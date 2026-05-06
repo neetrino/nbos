@@ -2,7 +2,7 @@ import { AlertTriangle, Building2, Calendar, FolderKanban } from 'lucide-react';
 import { KanbanBoard, StatusBadge, type KanbanColumn } from '@/components/shared';
 import {
   formatAmount,
-  getInvoiceStage,
+  getInvoiceMoneyStage,
   INVOICE_MONEY_STAGES,
   INVOICE_TYPES,
 } from '@/features/finance/constants/finance';
@@ -51,8 +51,8 @@ export function InvoiceKanban({ invoices, onInvoiceClick, onMove }: InvoiceKanba
   );
 }
 
-function InvoiceLegacyPipelineBadge({ status }: { status: string }) {
-  const stage = getInvoiceStage(status);
+function InvoiceMoneyStatusBadge({ moneyStatus }: { moneyStatus: string }) {
+  const stage = getInvoiceMoneyStage(moneyStatus);
   if (!stage) return null;
   return <StatusBadge label={stage.label} variant={stage.variant} />;
 }
@@ -85,7 +85,7 @@ function InvoiceKanbanCard({
       </div>
       <p className="text-sm font-bold">{formatAmount(parseFloat(invoice.amount))}</p>
       {type && <StatusBadge label={type.label} variant="blue" />}
-      <InvoiceLegacyPipelineBadge status={invoice.status} />
+      <InvoiceMoneyStatusBadge moneyStatus={invoice.moneyStatus} />
       {invoice.company && <InvoiceCompany name={invoice.company.name} />}
       {invoice.project && <InvoiceProject name={invoice.project.name} />}
       {invoice.dueDate && <InvoiceDueDate dueDate={invoice.dueDate} />}

@@ -20,7 +20,6 @@ const mockInvoice = (id: string): Invoice => ({
   currency: 'USD',
   taxStatus: 'TAX',
   type: 'STANDARD',
-  status: 'DRAFT',
   moneyStatus: 'NEW',
   dueDate: null,
   paidDate: null,
@@ -67,16 +66,16 @@ describe('fetchAllInvoicesForExport', () => {
         items: [mockInvoice('3')],
         meta: { total: 3, page: 2, pageSize: 500, totalPages: 2 },
       });
-    const rows = await fetchAllInvoicesForExport({ status: 'DRAFT' });
+    const rows = await fetchAllInvoicesForExport({ moneyStatus: 'NEW' });
     expect(rows).toHaveLength(3);
     expect(getAll).toHaveBeenCalledTimes(2);
     expect(getAll).toHaveBeenNthCalledWith(
       1,
-      expect.objectContaining({ page: 1, pageSize: 500, status: 'DRAFT' }),
+      expect.objectContaining({ page: 1, pageSize: 500, moneyStatus: 'NEW' }),
     );
     expect(getAll).toHaveBeenNthCalledWith(
       2,
-      expect.objectContaining({ page: 2, pageSize: 500, status: 'DRAFT' }),
+      expect.objectContaining({ page: 2, pageSize: 500, moneyStatus: 'NEW' }),
     );
   });
 });

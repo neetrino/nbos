@@ -66,7 +66,7 @@ interface TestInvoiceCandidate {
   amount: number;
   dueDate: Date;
   taxStatus: string;
-  status: string;
+  moneyStatus: string;
   govInvoiceId: string | null;
   company: { name: string };
   clientServiceRecord: { notificationsEnabled: boolean };
@@ -83,7 +83,7 @@ function baseInvoiceCandidate(): TestInvoiceCandidate {
     amount: 120000,
     dueDate: new Date('2026-05-01'),
     taxStatus: 'TAX_FREE',
-    status: 'WAITING',
+    moneyStatus: 'AWAITING_PAYMENT',
     govInvoiceId: null,
     company: { name: 'ACME' },
     clientServiceRecord: { notificationsEnabled: true },

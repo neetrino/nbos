@@ -65,7 +65,7 @@ export class SalesBonusAccrualService {
       where: { id: invoiceId },
       select: {
         id: true,
-        status: true,
+        moneyStatus: true,
         amount: true,
         orderId: true,
         order: {
@@ -88,7 +88,7 @@ export class SalesBonusAccrualService {
       },
     });
 
-    if (!invoice || invoice.status !== 'PAID' || !invoice.orderId || !invoice.order) {
+    if (!invoice || invoice.moneyStatus !== 'PAID' || !invoice.orderId || !invoice.order) {
       return null;
     }
 

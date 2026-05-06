@@ -1,28 +1,22 @@
-import type { InvoiceMoneyStatusEnum, InvoiceStatusEnum } from '@nbos/database';
+import type { InvoiceMoneyStatusEnum } from '@nbos/database';
 
-/** Manual kanban / API: money column maps to a legacy pipeline status kept in sync for orders/deals. */
-export const MONEY_STATUS_TO_LEGACY_COMPANION: Record<InvoiceMoneyStatusEnum, InvoiceStatusEnum> = {
-  NEW: 'THIS_MONTH',
-  AWAITING_PAYMENT: 'WAITING',
-  OVERDUE: 'DELAYED',
-  ON_HOLD: 'ON_HOLD',
-  PAID: 'PAID',
-  CANCELLED: 'FAIL',
-};
-
-const MONEY_STATUS_VALUES = Object.keys(
-  MONEY_STATUS_TO_LEGACY_COMPANION,
-) as InvoiceMoneyStatusEnum[];
+const INVOICE_MONEY_STATUS_VALUES: readonly InvoiceMoneyStatusEnum[] = [
+  'NEW',
+  'AWAITING_PAYMENT',
+  'OVERDUE',
+  'ON_HOLD',
+  'PAID',
+  'CANCELLED',
+];
 
 export function parseInvoiceMoneyStatus(value: string): InvoiceMoneyStatusEnum | null {
   const trimmed = value.trim();
-  return MONEY_STATUS_VALUES.includes(trimmed as InvoiceMoneyStatusEnum)
+  return (INVOICE_MONEY_STATUS_VALUES as readonly string[]).includes(trimmed)
     ? (trimmed as InvoiceMoneyStatusEnum)
     : null;
 }
 
-export interface ResolveInvoiceMoneyStatusArgs {
-  legacyStatus: InvoiceStatusEnum;
+export interface DeriveBaseInvoiceMoneyStatusArgs {
   amount: number;
   paid: number;
   dueDate: Date | null;
@@ -30,44 +24,45 @@ export interface ResolveInvoiceMoneyStatusArgs {
 }
 
 /**
- * Canonical Invoice Card **money** status derived from coverage, due date, and legacy pipeline status.
- * Legacy `InvoiceStatusEnum` remains until all consumers migrate.
+ * Money status from payments and due date only (no manual ON_HOLD / CANCELLED).
+ * Used for validation against user-requested PATCH values.
  */
-export function resolveInvoiceMoneyStatus(
-  args: ResolveInvoiceMoneyStatusArgs,
+export function deriveBaseInvoiceMoneyStatus(
+  args: DeriveBaseInvoiceMoneyStatusArgs,
 ): InvoiceMoneyStatusEnum {
-  const { legacyStatus, amount, paid, dueDate, now } = args;
-
+  const { amount, paid, dueDate, now } = args;
   if (paid >= amount) {
     return 'PAID';
   }
-
-  if (legacyStatus === 'ON_HOLD') {
-    return 'ON_HOLD';
-  }
-
-  /** Legacy `FAIL` is the companion for money `CANCELLED` (terminal, not collectible). */
-  if (legacyStatus === 'FAIL') {
-    return 'CANCELLED';
-  }
-
-  const overdueByDueDate = dueDate != null && dueDate.getTime() < now.getTime() && paid < amount;
-
-  if (overdueByDueDate || legacyStatus === 'DELAYED') {
+  if (dueDate != null && dueDate.getTime() < now.getTime()) {
     return 'OVERDUE';
   }
-
-  if (legacyStatus === 'WAITING') {
+  if (paid > 0) {
     return 'AWAITING_PAYMENT';
   }
-
-  if (legacyStatus === 'THIS_MONTH' || legacyStatus === 'CREATE_INVOICE') {
-    return 'NEW';
-  }
-
-  if (legacyStatus === 'PAID') {
-    return 'AWAITING_PAYMENT';
-  }
-
   return 'NEW';
+}
+
+export interface SyncInvoiceMoneyStatusFromPaymentsArgs extends DeriveBaseInvoiceMoneyStatusArgs {
+  currentMoneyStatus: InvoiceMoneyStatusEnum;
+}
+
+/**
+ * Recomputes stored money status after payments change. Preserves manual ON_HOLD and
+ * terminal CANCELLED until fully paid.
+ */
+export function syncInvoiceMoneyStatusFromPayments(
+  args: SyncInvoiceMoneyStatusFromPaymentsArgs,
+): InvoiceMoneyStatusEnum {
+  const { currentMoneyStatus, amount, paid, dueDate, now } = args;
+  if (paid >= amount) {
+    return 'PAID';
+  }
+  if (currentMoneyStatus === 'ON_HOLD') {
+    return 'ON_HOLD';
+  }
+  if (currentMoneyStatus === 'CANCELLED') {
+    return 'CANCELLED';
+  }
+  return deriveBaseInvoiceMoneyStatus({ amount, paid, dueDate, now });
 }

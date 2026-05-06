@@ -8,16 +8,15 @@ import { formatAmount } from '../constants/dealPipeline';
 import { invoicesApi } from '@/lib/api/finance';
 import type { Deal, DealInvoice } from '@/lib/api/deals';
 
-const INVOICE_STATUS_VARIANT: Record<
+const INVOICE_MONEY_STATUS_VARIANT: Record<
   string,
-  'blue' | 'amber' | 'red' | 'green' | 'gray' | 'orange'
+  'blue' | 'amber' | 'red' | 'green' | 'gray' | 'orange' | 'purple'
 > = {
-  THIS_MONTH: 'blue',
-  CREATE_INVOICE: 'amber',
-  WAITING: 'orange',
-  DELAYED: 'red',
+  NEW: 'blue',
+  AWAITING_PAYMENT: 'purple',
+  OVERDUE: 'orange',
   ON_HOLD: 'gray',
-  FAIL: 'red',
+  CANCELLED: 'red',
   PAID: 'green',
 };
 
@@ -146,8 +145,8 @@ export function DealInvoiceTab({
                 <div>
                   <p className="text-foreground text-sm font-medium">{inv.code}</p>
                   <StatusBadge
-                    label={inv.status.replace(/_/g, ' ')}
-                    variant={INVOICE_STATUS_VARIANT[inv.status] ?? 'gray'}
+                    label={inv.moneyStatus.replace(/_/g, ' ')}
+                    variant={INVOICE_MONEY_STATUS_VARIANT[inv.moneyStatus] ?? 'gray'}
                   />
                 </div>
               </div>

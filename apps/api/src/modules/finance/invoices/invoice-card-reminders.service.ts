@@ -2,8 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 
-const INVOICE_REMINDER_STATUSES = ['THIS_MONTH', 'WAITING', 'DELAYED'] as const;
-const OFFICIAL_REQUEST_STATUSES = ['THIS_MONTH', 'CREATE_INVOICE', 'WAITING', 'DELAYED'] as const;
+/** Money statuses eligible for invoice-card reminder jobs (replaces legacy pipeline buckets). */
+const REMINDER_ELIGIBLE_MONEY_STATUSES = ['NEW', 'AWAITING_PAYMENT', 'OVERDUE'] as const;
+const PAYMENT_REMINDER_MONEY_STATUSES = ['NEW', 'AWAITING_PAYMENT', 'OVERDUE'] as const;
+
 const INVOICE_REMINDER_RULE_RESOLVER = 'FINANCE_TEAM';
 const INVOICE_REMINDER_SOURCE_MODULE = 'finance';
 
@@ -25,7 +27,7 @@ interface InvoiceReminderCandidate {
   amount: unknown;
   dueDate: Date | null;
   taxStatus: string;
-  status: string;
+  moneyStatus: string;
   govInvoiceId: string | null;
   company: { name: string } | null;
   clientServiceRecord: { notificationsEnabled: boolean } | null;
@@ -64,7 +66,7 @@ export class InvoiceCardRemindersService {
   private findDueCandidates(asOf: Date) {
     return this.prisma.invoice.findMany({
       where: {
-        status: { in: [...OFFICIAL_REQUEST_STATUSES] },
+        moneyStatus: { in: [...REMINDER_ELIGIBLE_MONEY_STATUSES] },
         dueDate: { lte: asOf },
         OR: [
           { clientServiceRecordId: null },
@@ -77,7 +79,7 @@ export class InvoiceCardRemindersService {
         amount: true,
         dueDate: true,
         taxStatus: true,
-        status: true,
+        moneyStatus: true,
         govInvoiceId: true,
         company: { select: { name: true } },
         clientServiceRecord: { select: { notificationsEnabled: true } },
@@ -128,18 +130,20 @@ export class InvoiceCardRemindersService {
 }
 
 function buildReminderSeeds(invoice: InvoiceReminderCandidate): ReminderJobSeed[] {
-  if (invoice.status === 'ON_HOLD') return [];
+  if (invoice.moneyStatus === 'ON_HOLD') return [];
   if (invoice.taxStatus === 'TAX' && !invoice.govInvoiceId) {
     return [{ type: INVOICE_CARD_REMINDER_TYPES.OFFICIAL_REQUEST_DUE, invoice }];
   }
-  if (isPaymentReminderStatus(invoice.status)) {
+  if (isPaymentReminderMoneyStatus(invoice.moneyStatus)) {
     return [{ type: INVOICE_CARD_REMINDER_TYPES.PAYMENT_REMINDER_DUE, invoice }];
   }
   return [];
 }
 
-function isPaymentReminderStatus(status: string) {
-  return INVOICE_REMINDER_STATUSES.includes(status as (typeof INVOICE_REMINDER_STATUSES)[number]);
+function isPaymentReminderMoneyStatus(moneyStatus: string) {
+  return PAYMENT_REMINDER_MONEY_STATUSES.includes(
+    moneyStatus as (typeof PAYMENT_REMINDER_MONEY_STATUSES)[number],
+  );
 }
 
 function buildReminderPayload(invoice: InvoiceReminderCandidate, asOf: Date): InputJsonValue {

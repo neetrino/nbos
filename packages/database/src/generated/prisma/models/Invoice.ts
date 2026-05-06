@@ -46,7 +46,6 @@ export type InvoiceMinAggregateOutputType = {
   amount: runtime.Decimal | null;
   taxStatus: $Enums.TaxStatus | null;
   type: $Enums.InvoiceTypeEnum | null;
-  status: $Enums.InvoiceStatusEnum | null;
   moneyStatus: $Enums.InvoiceMoneyStatusEnum | null;
   coverageStartMonth: string | null;
   coverageMonthCount: number | null;
@@ -69,7 +68,6 @@ export type InvoiceMaxAggregateOutputType = {
   amount: runtime.Decimal | null;
   taxStatus: $Enums.TaxStatus | null;
   type: $Enums.InvoiceTypeEnum | null;
-  status: $Enums.InvoiceStatusEnum | null;
   moneyStatus: $Enums.InvoiceMoneyStatusEnum | null;
   coverageStartMonth: string | null;
   coverageMonthCount: number | null;
@@ -92,7 +90,6 @@ export type InvoiceCountAggregateOutputType = {
   amount: number;
   taxStatus: number;
   type: number;
-  status: number;
   moneyStatus: number;
   coverageStartMonth: number;
   coverageMonthCount: number;
@@ -126,7 +123,6 @@ export type InvoiceMinAggregateInputType = {
   amount?: true;
   taxStatus?: true;
   type?: true;
-  status?: true;
   moneyStatus?: true;
   coverageStartMonth?: true;
   coverageMonthCount?: true;
@@ -149,7 +145,6 @@ export type InvoiceMaxAggregateInputType = {
   amount?: true;
   taxStatus?: true;
   type?: true;
-  status?: true;
   moneyStatus?: true;
   coverageStartMonth?: true;
   coverageMonthCount?: true;
@@ -172,7 +167,6 @@ export type InvoiceCountAggregateInputType = {
   amount?: true;
   taxStatus?: true;
   type?: true;
-  status?: true;
   moneyStatus?: true;
   coverageStartMonth?: true;
   coverageMonthCount?: true;
@@ -283,7 +277,6 @@ export type InvoiceGroupByOutputType = {
   amount: runtime.Decimal;
   taxStatus: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status: $Enums.InvoiceStatusEnum;
   moneyStatus: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth: string | null;
   coverageMonthCount: number | null;
@@ -331,7 +324,6 @@ export type InvoiceWhereInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Invoice'> | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
   moneyStatus?: Prisma.EnumInvoiceMoneyStatusEnumFilter<'Invoice'> | $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: Prisma.StringNullableFilter<'Invoice'> | string | null;
   coverageMonthCount?: Prisma.IntNullableFilter<'Invoice'> | number | null;
@@ -367,7 +359,6 @@ export type InvoiceOrderByWithRelationInput = {
   amount?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
-  status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
   coverageStartMonth?: Prisma.SortOrderInput | Prisma.SortOrder;
   coverageMonthCount?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -406,7 +397,6 @@ export type InvoiceWhereUniqueInput = Prisma.AtLeast<
       | string;
     taxStatus?: Prisma.EnumTaxStatusFilter<'Invoice'> | $Enums.TaxStatus;
     type?: Prisma.EnumInvoiceTypeEnumFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
-    status?: Prisma.EnumInvoiceStatusEnumFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
     moneyStatus?:
       | Prisma.EnumInvoiceMoneyStatusEnumFilter<'Invoice'>
       | $Enums.InvoiceMoneyStatusEnum;
@@ -449,7 +439,6 @@ export type InvoiceOrderByWithAggregationInput = {
   amount?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
-  status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
   coverageStartMonth?: Prisma.SortOrderInput | Prisma.SortOrder;
   coverageMonthCount?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -489,7 +478,6 @@ export type InvoiceScalarWhereWithAggregatesInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusWithAggregatesFilter<'Invoice'> | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumWithAggregatesFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumWithAggregatesFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumWithAggregatesFilter<'Invoice'>
     | $Enums.InvoiceMoneyStatusEnum;
@@ -510,7 +498,6 @@ export type InvoiceCreateInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -540,7 +527,6 @@ export type InvoiceUncheckedCreateInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -567,7 +553,6 @@ export type InvoiceUpdateInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -604,7 +589,6 @@ export type InvoiceUncheckedUpdateInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -632,7 +616,6 @@ export type InvoiceCreateManyInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -656,7 +639,6 @@ export type InvoiceUpdateManyMutationInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -686,7 +668,6 @@ export type InvoiceUncheckedUpdateManyInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -721,7 +702,6 @@ export type InvoiceCountOrderByAggregateInput = {
   amount?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
-  status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
   coverageStartMonth?: Prisma.SortOrder;
   coverageMonthCount?: Prisma.SortOrder;
@@ -749,7 +729,6 @@ export type InvoiceMaxOrderByAggregateInput = {
   amount?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
-  status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
   coverageStartMonth?: Prisma.SortOrder;
   coverageMonthCount?: Prisma.SortOrder;
@@ -772,7 +751,6 @@ export type InvoiceMinOrderByAggregateInput = {
   amount?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   type?: Prisma.SortOrder;
-  status?: Prisma.SortOrder;
   moneyStatus?: Prisma.SortOrder;
   coverageStartMonth?: Prisma.SortOrder;
   coverageMonthCount?: Prisma.SortOrder;
@@ -1061,10 +1039,6 @@ export type EnumInvoiceTypeEnumFieldUpdateOperationsInput = {
   set?: $Enums.InvoiceTypeEnum;
 };
 
-export type EnumInvoiceStatusEnumFieldUpdateOperationsInput = {
-  set?: $Enums.InvoiceStatusEnum;
-};
-
 export type EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.InvoiceMoneyStatusEnum;
 };
@@ -1252,7 +1226,6 @@ export type InvoiceCreateWithoutClientServiceRecordInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1280,7 +1253,6 @@ export type InvoiceUncheckedCreateWithoutClientServiceRecordInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1357,7 +1329,6 @@ export type InvoiceScalarWhereInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Invoice'> | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFilter<'Invoice'> | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFilter<'Invoice'> | $Enums.InvoiceStatusEnum;
   moneyStatus?: Prisma.EnumInvoiceMoneyStatusEnumFilter<'Invoice'> | $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: Prisma.StringNullableFilter<'Invoice'> | string | null;
   coverageMonthCount?: Prisma.IntNullableFilter<'Invoice'> | number | null;
@@ -1376,7 +1347,6 @@ export type InvoiceCreateWithoutCompanyInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1404,7 +1374,6 @@ export type InvoiceUncheckedCreateWithoutCompanyInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1467,7 +1436,6 @@ export type InvoiceCreateWithoutOrderInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1495,7 +1463,6 @@ export type InvoiceUncheckedCreateWithoutOrderInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1558,7 +1525,6 @@ export type InvoiceCreateWithoutPaymentsInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1587,7 +1553,6 @@ export type InvoiceUncheckedCreateWithoutPaymentsInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1641,7 +1606,6 @@ export type InvoiceUpdateWithoutPaymentsInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -1677,7 +1641,6 @@ export type InvoiceUncheckedUpdateWithoutPaymentsInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -1700,7 +1663,6 @@ export type InvoiceCreateWithoutSubscriptionInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1728,7 +1690,6 @@ export type InvoiceUncheckedCreateWithoutSubscriptionInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1791,7 +1752,6 @@ export type InvoiceCreateWithoutPartnerAccrualsInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1820,7 +1780,6 @@ export type InvoiceUncheckedCreateWithoutPartnerAccrualsInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1874,7 +1833,6 @@ export type InvoiceUpdateWithoutPartnerAccrualsInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -1910,7 +1868,6 @@ export type InvoiceUncheckedUpdateWithoutPartnerAccrualsInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -1933,7 +1890,6 @@ export type InvoiceCreateWithoutPartnerServiceTermsInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -1962,7 +1918,6 @@ export type InvoiceUncheckedCreateWithoutPartnerServiceTermsInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -2016,7 +1971,6 @@ export type InvoiceUpdateWithoutPartnerServiceTermsInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2052,7 +2006,6 @@ export type InvoiceUncheckedUpdateWithoutPartnerServiceTermsInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2078,7 +2031,6 @@ export type InvoiceCreateManyClientServiceRecordInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -2102,7 +2054,6 @@ export type InvoiceUpdateWithoutClientServiceRecordInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2137,7 +2088,6 @@ export type InvoiceUncheckedUpdateWithoutClientServiceRecordInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2169,7 +2119,6 @@ export type InvoiceUncheckedUpdateManyWithoutClientServiceRecordInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2193,7 +2142,6 @@ export type InvoiceCreateManyCompanyInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -2217,7 +2165,6 @@ export type InvoiceUpdateWithoutCompanyInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2252,7 +2199,6 @@ export type InvoiceUncheckedUpdateWithoutCompanyInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2284,7 +2230,6 @@ export type InvoiceUncheckedUpdateManyWithoutCompanyInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2308,7 +2253,6 @@ export type InvoiceCreateManyOrderInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -2332,7 +2276,6 @@ export type InvoiceUpdateWithoutOrderInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2367,7 +2310,6 @@ export type InvoiceUncheckedUpdateWithoutOrderInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2399,7 +2341,6 @@ export type InvoiceUncheckedUpdateManyWithoutOrderInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2423,7 +2364,6 @@ export type InvoiceCreateManySubscriptionInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
   taxStatus?: $Enums.TaxStatus;
   type: $Enums.InvoiceTypeEnum;
-  status?: $Enums.InvoiceStatusEnum;
   moneyStatus?: $Enums.InvoiceMoneyStatusEnum;
   coverageStartMonth?: string | null;
   coverageMonthCount?: number | null;
@@ -2447,7 +2387,6 @@ export type InvoiceUpdateWithoutSubscriptionInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2482,7 +2421,6 @@ export type InvoiceUncheckedUpdateWithoutSubscriptionInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2514,7 +2452,6 @@ export type InvoiceUncheckedUpdateManyWithoutSubscriptionInput = {
     | string;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   type?: Prisma.EnumInvoiceTypeEnumFieldUpdateOperationsInput | $Enums.InvoiceTypeEnum;
-  status?: Prisma.EnumInvoiceStatusEnumFieldUpdateOperationsInput | $Enums.InvoiceStatusEnum;
   moneyStatus?:
     | Prisma.EnumInvoiceMoneyStatusEnumFieldUpdateOperationsInput
     | $Enums.InvoiceMoneyStatusEnum;
@@ -2599,7 +2536,6 @@ export type InvoiceSelect<
     amount?: boolean;
     taxStatus?: boolean;
     type?: boolean;
-    status?: boolean;
     moneyStatus?: boolean;
     coverageStartMonth?: boolean;
     coverageMonthCount?: boolean;
@@ -2635,7 +2571,6 @@ export type InvoiceSelectCreateManyAndReturn<
     amount?: boolean;
     taxStatus?: boolean;
     type?: boolean;
-    status?: boolean;
     moneyStatus?: boolean;
     coverageStartMonth?: boolean;
     coverageMonthCount?: boolean;
@@ -2667,7 +2602,6 @@ export type InvoiceSelectUpdateManyAndReturn<
     amount?: boolean;
     taxStatus?: boolean;
     type?: boolean;
-    status?: boolean;
     moneyStatus?: boolean;
     coverageStartMonth?: boolean;
     coverageMonthCount?: boolean;
@@ -2696,7 +2630,6 @@ export type InvoiceSelectScalar = {
   amount?: boolean;
   taxStatus?: boolean;
   type?: boolean;
-  status?: boolean;
   moneyStatus?: boolean;
   coverageStartMonth?: boolean;
   coverageMonthCount?: boolean;
@@ -2721,7 +2654,6 @@ export type InvoiceOmit<
   | 'amount'
   | 'taxStatus'
   | 'type'
-  | 'status'
   | 'moneyStatus'
   | 'coverageStartMonth'
   | 'coverageMonthCount'
@@ -2787,7 +2719,6 @@ export type $InvoicePayload<
       amount: runtime.Decimal;
       taxStatus: $Enums.TaxStatus;
       type: $Enums.InvoiceTypeEnum;
-      status: $Enums.InvoiceStatusEnum;
       moneyStatus: $Enums.InvoiceMoneyStatusEnum;
       /**
        * First month covered by this invoice (`YYYY-MM`, UTC calendar month). Subscription / prepayment invoices per `03-Subscriptions`.
@@ -3444,7 +3375,6 @@ export interface InvoiceFieldRefs {
   readonly amount: Prisma.FieldRef<'Invoice', 'Decimal'>;
   readonly taxStatus: Prisma.FieldRef<'Invoice', 'TaxStatus'>;
   readonly type: Prisma.FieldRef<'Invoice', 'InvoiceTypeEnum'>;
-  readonly status: Prisma.FieldRef<'Invoice', 'InvoiceStatusEnum'>;
   readonly moneyStatus: Prisma.FieldRef<'Invoice', 'InvoiceMoneyStatusEnum'>;
   readonly coverageStartMonth: Prisma.FieldRef<'Invoice', 'String'>;
   readonly coverageMonthCount: Prisma.FieldRef<'Invoice', 'Int'>;

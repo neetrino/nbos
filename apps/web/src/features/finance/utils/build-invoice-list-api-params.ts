@@ -18,8 +18,6 @@ export function buildInvoiceListApiParams(
   const periodParams = getFinancePeriodParams(input.period);
   return {
     search: input.search || undefined,
-    status:
-      input.filters.status && input.filters.status !== 'all' ? input.filters.status : undefined,
     moneyStatus:
       input.filters.moneyStatus && input.filters.moneyStatus !== 'all'
         ? input.filters.moneyStatus

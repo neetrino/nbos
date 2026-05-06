@@ -75,7 +75,7 @@ export async function syncInvoiceOrderStatus(
   const invoices = await prisma.invoice.findMany({
     where: { orderId },
     select: {
-      status: true,
+      moneyStatus: true,
       payments: { select: { amount: true } },
     },
   });

@@ -72,7 +72,7 @@ describe('DealsService', () => {
               {
                 id: 'inv-1',
                 code: 'INV-2026-0001',
-                status: 'THIS_MONTH',
+                moneyStatus: 'NEW',
                 amount: 5000,
                 paidDate: null,
                 payments: [{ id: 'pay-1', amount: 2000, paymentDate: new Date('2026-04-20') }],
@@ -92,7 +92,7 @@ describe('DealsService', () => {
           {
             id: 'inv-1',
             code: 'INV-2026-0001',
-            status: 'THIS_MONTH',
+            moneyStatus: 'NEW',
           },
         ],
       });
@@ -569,7 +569,7 @@ describe('DealsService', () => {
     });
 
     it('blocks WON when first invoice is unpaid', async () => {
-      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('WAITING'));
+      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('AWAITING_PAYMENT'));
 
       await expect(service.updateStatus('1', 'WON')).rejects.toMatchObject({
         response: {
@@ -606,7 +606,7 @@ describe('DealsService', () => {
     });
 
     it('allows Owner or CEO override without marking invoices paid', async () => {
-      const base = completeProductDeal('WAITING');
+      const base = completeProductDeal('AWAITING_PAYMENT');
       const won = { ...base, status: 'WON' as const };
       prisma.deal.findUnique
         .mockResolvedValueOnce(base)
@@ -640,7 +640,7 @@ describe('DealsService', () => {
     });
 
     it('rejects non-privileged override', async () => {
-      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('WAITING'));
+      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('AWAITING_PAYMENT'));
 
       await expect(
         service.updateStatus('1', 'WON', {
@@ -662,7 +662,7 @@ describe('DealsService', () => {
   });
 });
 
-function completeProductDeal(invoiceStatus = 'PAID') {
+function completeProductDeal(invoiceMoneyStatus: 'PAID' | 'AWAITING_PAYMENT' = 'PAID') {
   return {
     id: '1',
     status: 'DEPOSIT_AND_CONTRACT',
@@ -693,7 +693,9 @@ function completeProductDeal(invoiceStatus = 'PAID') {
     orders: [
       {
         id: 'order-1',
-        invoices: [{ id: 'invoice-1', status: invoiceStatus, amount: 5000, payments: [] }],
+        invoices: [
+          { id: 'invoice-1', moneyStatus: invoiceMoneyStatus, amount: 5000, payments: [] },
+        ],
       },
     ],
   };

@@ -178,7 +178,7 @@ export class ProductsService {
               },
             },
             invoices: {
-              select: { id: true, code: true, status: true, amount: true, dueDate: true },
+              select: { id: true, code: true, moneyStatus: true, amount: true, dueDate: true },
             },
           },
         },

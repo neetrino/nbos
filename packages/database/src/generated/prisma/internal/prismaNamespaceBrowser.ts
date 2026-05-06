@@ -762,7 +762,6 @@ export const InvoiceScalarFieldEnum = {
   amount: 'amount',
   taxStatus: 'taxStatus',
   type: 'type',
-  status: 'status',
   moneyStatus: 'moneyStatus',
   coverageStartMonth: 'coverageStartMonth',
   coverageMonthCount: 'coverageMonthCount',

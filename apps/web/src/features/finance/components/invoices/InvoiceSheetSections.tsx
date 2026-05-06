@@ -1,11 +1,7 @@
 import { FileText, Building2, Clock, User, FolderKanban, Shield, Repeat } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from '@/components/shared';
-import {
-  getInvoiceMoneyStage,
-  getInvoiceStage,
-  formatAmount,
-} from '@/features/finance/constants/finance';
+import { getInvoiceMoneyStage, formatAmount } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
 import { InvoicePaymentCoverageCard } from './InvoicePaymentCoverageCard';
 import { RecordPaymentForm } from './RecordPaymentForm';
@@ -13,12 +9,10 @@ import { RecordPaymentForm } from './RecordPaymentForm';
 export type InvoiceSheetInvoice = Invoice;
 
 export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  const stage = getInvoiceStage(invoice.status);
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
   return (
     <div className="flex flex-wrap gap-1.5">
-      {stage && <StatusBadge label={stage.label} variant={stage.variant} />}
-      {money && <StatusBadge label={`Money: ${money.label}`} variant={money.variant} />}
+      {money && <StatusBadge label={money.label} variant={money.variant} />}
       <StatusBadge
         label={invoice.taxStatus === 'TAX' ? 'Tax' : 'Tax-Free'}
         variant={invoice.taxStatus === 'TAX' ? 'green' : 'gray'}
@@ -43,7 +37,6 @@ export function InvoiceAmountPanel({ invoice }: { invoice: InvoiceSheetInvoice }
 }
 
 export function InvoiceDetailsSection({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  const stage = getInvoiceStage(invoice.status);
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
   return (
     <section className="space-y-3">
@@ -54,8 +47,6 @@ export function InvoiceDetailsSection({ invoice }: { invoice: InvoiceSheetInvoic
         <div className="text-muted-foreground">Type</div>
         <div className="font-medium">{invoice.type}</div>
         <div className="text-muted-foreground">Status</div>
-        <div>{stage && <StatusBadge label={stage.label} variant={stage.variant} />}</div>
-        <div className="text-muted-foreground">Money status</div>
         <div>{money && <StatusBadge label={money.label} variant={money.variant} />}</div>
         <InvoiceTaxStatusRow taxStatus={invoice.taxStatus} />
         <OfficialInvoiceRow invoice={invoice} />
@@ -216,7 +207,8 @@ function LinkedEntity({
 function isInvoiceOverdue(invoice: InvoiceSheetInvoice) {
   return (
     invoice.moneyStatus === 'OVERDUE' ||
-    invoice.status === 'DELAYED' ||
-    Boolean(invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.status !== 'PAID')
+    Boolean(
+      invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.moneyStatus !== 'PAID',
+    )
   );
 }

@@ -48,7 +48,7 @@ describe('buildSubscriptionsCsvContent', () => {
       minimalSubscription({
         id: 'a',
         amount: '10.00',
-        invoices: [{ id: 'i1', code: 'I1', status: 'DRAFT', amount: '1' }],
+        invoices: [{ id: 'i1', code: 'I1', moneyStatus: 'NEW', amount: '1' }],
         coverage: { firstCoveredMonth: 1, activeMonthCount: 2, annualizedAmount: 100 },
       }),
       minimalSubscription({

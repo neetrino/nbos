@@ -25,7 +25,9 @@ interface ReadinessItem {
 }
 
 function hasPaidInvoice(deal: Deal) {
-  return deal.orders.some((order) => order.invoices.some((invoice) => invoice.status === 'PAID'));
+  return deal.orders.some((order) =>
+    order.invoices.some((invoice) => invoice.moneyStatus === 'PAID'),
+  );
 }
 
 function getReadinessItems(deal: Deal): ReadinessItem[] {

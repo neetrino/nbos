@@ -76,19 +76,19 @@ describe('FinanceSummaryService', () => {
         {
           amount: 120000,
           dueDate: null,
-          status: 'PAID',
+          moneyStatus: 'PAID',
           payments: [{ amount: 120000 }],
         },
         {
           amount: 15000,
           dueDate: new Date('2020-04-25'),
-          status: 'DELAYED',
+          moneyStatus: 'OVERDUE',
           payments: [],
         },
         {
           amount: 30000,
           dueDate: daysFromToday(2),
-          status: 'WAITING',
+          moneyStatus: 'AWAITING_PAYMENT',
           payments: [],
         },
       ])

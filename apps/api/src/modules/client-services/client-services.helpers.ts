@@ -60,7 +60,6 @@ export const clientServiceDetailInclude = {
     select: {
       id: true,
       code: true,
-      status: true,
       moneyStatus: true,
       amount: true,
       type: true,
@@ -132,7 +131,6 @@ export function serializeClientServiceDetail(
       invoices: invoices.map((inv) => ({
         id: inv.id,
         code: inv.code,
-        status: inv.status,
         moneyStatus: inv.moneyStatus,
         amount: String(inv.amount),
         type: inv.type,

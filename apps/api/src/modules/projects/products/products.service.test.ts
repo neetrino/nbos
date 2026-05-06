@@ -106,7 +106,7 @@ describe('ProductsService', () => {
             offerFileUrl: 'https://cdn.example.com/offer.pdf',
             contractFileUrl: 'https://cdn.example.com/contract.pdf',
           },
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
@@ -138,7 +138,11 @@ describe('ProductsService', () => {
         name: 'Test',
         status: 'TRANSFER',
         project: { credentials: [], domains: [], _count: { credentials: 0, domains: 0 } },
-        order: { status: 'PARTIALLY_PAID', deal: null, invoices: [{ status: 'WAITING' }] },
+        order: {
+          status: 'PARTIALLY_PAID',
+          deal: null,
+          invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
+        },
         extensions: [{ status: 'DEVELOPMENT' }],
         tasks: [{ status: 'IN_PROGRESS' }],
         tickets: [{ status: 'NEW' }],
@@ -199,7 +203,7 @@ describe('ProductsService', () => {
             offerFileUrl: 'https://cdn.example.com/offer.pdf',
             contractFileUrl: 'https://cdn.example.com/contract.pdf',
           },
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
@@ -237,7 +241,7 @@ describe('ProductsService', () => {
         order: {
           status: 'FULLY_PAID',
           deal: { offerFileUrl: null, contractFileUrl: null },
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
@@ -457,7 +461,7 @@ describe('ProductsService', () => {
         order: {
           id: 'ord-1',
           status: 'FULLY_PAID',
-          invoices: [{ status: 'PAID' }, { status: 'WAITING' }],
+          invoices: [{ moneyStatus: 'PAID' }, { moneyStatus: 'AWAITING_PAYMENT' }],
         },
       });
 
@@ -482,7 +486,7 @@ describe('ProductsService', () => {
         order: {
           id: 'ord-1',
           status: 'PARTIALLY_PAID',
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
       });
 
@@ -507,7 +511,7 @@ describe('ProductsService', () => {
         order: {
           id: 'ord-1',
           status: 'FULLY_PAID',
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DONE' });

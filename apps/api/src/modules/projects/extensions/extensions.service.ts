@@ -145,7 +145,7 @@ export class ExtensionsService {
         order: {
           include: {
             invoices: {
-              select: { id: true, code: true, status: true, amount: true, dueDate: true },
+              select: { id: true, code: true, moneyStatus: true, amount: true, dueDate: true },
             },
           },
         },

@@ -24,7 +24,7 @@ export const projectDetailInclude = {
         select: {
           id: true,
           code: true,
-          status: true,
+          moneyStatus: true,
           amount: true,
           type: true,
           dueDate: true,
@@ -67,7 +67,7 @@ export const projectDetailInclude = {
         select: {
           id: true,
           code: true,
-          status: true,
+          moneyStatus: true,
           amount: true,
           dueDate: true,
           paidDate: true,

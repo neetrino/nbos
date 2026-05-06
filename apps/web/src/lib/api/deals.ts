@@ -3,7 +3,7 @@ import { api } from '../api';
 export interface DealInvoice {
   id: string;
   code: string;
-  status: string;
+  moneyStatus: string;
   amount: number;
   paidDate?: string | null;
   payments: Array<{ id: string; amount: number; paymentDate?: string }>;

@@ -9,7 +9,6 @@ export interface ClientServiceFinanceLinks {
   invoices: Array<{
     id: string;
     code: string;
-    status: string;
     moneyStatus: string;
     amount: string;
     type: string;

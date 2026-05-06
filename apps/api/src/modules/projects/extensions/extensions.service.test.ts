@@ -341,7 +341,7 @@ describe('ExtensionsService', () => {
         id: 'e1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }, { status: 'CANCELLED' }],
-        order: { id: 'ord-1', status: 'FULLY_PAID', invoices: [{ status: 'PAID' }] },
+        order: { id: 'ord-1', status: 'FULLY_PAID', invoices: [{ moneyStatus: 'PAID' }] },
       });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
 
@@ -355,7 +355,7 @@ describe('ExtensionsService', () => {
         id: 'e1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }],
-        order: { id: 'ord-1', status: 'PARTIALLY_PAID', invoices: [{ status: 'PAID' }] },
+        order: { id: 'ord-1', status: 'PARTIALLY_PAID', invoices: [{ moneyStatus: 'PAID' }] },
       });
 
       const error = await service.updateStatus('e1', 'DONE').catch((caught: unknown) => caught);

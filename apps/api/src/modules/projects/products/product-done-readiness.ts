@@ -39,7 +39,7 @@ interface ProductForDoneReadiness {
       offerFileUrl?: string | null;
       contractFileUrl?: string | null;
     } | null;
-    invoices?: Array<{ status: string }>;
+    invoices?: Array<{ moneyStatus: string }>;
   } | null;
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
@@ -87,7 +87,7 @@ function buildDoneReadinessSummary(product: ProductForDoneReadiness) {
     openTaskCount: countOpen(product.tasks ?? [], CLOSED_TASK_STATUSES),
     openTicketCount: countOpen(product.tickets ?? [], CLOSED_TICKET_STATUSES),
     unpaidInvoiceCount: (product.order?.invoices ?? []).filter(
-      (invoice) => invoice.status !== 'PAID',
+      (invoice) => invoice.moneyStatus !== 'PAID',
     ).length,
   };
 }

@@ -20,7 +20,7 @@ describe('SalesBonusAccrualService', () => {
   it('does nothing when invoice is not PAID', async () => {
     prisma.invoice.findUnique.mockResolvedValue({
       id: 'inv1',
-      status: 'WAITING',
+      moneyStatus: 'AWAITING_PAYMENT',
       amount: 100,
       orderId: 'ord1',
       order: { id: 'ord1' },
@@ -34,7 +34,7 @@ describe('SalesBonusAccrualService', () => {
   it('accrues seller SALES bonus on classic fully paid invoice', async () => {
     prisma.invoice.findUnique.mockResolvedValue({
       id: 'inv1',
-      status: 'PAID',
+      moneyStatus: 'PAID',
       amount: 500,
       orderId: 'ord1',
       order: {
@@ -90,7 +90,7 @@ describe('SalesBonusAccrualService', () => {
   it('skips classic accrual when a slotted SALES bonus already exists', async () => {
     prisma.invoice.findUnique.mockResolvedValue({
       id: 'inv1',
-      status: 'PAID',
+      moneyStatus: 'PAID',
       amount: 500,
       orderId: 'ord1',
       order: {
@@ -118,7 +118,7 @@ describe('SalesBonusAccrualService', () => {
   it('uses first-month policy on first subscription paid invoice', async () => {
     prisma.invoice.findUnique.mockResolvedValue({
       id: 'inv-a',
-      status: 'PAID',
+      moneyStatus: 'PAID',
       amount: 100_000,
       orderId: 'ord-sub',
       order: {
@@ -172,7 +172,7 @@ describe('SalesBonusAccrualService', () => {
   it('accrues recurring subscription bonus on later paid invoices', async () => {
     prisma.invoice.findUnique.mockResolvedValue({
       id: 'inv-b',
-      status: 'PAID',
+      moneyStatus: 'PAID',
       amount: 50_000,
       orderId: 'ord-sub',
       order: {

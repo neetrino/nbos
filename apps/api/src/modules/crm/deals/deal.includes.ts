@@ -31,7 +31,7 @@ export const dealListInclude = {
         select: {
           id: true,
           code: true,
-          status: true,
+          moneyStatus: true,
           amount: true,
           payments: { select: { id: true, amount: true } },
         },
@@ -56,7 +56,7 @@ export const dealDetailInclude = {
         select: {
           id: true,
           code: true,
-          status: true,
+          moneyStatus: true,
           amount: true,
           paidDate: true,
           payments: { select: { id: true, amount: true, paymentDate: true } },
@@ -88,7 +88,7 @@ export const dealUpdateInclude = {
         select: {
           id: true,
           code: true,
-          status: true,
+          moneyStatus: true,
           amount: true,
           paidDate: true,
           payments: { select: { id: true, amount: true } },

@@ -28,7 +28,7 @@ interface WonDealData {
   marketingActivityId: string | null;
   orders?: Array<{
     invoices?: Array<{
-      status: string;
+      moneyStatus: string;
       amount: unknown;
       paidDate?: Date | null;
     }>;
@@ -269,6 +269,6 @@ export class DealWonHandler {
 
   private getFirstPaidInvoice(deal: WonDealData) {
     const invoices = deal.orders?.flatMap((order) => order.invoices ?? []) ?? [];
-    return invoices.find((invoice) => invoice.status === 'PAID') ?? null;
+    return invoices.find((invoice) => invoice.moneyStatus === 'PAID') ?? null;
   }
 }

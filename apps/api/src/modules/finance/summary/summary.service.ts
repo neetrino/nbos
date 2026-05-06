@@ -4,7 +4,7 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { PayrollRunsService } from '../../payroll-runs/payroll-runs.service';
 import {
   ACTIVE_EXPENSE_STATUSES,
-  OPEN_INVOICE_STATUSES,
+  OPEN_INVOICE_MONEY_STATUSES,
   foldExpenseCards,
   foldInvoiceCards,
 } from './finance-card-metrics';
@@ -69,13 +69,12 @@ export class FinanceSummaryService {
     const [invoiceCards, total, byStatus, totalRevenue] = await Promise.all([
       this.prisma.invoice.findMany({
         where: {
-          status: { in: [...OPEN_INVOICE_STATUSES, 'PAID', 'FAIL', 'ON_HOLD'] },
           ...(createdAt ? { createdAt } : {}),
         },
         select: {
           amount: true,
           dueDate: true,
-          status: true,
+          moneyStatus: true,
           payments: { select: { amount: true } },
         },
       }),
@@ -207,7 +206,7 @@ export class FinanceSummaryService {
 
     const invoices = await this.prisma.invoice.findMany({
       where: {
-        status: { in: [...OPEN_INVOICE_STATUSES] },
+        moneyStatus: { in: [...OPEN_INVOICE_MONEY_STATUSES] },
         dueDate,
       },
       orderBy: { dueDate: 'asc' },

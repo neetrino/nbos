@@ -121,7 +121,6 @@ describe('ClientServicesService', () => {
         {
           id: 'inv-1',
           code: 'INV-1',
-          status: 'WAITING',
           moneyStatus: 'AWAITING_PAYMENT',
           amount: new Decimal('20'),
           type: 'DOMAIN_SERVICE',

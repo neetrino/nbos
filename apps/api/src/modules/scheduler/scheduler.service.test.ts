@@ -107,14 +107,14 @@ describe('SchedulerService', () => {
       expect(prisma.invoice.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: { in: ['inv-1', 'inv-2'] } },
-          data: { status: 'DELAYED', moneyStatus: 'OVERDUE' },
+          data: { moneyStatus: 'OVERDUE' },
         }),
       );
       expect(prisma.invoice.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: {
-              notIn: ['PAID', 'FAIL', 'DELAYED', 'ON_HOLD'],
+            moneyStatus: {
+              notIn: ['PAID', 'CANCELLED', 'ON_HOLD', 'OVERDUE'],
             },
           }),
         }),

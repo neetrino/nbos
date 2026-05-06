@@ -64,7 +64,7 @@ export class CompaniesService {
       include: {
         contact: true,
         projects: { select: { id: true, code: true, name: true } },
-        invoices: { select: { id: true, code: true, status: true, amount: true } },
+        invoices: { select: { id: true, code: true, moneyStatus: true, amount: true } },
       },
     });
     if (!company) throw new NotFoundException(`Company ${id} not found`);

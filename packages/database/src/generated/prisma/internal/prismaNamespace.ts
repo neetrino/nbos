@@ -8380,7 +8380,6 @@ export const InvoiceScalarFieldEnum = {
   amount: 'amount',
   taxStatus: 'taxStatus',
   type: 'type',
-  status: 'status',
   moneyStatus: 'moneyStatus',
   coverageStartMonth: 'coverageStartMonth',
   coverageMonthCount: 'coverageMonthCount',
@@ -10339,22 +10338,6 @@ export type EnumInvoiceTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
 export type ListEnumInvoiceTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'InvoiceTypeEnum[]'
->;
-
-/**
- * Reference to a field of type 'InvoiceStatusEnum'
- */
-export type EnumInvoiceStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'InvoiceStatusEnum'
->;
-
-/**
- * Reference to a field of type 'InvoiceStatusEnum[]'
- */
-export type ListEnumInvoiceStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'InvoiceStatusEnum[]'
 >;
 
 /**

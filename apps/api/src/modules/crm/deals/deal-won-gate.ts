@@ -13,7 +13,7 @@ interface DealForWonValidation {
   partnerReferralTerms?: { partnerPercent: unknown } | null;
   orders?: Array<{
     invoices?: Array<{
-      status: string;
+      moneyStatus: string;
     }>;
   }>;
 }
@@ -74,7 +74,7 @@ export function getDealWonErrors(deal: DealForWonValidation): ValidationError[] 
   }
 
   const firstInvoice = invoices[0];
-  if (firstInvoice?.status !== 'PAID') {
+  if (firstInvoice?.moneyStatus !== 'PAID') {
     errors.push({
       field: 'payment',
       message: 'First linked invoice must be marked as Paid by Finance before Deal Won.',

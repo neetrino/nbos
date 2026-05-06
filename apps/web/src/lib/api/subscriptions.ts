@@ -30,7 +30,7 @@ export interface Subscription {
   invoices: Array<{
     id: string;
     code: string;
-    status: string;
+    moneyStatus: string;
     amount: string;
     coverageStartMonth?: string | null;
     coverageMonthCount?: number | null;

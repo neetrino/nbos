@@ -476,18 +476,6 @@ export const InvoiceTypeEnum = {
 
 export type InvoiceTypeEnum = (typeof InvoiceTypeEnum)[keyof typeof InvoiceTypeEnum];
 
-export const InvoiceStatusEnum = {
-  THIS_MONTH: 'THIS_MONTH',
-  CREATE_INVOICE: 'CREATE_INVOICE',
-  WAITING: 'WAITING',
-  DELAYED: 'DELAYED',
-  ON_HOLD: 'ON_HOLD',
-  FAIL: 'FAIL',
-  PAID: 'PAID',
-} as const;
-
-export type InvoiceStatusEnum = (typeof InvoiceStatusEnum)[keyof typeof InvoiceStatusEnum];
-
 export const InvoiceMoneyStatusEnum = {
   NEW: 'NEW',
   AWAITING_PAYMENT: 'AWAITING_PAYMENT',

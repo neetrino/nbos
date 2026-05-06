@@ -22,7 +22,7 @@ describe('PartnerAccrualSubscriptionService', () => {
 
   const subscriptionInvoiceBase = {
     id: 'inv1',
-    status: 'PAID' as const,
+    moneyStatus: 'PAID' as const,
     type: 'SUBSCRIPTION' as const,
     projectId: 'pr1',
     orderId: 'ord1' as string | null,

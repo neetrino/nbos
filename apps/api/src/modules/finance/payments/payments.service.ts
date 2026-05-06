@@ -4,13 +4,8 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { NotificationService } from '../../notifications/notification.service';
 import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.service';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
-import {
-  getLatestPaymentDate,
-  resolveInvoiceStatus,
-  resolveOrderStatus,
-  sumAmounts,
-} from '../finance-status.utils';
-import { resolveInvoiceMoneyStatus } from '../invoices/invoice-money-status';
+import { getLatestPaymentDate, resolveOrderStatus, sumAmounts } from '../finance-status.utils';
+import { syncInvoiceMoneyStatusFromPayments } from '../invoices/invoice-money-status';
 import { OperationalJournalService } from '../journal/operational-journal.service';
 import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual-classic.service';
 import { PartnerAccrualSubscriptionService } from '../partner-accrual/partner-accrual-subscription.service';
@@ -69,7 +64,7 @@ export class PaymentsService {
               id: true,
               code: true,
               amount: true,
-              status: true,
+              moneyStatus: true,
               type: true,
               projectId: true,
               company: { select: { id: true, name: true } },
@@ -147,7 +142,7 @@ export class PaymentsService {
         projectId: true,
         companyId: true,
         amount: true,
-        status: true,
+        moneyStatus: true,
         dueDate: true,
         payments: { select: { amount: true } },
         order: { select: { productId: true } },
@@ -163,7 +158,7 @@ export class PaymentsService {
     const nextPaid = currentPaid + data.amount;
     const invoiceAmount = Number(invoice.amount);
 
-    if (invoice.status === 'PAID' || currentPaid >= invoiceAmount) {
+    if (invoice.moneyStatus === 'PAID' || currentPaid >= invoiceAmount) {
       throw new BadRequestException(`Invoice ${data.invoiceId} is already fully paid`);
     }
 
@@ -216,9 +211,9 @@ export class PaymentsService {
 
     const refreshed = await this.prisma.invoice.findUnique({
       where: { id: data.invoiceId },
-      select: { status: true },
+      select: { moneyStatus: true },
     });
-    if (refreshed?.status === 'PAID') {
+    if (refreshed?.moneyStatus === 'PAID') {
       await this.salesBonusAccrual.onInvoicePaid(data.invoiceId);
       await this.partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment({
         invoiceId: data.invoiceId,
@@ -302,7 +297,7 @@ export class PaymentsService {
       select: {
         amount: true,
         dueDate: true,
-        status: true,
+        moneyStatus: true,
         payments: { select: { amount: true, paymentDate: true } },
       },
     });
@@ -310,15 +305,9 @@ export class PaymentsService {
 
     const paid = sumAmounts(invoice.payments);
     const amount = Number(invoice.amount);
-    const status = resolveInvoiceStatus({
-      amount,
-      paid,
-      dueDate: invoice.dueDate,
-      currentStatus: invoice.status,
-    });
     const now = new Date();
-    const moneyStatus = resolveInvoiceMoneyStatus({
-      legacyStatus: status,
+    const moneyStatus = syncInvoiceMoneyStatusFromPayments({
+      currentMoneyStatus: invoice.moneyStatus,
       amount,
       paid,
       dueDate: invoice.dueDate,
@@ -328,9 +317,8 @@ export class PaymentsService {
     await this.prisma.invoice.update({
       where: { id: invoiceId },
       data: {
-        status,
         moneyStatus,
-        paidDate: status === 'PAID' ? getLatestPaymentDate(invoice.payments) : null,
+        paidDate: moneyStatus === 'PAID' ? getLatestPaymentDate(invoice.payments) : null,
       },
     });
   }
@@ -339,7 +327,7 @@ export class PaymentsService {
     const invoices = await this.prisma.invoice.findMany({
       where: { orderId },
       select: {
-        status: true,
+        moneyStatus: true,
         amount: true,
         payments: { select: { amount: true } },
       },

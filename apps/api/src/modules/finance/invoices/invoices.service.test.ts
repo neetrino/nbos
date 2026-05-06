@@ -24,7 +24,6 @@ function mockInvoiceFindByIdRow(
     code: `INV-2026-${id}`,
     amount,
     dueDate: new Date('2026-04-20'),
-    status: 'PAID',
     moneyStatus: 'PAID',
     type: 'SUBSCRIPTION',
     taxStatus: 'TAX',
@@ -122,13 +121,9 @@ describe('InvoicesService', () => {
     });
   });
 
-  describe('updateStatus', () => {
-    it('sets paidDate when marking as PAID', async () => {
+  describe('updateMoneyStatus', () => {
+    it('sets paidDate when marking money PAID and fully covered', async () => {
       const paidDate = new Date('2026-04-12T00:00:00.000Z');
-      const partialPayments = [
-        { amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
-        { amount: 40000, paymentDate: paidDate },
-      ];
       const fullPayments = [
         { id: 'p1', amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
         { id: 'p2', amount: 40000, paymentDate: paidDate },
@@ -139,16 +134,14 @@ describe('InvoicesService', () => {
           orderId: null,
           amount: 100000,
           dueDate: new Date('2026-04-20'),
-          status: 'WAITING',
-          payments: partialPayments,
+          payments: fullPayments.map((p) => ({ amount: p.amount, paymentDate: p.paymentDate })),
         })
         .mockResolvedValueOnce(mockInvoiceFindByIdRow('1', { paidDate, payments: fullPayments }));
       prisma.invoice.update.mockResolvedValue({});
-      await service.updateStatus('1', 'PAID');
+      await service.updateMoneyStatus('1', 'PAID');
       expect(prisma.invoice.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            status: 'PAID',
             moneyStatus: 'PAID',
             paidDate,
           }),
@@ -156,17 +149,48 @@ describe('InvoicesService', () => {
       );
     });
 
-    it('rejects manual PAID status before invoice is fully covered by payments', async () => {
+    it('sets OVERDUE money when valid for partial coverage', async () => {
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'ov-1',
+          orderId: null,
+          amount: 100000,
+          dueDate: new Date('2026-04-20'),
+          payments: [{ amount: 10000, paymentDate: new Date('2026-04-10T00:00:00.000Z') }],
+        })
+        .mockResolvedValueOnce(
+          mockInvoiceFindByIdRow('ov-1', {
+            moneyStatus: 'OVERDUE',
+            payments: [
+              { id: 'p1', amount: 10000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
+            ],
+            paidDate: null,
+          }),
+        );
+      prisma.invoice.update.mockResolvedValue({});
+      await service.updateMoneyStatus('ov-1', 'OVERDUE');
+      expect(prisma.invoice.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            moneyStatus: 'OVERDUE',
+            paidDate: null,
+          }),
+        }),
+      );
+    });
+
+    it('rejects PAID money before invoice is fully covered by payments', async () => {
       prisma.invoice.findUnique.mockResolvedValue({
         id: 'manual-inv',
         orderId: null,
         amount: 100000,
         dueDate: new Date('2026-04-20'),
-        status: 'WAITING',
         payments: [{ amount: 40000, paymentDate: new Date('2026-04-10T00:00:00.000Z') }],
       });
 
-      await expect(service.updateStatus('manual-inv', 'PAID')).rejects.toThrow(BadRequestException);
+      await expect(service.updateMoneyStatus('manual-inv', 'PAID')).rejects.toThrow(
+        BadRequestException,
+      );
       expect(prisma.invoice.update).not.toHaveBeenCalled();
     });
 
@@ -177,7 +201,6 @@ describe('InvoicesService', () => {
           orderId: 'ord-1',
           amount: 100000,
           dueDate: new Date('2026-04-20'),
-          status: 'WAITING',
           payments: [
             { amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
             { amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
@@ -193,20 +216,16 @@ describe('InvoicesService', () => {
           }),
         );
       prisma.invoice.update.mockResolvedValue({});
-      prisma.invoice.findMany.mockResolvedValueOnce([
-        { status: 'PAID', payments: [{ amount: 100000 }] },
-        { status: 'PAID', payments: [{ amount: 50000 }] },
-      ]);
       prisma.order.findUnique.mockResolvedValue({
         id: 'ord-1',
         deal: { id: 'deal-1', status: 'IN_PROGRESS', amount: 100000 },
         invoices: [
-          { status: 'PAID', amount: 50000 },
-          { status: 'PAID', amount: 50000 },
+          { moneyStatus: 'PAID', amount: 50000 },
+          { moneyStatus: 'PAID', amount: 50000 },
         ],
       });
 
-      await service.updateStatus('inv-1', 'PAID');
+      await service.updateMoneyStatus('inv-1', 'PAID');
 
       expect(prisma.deal.update).toHaveBeenCalledWith({
         where: { id: 'deal-1' },
@@ -221,7 +240,6 @@ describe('InvoicesService', () => {
           orderId: 'ord-2',
           amount: 50000,
           dueDate: new Date('2026-04-20'),
-          status: 'WAITING',
           payments: [{ amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') }],
         })
         .mockResolvedValueOnce(
@@ -234,20 +252,16 @@ describe('InvoicesService', () => {
           }),
         );
       prisma.invoice.update.mockResolvedValue({});
-      prisma.invoice.findMany.mockResolvedValueOnce([
-        { status: 'PAID', payments: [{ amount: 50000 }] },
-        { status: 'THIS_MONTH', payments: [] },
-      ]);
       prisma.order.findUnique.mockResolvedValue({
         id: 'ord-2',
         deal: { id: 'deal-2', status: 'IN_PROGRESS', amount: 100000 },
         invoices: [
-          { status: 'PAID', amount: 50000 },
-          { status: 'THIS_MONTH', amount: 50000 },
+          { moneyStatus: 'PAID', amount: 50000 },
+          { moneyStatus: 'NEW', amount: 50000 },
         ],
       });
 
-      await service.updateStatus('inv-2', 'PAID');
+      await service.updateMoneyStatus('inv-2', 'PAID');
 
       expect(prisma.deal.update).not.toHaveBeenCalled();
     });
@@ -259,7 +273,6 @@ describe('InvoicesService', () => {
           orderId: 'ord-3',
           amount: 100000,
           dueDate: new Date('2026-04-20'),
-          status: 'WAITING',
           payments: [
             { amount: 50000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
             { amount: 50000, paymentDate: new Date('2026-04-11T00:00:00.000Z') },
@@ -275,102 +288,18 @@ describe('InvoicesService', () => {
           }),
         );
       prisma.invoice.update.mockResolvedValue({});
-      prisma.invoice.findMany.mockResolvedValueOnce([
-        { status: 'PAID', payments: [{ amount: 100000 }] },
-        { status: 'PAID', payments: [{ amount: 100000 }] },
-      ]);
       prisma.order.findUnique.mockResolvedValue({
         id: 'ord-3',
         deal: { id: 'deal-3', status: 'IN_PROGRESS', amount: 120000 },
         invoices: [
-          { status: 'PAID', amount: 50000 },
-          { status: 'PAID', amount: 50000 },
+          { moneyStatus: 'PAID', amount: 50000 },
+          { moneyStatus: 'PAID', amount: 50000 },
         ],
       });
 
-      await service.updateStatus('inv-3', 'PAID');
+      await service.updateMoneyStatus('inv-3', 'PAID');
 
       expect(prisma.deal.update).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('updateMoneyStatus', () => {
-    it('sets PAID money and companion legacy status when fully covered', async () => {
-      const paidDate = new Date('2026-04-12T00:00:00.000Z');
-      const fullPayments = [
-        { id: 'p1', amount: 60000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
-        { id: 'p2', amount: 40000, paymentDate: paidDate },
-      ];
-      prisma.invoice.findUnique
-        .mockResolvedValueOnce({
-          id: '1',
-          orderId: null,
-          amount: 100000,
-          dueDate: new Date('2026-04-20'),
-          status: 'WAITING',
-          payments: fullPayments.map((p) => ({ amount: p.amount, paymentDate: p.paymentDate })),
-        })
-        .mockResolvedValueOnce(mockInvoiceFindByIdRow('1', { paidDate, payments: fullPayments }));
-      prisma.invoice.update.mockResolvedValue({});
-      await service.updateMoneyStatus('1', 'PAID');
-      expect(prisma.invoice.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            status: 'PAID',
-            moneyStatus: 'PAID',
-            paidDate,
-          }),
-        }),
-      );
-    });
-
-    it('sets OVERDUE money with DELAYED legacy companion', async () => {
-      prisma.invoice.findUnique
-        .mockResolvedValueOnce({
-          id: 'ov-1',
-          orderId: null,
-          amount: 100000,
-          dueDate: new Date('2026-04-20'),
-          status: 'WAITING',
-          payments: [{ amount: 10000, paymentDate: new Date('2026-04-10T00:00:00.000Z') }],
-        })
-        .mockResolvedValueOnce(
-          mockInvoiceFindByIdRow('ov-1', {
-            status: 'DELAYED',
-            moneyStatus: 'OVERDUE',
-            payments: [
-              { id: 'p1', amount: 10000, paymentDate: new Date('2026-04-10T00:00:00.000Z') },
-            ],
-            paidDate: null,
-          }),
-        );
-      prisma.invoice.update.mockResolvedValue({});
-      await service.updateMoneyStatus('ov-1', 'OVERDUE');
-      expect(prisma.invoice.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            status: 'DELAYED',
-            moneyStatus: 'OVERDUE',
-            paidDate: null,
-          }),
-        }),
-      );
-    });
-
-    it('rejects PAID money before invoice is fully covered by payments', async () => {
-      prisma.invoice.findUnique.mockResolvedValue({
-        id: 'manual-inv',
-        orderId: null,
-        amount: 100000,
-        dueDate: new Date('2026-04-20'),
-        status: 'WAITING',
-        payments: [{ amount: 40000, paymentDate: new Date('2026-04-10T00:00:00.000Z') }],
-      });
-
-      await expect(service.updateMoneyStatus('manual-inv', 'PAID')).rejects.toThrow(
-        BadRequestException,
-      );
-      expect(prisma.invoice.update).not.toHaveBeenCalled();
     });
   });
 

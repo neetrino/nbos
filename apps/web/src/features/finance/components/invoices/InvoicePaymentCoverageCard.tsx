@@ -11,7 +11,7 @@ export function InvoicePaymentCoverageCard({ invoice }: InvoicePaymentCoverageCa
     paidAmount: 0,
     outstandingAmount: parseFloat(invoice.amount),
     paymentCount: invoice._count.payments,
-    isFullyPaid: invoice.status === 'PAID',
+    isFullyPaid: invoice.moneyStatus === 'PAID',
   };
 
   return (

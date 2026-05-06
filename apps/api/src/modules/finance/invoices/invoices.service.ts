@@ -3,14 +3,10 @@ import {
   PrismaClient,
   type Prisma,
   type InvoiceTypeEnum,
-  type InvoiceStatusEnum,
+  type InvoiceMoneyStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import {
-  getLatestPaymentDate,
-  resolveBaseInvoiceStatus,
-  sumAmounts,
-} from '../finance-status.utils';
+import { getLatestPaymentDate, sumAmounts } from '../finance-status.utils';
 import { attachInvoicePaymentCoverage } from './invoice-payment-coverage';
 import {
   buildDateRange,
@@ -19,11 +15,7 @@ import {
   syncInvoiceOrderStatus,
 } from './invoice-service-helpers';
 import { assertFirstInvoiceMinimums } from './invoice-first-payment-minimums';
-import {
-  MONEY_STATUS_TO_LEGACY_COMPANION,
-  parseInvoiceMoneyStatus,
-  resolveInvoiceMoneyStatus,
-} from './invoice-money-status';
+import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice-money-status';
 import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
 
 interface CreateInvoiceDto {
@@ -40,7 +32,6 @@ interface CreateInvoiceDto {
 interface InvoiceQueryParams {
   page?: number;
   pageSize?: number;
-  status?: string;
   /** Filter by Invoice Card money layer (`Invoice.moneyStatus`). */
   moneyStatus?: string;
   type?: string;
@@ -65,7 +56,6 @@ export class InvoicesService {
     const {
       page = 1,
       pageSize = 20,
-      status,
       moneyStatus,
       type,
       projectId,
@@ -76,7 +66,6 @@ export class InvoicesService {
     } = params;
     const where: Prisma.InvoiceWhereInput = {};
 
-    if (status) where.status = status as InvoiceStatusEnum;
     const money = moneyStatus ? parseInvoiceMoneyStatus(moneyStatus) : null;
     if (moneyStatus && !money) {
       throw new BadRequestException(`Unknown invoice moneyStatus: ${moneyStatus}`);
@@ -175,79 +164,14 @@ export class InvoicesService {
     return this.findById(invoice.id);
   }
 
-  async updateStatus(id: string, status: string) {
-    const invoice = await this.prisma.invoice.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        orderId: true,
-        amount: true,
-        dueDate: true,
-        status: true,
-        payments: {
-          select: {
-            amount: true,
-            paymentDate: true,
-          },
-        },
-      },
-    });
-    if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
-
-    const amount = Number(invoice.amount);
-    const paid = sumAmounts(invoice.payments);
-    const derivedStatus = resolveBaseInvoiceStatus({
-      amount,
-      paid,
-      dueDate: invoice.dueDate,
-    });
-
-    this.assertManualStatusTransitionAllowed(status as InvoiceStatusEnum, derivedStatus);
-
-    const now = new Date();
-    const moneyStatus = resolveInvoiceMoneyStatus({
-      legacyStatus: status as InvoiceStatusEnum,
-      amount,
-      paid,
-      dueDate: invoice.dueDate,
-      now,
-    });
-
-    const updateData: Prisma.InvoiceUpdateInput = {
-      status: status as InvoiceStatusEnum,
-      moneyStatus,
-    };
-    if (status === 'PAID') {
-      updateData.paidDate = getLatestPaymentDate(invoice.payments);
-    } else {
-      updateData.paidDate = null;
-    }
-    await this.prisma.invoice.update({
-      where: { id },
-      data: updateData,
-    });
-
-    if (invoice.orderId) {
-      await syncInvoiceOrderStatus(this.prisma, invoice.orderId);
-    }
-
-    if (status === 'PAID' && invoice.orderId) {
-      await this.checkAndPromoteDeal(invoice.orderId);
-    }
-
-    return this.findById(id);
-  }
-
   /**
-   * Sets the canonical money status and the companion legacy pipeline status (orders/deals stay aligned).
-   * Does not re-derive money from legacy — the requested money column wins.
+   * Sets the canonical Invoice Card money status (`Invoice.moneyStatus`).
    */
   async updateMoneyStatus(id: string, moneyStatusRaw: string) {
     const moneyStatus = parseInvoiceMoneyStatus(moneyStatusRaw);
     if (!moneyStatus) {
       throw new BadRequestException(`Unknown invoice moneyStatus: ${moneyStatusRaw}`);
     }
-    const legacy = MONEY_STATUS_TO_LEGACY_COMPANION[moneyStatus];
 
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
@@ -256,7 +180,6 @@ export class InvoicesService {
         orderId: true,
         amount: true,
         dueDate: true,
-        status: true,
         payments: {
           select: {
             amount: true,
@@ -269,19 +192,20 @@ export class InvoicesService {
 
     const amount = Number(invoice.amount);
     const paid = sumAmounts(invoice.payments);
-    const derivedStatus = resolveBaseInvoiceStatus({
+    const now = new Date();
+    const derivedBase = deriveBaseInvoiceMoneyStatus({
       amount,
       paid,
       dueDate: invoice.dueDate,
+      now,
     });
 
-    this.assertManualStatusTransitionAllowed(legacy, derivedStatus);
+    this.assertManualMoneyStatusAllowed(moneyStatus, derivedBase);
 
     const updateData: Prisma.InvoiceUpdateInput = {
-      status: legacy,
       moneyStatus,
     };
-    if (legacy === 'PAID') {
+    if (moneyStatus === 'PAID') {
       updateData.paidDate = getLatestPaymentDate(invoice.payments);
     } else {
       updateData.paidDate = null;
@@ -295,7 +219,7 @@ export class InvoicesService {
       await syncInvoiceOrderStatus(this.prisma, invoice.orderId);
     }
 
-    if (legacy === 'PAID' && invoice.orderId) {
+    if (moneyStatus === 'PAID' && invoice.orderId) {
       await this.checkAndPromoteDeal(invoice.orderId);
     }
 
@@ -307,13 +231,13 @@ export class InvoicesService {
       where: { id: orderId },
       include: {
         deal: true,
-        invoices: { select: { status: true, amount: true } },
+        invoices: { select: { moneyStatus: true, amount: true } },
       },
     });
     if (!order?.deal || order.deal.status === 'WON' || order.deal.status === 'FAILED') return;
 
     const allPaid =
-      order.invoices.length > 0 && order.invoices.every((inv) => inv.status === 'PAID');
+      order.invoices.length > 0 && order.invoices.every((inv) => inv.moneyStatus === 'PAID');
     if (!allPaid) return;
 
     const paidTotal = order.invoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
@@ -332,16 +256,16 @@ export class InvoicesService {
     return this.prisma.invoice.delete({ where: { id } });
   }
 
-  private assertManualStatusTransitionAllowed(
-    requestedStatus: InvoiceStatusEnum,
-    derivedStatus: InvoiceStatusEnum,
+  private assertManualMoneyStatusAllowed(
+    requested: InvoiceMoneyStatusEnum,
+    derivedBase: InvoiceMoneyStatusEnum,
   ) {
-    if (requestedStatus === 'PAID' && derivedStatus !== 'PAID') {
+    if (requested === 'PAID' && derivedBase !== 'PAID') {
       throw new BadRequestException('Cannot mark invoice as paid before payments fully cover it');
     }
 
-    if (derivedStatus === 'PAID' && requestedStatus !== 'PAID') {
-      throw new BadRequestException('Fully paid invoices must stay in PAID status');
+    if (derivedBase === 'PAID' && requested !== 'PAID') {
+      throw new BadRequestException('Fully paid invoices must stay in PAID money status');
     }
   }
 

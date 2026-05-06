@@ -27,7 +27,7 @@ export function RecordPaymentForm({ invoice, onRecordPayment }: RecordPaymentFor
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (outstanding <= 0 || invoice.status === 'PAID') return null;
+  if (outstanding <= 0 || invoice.moneyStatus === 'PAID') return null;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

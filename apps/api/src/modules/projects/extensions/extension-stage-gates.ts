@@ -17,7 +17,11 @@ interface ExtensionForReadiness {
   status?: string | null;
   description?: string | null;
   assignedTo?: string | null;
-  order?: { id: string; status?: string | null; invoices?: Array<{ status: string }> } | null;
+  order?: {
+    id: string;
+    status?: string | null;
+    invoices?: Array<{ moneyStatus: string }>;
+  } | null;
   tasks?: Array<{ status: string }>;
 }
 
@@ -103,8 +107,10 @@ function buildOpenOrderError(order: ExtensionForReadiness['order']): ExtensionRe
   ];
 }
 
-function buildUnpaidInvoiceError(invoices: Array<{ status: string }>): ExtensionReadinessIssue[] {
-  const unpaidCount = invoices.filter((invoice) => invoice.status !== 'PAID').length;
+function buildUnpaidInvoiceError(
+  invoices: Array<{ moneyStatus: string }>,
+): ExtensionReadinessIssue[] {
+  const unpaidCount = invoices.filter((invoice) => invoice.moneyStatus !== 'PAID').length;
   if (unpaidCount === 0) return [];
   return [
     {

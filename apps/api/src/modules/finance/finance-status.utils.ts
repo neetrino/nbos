@@ -1,4 +1,4 @@
-import type { InvoiceStatusEnum } from '@nbos/database';
+import type { InvoiceMoneyStatusEnum } from '@nbos/database';
 
 /** Row shape accepted by `sumAmounts` (invoice lines, payments, etc.). */
 export interface FinanceAmountCarrier {
@@ -10,18 +10,8 @@ interface PaymentCarrier extends FinanceAmountCarrier {
 }
 
 interface OrderInvoiceCarrier {
-  status: string;
+  moneyStatus: InvoiceMoneyStatusEnum;
   payments: PaymentCarrier[];
-}
-
-interface BaseInvoiceStatusArgs {
-  amount: number;
-  paid: number;
-  dueDate: Date | null;
-}
-
-interface InvoiceStatusArgs extends BaseInvoiceStatusArgs {
-  currentStatus: InvoiceStatusEnum;
 }
 
 interface DecimalValue {
@@ -50,34 +40,10 @@ export function getLatestPaymentDate(payments: PaymentCarrier[]): Date | null {
   return new Date(Math.max(...timestamps));
 }
 
-export function resolveBaseInvoiceStatus(args: BaseInvoiceStatusArgs): InvoiceStatusEnum {
-  const { amount, paid, dueDate } = args;
-
-  if (paid >= amount) {
-    return 'PAID';
-  }
-
-  if (!dueDate) {
-    return paid > 0 ? 'WAITING' : 'THIS_MONTH';
-  }
-
-  return dueDate.getTime() < Date.now() ? 'DELAYED' : 'WAITING';
-}
-
-export function resolveInvoiceStatus(args: InvoiceStatusArgs): InvoiceStatusEnum {
-  const { currentStatus, ...baseArgs } = args;
-
-  if (currentStatus === 'ON_HOLD' || currentStatus === 'FAIL') {
-    return currentStatus;
-  }
-
-  return resolveBaseInvoiceStatus(baseArgs);
-}
-
 export function resolveOrderStatus(
   invoices: OrderInvoiceCarrier[],
 ): 'FULLY_PAID' | 'PARTIALLY_PAID' | 'ACTIVE' {
-  const allPaid = invoices.every((invoice) => invoice.status === 'PAID');
+  const allPaid = invoices.every((invoice) => invoice.moneyStatus === 'PAID');
   if (allPaid) {
     return 'FULLY_PAID';
   }

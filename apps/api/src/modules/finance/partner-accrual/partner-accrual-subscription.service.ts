@@ -56,7 +56,7 @@ export class PartnerAccrualSubscriptionService {
       where: { id: input.invoiceId },
       select: {
         id: true,
-        status: true,
+        moneyStatus: true,
         type: true,
         projectId: true,
         orderId: true,
@@ -65,7 +65,7 @@ export class PartnerAccrualSubscriptionService {
         subscription: { select: { partnerId: true } },
       },
     });
-    if (!invoice || invoice.status !== 'PAID') return;
+    if (!invoice || invoice.moneyStatus !== 'PAID') return;
     if (invoice.type !== 'SUBSCRIPTION' || !invoice.subscriptionId) return;
 
     const order = await this.resolveOrderForSubscriptionPartnerInvoice({

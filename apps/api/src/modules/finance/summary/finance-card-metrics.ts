@@ -1,15 +1,11 @@
 const DUE_SOON_DAYS = 7;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-export const OPEN_INVOICE_STATUSES = [
-  'THIS_MONTH',
-  'CREATE_INVOICE',
-  'WAITING',
-  'DELAYED',
-] as const;
+/** Open receivables on the Invoice Card money layer (excludes PAID, CANCELLED, ON_HOLD). */
+export const OPEN_INVOICE_MONEY_STATUSES = ['NEW', 'AWAITING_PAYMENT', 'OVERDUE'] as const;
 export const ACTIVE_EXPENSE_STATUSES = ['THIS_MONTH', 'PAY_NOW', 'DELAYED', 'ON_HOLD'] as const;
 
-type OpenInvoiceStatus = (typeof OPEN_INVOICE_STATUSES)[number];
+type OpenInvoiceMoneyStatus = (typeof OPEN_INVOICE_MONEY_STATUSES)[number];
 
 interface MoneyBucket {
   count: number;
@@ -19,7 +15,7 @@ interface MoneyBucket {
 export interface InvoiceCardMetricRow {
   amount: unknown;
   dueDate: Date | null;
-  status: string;
+  moneyStatus: string;
   payments: Array<{ amount: unknown }>;
 }
 
@@ -38,7 +34,9 @@ export function foldInvoiceCards(invoices: InvoiceCardMetricRow[]) {
   return invoices.reduce(
     (summary, invoice) => {
       const outstanding = getRemainingAmount(invoice.amount, invoice.payments);
-      const isOpen = OPEN_INVOICE_STATUSES.includes(invoice.status as OpenInvoiceStatus);
+      const isOpen = OPEN_INVOICE_MONEY_STATUSES.includes(
+        invoice.moneyStatus as OpenInvoiceMoneyStatus,
+      );
       const isOverdue = isOpen && Boolean(invoice.dueDate && invoice.dueDate < today);
 
       if (isOpen && outstanding > 0) addToBucket(summary.outstanding, outstanding);

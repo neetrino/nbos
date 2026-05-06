@@ -77,7 +77,7 @@ export interface ProjectOrder {
 export interface ProjectInvoice {
   id: string;
   code: string;
-  status: string;
+  moneyStatus: string;
   amount: string;
   type: string;
   dueDate: string | null;
