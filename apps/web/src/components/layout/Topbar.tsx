@@ -41,6 +41,14 @@ export function Topbar() {
         {/* Actions */}
         <div className="flex items-center gap-2">
           <NotificationDropdown />
+          <button
+            type="button"
+            onClick={() => router.push('/my-account')}
+            className="text-muted-foreground hover:bg-secondary hover:text-foreground hidden items-center gap-1 rounded-lg px-3 py-2 text-sm md:inline-flex"
+          >
+            <UserCircle2 size={16} />
+            My Account
+          </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger className="hover:bg-secondary flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors">

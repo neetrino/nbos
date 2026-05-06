@@ -153,7 +153,7 @@
 - 🟢 [x] Notifications: **пользовательские настройки** каналов/типов событий — M → API: `GET /api/notifications/preferences`, `PATCH /api/notifications/preferences/:eventType` (персональные overrides по `enabled/channels`); runtime `NotificationService.create` уважает user prefs и пропускает in-app delivery если тип отключён или `IN_APP` не выбран; web `/notifications`: блок `Your Notification Preferences` с toggle event type + channel chips (`IN_APP/EMAIL/TELEGRAM/WHATSAPP`)
 - 🟢 [x] Notifications: **админ-UI правил** если остаётся в рамках низкой сложности — M → API: `GET /api/notifications/admin/rules`, `PATCH /api/notifications/admin/rules/:code` (enabled/priority/channels, без user overrides `user_pref:*`); web `Settings -> Module Settings` показывает `Notification Rules` с inline toggles (enabled, priority, channels)
 - My Company: Compensation / SOP / KPI Scorecard до глубины канона — L
-- My Company / header: My Account вне Settings везде — S
+- 🟢 [x] My Company / header: My Account вне Settings везде — S → `Topbar` получил явный quick action `My Account` (desktop) + dropdown entry; доступ к `/my-account` теперь стабильно из header на любых страницах, без привязки к `Settings`
 - Technical Infrastructure: связи со Support и мониторинг baseline — M
 - Technical: Deploy records + backup policies по канону — M
 - Settings: integration registry + системные списки для новых интеграций — M
