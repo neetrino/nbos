@@ -160,19 +160,17 @@
 - 🟢 [x] Support: resolution requirements + auto-close после Extension Done где канон — M → `resolution_summary` + `close_reason`; Resolved требует summary; Closed только из Resolved с reason; `PATCH …/complete` extension → `closeLinkedTicketsAfterExtensionDelivered`; audit `support.closed_extension_delivered`
 - 🟢 [x] Support: product-context в UI create/filter — M → фильтры Project/Product на `/support` (загрузка продуктов по проекту); диалог New Ticket с project + optional product; API `productId` уже был в list
 - 🟢 [x] Finance: убрать legacy `InvoiceStatusEnum` и колонку `Invoice.status` — единый `money_status` — L → миграция `20260506210000_drop_invoice_legacy_status` (backfill `FAIL`→`money_status` `CANCELLED`); API без `PATCH …/status` и без фильтра `status`; web/DTO на `moneyStatus`; после среза **web:** `StatusBadge` variants на credentials/KPI/SOP, `Link`+`buttonVariants` на support (Base UI `Button` без `asChild`), `TechnicalBackupPolicyDraft` + `emptyBackupPolicyDraft` в Product Technical; `pnpm --filter @nbos/api typecheck` и `pnpm --filter @nbos/web typecheck` зелёные
+- 🟢 [x] Обновить cleanup registers статусами по мере закрытия срезов — S → **волна 1:** Finance, Support, Partners, Tasks, CRM, Projects Hub (`moneyStatus` cross-refs). **Волна 2 (2026-05-06):** Drive §1 snapshot, Documents B1 wording, Reports §C stale bullets, Marketing B2/B9/§C, Calendar scheduler note, Settings A2, UI Shell A2. **Что формально остаётся:** длинные Phase-backlog блоки в Drive/Documents/Projects Hub — это **план будущих работ**, а не «ошибка статуса»; обновлять при изменении кода. **Блокер «идеального нуля расхождений»:** нет автоматического doc↔code диффа в CI — дальше только ручная сверка после срезов или отдельная задача на doc-lint.
+- 🟢 [x] Синхронизировать `docs/дожать до 100% описанного.md` или заменить ссылкой на этот файл — S → **корень** `[дожать до 100% описанного.md](./дожать%20до%20100%25%20описанного.md)` — заглушка на `IMPLEMENTATION_PROGRESS.md`; **архив** `[Progress Archive/дожать до 100% описанного.md](Progress%20Archive/дожать%20до%20100%25%20описанного.md)` — политика «не вести дубль матрицы построчно; источник правды — этот файл + `*-Cleanup-Register.md`»; в §04 Finance уточнена строка про summary/scheduler и срез `money_status`
+- 🟢 [x] Производительность: тяжёлые отчёты только через очередь (контроль) — S → без `REDIS_URL` HTTP не создаёт «висящие» jobs (`503` + сообщение); при сбое `enqueue` job → `FAILED`; cron schedules не продвигаются без dispatch; локально опционально `REPORT_EXPORT_SYNC_FALLBACK=true`
+- 🟢 [x] Messenger: поиск/история PostgreSQL — доработка UX при объёме — S → история: по умолчанию **последнее** окно (`before` cursor + `hasMoreOlder`, кнопка «Load older» + сохранение scroll); поиск: только по **видимым** каналам (`listMessengerVisibleChannelIds`, MVP = все каналы); GIN `pg_trgm` на `messenger_*_messages.content`; лимит `pageSize` с `BadRequest` при мусоре
+- 🟢 [x] Production hardening: CORS/CSRF и security baseline по `docs/NBOS` / project rules — S → единый allowlist `CORS_ORIGIN` (HTTP + Socket.IO + Messenger WS), в `production` запрет `*` и пустого списка; Helmet без CSP на JSON API + `crossOriginResourcePolicy: cross-origin`; `trust proxy` в prod; глобальный `ThrottlerGuard` + `@SkipThrottle()` на `/health`; 500 в prod без деталей в теле; мутации API — Bearer JWT (cookie CSRF на Nest не применяется; NextAuth — по `TECH_CARD`)
 
 ### Блок 2A — Реализуем сейчас: внутренний канон без внешних факторов
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
-**Порядок внутри блока:** сначала то, что можно **сделать в коде/доках и самостоятельно проверить**; **в конце** — автоматизированная проверка (регресс, E2E) и **полная ручная приёмка** по трём областям как финальные «ворота», а не параллельно разработке.
-
-- 🟢 [x] Обновить cleanup registers статусами по мере закрытия срезов — S → **волна 1:** Finance, Support, Partners, Tasks, CRM, Projects Hub (`moneyStatus` cross-refs). **Волна 2 (2026-05-06):** Drive §1 snapshot, Documents B1 wording, Reports §C stale bullets, Marketing B2/B9/§C, Calendar scheduler note, Settings A2, UI Shell A2. **Что формально остаётся:** длинные Phase-backlog блоки в Drive/Documents/Projects Hub — это **план будущих работ**, а не «ошибка статуса»; обновлять при изменении кода. **Блокер «идеального нуля расхождений»:** нет автоматического doc↔code диффа в CI — дальше только ручная сверка после срезов или отдельная задача на doc-lint.
-- 🟢 [x] Синхронизировать `docs/дожать до 100% описанного.md` или заменить ссылкой на этот файл — S → **корень** [`дожать до 100% описанного.md`](./дожать%20до%20100%25%20описанного.md) — заглушка на **`IMPLEMENTATION_PROGRESS.md`**; **архив** [`Progress Archive/дожать до 100% описанного.md`](Progress%20Archive/дожать%20до%20100%25%20описанного.md) — политика «не вести дубль матрицы построчно; источник правды — этот файл + `*-Cleanup-Register.md`»; в §04 Finance уточнена строка про summary/scheduler и срез `money_status`
-- 🟢 [x] Производительность: тяжёлые отчёты только через очередь (контроль) — S → без `REDIS_URL` HTTP не создаёт «висящие» jobs (`503` + сообщение); при сбое `enqueue` job → `FAILED`; cron schedules не продвигаются без dispatch; локально опционально `REPORT_EXPORT_SYNC_FALLBACK=true`
-- 🟢 [x] Messenger: поиск/история PostgreSQL — доработка UX при объёме — S → история: по умолчанию **последнее** окно (`before` cursor + `hasMoreOlder`, кнопка «Load older» + сохранение scroll); поиск: только по **видимым** каналам (`listMessengerVisibleChannelIds`, MVP = все каналы); GIN `pg_trgm` на `messenger_*_messages.content`; лимит `pageSize` с `BadRequest` при мусоре
-- 🟢 [x] Production hardening: CORS/CSRF и security baseline по `docs/NBOS` / project rules — S → единый allowlist `CORS_ORIGIN` (HTTP + Socket.IO + Messenger WS), в `production` запрет `*` и пустого списка; Helmet без CSP на JSON API + `crossOriginResourcePolicy: cross-origin`; `trust proxy` в prod; глобальный `ThrottlerGuard` + `@SkipThrottle()` на `/health`; 500 в prod без деталей в теле; мутации API — Bearer JWT (cookie CSRF на Nest не применяется; NextAuth — по `TECH_CARD`)
-- Регрессионные тесты на критичные гейты после крупных срезов — M
+- 🟢 [x] Регрессионные тесты на критичные гейты после крупных срезов — M → `pnpm test:regression` + `vitest.regression.config.ts` (15 файлов / ~223 теста); описание и правило расширения: [`docs/reference/Check/Quality/regression-gates.md`](./reference/Check/Quality/regression-gates.md); попутно починены моки `expenses.service` (addPayment + notify path) и `payroll-bonus-release-paid-mark`
 - Web: E2E smoke для критичных flow (замена разовому precheck) — L
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
@@ -187,7 +185,7 @@
 - Messenger: **ExternalChannelAdapter** контракт + очереди send/receive — L
 - Mail: лимиты первичного импорта + retry policy — сначала зафиксировать лимиты, затем реализовать — M
 - Mail: многопровайдерность и health dashboard без реального внешнего sync — M
-- Calendar: внутренний sync-контракт и слои до внешнего Google sync — M
+-
 - Settings: required setup / системные списки для интеграций — M
 - Документировать для владельца: **какие env/ключи** нужны по каждой интеграции (кроме банка) — S
 - Аудит: покрыть новые интеграционные события — M
@@ -224,6 +222,7 @@
 - i18n: глубина UI по `20-i18n` если вошло в scope продукта — L
 - Reports: каналы доставки расписаний и delivery-attempt history по получателям — после явного решения о реальной рассылке — M
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
+- Calendar: внутренний sync-контракт и слои до внешнего Google sync — M
 
 ### Блок 2P — Pending / временно заблокировано
 

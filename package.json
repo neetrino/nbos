@@ -15,6 +15,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "test": "vitest run",
+    "test:regression": "vitest run --config vitest.regression.config.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "clean": "turbo clean && rm -rf node_modules",

@@ -449,7 +449,10 @@ describe('ExpensesService', () => {
           ],
         })
         .mockResolvedValueOnce({
-          id: 'e1',
+          status: 'THIS_MONTH',
+          partnerPayoutBatch: null,
+        })
+        .mockResolvedValueOnce({
           salaryLine: null,
         })
         .mockResolvedValueOnce({
@@ -497,7 +500,10 @@ describe('ExpensesService', () => {
           expensePayments: [{ amount: new Decimal(60) }, { amount: new Decimal(40) }],
         })
         .mockResolvedValueOnce({
-          id: 'e1',
+          status: 'PAID',
+          partnerPayoutBatch: null,
+        })
+        .mockResolvedValueOnce({
           salaryLine: null,
         })
         .mockResolvedValueOnce({

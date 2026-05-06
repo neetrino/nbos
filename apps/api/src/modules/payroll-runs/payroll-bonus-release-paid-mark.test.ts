@@ -22,13 +22,24 @@ describe('markPayrollBonusReleasesPaidForSalaryLine', () => {
   });
 
   it('marks releases PAID, closes bonus entry, and resyncs pool', async () => {
-    prisma.bonusRelease.findMany.mockResolvedValue([{ id: 'r1', bonusEntryId: 'be1' }]);
+    prisma.bonusRelease.findMany
+      .mockResolvedValueOnce([{ id: 'r1', bonusEntryId: 'be1', amount: new Decimal(100) }])
+      .mockResolvedValueOnce([
+        {
+          id: 'r1',
+          amount: new Decimal(100),
+          bonusEntry: { order: { code: 'O-1' } },
+        },
+      ]);
     prisma.bonusRelease.updateMany.mockResolvedValue({ count: 1 });
+    prisma.payrollRun.findUnique.mockResolvedValue({ payrollMonth: new Date('2026-04-01') });
     prisma.bonusEntry.findUnique
       .mockResolvedValueOnce({
         id: 'be1',
         status: 'ACTIVE',
         amount: new Decimal(100),
+        employeeId: 'e1',
+        order: { code: 'O-1' },
       })
       .mockResolvedValueOnce({ orderId: 'o1' });
     prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: new Decimal(100) } });
