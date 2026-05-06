@@ -15,9 +15,10 @@
 - purpose metadata foundation exists;
 - нет logical libraries;
 - нет cleanup/export/backup;
-- permissions только module-level через `DRIVE VIEW/ADD/DELETE`.
+- list/get/preview и связанные DB-backed операции учитывают **entity-level RBAC scope** (`OWN` / `DEPARTMENT` / `ALL`) поверх module permissions — см. **2026-05-06** в §3.2;
+- batch archive/restore для multi-select — shipped (см. IMPLEMENTATION_PROGRESS / Drive slice).
 
-Это полезный MVP-хвост, но не соответствует целевому Drive.
+Это уже ближе к канону, но **Libraries navigation, export jobs, cleanup dashboard, богатый preview** остаются в backlog §3 / §5.
 
 ### 1.1. Что важно не потерять
 

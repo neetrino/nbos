@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-06 (cleanup registers wave: Finance, Support, Partners, Tasks, CRM, Projects Hub cross-ref; web typecheck)
+**Обновлено:** 2026-05-06 (cleanup registers waves 1–2; web typecheck)
 
 ---
 
@@ -167,7 +167,7 @@
 
 **Порядок внутри блока:** сначала то, что можно **сделать в коде/доках и самостоятельно проверить**; **в конце** — автоматизированная проверка (регресс, E2E) и **полная ручная приёмка** по трём областям как финальные «ворота», а не параллельно разработке.
 
-- Обновить cleanup registers статусами по мере закрытия срезов — S → **wave 2026-05-06:** `10-Finance-Cleanup-Register`, `04-Support-Cleanup-Register`, `08-Partners-Cleanup-Register`, `04-Tasks-Cleanup-Register`, сноска CRM Won↔`moneyStatus`, сноска Projects Hub §A18↔`moneyStatus`; **следующие при необходимости:** остальной текст Projects Hub, Drive, Documents, Reports, Marketing, Settings, UI Shell (точечно)
+- 🟢 [x] Обновить cleanup registers статусами по мере закрытия срезов — S → **волна 1:** Finance, Support, Partners, Tasks, CRM, Projects Hub (`moneyStatus` cross-refs). **Волна 2 (2026-05-06):** Drive §1 snapshot, Documents B1 wording, Reports §C stale bullets, Marketing B2/B9/§C, Calendar scheduler note, Settings A2, UI Shell A2. **Что формально остаётся:** длинные Phase-backlog блоки в Drive/Documents/Projects Hub — это **план будущих работ**, а не «ошибка статуса»; обновлять при изменении кода. **Блокер «идеального нуля расхождений»:** нет автоматического doc↔code диффа в CI — дальше только ручная сверка после срезов или отдельная задача на doc-lint.
 - Синхронизировать `docs/дожать до 100% описанного.md` или заменить ссылкой на этот файл — S
 - Производительность: тяжёлые отчёты только через очередь (контроль) — S
 - Messenger: поиск/история PostgreSQL — доработка UX при объёме — S

@@ -45,7 +45,7 @@ Current Scheduler:
 - narrow Finance-oriented manual endpoints;
 - no job model;
 - no retry/idempotency/audit;
-- old invoice overdue status logic.
+- invoice overdue / card reminders опираются на **Finance Invoice Card / money layer** (legacy invoice pipeline enum снят — см. Finance cleanup register); глубина job-model/retry — backlog.
 
 ## D. Implementation backlog
 

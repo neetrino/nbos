@@ -71,9 +71,9 @@ AI Assistant will be discussed as a separate, large platform module and integrat
 
 ## B. Runtime missing
 
-### B1. Documents module route is missing
+### B1. Documents module routes and P0 depth
 
-Статус: `PARTIAL`
+Статус: `PARTIAL` (маршруты есть; углубление ACL/search — по канону)
 
 Done:
 

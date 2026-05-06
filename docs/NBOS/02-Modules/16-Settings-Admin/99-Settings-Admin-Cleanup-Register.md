@@ -35,11 +35,9 @@
 
 ### A2. My Account page exists separately
 
-Статус: `PARTIAL UI`
+Статус: `DONE IN UI SHELL SLICE` (см. §B2)
 
-В runtime уже есть отдельная страница `My Account`. Это правильно по канону.
-
-Остаток: убрать ссылку/раздел `My Account` из Settings navigation.
+В runtime есть `/my-account` из header; дублирующий пункт под Settings должен быть снят вместе с UI Shell slice. Остаточные deep-links проверять при рефакторе навигации.
 
 ### A3. Basic RBAC UI exists
 

@@ -187,9 +187,9 @@ Shipped:
 4. ~~Add basic reports links to existing module reports.~~ Done for Finance reports (2026-04-30).
 5. ~~Add report period/filter shell.~~ Done foundation (2026-04-30): `dateFrom`, `dateTo` and `asOf` are passed to export jobs and schedules.
 6. ~~Add export job model.~~ Done foundation (2026-04-30).
-7. ~~Link exports to Drive.~~ Done as `FileAsset` output relation; real writer worker still needed.
-8. ~~Add scheduled reports model.~~ Done foundation (2026-04-30); runner still needed.
-9. ~~Add data quality warnings.~~ Done foundation (2026-04-30); cross-module/runtime depth still needed.
+7. ~~Link exports to Drive.~~ Done: `FileAsset` output; BullMQ worker when `REDIS_URL` (см. §B5).
+8. ~~Add scheduled reports model + runner.~~ Done foundation + due runner (`POST /scheduler/report-schedules-due`) — см. §B4.
+9. ~~Add data quality warnings.~~ Done including runtime cross-module projections — см. §B6.
 10. ~~Add sensitive report audit.~~ Done foundation (2026-04-30): finance-sensitive audit markers are explicit on export and scheduled-run events.
 11. ~~Add saved report views.~~ Done foundation (2026-04-30): personal filter presets only; sharing is later.
 
