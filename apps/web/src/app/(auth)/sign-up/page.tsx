@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Mail, UserPlus } from 'lucide-react';
 
@@ -14,7 +13,14 @@ export default function SignUpInfoPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
-            <Image src="/logo/logo.svg" alt="NBOS" width={172} height={28} className="h-7 w-auto" />
+            <img
+              src="/logo/logo.svg"
+              alt="NBOS"
+              width={168}
+              height={28}
+              fetchPriority="high"
+              className="h-7 w-auto"
+            />
           </div>
           <h1 className="text-foreground text-xl font-semibold tracking-tight">
             Join your workspace

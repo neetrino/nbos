@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
@@ -62,7 +61,14 @@ function SignInForm() {
         {/* Logo */}
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
-            <Image src="/logo/logo.svg" alt="NBOS" width={172} height={28} className="h-7 w-auto" />
+            <img
+              src="/logo/logo.svg"
+              alt="NBOS"
+              width={168}
+              height={28}
+              fetchPriority="high"
+              className="h-7 w-auto"
+            />
           </div>
           <p className="text-muted-foreground text-base font-medium">
             Enter your credentials and sing in
