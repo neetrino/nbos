@@ -163,9 +163,16 @@ Later depth, not required for current MVP:
 
 ### B7. Report permissions are not centralized
 
-Статус: `LATER / NEEDS PRODUCT CLARITY`
+Статус: `DONE` (2026-05-06)
 
 Reports must enforce source permissions and cannot bypass module access.
+
+Shipped:
+
+- centralized source-permission helper over `ReportDefinition.requiredPermissions`;
+- `GET /api/reports/definitions`, `.../schedules`, `.../saved-views`, `.../data-quality-warnings` return only definitions accessible to the current user;
+- `POST /api/reports/export-jobs`, `.../schedules`, `.../saved-views` return `403` when source permissions are missing;
+- `ReportsController` is guarded by `DASHBOARDS.VIEW` and keeps source checks in `ReportsService`.
 
 ---
 

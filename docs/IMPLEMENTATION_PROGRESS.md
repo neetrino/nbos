@@ -136,7 +136,7 @@
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
-- Reports: централизованные permissions на источники — M
+- 🟢 [x] Reports: централизованные permissions на источники — M → API `reports` теперь permission-aware: `GET /api/reports/definitions|schedules|saved-views|data-quality-warnings` фильтруют выдачу по `requiredPermissions` каждого `ReportDefinition`; `POST /api/reports/export-jobs|schedules|saved-views` отклоняются с `403`, если нет source-module доступа; `ReportsController` защищён `DASHBOARDS.VIEW`; helper `reports-permissions.ts`
 - Reports: XLSX/PDF экспорт, retry/cancel, история доставки расписаний — L
 - Reports: data-quality предупреждения из Marketing и кросс-модульных проекций — M
 - Marketing: глубина Board / Attribution Review / popup polish из cleanup — M

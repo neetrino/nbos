@@ -30,6 +30,15 @@ const QUEUED_JOB = {
   filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
 };
 
+const FINANCE_PERMISSIONS = {
+  FINANCE_INVOICES_VIEW: 'ALL',
+};
+
+const CROSS_MODULE_PERMISSIONS = {
+  ...FINANCE_PERMISSIONS,
+  CRM_LEADS_VIEW: 'ALL',
+};
+
 describe('ReportsService', () => {
   let prisma: MockPrisma;
   let audit: ReturnType<typeof createAuditService>;
@@ -64,12 +73,18 @@ describe('ReportsService', () => {
   });
 
   it('creates an audited queued export job for a registered report definition', async () => {
-    await service.createExportJob('employee-1', {
-      reportKey: 'company-pnl',
-      ownerModule: 'FINANCE',
-      format: 'CSV',
-      filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
-    });
+    await service.createExportJob(
+      'employee-1',
+      {
+        ...FINANCE_PERMISSIONS,
+      },
+      {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        format: 'CSV',
+        filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
+      },
+    );
 
     expect(prisma.reportExportJob.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -117,30 +132,48 @@ describe('ReportsService', () => {
 
   it('rejects mismatched report owner modules', async () => {
     await expect(
-      service.createExportJob('employee-1', {
-        reportKey: 'company-pnl',
-        ownerModule: 'MARKETING',
-        format: 'CSV',
-      }),
+      service.createExportJob(
+        'employee-1',
+        {
+          ...FINANCE_PERMISSIONS,
+        },
+        {
+          reportKey: 'company-pnl',
+          ownerModule: 'MARKETING',
+          format: 'CSV',
+        },
+      ),
     ).rejects.toThrow(NotFoundException);
   });
 
   it('rejects formats that the report definition does not support', async () => {
     await expect(
-      service.createExportJob('employee-1', {
-        reportKey: 'marketing-source-performance',
-        ownerModule: 'MARKETING',
-        format: 'PDF',
-      }),
+      service.createExportJob(
+        'employee-1',
+        {
+          ...CROSS_MODULE_PERMISSIONS,
+        },
+        {
+          reportKey: 'marketing-source-performance',
+          ownerModule: 'MARKETING',
+          format: 'PDF',
+        },
+      ),
     ).rejects.toThrow(BadRequestException);
   });
 
   it('creates an export job for a non-Finance report definition', async () => {
-    await service.createExportJob('employee-1', {
-      reportKey: 'marketing-source-performance',
-      ownerModule: 'MARKETING',
-      format: 'CSV',
-    });
+    await service.createExportJob(
+      'employee-1',
+      {
+        ...CROSS_MODULE_PERMISSIONS,
+      },
+      {
+        reportKey: 'marketing-source-performance',
+        ownerModule: 'MARKETING',
+        format: 'CSV',
+      },
+    );
 
     expect(prisma.reportExportJob.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -154,16 +187,22 @@ describe('ReportsService', () => {
   });
 
   it('creates an audited scheduled report model without sending a fake report', async () => {
-    await service.createSchedule('employee-1', {
-      reportKey: 'company-pnl',
-      ownerModule: 'FINANCE',
-      format: 'CSV',
-      recipientEmails: ['finance@example.com'],
-      scheduleLabel: 'Monthly finance packet',
-      frequency: 'MONTHLY',
-      timeOfDay: '09:00',
-      dayOfMonth: 5,
-    });
+    await service.createSchedule(
+      'employee-1',
+      {
+        ...FINANCE_PERMISSIONS,
+      },
+      {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        format: 'CSV',
+        recipientEmails: ['finance@example.com'],
+        scheduleLabel: 'Monthly finance packet',
+        frequency: 'MONTHLY',
+        timeOfDay: '09:00',
+        dayOfMonth: 5,
+      },
+    );
 
     expect(prisma.reportSchedule.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -195,12 +234,18 @@ describe('ReportsService', () => {
   });
 
   it('creates a personal saved report view with validated filters', async () => {
-    await service.createSavedView('employee-1', {
-      reportKey: 'company-pnl',
-      ownerModule: 'FINANCE',
-      name: 'Current month P&L',
-      filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
-    });
+    await service.createSavedView(
+      'employee-1',
+      {
+        ...FINANCE_PERMISSIONS,
+      },
+      {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        name: 'Current month P&L',
+        filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
+      },
+    );
 
     expect(prisma.savedReportView.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -222,7 +267,7 @@ describe('ReportsService', () => {
   });
 
   it('exposes data-quality warnings from module-owned report definitions', () => {
-    const result = service.listDataQualityWarnings();
+    const result = service.listDataQualityWarnings(FINANCE_PERMISSIONS);
 
     expect(result.items).toEqual(
       expect.arrayContaining([
@@ -245,5 +290,19 @@ describe('ReportsService', () => {
       service.completeExportJobWithDriveFile('job-1', 'missing-file', 'employee-1'),
     ).rejects.toThrow(NotFoundException);
     expect(prisma.reportExportJob.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects export creation when source permissions are missing', async () => {
+    await expect(
+      service.createExportJob(
+        'employee-1',
+        {},
+        {
+          reportKey: 'marketing-source-performance',
+          ownerModule: 'MARKETING',
+          format: 'CSV',
+        },
+      ),
+    ).rejects.toThrow('source-module permissions');
   });
 });

@@ -1,5 +1,11 @@
 import { createHash } from 'node:crypto';
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
@@ -15,6 +21,7 @@ import {
   buildSensitiveReportAuditContext,
   REPORT_FINANCE_CONFIDENTIALITY,
 } from './reports-audit-context';
+import { hasReportSourceAccess } from './reports-permissions';
 import { findReportDefinition, getReportDefinitions } from './report-definition-registry';
 import { ReportsQueueService } from './reports-queue.service';
 import {
@@ -51,8 +58,10 @@ export class ReportsService {
     private readonly reportsQueueService?: ReportsQueueService,
   ) {}
 
-  listDefinitions() {
-    const items = getReportDefinitions();
+  listDefinitions(userPermissions: Record<string, string>) {
+    const items = getReportDefinitions().filter((definition) =>
+      hasReportSourceAccess(definition, userPermissions),
+    );
     return {
       items,
       meta: {
@@ -62,33 +71,50 @@ export class ReportsService {
     };
   }
 
-  async listExportJobs(requestedById: string) {
-    return this.prisma.reportExportJob.findMany({
+  async listExportJobs(requestedById: string, userPermissions: Record<string, string>) {
+    const jobs = await this.prisma.reportExportJob.findMany({
       where: { requestedById },
       include: { fileAsset: true },
       orderBy: { queuedAt: 'desc' },
       take: REPORT_EXPORT_JOB_LIMIT,
     });
+    return jobs.filter((job) => {
+      const definition = findReportDefinition(job.reportKey, job.ownerModule);
+      return definition ? hasReportSourceAccess(definition, userPermissions) : false;
+    });
   }
 
-  async listSchedules(ownerId: string) {
-    return this.prisma.reportSchedule.findMany({
+  async listSchedules(ownerId: string, userPermissions: Record<string, string>) {
+    const schedules = await this.prisma.reportSchedule.findMany({
       where: { ownerId },
       orderBy: [{ status: 'asc' }, { nextRunAt: 'asc' }],
       take: REPORT_SCHEDULE_LIMIT,
     });
+    return schedules.filter((schedule) => {
+      const definition = findReportDefinition(schedule.reportKey, schedule.ownerModule);
+      return definition ? hasReportSourceAccess(definition, userPermissions) : false;
+    });
   }
 
-  async listSavedViews(ownerId: string) {
-    return this.prisma.savedReportView.findMany({
+  async listSavedViews(ownerId: string, userPermissions: Record<string, string>) {
+    const savedViews = await this.prisma.savedReportView.findMany({
       where: { ownerId },
       orderBy: [{ reportTitle: 'asc' }, { name: 'asc' }],
       take: SAVED_REPORT_VIEW_LIMIT,
     });
+    return savedViews.filter((view) => {
+      const definition = findReportDefinition(view.reportKey, view.ownerModule);
+      return definition ? hasReportSourceAccess(definition, userPermissions) : false;
+    });
   }
 
-  listDataQualityWarnings(): { items: ReportDataQualityWarning[]; meta: { count: number } } {
-    const definitions = getReportDefinitions();
+  listDataQualityWarnings(userPermissions: Record<string, string>): {
+    items: ReportDataQualityWarning[];
+    meta: { count: number };
+  } {
+    const definitions = getReportDefinitions().filter((definition) =>
+      hasReportSourceAccess(definition, userPermissions),
+    );
     const items = definitions.flatMap((definition) => {
       const warnings: ReportDataQualityWarning[] = [
         {
@@ -128,9 +154,17 @@ export class ReportsService {
     return { items, meta: { count: items.length } };
   }
 
-  async createExportJob(requestedById: string, input: CreateReportExportJobDto) {
+  async createExportJob(
+    requestedById: string,
+    userPermissions: Record<string, string>,
+    input: CreateReportExportJobDto,
+  ) {
     const parsed = parseReportExportJobInput(input);
-    const definition = this.getRegisteredDefinition(parsed.reportKey, parsed.ownerModule);
+    const definition = this.getAccessibleDefinition(
+      parsed.reportKey,
+      parsed.ownerModule,
+      userPermissions,
+    );
     this.assertExportFormatSupported(definition.supportedExports, parsed.format);
     const job = await this.prisma.reportExportJob.create({
       data: {
@@ -156,9 +190,17 @@ export class ReportsService {
     return job;
   }
 
-  async createSchedule(ownerId: string, input: CreateReportScheduleDto) {
+  async createSchedule(
+    ownerId: string,
+    userPermissions: Record<string, string>,
+    input: CreateReportScheduleDto,
+  ) {
     const parsed = parseReportScheduleInput(input);
-    const definition = this.getRegisteredDefinition(parsed.reportKey, parsed.ownerModule);
+    const definition = this.getAccessibleDefinition(
+      parsed.reportKey,
+      parsed.ownerModule,
+      userPermissions,
+    );
     this.assertExportFormatSupported(definition.supportedExports, parsed.format);
     const schedule = await this.prisma.reportSchedule.create({
       data: {
@@ -200,9 +242,17 @@ export class ReportsService {
     return schedule;
   }
 
-  async createSavedView(ownerId: string, input: CreateSavedReportViewDto) {
+  async createSavedView(
+    ownerId: string,
+    userPermissions: Record<string, string>,
+    input: CreateSavedReportViewDto,
+  ) {
     const parsed = parseSavedReportViewInput(input);
-    const definition = this.getRegisteredDefinition(parsed.reportKey, parsed.ownerModule);
+    const definition = this.getAccessibleDefinition(
+      parsed.reportKey,
+      parsed.ownerModule,
+      userPermissions,
+    );
     const view = await this.prisma.savedReportView.create({
       data: {
         reportKey: definition.key,
@@ -304,6 +354,20 @@ export class ReportsService {
   private getRegisteredDefinition(reportKey: string, ownerModule: string) {
     const definition = findReportDefinition(reportKey, ownerModule);
     if (!definition) throw new NotFoundException('Report definition was not found.');
+    return definition;
+  }
+
+  private getAccessibleDefinition(
+    reportKey: string,
+    ownerModule: string,
+    userPermissions: Record<string, string>,
+  ) {
+    const definition = this.getRegisteredDefinition(reportKey, ownerModule);
+    if (!hasReportSourceAccess(definition, userPermissions)) {
+      throw new ForbiddenException(
+        'You do not have source-module permissions for this report definition.',
+      );
+    }
     return definition;
   }
 
