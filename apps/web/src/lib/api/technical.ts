@@ -85,6 +85,27 @@ export interface TechnicalProductProfileResponse {
   profile: ProductTechnicalProfile;
   assets: TechnicalAsset[];
   environments: TechnicalEnvironment[];
+  support: {
+    openIncidentCount: number;
+    criticalIncidentCount: number;
+    recentIncidents: Array<{
+      id: string;
+      code: string;
+      title: string;
+      priority: string;
+      status: string;
+      createdAt: string;
+      assignedTo: string | null;
+    }>;
+  };
+  monitoringBaseline: {
+    monitoringStatus: TechnicalHealthStatus;
+    backupStatus: TechnicalBackupStatus;
+    warningAssetCount: number;
+    criticalAssetCount: number;
+    missingOwnerCount: number;
+    missingCredentialLinkCount: number;
+  };
   readiness: TechnicalReadiness;
 }
 

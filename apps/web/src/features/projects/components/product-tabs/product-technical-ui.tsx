@@ -1,4 +1,5 @@
 import { AlertTriangle, CheckCircle2, Database, Globe2, Server } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type {
   TechnicalAssetType,
@@ -72,6 +73,37 @@ export function ReadinessCard({ data }: { data: TechnicalProductProfileResponse 
               {item.message}
             </div>
           ))}
+        </div>
+      )}
+      <div className="border-border mt-4 grid gap-2 border-t pt-3 text-xs md:grid-cols-3">
+        <div>
+          <p className="text-muted-foreground">Open incidents</p>
+          <p className="font-medium">
+            {data.support.openIncidentCount} (critical: {data.support.criticalIncidentCount})
+          </p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Monitoring baseline</p>
+          <p className="font-medium">
+            warn {data.monitoringBaseline.warningAssetCount} / critical{' '}
+            {data.monitoringBaseline.criticalAssetCount}
+          </p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Missing links</p>
+          <p className="font-medium">
+            owners {data.monitoringBaseline.missingOwnerCount} / creds{' '}
+            {data.monitoringBaseline.missingCredentialLinkCount}
+          </p>
+        </div>
+      </div>
+      {data.support.recentIncidents.length > 0 && (
+        <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Recent incident: {data.support.recentIncidents[0]?.code} ·{' '}
+          {data.support.recentIncidents[0]?.title}
+          <Link href="/support" className="ml-2 underline">
+            Open Support
+          </Link>
         </div>
       )}
     </section>

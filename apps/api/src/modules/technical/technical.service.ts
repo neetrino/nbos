@@ -21,18 +21,67 @@ export class TechnicalService {
   async getProductProfile(productId: string) {
     const product = await this.getProductContext(productId);
     const profile = await this.ensureProfile(product.id, product.projectId);
-    const [assets, environments] = await Promise.all([
+    const [assets, environments, incidentSummary, recentIncidents] = await Promise.all([
       this.prisma.technicalAsset.findMany({ where: { productId }, orderBy: { createdAt: 'desc' } }),
       this.prisma.technicalEnvironment.findMany({
         where: { productId },
         orderBy: { createdAt: 'desc' },
       }),
+      this.prisma.supportTicket.groupBy({
+        by: ['priority'],
+        where: {
+          productId,
+          category: 'INCIDENT',
+          status: { notIn: ['RESOLVED', 'CLOSED'] },
+        },
+        _count: true,
+      }),
+      this.prisma.supportTicket.findMany({
+        where: {
+          productId,
+          category: 'INCIDENT',
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: {
+          id: true,
+          code: true,
+          title: true,
+          priority: true,
+          status: true,
+          createdAt: true,
+          assignedTo: true,
+        },
+      }),
     ]);
+    const openIncidentCount = incidentSummary.reduce((acc, row) => acc + row._count, 0);
+    const criticalIncidentCount = incidentSummary
+      .filter((row) => row.priority === 'P1')
+      .reduce((acc, row) => acc + row._count, 0);
+    const missingOwnerCount = assets.filter((asset) => !asset.ownerId).length;
+    const missingCredentialLinkCount =
+      assets.filter((asset) => !asset.credentialId).length +
+      environments.filter((env) => !env.envCredentialId).length;
+    const warningAssetCount = assets.filter((asset) => asset.status === 'WARNING').length;
+    const criticalAssetCount = assets.filter((asset) => asset.status === 'BROKEN').length;
     return {
       product,
       profile,
       assets,
       environments,
+      support: {
+        openIncidentCount,
+        criticalIncidentCount,
+        recentIncidents,
+      },
+      monitoringBaseline: {
+        monitoringStatus: profile.monitoringStatus,
+        backupStatus: profile.backupStatus,
+        warningAssetCount,
+        criticalAssetCount,
+        missingOwnerCount,
+        missingCredentialLinkCount,
+      },
       readiness: buildTechnicalReadiness({ profile, assets, environments }),
     };
   }
