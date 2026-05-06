@@ -61,18 +61,18 @@
 
 ### 3.2. Backend API
 
-| Gap                  | Status    | Needed                                                                    |
-| -------------------- | --------- | ------------------------------------------------------------------------- |
-| Upload session       | `DONE`    | `POST /drive/upload-sessions`, presign, complete, fail, `HeadObject` gate |
-| Entity-aware upload  | `PARTIAL` | Session carries `entityType`/`entityId`; card UX still missing            |
-| File list by library | `PARTIAL` | `GET /drive/library?contextType=&contextId=` maps to linked File Assets   |
-| File detail          | `DONE`    | Metadata, versions, active links and recent audit are exposed in Drive UI |
-| Version upload       | `DONE`    | Existing R2 File Asset can receive a new current version                  |
-| Link/unlink API      | `DONE`    | Connect file to additional entities without copying                       |
-| Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later                      |
-| Export API           | `MISSING` | Create export job, generate ZIP + manifest                                |
-| Cleanup API          | `MISSING` | Find candidates, approve archive/delete                                   |
-| Permission resolver  | `MISSING` | Entity-aware access check                                                 |
+| Gap                  | Status    | Needed                                                                                                                                                                                                         |
+| -------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Upload session       | `DONE`    | `POST /drive/upload-sessions`, presign, complete, fail, `HeadObject` gate                                                                                                                                      |
+| Entity-aware upload  | `PARTIAL` | Session carries `entityType`/`entityId`; card UX still missing                                                                                                                                                 |
+| File list by library | `PARTIAL` | `GET /drive/library?contextType=&contextId=` maps to linked File Assets                                                                                                                                        |
+| File detail          | `DONE`    | Metadata, versions, active links and recent audit are exposed in Drive UI                                                                                                                                      |
+| Version upload       | `DONE`    | Existing R2 File Asset can receive a new current version                                                                                                                                                       |
+| Link/unlink API      | `DONE`    | Connect file to additional entities without copying                                                                                                                                                            |
+| Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later                                                                                                                                                           |
+| Export API           | `MISSING` | Create export job, generate ZIP + manifest                                                                                                                                                                     |
+| Cleanup API          | `MISSING` | Find candidates, approve archive/delete                                                                                                                                                                        |
+| Permission resolver  | `PARTIAL` | **2026-05-06:** Drive DB-backed file APIs now enforce entity-level RBAC scope (`OWN/DEPARTMENT/ALL`) via file owner/creator + department colleagues; project/entity graph-depth resolver can be expanded later |
 
 ### 3.3. Frontend UI
 

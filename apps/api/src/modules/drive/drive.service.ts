@@ -51,6 +51,13 @@ import { buildSessionUploadStorageKey } from './drive-upload-path';
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 3600;
 const VERSION_UPLOAD_PREFIX = `${R2_DRIVE_PREFIX}uploads/versions`;
+const DRIVE_WIDE_SCOPES = new Set<string>(['ALL']);
+
+export interface DriveEntityAccess {
+  employeeId: string;
+  departmentIds: string[];
+  driveScope?: string;
+}
 
 @Injectable()
 export class DriveService {
@@ -137,8 +144,8 @@ export class DriveService {
     this.logger.log(`Deleted file: ${key}`);
   }
 
-  async listFileAssets(params: FileAssetQueryParams) {
-    const where = this.buildFileAssetWhere(params);
+  async listFileAssets(params: FileAssetQueryParams, access?: DriveEntityAccess) {
+    const where = await this.buildFileAssetWhere(params, access);
     return this.prisma.fileAsset.findMany({
       where,
       include: FILE_ASSET_INCLUDE,
@@ -147,9 +154,10 @@ export class DriveService {
     });
   }
 
-  async getFileAsset(id: string) {
-    const file = await this.prisma.fileAsset.findUnique({
-      where: { id },
+  async getFileAsset(id: string, access?: DriveEntityAccess) {
+    const where = await this.buildDriveAssetAccessWhere(access);
+    const file = await this.prisma.fileAsset.findFirst({
+      where: { id, ...where, deletedAt: null },
       include: FILE_ASSET_INCLUDE,
     });
     if (!file) throw new NotFoundException(`File asset ${id} not found`);
@@ -164,6 +172,7 @@ export class DriveService {
   async getAssetViewUrl(
     assetId: string,
     gate?: { forDocumentId: string; documentsAccess: DocumentsReadAccess },
+    access?: DriveEntityAccess,
   ): Promise<{ url: string; mimeType: string | null }> {
     if (gate?.forDocumentId) {
       await assertFilePreviewableForDocument(
@@ -174,7 +183,12 @@ export class DriveService {
       );
     }
     const file = await this.prisma.fileAsset.findFirst({
-      where: { id: assetId, deletedAt: null, status: 'ACTIVE' },
+      where: {
+        id: assetId,
+        ...(await this.buildDriveAssetAccessWhere(access)),
+        deletedAt: null,
+        status: 'ACTIVE',
+      },
       include: {
         versions: { where: { isCurrent: true }, take: 1, orderBy: { versionNumber: 'desc' } },
       },
@@ -265,15 +279,19 @@ export class DriveService {
     });
   }
 
-  async linkFileAsset(id: string, data: CreateFileLinkDto) {
-    await this.getFileAsset(id);
+  async linkFileAsset(id: string, data: CreateFileLinkDto, access?: DriveEntityAccess) {
+    await this.getFileAsset(id, access);
     return this.prisma.fileLink.create({
       data: { fileAssetId: id, ...buildLinkCreateInput(data) },
     });
   }
 
-  async createVersionUploadUrl(id: string, data: CreateFileVersionUploadDto) {
-    const file = await this.getFileAsset(id);
+  async createVersionUploadUrl(
+    id: string,
+    data: CreateFileVersionUploadDto,
+    access?: DriveEntityAccess,
+  ) {
+    const file = await this.getFileAsset(id, access);
     if (file.storageProvider !== 'R2') {
       throw new BadRequestException('Only R2-backed files support version uploads.');
     }
@@ -295,12 +313,17 @@ export class DriveService {
     return { uploadUrl, storageKey, expiresInSeconds: PRESIGNED_URL_EXPIRY_SECONDS };
   }
 
-  async completeFileVersion(id: string, actorId: string, data: CompleteFileVersionDto) {
+  async completeFileVersion(
+    id: string,
+    actorId: string,
+    data: CompleteFileVersionDto,
+    access?: DriveEntityAccess,
+  ) {
     const storageKey = requireText(data.storageKey, 'storageKey');
     if (!storageKey.startsWith(`${VERSION_UPLOAD_PREFIX}/${id}/`)) {
       throw new BadRequestException('storageKey does not belong to this file version upload.');
     }
-    await this.getFileAsset(id);
+    await this.getFileAsset(id, access);
     try {
       await this.r2
         .ensureS3()
@@ -343,8 +366,8 @@ export class DriveService {
     });
   }
 
-  async unlinkFileAsset(id: string, linkId: string) {
-    await this.getFileAsset(id);
+  async unlinkFileAsset(id: string, linkId: string, access?: DriveEntityAccess) {
+    await this.getFileAsset(id, access);
     const link = await this.prisma.fileLink.findFirst({
       where: { id: linkId, fileAssetId: id, unlinkedAt: null },
     });
@@ -352,8 +375,8 @@ export class DriveService {
     return this.prisma.fileLink.update({ where: { id: linkId }, data: { unlinkedAt: new Date() } });
   }
 
-  async archiveFileAsset(id: string, actorId?: string) {
-    await this.getFileAsset(id);
+  async archiveFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
+    await this.getFileAsset(id, access);
     return this.prisma.fileAsset.update({
       where: { id },
       data: {
@@ -365,8 +388,8 @@ export class DriveService {
     });
   }
 
-  async restoreFileAsset(id: string, actorId?: string) {
-    await this.getFileAsset(id);
+  async restoreFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
+    await this.getFileAsset(id, access);
     return this.prisma.fileAsset.update({
       where: { id },
       data: {
@@ -378,15 +401,16 @@ export class DriveService {
     });
   }
 
-  async archiveFileAssets(ids: string[], actorId?: string) {
+  async archiveFileAssets(ids: string[], actorId?: string, access?: DriveEntityAccess) {
     const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
     if (uniqueIds.length === 0) {
       throw new BadRequestException('ids must include at least one file id.');
     }
     const now = new Date();
+    const accessWhere = await this.buildDriveAssetAccessWhere(access);
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.fileAsset.updateMany({
-        where: { id: { in: uniqueIds }, deletedAt: null },
+        where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
         data: { status: 'ARCHIVED', archivedAt: now },
       });
       await tx.fileAuditEvent.createMany({
@@ -397,7 +421,7 @@ export class DriveService {
         })),
       });
       return tx.fileAsset.findMany({
-        where: { id: { in: uniqueIds }, deletedAt: null },
+        where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
         include: FILE_ASSET_INCLUDE,
         orderBy: { createdAt: 'desc' },
       });
@@ -405,14 +429,15 @@ export class DriveService {
     return { updated };
   }
 
-  async restoreFileAssets(ids: string[], actorId?: string) {
+  async restoreFileAssets(ids: string[], actorId?: string, access?: DriveEntityAccess) {
     const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
     if (uniqueIds.length === 0) {
       throw new BadRequestException('ids must include at least one file id.');
     }
+    const accessWhere = await this.buildDriveAssetAccessWhere(access);
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.fileAsset.updateMany({
-        where: { id: { in: uniqueIds }, deletedAt: null },
+        where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
         data: { status: 'ACTIVE', archivedAt: null },
       });
       await tx.fileAuditEvent.createMany({
@@ -423,7 +448,7 @@ export class DriveService {
         })),
       });
       return tx.fileAsset.findMany({
-        where: { id: { in: uniqueIds }, deletedAt: null },
+        where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
         include: FILE_ASSET_INCLUDE,
         orderBy: { createdAt: 'desc' },
       });
@@ -451,22 +476,67 @@ export class DriveService {
     return root;
   }
 
-  private buildFileAssetWhere(params: FileAssetQueryParams): Prisma.FileAssetWhereInput {
-    const where: Prisma.FileAssetWhereInput = { deletedAt: null };
-    if (params.status) where.status = params.status as FileAssetStatusEnum;
-    if (params.purpose) where.purpose = params.purpose as FilePurposeEnum;
-    if (params.sourceModule) where.sourceModule = params.sourceModule;
+  private async buildFileAssetWhere(
+    params: FileAssetQueryParams,
+    access?: DriveEntityAccess,
+  ): Promise<Prisma.FileAssetWhereInput> {
+    const clauses: Prisma.FileAssetWhereInput[] = [
+      {
+        deletedAt: null,
+        ...(await this.buildDriveAssetAccessWhere(access)),
+      },
+    ];
+    if (params.status) clauses.push({ status: params.status as FileAssetStatusEnum });
+    if (params.purpose) clauses.push({ purpose: params.purpose as FilePurposeEnum });
+    if (params.sourceModule) clauses.push({ sourceModule: params.sourceModule });
     if (params.entityType && params.entityId) {
-      where.links = {
-        some: { entityType: params.entityType, entityId: params.entityId, unlinkedAt: null },
-      };
+      clauses.push({
+        links: {
+          some: { entityType: params.entityType, entityId: params.entityId, unlinkedAt: null },
+        },
+      });
     }
     if (params.search) {
-      where.OR = [
-        { displayName: { contains: params.search, mode: 'insensitive' } },
-        { originalName: { contains: params.search, mode: 'insensitive' } },
-      ];
+      clauses.push({
+        OR: [
+          { displayName: { contains: params.search, mode: 'insensitive' } },
+          { originalName: { contains: params.search, mode: 'insensitive' } },
+        ],
+      });
     }
-    return where;
+    return clauses.length === 1 ? clauses[0]! : { AND: clauses };
   }
+
+  private async buildDriveAssetAccessWhere(
+    access?: DriveEntityAccess,
+  ): Promise<Prisma.FileAssetWhereInput> {
+    if (!access) return {};
+    const scope = normalizeScope(access.driveScope);
+    if (DRIVE_WIDE_SCOPES.has(scope)) return {};
+    const selfOwnerWhere: Prisma.FileAssetWhereInput = {
+      OR: [{ ownerId: access.employeeId }, { createdById: access.employeeId }],
+    };
+    if (scope === 'OWN') return selfOwnerWhere;
+    if (scope === 'DEPARTMENT') {
+      const colleagueRows = await this.prisma.employeeDepartment.findMany({
+        where: { departmentId: { in: access.departmentIds } },
+        select: { employeeId: true },
+        distinct: ['employeeId'],
+      });
+      const colleagueIds = colleagueRows.map((row) => row.employeeId);
+      return {
+        OR: [
+          { ownerId: { in: colleagueIds } },
+          { createdById: { in: colleagueIds } },
+          { ownerId: access.employeeId },
+          { createdById: access.employeeId },
+        ],
+      };
+    }
+    return { id: { in: [] } };
+  }
+}
+
+function normalizeScope(scope: string | undefined): string {
+  return scope?.trim().toUpperCase() ?? 'NONE';
 }

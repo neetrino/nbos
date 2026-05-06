@@ -264,14 +264,39 @@ describe('DriveService', () => {
       expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            links: { some: { entityType: 'PRODUCT', entityId: 'product-1', unlinkedAt: null } },
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                links: {
+                  some: { entityType: 'PRODUCT', entityId: 'product-1', unlinkedAt: null },
+                },
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('applies OWN drive scope to File Assets list', async () => {
+      await service.listFileAssets(
+        { search: 'offer' },
+        { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'OWN' },
+      );
+
+      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
+              }),
+            ]),
           }),
         }),
       );
     });
 
     it('restores archived file asset lifecycle state', async () => {
-      prisma.fileAsset.findUnique.mockResolvedValueOnce({ id: 'f1' });
+      prisma.fileAsset.findFirst.mockResolvedValueOnce({ id: 'f1' });
       prisma.fileAsset.update.mockResolvedValueOnce({
         id: 'f1',
         status: 'ACTIVE',
