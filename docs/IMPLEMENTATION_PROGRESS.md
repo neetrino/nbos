@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-06 (Reports runtime data-quality warnings for Marketing + cross-module projections)
+**Обновлено:** 2026-05-06 (Marketing board + dashboard period filter; CRM deep link by id; CPL/ROI gating; expense plan UX)
 
 ---
 
@@ -139,9 +139,9 @@
 - 🟢 [x] Reports: централизованные permissions на источники — M → API `reports` теперь permission-aware: `GET /api/reports/definitions|schedules|saved-views|data-quality-warnings` фильтруют выдачу по `requiredPermissions` каждого `ReportDefinition`; `POST /api/reports/export-jobs|schedules|saved-views` отклоняются с `403`, если нет source-module доступа; `ReportsController` защищён `DASHBOARDS.VIEW`; helper `reports-permissions.ts`
 - 🟢 [x] Reports: XLSX/PDF экспорт, retry/cancel, история **экспортов** (без каналов доставки) — L → API: `POST /api/reports/export-jobs/:jobId/retry|cancel`; worker поддерживает `CSV/XLSX/PDF` и не пишет файл для `CANCELLED`; web `/reports` экспорт по форматам `CSV/XLSX/PDF` + кнопки retry/cancel в Export History; Drive history остаётся source-of-truth, каналы доставки вынесены в 2D
 - 🟢 [x] Reports: data-quality предупреждения из Marketing и кросс-модульных проекций — M → `GET /api/reports/data-quality-warnings` теперь добавляет runtime warnings (не fake zero) для `marketing-source-performance`, `sales-pipeline-health`, `project-delivery-overview`, `specialist-workload-scorecard`; UI `/reports` Data quality показывает тип источника (definition/runtime) и affected records; выдача остаётся permission-aware через `requiredPermissions`
-- Marketing: глубина Board / Attribution Review / popup polish из cleanup — M
-- Marketing: CPL/ROI виджеты только при наличии spend (без фейка) — S
-- Marketing: List.am ↔ Finance Expense Plan связь до UX канона — S
+- 🟢 [x] Marketing: глубина Board / Attribution Review / popup polish из cleanup — M → `marketing/layout.tsx`, board `marketing/page`, `marketing/attribution`, `MarketingLaunchDialog`; CRM `openLeadId`/`openDealId` + `getById` если записи нет в первой странице списка; дашборд: query `dateFrom`/`dateTo` + UI период (week / month / prev / custom / all) по `04-Marketing-Analytics-and-KPI.md`
+- 🟢 [x] Marketing: CPL/ROI виджеты только при наличии spend (без фейка) — S → `marketing-dashboard-summary.ts` (`isReliable`, null ROAS/CPL при дырах); web `marketing/dashboard`, `MarketingReportsTab`; `marketing.service.test.ts`
+- 🟢 [x] Marketing: List.am ↔ Finance Expense Plan связь до UX канона — S → `MarketingAccountExpensePlanLink`, `load-expense-plans-for-marketing-accounts.ts`, `marketing/settings` (пикер плана + ссылки в Finance); модель линка была, UX доведён под `18-Marketing`
 - CRM: Offer attachment и deal-required fields — глубина если не закрыта — M
 - Tasks: выравнивание статусов/enum под канон — M
 - Tasks: шаблоны повторяющихся задач (не Reports) — M

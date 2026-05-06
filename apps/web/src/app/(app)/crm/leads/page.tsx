@@ -108,6 +108,11 @@ export default function LeadsPipelinePage() {
   }, [fetchLeads]);
 
   const openLeadId = searchParams.get('openLeadId');
+  const deepLinkLeadAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    deepLinkLeadAttemptedRef.current = null;
+  }, [openLeadId]);
 
   useEffect(() => {
     if (!openLeadId || loading) return;
@@ -116,7 +121,28 @@ export default function LeadsPipelinePage() {
       setSelectedLead(match);
       setLeadBlockerNav(null);
       setSheetOpen(true);
+      return;
     }
+    if (deepLinkLeadAttemptedRef.current === openLeadId) return;
+    deepLinkLeadAttemptedRef.current = openLeadId;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const lead = await leadsApi.getById(openLeadId);
+        if (cancelled) return;
+        setLeads((prev) => (prev.some((l) => l.id === lead.id) ? prev : [lead, ...prev]));
+        setSelectedLead(lead);
+        setLeadBlockerNav(null);
+        setSheetOpen(true);
+      } catch {
+        if (!cancelled) {
+          toast.error('Lead not found or you cannot open it.');
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [openLeadId, loading, leads]);
 
   const handleLeadCreated = async (lead: Lead, options?: { openFull?: boolean }) => {

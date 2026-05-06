@@ -38,6 +38,7 @@ export interface MarketingActivity {
 }
 
 export interface MarketingDashboardSummary {
+  period: { dateFrom: string; dateTo: string } | null;
   totals: {
     accounts: number;
     activities: number;
@@ -121,8 +122,16 @@ export const marketingApi = {
     return resp.data;
   },
 
-  async getDashboardSummary(): Promise<MarketingDashboardSummary> {
-    const resp = await api.get<MarketingDashboardSummary>('/api/marketing/dashboard');
+  async getDashboardSummary(params?: {
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<MarketingDashboardSummary> {
+    const resp = await api.get<MarketingDashboardSummary>('/api/marketing/dashboard', {
+      params:
+        params?.dateFrom && params?.dateTo
+          ? { dateFrom: params.dateFrom, dateTo: params.dateTo }
+          : undefined,
+    });
     return resp.data;
   },
 

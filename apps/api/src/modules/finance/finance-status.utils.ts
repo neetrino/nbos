@@ -1,10 +1,11 @@
 import type { InvoiceStatusEnum } from '@nbos/database';
 
-interface AmountCarrier {
+/** Row shape accepted by `sumAmounts` (invoice lines, payments, etc.). */
+export interface FinanceAmountCarrier {
   amount: number | string | DecimalValue | null | undefined;
 }
 
-interface PaymentCarrier extends AmountCarrier {
+interface PaymentCarrier extends FinanceAmountCarrier {
   paymentDate?: Date | null;
 }
 
@@ -27,7 +28,7 @@ interface DecimalValue {
   toNumber: () => number;
 }
 
-export function sumAmounts(items: AmountCarrier[]): number {
+export function sumAmounts(items: FinanceAmountCarrier[]): number {
   return items.reduce((sum, item) => {
     const amount = item.amount;
     const numericAmount =

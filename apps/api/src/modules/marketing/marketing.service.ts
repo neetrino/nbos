@@ -15,6 +15,7 @@ import {
   UpdateMarketingCrmWhereOptionDto,
 } from './marketing.types';
 import { getMarketingDashboardSummary } from './marketing-dashboard-summary';
+import { resolveMarketingDashboardPeriodQuery } from './marketing-dashboard-period';
 import {
   buildAccountWhere,
   buildActivityWhere,
@@ -188,8 +189,9 @@ export class MarketingService {
     return { leads, deals };
   }
 
-  async getDashboardSummary() {
-    return getMarketingDashboardSummary(this.prisma);
+  async getDashboardSummary(query: { dateFrom?: string; dateTo?: string } = {}) {
+    const period = resolveMarketingDashboardPeriodQuery(query);
+    return getMarketingDashboardSummary(this.prisma, period);
   }
 
   private async ensureCrmWhereOption(channel: ReturnType<typeof normalizeChannel>): Promise<void> {

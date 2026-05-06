@@ -1,26 +1,21 @@
 import { PrismaClient, type Prisma } from '@nbos/database';
-import { sumAmounts } from '../finance/finance-status.utils';
+import type { MarketingDashboardPeriodRange } from './marketing-dashboard-period';
+import {
+  buildEfficiency,
+  buildWarnings,
+  countAttributedDeals,
+  countWonAttributedDeals,
+  type DashboardDealRow,
+  type MarketingDashboardWarning,
+  sumBudget,
+  sumPaidRevenue,
+} from './marketing-dashboard-summary-helpers';
 
-interface MarketingDashboardWarning {
-  code: string;
-  message: string;
-  count: number;
-}
-
-interface PaymentAmount {
-  amount: number | string | { toNumber(): number } | null;
-}
-
-interface DashboardInputs {
-  accounts: Array<{ financeExpensePlanId: string | null }>;
-  activities: Array<{ budget: unknown; expenseCardId: string | null; status: string }>;
-  deals: Array<{
-    status: string;
-    orders: Array<{ invoices: Array<{ payments: PaymentAmount[] }> }>;
-  }>;
-}
+export type { MarketingDashboardWarning } from './marketing-dashboard-summary-helpers';
 
 export interface MarketingDashboardSummary {
+  /** When set, lead/deal counts (by creation), revenue, and spend are scoped to this range. */
+  period: { dateFrom: string; dateTo: string } | null;
   totals: {
     accounts: number;
     activities: number;
@@ -50,8 +45,15 @@ export interface MarketingDashboardSummary {
   warnings: MarketingDashboardWarning[];
 }
 
+interface DashboardInputs {
+  accounts: Array<{ financeExpensePlanId: string | null }>;
+  activities: Array<{ budget: unknown; expenseCardId: string | null; status: string }>;
+  deals: DashboardDealRow[];
+}
+
 export async function getMarketingDashboardSummary(
   prisma: InstanceType<typeof PrismaClient>,
+  period?: MarketingDashboardPeriodRange,
 ): Promise<MarketingDashboardSummary> {
   const [accounts, activities, deals, attributedLeads] = await Promise.all([
     prisma.marketingAccount.findMany({ select: { financeExpensePlanId: true } }),
@@ -64,11 +66,12 @@ export async function getMarketingDashboardSummary(
       },
       select: {
         status: true,
+        createdAt: true,
         orders: {
           select: {
             invoices: {
               select: {
-                payments: { select: { amount: true } },
+                payments: { select: { amount: true, paymentDate: true } },
               },
             },
           },
@@ -78,6 +81,14 @@ export async function getMarketingDashboardSummary(
     prisma.lead.count({
       where: {
         OR: [{ marketingAccountId: { not: null } }, { marketingActivityId: { not: null } }],
+        ...(period
+          ? {
+              createdAt: {
+                gte: period.dateFrom,
+                lte: period.dateTo,
+              },
+            }
+          : {}),
       },
     }),
   ]);
@@ -92,6 +103,7 @@ export async function getMarketingDashboardSummary(
     prisma,
     activityExpenseIds,
     accountPlanIds,
+    period,
   );
 
   return buildDashboardSummary({
@@ -100,12 +112,14 @@ export async function getMarketingDashboardSummary(
     deals,
     attributedLeads,
     paidMarketingSpend,
+    period,
   });
 }
 
 interface DashboardBuildInput extends DashboardInputs {
   attributedLeads: number;
   paidMarketingSpend: number;
+  period?: MarketingDashboardPeriodRange;
 }
 
 function buildDashboardSummary({
@@ -114,7 +128,8 @@ function buildDashboardSummary({
   deals,
   attributedLeads,
   paidMarketingSpend,
-}: DashboardBuildInput) {
+  period,
+}: DashboardBuildInput): MarketingDashboardSummary {
   const missingAccountFinanceLinks = accounts.filter(
     (account) => !account.financeExpensePlanId,
   ).length;
@@ -123,9 +138,10 @@ function buildDashboardSummary({
   ).length;
 
   const plannedSpend = sumBudget(activities);
-  const paidRevenue = sumPaidRevenue(deals);
+  const paidRevenue = sumPaidRevenue(deals, period);
   const missingFinanceLinks = missingAccountFinanceLinks + missingActivityFinanceLinks;
-  const wonAttributedDeals = deals.filter((deal) => deal.status === 'WON').length;
+  const wonAttributedDeals = countWonAttributedDeals(deals, period);
+  const attributedDeals = countAttributedDeals(deals, period);
   const roiMetricsAvailable = paidMarketingSpend > 0;
   const efficiency = buildEfficiency({
     paidMarketingSpend,
@@ -136,6 +152,9 @@ function buildDashboardSummary({
   });
 
   return {
+    period: period
+      ? { dateFrom: period.dateFrom.toISOString(), dateTo: period.dateTo.toISOString() }
+      : null,
     totals: {
       accounts: accounts.length,
       activities: activities.length,
@@ -144,7 +163,7 @@ function buildDashboardSummary({
         .length,
       missingFinanceLinks,
       attributedLeads,
-      attributedDeals: deals.length,
+      attributedDeals,
       wonAttributedDeals,
     },
     money: {
@@ -172,21 +191,6 @@ function buildDashboardSummary({
   };
 }
 
-function sumBudget(activities: Array<{ budget: unknown }>): number {
-  return activities.reduce((sum, activity) => sum + Number(activity.budget ?? 0), 0);
-}
-
-function sumPaidRevenue(
-  deals: Array<{ orders: Array<{ invoices: Array<{ payments: PaymentAmount[] }> }> }>,
-): number {
-  return deals.reduce((dealSum, deal) => {
-    const dealPayments = deal.orders.flatMap((order) =>
-      order.invoices.flatMap((invoice) => invoice.payments),
-    );
-    return dealSum + sumAmounts(dealPayments);
-  }, 0);
-}
-
 function uniqueIds(ids: string[]): string[] {
   return [...new Set(ids)];
 }
@@ -195,6 +199,7 @@ async function sumPaidMarketingSpend(
   prisma: InstanceType<typeof PrismaClient>,
   activityExpenseIds: string[],
   accountPlanIds: string[],
+  period?: MarketingDashboardPeriodRange,
 ): Promise<number> {
   const expenseOr: Prisma.ExpenseWhereInput[] = [];
   if (activityExpenseIds.length > 0) {
@@ -208,110 +213,18 @@ async function sumPaidMarketingSpend(
   }
 
   const agg = await prisma.expensePayment.aggregate({
-    where: { expense: { OR: expenseOr } },
+    where: {
+      expense: { OR: expenseOr },
+      ...(period
+        ? {
+            paymentDate: {
+              gte: period.dateFrom,
+              lte: period.dateTo,
+            },
+          }
+        : {}),
+    },
     _sum: { amount: true },
   });
   return Number(agg._sum.amount ?? 0);
-}
-
-function buildWarnings({
-  missingAccountFinanceLinks,
-  missingActivityFinanceLinks,
-  missingFinanceLinks,
-  paidMarketingSpend,
-  paidRevenue,
-  wonAttributedDeals,
-}: {
-  missingAccountFinanceLinks: number;
-  missingActivityFinanceLinks: number;
-  missingFinanceLinks: number;
-  paidMarketingSpend: number;
-  paidRevenue: number;
-  wonAttributedDeals: number;
-}): MarketingDashboardWarning[] {
-  const noPaidSpendWarning =
-    paidMarketingSpend <= 0 && paidRevenue > 0
-      ? warning(
-          'NO_PAID_MARKETING_SPEND',
-          1,
-          'Attributed revenue exists but no paid marketing spend is recorded in Finance for linked plans/cards.',
-        )
-      : null;
-  const noWonDealsWarning =
-    paidMarketingSpend > 0 && wonAttributedDeals === 0
-      ? warning(
-          'NO_WON_ATTRIBUTED_DEALS',
-          1,
-          'Paid marketing spend exists but no won attributed deals are present.',
-        )
-      : null;
-
-  return [
-    warning(
-      'MISSING_ACCOUNT_FINANCE_LINKS',
-      missingAccountFinanceLinks,
-      'Marketing accounts are missing Finance Expense Plan links.',
-    ),
-    warning(
-      'MISSING_ACTIVITY_EXPENSE_LINKS',
-      missingActivityFinanceLinks,
-      'Paid marketing activities are missing Finance expense cards.',
-    ),
-    missingFinanceLinks > 0
-      ? warning(
-          'EFFICIENCY_PARTIAL_DATA',
-          missingFinanceLinks,
-          'Some marketing rows are missing Finance links; paid spend may not include every campaign or List.am plan.',
-        )
-      : null,
-    noPaidSpendWarning,
-    noWonDealsWarning,
-  ].filter((item): item is MarketingDashboardWarning => item !== null);
-}
-
-function buildEfficiency({
-  paidMarketingSpend,
-  paidRevenue,
-  wonAttributedDeals,
-  attributedLeads,
-  missingFinanceLinks,
-}: {
-  paidMarketingSpend: number;
-  paidRevenue: number;
-  wonAttributedDeals: number;
-  attributedLeads: number;
-  missingFinanceLinks: number;
-}) {
-  const hasPaidSpend = paidMarketingSpend > 0;
-  const roas = hasPaidSpend ? paidRevenue / paidMarketingSpend : null;
-  const costPerWonDeal =
-    hasPaidSpend && wonAttributedDeals > 0 ? paidMarketingSpend / wonAttributedDeals : null;
-  const costPerAttributedLead =
-    hasPaidSpend && attributedLeads > 0 ? paidMarketingSpend / attributedLeads : null;
-
-  if (!hasPaidSpend) {
-    return {
-      roas,
-      costPerWonDeal,
-      costPerAttributedLead,
-      isReliable: false,
-      reason: 'No paid marketing spend recorded',
-    };
-  }
-
-  if (missingFinanceLinks > 0) {
-    return {
-      roas: null,
-      costPerWonDeal: null,
-      costPerAttributedLead: null,
-      isReliable: false,
-      reason: 'Missing Finance links; ROI and CPL stay hidden until coverage is complete',
-    };
-  }
-
-  return { roas, costPerWonDeal, costPerAttributedLead, isReliable: true, reason: null };
-}
-
-function warning(code: string, count: number, message: string): MarketingDashboardWarning | null {
-  return count > 0 ? { code, count, message } : null;
 }

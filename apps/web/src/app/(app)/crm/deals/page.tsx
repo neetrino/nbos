@@ -109,6 +109,11 @@ export default function DealsPipelinePage() {
   }, [fetchDeals]);
 
   const openDealId = searchParams.get('openDealId');
+  const deepLinkDealAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    deepLinkDealAttemptedRef.current = null;
+  }, [openDealId]);
 
   useEffect(() => {
     if (!openDealId || loading) return;
@@ -117,7 +122,28 @@ export default function DealsPipelinePage() {
       setSelectedDeal(match);
       setDealBlockerNav(null);
       setSheetOpen(true);
+      return;
     }
+    if (deepLinkDealAttemptedRef.current === openDealId) return;
+    deepLinkDealAttemptedRef.current = openDealId;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const deal = await dealsApi.getById(openDealId);
+        if (cancelled) return;
+        setDeals((prev) => (prev.some((d) => d.id === deal.id) ? prev : [deal, ...prev]));
+        setSelectedDeal(deal);
+        setDealBlockerNav(null);
+        setSheetOpen(true);
+      } catch {
+        if (!cancelled) {
+          toast.error('Deal not found or you cannot open it.');
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [openDealId, loading, deals]);
 
   const handleStatusChange = async (id: string, status: string) => {

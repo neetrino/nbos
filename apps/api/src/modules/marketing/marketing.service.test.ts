@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MarketingService } from './marketing.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
@@ -135,17 +136,21 @@ describe('MarketingService', () => {
     prisma.deal.findMany.mockResolvedValue([
       {
         status: 'WON',
+        createdAt: new Date('2026-01-01'),
         orders: [
           {
             invoices: [
               {
-                payments: [{ amount: 40000 }, { amount: 10000 }],
+                payments: [
+                  { amount: 40000, paymentDate: new Date('2026-01-05') },
+                  { amount: 10000, paymentDate: new Date('2026-01-06') },
+                ],
               },
             ],
           },
         ],
       },
-      { status: 'SEND_OFFER', orders: [] },
+      { status: 'SEND_OFFER', createdAt: new Date('2026-01-02'), orders: [] },
     ]);
     prisma.lead.count.mockResolvedValue(4);
     prisma.expensePayment.aggregate.mockResolvedValue({ _sum: { amount: 30000 } });
@@ -153,6 +158,7 @@ describe('MarketingService', () => {
     const summary = await service.getDashboardSummary();
 
     expect(summary).toMatchObject({
+      period: null,
       totals: {
         accounts: 2,
         activities: 2,
@@ -208,6 +214,55 @@ describe('MarketingService', () => {
       isReliable: false,
       reason: 'No paid marketing spend recorded',
     });
+    expect(summary.period).toBeNull();
+  });
+
+  it('rejects partial marketing dashboard period query params', async () => {
+    await expect(service.getDashboardSummary({ dateFrom: '2026-01-01' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  it('scopes marketing dashboard to date range when both params are provided', async () => {
+    prisma.marketingAccount.findMany.mockResolvedValue([{ financeExpensePlanId: 'plan-1' }]);
+    prisma.marketingActivity.findMany.mockResolvedValue([
+      { status: 'LAUNCHED', budget: 0, expenseCardId: 'expense-1' },
+    ]);
+    prisma.deal.findMany.mockResolvedValue([
+      {
+        status: 'WON',
+        createdAt: new Date('2026-02-01'),
+        orders: [
+          {
+            invoices: [
+              {
+                payments: [
+                  { amount: 1000, paymentDate: new Date('2026-01-15') },
+                  { amount: 5000, paymentDate: new Date('2026-02-10') },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    prisma.lead.count.mockResolvedValue(2);
+    prisma.expensePayment.aggregate.mockResolvedValue({ _sum: { amount: 800 } });
+
+    const summary = await service.getDashboardSummary({
+      dateFrom: '2026-02-01T00:00:00.000Z',
+      dateTo: '2026-02-28T23:59:59.999Z',
+    });
+
+    expect(summary.period).toEqual({
+      dateFrom: '2026-02-01T00:00:00.000Z',
+      dateTo: '2026-02-28T23:59:59.999Z',
+    });
+    expect(summary.money.paidRevenue).toBe(5000);
+    expect(summary.money.paidMarketingSpend).toBe(800);
+    expect(summary.totals.attributedDeals).toBe(1);
+    expect(summary.totals.wonAttributedDeals).toBe(1);
+    expect(summary.totals.attributedLeads).toBe(2);
   });
 
   it('returns active CRM Where options only', async () => {

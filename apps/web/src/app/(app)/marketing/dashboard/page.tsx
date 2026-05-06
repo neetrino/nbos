@@ -1,10 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AreaChart, AlertTriangle, CheckCircle2, RefreshCcw } from 'lucide-react';
 import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { marketingApi, type MarketingDashboardSummary } from '@/lib/api/marketing';
+import { MarketingDashboardPeriodBar } from '@/features/marketing/components/MarketingDashboardPeriodBar';
+import {
+  getMarketingDashboardQueryRange,
+  type MarketingDashboardPeriodPreset,
+} from '@/features/marketing/constants/marketing-dashboard-period';
 
 const MARKETING_CURRENCY = 'AMD';
 
@@ -12,22 +17,36 @@ export default function MarketingDashboardPage() {
   const [summary, setSummary] = useState<MarketingDashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [periodPreset, setPeriodPreset] = useState<MarketingDashboardPeriodPreset>('all');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
 
-  const fetchDashboard = async () => {
+  const queryRange = useMemo(
+    () => getMarketingDashboardQueryRange(periodPreset, { from: customFrom, to: customTo }),
+    [periodPreset, customFrom, customTo],
+  );
+
+  const fetchDashboard = useCallback(async () => {
+    if (periodPreset === 'custom' && !queryRange) {
+      setError('Choose a valid custom date range (from and to).');
+      setSummary(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      setSummary(await marketingApi.getDashboardSummary());
+      setSummary(await marketingApi.getDashboardSummary(queryRange));
       setError(null);
     } catch {
       setError('Marketing dashboard could not be loaded.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [periodPreset, queryRange]);
 
   useEffect(() => {
-    fetchDashboard();
-  }, []);
+    void fetchDashboard();
+  }, [fetchDashboard]);
 
   return (
     <div className="space-y-6">
@@ -35,21 +54,32 @@ export default function MarketingDashboardPage() {
         title="Marketing Dashboard"
         description="Operational marketing snapshot with honest missing-data warnings."
       >
-        <Button variant="outline" size="icon" onClick={fetchDashboard}>
+        <Button variant="outline" size="icon" onClick={() => void fetchDashboard()}>
           <RefreshCcw size={16} />
         </Button>
       </PageHeader>
 
+      <MarketingDashboardPeriodBar
+        preset={periodPreset}
+        onPresetChange={setPeriodPreset}
+        customFrom={customFrom}
+        customTo={customTo}
+        onCustomFromChange={setCustomFrom}
+        onCustomToChange={setCustomTo}
+        summary={summary}
+        disabled={loading}
+      />
+
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (
-        <ErrorState description={error} onRetry={fetchDashboard} />
+        <ErrorState description={error} onRetry={() => void fetchDashboard()} />
       ) : summary ? (
         <MarketingDashboardContent summary={summary} />
       ) : (
         <ErrorState
           description="Marketing dashboard returned no summary."
-          onRetry={fetchDashboard}
+          onRetry={() => void fetchDashboard()}
         />
       )}
     </div>
@@ -125,6 +155,9 @@ function SpendReadinessCard({ summary }: { summary: MarketingDashboardSummary })
       <p className="text-muted-foreground mt-3 text-xs">
         Paid marketing spend sums Finance expense payments for cards and plans linked from
         Marketing. Revenue uses real invoice payments on attributed deals.
+        {summary.period
+          ? ' For this period: leads (by creation), deals created in range, won deals with payments in range, revenue, and spend follow the applied dates. Planned budgets and missing Finance link counts stay workspace-wide.'
+          : null}
       </p>
     </div>
   );

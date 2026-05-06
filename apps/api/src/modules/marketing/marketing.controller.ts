@@ -75,8 +75,13 @@ export class MarketingController {
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Get read-only marketing performance dashboard summary' })
-  async getDashboardSummary() {
-    return this.marketingService.getDashboardSummary();
+  @ApiQuery({ name: 'dateFrom', required: false, type: String })
+  @ApiQuery({ name: 'dateTo', required: false, type: String })
+  async getDashboardSummary(
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    return this.marketingService.getDashboardSummary({ dateFrom, dateTo });
   }
 
   @Post('activities')
