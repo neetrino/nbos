@@ -17,7 +17,7 @@ interface ExtensionForReadiness {
   status?: string | null;
   description?: string | null;
   assignedTo?: string | null;
-  order?: { id: string } | null;
+  order?: { id: string; status?: string | null; invoices?: Array<{ status: string }> } | null;
   tasks?: Array<{ status: string }>;
 }
 
@@ -70,23 +70,48 @@ function validateExtensionDevelopmentGate(extension: ExtensionForReadiness) {
 
 function validateExtensionDoneGate(extension: ExtensionForReadiness) {
   const openTaskCount = (extension.tasks ?? []).filter((task) => !isClosedTask(task.status)).length;
-  if (openTaskCount === 0) return;
+  const errors: ExtensionReadinessIssue[] = [];
+  if (openTaskCount > 0) {
+    errors.push({
+      field: 'tasks',
+      message: `${openTaskCount} tasks still require completion before Extension Done.`,
+    });
+  }
+  errors.push(...buildOpenOrderError(extension.order));
+  errors.push(...buildUnpaidInvoiceError(extension.order?.invoices ?? []));
+  if (errors.length === 0) return;
 
   throw new BadRequestException({
     statusCode: 400,
     code: EXTENSION_STAGE_GATE_ERROR_CODE,
-    message: 'Cannot complete extension while tasks are still open.',
-    errors: [
-      {
-        field: 'tasks',
-        message: `${openTaskCount} tasks still require completion before Extension Done.`,
-      },
-    ],
+    message: 'Cannot complete extension while delivery or finance blockers remain.',
+    errors,
   });
 }
 
 function isClosedTask(status: string) {
-  return ['DONE', 'DEFERRED', 'CANCELLED'].includes(status);
+  return ['COMPLETED', 'DONE', 'DEFERRED', 'CANCELLED'].includes(status);
+}
+
+function buildOpenOrderError(order: ExtensionForReadiness['order']): ExtensionReadinessIssue[] {
+  if (!order?.status || ['FULLY_PAID', 'CLOSED'].includes(order.status)) return [];
+  return [
+    {
+      field: 'finance',
+      message: `Order ${order.status} must be fully paid or closed before Extension Done.`,
+    },
+  ];
+}
+
+function buildUnpaidInvoiceError(invoices: Array<{ status: string }>): ExtensionReadinessIssue[] {
+  const unpaidCount = invoices.filter((invoice) => invoice.status !== 'PAID').length;
+  if (unpaidCount === 0) return [];
+  return [
+    {
+      field: 'finance',
+      message: `${unpaidCount} invoices still require payment before Extension Done.`,
+    },
+  ];
 }
 
 export function buildExtensionReadiness(

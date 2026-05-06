@@ -332,12 +332,31 @@ describe('ExtensionsService', () => {
         id: 'e1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }, { status: 'CANCELLED' }],
+        order: { id: 'ord-1', status: 'FULLY_PAID', invoices: [{ status: 'PAID' }] },
       });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
 
       const result = await service.updateStatus('e1', 'DONE');
 
       expect(result.status).toBe('DONE');
+    });
+
+    it('blocks TRANSFER → DONE when linked order is not fully paid', async () => {
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        status: 'TRANSFER',
+        tasks: [{ status: 'DONE' }],
+        order: { id: 'ord-1', status: 'PARTIALLY_PAID', invoices: [{ status: 'PAID' }] },
+      });
+
+      const error = await service.updateStatus('e1', 'DONE').catch((caught: unknown) => caught);
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(readExceptionResponse(error)).toMatchObject({
+        code: EXTENSION_STAGE_GATE_ERROR_CODE,
+        errors: [{ field: 'finance', message: expect.stringContaining('Order PARTIALLY_PAID') }],
+      });
+      expect(prisma.extension.update).not.toHaveBeenCalled();
     });
   });
 

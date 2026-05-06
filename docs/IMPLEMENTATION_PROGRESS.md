@@ -145,7 +145,7 @@
 - 🟢 [x] CRM: Offer attachment и deal-required fields — глубина если не закрыта — M → stage-gate hardening (`deal-stage-gate.ts`: blank-proof guard), inline Deal blocker editor в popup (`DealTransitionInlineEditor`, `crm/deals/page.tsx`, `TransitionBlockerDialog`) с `Save / Save and move` для обязательных полей и offer proof
 - 🟢 [x] Tasks: выравнивание статусов/enum под канон — M → канонизированы task workflow statuses (`OPEN/IN_PROGRESS/REVIEW/COMPLETED/DEFERRED/CANCELLED`) в shared/frontend/API; добавлена миграция `20260506150000_task_status_canon_alignment` (map `NEW→OPEN`, `DONE→COMPLETED`, default `OPEN`); task actions/kanban/deadline views и completion-rule checks обновлены с backward-compat на legacy `NEW/DONE`
 - 🟢 [x] Tasks: шаблоны повторяющихся задач (не Reports) — M → `RecurringTasksService` углублён под канон: строгая валидация расписания (`frequency/interval/daysOfWeek/dayOfMonth/start/end/dueDateOffset`), предсказуемый `nextCreateAt` для `DAILY/WEEKLY/MONTHLY/YEARLY`, пересчёт `nextCreateAt` при update cadence-полей; добавлен unit test `recurring-tasks.service.test.ts`
-- Projects Hub: linked orders block Transfer→Done — проверка гейтов — M
+- 🟢 [x] Projects Hub: linked orders block Transfer→Done — проверка гейтов — M → `Extension` Done gate выровнен с `Product`: при `TRANSFER -> DONE` блокирует не только open tasks, но и finance blockers (`Order.status != FULLY_PAID/CLOSED`, unpaid invoices); ошибки в structured stage-gate формате `EXTENSION_STAGE_GATE_VALIDATION` + тест `extensions.service.test.ts`
 - Drive: массовые операции / lifecycle из cleanup — M
 - Documents: политика retention/export cleanup согласована и внедрена — M
 - Credentials: step-up на reveal/copy/export + high-risk уведомления — M
