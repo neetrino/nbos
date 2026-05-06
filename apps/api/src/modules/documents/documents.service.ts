@@ -60,6 +60,7 @@ import type {
   AddDocumentAttachmentDto,
   CreateDocumentDto,
   CreateDocumentTagDto,
+  ExportDocumentQuery,
   ListDocumentsQuery,
   UpdateDocumentDto,
   UpdateDocumentSectionDto,
@@ -193,6 +194,80 @@ export class DocumentsService {
       activityEvents,
       activityRevealed: includeActivity,
       activityNextCursor: includeActivity ? activityNextCursor : null,
+    };
+  }
+
+  async exportDocument(
+    id: string,
+    query: ExportDocumentQuery,
+    actorId: string,
+    access: DocumentsDetailAccess,
+  ) {
+    await this.ensureDefaultSections();
+    await assertDocumentReadableByAccess(this.prisma, id, access);
+    const doc = await this.prisma.document.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        status: true,
+        contentJson: true,
+        contentHtml: true,
+        plainText: true,
+        updatedAt: true,
+      },
+    });
+    if (!doc) throw new NotFoundException(`Document ${id} not found`);
+
+    const format = (query.format ?? 'json').trim().toLowerCase();
+    if (format !== 'json' && format !== 'html' && format !== 'txt') {
+      throw new BadRequestException('format must be one of: json, html, txt.');
+    }
+
+    await this.recordActivity(id, actorId, 'exported', { format });
+    const safeName = slugifyTitle(doc.title || doc.slug || 'document');
+    if (format === 'html') {
+      return {
+        documentId: doc.id,
+        title: doc.title,
+        status: doc.status,
+        format: 'html',
+        mimeType: 'text/html; charset=utf-8',
+        fileName: `${safeName}.html`,
+        content: doc.contentHtml ?? '',
+      };
+    }
+    if (format === 'txt') {
+      return {
+        documentId: doc.id,
+        title: doc.title,
+        status: doc.status,
+        format: 'txt',
+        mimeType: 'text/plain; charset=utf-8',
+        fileName: `${safeName}.txt`,
+        content: doc.plainText ?? '',
+      };
+    }
+    return {
+      documentId: doc.id,
+      title: doc.title,
+      status: doc.status,
+      format: 'json',
+      mimeType: 'application/json; charset=utf-8',
+      fileName: `${safeName}.json`,
+      payload: {
+        id: doc.id,
+        title: doc.title,
+        slug: doc.slug,
+        description: doc.description,
+        status: doc.status,
+        contentJson: doc.contentJson,
+        contentHtml: doc.contentHtml,
+        plainText: doc.plainText,
+        updatedAt: doc.updatedAt,
+      },
     };
   }
 

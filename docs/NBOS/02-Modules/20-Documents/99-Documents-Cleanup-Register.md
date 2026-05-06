@@ -181,6 +181,7 @@ Recommended implementation order:
 13. Add archive/restore flow. **Shipped:** `POST …/archive`, `POST …/restore`, detail UI Restore when `DOCUMENTS` DELETE; activity `restored`.
 14. Add recent documents. **Shipped:** recent updates block; favorites are deferred because no favorite data model is currently needed for P0.
 15. Add Google integration only after first release is stable.
+16. Add export endpoint + audit-safe activity trail. **Shipped:** `GET /api/documents/:id/export?format=json|html|txt` under `DOCUMENTS.EXPORT`; activity event `exported` stores format.
 
 ## D. Non-goals for first release
 

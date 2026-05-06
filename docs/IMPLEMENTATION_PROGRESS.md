@@ -147,7 +147,7 @@
 - 🟢 [x] Tasks: шаблоны повторяющихся задач (не Reports) — M → `RecurringTasksService` углублён под канон: строгая валидация расписания (`frequency/interval/daysOfWeek/dayOfMonth/start/end/dueDateOffset`), предсказуемый `nextCreateAt` для `DAILY/WEEKLY/MONTHLY/YEARLY`, пересчёт `nextCreateAt` при update cadence-полей; добавлен unit test `recurring-tasks.service.test.ts`
 - 🟢 [x] Projects Hub: linked orders block Transfer→Done — проверка гейтов — M → `Extension` Done gate выровнен с `Product`: при `TRANSFER -> DONE` блокирует не только open tasks, но и finance blockers (`Order.status != FULLY_PAID/CLOSED`, unpaid invoices); ошибки в structured stage-gate формате `EXTENSION_STAGE_GATE_VALIDATION` + тест `extensions.service.test.ts`
 - 🟢 [x] Drive: массовые операции / lifecycle из cleanup — M → API: single `restore` + batch `archive/restore` (`/api/drive/files/:id/restore`, `/api/drive/files/archive-batch`, `/api/drive/files/restore-batch`), audit events per file; web `/drive`: multi-select list + bulk actions (`Archive selected` / `Restore selected`) + lifecycle button в detail drawer; tests: `drive.service.test.ts`
-- Documents: политика retention/export cleanup согласована и внедрена — M
+- 🟢 [x] Documents: политика retention/export cleanup согласована и внедрена — M → API: `GET /api/documents/:id/export?format=json|html|txt` (`DOCUMENTS.EXPORT`), экспорт логируется в `DocumentActivityEvent` (`action=exported`, metadata format); web activity detail показывает формат экспорта; tests: `documents.service.test.ts`
 - Credentials: step-up на reveal/copy/export + high-risk уведомления — M
 - Credentials: довести list API / health metadata (cleanup PARTIAL) — S
 - Notifications: **пользовательские настройки** каналов/типов событий — M

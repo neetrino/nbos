@@ -469,4 +469,52 @@ describe('DocumentsService', () => {
       }),
     );
   });
+
+  it('exports document in txt format and records exported activity', async () => {
+    prisma.documentSection.count.mockResolvedValue(10);
+    prisma.document.findUnique
+      .mockResolvedValueOnce({
+        ownerId: 'employee-1',
+        createdById: 'employee-1',
+        listScopeOverride: null,
+        section: { defaultListScope: 'ALL' },
+      })
+      .mockResolvedValueOnce({
+        id: 'doc-1',
+        title: 'Runbook',
+        slug: 'runbook-doc',
+        description: 'D',
+        status: 'PUBLISHED',
+        contentJson: { type: 'doc' },
+        contentHtml: '<p>Hello</p>',
+        plainText: 'Hello',
+        updatedAt: new Date('2026-05-06T10:00:00.000Z'),
+      });
+    prisma.documentActivityEvent.create.mockResolvedValue({});
+
+    const result = await service.exportDocument(
+      'doc-1',
+      { format: 'txt' },
+      'employee-1',
+      detailAccessAll,
+    );
+
+    expect(result).toMatchObject({
+      documentId: 'doc-1',
+      format: 'txt',
+      mimeType: 'text/plain; charset=utf-8',
+      fileName: 'runbook.txt',
+      content: 'Hello',
+    });
+    expect(prisma.documentActivityEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          documentId: 'doc-1',
+          action: 'exported',
+          actorId: 'employee-1',
+          metadata: { format: 'txt' },
+        }),
+      }),
+    );
+  });
 });
