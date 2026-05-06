@@ -19,6 +19,14 @@ export interface CredentialSecretsPresent {
   secureNotes: boolean;
 }
 
+type CredentialHealthStatus = 'HEALTHY' | 'DUE_SOON' | 'OVERDUE' | 'UNKNOWN';
+
+interface CredentialHealthMetadata {
+  status: CredentialHealthStatus;
+  dueInDays: number | null;
+  flags: string[];
+}
+
 function isSensitiveField(value: string): value is SensitiveField {
   return (SENSITIVE_FIELDS as readonly string[]).includes(value);
 }
@@ -125,6 +133,15 @@ function nullableDate(value: string | null | undefined): Date | null | undefined
   if (value === undefined) return undefined;
   if (value === null || value.trim() === '') return null;
   return new Date(value);
+}
+
+function startOfUtcDay(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
+function daysDiffUtc(from: Date, to: Date): number {
+  const DAY = 24 * 60 * 60 * 1000;
+  return Math.floor((startOfUtcDay(to).getTime() - startOfUtcDay(from).getTime()) / DAY);
 }
 
 @Injectable()
@@ -818,6 +835,27 @@ export class CredentialsService {
 
   private toCredentialWithoutSecrets(credential: Record<string, unknown>) {
     const { password, apiKey, envData, secureNotes, ...rest } = credential;
+    const nextRotationAt =
+      credential.nextRotationAt instanceof Date ? credential.nextRotationAt : null;
+    const now = new Date();
+    const dueInDays = nextRotationAt ? daysDiffUtc(now, nextRotationAt) : null;
+    let status: CredentialHealthStatus = 'UNKNOWN';
+    if (dueInDays !== null) {
+      if (dueInDays < 0) status = 'OVERDUE';
+      else if (dueInDays <= 14) status = 'DUE_SOON';
+      else status = 'HEALTHY';
+    }
+    const flags: string[] = [];
+    const criticality = typeof credential.criticality === 'string' ? credential.criticality : null;
+    const accessLevel = typeof credential.accessLevel === 'string' ? credential.accessLevel : null;
+    const ownerId = typeof credential.ownerId === 'string' ? credential.ownerId : null;
+    if ((criticality === 'HIGH' || criticality === 'CRITICAL') && !ownerId) {
+      flags.push('MISSING_OWNER');
+    }
+    if ((criticality === 'HIGH' || criticality === 'CRITICAL') && accessLevel === 'ALL') {
+      flags.push('BROAD_ACCESS');
+    }
+
     return {
       ...rest,
       secretsPresent: {
@@ -826,6 +864,11 @@ export class CredentialsService {
         envData: typeof envData === 'string' && envData.length > 0,
         secureNotes: typeof secureNotes === 'string' && secureNotes.length > 0,
       } satisfies CredentialSecretsPresent,
+      health: {
+        status,
+        dueInDays,
+        flags,
+      } satisfies CredentialHealthMetadata,
     };
   }
 

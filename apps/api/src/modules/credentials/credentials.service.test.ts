@@ -148,6 +148,27 @@ describe('CredentialsService', () => {
         }),
       );
     });
+
+    it('adds health metadata for rotation due/overdue flags', async () => {
+      prisma.credential.findMany.mockResolvedValue([
+        {
+          id: '1',
+          name: 'Critical Vault',
+          criticality: 'CRITICAL',
+          accessLevel: 'ALL',
+          ownerId: null,
+          nextRotationAt: new Date('2020-01-01T00:00:00.000Z'),
+        },
+      ]);
+      prisma.credential.count.mockResolvedValue(1);
+
+      const result = await service.findAll({ page: 1, pageSize: 10 });
+      const first = result.items[0] as { health?: { status: string; flags: string[] } };
+
+      expect(first.health?.status).toBe('OVERDUE');
+      expect(first.health?.flags).toContain('MISSING_OWNER');
+      expect(first.health?.flags).toContain('BROAD_ACCESS');
+    });
   });
 
   describe('findById', () => {

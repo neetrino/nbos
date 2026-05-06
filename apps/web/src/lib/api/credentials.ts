@@ -37,6 +37,11 @@ export interface CredentialDetail {
   createdAt: string;
   updatedAt?: string;
   secretsPresent: CredentialSecretsPresent;
+  health?: {
+    status: 'HEALTHY' | 'DUE_SOON' | 'OVERDUE' | 'UNKNOWN';
+    dueInDays: number | null;
+    flags: string[];
+  };
   project?: { id: string; code?: string; name: string } | null;
   department?: { id: string; name: string } | null;
   owner?: { id: string; firstName: string; lastName: string } | null;
