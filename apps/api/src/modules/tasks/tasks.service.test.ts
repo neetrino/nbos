@@ -20,7 +20,7 @@ describe('TasksService', () => {
 
     it('applies filters', async () => {
       await service.findAll({
-        status: 'NEW',
+        status: 'OPEN',
         priority: 'HIGH',
         assigneeId: 'a1',
         workspaceId: 'ws-1',
@@ -161,7 +161,7 @@ describe('TasksService', () => {
 
   describe('start', () => {
     it('starts a task', async () => {
-      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'NEW' });
+      prisma.task.findUnique.mockResolvedValue({ id: '1', status: 'OPEN' });
       prisma.task.update.mockResolvedValue({ id: '1', status: 'IN_PROGRESS' });
       const result = await service.start('1');
       expect(result.status).toBe('IN_PROGRESS');
@@ -177,9 +177,9 @@ describe('TasksService', () => {
         checklists: [],
         subtasks: [],
       });
-      prisma.task.update.mockResolvedValue({ id: '1', status: 'DONE' });
+      prisma.task.update.mockResolvedValue({ id: '1', status: 'COMPLETED' });
       const result = await service.complete('1');
-      expect(result.status).toBe('DONE');
+      expect(result.status).toBe('COMPLETED');
     });
 
     it('blocks completion when required checklist has open items', async () => {
@@ -213,7 +213,7 @@ describe('TasksService', () => {
         checklists: [],
         subtasks: [
           { code: 'T-2026-0002', title: 'Open child', status: 'IN_PROGRESS' },
-          { code: 'T-2026-0003', title: 'Done child', status: 'DONE' },
+          { code: 'T-2026-0003', title: 'Done child', status: 'COMPLETED' },
         ],
       });
 

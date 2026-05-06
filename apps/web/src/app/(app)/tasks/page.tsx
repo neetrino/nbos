@@ -46,7 +46,7 @@ const DEADLINE_COLUMNS_DEF = [
 ];
 
 function getDeadlineColumn(task: Task): string {
-  if (task.status === 'DONE') return 'done';
+  if (task.status === 'COMPLETED' || task.status === 'DONE') return 'done';
   if (!task.dueDate) return 'no-date';
 
   const now = new Date();
@@ -98,9 +98,12 @@ function getDueDateForDeadlineColumn(columnKey: string): string | null {
 }
 
 const KANBAN_STATUS_MAP: Record<string, string> = {
-  New: 'NEW',
+  New: 'OPEN',
+  Open: 'OPEN',
   'In Progress': 'IN_PROGRESS',
-  Done: 'DONE',
+  Review: 'REVIEW',
+  Done: 'COMPLETED',
+  Completed: 'COMPLETED',
 };
 
 /* ─── Task mini-card ─── */
@@ -162,7 +165,7 @@ function TaskMiniCard({
         </div>
 
         <div className="flex items-center gap-1">
-          {task.status === 'NEW' && (
+          {task.status === 'OPEN' && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -186,7 +189,7 @@ function TaskMiniCard({
               <CheckCircle2 size={12} className="text-green-500" />
             </button>
           )}
-          {task.status === 'DONE' && (
+          {task.status === 'COMPLETED' && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -211,7 +214,9 @@ function TaskMiniCard({
 
       {task._count.subtasks > 0 && (
         <div className="text-muted-foreground flex items-center gap-1 text-[10px]">
-          Subtasks: {task.subtasks.filter((s) => s.status === 'DONE').length}/{task._count.subtasks}
+          Subtasks:{' '}
+          {task.subtasks.filter((s) => s.status === 'COMPLETED' || s.status === 'DONE').length}/
+          {task._count.subtasks}
         </div>
       )}
     </div>
@@ -324,11 +329,11 @@ export default function TasksPage() {
     setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: targetStatus } : t)));
 
     try {
-      if (targetStatus === 'IN_PROGRESS' && task.status === 'NEW') {
+      if (targetStatus === 'IN_PROGRESS' && (task.status === 'OPEN' || task.status === 'NEW')) {
         await tasksApi.start(taskId);
-      } else if (targetStatus === 'DONE') {
+      } else if (targetStatus === 'COMPLETED' || targetStatus === 'DONE') {
         await tasksApi.complete(taskId);
-      } else if (targetStatus === 'NEW' && task.status !== 'NEW') {
+      } else if (targetStatus === 'OPEN' && task.status !== 'OPEN') {
         await tasksApi.reopen(taskId);
       } else {
         await tasksApi.update(taskId, { status: targetStatus });
@@ -366,7 +371,7 @@ export default function TasksPage() {
 
     if (toColumnKey === 'done') {
       setTasks((prev) =>
-        prev.map((t) => (t.id === taskId ? { ...t, status: 'DONE' as const } : t)),
+        prev.map((t) => (t.id === taskId ? { ...t, status: 'COMPLETED' as const } : t)),
       );
       try {
         await tasksApi.complete(taskId);
@@ -383,7 +388,10 @@ export default function TasksPage() {
           ? {
               ...t,
               dueDate: newDueDate,
-              status: task.status === 'DONE' ? ('NEW' as const) : t.status,
+              status:
+                task.status === 'COMPLETED' || task.status === 'DONE'
+                  ? ('OPEN' as const)
+                  : t.status,
             }
           : t,
       ),
@@ -391,7 +399,7 @@ export default function TasksPage() {
 
     try {
       const updates: Record<string, unknown> = { dueDate: newDueDate };
-      if (task.status === 'DONE') {
+      if (task.status === 'COMPLETED' || task.status === 'DONE') {
         await tasksApi.reopen(taskId);
         await tasksApi.update(taskId, updates);
       } else {

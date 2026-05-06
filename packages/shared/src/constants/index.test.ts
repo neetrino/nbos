@@ -67,10 +67,11 @@ describe('Constants', () => {
     expect(BONUS_PERCENTAGES.PARTNER_DEFAULT).toBe(30);
   });
 
-  it('TASK_STATUSES includes NEW and DONE', () => {
-    expect(TASK_STATUSES).toContain('NEW');
-    expect(TASK_STATUSES).toContain('DONE');
-    expect(TASK_STATUSES).toHaveLength(5);
+  it('TASK_STATUSES follows canonical workflow values', () => {
+    expect(TASK_STATUSES).toContain('OPEN');
+    expect(TASK_STATUSES).toContain('REVIEW');
+    expect(TASK_STATUSES).toContain('COMPLETED');
+    expect(TASK_STATUSES).toHaveLength(6);
   });
 
   it('TICKET_PRIORITIES has P1 P2 P3', () => {

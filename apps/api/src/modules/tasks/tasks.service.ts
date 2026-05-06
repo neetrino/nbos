@@ -177,7 +177,7 @@ export class TasksService {
   /** Начать задачу */
   async start(id: string) {
     const task = await this.findById(id);
-    if (task.status === 'DONE' || task.status === 'CANCELLED') {
+    if (task.status === 'COMPLETED' || task.status === 'DONE' || task.status === 'CANCELLED') {
       throw new NotFoundException('Cannot start a completed/cancelled task');
     }
     return this.prisma.task.update({
@@ -200,7 +200,7 @@ export class TasksService {
     return this.prisma.task.update({
       where: { id },
       data: {
-        status: 'DONE' as TaskStatusEnum,
+        status: 'COMPLETED' as TaskStatusEnum,
         completedAt: new Date(),
       },
       include: TASK_DETAIL_INCLUDE,
@@ -213,7 +213,7 @@ export class TasksService {
     return this.prisma.task.update({
       where: { id },
       data: {
-        status: 'NEW' as TaskStatusEnum,
+        status: 'OPEN' as TaskStatusEnum,
         completedAt: null,
       },
       include: TASK_DETAIL_INCLUDE,

@@ -7,7 +7,7 @@ const taskBase = {
   code: 'T-2026-0001',
   title: 'x',
   description: null,
-  status: 'NEW',
+  status: 'OPEN',
   priority: 'NORMAL',
   startDate: null,
   dueDate: null,

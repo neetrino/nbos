@@ -1,11 +1,14 @@
 // ─── TASKS ────────────────────────────────────────────────
 
 enum TaskStatusEnum {
-  NEW
+  OPEN
   IN_PROGRESS
-  DONE
+  REVIEW
+  COMPLETED
   DEFERRED
   CANCELLED
+  NEW
+  DONE
 }
 
 enum TaskPriorityEnum {
@@ -62,7 +65,7 @@ model Task {
   assigneeId         String?                @map("assignee_id")
   coAssignees        String[]               @map("co_assignees")
   observers          String[]
-  status             TaskStatusEnum         @default(NEW)
+  status             TaskStatusEnum         @default(OPEN)
   planningStatus     TaskPlanningStatusEnum @default(UNPLANNED) @map("planning_status")
   priority           TaskPriorityEnum       @default(NORMAL)
   startDate          DateTime?              @map("start_date")

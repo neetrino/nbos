@@ -143,7 +143,7 @@
 - 🟢 [x] Marketing: CPL/ROI виджеты только при наличии spend (без фейка) — S → `marketing-dashboard-summary.ts` (`isReliable`, null ROAS/CPL при дырах); web `marketing/dashboard`, `MarketingReportsTab`; `marketing.service.test.ts`
 - 🟢 [x] Marketing: List.am ↔ Finance Expense Plan связь до UX канона — S → `MarketingAccountExpensePlanLink`, `load-expense-plans-for-marketing-accounts.ts`, `marketing/settings` (пикер плана + ссылки в Finance); модель линка была, UX доведён под `18-Marketing`
 - 🟢 [x] CRM: Offer attachment и deal-required fields — глубина если не закрыта — M → stage-gate hardening (`deal-stage-gate.ts`: blank-proof guard), inline Deal blocker editor в popup (`DealTransitionInlineEditor`, `crm/deals/page.tsx`, `TransitionBlockerDialog`) с `Save / Save and move` для обязательных полей и offer proof
-- Tasks: выравнивание статусов/enum под канон — M
+- 🟢 [x] Tasks: выравнивание статусов/enum под канон — M → канонизированы task workflow statuses (`OPEN/IN_PROGRESS/REVIEW/COMPLETED/DEFERRED/CANCELLED`) в shared/frontend/API; добавлена миграция `20260506150000_task_status_canon_alignment` (map `NEW→OPEN`, `DONE→COMPLETED`, default `OPEN`); task actions/kanban/deadline views и completion-rule checks обновлены с backward-compat на legacy `NEW/DONE`
 - Tasks: шаблоны повторяющихся задач (не Reports) — M
 - Projects Hub: linked orders block Transfer→Done — проверка гейтов — M
 - Drive: массовые операции / lifecycle из cleanup — M
