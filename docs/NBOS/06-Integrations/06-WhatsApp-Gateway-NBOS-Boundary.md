@@ -130,7 +130,7 @@ Gateway **не** заменяет NBOS в вопросах RBAC конечных
 - `01-WhatsApp-Integration.md` — общий канон + отсылка сюда.
 - `docs/NBOS/06-Integrations/07-waha-server-deployment-brief.md` — развёртывание VPS.
 - Messenger / Notifications — диаграммы с узлом Gateway.
-- `docs/PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md` — срез WhatsApp/WAHA.
+- `docs/PHASE_7_INTEGRATIONS.md` — срез WhatsApp/WAHA.
 
 ---
 

@@ -72,7 +72,7 @@
 
 Эти задачи не подключают реальные внешние сервисы. Они создают безопасный каркас: реестр, статусы, аудит, адаптеры, required setup и документацию для владельца.
 
-Детальный нарез Phase 7 (треки, P0/P1/P2, **таблица статусов срезов §9**) — [`PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md`](./PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md). Ниже — операционная очередь в терминах продукта; при старте среза обновляйте §9 Phase 7 и по крупной вехе — этот файл.
+Детальный нарез Phase 7 (треки, P0/P1/P2, **таблица статусов срезов §9**) — [`PHASE_7_INTEGRATIONS.md`](./PHASE_7_INTEGRATIONS.md). Ниже — операционная очередь в терминах продукта; при старте среза обновляйте §9 Phase 7 и по крупной вехе — этот файл.
 
 - Integration foundation: `IntegrationProvider` реестр, статусы, аудит, контракт адаптера — L
 - Admin UI: страница статусов интеграций и required setup — M
@@ -172,5 +172,5 @@
 - [`AI-START-HERE.md`](./AI-START-HERE.md)
 - [`NBOS/00-Implementation-Roadmap.md`](./NBOS/00-Implementation-Roadmap.md)
 - [`Progress Archive/дожать до 100% описанного.md`](./Progress%20Archive/дожать%20до%20100%25%20описанного.md) (архивная матрица; чеклист — **Progress + Done**)
-- [`PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md`](./PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md)
+- [`PHASE_7_INTEGRATIONS.md`](./PHASE_7_INTEGRATIONS.md)
 - [`archive/plans/DEVELOPMENT_PLAN.archived.md`](./archive/plans/DEVELOPMENT_PLAN.archived.md) — исторический unified plan
