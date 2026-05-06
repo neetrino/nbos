@@ -1,4 +1,6 @@
-# NBOS Platform - Unified Development Plan
+# NBOS Platform - Unified Development Plan (archived)
+
+> **Archived:** 2026-05-06. Active execution: [`docs/IMPLEMENTATION_PROGRESS.md`](../../IMPLEMENTATION_PROGRESS.md) and history: [`docs/IMPLEMENTATION_DONE.md`](../../IMPLEMENTATION_DONE.md). Do not update this file.
 
 **Project:** NBOS Platform  
 **Project size:** C (monorepo: `apps/*`, `packages/*`)  

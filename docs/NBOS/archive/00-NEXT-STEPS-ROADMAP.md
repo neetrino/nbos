@@ -1,6 +1,6 @@
 # Пошаговый план дальнейших действий (продукт + документация + код)
 
-> Архивный документ. Сохраняется как исторический roadmap раннего этапа. Не использовать как текущий план работ; актуальный план смотреть в `docs/DEVELOPMENT_PLAN.md`.
+> Архивный документ. Сохраняется как исторический roadmap раннего этапа. Не использовать как текущий план работ; актуальное исполнение — `docs/IMPLEMENTATION_PROGRESS.md`, история срезов — `docs/IMPLEMENTATION_DONE.md`, последовательность — `docs/NBOS/00-Implementation-Roadmap.md`.
 
 **База:** `PRODUCT-ENTITY-GIT-ANALYSIS.md`, `00-Documentation-Hub.md`, закрытый Q1 по Product и Hub.
 

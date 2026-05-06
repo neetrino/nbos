@@ -81,5 +81,5 @@ Every block must pass all of:
 
 1. `pnpm lint`, `pnpm typecheck`, and targeted tests pass.
 2. No unresolved P1/P2 defects remain in the block scope.
-3. Documentation is updated in `docs/DEVELOPMENT_PLAN.md`.
+3. Documentation is updated in `docs/IMPLEMENTATION_PROGRESS.md` (and closed slices recorded in `docs/IMPLEMENTATION_DONE.md` when applicable).
 4. Performance guardrails for changed endpoints/pages are checked.

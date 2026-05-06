@@ -9,9 +9,10 @@ Read in this order:
 1. `docs/NBOS/00-Documentation-Hub.md`
 2. `docs/NBOS/00-Implementation-Roadmap.md`
 3. `docs/NBOS/00-Technical-Decisions-By-Module.md`
-4. `docs/IMPLEMENTATION_PROGRESS.md`
-5. `docs/NBOS/00-Documentation-Consistency-Audit.md`
-6. The specific module docs for the task you are implementing.
+4. `docs/IMPLEMENTATION_PROGRESS.md` (активный бэклог)
+5. `docs/IMPLEMENTATION_DONE.md` (закрытые срезы и история)
+6. `docs/NBOS/00-Documentation-Consistency-Audit.md`
+7. The specific module docs for the task you are implementing.
 
 ## Source Of Truth
 
@@ -65,7 +66,7 @@ docs/IMPLEMENTATION_PROGRESS.md
 Current phase (authoritative):
 
 ```text
-See docs/IMPLEMENTATION_PROGRESS.md — единый чеклист: блок «Закрыто», блок «Бэклог», блок «Не делаем сейчас».
+See `docs/IMPLEMENTATION_PROGRESS.md` (бэклог) + `docs/IMPLEMENTATION_DONE.md` (закрыто); блок «Не делаем сейчас» — в Progress.
 ```
 
 Key rules:

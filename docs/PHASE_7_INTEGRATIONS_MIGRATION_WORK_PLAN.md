@@ -438,7 +438,7 @@ If approved, implementation should happen in small reviewable slices:
 8. `meta-lead-candidate-shell`
 9. `github-technical-links`
 
-Each slice should update this plan, the relevant integration docs and `docs/IMPLEMENTATION_PROGRESS.md`.
+Each slice should update this plan, the relevant integration docs, `docs/IMPLEMENTATION_PROGRESS.md`, and record major closures in `docs/IMPLEMENTATION_DONE.md` when useful.
 
 ## 9. Implementation status
 

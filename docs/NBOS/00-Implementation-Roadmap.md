@@ -24,6 +24,7 @@ Actual implementation status is tracked in:
 
 ```text
 docs/IMPLEMENTATION_PROGRESS.md
+docs/IMPLEMENTATION_DONE.md
 ```
 
 ## Primary implementation rule
