@@ -236,6 +236,30 @@ export const driveApi = {
     return resp.data;
   },
 
+  async restoreFileAsset(id: string, actorId?: string): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/restore',
+      { actorId },
+    );
+    return resp.data;
+  },
+
+  async archiveFileAssets(ids: string[], actorId?: string): Promise<{ updated: FileAsset[] }> {
+    const resp = await api.post<{ updated: FileAsset[] }>('/api/drive/files/archive-batch', {
+      ids,
+      actorId,
+    });
+    return resp.data;
+  },
+
+  async restoreFileAssets(ids: string[], actorId?: string): Promise<{ updated: FileAsset[] }> {
+    const resp = await api.post<{ updated: FileAsset[] }>('/api/drive/files/restore-batch', {
+      ids,
+      actorId,
+    });
+    return resp.data;
+  },
+
   async listFiles(projectId: string, prefix?: string): Promise<DriveFileEntry[]> {
     const resp = await api.get<DriveFileEntry[]>('/api/drive/' + encodeURIComponent(projectId), {
       params: prefix ? { prefix } : undefined,

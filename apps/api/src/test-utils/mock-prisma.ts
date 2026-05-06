@@ -6,6 +6,7 @@ function createModelMock() {
     findUnique: vi.fn().mockResolvedValue(null),
     findFirst: vi.fn().mockResolvedValue(null),
     create: vi.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'test-id', ...data })),
+    createMany: vi.fn().mockResolvedValue({ count: 1 }),
     update: vi.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'test-id', ...data })),
     upsert: vi
       .fn()

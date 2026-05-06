@@ -185,6 +185,27 @@ export class DriveController {
     return this.driveService.archiveFileAsset(id, body.actorId);
   }
 
+  @Post('files/:id/restore')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Restore archived Drive file asset metadata' })
+  async restoreFileAsset(@Param('id') id: string, @Body() body: { actorId?: string }) {
+    return this.driveService.restoreFileAsset(id, body.actorId);
+  }
+
+  @Post('files/archive-batch')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Archive multiple Drive file assets' })
+  async archiveFileAssets(@Body() body: { ids: string[]; actorId?: string }) {
+    return this.driveService.archiveFileAssets(body.ids ?? [], body.actorId);
+  }
+
+  @Post('files/restore-batch')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Restore multiple archived Drive file assets' })
+  async restoreFileAssets(@Body() body: { ids: string[]; actorId?: string }) {
+    return this.driveService.restoreFileAssets(body.ids ?? [], body.actorId);
+  }
+
   @Get(':projectId')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'List files in project folder' })

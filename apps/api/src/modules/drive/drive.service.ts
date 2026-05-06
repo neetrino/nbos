@@ -365,6 +365,72 @@ export class DriveService {
     });
   }
 
+  async restoreFileAsset(id: string, actorId?: string) {
+    await this.getFileAsset(id);
+    return this.prisma.fileAsset.update({
+      where: { id },
+      data: {
+        status: 'ACTIVE',
+        archivedAt: null,
+        auditEvents: { create: { action: 'restored', actorId } },
+      },
+      include: FILE_ASSET_INCLUDE,
+    });
+  }
+
+  async archiveFileAssets(ids: string[], actorId?: string) {
+    const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('ids must include at least one file id.');
+    }
+    const now = new Date();
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.fileAsset.updateMany({
+        where: { id: { in: uniqueIds }, deletedAt: null },
+        data: { status: 'ARCHIVED', archivedAt: now },
+      });
+      await tx.fileAuditEvent.createMany({
+        data: uniqueIds.map((fileAssetId) => ({
+          fileAssetId,
+          actorId: actorId ?? null,
+          action: 'archived',
+        })),
+      });
+      return tx.fileAsset.findMany({
+        where: { id: { in: uniqueIds }, deletedAt: null },
+        include: FILE_ASSET_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+      });
+    });
+    return { updated };
+  }
+
+  async restoreFileAssets(ids: string[], actorId?: string) {
+    const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))];
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('ids must include at least one file id.');
+    }
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.fileAsset.updateMany({
+        where: { id: { in: uniqueIds }, deletedAt: null },
+        data: { status: 'ACTIVE', archivedAt: null },
+      });
+      await tx.fileAuditEvent.createMany({
+        data: uniqueIds.map((fileAssetId) => ({
+          fileAssetId,
+          actorId: actorId ?? null,
+          action: 'restored',
+        })),
+      });
+      return tx.fileAsset.findMany({
+        where: { id: { in: uniqueIds }, deletedAt: null },
+        include: FILE_ASSET_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+      });
+    });
+    return { updated };
+  }
+
   async getProjectStructure(projectId: string): Promise<FolderNode> {
     const prefix = `${R2_DRIVE_PREFIX}projects/${projectId}/`;
 
