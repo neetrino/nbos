@@ -3,7 +3,7 @@
 Документ фиксирует **согласованную production-архитектуру**: логический адаптер `WhatsAppWebAdapter` реализуется как **отдельный сервис WhatsApp Gateway**; NBOS не вызывает WAHA напрямую и не хранит `WAHA_API_KEY`.
 
 Канон сценариев и статусов: `01-WhatsApp-Integration.md`.  
-Бриф по развёртыванию WAHA + Gateway на сервере: `docs/archive/waha-server-deployment-brief.md`.
+Бриф по развёртыванию WAHA + Gateway на сервере: `docs/NBOS/06-Integrations/07-waha-server-deployment-brief.md`.
 
 ---
 
@@ -128,7 +128,7 @@ Gateway **не** заменяет NBOS в вопросах RBAC конечных
 После принятия этой схемы обновлены:
 
 - `01-WhatsApp-Integration.md` — общий канон + отсылка сюда.
-- `docs/archive/waha-server-deployment-brief.md` — развёртывание VPS.
+- `docs/NBOS/06-Integrations/07-waha-server-deployment-brief.md` — развёртывание VPS.
 - Messenger / Notifications — диаграммы с узлом Gateway.
 - `docs/PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md` — срез WhatsApp/WAHA.
 

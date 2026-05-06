@@ -144,7 +144,7 @@ Owner decisions needed:
 
 Current state: WAHA is the canonical MVP candidate, but real runtime needs WAHA instance and QR-connected account.
 
-**Production target (agreed):** `WhatsAppWebAdapter` is implemented as a **standalone WhatsApp Gateway** (NestJS) on the same Hetzner VPS as WAHA; NBOS calls Gateway over HTTPS; Gateway calls WAHA over internal Docker (e.g. `http://waha:3000`). Gateway uses **Neon PostgreSQL** for its own data. Canon: `docs/NBOS/06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md` and `docs/archive/waha-server-deployment-brief.md`.
+**Production target (agreed):** `WhatsAppWebAdapter` is implemented as a **standalone WhatsApp Gateway** (NestJS) on the same Hetzner VPS as WAHA; NBOS calls Gateway over HTTPS; Gateway calls WAHA over internal Docker (e.g. `http://waha:3000`). Gateway uses **Neon PostgreSQL** for its own data. Canon: `docs/NBOS/06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md` and `docs/NBOS/06-Integrations/07-waha-server-deployment-brief.md`.
 
 `P0 Foundation`
 
