@@ -1,19 +1,31 @@
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import helmet from 'helmet';
 import { AppModule } from './app.module';
+import {
+  assertCorsOriginsSafeForProduction,
+  parseCorsOriginsFromEnv,
+} from './security/cors-origins';
+import { createHelmetMiddleware } from './security/helmet.middleware';
 import { SocketIoCorsAdapter } from './socket-io.adapter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const corsOrigins = parseCorsOriginsFromEnv();
+  assertCorsOriginsSafeForProduction(corsOrigins);
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.useWebSocketAdapter(new SocketIoCorsAdapter(app));
 
-  app.use(helmet());
+  if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+  }
+
+  app.use(createHelmetMiddleware());
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:3000'],
+    origin: corsOrigins,
     credentials: true,
   });
 

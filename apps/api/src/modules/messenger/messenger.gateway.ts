@@ -37,6 +37,7 @@ import {
 import { MessengerPresenceTracker } from './messenger-presence-tracker';
 import { MessengerTypingThrottle } from './messenger-typing-throttle';
 import type { MessengerMessageDto } from './messenger.types';
+import { parseCorsOriginsFromEnv } from '../../security/cors-origins';
 
 interface JwtSubPayload {
   sub: string;
@@ -44,7 +45,7 @@ interface JwtSubPayload {
 
 @WebSocketGateway({
   namespace: MESSENGER_SOCKET_NAMESPACE,
-  cors: { origin: true, credentials: true },
+  cors: { origin: parseCorsOriginsFromEnv(), credentials: true },
 })
 export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
