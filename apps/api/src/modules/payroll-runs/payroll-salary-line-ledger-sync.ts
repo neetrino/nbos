@@ -2,7 +2,10 @@ import { Decimal, type PrismaClient, type SalaryLineStatusEnum } from '@nbos/dat
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
 import { sumExpensePaymentAmounts } from '../expenses/expense-payment-rollup';
 import { markPayrollBonusReleasesPaidForSalaryLine } from './payroll-bonus-release-paid-mark';
-import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
+import {
+  recalculatePayrollRunTotalsFromSalaryLines,
+  type PayrollRunTotalsDb,
+} from './payroll-run-line-totals';
 
 export function resolveSalaryLineStatus(
   totalPayable: Decimal,
@@ -58,7 +61,10 @@ export async function syncSalaryLinePaidFromExpenseLedger(
     },
   });
 
-  await recalculatePayrollRunTotalsFromSalaryLines(prisma, salaryLine.payrollRunId);
+  await recalculatePayrollRunTotalsFromSalaryLines(
+    prisma as PayrollRunTotalsDb,
+    salaryLine.payrollRunId,
+  );
 
   if (status === 'PAID') {
     await markPayrollBonusReleasesPaidForSalaryLine(

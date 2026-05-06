@@ -10,35 +10,38 @@ export interface CrmWhereSelectOption {
 }
 
 export function useCrmMarketingWhereOptions(enabled: boolean) {
-  const [options, setOptions] = useState<CrmWhereSelectOption[]>([]);
+  const [fetchedOptions, setFetchedOptions] = useState<CrmWhereSelectOption[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!enabled) {
-      setOptions([]);
       return;
     }
     let cancelled = false;
-    setLoading(true);
-    marketingApi
-      .getCrmWhereOptions()
-      .then((rows) => {
+    void (async () => {
+      await Promise.resolve();
+      if (cancelled) return;
+      setLoading(true);
+      try {
+        const rows = await marketingApi.getCrmWhereOptions();
         if (!cancelled) {
-          setOptions(rows.map((row) => ({ value: row.channel, label: row.label })));
+          setFetchedOptions(rows.map((row) => ({ value: row.channel, label: row.label })));
         }
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) {
-          setOptions(MARKETING_CHANNELS.map((c) => ({ value: c.value, label: c.label })));
+          setFetchedOptions(MARKETING_CHANNELS.map((c) => ({ value: c.value, label: c.label })));
         }
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };
   }, [enabled]);
 
-  return { options, loading };
+  return {
+    options: enabled ? fetchedOptions : [],
+    loading: enabled && loading,
+  };
 }
