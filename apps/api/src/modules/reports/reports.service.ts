@@ -21,6 +21,7 @@ import {
   buildSensitiveReportAuditContext,
   REPORT_FINANCE_CONFIDENTIALITY,
 } from './reports-audit-context';
+import { renderReportExportFile } from './reports-export-content';
 import { hasReportSourceAccess } from './reports-permissions';
 import { findReportDefinition, getReportDefinitions } from './report-definition-registry';
 import { ReportsQueueService } from './reports-queue.service';
@@ -190,6 +191,81 @@ export class ReportsService {
     return job;
   }
 
+  async retryExportJob(
+    requestedById: string,
+    userPermissions: Record<string, string>,
+    jobId: string,
+  ) {
+    const sourceJob = await this.getOwnedExportJob(jobId, requestedById);
+    if (sourceJob.status !== 'FAILED' && sourceJob.status !== 'CANCELLED') {
+      throw new BadRequestException('Only failed or cancelled export jobs can be retried.');
+    }
+    const definition = this.getAccessibleDefinition(
+      sourceJob.reportKey,
+      sourceJob.ownerModule,
+      userPermissions,
+    );
+    this.assertExportFormatSupported(definition.supportedExports, sourceJob.format);
+    const retriedJob = await this.prisma.reportExportJob.create({
+      data: {
+        reportKey: sourceJob.reportKey,
+        reportTitle: sourceJob.reportTitle,
+        ownerModule: sourceJob.ownerModule,
+        format: sourceJob.format,
+        requestedById,
+        filters: sourceJob.filters === null ? undefined : (sourceJob.filters as InputJsonValue),
+      },
+      include: { fileAsset: true },
+    });
+    await this.auditService.log({
+      entityType: REPORT_EXPORT_AUDIT_ENTITY,
+      entityId: retriedJob.id,
+      action: 'report_export.retried',
+      userId: requestedById,
+      changes: {
+        sourceJobId: sourceJob.id,
+        format: retriedJob.format,
+        filters: retriedJob.filters ?? null,
+        driveOutput: 'pending',
+        ...buildSensitiveReportAuditContext(retriedJob.reportKey),
+      },
+    });
+    await this.reportsQueueService?.enqueueExport({ jobId: retriedJob.id, actorId: requestedById });
+    return retriedJob;
+  }
+
+  async cancelExportJob(
+    requestedById: string,
+    userPermissions: Record<string, string>,
+    jobId: string,
+  ) {
+    const job = await this.getOwnedExportJob(jobId, requestedById);
+    this.getAccessibleDefinition(job.reportKey, job.ownerModule, userPermissions);
+    if (job.status === 'CANCELLED') return job;
+    if (job.status === 'COMPLETED') {
+      throw new BadRequestException('Completed export jobs cannot be cancelled.');
+    }
+    if (job.status === 'FAILED') {
+      throw new BadRequestException('Failed export jobs cannot be cancelled.');
+    }
+    const cancelled = await this.prisma.reportExportJob.update({
+      where: { id: job.id },
+      data: {
+        status: 'CANCELLED',
+        errorMessage: null,
+      },
+      include: { fileAsset: true },
+    });
+    await this.auditService.log({
+      entityType: REPORT_EXPORT_AUDIT_ENTITY,
+      entityId: cancelled.id,
+      action: 'report_export.cancelled',
+      userId: requestedById,
+      changes: { ...buildSensitiveReportAuditContext(cancelled.reportKey) },
+    });
+    return cancelled;
+  }
+
   async createSchedule(
     ownerId: string,
     userPermissions: Record<string, string>,
@@ -280,6 +356,12 @@ export class ReportsService {
   async completeExportJobWithDriveFile(jobId: string, fileAssetId: string, actorId: string) {
     const file = await this.prisma.fileAsset.findUnique({ where: { id: fileAssetId } });
     if (!file) throw new NotFoundException('Drive output file was not found.');
+    const current = await this.prisma.reportExportJob.findUnique({
+      where: { id: jobId },
+      include: { fileAsset: true },
+    });
+    if (!current) throw new NotFoundException('Report export job not found.');
+    if (current.status === 'CANCELLED') return current;
 
     const job = await this.prisma.reportExportJob.update({
       where: { id: jobId },
@@ -304,11 +386,12 @@ export class ReportsService {
   }
 
   async processExportJob(jobId: string, actorId: string) {
-    const job = await this.prisma.reportExportJob.findUnique({ where: { id: jobId } });
+    const job = await this.prisma.reportExportJob.findUnique({
+      where: { id: jobId },
+      include: { fileAsset: true },
+    });
     if (!job) throw new NotFoundException('Report export job not found.');
-    if (job.format !== 'CSV') {
-      return this.failExportJob(job.id, actorId, 'Only CSV export writing is implemented.');
-    }
+    if (job.status === 'CANCELLED') return job;
 
     await this.prisma.reportExportJob.update({
       where: { id: job.id },
@@ -317,22 +400,22 @@ export class ReportsService {
 
     try {
       const payload = await this.getReportPayload(job.reportKey, job.ownerModule, job.filters);
-      const csv = toCsvRows(payload);
-      const file = await this.driveService.createGeneratedFileAsset({
-        displayName: buildExportFileName(job.reportKey, job.id),
-        fileType: 'SPREADSHEET',
+      const exportFile = await renderReportExportFile(job.format, payload);
+      const driveFile = await this.driveService.createGeneratedFileAsset({
+        displayName: buildExportFileName(job.reportKey, job.id, exportFile.extension),
+        fileType: exportFile.fileType,
         purpose: 'OTHER',
         sourceModule: 'REPORTS',
         createdById: actorId,
         visibility: 'RESTRICTED',
         confidentiality: REPORT_FINANCE_CONFIDENTIALITY,
-        storageKey: buildExportStorageKey(job.reportKey, job.id),
-        content: csv,
-        contentType: 'text/csv; charset=utf-8',
-        checksum: createHash('sha256').update(csv).digest('hex'),
+        storageKey: buildExportStorageKey(job.reportKey, job.id, exportFile.extension),
+        content: exportFile.content,
+        contentType: exportFile.contentType,
+        checksum: createHash('sha256').update(exportFile.content).digest('hex'),
         link: { entityType: REPORT_EXPORT_AUDIT_ENTITY, entityId: job.id, linkType: 'OTHER' },
       });
-      return this.completeExportJobWithDriveFile(job.id, file.id, actorId);
+      return this.completeExportJobWithDriveFile(job.id, driveFile.id, actorId);
     } catch (caught) {
       return this.failExportJob(job.id, actorId, errorMessage(caught));
     }
@@ -355,6 +438,17 @@ export class ReportsService {
     const definition = findReportDefinition(reportKey, ownerModule);
     if (!definition) throw new NotFoundException('Report definition was not found.');
     return definition;
+  }
+
+  private async getOwnedExportJob(jobId: string, requestedById: string) {
+    const job = await this.prisma.reportExportJob.findUnique({
+      where: { id: jobId },
+      include: { fileAsset: true },
+    });
+    if (!job || job.requestedById !== requestedById) {
+      throw new NotFoundException('Report export job was not found.');
+    }
+    return job;
   }
 
   private getAccessibleDefinition(
@@ -452,34 +546,12 @@ function stringField(source: object, key: string): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
-function toCsvRows(payload: unknown): string {
-  const rows = [['path', 'value'], ...flattenPayload(payload)];
-  return rows.map((row) => row.map(escapeCsvCell).join(',')).join('\n') + '\n';
+function buildExportFileName(reportKey: string, jobId: string, extension: string): string {
+  return `${dateStamp()}__report-export__${sanitizeSegment(reportKey)}__${jobId}.${extension}`;
 }
 
-function flattenPayload(value: unknown, path = 'report'): string[][] {
-  if (value === null || typeof value !== 'object') return [[path, scalarValue(value)]];
-  if (Array.isArray(value)) return [[path, JSON.stringify(value)]];
-  return Object.entries(value).flatMap(([key, item]) => flattenPayload(item, `${path}.${key}`));
-}
-
-function scalarValue(value: unknown): string {
-  if (value === null || value === undefined) return '';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  return JSON.stringify(value);
-}
-
-function escapeCsvCell(value: string): string {
-  return `"${value.replaceAll('"', '""')}"`;
-}
-
-function buildExportFileName(reportKey: string, jobId: string): string {
-  return `${dateStamp()}__report-export__${sanitizeSegment(reportKey)}__${jobId}.csv`;
-}
-
-function buildExportStorageKey(reportKey: string, jobId: string): string {
-  return `${R2_DRIVE_PREFIX}_exports/reports/${buildExportFileName(reportKey, jobId)}`;
+function buildExportStorageKey(reportKey: string, jobId: string, extension: string): string {
+  return `${R2_DRIVE_PREFIX}_exports/reports/${buildExportFileName(reportKey, jobId, extension)}`;
 }
 
 function dateStamp(): string {

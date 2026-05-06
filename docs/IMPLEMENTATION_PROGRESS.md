@@ -137,7 +137,7 @@
 
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
 - 🟢 [x] Reports: централизованные permissions на источники — M → API `reports` теперь permission-aware: `GET /api/reports/definitions|schedules|saved-views|data-quality-warnings` фильтруют выдачу по `requiredPermissions` каждого `ReportDefinition`; `POST /api/reports/export-jobs|schedules|saved-views` отклоняются с `403`, если нет source-module доступа; `ReportsController` защищён `DASHBOARDS.VIEW`; helper `reports-permissions.ts`
-- Reports: XLSX/PDF экспорт, retry/cancel, история доставки расписаний — L
+- 🟢 [x] Reports: XLSX/PDF экспорт, retry/cancel, история **экспортов** (без каналов доставки) — L → API: `POST /api/reports/export-jobs/:jobId/retry|cancel`; worker поддерживает `CSV/XLSX/PDF` и не пишет файл для `CANCELLED`; web `/reports` экспорт по форматам `CSV/XLSX/PDF` + кнопки retry/cancel в Export History; Drive history остаётся source-of-truth, каналы доставки вынесены в 2D
 - Reports: data-quality предупреждения из Marketing и кросс-модульных проекций — M
 - Marketing: глубина Board / Attribution Review / popup polish из cleanup — M
 - Marketing: CPL/ROI виджеты только при наличии spend (без фейка) — S
@@ -221,6 +221,7 @@
 - Documents: избранное и расширенная RBAC секций при необходимости канона — M
 - Drive: дедупликация/квоты если канон потребует — M
 - i18n: глубина UI по `20-i18n` если вошло в scope продукта — L
+- Reports: каналы доставки расписаний и delivery-attempt history по получателям — после явного решения о реальной рассылке — M
 
 ### Блок 2P — Pending / временно заблокировано
 

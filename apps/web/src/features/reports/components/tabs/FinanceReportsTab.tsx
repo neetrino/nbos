@@ -1,7 +1,7 @@
 'use client';
 
 import { Banknote, ChartNoAxesCombined, CircleDollarSign, TrendingUp } from 'lucide-react';
-import type { ReportDefinition } from '@/lib/api/reports';
+import type { ReportDefinition, ReportExportFormat } from '@/lib/api/reports';
 import type { LazyReportTabState } from '../../hooks/useLazyReportTabData';
 import type { FinanceReportsTabData } from '../../hooks/useReportTabData';
 import { count, money, numberValue, percent } from '../../report-number-format';
@@ -14,14 +14,14 @@ import { ReportTabState } from './ReportTabState';
 interface FinanceReportsTabProps {
   definitions: ReportDefinition[];
   state: LazyReportTabState<FinanceReportsTabData>;
-  creatingExportKey: string | null;
-  onExport: (definition: ReportDefinition) => void;
+  creatingExportToken: string | null;
+  onExport: (definition: ReportDefinition, format: ReportExportFormat) => void;
 }
 
 export function FinanceReportsTab({
   definitions,
   state,
-  creatingExportKey,
+  creatingExportToken,
   onExport,
 }: FinanceReportsTabProps) {
   const data = state.data;
@@ -62,7 +62,7 @@ export function FinanceReportsTab({
       ) : null}
       <ReportActions
         definitions={definitions}
-        creatingExportKey={creatingExportKey}
+        creatingExportToken={creatingExportToken}
         onExport={onExport}
       />
     </div>

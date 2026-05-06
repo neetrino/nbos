@@ -6,6 +6,7 @@ import {
   reportsApi,
   type ReportDataQualityWarning,
   type ReportDefinition,
+  type ReportExportFormat,
   type ReportExportJob,
   type ReportSchedule,
   type SavedReportView,
@@ -45,7 +46,7 @@ export function ReportsCenter() {
   const [filters, setFilters] = useState<ReportFilterState>(buildInitialReportFilters());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [creatingExportKey, setCreatingExportKey] = useState<string | null>(null);
+  const [creatingExportToken, setCreatingExportToken] = useState<string | null>(null);
 
   const exportFilters = useMemo(() => buildReportFilters(filters), [filters]);
   const finance = useFinanceReportsTabData(view === 'FINANCE', filters);
@@ -80,14 +81,14 @@ export function ReportsCenter() {
     [definitions, view, search],
   );
 
-  async function requestExport(definition: ReportDefinition) {
-    setCreatingExportKey(definition.key);
+  async function requestExport(definition: ReportDefinition, format: ReportExportFormat) {
+    setCreatingExportToken(`${definition.key}:${format}`);
     setError(null);
     try {
       const job = await reportsApi.createExportJob({
         reportKey: definition.key,
         ownerModule: definition.ownerModule,
-        format: 'CSV',
+        format,
         filters: exportFilters,
       });
       setExportJobs((current) => [job, ...current.filter((item) => item.id !== job.id)]);
@@ -95,7 +96,7 @@ export function ReportsCenter() {
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Report export job could not be requested.'));
     } finally {
-      setCreatingExportKey(null);
+      setCreatingExportToken(null);
     }
   }
 
@@ -127,43 +128,48 @@ export function ReportsCenter() {
           onRefresh={() => void load()}
         />
       ) : view === 'EXPORTS' ? (
-        <ReportExportHistory jobs={exportJobs} onRefresh={() => void load()} />
+        <ReportExportHistory
+          jobs={exportJobs}
+          onRefresh={() => void load()}
+          onRetry={(jobId) => void retryExport(jobId)}
+          onCancel={(jobId) => void cancelExport(jobId)}
+        />
       ) : view === 'QUALITY' ? (
         <ReportsDataQualityPanel warnings={warnings} onRefresh={() => void load()} />
       ) : view === 'FINANCE' ? (
         <FinanceReportsTab
           definitions={visibleDefinitions}
           state={finance}
-          creatingExportKey={creatingExportKey}
-          onExport={(definition) => void requestExport(definition)}
+          creatingExportToken={creatingExportToken}
+          onExport={(definition, format) => void requestExport(definition, format)}
         />
       ) : view === 'SALES' ? (
         <SalesReportsTab
           definitions={visibleDefinitions}
           state={sales}
-          creatingExportKey={creatingExportKey}
-          onExport={(definition) => void requestExport(definition)}
+          creatingExportToken={creatingExportToken}
+          onExport={(definition, format) => void requestExport(definition, format)}
         />
       ) : view === 'MARKETING' ? (
         <MarketingReportsTab
           definitions={visibleDefinitions}
           state={marketing}
-          creatingExportKey={creatingExportKey}
-          onExport={(definition) => void requestExport(definition)}
+          creatingExportToken={creatingExportToken}
+          onExport={(definition, format) => void requestExport(definition, format)}
         />
       ) : view === 'PROJECTS' ? (
         <ProjectsReportsTab
           definitions={visibleDefinitions}
           state={projects}
-          creatingExportKey={creatingExportKey}
-          onExport={(definition) => void requestExport(definition)}
+          creatingExportToken={creatingExportToken}
+          onExport={(definition, format) => void requestExport(definition, format)}
         />
       ) : (
         <SpecialistsReportsTab
           definitions={visibleDefinitions}
           state={specialists}
-          creatingExportKey={creatingExportKey}
-          onExport={(definition) => void requestExport(definition)}
+          creatingExportToken={creatingExportToken}
+          onExport={(definition, format) => void requestExport(definition, format)}
         />
       )}
     </div>
@@ -176,6 +182,30 @@ export function ReportsCenter() {
     if (viewId === 'PROJECTS') return projects.refresh;
     if (viewId === 'SPECIALISTS') return specialists.refresh;
     return null;
+  }
+
+  async function retryExport(jobId: string) {
+    setError(null);
+    try {
+      const retried = await reportsApi.retryExportJob(jobId);
+      setExportJobs((current) => [retried, ...current.filter((item) => item.id !== retried.id)]);
+      setView('EXPORTS');
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Report export retry could not be requested.'));
+    }
+  }
+
+  async function cancelExport(jobId: string) {
+    setError(null);
+    try {
+      const cancelled = await reportsApi.cancelExportJob(jobId);
+      setExportJobs((current) =>
+        current.map((item) => (item.id === cancelled.id ? cancelled : item)),
+      );
+      setView('EXPORTS');
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Report export cancel could not be completed.'));
+    }
   }
 }
 

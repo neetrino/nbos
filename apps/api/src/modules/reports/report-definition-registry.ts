@@ -2,6 +2,7 @@ import { FINANCE_REPORT_DEFINITIONS } from '../finance/reports/finance-report-de
 import type { ReportDefinition } from './reports.types';
 
 const STANDARD_FILTERS = ['dateFrom', 'dateTo', 'asOf'];
+const STANDARD_EXPORTS = ['CSV', 'XLSX', 'PDF'] as const;
 const FINANCE_PERMISSION = [{ module: 'FINANCE_INVOICES', action: 'VIEW' }];
 
 const CROSS_MODULE_REPORT_DEFINITIONS: ReportDefinition[] = [
@@ -13,7 +14,7 @@ const CROSS_MODULE_REPORT_DEFINITIONS: ReportDefinition[] = [
     description: 'Lead volume, deal funnel, won deals and pipeline value for the selected period.',
     audience: ['CEO', 'Head of Sales', 'Seller'],
     supportedFilters: [...STANDARD_FILTERS, 'seller', 'source'],
-    supportedExports: ['CSV'],
+    supportedExports: [...STANDARD_EXPORTS],
     visualizations: ['kpi_cards', 'funnel_bars', 'source_distribution'],
     sourceEndpoints: ['/api/crm/leads/stats', '/api/crm/deals/stats'],
     drillDownHrefs: ['/crm/leads', '/crm/deals'],
@@ -29,7 +30,7 @@ const CROSS_MODULE_REPORT_DEFINITIONS: ReportDefinition[] = [
     description: 'Marketing spend readiness, attributed revenue, ROAS and attribution warnings.',
     audience: ['CEO', 'Head of Marketing', 'Marketing'],
     supportedFilters: [...STANDARD_FILTERS, 'channel', 'account'],
-    supportedExports: ['CSV'],
+    supportedExports: [...STANDARD_EXPORTS],
     visualizations: ['kpi_cards', 'efficiency_table', 'data_quality'],
     sourceEndpoints: ['/api/marketing/dashboard'],
     drillDownHrefs: ['/marketing/dashboard', '/marketing/attribution'],
@@ -45,7 +46,7 @@ const CROSS_MODULE_REPORT_DEFINITIONS: ReportDefinition[] = [
     description: 'Product and extension delivery status across the workspace.',
     audience: ['CEO', 'Head of Delivery', 'PM'],
     supportedFilters: [...STANDARD_FILTERS, 'project', 'pm'],
-    supportedExports: ['CSV'],
+    supportedExports: [...STANDARD_EXPORTS],
     visualizations: ['kpi_cards', 'status_bars', 'risk_table'],
     sourceEndpoints: ['/api/projects/products/stats', '/api/projects/extensions/stats'],
     drillDownHrefs: ['/projects'],
@@ -63,7 +64,7 @@ const CROSS_MODULE_REPORT_DEFINITIONS: ReportDefinition[] = [
     description: 'Task load, priority mix and KPI-ready workload signals by specialist scope.',
     audience: ['CEO', 'Head of Delivery', 'PM', 'Specialist'],
     supportedFilters: [...STANDARD_FILTERS, 'department', 'specialist'],
-    supportedExports: ['CSV'],
+    supportedExports: [...STANDARD_EXPORTS],
     visualizations: ['kpi_cards', 'priority_bars', 'status_table'],
     sourceEndpoints: ['/api/tasks/stats', '/api/my-company/kpi'],
     drillDownHrefs: ['/tasks', '/my-company/kpi'],
@@ -102,7 +103,7 @@ function toFinanceReportDefinition(
     description: definition.description,
     audience: definition.audience,
     supportedFilters: STANDARD_FILTERS,
-    supportedExports: ['CSV'],
+    supportedExports: [...STANDARD_EXPORTS],
     visualizations: ['kpi_cards', 'finance_snapshot', 'detail_table'],
     sourceEndpoints: definition.sourceEndpoints,
     drillDownHrefs: definition.drillDownHrefs,

@@ -143,6 +143,16 @@ export const reportsApi = {
     return resp.data;
   },
 
+  async retryExportJob(jobId: string): Promise<ReportExportJob> {
+    const resp = await api.post<ReportExportJob>(`/api/reports/export-jobs/${jobId}/retry`);
+    return resp.data;
+  },
+
+  async cancelExportJob(jobId: string): Promise<ReportExportJob> {
+    const resp = await api.post<ReportExportJob>(`/api/reports/export-jobs/${jobId}/cancel`);
+    return resp.data;
+  },
+
   async listSchedules(): Promise<ReportSchedule[]> {
     const resp = await api.get<ReportSchedule[]>('/api/reports/schedules');
     return resp.data;

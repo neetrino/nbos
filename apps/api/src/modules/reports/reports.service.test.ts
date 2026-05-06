@@ -30,6 +30,13 @@ const QUEUED_JOB = {
   filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
 };
 
+const FAILED_JOB = {
+  ...QUEUED_JOB,
+  id: 'job-failed',
+  status: 'FAILED',
+  errorMessage: 'Worker failed',
+};
+
 const FINANCE_PERMISSIONS = {
   FINANCE_INVOICES_VIEW: 'ALL',
 };
@@ -130,6 +137,32 @@ describe('ReportsService', () => {
     );
   });
 
+  it('processes a queued XLSX export into a Drive file', async () => {
+    prisma.reportExportJob.findUnique.mockResolvedValueOnce({ ...QUEUED_JOB, format: 'XLSX' });
+
+    await service.processExportJob('job-1', 'employee-1');
+
+    expect(drive.createGeneratedFileAsset).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fileType: 'SPREADSHEET',
+        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }),
+    );
+  });
+
+  it('processes a queued PDF export into a Drive file', async () => {
+    prisma.reportExportJob.findUnique.mockResolvedValueOnce({ ...QUEUED_JOB, format: 'PDF' });
+
+    await service.processExportJob('job-1', 'employee-1');
+
+    expect(drive.createGeneratedFileAsset).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fileType: 'DOCUMENT',
+        contentType: 'application/pdf',
+      }),
+    );
+  });
+
   it('rejects mismatched report owner modules', async () => {
     await expect(
       service.createExportJob(
@@ -146,7 +179,7 @@ describe('ReportsService', () => {
     ).rejects.toThrow(NotFoundException);
   });
 
-  it('rejects formats that the report definition does not support', async () => {
+  it('rejects unknown export formats', async () => {
     await expect(
       service.createExportJob(
         'employee-1',
@@ -156,7 +189,7 @@ describe('ReportsService', () => {
         {
           reportKey: 'marketing-source-performance',
           ownerModule: 'MARKETING',
-          format: 'PDF',
+          format: 'DOCX',
         },
       ),
     ).rejects.toThrow(BadRequestException);
@@ -304,5 +337,43 @@ describe('ReportsService', () => {
         },
       ),
     ).rejects.toThrow('source-module permissions');
+  });
+
+  it('retries a failed export job by creating a new queued job', async () => {
+    prisma.reportExportJob.findUnique.mockResolvedValueOnce(FAILED_JOB);
+    prisma.reportExportJob.create.mockResolvedValueOnce({ ...QUEUED_JOB, id: 'job-retry-1' });
+
+    const retried = await service.retryExportJob('employee-1', FINANCE_PERMISSIONS, 'job-failed');
+
+    expect(retried.id).toBe('job-retry-1');
+    expect(prisma.reportExportJob.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          reportKey: FAILED_JOB.reportKey,
+          ownerModule: FAILED_JOB.ownerModule,
+          format: FAILED_JOB.format,
+          requestedById: 'employee-1',
+        }),
+      }),
+    );
+    expect(queue.enqueueExport).toHaveBeenCalledWith({
+      jobId: 'job-retry-1',
+      actorId: 'employee-1',
+    });
+  });
+
+  it('cancels a queued export job', async () => {
+    prisma.reportExportJob.findUnique.mockResolvedValueOnce(QUEUED_JOB);
+    prisma.reportExportJob.update.mockResolvedValueOnce({ ...QUEUED_JOB, status: 'CANCELLED' });
+
+    const cancelled = await service.cancelExportJob('employee-1', FINANCE_PERMISSIONS, 'job-1');
+
+    expect(cancelled.status).toBe('CANCELLED');
+    expect(prisma.reportExportJob.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'job-1' },
+        data: expect.objectContaining({ status: 'CANCELLED' }),
+      }),
+    );
   });
 });

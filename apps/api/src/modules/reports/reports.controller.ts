@@ -49,6 +49,26 @@ export class ReportsController {
     return this.reportsService.createExportJob(user.id, user.permissions, body);
   }
 
+  @Post('export-jobs/:jobId/retry')
+  @ApiOperation({
+    summary: 'Retry a failed or cancelled export job',
+    description:
+      'Creates a new queued export job from the same report definition and filters for the current user.',
+  })
+  retryExportJob(@CurrentUser() user: CurrentUserPayload, @Param('jobId') jobId: string) {
+    return this.reportsService.retryExportJob(user.id, user.permissions, jobId);
+  }
+
+  @Post('export-jobs/:jobId/cancel')
+  @ApiOperation({
+    summary: 'Cancel a queued or processing export job',
+    description:
+      'Marks the export as cancelled. Queue workers skip cancelled jobs before writing Drive output.',
+  })
+  cancelExportJob(@CurrentUser() user: CurrentUserPayload, @Param('jobId') jobId: string) {
+    return this.reportsService.cancelExportJob(user.id, user.permissions, jobId);
+  }
+
   @Get('schedules')
   @ApiOperation({
     summary: 'List current user scheduled reports',

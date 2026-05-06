@@ -121,6 +121,7 @@ Later depth, not required for current MVP:
 - delivery attempts and recipient channel integration;
 - link last run to real export job execution.
 - richer run history beyond `lastRunAt` / `lastExportJobId`.
+- product decision (2026-05-06): keep export+history path active; recipient delivery channels stay deferred until real sending is required.
 
 Note: Bitrix-like recurring task templates belong to the Tasks module, not Reports. Reports scheduled exports use the simpler recurrence above.
 
@@ -135,16 +136,17 @@ Shipped foundation:
 - audit event when an export job is requested;
 - `/reports` export history and CSV export request action over Finance-owned definitions.
 - real CSV writer over Finance-owned aggregate services, stored as Drive/R2 `FileAsset`;
+- XLSX and PDF writers over the same report payload path, saved as Drive/R2 `FileAsset`;
 - failure state and audit event when export writing fails.
 - BullMQ export queue/worker wiring when `REDIS_URL` is configured; HTTP requests no longer write export files inline.
 - finance-sensitive audit context is explicit on export request/completion/failure and scheduled export queue events.
+- export job management actions: retry (`POST /api/reports/export-jobs/:jobId/retry`) and cancel (`.../:jobId/cancel`) with status guards; cancelled jobs are skipped by worker completion path.
 
 Later depth, not required for current MVP:
 
 - approved retry/backoff and queue retention policy;
-- XLSX/PDF generators;
-- retry/cancellation flow;
-- source-permission centralization before cross-module exports.
+- recipient delivery channels and per-recipient delivery attempts;
+- source-permission-aware export/schedule warnings in UI.
 
 ### B6. Data quality warnings are missing
 

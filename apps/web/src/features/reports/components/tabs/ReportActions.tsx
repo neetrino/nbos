@@ -3,15 +3,15 @@
 import Link from 'next/link';
 import { ArrowUpRight, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { ReportDefinition } from '@/lib/api/reports';
+import type { ReportDefinition, ReportExportFormat } from '@/lib/api/reports';
 
 interface ReportActionsProps {
   definitions: ReportDefinition[];
-  creatingExportKey: string | null;
-  onExport: (definition: ReportDefinition) => void;
+  creatingExportToken: string | null;
+  onExport: (definition: ReportDefinition, format: ReportExportFormat) => void;
 }
 
-export function ReportActions({ definitions, creatingExportKey, onExport }: ReportActionsProps) {
+export function ReportActions({ definitions, creatingExportToken, onExport }: ReportActionsProps) {
   if (definitions.length === 0) return null;
 
   return (
@@ -29,17 +29,24 @@ export function ReportActions({ definitions, creatingExportKey, onExport }: Repo
           >
             <p className="min-w-0 truncate text-sm font-medium">{definition.title}</p>
             <div className="flex shrink-0 items-center gap-1.5">
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                disabled={creatingExportKey === definition.key}
-                onClick={() => onExport(definition)}
-                className="h-7 px-2 text-xs"
-              >
-                <Download className="mr-1 h-3.5 w-3.5" />
-                {creatingExportKey === definition.key ? '...' : 'CSV'}
-              </Button>
+              {definition.supportedExports.map((format) => {
+                const token = `${definition.key}:${format}`;
+                const loading = creatingExportToken === token;
+                return (
+                  <Button
+                    key={`${definition.key}-${format}`}
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    disabled={creatingExportToken !== null}
+                    onClick={() => onExport(definition, format)}
+                    className="h-7 px-2 text-xs"
+                  >
+                    <Download className="mr-1 h-3.5 w-3.5" />
+                    {loading ? '...' : format}
+                  </Button>
+                );
+              })}
               {definition.drillDownHrefs.slice(0, 2).map((href) => (
                 <Link
                   key={href}
