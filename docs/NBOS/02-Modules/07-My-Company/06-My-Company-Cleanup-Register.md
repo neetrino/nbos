@@ -197,7 +197,7 @@ Phase 1 runtime now surfaces current departments, assignment coverage and permis
 
 ### C6. Compensation UI is missing
 
-Статус: `MISSING UI`
+Статус: `FOUNDATION VISIBLE / PARTIAL DEPTH`
 
 New canon requires:
 
@@ -209,9 +209,11 @@ New canon requires:
 - policy audit view;
 - validation warnings.
 
+**Done (2026-05-06, foundation slice):** runtime `my-company/compensation` больше не placeholder — есть live summary по сотрудникам/зарплатам, покрытие sales bonus policies и рабочие переходы в Team / Sales Bonus Policies / Payroll.
+
 ### C7. SOP runtime model is missing
 
-Статус: `MISSING CODE`
+Статус: `FOUNDATION VISIBLE / RUNTIME MODEL STILL MISSING`
 
 New canon requires:
 
@@ -227,6 +229,9 @@ New canon requires:
 - change requests.
 
 Current docs/processes may still treat SOP as static markdown or mix it with task templates. Runtime must separate SOP Library from Task Blueprints and Automation Rules.
+
+**Done (2026-05-06, foundation slice):** runtime `my-company/sop` больше не placeholder — библиотека SOP на live Documents search (`sop`), review queue по дате обновления и видимость section coverage.  
+**Still missing for full canon:** отдельные сущности `Process Template`/`Process Run` и их versioned persistence.
 
 ---
 
