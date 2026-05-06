@@ -1,5 +1,7 @@
 import type {
   TechnicalAssetType,
+  TechnicalBackupStatus,
+  TechnicalDeployStatus,
   TechnicalEnvironmentKind,
   TechnicalProductProfileResponse,
 } from '@/lib/api/technical';
@@ -22,6 +24,30 @@ export function emptyAssetDraft() {
 
 export function emptyEnvironmentDraft() {
   return { name: 'Production', kind: 'PRODUCTION' as TechnicalEnvironmentKind, url: '' };
+}
+
+export function emptyDeployDraft() {
+  return {
+    status: 'SUCCESS' as TechnicalDeployStatus,
+    environment: 'PRODUCTION' as TechnicalEnvironmentKind,
+    version: '',
+    notes: '',
+  };
+}
+
+export function backupPolicyDraftFromData(data: TechnicalProductProfileResponse) {
+  const payload = data.backupPolicy?.payload;
+  return {
+    backupStatus: (payload?.backupStatus ??
+      data.profile.backupStatus ??
+      'UNKNOWN') as TechnicalBackupStatus,
+    policyName: payload?.policyName ?? '',
+    rpoHours: payload?.rpoHours != null ? String(payload.rpoHours) : '',
+    rtoHours: payload?.rtoHours != null ? String(payload.rtoHours) : '',
+    restoreTestCadenceDays:
+      payload?.restoreTestCadenceDays != null ? String(payload.restoreTestCadenceDays) : '',
+    notes: payload?.notes ?? '',
+  };
 }
 
 export function technicalAssetItems(data: TechnicalProductProfileResponse) {

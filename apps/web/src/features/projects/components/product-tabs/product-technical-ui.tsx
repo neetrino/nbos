@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type {
   TechnicalAssetType,
+  TechnicalBackupStatus,
+  TechnicalDeployStatus,
   TechnicalEnvironmentKind,
   TechnicalProductProfileResponse,
 } from '@/lib/api/technical';
@@ -26,6 +28,21 @@ export const ENV_KINDS: TechnicalEnvironmentKind[] = [
   'LEGACY',
 ];
 
+export const DEPLOY_STATUSES: TechnicalDeployStatus[] = [
+  'SUCCESS',
+  'FAILED',
+  'ROLLED_BACK',
+  'UNKNOWN',
+];
+
+export const BACKUP_STATUSES: TechnicalBackupStatus[] = [
+  'HEALTHY',
+  'WARNING',
+  'MISSING',
+  'NOT_REQUIRED',
+  'UNKNOWN',
+];
+
 export type TechnicalProfileDraft = {
   productionUrl: string;
   repositoryUrl: string;
@@ -42,6 +59,22 @@ export type TechnicalEnvironmentDraft = {
   name: string;
   kind: TechnicalEnvironmentKind;
   url: string;
+};
+
+export type TechnicalDeployDraft = {
+  status: TechnicalDeployStatus;
+  environment: TechnicalEnvironmentKind;
+  version: string;
+  notes: string;
+};
+
+export type TechnicalBackupPolicyDraft = {
+  backupStatus: TechnicalBackupStatus;
+  policyName: string;
+  rpoHours: string;
+  rtoHours: string;
+  restoreTestCadenceDays: string;
+  notes: string;
 };
 
 export function ReadinessCard({ data }: { data: TechnicalProductProfileResponse }) {
@@ -221,6 +254,106 @@ export function ListCard({
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+export function DeployAndBackupCard({
+  deployDraft,
+  backupDraft,
+  recentDeployLabel,
+  saving,
+  onDeployChange,
+  onBackupChange,
+  onRecordDeploy,
+  onSaveBackupPolicy,
+}: {
+  deployDraft: TechnicalDeployDraft;
+  backupDraft: TechnicalBackupPolicyDraft;
+  recentDeployLabel: string;
+  saving: boolean;
+  onDeployChange: (draft: TechnicalDeployDraft) => void;
+  onBackupChange: (draft: TechnicalBackupPolicyDraft) => void;
+  onRecordDeploy: () => void;
+  onSaveBackupPolicy: () => void;
+}) {
+  return (
+    <section className="bg-card border-border rounded-xl border p-5">
+      <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+        <Server size={16} /> Deploy and Backup
+      </h3>
+      <div className="space-y-3">
+        <p className="text-muted-foreground text-xs">Recent deploy: {recentDeployLabel}</p>
+        <SelectInput
+          label="Deploy status"
+          value={deployDraft.status}
+          options={DEPLOY_STATUSES}
+          onChange={(status) =>
+            onDeployChange({ ...deployDraft, status: status as TechnicalDeployStatus })
+          }
+        />
+        <SelectInput
+          label="Environment"
+          value={deployDraft.environment}
+          options={ENV_KINDS}
+          onChange={(environment) =>
+            onDeployChange({ ...deployDraft, environment: environment as TechnicalEnvironmentKind })
+          }
+        />
+        <TextInput
+          label="Version"
+          value={deployDraft.version}
+          onChange={(version) => onDeployChange({ ...deployDraft, version })}
+        />
+        <TextInput
+          label="Deploy notes"
+          value={deployDraft.notes}
+          onChange={(notes) => onDeployChange({ ...deployDraft, notes })}
+        />
+        <Button onClick={onRecordDeploy} disabled={saving} size="sm" variant="outline">
+          Record Deploy
+        </Button>
+      </div>
+      <div className="border-border mt-4 space-y-3 border-t pt-4">
+        <SelectInput
+          label="Backup status"
+          value={backupDraft.backupStatus}
+          options={BACKUP_STATUSES}
+          onChange={(backupStatus) =>
+            onBackupChange({ ...backupDraft, backupStatus: backupStatus as TechnicalBackupStatus })
+          }
+        />
+        <TextInput
+          label="Policy name"
+          value={backupDraft.policyName}
+          onChange={(policyName) => onBackupChange({ ...backupDraft, policyName })}
+        />
+        <TextInput
+          label="RPO hours"
+          value={backupDraft.rpoHours}
+          onChange={(rpoHours) => onBackupChange({ ...backupDraft, rpoHours })}
+        />
+        <TextInput
+          label="RTO hours"
+          value={backupDraft.rtoHours}
+          onChange={(rtoHours) => onBackupChange({ ...backupDraft, rtoHours })}
+        />
+        <TextInput
+          label="Restore cadence days"
+          value={backupDraft.restoreTestCadenceDays}
+          onChange={(restoreTestCadenceDays) =>
+            onBackupChange({ ...backupDraft, restoreTestCadenceDays })
+          }
+        />
+        <TextInput
+          label="Backup notes"
+          value={backupDraft.notes}
+          onChange={(notes) => onBackupChange({ ...backupDraft, notes })}
+        />
+        <Button onClick={onSaveBackupPolicy} disabled={saving} size="sm">
+          Save Backup Policy
+        </Button>
+      </div>
     </section>
   );
 }

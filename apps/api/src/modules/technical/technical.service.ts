@@ -6,6 +6,8 @@ import { buildTechnicalReadiness } from './technical-readiness';
 import type {
   CreateTechnicalAssetDto,
   CreateTechnicalEnvironmentDto,
+  RecordTechnicalDeployDto,
+  UpdateTechnicalBackupPolicyDto,
   UpdateTechnicalAssetDto,
   UpdateTechnicalEnvironmentDto,
   UpdateTechnicalProfileDto,
@@ -21,7 +23,14 @@ export class TechnicalService {
   async getProductProfile(productId: string) {
     const product = await this.getProductContext(productId);
     const profile = await this.ensureProfile(product.id, product.projectId);
-    const [assets, environments, incidentSummary, recentIncidents] = await Promise.all([
+    const [
+      assets,
+      environments,
+      incidentSummary,
+      recentIncidents,
+      deployAuditRows,
+      backupPolicyRow,
+    ] = await Promise.all([
       this.prisma.technicalAsset.findMany({ where: { productId }, orderBy: { createdAt: 'desc' } }),
       this.prisma.technicalEnvironment.findMany({
         where: { productId },
@@ -53,6 +62,23 @@ export class TechnicalService {
           assignedTo: true,
         },
       }),
+      this.prisma.auditLog.findMany({
+        where: {
+          entityType: 'TechnicalInfrastructure',
+          entityId: profile.id,
+          action: 'technical.deploy_recorded',
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      this.prisma.auditLog.findFirst({
+        where: {
+          entityType: 'TechnicalInfrastructure',
+          entityId: profile.id,
+          action: 'technical.backup_policy_updated',
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
     ]);
     const openIncidentCount = incidentSummary.reduce((acc, row) => acc + row._count, 0);
     const criticalIncidentCount = incidentSummary
@@ -64,6 +90,19 @@ export class TechnicalService {
       environments.filter((env) => !env.envCredentialId).length;
     const warningAssetCount = assets.filter((asset) => asset.status === 'WARNING').length;
     const criticalAssetCount = assets.filter((asset) => asset.status === 'BROKEN').length;
+    const deployRecords = deployAuditRows.map((row) => ({
+      id: row.id,
+      createdAt: row.createdAt,
+      createdById: row.userId,
+      payload: row.changes ?? {},
+    }));
+    const backupPolicy = backupPolicyRow
+      ? {
+          updatedAt: backupPolicyRow.createdAt,
+          updatedById: backupPolicyRow.userId,
+          payload: backupPolicyRow.changes ?? {},
+        }
+      : null;
     return {
       product,
       profile,
@@ -82,6 +121,10 @@ export class TechnicalService {
         missingOwnerCount,
         missingCredentialLinkCount,
       },
+      deployment: {
+        records: deployRecords,
+      },
+      backupPolicy,
       readiness: buildTechnicalReadiness({ profile, assets, environments }),
     };
   }
@@ -181,6 +224,69 @@ export class TechnicalService {
       data: buildEnvironmentPatch(body),
     });
     await this.log(actorId, env.projectId, env.id, 'technical.environment_updated');
+    return this.getProductProfile(productId);
+  }
+
+  async recordDeploy(productId: string, actorId: string, body: RecordTechnicalDeployDto) {
+    const product = await this.getProductContext(productId);
+    const profile = await this.ensureProfile(product.id, product.projectId);
+    const status = body.status ?? 'SUCCESS';
+    const deployedAt = body.deployedAt ? new Date(body.deployedAt) : new Date();
+
+    await this.prisma.productTechnicalProfile.update({
+      where: { productId },
+      data: {
+        lastDeployAt: deployedAt,
+        lastDeployStatus: status,
+      },
+    });
+
+    await this.audit.log({
+      entityType: 'TechnicalInfrastructure',
+      entityId: profile.id,
+      action: 'technical.deploy_recorded',
+      userId: actorId,
+      projectId: product.projectId,
+      changes: {
+        status,
+        environment: body.environment ?? null,
+        version: nullable(body.version),
+        notes: nullable(body.notes),
+        deployedAt: deployedAt.toISOString(),
+      },
+    });
+    return this.getProductProfile(productId);
+  }
+
+  async updateBackupPolicy(
+    productId: string,
+    actorId: string,
+    body: UpdateTechnicalBackupPolicyDto,
+  ) {
+    const product = await this.getProductContext(productId);
+    const profile = await this.ensureProfile(product.id, product.projectId);
+    if (body.backupStatus !== undefined) {
+      await this.prisma.productTechnicalProfile.update({
+        where: { productId },
+        data: { backupStatus: body.backupStatus },
+      });
+    }
+
+    await this.audit.log({
+      entityType: 'TechnicalInfrastructure',
+      entityId: profile.id,
+      action: 'technical.backup_policy_updated',
+      userId: actorId,
+      projectId: product.projectId,
+      changes: {
+        backupStatus: body.backupStatus ?? null,
+        policyName: nullable(body.policyName),
+        rpoHours: body.rpoHours ?? null,
+        rtoHours: body.rtoHours ?? null,
+        restoreTestCadenceDays: body.restoreTestCadenceDays ?? null,
+        notes: nullable(body.notes),
+      },
+    });
     return this.getProductProfile(productId);
   }
 
