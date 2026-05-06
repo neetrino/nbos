@@ -23,17 +23,20 @@ export class ContactsController {
   @ApiOperation({ summary: 'Get all contacts' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
+  @ApiQuery({ name: 'contactType', required: false })
   @ApiQuery({ name: 'role', required: false })
   @ApiQuery({ name: 'search', required: false })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
+    @Query('contactType') contactType?: string,
     @Query('role') role?: string,
     @Query('search') search?: string,
   ) {
     return this.contactsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
+      contactType,
       role,
       search,
     });

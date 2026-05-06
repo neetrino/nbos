@@ -202,7 +202,7 @@
 
 Текущая база есть, Phase 2 attribution foundation уже расширил обязательные source gates,
 transition popup foundation уже показывает structured blockers вместо общего page error,
-Deal Won foundation уже блокирует non-maintenance Won без linked paid invoice,
+Deal Won foundation уже блокирует non-maintenance Won без linked paid invoice (**2026-05:** «оплачен» = `Invoice.moneyStatus = PAID`, legacy `Invoice.status` снят — см. Finance cleanup register),
 а offer/contract foundation добавил dedicated поля и gates для `SEND_OFFER`, `GET_ANSWER`
 и `DEPOSIT_AND_CONTRACT`. Maintenance entry foundation добавил canonical subscription statuses,
 Product subscription entry, auto-created linked `MAINTENANCE Deal`, `Pending` subscription

@@ -631,6 +631,16 @@ export type RecurringTaskTemplateUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
+export type RecurringTaskTemplateListRelationFilter = {
+  every?: Prisma.RecurringTaskTemplateWhereInput;
+  some?: Prisma.RecurringTaskTemplateWhereInput;
+  none?: Prisma.RecurringTaskTemplateWhereInput;
+};
+
+export type RecurringTaskTemplateOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
+};
+
 export type RecurringTaskTemplateCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   title?: Prisma.SortOrder;
@@ -704,25 +714,6 @@ export type RecurringTaskTemplateSumOrderByAggregateInput = {
   interval?: Prisma.SortOrder;
   dayOfMonth?: Prisma.SortOrder;
   dueDateOffset?: Prisma.SortOrder;
-};
-
-export type RecurringTaskTemplateListRelationFilter = {
-  every?: Prisma.RecurringTaskTemplateWhereInput;
-  some?: Prisma.RecurringTaskTemplateWhereInput;
-  none?: Prisma.RecurringTaskTemplateWhereInput;
-};
-
-export type RecurringTaskTemplateOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder;
-};
-
-export type RecurringTaskTemplateCreatedaysOfWeekInput = {
-  set: string[];
-};
-
-export type RecurringTaskTemplateUpdatedaysOfWeekInput = {
-  set?: string[];
-  push?: string | string[];
 };
 
 export type RecurringTaskTemplateCreateNestedManyWithoutCreatorInput = {
@@ -943,6 +934,15 @@ export type RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput =
   deleteMany?:
     | Prisma.RecurringTaskTemplateScalarWhereInput
     | Prisma.RecurringTaskTemplateScalarWhereInput[];
+};
+
+export type RecurringTaskTemplateCreatedaysOfWeekInput = {
+  set: string[];
+};
+
+export type RecurringTaskTemplateUpdatedaysOfWeekInput = {
+  set?: string[];
+  push?: string | string[];
 };
 
 export type RecurringTaskTemplateCreateWithoutCreatorInput = {

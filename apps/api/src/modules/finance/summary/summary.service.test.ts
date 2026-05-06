@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FinanceSummaryService } from './summary.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
 function emptyPayrollRunStats() {
   return {
     runCount: 0,
@@ -38,14 +40,20 @@ describe('FinanceSummaryService', () => {
   it('returns finance dashboard summary from aggregate sources', async () => {
     prisma.invoice.count.mockResolvedValue(6);
     prisma.invoice.groupBy.mockResolvedValue([
-      { status: 'PAID', _count: 3, _sum: { amount: 120000 } },
-      { status: 'DELAYED', _count: 1, _sum: { amount: 15000 } },
-      { status: 'WAITING', _count: 2, _sum: { amount: 30000 } },
+      { moneyStatus: 'PAID', _count: 3, _sum: { amount: 120000 } },
+      { moneyStatus: 'OVERDUE', _count: 1, _sum: { amount: 15000 } },
+      { moneyStatus: 'AWAITING_PAYMENT', _count: 2, _sum: { amount: 30000 } },
     ]);
-    prisma.invoice.aggregate
-      .mockResolvedValueOnce({ _sum: { amount: 120000 } })
-      .mockResolvedValueOnce({ _count: 3, _sum: { amount: 45000 } })
-      .mockResolvedValueOnce({ _count: 1, _sum: { amount: 15000 } });
+    prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: 120000 } });
+    prisma.expense.findMany.mockResolvedValue([
+      {
+        amount: 50000,
+        dueDate: daysFromToday(2),
+        status: 'PAY_NOW',
+        backlogReason: null,
+        expensePayments: [{ amount: 15000 }],
+      },
+    ]);
     prisma.subscription.aggregate.mockResolvedValue({ _sum: { amount: 25000 } });
     prisma.subscription.count.mockResolvedValue(4);
     prisma.payment.findMany.mockResolvedValue([
@@ -63,16 +71,37 @@ describe('FinanceSummaryService', () => {
         },
       },
     ]);
-    prisma.invoice.findMany.mockResolvedValue([
-      {
-        id: 'inv-2',
-        code: 'INV-2',
-        amount: 15000,
-        dueDate: new Date('2026-04-25'),
-        company: { id: 'comp-2', name: 'Globex' },
-        projectId: 'proj-2',
-      },
-    ]);
+    prisma.invoice.findMany
+      .mockResolvedValueOnce([
+        {
+          amount: 120000,
+          dueDate: null,
+          moneyStatus: 'PAID',
+          payments: [{ amount: 120000 }],
+        },
+        {
+          amount: 15000,
+          dueDate: new Date('2020-04-25'),
+          moneyStatus: 'OVERDUE',
+          payments: [],
+        },
+        {
+          amount: 30000,
+          dueDate: daysFromToday(2),
+          moneyStatus: 'AWAITING_PAYMENT',
+          payments: [],
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          id: 'inv-2',
+          code: 'INV-2',
+          amount: 30000,
+          dueDate: daysFromToday(2),
+          company: { id: 'comp-2', name: 'Globex' },
+          projectId: 'proj-2',
+        },
+      ]);
     prisma.order.findMany.mockResolvedValue([
       {
         totalAmount: 100000,
@@ -90,7 +119,7 @@ describe('FinanceSummaryService', () => {
     expect(result.kpis).toEqual({
       totalRevenue: 120000,
       outstandingAmount: 45000,
-      outstandingCount: 3,
+      outstandingCount: 2,
       overdueAmount: 15000,
       overdueCount: 1,
       monthlyRecurringRevenue: 25000,
@@ -98,9 +127,14 @@ describe('FinanceSummaryService', () => {
     });
     expect(result.invoiceStatusItems).toEqual([
       { status: 'PAID', count: 3, amount: 120000 },
-      { status: 'DELAYED', count: 1, amount: 15000 },
-      { status: 'WAITING', count: 2, amount: 30000 },
+      { status: 'OVERDUE', count: 1, amount: 15000 },
+      { status: 'AWAITING_PAYMENT', count: 2, amount: 30000 },
     ]);
+    expect(result.invoiceCards).toEqual({
+      outstanding: { count: 2, amount: 45000 },
+      overdue: { count: 1, amount: 15000 },
+    });
+    expect(result.expenseCards.dueSoon).toEqual({ count: 1, amount: 35000 });
     expect(result.reconciliation).toMatchObject({
       orderCount: 1,
       orderAmount: 100000,
@@ -127,10 +161,8 @@ describe('FinanceSummaryService', () => {
   it('applies date filters to period-aware dashboard reads', async () => {
     prisma.invoice.count.mockResolvedValue(0);
     prisma.invoice.groupBy.mockResolvedValue([]);
-    prisma.invoice.aggregate
-      .mockResolvedValueOnce({ _sum: { amount: 0 } })
-      .mockResolvedValueOnce({ _count: 0, _sum: { amount: 0 } })
-      .mockResolvedValueOnce({ _count: 0, _sum: { amount: 0 } });
+    prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
+    prisma.expense.findMany.mockResolvedValue([]);
     prisma.subscription.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
     prisma.subscription.count.mockResolvedValue(0);
     prisma.payment.findMany.mockResolvedValue([]);
@@ -165,3 +197,9 @@ describe('FinanceSummaryService', () => {
     expect(payrollMock.getStats).toHaveBeenCalledWith({});
   });
 });
+
+function daysFromToday(days: number) {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return new Date(date.getTime() + days * ONE_DAY_MS);
+}

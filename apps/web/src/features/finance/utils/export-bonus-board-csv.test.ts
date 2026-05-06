@@ -12,8 +12,6 @@ const sampleRow: BonusEntryListRow = {
   percent: '5',
   status: 'VESTED',
   kpiGatePassed: true,
-  holdbackPercent: '10',
-  holdbackReleaseDate: null,
   payoutMonth: '2026-05',
   createdAt: '2026-04-01T00:00:00.000Z',
   updatedAt: '2026-04-02T00:00:00.000Z',
@@ -36,7 +34,7 @@ describe('buildBonusBoardCsvContent', () => {
   it('returns header only when no rows', () => {
     const csv = buildBonusBoardCsvContent([]);
     expect(csv).toBe(
-      'id,employeeId,employeeName,projectId,projectCode,projectName,orderId,orderCode,type,amount,percent,status,kpiGatePassed,holdbackPercent,holdbackReleaseDate,payoutMonth,createdAt,updatedAt',
+      'id,employeeId,employeeName,projectId,projectCode,projectName,orderId,orderCode,type,amount,percent,status,kpiGatePassed,payoutMonth,createdAt,updatedAt,salesAccrualHint,salesAccrualInvoiceId',
     );
   });
 

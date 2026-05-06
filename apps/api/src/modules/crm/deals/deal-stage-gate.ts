@@ -27,11 +27,16 @@ interface DealForValidation {
   sourceContactId: string | null;
   marketingAccountId: string | null;
   marketingActivityId: string | null;
+  partnerReferralTerms?: { id: string } | null;
 }
 
 interface ValidationError {
   field: string;
   message: string;
+}
+
+function hasNonBlankValue(value: string | null | undefined): boolean {
+  return Boolean(value?.trim());
 }
 
 /**
@@ -50,8 +55,12 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
 
   const isProductLike = deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE';
   const isExtension = deal.type === 'EXTENSION';
-  const hasOfferProof = Boolean(deal.offerLink || deal.offerFileUrl || deal.offerScreenshotUrl);
-  const hasContractProof = Boolean(deal.contractSignedAt || deal.contractFileUrl);
+  const hasOfferProof = Boolean(
+    hasNonBlankValue(deal.offerLink) ||
+    hasNonBlankValue(deal.offerFileUrl) ||
+    hasNonBlankValue(deal.offerScreenshotUrl),
+  );
+  const hasContractProof = Boolean(deal.contractSignedAt || hasNonBlankValue(deal.contractFileUrl));
   const hasInvoice = deal.orders?.some((order) => (order.invoices?.length ?? 0) > 0) ?? false;
 
   const reachesStage = (stage: string) =>
@@ -91,6 +100,19 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
         field: 'offerProof',
         message: 'Offer link, file URL, or screenshot URL is required at SEND_OFFER',
       });
+    }
+    if (deal.source === 'PARTNER') {
+      if (!deal.sourcePartnerId) {
+        errors.push({
+          field: 'sourcePartnerId',
+          message: 'Partner is required when source is Partner at SEND_OFFER',
+        });
+      } else if (!deal.partnerReferralTerms) {
+        errors.push({
+          field: 'partnerReferralTerms',
+          message: 'Partner referral terms must be synced before SEND_OFFER',
+        });
+      }
     }
   }
 

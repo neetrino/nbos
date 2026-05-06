@@ -31,6 +31,7 @@ export interface MessengerListMeta {
   page: number;
   pageSize: number;
   totalPages: number;
+  hasMoreOlder?: boolean;
 }
 
 export interface MessengerPagedMessages {
@@ -74,13 +75,13 @@ export const messengerApi = {
 
   async listChannelMessages(
     channelId: string,
-    params?: { page?: number; pageSize?: number },
+    params?: { before?: string; pageSize?: number },
   ): Promise<MessengerChannelPagedMessages> {
     const resp = await api.get<MessengerChannelPagedMessages>(
       `/api/messenger/channels/${channelId}/messages`,
       {
         params: {
-          page: params?.page ?? 1,
+          ...(params?.before ? { before: params.before } : {}),
           pageSize: params?.pageSize ?? LIST_PAGE_SIZE,
         },
       },
@@ -111,13 +112,13 @@ export const messengerApi = {
   async listDirectMessages(
     userId1: string,
     userId2: string,
-    params?: { page?: number; pageSize?: number },
+    params?: { before?: string; pageSize?: number },
   ): Promise<MessengerDmPagedMessages> {
     const resp = await api.get<MessengerDmPagedMessages>(
       `/api/messenger/dm/${userId1}/${userId2}`,
       {
         params: {
-          page: params?.page ?? 1,
+          ...(params?.before ? { before: params.before } : {}),
           pageSize: params?.pageSize ?? LIST_PAGE_SIZE,
         },
       },

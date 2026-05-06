@@ -34,6 +34,21 @@ export interface NotificationsListResponse {
   };
 }
 
+export interface NotificationPreferenceDto {
+  eventType: string;
+  enabled: boolean;
+  channels: string[];
+}
+
+export interface NotificationAdminRuleDto {
+  code: string;
+  eventType: string;
+  recipientResolver: string;
+  enabled: boolean;
+  priority: string;
+  channels: string[];
+}
+
 export const notificationsApi = {
   async list(params: NotificationsListParams = {}): Promise<NotificationsListResponse> {
     const resp = await api.get<NotificationsListResponse>('/api/notifications', {
@@ -59,6 +74,38 @@ export const notificationsApi = {
 
   async archive(id: string): Promise<NotificationDto> {
     const resp = await api.patch<NotificationDto>(`/api/notifications/${id}/archive`);
+    return resp.data;
+  },
+
+  async getPreferences(): Promise<NotificationPreferenceDto[]> {
+    const resp = await api.get<NotificationPreferenceDto[]>('/api/notifications/preferences');
+    return resp.data;
+  },
+
+  async patchPreference(
+    eventType: string,
+    data: { enabled?: boolean; channels?: string[] },
+  ): Promise<NotificationPreferenceDto> {
+    const resp = await api.patch<NotificationPreferenceDto>(
+      `/api/notifications/preferences/${encodeURIComponent(eventType)}`,
+      data,
+    );
+    return resp.data;
+  },
+
+  async listAdminRules(): Promise<NotificationAdminRuleDto[]> {
+    const resp = await api.get<NotificationAdminRuleDto[]>('/api/notifications/admin/rules');
+    return resp.data;
+  },
+
+  async patchAdminRule(
+    code: string,
+    data: { enabled?: boolean; priority?: string; channels?: string[] },
+  ): Promise<NotificationAdminRuleDto> {
+    const resp = await api.patch<NotificationAdminRuleDto>(
+      `/api/notifications/admin/rules/${encodeURIComponent(code)}`,
+      data,
+    );
     return resp.data;
   },
 };

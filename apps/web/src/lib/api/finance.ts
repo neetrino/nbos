@@ -5,6 +5,11 @@ export type { CreateInvoiceInput } from './finance-create';
 export type {
   Subscription,
   SubscriptionCoverageSummary,
+  SubscriptionGridCell,
+  SubscriptionGridCellKind,
+  SubscriptionGridPayload,
+  SubscriptionGridQueryParams,
+  SubscriptionGridRow,
   SubscriptionStats,
   SubscriptionStatsQueryParams,
   UpdateSubscriptionPayload,
@@ -14,7 +19,8 @@ export { subscriptionsApi } from './subscriptions';
 export interface InvoiceListParams extends FinanceDateRangeParams {
   page?: number;
   pageSize?: number;
-  status?: string;
+  /** Filter by canonical money layer (`Invoice.moneyStatus`). */
+  moneyStatus?: string;
   type?: string;
   projectId?: string;
   subscriptionId?: string;
@@ -37,7 +43,7 @@ export interface Invoice {
   currency: string;
   taxStatus: string;
   type: string;
-  status: string;
+  moneyStatus: string;
   dueDate: string | null;
   paidDate: string | null;
   govInvoiceId: string | null;
@@ -96,7 +102,7 @@ export interface Order {
   project: { id: string; code: string; name: string };
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
-  invoices: Array<{ id: string; code: string; status: string; amount: string }>;
+  invoices: Array<{ id: string; code: string; moneyStatus: string; amount: string }>;
   reconciliation?: OrderReconciliation;
   _count?: { invoices: number };
 }
@@ -264,6 +270,7 @@ export interface UpdateExpensePayload {
 
 export interface InvoiceStats {
   total: number;
+  /** Breakdown by `Invoice.moneyStatus` (values: NEW, AWAITING_PAYMENT, …). Field name kept for API shape. */
   byStatus: Array<{
     status: string;
     _count: number;
@@ -334,6 +341,7 @@ export interface FinanceDashboardSummary {
     monthlyRecurringRevenue: number | null;
     activeSubscriptions: number;
   };
+  /** Breakdown by `Invoice.moneyStatus` (`status` field is the money enum value). */
   invoiceStatusItems: Array<{
     status: string;
     count: number;
@@ -386,8 +394,10 @@ export const invoicesApi = {
     const resp = await api.post<Invoice>('/api/finance/invoices', data);
     return resp.data;
   },
-  async updateStatus(id: string, status: string): Promise<Invoice> {
-    const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}/status`, { status });
+  async updateMoneyStatus(id: string, moneyStatus: string): Promise<Invoice> {
+    const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}/money-status`, {
+      moneyStatus,
+    });
     return resp.data;
   },
   async delete(id: string): Promise<void> {

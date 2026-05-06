@@ -18,6 +18,7 @@ import {
   GENERIC_STATUS_DEPRECATION_DESCRIPTION,
   GENERIC_STATUS_DEPRECATION_HEADER,
 } from '../delivery-status-deprecation';
+import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 
 @ApiTags('Extensions')
 @ApiBearerAuth()
@@ -148,8 +149,8 @@ export class ExtensionsController {
 
   @Patch(':id/complete')
   @ApiOperation({ summary: 'Complete extension delivery' })
-  async complete(@Param('id') id: string) {
-    return this.extensionsService.complete(id);
+  async complete(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.extensionsService.complete(id, user.id);
   }
 
   @Delete(':id')

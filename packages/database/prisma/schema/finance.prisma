@@ -1,0 +1,589 @@
+// ─── FINANCE ──────────────────────────────────────────────
+
+enum OrderTypeEnum {
+  PRODUCT
+  EXTENSION
+  MAINTENANCE
+  OUTSOURCE
+}
+
+enum PaymentTypeEnum {
+  CLASSIC
+  SUBSCRIPTION
+}
+
+enum OrderStatusEnum {
+  ACTIVE
+  PARTIALLY_PAID
+  FULLY_PAID
+  CLOSED
+}
+
+model Order {
+  id                   String          @id @default(uuid())
+  code                 String          @unique
+  projectId            String          @map("project_id")
+  dealId               String?         @map("deal_id")
+  productId            String?         @unique @map("product_id")
+  extensionId          String?         @unique @map("extension_id")
+  type                 OrderTypeEnum
+  paymentType          PaymentTypeEnum @map("payment_type")
+  totalAmount          Decimal         @map("total_amount") @db.Decimal(12, 2)
+  currency             String          @default("AMD")
+  taxStatus            TaxStatus       @default(TAX) @map("tax_status")
+  status               OrderStatusEnum @default(ACTIVE)
+  partnerId            String?         @map("partner_id")
+  partnerPercent       Decimal?        @default(30) @map("partner_percent") @db.Decimal(5, 2)
+  sellerBonusPercent   Decimal?        @map("seller_bonus_percent") @db.Decimal(5, 2)
+  deliveryBonusPercent Decimal?        @map("delivery_bonus_percent") @db.Decimal(5, 2)
+  sellerBonusSource    LeadSourceEnum? @map("seller_bonus_source")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt            DateTime        @updatedAt @map("updated_at")
+
+  project                   Project                   @relation(fields: [projectId], references: [id])
+  deal                      Deal?                     @relation(fields: [dealId], references: [id])
+  product                   Product?                  @relation(fields: [productId], references: [id])
+  extension                 Extension?                @relation(fields: [extensionId], references: [id])
+  partner                   Partner?                  @relation(fields: [partnerId], references: [id])
+  invoices                  Invoice[]
+  bonusEntries              BonusEntry[]
+  productBonusPool          ProductBonusPool?
+  operationalJournalEntries OperationalJournalEntry[]
+  partnerAccruals           PartnerAccrual[]
+
+  @@map("orders")
+}
+
+enum InvoiceTypeEnum {
+  DEVELOPMENT
+  EXTENSION
+  SUBSCRIPTION
+  DOMAIN
+  SERVICE
+}
+
+enum InvoiceMoneyStatusEnum {
+  NEW
+  AWAITING_PAYMENT
+  OVERDUE
+  ON_HOLD
+  PAID
+  CANCELLED
+}
+
+model Invoice {
+  id                    String                 @id @default(uuid())
+  code                  String                 @unique
+  orderId               String?                @map("order_id")
+  subscriptionId        String?                @map("subscription_id")
+  projectId             String                 @map("project_id")
+  companyId             String?                @map("company_id")
+  clientServiceRecordId String?                @map("client_service_record_id")
+  amount                Decimal                @db.Decimal(12, 2)
+  taxStatus             TaxStatus              @default(TAX) @map("tax_status")
+  type                  InvoiceTypeEnum
+  moneyStatus           InvoiceMoneyStatusEnum @default(NEW) @map("money_status")
+  /// First month covered by this invoice (`YYYY-MM`, UTC calendar month). Subscription / prepayment invoices per `03-Subscriptions`.
+  coverageStartMonth    String?                @map("coverage_start_month") @db.VarChar(7)
+  /// Number of consecutive months covered starting at `coverageStartMonth` (e.g. 12 for yearly prepayment).
+  coverageMonthCount    Int?                   @map("coverage_month_count")
+  dueDate               DateTime?              @map("due_date")
+  paidDate              DateTime?              @map("paid_date")
+  govInvoiceId          String?                @map("gov_invoice_id")
+  paymentLink           String?                @map("payment_link")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+
+  order               Order?               @relation(fields: [orderId], references: [id])
+  subscription        Subscription?        @relation(fields: [subscriptionId], references: [id])
+  company             Company?             @relation(fields: [companyId], references: [id])
+  clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
+  payments            Payment[]
+  partnerAccruals     PartnerAccrual[]
+  partnerServiceTerms PartnerServiceTerm[]
+
+  @@index([clientServiceRecordId])
+  @@map("invoices")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  invoiceId     String   @map("invoice_id")
+  amount        Decimal  @db.Decimal(12, 2)
+  paymentDate   DateTime @map("payment_date")
+  paymentMethod String?  @map("payment_method")
+  confirmedBy   String?  @map("confirmed_by")
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  invoice   Invoice   @relation(fields: [invoiceId], references: [id])
+  confirmer Employee? @relation("PaymentConfirmer", fields: [confirmedBy], references: [id])
+  partnerAccrual PartnerAccrual?
+
+  @@map("payments")
+}
+
+enum FinancePostingPeriodStatusEnum {
+  OPEN
+  CLOSED
+}
+
+enum JournalRecognitionBasisEnum {
+  ACCRUAL
+  CASH
+}
+
+enum JournalSourceTypeEnum {
+  PAYMENT
+  EXPENSE_PAYMENT
+  INVOICE_CARD
+  EXPENSE_CARD
+  PAYROLL_RUN
+  SALARY_LINE
+  MANUAL_ADJUSTMENT
+  PARTNER_ACCRUAL
+}
+
+enum JournalLineStatusEnum {
+  ACTIVE
+  REVERSED
+}
+
+model FinancePostingPeriod {
+  id        String                         @id @default(uuid())
+  monthKey  String                         @unique @map("month_key") @db.VarChar(7)
+  status    FinancePostingPeriodStatusEnum @default(OPEN)
+  startsAt  DateTime                       @map("starts_at")
+  endsAt    DateTime                       @map("ends_at")
+  closedAt  DateTime?                      @map("closed_at")
+  createdAt DateTime                       @default(now()) @map("created_at")
+  updatedAt DateTime                       @updatedAt @map("updated_at")
+
+  journalEntries OperationalJournalEntry[]
+
+  @@map("finance_posting_periods")
+}
+
+model OperationalJournalEntry {
+  id               String                      @id @default(uuid())
+  amount           Decimal                     @db.Decimal(14, 2)
+  currency         String                      @default("AMD")
+  fxRateApplied    Decimal                     @default(1) @map("fx_rate_applied") @db.Decimal(18, 8)
+  functionalAmount Decimal                     @map("functional_amount") @db.Decimal(14, 2)
+  bookedAt         DateTime                    @map("booked_at")
+  recognitionBasis JournalRecognitionBasisEnum @map("recognition_basis")
+  postingPeriodId  String                      @map("posting_period_id")
+  idempotencyKey   String                      @unique @map("idempotency_key")
+  sourceType       JournalSourceTypeEnum       @map("source_type")
+  sourceId         String                      @map("source_id")
+  description      String?
+  status           JournalLineStatusEnum       @default(ACTIVE)
+  companyId        String?                     @map("company_id")
+  projectId        String?                     @map("project_id")
+  productId        String?                     @map("product_id")
+  orderId          String?                     @map("order_id")
+  employeeId       String?                     @map("employee_id")
+  departmentId     String?                     @map("department_id")
+  partnerId        String?                     @map("partner_id")
+  createdAt        DateTime                    @default(now()) @map("created_at")
+  updatedAt        DateTime                    @updatedAt @map("updated_at")
+
+  postingPeriod FinancePostingPeriod @relation(fields: [postingPeriodId], references: [id])
+  company       Company?             @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  project       Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  product       Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  order         Order?               @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  employee      Employee?            @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  department    Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  partner       Partner?             @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+
+  @@index([postingPeriodId])
+  @@index([bookedAt])
+  @@index([sourceType, sourceId])
+  @@index([companyId])
+  @@index([projectId])
+  @@index([orderId])
+  @@map("operational_journal_entries")
+}
+
+enum SubscriptionTypeEnum {
+  MAINTENANCE_ONLY
+  DEV_AND_MAINTENANCE
+  DEV_ONLY
+  PARTNER_SERVICE
+}
+
+enum SubscriptionStatusEnum {
+  PENDING
+  ACTIVE
+  ON_HOLD
+  CANCELLED
+  COMPLETED
+}
+
+model Subscription {
+  id         String                 @id @default(uuid())
+  code       String                 @unique
+  projectId  String                 @map("project_id")
+  type       SubscriptionTypeEnum
+  amount     Decimal                @db.Decimal(12, 2)
+  billingDay Int                    @map("billing_day")
+  taxStatus  TaxStatus              @default(TAX) @map("tax_status")
+  startDate  DateTime               @map("start_date")
+  endDate    DateTime?              @map("end_date")
+  status     SubscriptionStatusEnum @default(ACTIVE)
+  partnerId  String?                @map("partner_id")
+  createdAt  DateTime               @default(now()) @map("created_at")
+  updatedAt  DateTime               @updatedAt @map("updated_at")
+
+  project             Project              @relation(fields: [projectId], references: [id])
+  partner             Partner?             @relation(fields: [partnerId], references: [id])
+  invoices            Invoice[]
+  partnerAccruals     PartnerAccrual[]
+  partnerServiceTerms PartnerServiceTerm[]
+
+  @@map("subscriptions")
+}
+
+enum ExpenseTypeEnum {
+  PLANNED
+  UNPLANNED
+}
+
+enum ExpenseCategoryEnum {
+  DOMAIN
+  HOSTING
+  SERVICE
+  MARKETING
+  SALARY
+  BONUS
+  PARTNER_PAYOUT
+  TOOLS
+  OTHER
+}
+
+enum ExpenseFrequency {
+  ONE_TIME
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  MULTI_YEAR
+}
+
+enum ExpenseStatusEnum {
+  THIS_MONTH
+  PAY_NOW
+  DELAYED
+  ON_HOLD
+  PAID
+  UNPAID
+}
+
+enum ExpenseBacklogReasonEnum {
+  DEBT_PAY_LATER
+  WAITING_DECISION
+  WAITING_CLIENT
+  WAITING_PROVIDER
+  OTHER
+}
+
+model ExpensePlan {
+  id                    String              @id @default(uuid())
+  name                  String
+  category              ExpenseCategoryEnum
+  amount                Decimal             @db.Decimal(12, 2)
+  frequency             ExpenseFrequency    @default(ONE_TIME)
+  nextDueDate           DateTime?           @map("next_due_date")
+  provider              String?
+  projectId             String?             @map("project_id")
+  clientServiceRecordId String?             @map("client_service_record_id")
+  autoGenerate          Boolean             @default(false) @map("auto_generate")
+  notes                 String?
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  project             Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
+  expenses            Expense[]
+
+  @@index([projectId])
+  @@index([clientServiceRecordId])
+  @@map("expense_plans")
+}
+
+model Expense {
+  id                    String                    @id @default(uuid())
+  type                  ExpenseTypeEnum
+  category              ExpenseCategoryEnum
+  name                  String
+  amount                Decimal                   @db.Decimal(12, 2)
+  frequency             ExpenseFrequency          @default(ONE_TIME)
+  dueDate               DateTime?                 @map("due_date")
+  status                ExpenseStatusEnum         @default(THIS_MONTH)
+  projectId             String?                   @map("project_id")
+  expensePlanId         String?                   @map("expense_plan_id")
+  clientServiceRecordId String?                   @map("client_service_record_id")
+  isPassThrough         Boolean                   @default(false) @map("is_pass_through")
+  taxStatus             TaxStatus                 @default(TAX) @map("tax_status")
+  backlogReason         ExpenseBacklogReasonEnum? @map("backlog_reason")
+  notes                 String?
+  createdAt             DateTime                  @default(now()) @map("created_at")
+  updatedAt             DateTime                  @updatedAt @map("updated_at")
+
+  project             Project?             @relation(fields: [projectId], references: [id])
+  expensePlan         ExpensePlan?         @relation(fields: [expensePlanId], references: [id], onDelete: SetNull)
+  clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
+  expensePayments     ExpensePayment[]
+  salaryLine          SalaryLine?
+  partnerPayoutBatch  PartnerPayoutBatch?
+
+  @@index([expensePlanId])
+  @@index([clientServiceRecordId])
+  @@map("expenses")
+}
+
+model ExpensePayment {
+  id          String   @id @default(uuid())
+  expenseId   String   @map("expense_id")
+  amount      Decimal  @db.Decimal(12, 2)
+  paymentDate DateTime @map("payment_date")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  @@map("expense_payments")
+}
+
+enum BonusTypeEnum {
+  SALES
+  DELIVERY
+  PM
+  DESIGN
+  MARKETING
+}
+
+enum SalesBonusPaymentModelEnum {
+  CLASSIC
+  SUBSCRIPTION_FIRST_MONTH
+  /// Months 2+ of a subscription order; separate editable rates from first month (NBOS).
+  SUBSCRIPTION_RECURRING
+}
+
+enum SalesBonusSlotEnum {
+  SELLER
+  ASSISTANT
+}
+
+/// Editable Seller / Assistant rates by CRM `From` and order payment model (NBOS § sales bonus).
+model SalesBonusPolicy {
+  id               String                     @id @default(uuid())
+  fromCategory     LeadSourceEnum             @map("from_category")
+  paymentModel     SalesBonusPaymentModelEnum @map("payment_model")
+  sellerPercent    Decimal                    @map("seller_percent") @db.Decimal(5, 2)
+  assistantPercent Decimal                    @map("assistant_percent") @db.Decimal(5, 2)
+  effectiveFrom    DateTime                   @map("effective_from")
+  isActive         Boolean                    @default(true) @map("is_active")
+  createdAt        DateTime                   @default(now()) @map("created_at")
+  updatedAt        DateTime                   @updatedAt @map("updated_at")
+
+  @@index([fromCategory, paymentModel, isActive])
+  @@map("sales_bonus_policies")
+}
+
+enum BonusStatusEnum {
+  INCOMING
+  EARNED
+  PENDING_ELIGIBILITY
+  VESTED
+  ACTIVE
+  PAID
+  CLAWBACK
+}
+
+enum BonusReleaseTypeEnum {
+  AUTO
+  MANUAL
+  EARLY
+  EXTRA
+  OVER_FUNDING
+  CORRECTION
+}
+
+enum BonusReleaseStatusEnum {
+  DRAFT
+  APPROVED
+  INCLUDED_IN_PAYROLL
+  PAID
+  CANCELLED
+}
+
+model BonusEntry {
+  id                    String              @id @default(uuid())
+  employeeId            String              @map("employee_id")
+  orderId               String              @map("order_id")
+  projectId             String              @map("project_id")
+  dealId                String?             @map("deal_id")
+  /// Invoice whose PAID event triggered this accrual (subscription recurring idempotency; audit).
+  salesAccrualInvoiceId String?             @map("sales_accrual_invoice_id")
+  salesBonusSlot        SalesBonusSlotEnum? @map("sales_bonus_slot")
+  calculationSnapshot   Json?               @map("calculation_snapshot")
+  type                  BonusTypeEnum
+  amount                Decimal             @db.Decimal(12, 2)
+  percent               Decimal             @db.Decimal(5, 2)
+  status                BonusStatusEnum     @default(INCOMING)
+  kpiGatePassed         Boolean?            @map("kpi_gate_passed")
+  payoutMonth           DateTime?           @map("payout_month")
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  employee      Employee       @relation(fields: [employeeId], references: [id])
+  order         Order          @relation(fields: [orderId], references: [id])
+  project       Project        @relation(fields: [projectId], references: [id])
+  deal          Deal?          @relation("DealSalesBonusEntries", fields: [dealId], references: [id])
+  bonusReleases BonusRelease[]
+
+  @@index([orderId, salesBonusSlot])
+  @@index([orderId, salesAccrualInvoiceId])
+  @@map("bonus_entries")
+}
+
+/// NBOS Bonus Release — amount earmarked for a payroll run (see `03-Bonus-Payroll-Logic.md`).
+model BonusRelease {
+  id                    String                 @id @default(uuid())
+  bonusEntryId          String                 @map("bonus_entry_id")
+  payrollRunId          String?                @map("payroll_run_id")
+  employeeId            String                 @map("employee_id")
+  projectId             String                 @map("project_id")
+  productId             String?                @map("product_id")
+  extensionId           String?                @map("extension_id")
+  amount                Decimal                @db.Decimal(12, 2)
+  /// Amount applied to `SalaryLine.bonusesTotal` when INCLUDED_IN_PAYROLL (may differ from `amount` for SALES + KPI).
+  payrollIncludedAmount Decimal?               @map("payroll_included_amount") @db.Decimal(12, 2)
+  releaseType           BonusReleaseTypeEnum   @map("release_type")
+  reason                String?
+  approvedById          String?                @map("approved_by_id")
+  status                BonusReleaseStatusEnum @default(DRAFT)
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+
+  bonusEntry BonusEntry  @relation(fields: [bonusEntryId], references: [id], onDelete: Cascade)
+  payrollRun PayrollRun? @relation(fields: [payrollRunId], references: [id], onDelete: SetNull)
+  employee   Employee    @relation("BonusReleaseEmployee", fields: [employeeId], references: [id])
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  product    Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
+  extension  Extension?  @relation(fields: [extensionId], references: [id], onDelete: SetNull)
+  approvedBy Employee?   @relation("BonusReleaseApprover", fields: [approvedById], references: [id])
+
+  @@index([bonusEntryId])
+  @@index([payrollRunId])
+  @@index([projectId])
+  @@map("bonus_releases")
+}
+
+enum ProductBonusPoolStatusEnum {
+  DRAFT
+  ACTIVE
+  PARTIALLY_RELEASED
+  CLOSED
+}
+
+/// NBOS Product Bonus Pool ledger row (one per `Order` that has bonus lines). Release events (`BonusRelease`) — follow-up.
+model ProductBonusPool {
+  id                   String                     @id @default(uuid())
+  orderId              String                     @unique @map("order_id")
+  projectId            String                     @map("project_id")
+  productId            String?                    @map("product_id")
+  extensionId          String?                    @map("extension_id")
+  totalPlannedAmount   Decimal                    @map("total_planned_amount") @db.Decimal(14, 2)
+  totalReleasedAmount  Decimal                    @default(0) @map("total_released_amount") @db.Decimal(14, 2)
+  totalPaidAmount      Decimal                    @default(0) @map("total_paid_amount") @db.Decimal(14, 2)
+  totalRemainingAmount Decimal                    @map("total_remaining_amount") @db.Decimal(14, 2)
+  availableFunding     Decimal                    @default(0) @map("available_funding") @db.Decimal(14, 2)
+  overFundingAmount    Decimal                    @default(0) @map("over_funding_amount") @db.Decimal(14, 2)
+  status               ProductBonusPoolStatusEnum @default(ACTIVE)
+  createdAt            DateTime                   @default(now()) @map("created_at")
+  updatedAt            DateTime                   @updatedAt @map("updated_at")
+
+  order     Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  product   Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+  extension Extension? @relation(fields: [extensionId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@map("product_bonus_pools")
+}
+
+enum PayrollRunStatusEnum {
+  DRAFT
+  REVIEW
+  APPROVED
+  PAYING
+  CLOSED
+}
+
+enum SalaryLineStatusEnum {
+  PENDING
+  APPROVED
+  PARTIALLY_PAID
+  PAID
+  HELD
+}
+
+model PayrollRun {
+  id                   String               @id @default(uuid())
+  payrollMonth         String               @map("payroll_month") @db.VarChar(7)
+  status               PayrollRunStatusEnum @default(DRAFT)
+  totalBaseSalary      Decimal              @default(0) @map("total_base_salary") @db.Decimal(14, 2)
+  totalBonuses         Decimal              @default(0) @map("total_bonuses") @db.Decimal(14, 2)
+  totalAdjustments     Decimal              @default(0) @map("total_adjustments") @db.Decimal(14, 2)
+  totalDeductions      Decimal              @default(0) @map("total_deductions") @db.Decimal(14, 2)
+  totalPayable         Decimal              @default(0) @map("total_payable") @db.Decimal(14, 2)
+  totalPaid            Decimal              @default(0) @map("total_paid") @db.Decimal(14, 2)
+  /// Monthly sales plan (major units) for seller KPI payout gate; pair with `kpiSalesActualAmount` (NBOS § KPI).
+  kpiSalesPlanAmount   Decimal?             @map("kpi_sales_plan_amount") @db.Decimal(14, 2)
+  /// Recognized sales actual for the same month as `payrollMonth` (major units).
+  kpiSalesActualAmount Decimal?             @map("kpi_sales_actual_amount") @db.Decimal(14, 2)
+  createdById          String?              @map("created_by_id")
+  approvedById         String?              @map("approved_by_id")
+  approvedAt           DateTime?            @map("approved_at")
+  closedAt             DateTime?            @map("closed_at")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+
+  createdBy     Employee?      @relation("PayrollRunCreator", fields: [createdById], references: [id])
+  approvedBy    Employee?      @relation("PayrollRunApprover", fields: [approvedById], references: [id])
+  salaryLines   SalaryLine[]
+  bonusReleases BonusRelease[]
+
+  @@unique([payrollMonth])
+  @@map("payroll_runs")
+}
+
+model SalaryLine {
+  id               String               @id @default(uuid())
+  payrollRunId     String               @map("payroll_run_id")
+  employeeId       String               @map("employee_id")
+  baseSalary       Decimal              @default(0) @map("base_salary") @db.Decimal(12, 2)
+  bonusesTotal     Decimal              @default(0) @map("bonuses_total") @db.Decimal(12, 2)
+  adjustmentsTotal Decimal              @default(0) @map("adjustments_total") @db.Decimal(12, 2)
+  deductionsTotal  Decimal              @default(0) @map("deductions_total") @db.Decimal(12, 2)
+  totalPayable     Decimal              @default(0) @map("total_payable") @db.Decimal(12, 2)
+  paidAmount       Decimal              @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  remainingAmount  Decimal              @default(0) @map("remaining_amount") @db.Decimal(12, 2)
+  status           SalaryLineStatusEnum @default(PENDING)
+  expenseId        String?              @unique @map("expense_id")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee   Employee   @relation(fields: [employeeId], references: [id])
+  expense    Expense?   @relation(fields: [expenseId], references: [id])
+
+  @@unique([payrollRunId, employeeId])
+  @@index([payrollRunId])
+  @@index([employeeId])
+  @@map("salary_lines")
+}

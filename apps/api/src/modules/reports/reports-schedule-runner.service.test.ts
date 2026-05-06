@@ -37,17 +37,26 @@ const DUE_SCHEDULE = {
 describe('ReportsScheduleRunnerService', () => {
   let prisma: MockPrisma;
   let audit: { log: ReturnType<typeof vi.fn> };
-  let queue: { enqueueExport: ReturnType<typeof vi.fn> };
+  let queue: {
+    isQueueAvailable: ReturnType<typeof vi.fn>;
+    enqueueExport: ReturnType<typeof vi.fn>;
+  };
+  let reports: { dispatchReportExportJob: ReturnType<typeof vi.fn> };
   let service: ReportsScheduleRunnerService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     audit = { log: vi.fn() };
-    queue = { enqueueExport: vi.fn().mockResolvedValue(true) };
+    queue = {
+      isQueueAvailable: vi.fn().mockReturnValue(true),
+      enqueueExport: vi.fn().mockResolvedValue(true),
+    };
+    reports = { dispatchReportExportJob: vi.fn().mockResolvedValue(undefined) };
     prisma.reportExportJob.create.mockResolvedValue(QUEUED_JOB);
     service = new ReportsScheduleRunnerService(
       prisma as never,
       audit as Partial<AuditService> as never,
+      reports as never,
       queue as Partial<ReportsQueueService> as never,
     );
   });
@@ -67,7 +76,7 @@ describe('ReportsScheduleRunnerService', () => {
         }),
       }),
     );
-    expect(queue.enqueueExport).toHaveBeenCalledWith({ jobId: 'job-1', actorId: 'employee-1' });
+    expect(reports.dispatchReportExportJob).toHaveBeenCalledWith('job-1', 'employee-1');
     expect(prisma.reportSchedule.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'schedule-1' },
@@ -84,5 +93,35 @@ describe('ReportsScheduleRunnerService', () => {
         changes: expect.objectContaining({ sensitive: true, confidentiality: 'FINANCE_SENSITIVE' }),
       }),
     );
+  });
+
+  it('fails schedule run when neither Redis nor sync fallback is configured', async () => {
+    prisma.reportSchedule.findMany.mockResolvedValueOnce([DUE_SCHEDULE]);
+    queue.isQueueAvailable.mockReturnValue(false);
+    delete process.env.REPORT_EXPORT_SYNC_FALLBACK;
+
+    const result = await service.runDueSchedules(new Date('2026-04-06T00:00:00.000Z'));
+
+    expect(result).toEqual({ processed: 0, failed: 1 });
+    expect(prisma.reportExportJob.create).not.toHaveBeenCalled();
+    expect(reports.dispatchReportExportJob).not.toHaveBeenCalled();
+    expect(prisma.reportSchedule.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'schedule-1' },
+        data: expect.objectContaining({ status: 'FAILED' }),
+      }),
+    );
+  });
+
+  it('dispatches scheduled export when sync fallback is on without Redis', async () => {
+    prisma.reportSchedule.findMany.mockResolvedValueOnce([DUE_SCHEDULE]);
+    queue.isQueueAvailable.mockReturnValue(false);
+    process.env.REPORT_EXPORT_SYNC_FALLBACK = 'true';
+
+    const result = await service.runDueSchedules(new Date('2026-04-06T00:00:00.000Z'));
+
+    expect(result).toEqual({ processed: 1, failed: 0 });
+    expect(reports.dispatchReportExportJob).toHaveBeenCalledWith('job-1', 'employee-1');
+    delete process.env.REPORT_EXPORT_SYNC_FALLBACK;
   });
 });

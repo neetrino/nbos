@@ -1,0 +1,134 @@
+// ─── TECHNICAL INFRASTRUCTURE ─────────────────────────────
+
+enum TechnicalHealthStatus {
+  HEALTHY
+  WARNING
+  CRITICAL
+  NOT_CONFIGURED
+  UNKNOWN
+}
+
+enum TechnicalBackupStatus {
+  HEALTHY
+  WARNING
+  MISSING
+  NOT_REQUIRED
+  UNKNOWN
+}
+
+enum TechnicalDeployStatus {
+  SUCCESS
+  FAILED
+  ROLLED_BACK
+  UNKNOWN
+}
+
+enum TechnicalAssetType {
+  DOMAIN
+  HOSTING
+  REPOSITORY
+  DATABASE
+  STORAGE
+  MONITORING
+  ERROR_TRACKING
+  EXTERNAL_API
+  QUEUE
+  OTHER
+}
+
+enum TechnicalAssetStatus {
+  ACTIVE
+  WARNING
+  BROKEN
+  DEPRECATED
+  UNKNOWN
+}
+
+enum TechnicalEnvironmentKind {
+  PRODUCTION
+  STAGING
+  DEVELOPMENT
+  PREVIEW
+  LEGACY
+}
+
+model ProductTechnicalProfile {
+  id               String                @id @default(uuid())
+  productId        String                @unique @map("product_id")
+  projectId        String                @map("project_id")
+  technicalOwnerId String?               @map("technical_owner_id")
+  productionUrl    String?               @map("production_url")
+  stagingUrl       String?               @map("staging_url")
+  repositoryUrl    String?               @map("repository_url")
+  deploymentMethod String?               @map("deployment_method")
+  hostingProvider  String?               @map("hosting_provider")
+  monitoringStatus TechnicalHealthStatus @default(NOT_CONFIGURED) @map("monitoring_status")
+  backupStatus     TechnicalBackupStatus @default(UNKNOWN) @map("backup_status")
+  lastDeployAt     DateTime?             @map("last_deploy_at")
+  lastDeployStatus TechnicalDeployStatus @default(UNKNOWN) @map("last_deploy_status")
+  technicalNotes   String?               @map("technical_notes") @db.Text
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([technicalOwnerId])
+  @@map("product_technical_profiles")
+}
+
+model TechnicalAsset {
+  id                    String                    @id @default(uuid())
+  productId             String                    @map("product_id")
+  projectId             String                    @map("project_id")
+  type                  TechnicalAssetType
+  name                  String
+  provider              String?
+  environment           TechnicalEnvironmentKind?
+  status                TechnicalAssetStatus      @default(UNKNOWN)
+  url                   String?
+  ownerId               String?                   @map("owner_id")
+  credentialId          String?                   @map("credential_id")
+  clientServiceRecordId String?                   @map("client_service_record_id")
+  notes                 String?                   @db.Text
+  createdAt             DateTime                  @default(now()) @map("created_at")
+  updatedAt             DateTime                  @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  supportTickets SupportTicket[]
+
+  @@index([productId])
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@map("technical_assets")
+}
+
+model TechnicalEnvironment {
+  id               String                   @id @default(uuid())
+  productId        String                   @map("product_id")
+  projectId        String                   @map("project_id")
+  kind             TechnicalEnvironmentKind
+  name             String
+  url              String?
+  branch           String?
+  deploymentTarget String?                  @map("deployment_target")
+  envCredentialId  String?                  @map("env_credential_id")
+  databaseAssetId  String?                  @map("database_asset_id")
+  status           TechnicalHealthStatus    @default(UNKNOWN)
+  lastCheckedAt    DateTime?                @map("last_checked_at")
+  createdAt        DateTime                 @default(now()) @map("created_at")
+  updatedAt        DateTime                 @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  supportTickets SupportTicket[]
+
+  @@index([productId])
+  @@index([projectId])
+  @@index([kind])
+  @@index([status])
+  @@map("technical_environments")
+}

@@ -8,6 +8,7 @@ export interface CreateDealDto {
   taxStatus?: string;
   companyId?: string | null;
   sellerId: string;
+  sellerAssistantId?: string | null;
   projectId?: string;
   source?: string | null;
   sourceDetail?: string | null;

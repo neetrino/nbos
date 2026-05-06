@@ -2,6 +2,8 @@
 
 > NBOS Platform - реестр устаревшей логики, старых формулировок и обязательной зачистки после обновления канона Projects Hub
 
+**Снимок 2026-05:** ниже много **истории миграций** (legacy `status` как compatibility mirror). Это не дублирует `IMPLEMENTATION_PROGRESS`: при сомнении смотреть закрытые срезы в прогрессе и код. Свежая сноска по оплате инвойсов: §A18 (`moneyStatus = PAID`).
+
 ## Назначение
 
 Этот файл нужен, чтобы после согласования нового канона `Projects Hub` команда не продолжила опираться на старые модели:
@@ -260,7 +262,7 @@ This implements the canon rule that execution/QA work must be closed before the 
 
 Product Done gate now checks existing finance source data conservatively:
 
-- when the linked Product order has invoices, all of those invoices must be `PAID`;
+- when the linked Product order has invoices, all of those invoices must be paid (`moneyStatus = PAID`; legacy `Invoice.status` снят);
 - when the linked Product order has a status, it must be `FULLY_PAID` or `CLOSED`;
 - unpaid linked invoices block `Transfer -> Done` with the structured stage-gate error shape;
 - open linked orders block `Transfer -> Done` with the same structured stage-gate error shape;

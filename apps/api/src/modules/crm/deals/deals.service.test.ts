@@ -72,7 +72,7 @@ describe('DealsService', () => {
               {
                 id: 'inv-1',
                 code: 'INV-2026-0001',
-                status: 'THIS_MONTH',
+                moneyStatus: 'NEW',
                 amount: 5000,
                 paidDate: null,
                 payments: [{ id: 'pay-1', amount: 2000, paymentDate: new Date('2026-04-20') }],
@@ -92,7 +92,7 @@ describe('DealsService', () => {
           {
             id: 'inv-1',
             code: 'INV-2026-0001',
-            status: 'THIS_MONTH',
+            moneyStatus: 'NEW',
           },
         ],
       });
@@ -165,31 +165,163 @@ describe('DealsService', () => {
   });
 
   describe('create', () => {
-    it('generates code and creates deal', async () => {
-      prisma.deal.findFirst.mockResolvedValue(null);
-      prisma.deal.create.mockResolvedValue({ id: '1', code: 'D-2026-0001' });
+    beforeEach(() => {
+      prisma.employee.findUnique.mockImplementation(({ where }: { where: { id: string } }) =>
+        Promise.resolve({ id: where.id }),
+      );
+    });
 
-      const result = await service.create({
-        contactId: 'c-1',
-        type: 'NEW_PROJECT',
-        paymentType: 'MONTHLY',
-        sellerId: 's-1',
+    it('generates code and creates direct deal with audit', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0001',
+        projectId: null,
+        type: 'PRODUCT',
+        source: 'SALES',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
+      });
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0001',
+        projectId: null,
+        type: 'PRODUCT',
+        source: 'SALES',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
       });
 
+      const result = await service.create(
+        {
+          contactId: 'c-1',
+          type: 'PRODUCT',
+          paymentType: 'CLASSIC',
+          sellerId: 's-1',
+          name: 'Direct client',
+          source: 'SALES',
+          sourceDetail: 'COLD_CALL',
+        },
+        { actorId: 'user-1' },
+      );
+
       expect(result.code).toBe('D-2026-0001');
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'DEAL',
+          action: 'DEAL_CREATED',
+          userId: 'user-1',
+          changes: expect.objectContaining({ withoutPriorLead: true }),
+        }),
+      );
+    });
+
+    it('allows minimal payload when leadId is present', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0002',
+        projectId: null,
+        type: 'PRODUCT',
+        source: 'SALES',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
+      });
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0002',
+        projectId: null,
+        type: 'PRODUCT',
+        source: 'SALES',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
+      });
+
+      await service.create(
+        {
+          leadId: 'lead-1',
+          contactId: 'c-1',
+          type: 'PRODUCT',
+          paymentType: 'CLASSIC',
+          sellerId: 's-1',
+        },
+        { actorId: 'user-1' },
+      );
+
+      expect(prisma.deal.create).toHaveBeenCalled();
+    });
+
+    it('rejects direct deal without attribution', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
+      await expect(
+        service.create({
+          contactId: 'c-1',
+          type: 'PRODUCT',
+          paymentType: 'CLASSIC',
+          sellerId: 's-1',
+          name: 'Needs attribution',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('skips DEAL_CREATED audit when actorId is omitted', async () => {
+      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0003',
+        projectId: null,
+        type: 'PRODUCT',
+        source: 'CLIENT',
+        sourceDetail: 'OTHER',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
+      });
+      prisma.deal.findUnique.mockResolvedValue({
+        id: '1',
+        code: 'D-2026-0003',
+        projectId: null,
+        type: 'PRODUCT',
+        source: 'CLIENT',
+        sourceDetail: 'OTHER',
+        sourcePartnerId: null,
+        paymentType: 'CLASSIC',
+      });
+      vi.mocked(auditService.log).mockClear();
+
+      await service.create({
+        contactId: 'c-1',
+        type: 'PRODUCT',
+        paymentType: 'CLASSIC',
+        sellerId: 's-1',
+        name: 'No audit actor',
+        source: 'CLIENT',
+        sourceDetail: 'OTHER',
+      });
+
+      expect(auditService.log).not.toHaveBeenCalled();
     });
   });
 
   describe('update', () => {
     it('updates deal on locked stage when attribution unchanged', async () => {
-      prisma.deal.findUnique.mockResolvedValue({
-        id: '1',
-        status: 'DISCUSS_NEEDS',
-        type: 'EXTENSION',
-        projectId: null,
-        existingProduct: null,
-        ...attribution,
-        name: 'Old',
+      let calls = 0;
+      prisma.deal.findUnique.mockImplementation(() => {
+        calls += 1;
+        const base = {
+          id: '1',
+          status: 'DISCUSS_NEEDS',
+          type: 'EXTENSION',
+          projectId: null,
+          existingProduct: null,
+          ...attribution,
+        };
+        if (calls === 1) {
+          return Promise.resolve({ ...base, name: 'Old' });
+        }
+        return Promise.resolve({ ...base, name: 'New' });
       });
       prisma.deal.update.mockResolvedValue({ id: '1', name: 'New', status: 'DISCUSS_NEEDS' });
 
@@ -216,13 +348,23 @@ describe('DealsService', () => {
     });
 
     it('allows clearing source on START_CONVERSATION', async () => {
-      prisma.deal.findUnique.mockResolvedValue({
-        id: '1',
-        status: 'START_CONVERSATION',
-        type: 'EXTENSION',
-        projectId: null,
-        existingProduct: null,
-        ...attribution,
+      let calls = 0;
+      prisma.deal.findUnique.mockImplementation(() => {
+        calls += 1;
+        const base = {
+          id: '1',
+          status: 'START_CONVERSATION',
+          type: 'EXTENSION',
+          projectId: null,
+          existingProduct: null,
+          ...attribution,
+        };
+        if (calls === 1) return Promise.resolve(base);
+        return Promise.resolve({
+          ...base,
+          source: null,
+          sourceDetail: null,
+        });
       });
       prisma.deal.update.mockResolvedValue({
         id: '1',
@@ -233,6 +375,35 @@ describe('DealsService', () => {
 
       const result = await service.update('1', { source: null, sourceDetail: null });
       expect(result.source).toBeNull();
+    });
+
+    it('persists sellerAssistantId when employee exists', async () => {
+      prisma.employee.findUnique.mockImplementation(({ where }: { where: { id: string } }) =>
+        Promise.resolve({ id: where.id }),
+      );
+      let assistantCalls = 0;
+      prisma.deal.findUnique.mockImplementation(() => {
+        assistantCalls += 1;
+        return Promise.resolve({
+          id: '1',
+          status: 'START_CONVERSATION',
+          type: 'PRODUCT',
+          sellerId: 's-1',
+          sellerAssistantId: assistantCalls === 1 ? null : 'asst-1',
+          projectId: null,
+          existingProduct: null,
+          ...attribution,
+        });
+      });
+      prisma.deal.update.mockResolvedValue({ id: '1', sellerAssistantId: 'asst-1' });
+
+      await service.update('1', { sellerAssistantId: 'asst-1' });
+
+      expect(prisma.deal.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ sellerAssistantId: 'asst-1' }),
+        }),
+      );
     });
   });
 
@@ -310,8 +481,9 @@ describe('DealsService', () => {
     });
 
     it('updates deal status for early stage (no gate)', async () => {
-      prisma.deal.findUnique.mockResolvedValue({
+      const before = {
         id: '1',
+        status: 'START_CONVERSATION',
         type: 'PRODUCT',
         amount: null,
         paymentType: null,
@@ -330,7 +502,12 @@ describe('DealsService', () => {
         contractSignedAt: null,
         contractFileUrl: null,
         ...attribution,
-      });
+      };
+      const after = { ...before, status: 'MEETING' };
+      prisma.deal.findUnique
+        .mockResolvedValueOnce(before)
+        .mockResolvedValueOnce(before)
+        .mockResolvedValueOnce(after);
       prisma.deal.update.mockResolvedValue({ id: '1', status: 'MEETING' });
       const result = await service.updateStatus('1', 'MEETING');
       expect(result.status).toBe('MEETING');
@@ -362,16 +539,13 @@ describe('DealsService', () => {
     });
 
     it('allows WON when all required fields present', async () => {
+      const base = completeProductDeal();
+      const won = { ...base, status: 'WON' as const };
       prisma.deal.findUnique
-        .mockResolvedValueOnce(completeProductDeal())
-        .mockResolvedValueOnce(completeProductDeal())
-        .mockResolvedValueOnce({
-          id: '1',
-          status: 'WON',
-          type: 'PRODUCT',
-          projectId: null,
-          existingProduct: null,
-        });
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(won)
+        .mockResolvedValueOnce(won);
       prisma.deal.update.mockResolvedValue({
         id: '1',
         status: 'WON',
@@ -395,7 +569,7 @@ describe('DealsService', () => {
     });
 
     it('blocks WON when first invoice is unpaid', async () => {
-      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('WAITING'));
+      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('AWAITING_PAYMENT'));
 
       await expect(service.updateStatus('1', 'WON')).rejects.toMatchObject({
         response: {
@@ -417,16 +591,12 @@ describe('DealsService', () => {
         deadline: null,
         orders: [],
       };
+      const wonMaintenance = { ...maintenanceDeal, status: 'WON' as const };
       prisma.deal.findUnique
         .mockResolvedValueOnce(maintenanceDeal)
         .mockResolvedValueOnce(maintenanceDeal)
-        .mockResolvedValueOnce({
-          id: '1',
-          status: 'WON',
-          type: 'MAINTENANCE',
-          projectId: null,
-          existingProduct: null,
-        });
+        .mockResolvedValueOnce(wonMaintenance)
+        .mockResolvedValueOnce(wonMaintenance);
       prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'MAINTENANCE' });
 
       const result = await service.updateStatus('1', 'WON');
@@ -436,7 +606,13 @@ describe('DealsService', () => {
     });
 
     it('allows Owner or CEO override without marking invoices paid', async () => {
-      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('WAITING'));
+      const base = completeProductDeal('AWAITING_PAYMENT');
+      const won = { ...base, status: 'WON' as const };
+      prisma.deal.findUnique
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(base)
+        .mockResolvedValueOnce(won)
+        .mockResolvedValueOnce(won);
       prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'PRODUCT' });
 
       await service.updateStatus('1', 'WON', {
@@ -464,7 +640,7 @@ describe('DealsService', () => {
     });
 
     it('rejects non-privileged override', async () => {
-      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('WAITING'));
+      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('AWAITING_PAYMENT'));
 
       await expect(
         service.updateStatus('1', 'WON', {
@@ -486,7 +662,7 @@ describe('DealsService', () => {
   });
 });
 
-function completeProductDeal(invoiceStatus = 'PAID') {
+function completeProductDeal(invoiceMoneyStatus: 'PAID' | 'AWAITING_PAYMENT' = 'PAID') {
   return {
     id: '1',
     status: 'DEPOSIT_AND_CONTRACT',
@@ -517,7 +693,9 @@ function completeProductDeal(invoiceStatus = 'PAID') {
     orders: [
       {
         id: 'order-1',
-        invoices: [{ id: 'invoice-1', status: invoiceStatus, amount: 5000, payments: [] }],
+        invoices: [
+          { id: 'invoice-1', moneyStatus: invoiceMoneyStatus, amount: 5000, payments: [] },
+        ],
       },
     ],
   };

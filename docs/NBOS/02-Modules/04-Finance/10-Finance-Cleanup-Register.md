@@ -107,43 +107,35 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 ## C. Runtime stale / Устарело в коде и требует refactor
 
-### C1. Invoice runtime still uses old Bitrix-style status model
+### C1. Invoice Card money layer vs legacy pipeline
 
-Статус: `STALE CODE`
+Статус: `PARTIAL RUNTIME ALIGNMENT` (legacy invoice pipeline enum **removed**)
 
-Runtime сейчас использует старые статусы:
+**Сделано (срез 2026-05):**
 
-- `THIS_MONTH`;
-- `CREATE_INVOICE`;
-- `WAITING`;
-- `DELAYED`;
-- `ON_HOLD`;
-- `FAIL`;
-- `PAID`.
+- Колонка `Invoice.status` и enum `InvoiceStatusEnum` удалены из Prisma; миграция
+  `20260506210000_drop_invoice_legacy_status` (backfill legacy `FAIL` → `money_status` `CANCELLED`).
+- Единый слой статуса инвойса в API/UI: `moneyStatus` / `InvoiceMoneyStatusEnum`
+  (`NEW`, `AWAITING_PAYMENT`, `OVERDUE`, `ON_HOLD`, `PAID`, `CANCELLED`).
+- Список/фильтр/канбан/статистика/CSV и потребители (CRM, projects, client-services, payments и т.д.)
+  опираются на `moneyStatus`; нет `PATCH …/status` и нет companion-синка legacy↔money.
 
-Примеры мест:
-
-- [packages/shared/src/constants/index.ts](../../../../packages/shared/src/constants/index.ts)
-- [packages/database/prisma/schema.prisma](../../../../packages/database/prisma/schema.prisma)
-- [apps/api/src/modules/finance/finance-status.utils.ts](../../../../apps/api/src/modules/finance/finance-status.utils.ts)
-- [apps/api/src/modules/scheduler/scheduler.service.ts](../../../../apps/api/src/modules/scheduler/scheduler.service.ts)
-- [apps/web/src/features/finance/constants/finance.ts](../../../../apps/web/src/features/finance/constants/finance.ts)
-- [apps/web/src/app/(app)/finance/invoices/page.tsx](<../../../../apps/web/src/app/(app)/finance/invoices/page.tsx>)
-
-Новый канон:
+**Канон (без изменений по смыслу):**
 
 - `Invoice Card` = карточка денег, которые клиент должен заплатить;
-- money status: `New / Awaiting Payment / Overdue / On Hold / Paid / Cancelled`;
-- official invoice request is an internal block: `tax_status`, `request_sent`, `sent_at`, `cancelled_at`;
-- notifications are automation rules, not invoice stages.
+- official invoice request — отдельный блок: `tax_status`, маркеры запроса/отправки, даты;
+- уведомления — правила автоматизации, не «стадии доски».
 
-Будущий refactor:
+**Уже было ранее:**
 
-- заменить old invoice status enum;
-- вынести official invoice request fields из stage workflow;
-- обновить scheduler/reminder logic;
-- обновить invoice board UI;
-- обновить finance summary calculations.
+- `InvoiceCardRemindersService` — idempotent `NotificationEvent` / `NotificationJob` для правил Invoice Card;
+  пропуск `ON_HOLD`, `notificationsEnabled = false`, Tax без маркера official invoice.
+
+**Остаётся:**
+
+- углубить поля official invoice request и шаблоны каналов;
+- добить scheduler/reminder логику после полноты official-invoice блока в runtime;
+- summary/order rollup — по мере появления полей (см. C8).
 
 ### C2. Subscription runtime still uses old status model
 
@@ -211,10 +203,16 @@ Runtime сейчас использует старые statuses:
   - workflow: `Planned / Due Soon / Due Now / Overdue / On Hold / Backlog / Paid / Cancelled`;
   - payment: `Unpaid / Partially Paid / Paid`.
 
+Done slice:
+
+- Partial and full outgoing payments are implemented via `ExpensePayment` (`expense-payment-create.ts`),
+  with ledger `paymentStatus` `UNPAID` / `PARTIAL` / `PAID` and guards when editing expense amount.
+- Payroll-linked salary expenses sync `SalaryLine.paidAmount` / `remainingAmount` / `PARTIALLY_PAID`
+  through `payroll-salary-line-ledger-sync.ts`.
+
 Будущий refactor:
 
 - split existing expense model or introduce new tables;
-- add partial payments;
 - add backlog reason;
 - update expense board routes and UI;
 - update P&L and cash flow sources.
@@ -328,19 +326,19 @@ Remaining future refactor:
 
 ### C7. Finance UI still contains old board assumptions
 
-Статус: `STALE CODE`
+Статус: `PARTIAL` (инвойсы выровнены по money layer; расходы/подписки — старые допущения)
 
-Frontend still references old finance statuses and pages:
+Frontend:
 
-- invoice page uses `THIS_MONTH / CREATE_INVOICE / WAITING / DELAYED`;
-- expense page uses `THIS_MONTH / PAY_NOW / DELAYED / ON_HOLD / OLD`;
-- subscription UI uses `PAUSED`;
-- project finance tab still maps old status names in places.
+- **Invoices:** доска и фильтры используют **money stages** (`INVOICE_MONEY_STAGES` / `moneyStatus`), не legacy pipeline enum.
+- expense pages still use `THIS_MONTH / PAY_NOW / DELAYED / ON_HOLD / OLD` (workflow канона Expense Card — в C3);
+- subscription UI still uses `PAUSED` и т.д. (C2);
+- project finance tab: проверять оставшиеся места на старые имена там, где ещё не переведено на money/expense канон.
 
 Будущий refactor:
 
 - rebuild Finance UI around:
-  - Invoice Cards;
+  - Invoice Cards (money layer — база есть; official invoice block в UI — по полям runtime);
   - Subscription Grid with coverage;
   - Client Services;
   - Expense Plans / Expense Board / Expense Backlog;
@@ -349,7 +347,7 @@ Frontend still references old finance statuses and pages:
 
 ### C8. Finance summary and scheduler logic still use old status semantics
 
-Статус: `STALE CODE`
+Статус: `PARTIAL`
 
 Examples:
 
@@ -357,28 +355,29 @@ Examples:
 - [apps/api/src/modules/scheduler/scheduler.service.ts](../../../../apps/api/src/modules/scheduler/scheduler.service.ts)
 - [apps/api/src/modules/finance/finance-status.utils.ts](../../../../apps/api/src/modules/finance/finance-status.utils.ts)
 
-They currently calculate status and summary around old invoice and expense stages.
+`summary.service.ts` exposes domain-driven `invoiceCards` and `expenseCards`; агрегат по инвойсам для
+дашборда группирует **`moneyStatus`** (ключ `status` в JSON — значение money enum). `scheduler.service.ts`
+не переводит `ON_HOLD` invoice cards в `DELAYED`. Legacy **`InvoiceStatusEnum` / колонка `status` удалены**;
+`finance-status.utils.ts` и order rollup используют money layer для оплаты заказа.
 
-Будущий refactor:
+Remaining refactor:
 
-- replace status-driven summary with domain-driven metrics:
-  - open invoice cards;
-  - overdue invoice cards;
-  - expected incoming;
-  - expense cards due soon / due now / overdue;
-  - expense backlog;
-  - subscription coverage;
-  - payroll payable / paid / remaining.
+- finish expected incoming from official invoice/payment request fields;
+- expose expense `due now` separately when the runtime model has an explicit threshold;
+- replace subscription statuses and coverage fields.
 
 ---
 
 ## D. Implementation backlog / Что потом реализовать
 
-1. Replace `InvoiceStatusEnum` with new Invoice Card money-status model and official invoice request fields.
+1. ~~Replace `InvoiceStatusEnum` with Invoice Card money-status model~~ — **done:** `moneyStatus` only;
+   **осталось:** official invoice request fields + channel templates depth (см. C1).
 2. Add notification/reminder automation based on invoice card rules, not invoice board stages.
 3. Replace subscription statuses and add billing coverage fields.
 4. Add `Expense Plan`, `Expense Card`, `Expense Payment`, `Expense Backlog`.
-5. Add partial outgoing payments for expenses and salary.
+5. ~~Add partial outgoing payments for expenses and salary.~~ Partial/full outgoing is implemented via
+   `ExpensePayment`; salary lines linked to an expense card sync partial pay state. Remaining work is
+   the full canon entity split and payroll UI depth (see items 4, 7, 12).
 6. Add `Client Service Record` and connect it to invoice/expense/task/credential.
 7. Add `Compensation Profile`, `Product Bonus Pool`, `Bonus Release`, `Payroll Run`, `Salary Line`.
 8. Add automatic subscription delivery bonus release after Product / Extension done, with manual override.
@@ -393,7 +392,7 @@ They currently calculate status and summary around old invoice and expense stage
 
 ## E. Recommended implementation order
 
-1. `Invoice Card` status and official invoice request block.
+1. `Invoice Card` money status (**shipped**) and official invoice request block (**осталось**).
 2. `Subscriptions` status + coverage because recurring revenue depends on invoice cards.
 3. `Client Service Record` because it feeds both invoice and expense.
 4. `Expense Plan / Card / Payment / Backlog`.

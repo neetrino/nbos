@@ -1,6 +1,11 @@
-import { Building2, Calendar } from 'lucide-react';
+import { AlertTriangle, Building2, Calendar, FolderKanban } from 'lucide-react';
 import { KanbanBoard, StatusBadge, type KanbanColumn } from '@/components/shared';
-import { formatAmount, INVOICE_STAGES } from '@/features/finance/constants/finance';
+import {
+  formatAmount,
+  getInvoiceMoneyStage,
+  INVOICE_MONEY_STAGES,
+  INVOICE_TYPES,
+} from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoiceKanbanProps {
@@ -10,21 +15,21 @@ interface InvoiceKanbanProps {
 }
 
 const STAGE_COLORS: Record<string, string> = {
-  THIS_MONTH: 'bg-blue-500',
-  CREATE_INVOICE: 'bg-indigo-500',
-  WAITING: 'bg-purple-500',
-  DELAYED: 'bg-orange-500',
+  NEW: 'bg-blue-500',
+  AWAITING_PAYMENT: 'bg-purple-500',
+  OVERDUE: 'bg-orange-500',
   ON_HOLD: 'bg-gray-400',
-  FAIL: 'bg-red-500',
+  CANCELLED: 'bg-red-500',
   PAID: 'bg-green-500',
 };
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 export function InvoiceKanban({ invoices, onInvoiceClick, onMove }: InvoiceKanbanProps) {
-  const columns = INVOICE_STAGES.map((stage) => ({
+  const columns = INVOICE_MONEY_STAGES.map((stage) => ({
     key: stage.value,
     label: stage.label,
     color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
-    items: invoices.filter((invoice) => invoice.status === stage.value),
+    items: invoices.filter((invoice) => invoice.moneyStatus === stage.value),
   }));
 
   return (
@@ -46,6 +51,12 @@ export function InvoiceKanban({ invoices, onInvoiceClick, onMove }: InvoiceKanba
   );
 }
 
+function InvoiceMoneyStatusBadge({ moneyStatus }: { moneyStatus: string }) {
+  const stage = getInvoiceMoneyStage(moneyStatus);
+  if (!stage) return null;
+  return <StatusBadge label={stage.label} variant={stage.variant} />;
+}
+
 function InvoiceKanbanColumnTotal({ column }: { column: KanbanColumn<Invoice> }) {
   const columnTotal = column.items.reduce((sum, invoice) => sum + parseFloat(invoice.amount), 0);
   return (
@@ -60,6 +71,9 @@ function InvoiceKanbanCard({
   invoice: Invoice;
   onInvoiceClick: (invoice: Invoice) => void;
 }) {
+  const type = INVOICE_TYPES.find((invoiceType) => invoiceType.value === invoice.type);
+  const overdueDays = resolveOverdueDays(invoice);
+
   return (
     <div
       className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
@@ -70,8 +84,12 @@ function InvoiceKanbanCard({
         {invoice.taxStatus === 'TAX' && <StatusBadge label="Tax" variant="green" />}
       </div>
       <p className="text-sm font-bold">{formatAmount(parseFloat(invoice.amount))}</p>
+      {type && <StatusBadge label={type.label} variant="blue" />}
+      <InvoiceMoneyStatusBadge moneyStatus={invoice.moneyStatus} />
       {invoice.company && <InvoiceCompany name={invoice.company.name} />}
+      {invoice.project && <InvoiceProject name={invoice.project.name} />}
       {invoice.dueDate && <InvoiceDueDate dueDate={invoice.dueDate} />}
+      {overdueDays > 0 && <InvoiceOverdueDays days={overdueDays} />}
     </div>
   );
 }
@@ -92,4 +110,33 @@ function InvoiceDueDate({ dueDate }: { dueDate: string }) {
       {new Date(dueDate).toLocaleDateString()}
     </div>
   );
+}
+
+function InvoiceProject({ name }: { name: string }) {
+  return (
+    <div className="text-muted-foreground flex items-center gap-1 text-xs">
+      <FolderKanban size={10} />
+      {name}
+    </div>
+  );
+}
+
+function InvoiceOverdueDays({ days }: { days: number }) {
+  return (
+    <div className="flex items-center gap-1 text-xs font-medium text-red-500">
+      <AlertTriangle size={10} />
+      {days}d overdue
+    </div>
+  );
+}
+
+function resolveOverdueDays(invoice: Invoice) {
+  if (!invoice.dueDate || invoice.moneyStatus === 'PAID') return 0;
+
+  const dueDate = new Date(invoice.dueDate);
+  const now = new Date();
+  dueDate.setHours(0, 0, 0, 0);
+  now.setHours(0, 0, 0, 0);
+
+  return Math.max(0, Math.floor((now.getTime() - dueDate.getTime()) / DAY_IN_MS));
 }

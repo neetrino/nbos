@@ -115,6 +115,11 @@ export interface ReportDataQualityWarning {
   code: string;
   message: string;
   sourceEndpoints: string[];
+  sourceKind?: 'REGISTRY' | 'RUNTIME';
+  details?: {
+    count?: number;
+    affectedMetric?: string;
+  };
 }
 
 export interface ReportDataQualityWarningsResponse {
@@ -140,6 +145,16 @@ export const reportsApi = {
     filters?: Record<string, string | number | boolean | null>;
   }): Promise<ReportExportJob> {
     const resp = await api.post<ReportExportJob>('/api/reports/export-jobs', data);
+    return resp.data;
+  },
+
+  async retryExportJob(jobId: string): Promise<ReportExportJob> {
+    const resp = await api.post<ReportExportJob>(`/api/reports/export-jobs/${jobId}/retry`);
+    return resp.data;
+  },
+
+  async cancelExportJob(jobId: string): Promise<ReportExportJob> {
+    const resp = await api.post<ReportExportJob>(`/api/reports/export-jobs/${jobId}/cancel`);
     return resp.data;
   },
 

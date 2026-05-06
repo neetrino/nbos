@@ -37,10 +37,14 @@ function badgeClass(value: string): string {
 function FileRow({
   file,
   selected,
+  checked,
+  onToggleChecked,
   onSelect,
 }: {
   file: FileAsset;
   selected: boolean;
+  checked: boolean;
+  onToggleChecked: (file: FileAsset, checked: boolean) => void;
   onSelect: (file: FileAsset) => void;
 }) {
   return (
@@ -51,6 +55,14 @@ function FileRow({
         selected ? 'ring-accent ring-2' : ''
       }`}
     >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onToggleChecked(file, event.target.checked)}
+        onClick={(event) => event.stopPropagation()}
+        className="h-4 w-4"
+        aria-label={`Select ${file.displayName}`}
+      />
       <div className="bg-secondary text-muted-foreground rounded-lg p-2">
         <File size={16} />
       </div>
@@ -76,12 +88,14 @@ function DetailDrawer({
   file,
   busy,
   onArchive,
+  onRestore,
   onPreview,
   onVersionUpload,
 }: {
   file: FileAsset | null;
   busy: boolean;
   onArchive: (file: FileAsset) => void;
+  onRestore: (file: FileAsset) => void;
   onPreview: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
 }) {
@@ -142,12 +156,12 @@ function DetailDrawer({
         </label>
         <button
           type="button"
-          onClick={() => onArchive(file)}
-          disabled={busy || file.status === 'ARCHIVED'}
+          onClick={() => (file.status === 'ARCHIVED' ? onRestore(file) : onArchive(file))}
+          disabled={busy}
           className="border-border hover:bg-secondary inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm disabled:opacity-50"
         >
           <Archive size={16} />
-          Archive
+          {file.status === 'ARCHIVED' ? 'Restore' : 'Archive'}
         </button>
       </div>
 
@@ -207,6 +221,7 @@ export default function DrivePage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -214,6 +229,7 @@ export default function DrivePage() {
     try {
       const list = await driveApi.listFileAssets({ status, search: search || undefined });
       setFiles(list);
+      setSelectedIds((current) => current.filter((id) => list.some((file) => file.id === id)));
       setSelected((current) => list.find((file) => file.id === current?.id) ?? list[0] ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load Drive files');
@@ -240,6 +256,50 @@ export default function DrivePage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function onRestore(file: FileAsset) {
+    setBusy(true);
+    try {
+      const updated = await driveApi.restoreFileAsset(file.id);
+      setSelected(updated);
+      await load();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onBulkArchive() {
+    if (selectedIds.length === 0) return;
+    setBusy(true);
+    try {
+      await driveApi.archiveFileAssets(selectedIds);
+      setSelectedIds([]);
+      await load();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onBulkRestore() {
+    if (selectedIds.length === 0) return;
+    setBusy(true);
+    try {
+      await driveApi.restoreFileAssets(selectedIds);
+      setSelectedIds([]);
+      await load();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function toggleChecked(file: FileAsset, checked: boolean) {
+    setSelectedIds((current) => {
+      const has = current.includes(file.id);
+      if (checked && !has) return [...current, file.id];
+      if (!checked && has) return current.filter((id) => id !== file.id);
+      return current;
+    });
   }
 
   async function onVersionUpload(file: FileAsset, event: ChangeEvent<HTMLInputElement>) {
@@ -318,6 +378,41 @@ export default function DrivePage() {
           </div>
         </div>
 
+        {selectedIds.length > 0 && (
+          <div className="border-border bg-card flex items-center justify-between rounded-2xl border p-3">
+            <p className="text-sm">{selectedIds.length} selected</p>
+            <div className="flex gap-2">
+              {status === 'ARCHIVED' ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void onBulkRestore()}
+                  className="border-border hover:bg-secondary rounded-xl border px-3 py-2 text-sm disabled:opacity-50"
+                >
+                  Restore selected
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void onBulkArchive()}
+                  className="border-border hover:bg-secondary rounded-xl border px-3 py-2 text-sm disabled:opacity-50"
+                >
+                  Archive selected
+                </button>
+              )}
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setSelectedIds([])}
+                className="border-border hover:bg-secondary rounded-xl border px-3 py-2 text-sm disabled:opacity-50"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="text-muted-foreground animate-spin" size={28} />
@@ -337,6 +432,8 @@ export default function DrivePage() {
                 key={file.id}
                 file={file}
                 selected={file.id === selected?.id}
+                checked={selectedIds.includes(file.id)}
+                onToggleChecked={toggleChecked}
                 onSelect={setSelected}
               />
             ))}
@@ -348,6 +445,7 @@ export default function DrivePage() {
         file={selected}
         busy={busy}
         onArchive={(file) => void onArchive(file)}
+        onRestore={(file) => void onRestore(file)}
         onPreview={(file) => void onPreview(file)}
         onVersionUpload={(file, event) => void onVersionUpload(file, event)}
       />

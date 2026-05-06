@@ -55,7 +55,7 @@ describe('ProjectsService', () => {
         orders: [
           {
             id: 'order-1',
-            invoices: [{ id: 'invoice-1', status: 'PAID', paidDate: new Date('2026-04-28') }],
+            invoices: [{ id: 'invoice-1', moneyStatus: 'PAID', paidDate: new Date('2026-04-28') }],
           },
         ],
         subscriptions: [{ id: 'sub-1', status: 'ACTIVE' }],

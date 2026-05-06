@@ -16,11 +16,11 @@ import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/s
 import { formatAmount } from '@/features/finance/constants/finance';
 import { bonusProjectPoolsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import { useBonusProjectPoolsCsvExport } from '@/features/finance/components/bonus/use-bonus-project-pools-csv-export';
+import { useBonusProductPoolsCsvExport } from '@/features/finance/components/bonus/use-bonus-product-pools-csv-export';
 import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
-import { bonusesApi, type BonusProjectPoolRow } from '@/lib/api/bonus';
+import { bonusesApi, type BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
 function parseAmount(value: string): number {
@@ -31,17 +31,17 @@ function parseAmount(value: string): number {
 export default function BonusPoolsPage() {
   useFinanceDocumentTitle(bonusProjectPoolsPageTitle());
 
-  const [rows, setRows] = useState<BonusProjectPoolRow[]>([]);
+  const [rows, setRows] = useState<BonusProductPoolRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { exportCsvSubmitting, handleExportCsv } = useBonusProjectPoolsCsvExport(rows);
+  const { exportCsvSubmitting, handleExportCsv } = useBonusProductPoolsCsvExport(rows);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await bonusesApi.getProjectPools();
+      const data = await bonusesApi.getProductPools();
       setRows(data);
     } catch (caught) {
       setRows([]);
@@ -57,7 +57,7 @@ export default function BonusPoolsPage() {
 
   const poolTotals = useMemo(() => {
     return {
-      projects: rows.length,
+      pools: rows.length,
       entries: rows.reduce((acc, r) => acc + r.entryCount, 0),
       pipeline: sumMoneyStringsMajorUnits(rows.map((r) => r.sumPipelineAmount)),
       paid: sumMoneyStringsMajorUnits(rows.map((r) => r.sumPaidAmount)),
@@ -69,8 +69,8 @@ export default function BonusPoolsPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader
-        title="Bonus pools (by project)"
-        description="Read-only totals rolled up from bonus entries. Pipeline counts every status except Paid and Clawback."
+        title="Bonus pools (by product)"
+        description="Read-only totals rolled up by Product / Extension (or order fallback), aligned with NBOS Product Bonus Pool. Pipeline counts every status except Paid and Clawback."
       >
         <div className="flex flex-wrap items-center gap-2">
           <Link
@@ -89,8 +89,8 @@ export default function BonusPoolsPage() {
             size="icon"
             disabled={loading || Boolean(error) || rows.length === 0 || exportCsvSubmitting}
             onClick={() => handleExportCsv()}
-            aria-label="Export bonus project pools as CSV"
-            title="UTF-8 CSV of roll-up rows plus a final grand-total row (GET /api/bonus/projects/pools)"
+            aria-label="Export bonus product pools as CSV"
+            title="UTF-8 CSV of roll-up rows plus a final grand-total row (GET /api/bonus/products/pools)"
           >
             {exportCsvSubmitting ? (
               <Loader2 size={16} className="animate-spin" aria-hidden />
@@ -102,9 +102,8 @@ export default function BonusPoolsPage() {
       </PageHeader>
 
       <p className="text-muted-foreground text-sm">
-        Figures are aggregates over bonus entry rows; NBOS may introduce a dedicated project bonus
-        pool entity later. Use the Bonus board column to open **`/bonus`** scoped to that project
-        (server list filter **`GET /api/bonus?projectId=`**).
+        Figures aggregate bonus entry rows by the order&apos;s linked product or extension. Use the
+        bonus board filtered by project for delivery context (**`/bonus?projectId=`**).
       </p>
 
       {loading ? (
@@ -115,7 +114,7 @@ export default function BonusPoolsPage() {
         <EmptyState
           icon={PieChart}
           title="No bonus entries yet"
-          description="Once bonus lines exist per project, roll-ups appear here."
+          description="Once bonus lines exist on orders, product-level roll-ups appear here."
           action={
             <Link
               href="/bonus"
@@ -130,18 +129,33 @@ export default function BonusPoolsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Pool</TableHead>
+                <TableHead>Kind</TableHead>
                 <TableHead>Project</TableHead>
+                <TableHead>Order</TableHead>
                 <TableHead>Bonus board</TableHead>
                 <TableHead className="text-right">Entries</TableHead>
                 <TableHead className="text-right">Pipeline</TableHead>
                 <TableHead className="text-right">Paid</TableHead>
                 <TableHead className="text-right">Clawback</TableHead>
                 <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Pool planned</TableHead>
+                <TableHead className="text-right">Released</TableHead>
+                <TableHead className="text-right">Remaining</TableHead>
+                <TableHead className="text-right">Funding</TableHead>
+                <TableHead>Pool status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((row) => (
-                <TableRow key={row.projectId}>
+                <TableRow key={row.poolKey}>
+                  <TableCell>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-foreground font-medium">{row.poolName}</span>
+                      <span className="text-muted-foreground font-mono text-xs">{row.poolKey}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-sm">{row.poolKind}</TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-0.5">
                       <Link
@@ -153,6 +167,7 @@ export default function BonusPoolsPage() {
                       <span className="text-muted-foreground text-xs">{row.projectName}</span>
                     </div>
                   </TableCell>
+                  <TableCell className="text-muted-foreground text-sm">{row.orderCode}</TableCell>
                   <TableCell>
                     <Link
                       href={bonusBoardHref(row.projectId)}
@@ -174,13 +189,36 @@ export default function BonusPoolsPage() {
                   <TableCell className="text-right font-medium">
                     {formatAmount(parseAmount(row.sumTotalAmount))}
                   </TableCell>
+                  <TableCell className="text-muted-foreground text-right tabular-nums">
+                    {row.ledgerPlannedAmount != null
+                      ? formatAmount(parseAmount(row.ledgerPlannedAmount))
+                      : '—'}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-right tabular-nums">
+                    {row.ledgerReleasedAmount != null
+                      ? formatAmount(parseAmount(row.ledgerReleasedAmount))
+                      : '—'}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-right tabular-nums">
+                    {row.ledgerRemainingAmount != null
+                      ? formatAmount(parseAmount(row.ledgerRemainingAmount))
+                      : '—'}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-right tabular-nums">
+                    {row.ledgerAvailableFunding != null
+                      ? formatAmount(parseAmount(row.ledgerAvailableFunding))
+                      : '—'}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {row.ledgerPoolStatus ?? '—'}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
             <tfoot>
               <TableRow className="bg-muted/30 font-medium">
-                <TableCell colSpan={2} className="text-muted-foreground text-xs">
-                  All projects ({poolTotals.projects})
+                <TableCell colSpan={5} className="text-muted-foreground text-xs">
+                  All pools ({poolTotals.pools})
                 </TableCell>
                 <TableCell className="text-right tabular-nums">{poolTotals.entries}</TableCell>
                 <TableCell className="text-right tabular-nums">
@@ -194,6 +232,9 @@ export default function BonusPoolsPage() {
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {formatAmount(poolTotals.total)}
+                </TableCell>
+                <TableCell colSpan={5} className="text-muted-foreground text-xs">
+                  Per-order ledger totals are not summed here.
                 </TableCell>
               </TableRow>
             </tfoot>

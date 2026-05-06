@@ -35,11 +35,9 @@ Runtime уже имеет sidebar, collapse mode, active states и RBAC visibili
 
 ### A2. Header user menu opens My Account
 
-Статус: `PARTIAL UI`
+Статус: `DONE IN UI SHELL SLICE`
 
-Runtime уже имеет переход в `/my-account` из user menu.
-
-Остаток: убрать My Account из Settings navigation.
+Runtime имеет переход в `/my-account` из user menu; **My Account** также вынесен в quick action Topbar (см. IMPLEMENTATION_PROGRESS). Периодически проверять, что Settings не реintroduce дубликат.
 
 ### A3. Dashboard exists as first screen
 

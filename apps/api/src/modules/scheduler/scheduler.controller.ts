@@ -29,6 +29,28 @@ export class SchedulerController {
     return this.schedulerService.markOverdueInvoices();
   }
 
+  @Post('invoice-card-reminders')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Create due Invoice Card reminder notification jobs (external cron)',
+    description:
+      'Creates idempotent NotificationEvent/NotificationJob records from Invoice Card rules. It does not send external client messages.',
+  })
+  async runInvoiceCardReminders() {
+    return this.schedulerService.runInvoiceCardReminders();
+  }
+
+  @Post('expense-backlog-reminders')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Expense Backlog reminder jobs (external cron)',
+    description:
+      'Creates idempotent NotificationEvent/NotificationJob records: one weekly digest per UTC week for open backlog cards (DELAYED + backlog reason + unpaid balance), and per-day reminders for backlog cards whose due date has passed. Does not send external messages.',
+  })
+  async runExpenseBacklogReminders() {
+    return this.schedulerService.runExpenseBacklogReminders();
+  }
+
   @Post('expense-plan-auto-due')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -49,5 +71,16 @@ export class SchedulerController {
   })
   async runReportSchedulesDue() {
     return this.schedulerService.runReportSchedulesDue();
+  }
+
+  @Post('support-sla-escalation')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Support SLA warning / breach in-app notifications (external cron)',
+    description:
+      'Scans open tickets; creates idempotent in-app notifications for resolve warning, response breach, and resolve breach. Waiting overlay pauses the SLA clock.',
+  })
+  async runSupportSlaEscalation() {
+    return this.schedulerService.runSupportSlaEscalation();
   }
 }

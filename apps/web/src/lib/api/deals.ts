@@ -3,10 +3,22 @@ import { api } from '../api';
 export interface DealInvoice {
   id: string;
   code: string;
-  status: string;
+  moneyStatus: string;
   amount: number;
   paidDate?: string | null;
   payments: Array<{ id: string; amount: number; paymentDate?: string }>;
+}
+
+export type PartnerReferralSourcePolicy = 'POLICY' | 'DEFAULT' | 'OVERRIDE';
+
+export interface PartnerReferralTerms {
+  id: string;
+  partnerPercent: number | string;
+  sourcePolicy: PartnerReferralSourcePolicy;
+  overrideReason: string | null;
+  dealType: string;
+  paymentType: string | null;
+  updatedAt: string;
 }
 
 export interface DealOrder {
@@ -49,6 +61,7 @@ export interface Deal {
   projectId: string | null;
   taxStatus?: string;
   companyId?: string | null;
+  sellerAssistantId?: string | null;
   company?: { id: string; name: string } | null;
   source: string | null;
   sourceDetail: string | null;
@@ -77,12 +90,14 @@ export interface Deal {
   lead: { id: string; code: string; contactName: string } | null;
   contact: { id: string; firstName: string; lastName: string; email: string | null };
   seller: { id: string; firstName: string; lastName: string };
+  sellerAssistant?: { id: string; firstName: string; lastName: string } | null;
   orders: DealOrder[];
   handoff?: DealHandoffReferences;
   sourcePartner: { id: string; name: string; defaultPercent?: number | string | null } | null;
   sourceContact: { id: string; firstName: string; lastName: string } | null;
   marketingAccount: { id: string; name: string; channel: string; phone: string | null } | null;
   marketingActivity: { id: string; title: string; channel: string; status: string } | null;
+  partnerReferralTerms?: PartnerReferralTerms | null;
 }
 
 export interface DealListData {
@@ -129,6 +144,10 @@ interface DealStatusOptions {
   overrideReason?: string | null;
 }
 
+export type PatchPartnerReferralTermsPayload =
+  | { mode: 'RESET' }
+  | { mode: 'OVERRIDE'; partnerPercent: number; overrideReason: string };
+
 export const dealsApi = {
   async getAll(params?: DealQueryParams): Promise<DealListData> {
     const resp = await api.get<DealListData>('/api/crm/deals', { params });
@@ -148,6 +167,7 @@ export const dealsApi = {
     amount?: number;
     paymentType?: string;
     sellerId: string;
+    sellerAssistantId?: string | null;
     source?: string;
     sourceDetail?: string;
     sourcePartnerId?: string;
@@ -183,6 +203,14 @@ export const dealsApi = {
       status,
       ...(options.overrideReason && { overrideReason: options.overrideReason }),
     });
+    return resp.data;
+  },
+
+  async patchPartnerReferralTerms(
+    id: string,
+    payload: PatchPartnerReferralTermsPayload,
+  ): Promise<Deal> {
+    const resp = await api.patch<Deal>(`/api/crm/deals/${id}/partner-referral-terms`, payload);
     return resp.data;
   },
 

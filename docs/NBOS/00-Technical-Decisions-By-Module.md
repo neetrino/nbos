@@ -95,15 +95,15 @@ These rules apply to all modules unless a module-specific decision explicitly sa
 
 ### Messenger
 
-| Area            | Decision                                                                                     |
-| --------------- | -------------------------------------------------------------------------------------------- |
-| Architecture    | Use adapter architecture for external channels.                                              |
-| Source of truth | Message history lives in PostgreSQL.                                                         |
-| API split       | REST handles history, commands and search; Socket.io handles live events.                    |
-| WhatsApp MVP    | Use WAHA through a WhatsApp Web adapter.                                                     |
-| Sending         | External sends go through BullMQ, not directly from HTTP requests.                           |
-| Attachments     | Attachments are Drive file assets.                                                           |
-| Search          | Use PostgreSQL search for MVP; consider Meilisearch only after volume or UX proves the need. |
+| Area            | Decision                                                                                                                                                                                           |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Architecture    | Use adapter architecture for external channels.                                                                                                                                                    |
+| Source of truth | Message history lives in PostgreSQL.                                                                                                                                                               |
+| API split       | REST handles history, commands and search; Socket.io handles live events.                                                                                                                          |
+| WhatsApp MVP    | Use WAHA via a **WhatsApp Gateway** service implementing the logical `WhatsAppWebAdapter`; NBOS does not call WAHA directly. See `docs/NBOS/06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`. |
+| Sending         | External sends go through BullMQ, not directly from HTTP requests.                                                                                                                                 |
+| Attachments     | Attachments are Drive file assets.                                                                                                                                                                 |
+| Search          | Use PostgreSQL search for MVP; consider Meilisearch only after volume or UX proves the need.                                                                                                       |
 
 ### Mail
 
@@ -117,13 +117,13 @@ These rules apply to all modules unless a module-specific decision explicitly sa
 
 ### Notifications
 
-| Area            | Decision                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------- |
-| Engine          | Notifications are a dedicated module, not scattered helpers.                                |
-| Source of truth | DB stores notification rules, jobs, delivery attempts and read state.                       |
-| Delivery        | Use BullMQ for channel delivery, retry and deduplication.                                   |
-| Realtime        | Socket.io only refreshes in-app UI state.                                                   |
-| Channels        | In-app, email, Telegram internal and WhatsApp external via the Messenger/WAHA adapter path. |
+| Area            | Decision                                                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Engine          | Notifications are a dedicated module, not scattered helpers.                                                                         |
+| Source of truth | DB stores notification rules, jobs, delivery attempts and read state.                                                                |
+| Delivery        | Use BullMQ for channel delivery, retry and deduplication.                                                                            |
+| Realtime        | Socket.io only refreshes in-app UI state.                                                                                            |
+| Channels        | In-app, email, Telegram internal and WhatsApp external via **Messenger → WhatsApp Gateway → WAHA** (logical adapter path unchanged). |
 
 ### Calendar
 

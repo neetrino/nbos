@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { BONUS_BOARD_PROJECT_FILTER_QUERY } from '@/features/finance/constants/bonus-board-url';
+import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
 import {
   BonusBoardColumns,
   BonusBoardToolbar,
@@ -47,6 +48,13 @@ export function BonusBoardPageContent() {
   const [typeFilter, setTypeFilter] = useState<BonusType | 'ALL'>('ALL');
   const [employeeFilter, setEmployeeFilter] = useState<string>('ALL');
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
+  const [ledgerEntry, setLedgerEntry] = useState<BonusEntryListRow | null>(null);
+  const [ledgerOpen, setLedgerOpen] = useState(false);
+
+  const openReleaseLedger = useCallback((row: BonusEntryListRow) => {
+    setLedgerEntry(row);
+    setLedgerOpen(true);
+  }, []);
 
   useEffect(() => {
     const raw = searchParams.get(BONUS_BOARD_PROJECT_FILTER_QUERY)?.trim();
@@ -265,7 +273,17 @@ export function BonusBoardPageContent() {
         uniqueEmployees={uniqueEmployees}
       />
 
-      <BonusBoardColumns filtered={filtered} />
+      <BonusBoardColumns filtered={filtered} onOpenReleases={openReleaseLedger} />
+
+      <BonusEntryReleasesSheet
+        entry={ledgerEntry}
+        open={ledgerOpen}
+        onOpenChange={(next) => {
+          setLedgerOpen(next);
+          if (!next) setLedgerEntry(null);
+        }}
+        onAfterPatch={() => void load()}
+      />
     </div>
   );
 }

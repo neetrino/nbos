@@ -14,6 +14,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { DealsService } from './deals.service';
+import type { PatchPartnerReferralTermsBody } from './partner-referral-terms.ops';
 
 @ApiTags('CRM / Deals')
 @ApiBearerAuth()
@@ -64,8 +65,9 @@ export class DealsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Create a new deal' })
+  @ApiOperation({ summary: 'Create a new deal (with or without prior lead)' })
   async create(
+    @CurrentUser() user: CurrentUserPayload | undefined,
     @Body()
     body: {
       name?: string;
@@ -77,6 +79,7 @@ export class DealsController {
       taxStatus?: string;
       companyId?: string | null;
       sellerId: string;
+      sellerAssistantId?: string | null;
       projectId?: string;
       source?: string;
       sourceDetail?: string | null;
@@ -95,7 +98,18 @@ export class DealsController {
       maintenanceStartAt?: string | null;
     },
   ) {
-    return this.dealsService.create(body);
+    return this.dealsService.create(body, { actorId: user?.id });
+  }
+
+  @Patch(':id/partner-referral-terms')
+  @ApiOperation({
+    summary: 'Update partner referral terms (frozen % on deal when source is Partner)',
+  })
+  async patchPartnerReferralTerms(
+    @Param('id') id: string,
+    @Body() body: PatchPartnerReferralTermsBody,
+  ) {
+    return this.dealsService.patchPartnerReferralTerms(id, body);
   }
 
   @Put(':id')
@@ -112,6 +126,8 @@ export class DealsController {
       taxStatus?: string;
       companyId?: string | null;
       contactId?: string;
+      sellerId?: string;
+      sellerAssistantId?: string | null;
       projectId?: string | null;
       source?: string;
       sourceDetail?: string | null;

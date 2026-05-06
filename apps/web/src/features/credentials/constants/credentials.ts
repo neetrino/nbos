@@ -29,7 +29,7 @@ export const CREDENTIAL_TYPES = [
 export const CREDENTIAL_CRITICALITIES = [
   { value: 'LOW', label: 'Low', variant: 'gray' as StatusVariant },
   { value: 'MEDIUM', label: 'Medium', variant: 'blue' as StatusVariant },
-  { value: 'HIGH', label: 'High', variant: 'yellow' as StatusVariant },
+  { value: 'HIGH', label: 'High', variant: 'amber' as StatusVariant },
   { value: 'CRITICAL', label: 'Critical', variant: 'red' as StatusVariant },
 ] as const;
 

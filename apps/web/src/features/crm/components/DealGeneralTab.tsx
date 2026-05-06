@@ -9,6 +9,7 @@ import { partnersApi } from '@/lib/api/partners';
 import { productsApi } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
 import { systemListsApi } from '@/lib/api/systemLists';
+import { employeesApi } from '@/lib/api/employees';
 import { DealContactTeamSection } from './DealContactTeamSection';
 import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
 import { DealHandoffPanel } from './DealHandoffPanel';
@@ -117,6 +118,15 @@ export function DealGeneralTab({
     return data.items.map((company) => ({ value: company.id, label: company.name }));
   }, []);
 
+  const searchEmployees = useCallback(async (query: string) => {
+    const data = await employeesApi.getAll({ pageSize: 20, search: query || undefined });
+    return data.items.map((employee) => ({
+      value: employee.id,
+      label: `${employee.firstName} ${employee.lastName}`,
+      subtitle: employee.position ?? employee.email,
+    }));
+  }, []);
+
   const firstOrder = deal.orders?.[0];
   const projectId = deal.projectId ?? firstOrder?.projectId;
   const taxStatus = deal.taxStatus ?? 'TAX';
@@ -146,8 +156,14 @@ export function DealGeneralTab({
           searchContacts={searchContacts}
           saveField={saveField}
           saveMultipleFields={saveMultipleFields}
+          onRefresh={onRefresh}
         />
-        <DealContactTeamSection deal={deal} searchContacts={searchContacts} saveField={saveField} />
+        <DealContactTeamSection
+          deal={deal}
+          searchContacts={searchContacts}
+          searchEmployees={searchEmployees}
+          saveField={saveField}
+        />
         <DealNotesSection deal={deal} saveField={saveField} />
         <DealSourceLeadSection deal={deal} />
       </div>

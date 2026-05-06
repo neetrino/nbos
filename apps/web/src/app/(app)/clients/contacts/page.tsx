@@ -21,11 +21,7 @@ import {
 } from '@/components/shared';
 import { ContactSheet } from '@/features/clients/components/ContactSheet';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
-import {
-  CONTACT_ROLES,
-  CONTACT_SOURCES,
-  getContactRole,
-} from '@/features/clients/constants/clients';
+import { CONTACT_ROLES, getContactRole } from '@/features/clients/constants/clients';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 
 export default function ContactsPage() {
@@ -44,7 +40,8 @@ export default function ContactsPage() {
       const data = await contactsApi.getAll({
         pageSize: 100,
         search: search || undefined,
-        role: filters.role && filters.role !== 'all' ? filters.role : undefined,
+        contactType:
+          filters.contactType && filters.contactType !== 'all' ? filters.contactType : undefined,
       });
       setContacts(data.items);
       setError(null);
@@ -60,7 +57,7 @@ export default function ContactsPage() {
   }, [fetchContacts]);
 
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
-    await contactsApi.create(data);
+    await contactsApi.update(id, data);
     await fetchContacts();
   };
 
@@ -78,14 +75,9 @@ export default function ContactsPage() {
 
   const filterConfigs = [
     {
-      key: 'role',
-      label: 'Role',
+      key: 'contactType',
+      label: 'Contact Type',
       options: CONTACT_ROLES.map((r) => ({ value: r.value, label: r.label })),
-    },
-    {
-      key: 'source',
-      label: 'Source',
-      options: CONTACT_SOURCES.map((s) => ({ value: s.value, label: s.label })),
     },
   ];
 
@@ -134,7 +126,7 @@ export default function ContactsPage() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Contact</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>Contact Type</TableHead>
                 <TableHead>Companies</TableHead>
                 <TableHead className="text-center">Projects</TableHead>
                 <TableHead className="text-center">Leads</TableHead>

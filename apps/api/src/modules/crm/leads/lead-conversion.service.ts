@@ -13,6 +13,7 @@ interface ConvertLeadDto {
 
 interface LeadForConversion {
   id: string;
+  name: string | null;
   contactName: string;
   status: string;
   source: string | null;
@@ -125,11 +126,14 @@ export class LeadConversionService {
       contactId = contact.id;
     }
 
+    const inquiryTitle = lead.name?.trim() ?? '';
+
     const deal = await this.prisma.deal.create({
       data: {
         code: dealCode,
         leadId: lead.id,
         contactId,
+        name: inquiryTitle || undefined,
         type: (data.dealType ?? DEFAULT_LEAD_DEAL_TYPE) as DealTypeEnum,
         amount: data.amount,
         paymentType: data.paymentType ? (data.paymentType as PaymentTypeEnum) : undefined,
@@ -165,6 +169,12 @@ function getLeadConversionErrors(
 ): ConversionFieldError[] {
   const errors: ConversionFieldError[] = [];
 
+  if (!lead.name?.trim()) {
+    errors.push({
+      field: 'name',
+      message: 'Inquiry title (product/service) is required before SQL / Deal creation',
+    });
+  }
   if (!lead.contactName.trim()) {
     errors.push({ field: 'contactName', message: 'Contact name is required' });
   }

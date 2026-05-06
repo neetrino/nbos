@@ -8,14 +8,14 @@ export const INVOICE_TYPES = [
   { value: 'DOMAIN_SERVICE', label: 'Domain / Service' },
 ] as const;
 
-export const INVOICE_STAGES = [
-  { value: 'THIS_MONTH', label: 'This Month', variant: 'blue' as StatusVariant },
-  { value: 'CREATE_INVOICE', label: 'Create Invoice', variant: 'indigo' as StatusVariant },
-  { value: 'WAITING', label: 'Waiting', variant: 'purple' as StatusVariant },
-  { value: 'DELAYED', label: 'Delayed', variant: 'orange' as StatusVariant },
-  { value: 'ON_HOLD', label: 'On Hold', variant: 'gray' as StatusVariant },
-  { value: 'FAIL', label: 'Fail', variant: 'red' as StatusVariant },
+/** Invoice Card money status (canonical). */
+export const INVOICE_MONEY_STAGES = [
+  { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant },
+  { value: 'AWAITING_PAYMENT', label: 'Awaiting payment', variant: 'purple' as StatusVariant },
+  { value: 'OVERDUE', label: 'Overdue', variant: 'orange' as StatusVariant },
+  { value: 'ON_HOLD', label: 'On hold', variant: 'gray' as StatusVariant },
   { value: 'PAID', label: 'Paid', variant: 'green' as StatusVariant },
+  { value: 'CANCELLED', label: 'Cancelled', variant: 'red' as StatusVariant },
 ] as const;
 
 export const EXPENSE_STAGES = [
@@ -65,8 +65,9 @@ export const FINANCE_PERIOD_OPTIONS = [
 
 export type FinancePeriod = (typeof FINANCE_PERIOD_OPTIONS)[number]['value'];
 
-export function getInvoiceStage(value: string) {
-  return INVOICE_STAGES.find((s) => s.value === value);
+export function getInvoiceMoneyStage(value: string | undefined) {
+  if (!value) return undefined;
+  return INVOICE_MONEY_STAGES.find((s) => s.value === value);
 }
 
 export function getExpenseStage(value: string) {

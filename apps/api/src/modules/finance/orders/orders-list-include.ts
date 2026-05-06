@@ -17,7 +17,7 @@ export const ORDER_LIST_INCLUDE = {
     select: {
       id: true,
       code: true,
-      status: true,
+      moneyStatus: true,
       amount: true,
       payments: { select: { amount: true } },
     },

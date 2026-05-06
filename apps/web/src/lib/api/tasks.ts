@@ -24,6 +24,11 @@ export interface TaskChecklist {
   items: TaskChecklistItem[];
 }
 
+export interface TaskOrderRef {
+  id: string;
+  code: string;
+}
+
 export interface Task {
   id: string;
   code: string;
@@ -61,6 +66,25 @@ export interface Task {
     assigneeId: string | null;
   }>;
   _count: { subtasks: number; checklists: number };
+  /** Present when API returns task detail / project-scoped list (Order context). */
+  product?: { id: string; name: string; order: TaskOrderRef | null } | null;
+  extension?: {
+    id: string;
+    name: string;
+    order: TaskOrderRef | null;
+    product: { id: string; name: string };
+  } | null;
+  workspace?: {
+    id: string;
+    name: string;
+    product?: { id: string; name: string; order: TaskOrderRef | null } | null;
+    extension?: {
+      id: string;
+      name: string;
+      order: TaskOrderRef | null;
+      product: { id: string; name: string };
+    } | null;
+  } | null;
 }
 
 export type TaskCompletionRuleType =
@@ -129,6 +153,8 @@ interface TaskQueryParams {
   planningStatus?: string;
   entityType?: string;
   entityId?: string;
+  projectId?: string;
+  orderId?: string;
   parentId?: string;
   hasParent?: boolean;
   search?: string;

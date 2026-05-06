@@ -1,0 +1,20 @@
+// ─── AUDIT ────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  projectId  String?  @map("project_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  action     String
+  userId     String   @map("user_id")
+  changes    Json?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

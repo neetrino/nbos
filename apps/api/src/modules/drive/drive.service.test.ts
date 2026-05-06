@@ -264,10 +264,82 @@ describe('DriveService', () => {
       expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            links: { some: { entityType: 'PRODUCT', entityId: 'product-1', unlinkedAt: null } },
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                links: {
+                  some: { entityType: 'PRODUCT', entityId: 'product-1', unlinkedAt: null },
+                },
+              }),
+            ]),
           }),
         }),
       );
+    });
+
+    it('applies OWN drive scope to File Assets list', async () => {
+      await service.listFileAssets(
+        { search: 'offer' },
+        { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'OWN' },
+      );
+
+      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('restores archived file asset lifecycle state', async () => {
+      prisma.fileAsset.findFirst.mockResolvedValueOnce({ id: 'f1' });
+      prisma.fileAsset.update.mockResolvedValueOnce({
+        id: 'f1',
+        status: 'ACTIVE',
+        archivedAt: null,
+      });
+
+      const result = await service.restoreFileAsset('f1', 'employee-1');
+
+      expect(result.status).toBe('ACTIVE');
+      expect(prisma.fileAsset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'f1' },
+          data: expect.objectContaining({
+            status: 'ACTIVE',
+            archivedAt: null,
+          }),
+        }),
+      );
+    });
+
+    it('archives file assets in batch', async () => {
+      prisma.$transaction.mockImplementationOnce(async (cb: unknown) => {
+        if (typeof cb !== 'function') return undefined;
+        return (cb as (tx: MockPrisma) => Promise<unknown>)(prisma);
+      });
+      prisma.fileAsset.findMany.mockResolvedValueOnce([{ id: 'f1' }, { id: 'f2' }]);
+
+      const result = await service.archiveFileAssets(['f1', 'f2', 'f1'], 'employee-1');
+
+      expect(prisma.fileAsset.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: { in: ['f1', 'f2'] }, deletedAt: null },
+        }),
+      );
+      expect(prisma.fileAuditEvent.createMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: [
+            expect.objectContaining({ fileAssetId: 'f1', action: 'archived' }),
+            expect.objectContaining({ fileAssetId: 'f2', action: 'archived' }),
+          ],
+        }),
+      );
+      expect(result).toHaveProperty('updated');
     });
   });
 

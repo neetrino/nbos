@@ -17,14 +17,14 @@
 
 ## Runtime Cleanup
 
-| Область                 | Статус  | Что сейчас                                     | Что нужно сделать                                                  |
-| ----------------------- | ------- | ---------------------------------------------- | ------------------------------------------------------------------ |
-| Technical Profile model | `OK`    | **2026-04-30:** `ProductTechnicalProfile`      | Product technical profile linked to Product/Project                |
-| Technical Asset model   | `OK`    | **2026-04-30:** `TechnicalAsset`               | Assets: domain, hosting, repo, database, storage, monitoring, etc. |
-| Environment model       | `OK`    | **2026-04-30:** `TechnicalEnvironment`         | Production/Staging/Development/Preview/Legacy environments         |
-| Deployment Record       | MISSING | нет                                            | Фиксировать deploys, failures, rollback                            |
-| Monitoring Check        | MISSING | нет                                            | Добавить checks и status summary                                   |
-| Backup Policy           | MISSING | нет                                            | Добавить product backup policy и restore test                      |
-| Domain model            | PARTIAL | есть `Domain`, но только частный случай        | Связать с Client Service Record и Technical Asset                  |
-| Support Incident link   | PARTIAL | есть SupportTicket category Incident           | Добавить связи incident -> asset/environment/deploy                |
-| Project Product UI      | `OK`    | **2026-04-30:** Product page tab **Technical** | Technical profile, readiness, assets and environments              |
+| Область                 | Статус  | Что сейчас                                                                                                                                                         | Что нужно сделать                                                         |
+| ----------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Technical Profile model | `OK`    | **2026-04-30:** `ProductTechnicalProfile`                                                                                                                          | Product technical profile linked to Product/Project                       |
+| Technical Asset model   | `OK`    | **2026-04-30:** `TechnicalAsset`                                                                                                                                   | Assets: domain, hosting, repo, database, storage, monitoring, etc.        |
+| Environment model       | `OK`    | **2026-04-30:** `TechnicalEnvironment`                                                                                                                             | Production/Staging/Development/Preview/Legacy environments                |
+| Deployment Record       | PARTIAL | **2026-05-06:** API/UI runtime slice: `POST /technical/products/:productId/deploy-records`, audit action `technical.deploy_recorded`, profile `deployment.records` | Дожать до отдельного deploy entity/history policies при необходимости     |
+| Monitoring Check        | PARTIAL | baseline summary в profile API/UI: monitoring/backup status + warning/critical assets + missing owner/credential links                                             | Scheduled checks + persisted check runs                                   |
+| Backup Policy           | PARTIAL | **2026-05-06:** API/UI runtime slice: `PATCH /technical/products/:productId/backup-policy`, audit action `technical.backup_policy_updated`, profile `backupPolicy` | При необходимости выделить persisted policy model + restore test workflow |
+| Domain model            | PARTIAL | есть `Domain`, но только частный случай                                                                                                                            | Связать с Client Service Record и Technical Asset                         |
+| Support Incident link   | PARTIAL | profile API/UI теперь показывает linked Support incidents по product (`open`, `critical`, `recent`)                                                                | Явные links incident -> asset/environment/deploy                          |
+| Project Product UI      | `OK`    | **2026-04-30:** Product page tab **Technical**                                                                                                                     | Technical profile, readiness, assets and environments                     |

@@ -10,7 +10,6 @@ export type BonusStatus =
   | 'EARNED'
   | 'PENDING_ELIGIBILITY'
   | 'VESTED'
-  | 'HOLDBACK'
   | 'ACTIVE'
   | 'PAID'
   | 'CLAWBACK';
@@ -33,6 +32,8 @@ export interface BonusProjectRef {
   name: string;
 }
 
+export type SalesBonusSlot = 'SELLER' | 'ASSISTANT';
+
 export interface BonusEntryListRow {
   id: string;
   employeeId: string;
@@ -43,14 +44,18 @@ export interface BonusEntryListRow {
   percent: string;
   status: BonusStatus;
   kpiGatePassed: boolean | null;
-  holdbackPercent: string | null;
-  holdbackReleaseDate: string | null;
   payoutMonth: string | null;
   createdAt: string;
   updatedAt: string;
   employee: BonusEmployeeRef;
   order: BonusOrderRef;
   project: BonusProjectRef;
+  /** Present for sales bonus rows; null for subscription month 2+ accrual waves. */
+  salesBonusSlot?: SalesBonusSlot | null;
+  /** Invoice that triggered this accrual (sales bonus idempotency / audit). */
+  salesAccrualInvoiceId?: string | null;
+  /** Accrual snapshot from API (payment model, basis, …). */
+  calculationSnapshot?: unknown;
 }
 
 export interface BonusStatsByStatusRow {
@@ -64,8 +69,15 @@ export interface BonusStats {
   totalAmount: string | null;
 }
 
-/** Matches `GET /api/bonus/projects/pools` rows (derived from bonus entries, not a separate pool ledger). */
-export interface BonusProjectPoolRow {
+/** Matches `GET /api/bonus/products/pools` — product / extension / order roll-up (NBOS Product Bonus Pool view). */
+export type BonusProductPoolKind = 'PRODUCT' | 'EXTENSION' | 'ORDER';
+
+export interface BonusProductPoolRow {
+  poolKey: string;
+  poolKind: BonusProductPoolKind;
+  anchorOrderId: string;
+  poolName: string;
+  orderCode: string;
   projectId: string;
   projectCode: string;
   projectName: string;
@@ -74,6 +86,45 @@ export interface BonusProjectPoolRow {
   sumPipelineAmount: string;
   sumPaidAmount: string;
   sumClawbackAmount: string;
+  ledgerPlannedAmount: string | null;
+  ledgerReleasedAmount: string | null;
+  ledgerRemainingAmount: string | null;
+  ledgerAvailableFunding: string | null;
+  ledgerPoolStatus: string | null;
+}
+
+/** Matches Prisma `BonusReleaseTypeEnum`. */
+export type BonusReleaseType =
+  | 'AUTO'
+  | 'MANUAL'
+  | 'EARLY'
+  | 'EXTRA'
+  | 'OVER_FUNDING'
+  | 'CORRECTION';
+
+/** Matches Prisma `BonusReleaseStatusEnum`. */
+export type BonusReleaseStatus =
+  | 'DRAFT'
+  | 'APPROVED'
+  | 'INCLUDED_IN_PAYROLL'
+  | 'PAID'
+  | 'CANCELLED';
+
+export interface BonusReleaseRow {
+  id: string;
+  bonusEntryId: string;
+  payrollRunId: string | null;
+  employeeId: string;
+  projectId: string;
+  productId: string | null;
+  extensionId: string | null;
+  amount: string;
+  releaseType: BonusReleaseType;
+  reason: string | null;
+  approvedById: string | null;
+  status: BonusReleaseStatus;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BonusListQueryParams {
@@ -93,7 +144,45 @@ export const BONUS_LIST_PAGE_SIZE = 500;
 
 const BONUS_FETCH_MAX_PAGES = 40;
 
+/** Matches `SalesBonusPaymentModelEnum` (sales bonus policy rows). */
+export type SalesBonusPaymentModel =
+  | 'CLASSIC'
+  | 'SUBSCRIPTION_FIRST_MONTH'
+  | 'SUBSCRIPTION_RECURRING';
+
+/** Row from `GET /api/bonus/sales-policies`. Decimal fields arrive as strings in JSON. */
+export interface SalesBonusPolicyRow {
+  id: string;
+  fromCategory: string;
+  paymentModel: SalesBonusPaymentModel;
+  sellerPercent: string;
+  assistantPercent: string;
+  effectiveFrom: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PatchSalesBonusPolicyBody {
+  sellerPercent?: number;
+  assistantPercent?: number;
+  isActive?: boolean;
+}
+
 export const bonusesApi = {
+  async getSalesPolicies(): Promise<SalesBonusPolicyRow[]> {
+    const resp = await api.get<SalesBonusPolicyRow[]>('/api/bonus/sales-policies');
+    return resp.data;
+  },
+
+  async patchSalesPolicy(
+    id: string,
+    body: PatchSalesBonusPolicyBody,
+  ): Promise<SalesBonusPolicyRow> {
+    const resp = await api.patch<SalesBonusPolicyRow>(`/api/bonus/sales-policies/${id}`, body);
+    return resp.data;
+  },
+
   async getPage(params?: BonusListQueryParams): Promise<ListData<BonusEntryListRow>> {
     const resp = await api.get<ListData<BonusEntryListRow>>('/api/bonus', {
       params: {
@@ -109,8 +198,25 @@ export const bonusesApi = {
     return resp.data;
   },
 
-  async getProjectPools(): Promise<BonusProjectPoolRow[]> {
-    const resp = await api.get<BonusProjectPoolRow[]>('/api/bonus/projects/pools');
+  async getProductPools(): Promise<BonusProductPoolRow[]> {
+    const resp = await api.get<BonusProductPoolRow[]>('/api/bonus/products/pools');
+    return resp.data;
+  },
+
+  async listReleasesForEntry(entryId: string): Promise<BonusReleaseRow[]> {
+    const resp = await api.get<BonusReleaseRow[]>(`/api/bonus/entries/${entryId}/releases`);
+    return resp.data;
+  },
+
+  async patchRelease(
+    entryId: string,
+    releaseId: string,
+    body: { amount: number; reason: string; approvedById?: string },
+  ): Promise<BonusReleaseRow> {
+    const resp = await api.patch<BonusReleaseRow>(
+      `/api/bonus/entries/${entryId}/releases/${releaseId}`,
+      body,
+    );
     return resp.data;
   },
 };

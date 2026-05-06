@@ -28,9 +28,41 @@ export const TICKET_COVERAGE_DECISIONS = [
 export const TICKET_SLA_STATES = [
   { value: 'ON_TRACK', label: 'On track', variant: 'green' as StatusVariant },
   { value: 'AT_RISK', label: 'At risk', variant: 'amber' as StatusVariant },
+  { value: 'HIGH_RISK', label: 'High risk', variant: 'orange' as StatusVariant },
   { value: 'BREACHED', label: 'Breached', variant: 'red' as StatusVariant },
+  { value: 'PAUSED', label: 'SLA paused', variant: 'gray' as StatusVariant },
   { value: 'CLOSED', label: 'Closed', variant: 'gray' as StatusVariant },
 ] as const;
+
+export const TICKET_WAITING_STATES = [
+  { value: 'all', label: 'All waiting states' },
+  { value: 'NONE', label: 'Not waiting' },
+  { value: 'WAITING_FOR_CLIENT', label: 'Waiting for client' },
+  { value: 'WAITING_FOR_THIRD_PARTY', label: 'Waiting for third party' },
+  { value: 'ESCALATED', label: 'Escalated' },
+] as const;
+
+export const TICKET_WAITING_OVERLAY_OPTIONS = TICKET_WAITING_STATES.filter(
+  (w) => w.value !== 'all',
+);
+
+/** Matches API `MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH` when moving to Resolved. */
+export const MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH = 10;
+
+export const SUPPORT_TICKET_CLOSE_REASON_OPTIONS = [
+  { value: 'CLIENT_CONFIRMED', label: 'Client confirmed' },
+  { value: 'MANUAL', label: 'Manual / management' },
+  { value: 'DUPLICATE', label: 'Duplicate' },
+  { value: 'AUTO_TIMED_OUT', label: 'Auto timed out' },
+] as const;
+
+export function getTicketCloseReasonLabel(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  const row = SUPPORT_TICKET_CLOSE_REASON_OPTIONS.find((o) => o.value === value);
+  if (row) return row.label;
+  if (value === 'EXTENSION_DELIVERED') return 'Extension delivered';
+  return value;
+}
 
 export const TICKET_STATUSES = [
   { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
@@ -76,6 +108,10 @@ export function getTicketCoverage(value: string | null) {
 
 export function getTicketSlaState(value: string) {
   return TICKET_SLA_STATES.find((state) => state.value === value);
+}
+
+export function getTicketWaitingState(value: string) {
+  return TICKET_WAITING_STATES.find((w) => w.value === value);
 }
 
 export function getTicketStatus(value: string) {

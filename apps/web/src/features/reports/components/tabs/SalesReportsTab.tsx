@@ -1,7 +1,7 @@
 'use client';
 
 import { Handshake, Target, TrendingUp, Users } from 'lucide-react';
-import type { ReportDefinition } from '@/lib/api/reports';
+import type { ReportDefinition, ReportExportFormat } from '@/lib/api/reports';
 import type { LazyReportTabState } from '../../hooks/useLazyReportTabData';
 import type { SalesReportsTabData } from '../../hooks/useReportTabData';
 import { count, money } from '../../report-number-format';
@@ -14,14 +14,14 @@ import { ReportTabState } from './ReportTabState';
 interface SalesReportsTabProps {
   definitions: ReportDefinition[];
   state: LazyReportTabState<SalesReportsTabData>;
-  creatingExportKey: string | null;
-  onExport: (definition: ReportDefinition) => void;
+  creatingExportToken: string | null;
+  onExport: (definition: ReportDefinition, format: ReportExportFormat) => void;
 }
 
 export function SalesReportsTab({
   definitions,
   state,
-  creatingExportKey,
+  creatingExportToken,
   onExport,
 }: SalesReportsTabProps) {
   const data = state.data;
@@ -53,7 +53,7 @@ export function SalesReportsTab({
       ) : null}
       <ReportActions
         definitions={definitions}
-        creatingExportKey={creatingExportKey}
+        creatingExportToken={creatingExportToken}
         onExport={onExport}
       />
     </div>

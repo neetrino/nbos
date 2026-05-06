@@ -6,11 +6,13 @@ import {
   type BonusStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { NotificationService } from '../notifications/notification.service';
 import {
-  foldBonusProjectPools,
-  type BonusProjectPoolGroupRow,
-  type BonusProjectPoolRow,
-} from './bonus-project-pools';
+  foldBonusProductPools,
+  type BonusOrderPoolGroupRow,
+  type BonusProductPoolRow,
+} from './bonus-product-pools';
+import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 
 interface CreateBonusDto {
   employeeId: string;
@@ -21,8 +23,6 @@ interface CreateBonusDto {
   percent: number;
   status?: string;
   kpiGatePassed?: boolean;
-  holdbackPercent?: number;
-  holdbackReleaseDate?: string;
   payoutMonth?: string;
 }
 
@@ -41,7 +41,10 @@ interface BonusQueryParams {
 
 @Injectable()
 export class BonusService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+  ) {}
 
   async findAll(params: BonusQueryParams) {
     const {
@@ -93,7 +96,7 @@ export class BonusService {
   }
 
   async create(data: CreateBonusDto) {
-    return this.prisma.bonusEntry.create({
+    const created = await this.prisma.bonusEntry.create({
       data: {
         employeeId: data.employeeId,
         orderId: data.orderId,
@@ -103,10 +106,6 @@ export class BonusService {
         percent: data.percent,
         status: (data.status as BonusStatusEnum) ?? 'INCOMING',
         kpiGatePassed: data.kpiGatePassed,
-        holdbackPercent: data.holdbackPercent,
-        holdbackReleaseDate: data.holdbackReleaseDate
-          ? new Date(data.holdbackReleaseDate)
-          : undefined,
         payoutMonth: data.payoutMonth ? new Date(data.payoutMonth) : undefined,
       },
       include: {
@@ -115,14 +114,18 @@ export class BonusService {
         project: { select: { id: true, code: true, name: true } },
       },
     });
+    await syncProductBonusPoolForOrder(this.prisma, data.orderId, this.notifications);
+    return created;
   }
 
   async updateStatus(id: string, status: string) {
-    await this.findById(id);
-    return this.prisma.bonusEntry.update({
+    const existing = await this.findById(id);
+    const updated = await this.prisma.bonusEntry.update({
       where: { id },
       data: { status: status as BonusStatusEnum },
     });
+    await syncProductBonusPoolForOrder(this.prisma, existing.orderId, this.notifications);
+    return updated;
   }
 
   async getStats() {
@@ -137,9 +140,9 @@ export class BonusService {
     return { byStatus, totalAmount: totalAmount._sum.amount };
   }
 
-  async getProjectPools(): Promise<BonusProjectPoolRow[]> {
+  async getProductPools(): Promise<BonusProductPoolRow[]> {
     const raw = await this.prisma.bonusEntry.groupBy({
-      by: ['projectId', 'status'] as const,
+      by: ['orderId', 'status'] as const,
       _count: true,
       _sum: { amount: true },
     });
@@ -148,13 +151,62 @@ export class BonusService {
       return [];
     }
 
-    const projectIds = [...new Set(raw.map((r) => r.projectId))];
-    const projects = await this.prisma.project.findMany({
-      where: { id: { in: projectIds } },
-      select: { id: true, code: true, name: true },
+    const orderIds = [...new Set(raw.map((r) => r.orderId))];
+    const orders = await this.prisma.order.findMany({
+      where: { id: { in: orderIds } },
+      select: {
+        id: true,
+        code: true,
+        projectId: true,
+        productId: true,
+        extensionId: true,
+        project: { select: { id: true, code: true, name: true } },
+        product: { select: { id: true, name: true } },
+        extension: { select: { id: true, name: true } },
+      },
     });
 
-    return foldBonusProjectPools(raw as BonusProjectPoolGroupRow[], projects);
+    const folded = foldBonusProductPools(raw as BonusOrderPoolGroupRow[], orders);
+    if (folded.length === 0) {
+      return [];
+    }
+    const anchorIds = [...new Set(folded.map((r) => r.anchorOrderId))];
+    return this.mergeProductPoolLedgersWithIds(folded, anchorIds);
+  }
+
+  private async mergeProductPoolLedgersWithIds(
+    rows: BonusProductPoolRow[],
+    anchorIds: string[],
+  ): Promise<BonusProductPoolRow[]> {
+    if (anchorIds.length === 0) {
+      return rows;
+    }
+    const ledgers = await this.prisma.productBonusPool.findMany({
+      where: { orderId: { in: anchorIds } },
+      select: {
+        orderId: true,
+        totalPlannedAmount: true,
+        totalReleasedAmount: true,
+        totalRemainingAmount: true,
+        availableFunding: true,
+        status: true,
+      },
+    });
+    const byOrder = new Map(ledgers.map((row) => [row.orderId, row] as const));
+    return rows.map((row) => {
+      const ledger = byOrder.get(row.anchorOrderId);
+      if (!ledger) {
+        return row;
+      }
+      return {
+        ...row,
+        ledgerPlannedAmount: ledger.totalPlannedAmount.toFixed(2),
+        ledgerReleasedAmount: ledger.totalReleasedAmount.toFixed(2),
+        ledgerRemainingAmount: ledger.totalRemainingAmount.toFixed(2),
+        ledgerAvailableFunding: ledger.availableFunding.toFixed(2),
+        ledgerPoolStatus: ledger.status,
+      };
+    });
   }
 
   private buildWhere(

@@ -41,3 +41,7 @@ export interface AddDocumentAttachmentDto {
   purpose?: string;
   sortOrder?: number;
 }
+
+export interface ExportDocumentQuery {
+  format?: string;
+}

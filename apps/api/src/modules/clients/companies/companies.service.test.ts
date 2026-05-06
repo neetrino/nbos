@@ -76,6 +76,15 @@ describe('CompaniesService', () => {
         }),
       );
     });
+
+    it('applies tax status filter', async () => {
+      await service.findAll({ taxStatus: 'NO_TAX' });
+      expect(prisma.company.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ taxStatus: 'NO_TAX' }),
+        }),
+      );
+    });
   });
 
   describe('update', () => {

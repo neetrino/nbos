@@ -1,0 +1,215 @@
+// ─── PARTNERS ─────────────────────────────────────────────
+
+enum PartnerTypeEnum {
+  REGULAR
+  PREMIUM
+}
+
+enum PartnerDirectionEnum {
+  INBOUND
+  OUTBOUND
+  BOTH
+}
+
+enum PartnerStatusEnum {
+  ACTIVE
+  INACTIVE
+}
+
+model Partner {
+  id             String               @id @default(uuid())
+  name           String
+  type           PartnerTypeEnum      @default(REGULAR)
+  direction      PartnerDirectionEnum @default(INBOUND)
+  defaultPercent Decimal              @default(30) @map("default_percent") @db.Decimal(5, 2)
+  status         PartnerStatusEnum    @default(ACTIVE)
+  contactId      String?              @map("contact_id")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  contact                   Contact?                     @relation(fields: [contactId], references: [id])
+  orders                    Order[]
+  subscriptions             Subscription[]
+  leadsAsSource             Lead[]                       @relation("LeadSourcePartner")
+  dealsAsSource             Deal[]                       @relation("DealSourcePartner")
+  operationalJournalEntries OperationalJournalEntry[]
+  commissionPolicyRows      PartnerCommissionPolicyRow[]
+  partnerReferralTerms      PartnerReferralTerms[]
+  partnerAccruals           PartnerAccrual[]
+  partnerPayoutBatches      PartnerPayoutBatch[]
+  partnerServiceTerms       PartnerServiceTerm[]
+
+  @@map("partners")
+}
+
+enum PartnerReferralSourcePolicyEnum {
+  POLICY
+  DEFAULT
+  OVERRIDE
+}
+
+/// Frozen partner % and snapshots for inbound referral deals (NBOS § Inbound Referral Flow).
+model PartnerReferralTerms {
+  id             String                          @id @default(uuid())
+  dealId         String                          @unique @map("deal_id")
+  partnerId      String                          @map("partner_id")
+  dealType       DealTypeEnum                    @map("deal_type")
+  paymentType    PaymentTypeEnum?                @map("payment_type")
+  partnerPercent Decimal                         @map("partner_percent") @db.Decimal(5, 2)
+  sourcePolicy   PartnerReferralSourcePolicyEnum @map("source_policy")
+  overrideReason String?                         @map("override_reason") @db.Text
+  createdAt      DateTime                        @default(now()) @map("created_at")
+  updatedAt      DateTime                        @updatedAt @map("updated_at")
+
+  deal            Deal             @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  partner         Partner          @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  partnerAccruals PartnerAccrual[]
+
+  @@index([partnerId])
+  @@map("partner_referral_terms")
+}
+
+/// Per–deal-type partner payout percent (NBOS § Partner Commission Policy). Null row → use `Partner.defaultPercent`.
+model PartnerCommissionPolicyRow {
+  id        String       @id @default(uuid())
+  partnerId String       @map("partner_id")
+  dealType  DealTypeEnum @map("deal_type")
+  percent   Decimal      @db.Decimal(5, 2)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, dealType])
+  @@index([partnerId])
+  @@map("partner_commission_policy_rows")
+}
+
+enum PartnerAccrualStatusEnum {
+  ACCRUED
+  ELIGIBLE
+  IN_BATCH
+  PAID
+  CANCELLED
+}
+
+enum PartnerPayoutBatchStatusEnum {
+  DRAFT
+  APPROVED
+  EXPENSE_CREATED
+  PAID
+  CANCELLED
+}
+
+enum PartnerServiceTypeEnum {
+  SEO
+  SMM
+  ADS
+  OTHER
+}
+
+enum PartnerServicePaymentModelEnum {
+  ONE_TIME
+  MONTHLY
+  CUSTOM
+}
+
+enum PartnerServiceStatusEnum {
+  PENDING
+  ACTIVE
+  ON_HOLD
+  CANCELLED
+  COMPLETED
+}
+
+/// Inbound referral commission accrual from client cash (NBOS § Partner Payouts — PAR-01 / PAR-02).
+model PartnerAccrual {
+  id              String                   @id @default(uuid())
+  partnerId       String                   @map("partner_id")
+  referralTermsId String                   @map("referral_terms_id")
+  projectId       String                   @map("project_id")
+  productId       String?                  @map("product_id")
+  orderId         String                   @map("order_id")
+  subscriptionId  String?                  @map("subscription_id")
+  invoiceId       String?                  @map("invoice_id")
+  paymentId       String                   @unique @map("payment_id")
+  payoutBatchId   String?                  @map("payout_batch_id")
+  dealType        DealTypeEnum             @map("deal_type")
+  paymentType     PaymentTypeEnum          @map("payment_type")
+  baseAmount      Decimal                  @map("base_amount") @db.Decimal(14, 2)
+  percent         Decimal                  @db.Decimal(5, 2)
+  amount          Decimal                  @db.Decimal(14, 2)
+  status          PartnerAccrualStatusEnum @default(ELIGIBLE)
+  eligibleAt      DateTime?                @map("eligible_at")
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+
+  partner       Partner              @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  referralTerms PartnerReferralTerms @relation(fields: [referralTermsId], references: [id], onDelete: Restrict)
+  project       Project              @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  product       Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  order         Order                @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  subscription  Subscription?        @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  invoice       Invoice?             @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  payment       Payment              @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  payoutBatch   PartnerPayoutBatch?  @relation(fields: [payoutBatchId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@index([orderId])
+  @@index([projectId])
+  @@index([payoutBatchId])
+  @@map("partner_accruals")
+}
+
+/// Finance-selected batch of partner accruals to be paid as one Partner Payout expense.
+model PartnerPayoutBatch {
+  id          String                       @id @default(uuid())
+  partnerId   String                       @map("partner_id")
+  totalAmount Decimal                      @map("total_amount") @db.Decimal(14, 2)
+  status      PartnerPayoutBatchStatusEnum @default(DRAFT)
+  payoutDate  DateTime?                    @map("payout_date")
+  expenseId   String?                      @unique @map("expense_id")
+  approvedBy  String?                      @map("approved_by")
+  notes       String?                      @db.Text
+  createdAt   DateTime                     @default(now()) @map("created_at")
+  updatedAt   DateTime                     @updatedAt @map("updated_at")
+
+  partner  Partner          @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  expense  Expense?         @relation(fields: [expenseId], references: [id], onDelete: SetNull)
+  accruals PartnerAccrual[]
+
+  @@index([partnerId])
+  @@index([status])
+  @@map("partner_payout_batches")
+}
+
+/// Outbound service terms for partner revenue cases (NBOS § Outbound Partner Services).
+model PartnerServiceTerm {
+  id               String                         @id @default(uuid())
+  partnerId        String                         @map("partner_id")
+  clientContactId  String?                        @map("client_contact_id")
+  clientCompanyId  String?                        @map("client_company_id")
+  projectId        String?                        @map("project_id")
+  serviceType      PartnerServiceTypeEnum         @map("service_type")
+  paymentModel     PartnerServicePaymentModelEnum @map("payment_model")
+  amount           Decimal                        @db.Decimal(12, 2)
+  billingStartDate DateTime?                      @map("billing_start_date")
+  subscriptionId   String?                        @map("subscription_id")
+  invoiceId        String?                        @map("invoice_id")
+  status           PartnerServiceStatusEnum       @default(PENDING)
+  notes            String?                        @db.Text
+  createdAt        DateTime                       @default(now()) @map("created_at")
+  updatedAt        DateTime                       @updatedAt @map("updated_at")
+
+  partner       Partner        @relation(fields: [partnerId], references: [id], onDelete: Restrict)
+  clientContact Contact?       @relation(fields: [clientContactId], references: [id], onDelete: SetNull)
+  clientCompany Company?       @relation(fields: [clientCompanyId], references: [id], onDelete: SetNull)
+  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  subscription  Subscription?  @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  invoice       Invoice?       @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([projectId])
+  @@map("partner_service_terms")
+}

@@ -81,7 +81,7 @@ export class CashFlowService {
 
   private async getExpectedIncoming(asOf: Date, maxDate: Date) {
     const invoices = await this.prisma.invoice.findMany({
-      where: { status: { not: 'PAID' }, dueDate: { gte: asOf, lte: maxDate } },
+      where: { moneyStatus: { not: 'PAID' }, dueDate: { gte: asOf, lte: maxDate } },
       select: { amount: true, dueDate: true, payments: { select: { amount: true } } },
     });
     return invoices.map((row) => ({

@@ -8,17 +8,20 @@ import { SearchField } from '@/components/shared';
 import { employeesApi } from '@/lib/api/employees';
 import { contactsApi } from '@/lib/api/clients';
 import { partnersApi } from '@/lib/api/partners';
+import { getPartnerLevel } from '@/features/partners/constants/partners';
 import { marketingApi } from '@/lib/api/marketing';
 import type { Lead } from '@/lib/api/leads';
 import type { ApiFieldError } from '@/lib/api-errors';
-import { LEAD_SOURCES, MARKETING_CHANNELS, SALES_CHANNELS } from '../constants/leadPipeline';
+import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import {
   isLeadAttributionLocked,
   requiresMarketingWhichOneSelection,
 } from '@nbos/shared/constants';
+import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 
 type LeadInlinePayload = Pick<
   Lead,
+  | 'name'
   | 'contactName'
   | 'phone'
   | 'email'
@@ -41,6 +44,7 @@ interface LeadTransitionInlineEditorProps {
 }
 
 interface FormState {
+  name: string;
   contactName: string;
   phone: string;
   email: string;
@@ -65,9 +69,12 @@ export function LeadTransitionInlineEditor({
   const [touchedRequiredFields, setTouchedRequiredFields] = useState<Set<string>>(new Set());
 
   const errorFields = useMemo(() => new Set(errors.map((error) => error.field)), [errors]);
+  const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
+    form.source === 'MARKETING',
+  );
   const needsAttributionForMove = isLeadAttributionLocked(targetStatus);
   const needsContactMethod = errorFields.has('contactMethod');
-  const whereOptions = getWhereOptions(form.source);
+  const whereOptions = getWhereOptions(form.source, marketingWhereOptions);
   const showWhereField = whereOptions.length > 0;
   const showFromField =
     needsAttributionForMove || errorFields.has('source') || Boolean(!form.source);
@@ -104,6 +111,19 @@ export function LeadTransitionInlineEditor({
 
   return (
     <div className="space-y-3">
+      {(targetStatus === 'SQL' || errorFields.has('name')) && (
+        <Field
+          label="Inquiry title (product / service)"
+          invalid={touchedRequiredFields.has('name')}
+        >
+          <Input
+            value={form.name}
+            onChange={(event) => updateForm('name', event.target.value)}
+            placeholder="e.g. Company website, CRM integration"
+          />
+        </Field>
+      )}
+
       {targetStatus === 'SQL' || errorFields.has('contactName') ? (
         <Field label="Contact name" invalid={touchedRequiredFields.has('contactName')}>
           <Input
@@ -173,7 +193,7 @@ export function LeadTransitionInlineEditor({
               return data.items.map((partner) => ({
                 value: partner.id,
                 label: partner.name,
-                subtitle: partner.type,
+                subtitle: getPartnerLevel(partner.level)?.label ?? partner.level,
               }));
             }}
           />
@@ -323,6 +343,7 @@ function NativeSelect({
 
 function getInitialForm(lead: Lead): FormState {
   return {
+    name: lead.name ?? '',
     contactName: lead.contactName ?? '',
     phone: lead.phone ?? '',
     email: lead.email ?? '',
@@ -336,12 +357,15 @@ function getInitialForm(lead: Lead): FormState {
   };
 }
 
-function getWhereOptions(source: string) {
+function getWhereOptions(
+  source: string,
+  marketingOptions: Array<{ value: string; label: string }>,
+) {
   if (source === 'SALES') {
     return SALES_CHANNELS.map((channel) => ({ value: channel.value, label: channel.label }));
   }
   if (source === 'MARKETING') {
-    return MARKETING_CHANNELS.map((channel) => ({ value: channel.value, label: channel.label }));
+    return marketingOptions;
   }
   return [];
 }
@@ -394,6 +418,7 @@ function buildRequiredFieldSet(
     required.add('whichOne');
   }
   if (targetStatus === 'SQL') {
+    required.add('name');
     required.add('contactName');
     required.add('contactMethod');
     required.add('assignedTo');
@@ -409,6 +434,7 @@ function getMissingFields(
   const required = buildRequiredFieldSet(form, errors, targetStatus);
   const missing: string[] = [];
 
+  if (required.has('name') && !form.name.trim()) missing.push('name');
   if (required.has('contactName') && !form.contactName.trim()) missing.push('contactName');
   if (required.has('contactMethod') && !form.phone.trim() && !form.email.trim()) {
     missing.push('contactMethod');
@@ -429,6 +455,7 @@ function getMissingFields(
 
 function buildChangedPayload(lead: Lead, form: FormState): Partial<LeadInlinePayload> {
   const payload: Partial<LeadInlinePayload> = {};
+  assignIfChanged(payload, 'name', lead.name, form.name);
   assignIfChanged(payload, 'contactName', lead.contactName, form.contactName);
   assignIfChanged(payload, 'phone', lead.phone, form.phone);
   assignIfChanged(payload, 'email', lead.email, form.email);

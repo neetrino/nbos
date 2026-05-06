@@ -62,7 +62,7 @@ export default function CompaniesPage() {
   }, [fetchCompanies]);
 
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
-    await companiesApi.create(data);
+    await companiesApi.update(id, data);
     await fetchCompanies();
   };
 

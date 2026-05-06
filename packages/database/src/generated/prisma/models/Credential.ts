@@ -839,14 +839,9 @@ export type CredentialUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type CredentialListRelationFilter = {
-  every?: Prisma.CredentialWhereInput;
-  some?: Prisma.CredentialWhereInput;
-  none?: Prisma.CredentialWhereInput;
-};
-
-export type CredentialOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder;
+export type CredentialNullableScalarRelationFilter = {
+  is?: Prisma.CredentialWhereInput | null;
+  isNot?: Prisma.CredentialWhereInput | null;
 };
 
 export type CredentialCountOrderByAggregateInput = {
@@ -946,120 +941,14 @@ export type CredentialMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder;
 };
 
-export type CredentialNullableScalarRelationFilter = {
-  is?: Prisma.CredentialWhereInput | null;
-  isNot?: Prisma.CredentialWhereInput | null;
+export type CredentialListRelationFilter = {
+  every?: Prisma.CredentialWhereInput;
+  some?: Prisma.CredentialWhereInput;
+  none?: Prisma.CredentialWhereInput;
 };
 
-export type CredentialCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CredentialCreateWithoutProjectInput,
-        Prisma.CredentialUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.CredentialCreateWithoutProjectInput[]
-    | Prisma.CredentialUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.CredentialCreateOrConnectWithoutProjectInput
-    | Prisma.CredentialCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.CredentialCreateManyProjectInputEnvelope;
-  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-};
-
-export type CredentialUncheckedCreateNestedManyWithoutProjectInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CredentialCreateWithoutProjectInput,
-        Prisma.CredentialUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.CredentialCreateWithoutProjectInput[]
-    | Prisma.CredentialUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.CredentialCreateOrConnectWithoutProjectInput
-    | Prisma.CredentialCreateOrConnectWithoutProjectInput[];
-  createMany?: Prisma.CredentialCreateManyProjectInputEnvelope;
-  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-};
-
-export type CredentialUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CredentialCreateWithoutProjectInput,
-        Prisma.CredentialUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.CredentialCreateWithoutProjectInput[]
-    | Prisma.CredentialUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.CredentialCreateOrConnectWithoutProjectInput
-    | Prisma.CredentialCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.CredentialUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.CredentialUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.CredentialCreateManyProjectInputEnvelope;
-  set?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  disconnect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  delete?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  update?:
-    | Prisma.CredentialUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.CredentialUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.CredentialUpdateManyWithWhereWithoutProjectInput
-    | Prisma.CredentialUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
-};
-
-export type CredentialUncheckedUpdateManyWithoutProjectNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CredentialCreateWithoutProjectInput,
-        Prisma.CredentialUncheckedCreateWithoutProjectInput
-      >
-    | Prisma.CredentialCreateWithoutProjectInput[]
-    | Prisma.CredentialUncheckedCreateWithoutProjectInput[];
-  connectOrCreate?:
-    | Prisma.CredentialCreateOrConnectWithoutProjectInput
-    | Prisma.CredentialCreateOrConnectWithoutProjectInput[];
-  upsert?:
-    | Prisma.CredentialUpsertWithWhereUniqueWithoutProjectInput
-    | Prisma.CredentialUpsertWithWhereUniqueWithoutProjectInput[];
-  createMany?: Prisma.CredentialCreateManyProjectInputEnvelope;
-  set?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  disconnect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  delete?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  update?:
-    | Prisma.CredentialUpdateWithWhereUniqueWithoutProjectInput
-    | Prisma.CredentialUpdateWithWhereUniqueWithoutProjectInput[];
-  updateMany?:
-    | Prisma.CredentialUpdateManyWithWhereWithoutProjectInput
-    | Prisma.CredentialUpdateManyWithWhereWithoutProjectInput[];
-  deleteMany?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
-};
-
-export type CredentialCreateallowedEmployeesInput = {
-  set: string[];
-};
-
-export type EnumCredentialCategoryEnumFieldUpdateOperationsInput = {
-  set?: $Enums.CredentialCategoryEnum;
-};
-
-export type EnumCredentialTypeEnumFieldUpdateOperationsInput = {
-  set?: $Enums.CredentialTypeEnum;
-};
-
-export type EnumCredentialCriticalityEnumFieldUpdateOperationsInput = {
-  set?: $Enums.CredentialCriticalityEnum;
-};
-
-export type EnumCredentialAccessLevelEnumFieldUpdateOperationsInput = {
-  set?: $Enums.CredentialAccessLevelEnum;
-};
-
-export type CredentialUpdateallowedEmployeesInput = {
-  set?: string[];
-  push?: string | string[];
+export type CredentialOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
 };
 
 export type CredentialCreateNestedOneWithoutClientServiceRecordsInput = {
@@ -1090,90 +979,29 @@ export type CredentialUpdateOneWithoutClientServiceRecordsNestedInput = {
   >;
 };
 
-export type CredentialCreateNestedManyWithoutDepartmentInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CredentialCreateWithoutDepartmentInput,
-        Prisma.CredentialUncheckedCreateWithoutDepartmentInput
-      >
-    | Prisma.CredentialCreateWithoutDepartmentInput[]
-    | Prisma.CredentialUncheckedCreateWithoutDepartmentInput[];
-  connectOrCreate?:
-    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput
-    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput[];
-  createMany?: Prisma.CredentialCreateManyDepartmentInputEnvelope;
-  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+export type CredentialCreateallowedEmployeesInput = {
+  set: string[];
 };
 
-export type CredentialUncheckedCreateNestedManyWithoutDepartmentInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CredentialCreateWithoutDepartmentInput,
-        Prisma.CredentialUncheckedCreateWithoutDepartmentInput
-      >
-    | Prisma.CredentialCreateWithoutDepartmentInput[]
-    | Prisma.CredentialUncheckedCreateWithoutDepartmentInput[];
-  connectOrCreate?:
-    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput
-    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput[];
-  createMany?: Prisma.CredentialCreateManyDepartmentInputEnvelope;
-  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+export type EnumCredentialCategoryEnumFieldUpdateOperationsInput = {
+  set?: $Enums.CredentialCategoryEnum;
 };
 
-export type CredentialUpdateManyWithoutDepartmentNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CredentialCreateWithoutDepartmentInput,
-        Prisma.CredentialUncheckedCreateWithoutDepartmentInput
-      >
-    | Prisma.CredentialCreateWithoutDepartmentInput[]
-    | Prisma.CredentialUncheckedCreateWithoutDepartmentInput[];
-  connectOrCreate?:
-    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput
-    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput[];
-  upsert?:
-    | Prisma.CredentialUpsertWithWhereUniqueWithoutDepartmentInput
-    | Prisma.CredentialUpsertWithWhereUniqueWithoutDepartmentInput[];
-  createMany?: Prisma.CredentialCreateManyDepartmentInputEnvelope;
-  set?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  disconnect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  delete?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  update?:
-    | Prisma.CredentialUpdateWithWhereUniqueWithoutDepartmentInput
-    | Prisma.CredentialUpdateWithWhereUniqueWithoutDepartmentInput[];
-  updateMany?:
-    | Prisma.CredentialUpdateManyWithWhereWithoutDepartmentInput
-    | Prisma.CredentialUpdateManyWithWhereWithoutDepartmentInput[];
-  deleteMany?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
+export type EnumCredentialTypeEnumFieldUpdateOperationsInput = {
+  set?: $Enums.CredentialTypeEnum;
 };
 
-export type CredentialUncheckedUpdateManyWithoutDepartmentNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CredentialCreateWithoutDepartmentInput,
-        Prisma.CredentialUncheckedCreateWithoutDepartmentInput
-      >
-    | Prisma.CredentialCreateWithoutDepartmentInput[]
-    | Prisma.CredentialUncheckedCreateWithoutDepartmentInput[];
-  connectOrCreate?:
-    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput
-    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput[];
-  upsert?:
-    | Prisma.CredentialUpsertWithWhereUniqueWithoutDepartmentInput
-    | Prisma.CredentialUpsertWithWhereUniqueWithoutDepartmentInput[];
-  createMany?: Prisma.CredentialCreateManyDepartmentInputEnvelope;
-  set?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  disconnect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  delete?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
-  update?:
-    | Prisma.CredentialUpdateWithWhereUniqueWithoutDepartmentInput
-    | Prisma.CredentialUpdateWithWhereUniqueWithoutDepartmentInput[];
-  updateMany?:
-    | Prisma.CredentialUpdateManyWithWhereWithoutDepartmentInput
-    | Prisma.CredentialUpdateManyWithWhereWithoutDepartmentInput[];
-  deleteMany?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
+export type EnumCredentialCriticalityEnumFieldUpdateOperationsInput = {
+  set?: $Enums.CredentialCriticalityEnum;
+};
+
+export type EnumCredentialAccessLevelEnumFieldUpdateOperationsInput = {
+  set?: $Enums.CredentialAccessLevelEnum;
+};
+
+export type CredentialUpdateallowedEmployeesInput = {
+  set?: string[];
+  push?: string | string[];
 };
 
 export type CredentialCreateNestedManyWithoutOwnerInput = {
@@ -1290,153 +1118,176 @@ export type CredentialUpdateOneWithoutMailProviderConnectionsNestedInput = {
   >;
 };
 
-export type CredentialCreateWithoutProjectInput = {
-  id?: string;
-  productId?: string | null;
-  domainId?: string | null;
-  clientServiceRecordId?: string | null;
-  category: $Enums.CredentialCategoryEnum;
-  credentialType?: $Enums.CredentialTypeEnum;
-  criticality?: $Enums.CredentialCriticalityEnum;
-  environment?: string | null;
-  provider?: string | null;
-  name: string;
-  url?: string | null;
-  login?: string | null;
-  password?: string | null;
-  apiKey?: string | null;
-  envData?: string | null;
-  phone?: string | null;
-  notes?: string | null;
-  publicNotes?: string | null;
-  secureNotes?: string | null;
-  lastRotatedAt?: Date | string | null;
-  nextRotationAt?: Date | string | null;
-  rotationOwnerId?: string | null;
-  accessLevel?: $Enums.CredentialAccessLevelEnum;
-  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
-  archivedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  department?: Prisma.DepartmentCreateNestedOneWithoutCredentialsInput;
-  owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
-  mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
+export type CredentialCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CredentialCreateWithoutProjectInput,
+        Prisma.CredentialUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.CredentialCreateWithoutProjectInput[]
+    | Prisma.CredentialUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.CredentialCreateOrConnectWithoutProjectInput
+    | Prisma.CredentialCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.CredentialCreateManyProjectInputEnvelope;
+  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
 };
 
-export type CredentialUncheckedCreateWithoutProjectInput = {
-  id?: string;
-  productId?: string | null;
-  domainId?: string | null;
-  clientServiceRecordId?: string | null;
-  departmentId?: string | null;
-  ownerId?: string | null;
-  category: $Enums.CredentialCategoryEnum;
-  credentialType?: $Enums.CredentialTypeEnum;
-  criticality?: $Enums.CredentialCriticalityEnum;
-  environment?: string | null;
-  provider?: string | null;
-  name: string;
-  url?: string | null;
-  login?: string | null;
-  password?: string | null;
-  apiKey?: string | null;
-  envData?: string | null;
-  phone?: string | null;
-  notes?: string | null;
-  publicNotes?: string | null;
-  secureNotes?: string | null;
-  lastRotatedAt?: Date | string | null;
-  nextRotationAt?: Date | string | null;
-  rotationOwnerId?: string | null;
-  accessLevel?: $Enums.CredentialAccessLevelEnum;
-  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
-  archivedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
-  mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
+export type CredentialUncheckedCreateNestedManyWithoutProjectInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CredentialCreateWithoutProjectInput,
+        Prisma.CredentialUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.CredentialCreateWithoutProjectInput[]
+    | Prisma.CredentialUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.CredentialCreateOrConnectWithoutProjectInput
+    | Prisma.CredentialCreateOrConnectWithoutProjectInput[];
+  createMany?: Prisma.CredentialCreateManyProjectInputEnvelope;
+  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
 };
 
-export type CredentialCreateOrConnectWithoutProjectInput = {
-  where: Prisma.CredentialWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.CredentialCreateWithoutProjectInput,
-    Prisma.CredentialUncheckedCreateWithoutProjectInput
-  >;
+export type CredentialUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CredentialCreateWithoutProjectInput,
+        Prisma.CredentialUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.CredentialCreateWithoutProjectInput[]
+    | Prisma.CredentialUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.CredentialCreateOrConnectWithoutProjectInput
+    | Prisma.CredentialCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.CredentialUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.CredentialUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.CredentialCreateManyProjectInputEnvelope;
+  set?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  disconnect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  delete?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  update?:
+    | Prisma.CredentialUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.CredentialUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.CredentialUpdateManyWithWhereWithoutProjectInput
+    | Prisma.CredentialUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
 };
 
-export type CredentialCreateManyProjectInputEnvelope = {
-  data: Prisma.CredentialCreateManyProjectInput | Prisma.CredentialCreateManyProjectInput[];
-  skipDuplicates?: boolean;
+export type CredentialUncheckedUpdateManyWithoutProjectNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CredentialCreateWithoutProjectInput,
+        Prisma.CredentialUncheckedCreateWithoutProjectInput
+      >
+    | Prisma.CredentialCreateWithoutProjectInput[]
+    | Prisma.CredentialUncheckedCreateWithoutProjectInput[];
+  connectOrCreate?:
+    | Prisma.CredentialCreateOrConnectWithoutProjectInput
+    | Prisma.CredentialCreateOrConnectWithoutProjectInput[];
+  upsert?:
+    | Prisma.CredentialUpsertWithWhereUniqueWithoutProjectInput
+    | Prisma.CredentialUpsertWithWhereUniqueWithoutProjectInput[];
+  createMany?: Prisma.CredentialCreateManyProjectInputEnvelope;
+  set?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  disconnect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  delete?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  update?:
+    | Prisma.CredentialUpdateWithWhereUniqueWithoutProjectInput
+    | Prisma.CredentialUpdateWithWhereUniqueWithoutProjectInput[];
+  updateMany?:
+    | Prisma.CredentialUpdateManyWithWhereWithoutProjectInput
+    | Prisma.CredentialUpdateManyWithWhereWithoutProjectInput[];
+  deleteMany?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
 };
 
-export type CredentialUpsertWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.CredentialWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.CredentialUpdateWithoutProjectInput,
-    Prisma.CredentialUncheckedUpdateWithoutProjectInput
-  >;
-  create: Prisma.XOR<
-    Prisma.CredentialCreateWithoutProjectInput,
-    Prisma.CredentialUncheckedCreateWithoutProjectInput
-  >;
+export type CredentialCreateNestedManyWithoutDepartmentInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CredentialCreateWithoutDepartmentInput,
+        Prisma.CredentialUncheckedCreateWithoutDepartmentInput
+      >
+    | Prisma.CredentialCreateWithoutDepartmentInput[]
+    | Prisma.CredentialUncheckedCreateWithoutDepartmentInput[];
+  connectOrCreate?:
+    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput
+    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput[];
+  createMany?: Prisma.CredentialCreateManyDepartmentInputEnvelope;
+  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
 };
 
-export type CredentialUpdateWithWhereUniqueWithoutProjectInput = {
-  where: Prisma.CredentialWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.CredentialUpdateWithoutProjectInput,
-    Prisma.CredentialUncheckedUpdateWithoutProjectInput
-  >;
+export type CredentialUncheckedCreateNestedManyWithoutDepartmentInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CredentialCreateWithoutDepartmentInput,
+        Prisma.CredentialUncheckedCreateWithoutDepartmentInput
+      >
+    | Prisma.CredentialCreateWithoutDepartmentInput[]
+    | Prisma.CredentialUncheckedCreateWithoutDepartmentInput[];
+  connectOrCreate?:
+    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput
+    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput[];
+  createMany?: Prisma.CredentialCreateManyDepartmentInputEnvelope;
+  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
 };
 
-export type CredentialUpdateManyWithWhereWithoutProjectInput = {
-  where: Prisma.CredentialScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.CredentialUpdateManyMutationInput,
-    Prisma.CredentialUncheckedUpdateManyWithoutProjectInput
-  >;
+export type CredentialUpdateManyWithoutDepartmentNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CredentialCreateWithoutDepartmentInput,
+        Prisma.CredentialUncheckedCreateWithoutDepartmentInput
+      >
+    | Prisma.CredentialCreateWithoutDepartmentInput[]
+    | Prisma.CredentialUncheckedCreateWithoutDepartmentInput[];
+  connectOrCreate?:
+    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput
+    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput[];
+  upsert?:
+    | Prisma.CredentialUpsertWithWhereUniqueWithoutDepartmentInput
+    | Prisma.CredentialUpsertWithWhereUniqueWithoutDepartmentInput[];
+  createMany?: Prisma.CredentialCreateManyDepartmentInputEnvelope;
+  set?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  disconnect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  delete?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  update?:
+    | Prisma.CredentialUpdateWithWhereUniqueWithoutDepartmentInput
+    | Prisma.CredentialUpdateWithWhereUniqueWithoutDepartmentInput[];
+  updateMany?:
+    | Prisma.CredentialUpdateManyWithWhereWithoutDepartmentInput
+    | Prisma.CredentialUpdateManyWithWhereWithoutDepartmentInput[];
+  deleteMany?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
 };
 
-export type CredentialScalarWhereInput = {
-  AND?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
-  OR?: Prisma.CredentialScalarWhereInput[];
-  NOT?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
-  id?: Prisma.StringFilter<'Credential'> | string;
-  projectId?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  productId?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  domainId?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  clientServiceRecordId?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  departmentId?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  ownerId?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  category?: Prisma.EnumCredentialCategoryEnumFilter<'Credential'> | $Enums.CredentialCategoryEnum;
-  credentialType?: Prisma.EnumCredentialTypeEnumFilter<'Credential'> | $Enums.CredentialTypeEnum;
-  criticality?:
-    | Prisma.EnumCredentialCriticalityEnumFilter<'Credential'>
-    | $Enums.CredentialCriticalityEnum;
-  environment?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  provider?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  name?: Prisma.StringFilter<'Credential'> | string;
-  url?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  login?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  password?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  apiKey?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  envData?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  phone?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  notes?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  publicNotes?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  secureNotes?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  lastRotatedAt?: Prisma.DateTimeNullableFilter<'Credential'> | Date | string | null;
-  nextRotationAt?: Prisma.DateTimeNullableFilter<'Credential'> | Date | string | null;
-  rotationOwnerId?: Prisma.StringNullableFilter<'Credential'> | string | null;
-  accessLevel?:
-    | Prisma.EnumCredentialAccessLevelEnumFilter<'Credential'>
-    | $Enums.CredentialAccessLevelEnum;
-  allowedEmployees?: Prisma.StringNullableListFilter<'Credential'>;
-  archivedAt?: Prisma.DateTimeNullableFilter<'Credential'> | Date | string | null;
-  createdAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
-  updatedAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
+export type CredentialUncheckedUpdateManyWithoutDepartmentNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CredentialCreateWithoutDepartmentInput,
+        Prisma.CredentialUncheckedCreateWithoutDepartmentInput
+      >
+    | Prisma.CredentialCreateWithoutDepartmentInput[]
+    | Prisma.CredentialUncheckedCreateWithoutDepartmentInput[];
+  connectOrCreate?:
+    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput
+    | Prisma.CredentialCreateOrConnectWithoutDepartmentInput[];
+  upsert?:
+    | Prisma.CredentialUpsertWithWhereUniqueWithoutDepartmentInput
+    | Prisma.CredentialUpsertWithWhereUniqueWithoutDepartmentInput[];
+  createMany?: Prisma.CredentialCreateManyDepartmentInputEnvelope;
+  set?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  disconnect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  delete?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  connect?: Prisma.CredentialWhereUniqueInput | Prisma.CredentialWhereUniqueInput[];
+  update?:
+    | Prisma.CredentialUpdateWithWhereUniqueWithoutDepartmentInput
+    | Prisma.CredentialUpdateWithWhereUniqueWithoutDepartmentInput[];
+  updateMany?:
+    | Prisma.CredentialUpdateManyWithWhereWithoutDepartmentInput
+    | Prisma.CredentialUpdateManyWithWhereWithoutDepartmentInput[];
+  deleteMany?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
 };
 
 export type CredentialCreateWithoutClientServiceRecordsInput = {
@@ -1619,115 +1470,6 @@ export type CredentialUncheckedUpdateWithoutClientServiceRecordsInput = {
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedUpdateManyWithoutCredentialNestedInput;
 };
 
-export type CredentialCreateWithoutDepartmentInput = {
-  id?: string;
-  productId?: string | null;
-  domainId?: string | null;
-  clientServiceRecordId?: string | null;
-  category: $Enums.CredentialCategoryEnum;
-  credentialType?: $Enums.CredentialTypeEnum;
-  criticality?: $Enums.CredentialCriticalityEnum;
-  environment?: string | null;
-  provider?: string | null;
-  name: string;
-  url?: string | null;
-  login?: string | null;
-  password?: string | null;
-  apiKey?: string | null;
-  envData?: string | null;
-  phone?: string | null;
-  notes?: string | null;
-  publicNotes?: string | null;
-  secureNotes?: string | null;
-  lastRotatedAt?: Date | string | null;
-  nextRotationAt?: Date | string | null;
-  rotationOwnerId?: string | null;
-  accessLevel?: $Enums.CredentialAccessLevelEnum;
-  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
-  archivedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  project?: Prisma.ProjectCreateNestedOneWithoutCredentialsInput;
-  owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
-  mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
-};
-
-export type CredentialUncheckedCreateWithoutDepartmentInput = {
-  id?: string;
-  projectId?: string | null;
-  productId?: string | null;
-  domainId?: string | null;
-  clientServiceRecordId?: string | null;
-  ownerId?: string | null;
-  category: $Enums.CredentialCategoryEnum;
-  credentialType?: $Enums.CredentialTypeEnum;
-  criticality?: $Enums.CredentialCriticalityEnum;
-  environment?: string | null;
-  provider?: string | null;
-  name: string;
-  url?: string | null;
-  login?: string | null;
-  password?: string | null;
-  apiKey?: string | null;
-  envData?: string | null;
-  phone?: string | null;
-  notes?: string | null;
-  publicNotes?: string | null;
-  secureNotes?: string | null;
-  lastRotatedAt?: Date | string | null;
-  nextRotationAt?: Date | string | null;
-  rotationOwnerId?: string | null;
-  accessLevel?: $Enums.CredentialAccessLevelEnum;
-  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
-  archivedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
-  mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
-};
-
-export type CredentialCreateOrConnectWithoutDepartmentInput = {
-  where: Prisma.CredentialWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.CredentialCreateWithoutDepartmentInput,
-    Prisma.CredentialUncheckedCreateWithoutDepartmentInput
-  >;
-};
-
-export type CredentialCreateManyDepartmentInputEnvelope = {
-  data: Prisma.CredentialCreateManyDepartmentInput | Prisma.CredentialCreateManyDepartmentInput[];
-  skipDuplicates?: boolean;
-};
-
-export type CredentialUpsertWithWhereUniqueWithoutDepartmentInput = {
-  where: Prisma.CredentialWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.CredentialUpdateWithoutDepartmentInput,
-    Prisma.CredentialUncheckedUpdateWithoutDepartmentInput
-  >;
-  create: Prisma.XOR<
-    Prisma.CredentialCreateWithoutDepartmentInput,
-    Prisma.CredentialUncheckedCreateWithoutDepartmentInput
-  >;
-};
-
-export type CredentialUpdateWithWhereUniqueWithoutDepartmentInput = {
-  where: Prisma.CredentialWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.CredentialUpdateWithoutDepartmentInput,
-    Prisma.CredentialUncheckedUpdateWithoutDepartmentInput
-  >;
-};
-
-export type CredentialUpdateManyWithWhereWithoutDepartmentInput = {
-  where: Prisma.CredentialScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.CredentialUpdateManyMutationInput,
-    Prisma.CredentialUncheckedUpdateManyWithoutDepartmentInput
-  >;
-};
-
 export type CredentialCreateWithoutOwnerInput = {
   id?: string;
   productId?: string | null;
@@ -1835,6 +1577,46 @@ export type CredentialUpdateManyWithWhereWithoutOwnerInput = {
     Prisma.CredentialUpdateManyMutationInput,
     Prisma.CredentialUncheckedUpdateManyWithoutOwnerInput
   >;
+};
+
+export type CredentialScalarWhereInput = {
+  AND?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
+  OR?: Prisma.CredentialScalarWhereInput[];
+  NOT?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
+  id?: Prisma.StringFilter<'Credential'> | string;
+  projectId?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  productId?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  domainId?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  clientServiceRecordId?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  departmentId?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  ownerId?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  category?: Prisma.EnumCredentialCategoryEnumFilter<'Credential'> | $Enums.CredentialCategoryEnum;
+  credentialType?: Prisma.EnumCredentialTypeEnumFilter<'Credential'> | $Enums.CredentialTypeEnum;
+  criticality?:
+    | Prisma.EnumCredentialCriticalityEnumFilter<'Credential'>
+    | $Enums.CredentialCriticalityEnum;
+  environment?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  provider?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  name?: Prisma.StringFilter<'Credential'> | string;
+  url?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  login?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  password?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  apiKey?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  envData?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  phone?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  notes?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  publicNotes?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  secureNotes?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  lastRotatedAt?: Prisma.DateTimeNullableFilter<'Credential'> | Date | string | null;
+  nextRotationAt?: Prisma.DateTimeNullableFilter<'Credential'> | Date | string | null;
+  rotationOwnerId?: Prisma.StringNullableFilter<'Credential'> | string | null;
+  accessLevel?:
+    | Prisma.EnumCredentialAccessLevelEnumFilter<'Credential'>
+    | $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.StringNullableListFilter<'Credential'>;
+  archivedAt?: Prisma.DateTimeNullableFilter<'Credential'> | Date | string | null;
+  createdAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
+  updatedAt?: Prisma.DateTimeFilter<'Credential'> | Date | string;
 };
 
 export type CredentialCreateWithoutMailProviderConnectionsInput = {
@@ -2015,6 +1797,380 @@ export type CredentialUncheckedUpdateWithoutMailProviderConnectionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
+};
+
+export type CredentialCreateWithoutProjectInput = {
+  id?: string;
+  productId?: string | null;
+  domainId?: string | null;
+  clientServiceRecordId?: string | null;
+  category: $Enums.CredentialCategoryEnum;
+  credentialType?: $Enums.CredentialTypeEnum;
+  criticality?: $Enums.CredentialCriticalityEnum;
+  environment?: string | null;
+  provider?: string | null;
+  name: string;
+  url?: string | null;
+  login?: string | null;
+  password?: string | null;
+  apiKey?: string | null;
+  envData?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  publicNotes?: string | null;
+  secureNotes?: string | null;
+  lastRotatedAt?: Date | string | null;
+  nextRotationAt?: Date | string | null;
+  rotationOwnerId?: string | null;
+  accessLevel?: $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  department?: Prisma.DepartmentCreateNestedOneWithoutCredentialsInput;
+  owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
+};
+
+export type CredentialUncheckedCreateWithoutProjectInput = {
+  id?: string;
+  productId?: string | null;
+  domainId?: string | null;
+  clientServiceRecordId?: string | null;
+  departmentId?: string | null;
+  ownerId?: string | null;
+  category: $Enums.CredentialCategoryEnum;
+  credentialType?: $Enums.CredentialTypeEnum;
+  criticality?: $Enums.CredentialCriticalityEnum;
+  environment?: string | null;
+  provider?: string | null;
+  name: string;
+  url?: string | null;
+  login?: string | null;
+  password?: string | null;
+  apiKey?: string | null;
+  envData?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  publicNotes?: string | null;
+  secureNotes?: string | null;
+  lastRotatedAt?: Date | string | null;
+  nextRotationAt?: Date | string | null;
+  rotationOwnerId?: string | null;
+  accessLevel?: $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
+};
+
+export type CredentialCreateOrConnectWithoutProjectInput = {
+  where: Prisma.CredentialWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.CredentialCreateWithoutProjectInput,
+    Prisma.CredentialUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type CredentialCreateManyProjectInputEnvelope = {
+  data: Prisma.CredentialCreateManyProjectInput | Prisma.CredentialCreateManyProjectInput[];
+  skipDuplicates?: boolean;
+};
+
+export type CredentialUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.CredentialWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.CredentialUpdateWithoutProjectInput,
+    Prisma.CredentialUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.CredentialCreateWithoutProjectInput,
+    Prisma.CredentialUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type CredentialUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.CredentialWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.CredentialUpdateWithoutProjectInput,
+    Prisma.CredentialUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type CredentialUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.CredentialScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.CredentialUpdateManyMutationInput,
+    Prisma.CredentialUncheckedUpdateManyWithoutProjectInput
+  >;
+};
+
+export type CredentialCreateWithoutDepartmentInput = {
+  id?: string;
+  productId?: string | null;
+  domainId?: string | null;
+  clientServiceRecordId?: string | null;
+  category: $Enums.CredentialCategoryEnum;
+  credentialType?: $Enums.CredentialTypeEnum;
+  criticality?: $Enums.CredentialCriticalityEnum;
+  environment?: string | null;
+  provider?: string | null;
+  name: string;
+  url?: string | null;
+  login?: string | null;
+  password?: string | null;
+  apiKey?: string | null;
+  envData?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  publicNotes?: string | null;
+  secureNotes?: string | null;
+  lastRotatedAt?: Date | string | null;
+  nextRotationAt?: Date | string | null;
+  rotationOwnerId?: string | null;
+  accessLevel?: $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project?: Prisma.ProjectCreateNestedOneWithoutCredentialsInput;
+  owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
+};
+
+export type CredentialUncheckedCreateWithoutDepartmentInput = {
+  id?: string;
+  projectId?: string | null;
+  productId?: string | null;
+  domainId?: string | null;
+  clientServiceRecordId?: string | null;
+  ownerId?: string | null;
+  category: $Enums.CredentialCategoryEnum;
+  credentialType?: $Enums.CredentialTypeEnum;
+  criticality?: $Enums.CredentialCriticalityEnum;
+  environment?: string | null;
+  provider?: string | null;
+  name: string;
+  url?: string | null;
+  login?: string | null;
+  password?: string | null;
+  apiKey?: string | null;
+  envData?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  publicNotes?: string | null;
+  secureNotes?: string | null;
+  lastRotatedAt?: Date | string | null;
+  nextRotationAt?: Date | string | null;
+  rotationOwnerId?: string | null;
+  accessLevel?: $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
+};
+
+export type CredentialCreateOrConnectWithoutDepartmentInput = {
+  where: Prisma.CredentialWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.CredentialCreateWithoutDepartmentInput,
+    Prisma.CredentialUncheckedCreateWithoutDepartmentInput
+  >;
+};
+
+export type CredentialCreateManyDepartmentInputEnvelope = {
+  data: Prisma.CredentialCreateManyDepartmentInput | Prisma.CredentialCreateManyDepartmentInput[];
+  skipDuplicates?: boolean;
+};
+
+export type CredentialUpsertWithWhereUniqueWithoutDepartmentInput = {
+  where: Prisma.CredentialWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.CredentialUpdateWithoutDepartmentInput,
+    Prisma.CredentialUncheckedUpdateWithoutDepartmentInput
+  >;
+  create: Prisma.XOR<
+    Prisma.CredentialCreateWithoutDepartmentInput,
+    Prisma.CredentialUncheckedCreateWithoutDepartmentInput
+  >;
+};
+
+export type CredentialUpdateWithWhereUniqueWithoutDepartmentInput = {
+  where: Prisma.CredentialWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.CredentialUpdateWithoutDepartmentInput,
+    Prisma.CredentialUncheckedUpdateWithoutDepartmentInput
+  >;
+};
+
+export type CredentialUpdateManyWithWhereWithoutDepartmentInput = {
+  where: Prisma.CredentialScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.CredentialUpdateManyMutationInput,
+    Prisma.CredentialUncheckedUpdateManyWithoutDepartmentInput
+  >;
+};
+
+export type CredentialCreateManyOwnerInput = {
+  id?: string;
+  projectId?: string | null;
+  productId?: string | null;
+  domainId?: string | null;
+  clientServiceRecordId?: string | null;
+  departmentId?: string | null;
+  category: $Enums.CredentialCategoryEnum;
+  credentialType?: $Enums.CredentialTypeEnum;
+  criticality?: $Enums.CredentialCriticalityEnum;
+  environment?: string | null;
+  provider?: string | null;
+  name: string;
+  url?: string | null;
+  login?: string | null;
+  password?: string | null;
+  apiKey?: string | null;
+  envData?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  publicNotes?: string | null;
+  secureNotes?: string | null;
+  lastRotatedAt?: Date | string | null;
+  nextRotationAt?: Date | string | null;
+  rotationOwnerId?: string | null;
+  accessLevel?: $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type CredentialUpdateWithoutOwnerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?:
+    | Prisma.EnumCredentialCategoryEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCategoryEnum;
+  credentialType?:
+    | Prisma.EnumCredentialTypeEnumFieldUpdateOperationsInput
+    | $Enums.CredentialTypeEnum;
+  criticality?:
+    | Prisma.EnumCredentialCriticalityEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCriticalityEnum;
+  environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  login?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  envData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publicNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  secureNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  lastRotatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  nextRotationAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  rotationOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  accessLevel?:
+    | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
+    | $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneWithoutCredentialsNestedInput;
+  department?: Prisma.DepartmentUpdateOneWithoutCredentialsNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionUpdateManyWithoutCredentialNestedInput;
+};
+
+export type CredentialUncheckedUpdateWithoutOwnerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?:
+    | Prisma.EnumCredentialCategoryEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCategoryEnum;
+  credentialType?:
+    | Prisma.EnumCredentialTypeEnumFieldUpdateOperationsInput
+    | $Enums.CredentialTypeEnum;
+  criticality?:
+    | Prisma.EnumCredentialCriticalityEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCriticalityEnum;
+  environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  login?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  envData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publicNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  secureNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  lastRotatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  nextRotationAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  rotationOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  accessLevel?:
+    | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
+    | $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionUncheckedUpdateManyWithoutCredentialNestedInput;
+};
+
+export type CredentialUncheckedUpdateManyWithoutOwnerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?:
+    | Prisma.EnumCredentialCategoryEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCategoryEnum;
+  credentialType?:
+    | Prisma.EnumCredentialTypeEnumFieldUpdateOperationsInput
+    | $Enums.CredentialTypeEnum;
+  criticality?:
+    | Prisma.EnumCredentialCriticalityEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCriticalityEnum;
+  environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  login?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  envData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publicNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  secureNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  lastRotatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  nextRotationAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  rotationOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  accessLevel?:
+    | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
+    | $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type CredentialCreateManyProjectInput = {
@@ -2296,162 +2452,6 @@ export type CredentialUncheckedUpdateManyWithoutDepartmentInput = {
   domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  category?:
-    | Prisma.EnumCredentialCategoryEnumFieldUpdateOperationsInput
-    | $Enums.CredentialCategoryEnum;
-  credentialType?:
-    | Prisma.EnumCredentialTypeEnumFieldUpdateOperationsInput
-    | $Enums.CredentialTypeEnum;
-  criticality?:
-    | Prisma.EnumCredentialCriticalityEnumFieldUpdateOperationsInput
-    | $Enums.CredentialCriticalityEnum;
-  environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  login?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  envData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  publicNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  secureNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  lastRotatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  nextRotationAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  rotationOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  accessLevel?:
-    | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
-    | $Enums.CredentialAccessLevelEnum;
-  allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type CredentialCreateManyOwnerInput = {
-  id?: string;
-  projectId?: string | null;
-  productId?: string | null;
-  domainId?: string | null;
-  clientServiceRecordId?: string | null;
-  departmentId?: string | null;
-  category: $Enums.CredentialCategoryEnum;
-  credentialType?: $Enums.CredentialTypeEnum;
-  criticality?: $Enums.CredentialCriticalityEnum;
-  environment?: string | null;
-  provider?: string | null;
-  name: string;
-  url?: string | null;
-  login?: string | null;
-  password?: string | null;
-  apiKey?: string | null;
-  envData?: string | null;
-  phone?: string | null;
-  notes?: string | null;
-  publicNotes?: string | null;
-  secureNotes?: string | null;
-  lastRotatedAt?: Date | string | null;
-  nextRotationAt?: Date | string | null;
-  rotationOwnerId?: string | null;
-  accessLevel?: $Enums.CredentialAccessLevelEnum;
-  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
-  archivedAt?: Date | string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type CredentialUpdateWithoutOwnerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  category?:
-    | Prisma.EnumCredentialCategoryEnumFieldUpdateOperationsInput
-    | $Enums.CredentialCategoryEnum;
-  credentialType?:
-    | Prisma.EnumCredentialTypeEnumFieldUpdateOperationsInput
-    | $Enums.CredentialTypeEnum;
-  criticality?:
-    | Prisma.EnumCredentialCriticalityEnumFieldUpdateOperationsInput
-    | $Enums.CredentialCriticalityEnum;
-  environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  login?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  envData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  publicNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  secureNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  lastRotatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  nextRotationAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  rotationOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  accessLevel?:
-    | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
-    | $Enums.CredentialAccessLevelEnum;
-  allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  project?: Prisma.ProjectUpdateOneWithoutCredentialsNestedInput;
-  department?: Prisma.DepartmentUpdateOneWithoutCredentialsNestedInput;
-  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput;
-  mailProviderConnections?: Prisma.MailProviderConnectionUpdateManyWithoutCredentialNestedInput;
-};
-
-export type CredentialUncheckedUpdateWithoutOwnerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  category?:
-    | Prisma.EnumCredentialCategoryEnumFieldUpdateOperationsInput
-    | $Enums.CredentialCategoryEnum;
-  credentialType?:
-    | Prisma.EnumCredentialTypeEnumFieldUpdateOperationsInput
-    | $Enums.CredentialTypeEnum;
-  criticality?:
-    | Prisma.EnumCredentialCriticalityEnumFieldUpdateOperationsInput
-    | $Enums.CredentialCriticalityEnum;
-  environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  login?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  envData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  publicNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  secureNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  lastRotatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  nextRotationAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  rotationOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  accessLevel?:
-    | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
-    | $Enums.CredentialAccessLevelEnum;
-  allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
-  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
-  mailProviderConnections?: Prisma.MailProviderConnectionUncheckedUpdateManyWithoutCredentialNestedInput;
-};
-
-export type CredentialUncheckedUpdateManyWithoutOwnerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   category?:
     | Prisma.EnumCredentialCategoryEnumFieldUpdateOperationsInput
     | $Enums.CredentialCategoryEnum;

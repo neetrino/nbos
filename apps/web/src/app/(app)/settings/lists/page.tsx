@@ -25,6 +25,9 @@ import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
 
 const LIST_KEY_LABELS: Record<string, string> = {
   PRODUCT_TYPE: 'Product Type',
+  INTEGRATION_PROVIDER: 'Integration Providers',
+  INTEGRATION_REQUIRED_SETUP: 'Integration Required Setup',
+  INTEGRATION_REGISTRY_STATUS: 'Integration Registry Status',
 };
 
 const PROTECTED_LIST_KEYS = new Set(['PRODUCT_TYPE']);

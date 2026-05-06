@@ -782,21 +782,6 @@ export type ClientServiceRecordUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type ClientServiceRecordListRelationFilter = {
-  every?: Prisma.ClientServiceRecordWhereInput;
-  some?: Prisma.ClientServiceRecordWhereInput;
-  none?: Prisma.ClientServiceRecordWhereInput;
-};
-
-export type ClientServiceRecordOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder;
-};
-
-export type ClientServiceRecordNullableScalarRelationFilter = {
-  is?: Prisma.ClientServiceRecordWhereInput | null;
-  isNot?: Prisma.ClientServiceRecordWhereInput | null;
-};
-
 export type ClientServiceRecordCountOrderByAggregateInput = {
   id?: Prisma.SortOrder;
   projectId?: Prisma.SortOrder;
@@ -874,6 +859,247 @@ export type ClientServiceRecordMinOrderByAggregateInput = {
 export type ClientServiceRecordSumOrderByAggregateInput = {
   ourCost?: Prisma.SortOrder;
   clientCharge?: Prisma.SortOrder;
+};
+
+export type ClientServiceRecordListRelationFilter = {
+  every?: Prisma.ClientServiceRecordWhereInput;
+  some?: Prisma.ClientServiceRecordWhereInput;
+  none?: Prisma.ClientServiceRecordWhereInput;
+};
+
+export type ClientServiceRecordOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
+};
+
+export type ClientServiceRecordNullableScalarRelationFilter = {
+  is?: Prisma.ClientServiceRecordWhereInput | null;
+  isNot?: Prisma.ClientServiceRecordWhereInput | null;
+};
+
+export type EnumClientServiceTypeFieldUpdateOperationsInput = {
+  set?: $Enums.ClientServiceType;
+};
+
+export type EnumClientServiceStatusFieldUpdateOperationsInput = {
+  set?: $Enums.ClientServiceStatus;
+};
+
+export type EnumClientServiceBillingModelFieldUpdateOperationsInput = {
+  set?: $Enums.ClientServiceBillingModel;
+};
+
+export type EnumClientServicePricingModelFieldUpdateOperationsInput = {
+  set?: $Enums.ClientServicePricingModel;
+};
+
+export type EnumExpenseFrequencyFieldUpdateOperationsInput = {
+  set?: $Enums.ExpenseFrequency;
+};
+
+export type NullableDecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+};
+
+export type EnumTaxStatusFieldUpdateOperationsInput = {
+  set?: $Enums.TaxStatus;
+};
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null;
+};
+
+export type ClientServiceRecordCreateNestedManyWithoutProviderAccountInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
+        Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
+      >
+    | Prisma.ClientServiceRecordCreateWithoutProviderAccountInput[]
+    | Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput[];
+  connectOrCreate?:
+    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput[];
+  createMany?: Prisma.ClientServiceRecordCreateManyProviderAccountInputEnvelope;
+  connect?:
+    | Prisma.ClientServiceRecordWhereUniqueInput
+    | Prisma.ClientServiceRecordWhereUniqueInput[];
+};
+
+export type ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
+        Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
+      >
+    | Prisma.ClientServiceRecordCreateWithoutProviderAccountInput[]
+    | Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput[];
+  connectOrCreate?:
+    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput[];
+  createMany?: Prisma.ClientServiceRecordCreateManyProviderAccountInputEnvelope;
+  connect?:
+    | Prisma.ClientServiceRecordWhereUniqueInput
+    | Prisma.ClientServiceRecordWhereUniqueInput[];
+};
+
+export type ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
+        Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
+      >
+    | Prisma.ClientServiceRecordCreateWithoutProviderAccountInput[]
+    | Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput[];
+  connectOrCreate?:
+    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput[];
+  upsert?:
+    | Prisma.ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput[];
+  createMany?: Prisma.ClientServiceRecordCreateManyProviderAccountInputEnvelope;
+  set?: Prisma.ClientServiceRecordWhereUniqueInput | Prisma.ClientServiceRecordWhereUniqueInput[];
+  disconnect?:
+    | Prisma.ClientServiceRecordWhereUniqueInput
+    | Prisma.ClientServiceRecordWhereUniqueInput[];
+  delete?:
+    | Prisma.ClientServiceRecordWhereUniqueInput
+    | Prisma.ClientServiceRecordWhereUniqueInput[];
+  connect?:
+    | Prisma.ClientServiceRecordWhereUniqueInput
+    | Prisma.ClientServiceRecordWhereUniqueInput[];
+  update?:
+    | Prisma.ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput[];
+  updateMany?:
+    | Prisma.ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput[];
+  deleteMany?:
+    | Prisma.ClientServiceRecordScalarWhereInput
+    | Prisma.ClientServiceRecordScalarWhereInput[];
+};
+
+export type ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
+        Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
+      >
+    | Prisma.ClientServiceRecordCreateWithoutProviderAccountInput[]
+    | Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput[];
+  connectOrCreate?:
+    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput[];
+  upsert?:
+    | Prisma.ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput[];
+  createMany?: Prisma.ClientServiceRecordCreateManyProviderAccountInputEnvelope;
+  set?: Prisma.ClientServiceRecordWhereUniqueInput | Prisma.ClientServiceRecordWhereUniqueInput[];
+  disconnect?:
+    | Prisma.ClientServiceRecordWhereUniqueInput
+    | Prisma.ClientServiceRecordWhereUniqueInput[];
+  delete?:
+    | Prisma.ClientServiceRecordWhereUniqueInput
+    | Prisma.ClientServiceRecordWhereUniqueInput[];
+  connect?:
+    | Prisma.ClientServiceRecordWhereUniqueInput
+    | Prisma.ClientServiceRecordWhereUniqueInput[];
+  update?:
+    | Prisma.ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput[];
+  updateMany?:
+    | Prisma.ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput
+    | Prisma.ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput[];
+  deleteMany?:
+    | Prisma.ClientServiceRecordScalarWhereInput
+    | Prisma.ClientServiceRecordScalarWhereInput[];
+};
+
+export type ClientServiceRecordCreateNestedOneWithoutInvoicesInput = {
+  create?: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutInvoicesInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutInvoicesInput
+  >;
+  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutInvoicesInput;
+  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
+};
+
+export type ClientServiceRecordUpdateOneWithoutInvoicesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutInvoicesInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutInvoicesInput
+  >;
+  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutInvoicesInput;
+  upsert?: Prisma.ClientServiceRecordUpsertWithoutInvoicesInput;
+  disconnect?: Prisma.ClientServiceRecordWhereInput | boolean;
+  delete?: Prisma.ClientServiceRecordWhereInput | boolean;
+  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ClientServiceRecordUpdateToOneWithWhereWithoutInvoicesInput,
+      Prisma.ClientServiceRecordUpdateWithoutInvoicesInput
+    >,
+    Prisma.ClientServiceRecordUncheckedUpdateWithoutInvoicesInput
+  >;
+};
+
+export type ClientServiceRecordCreateNestedOneWithoutExpensePlansInput = {
+  create?: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutExpensePlansInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutExpensePlansInput
+  >;
+  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutExpensePlansInput;
+  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
+};
+
+export type ClientServiceRecordUpdateOneWithoutExpensePlansNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutExpensePlansInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutExpensePlansInput
+  >;
+  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutExpensePlansInput;
+  upsert?: Prisma.ClientServiceRecordUpsertWithoutExpensePlansInput;
+  disconnect?: Prisma.ClientServiceRecordWhereInput | boolean;
+  delete?: Prisma.ClientServiceRecordWhereInput | boolean;
+  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ClientServiceRecordUpdateToOneWithWhereWithoutExpensePlansInput,
+      Prisma.ClientServiceRecordUpdateWithoutExpensePlansInput
+    >,
+    Prisma.ClientServiceRecordUncheckedUpdateWithoutExpensePlansInput
+  >;
+};
+
+export type ClientServiceRecordCreateNestedOneWithoutExpensesInput = {
+  create?: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutExpensesInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutExpensesInput
+  >;
+  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutExpensesInput;
+  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
+};
+
+export type ClientServiceRecordUpdateOneWithoutExpensesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutExpensesInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutExpensesInput
+  >;
+  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutExpensesInput;
+  upsert?: Prisma.ClientServiceRecordUpsertWithoutExpensesInput;
+  disconnect?: Prisma.ClientServiceRecordWhereInput | boolean;
+  delete?: Prisma.ClientServiceRecordWhereInput | boolean;
+  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ClientServiceRecordUpdateToOneWithWhereWithoutExpensesInput,
+      Prisma.ClientServiceRecordUpdateWithoutExpensesInput
+    >,
+    Prisma.ClientServiceRecordUncheckedUpdateWithoutExpensesInput
+  >;
 };
 
 export type ClientServiceRecordCreateNestedManyWithoutProjectInput = {
@@ -1088,213 +1314,7 @@ export type ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput = {
     | Prisma.ClientServiceRecordScalarWhereInput[];
 };
 
-export type ClientServiceRecordCreateNestedOneWithoutInvoicesInput = {
-  create?: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutInvoicesInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutInvoicesInput
-  >;
-  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutInvoicesInput;
-  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
-};
-
-export type ClientServiceRecordUpdateOneWithoutInvoicesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutInvoicesInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutInvoicesInput
-  >;
-  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutInvoicesInput;
-  upsert?: Prisma.ClientServiceRecordUpsertWithoutInvoicesInput;
-  disconnect?: Prisma.ClientServiceRecordWhereInput | boolean;
-  delete?: Prisma.ClientServiceRecordWhereInput | boolean;
-  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ClientServiceRecordUpdateToOneWithWhereWithoutInvoicesInput,
-      Prisma.ClientServiceRecordUpdateWithoutInvoicesInput
-    >,
-    Prisma.ClientServiceRecordUncheckedUpdateWithoutInvoicesInput
-  >;
-};
-
-export type ClientServiceRecordCreateNestedOneWithoutExpensePlansInput = {
-  create?: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutExpensePlansInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutExpensePlansInput
-  >;
-  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutExpensePlansInput;
-  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
-};
-
-export type ClientServiceRecordUpdateOneWithoutExpensePlansNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutExpensePlansInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutExpensePlansInput
-  >;
-  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutExpensePlansInput;
-  upsert?: Prisma.ClientServiceRecordUpsertWithoutExpensePlansInput;
-  disconnect?: Prisma.ClientServiceRecordWhereInput | boolean;
-  delete?: Prisma.ClientServiceRecordWhereInput | boolean;
-  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ClientServiceRecordUpdateToOneWithWhereWithoutExpensePlansInput,
-      Prisma.ClientServiceRecordUpdateWithoutExpensePlansInput
-    >,
-    Prisma.ClientServiceRecordUncheckedUpdateWithoutExpensePlansInput
-  >;
-};
-
-export type ClientServiceRecordCreateNestedOneWithoutExpensesInput = {
-  create?: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutExpensesInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutExpensesInput
-  >;
-  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutExpensesInput;
-  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
-};
-
-export type ClientServiceRecordUpdateOneWithoutExpensesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutExpensesInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutExpensesInput
-  >;
-  connectOrCreate?: Prisma.ClientServiceRecordCreateOrConnectWithoutExpensesInput;
-  upsert?: Prisma.ClientServiceRecordUpsertWithoutExpensesInput;
-  disconnect?: Prisma.ClientServiceRecordWhereInput | boolean;
-  delete?: Prisma.ClientServiceRecordWhereInput | boolean;
-  connect?: Prisma.ClientServiceRecordWhereUniqueInput;
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.ClientServiceRecordUpdateToOneWithWhereWithoutExpensesInput,
-      Prisma.ClientServiceRecordUpdateWithoutExpensesInput
-    >,
-    Prisma.ClientServiceRecordUncheckedUpdateWithoutExpensesInput
-  >;
-};
-
-export type ClientServiceRecordCreateNestedManyWithoutProviderAccountInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
-        Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
-      >
-    | Prisma.ClientServiceRecordCreateWithoutProviderAccountInput[]
-    | Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput[];
-  connectOrCreate?:
-    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput[];
-  createMany?: Prisma.ClientServiceRecordCreateManyProviderAccountInputEnvelope;
-  connect?:
-    | Prisma.ClientServiceRecordWhereUniqueInput
-    | Prisma.ClientServiceRecordWhereUniqueInput[];
-};
-
-export type ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
-        Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
-      >
-    | Prisma.ClientServiceRecordCreateWithoutProviderAccountInput[]
-    | Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput[];
-  connectOrCreate?:
-    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput[];
-  createMany?: Prisma.ClientServiceRecordCreateManyProviderAccountInputEnvelope;
-  connect?:
-    | Prisma.ClientServiceRecordWhereUniqueInput
-    | Prisma.ClientServiceRecordWhereUniqueInput[];
-};
-
-export type ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
-        Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
-      >
-    | Prisma.ClientServiceRecordCreateWithoutProviderAccountInput[]
-    | Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput[];
-  connectOrCreate?:
-    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput[];
-  upsert?:
-    | Prisma.ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput[];
-  createMany?: Prisma.ClientServiceRecordCreateManyProviderAccountInputEnvelope;
-  set?: Prisma.ClientServiceRecordWhereUniqueInput | Prisma.ClientServiceRecordWhereUniqueInput[];
-  disconnect?:
-    | Prisma.ClientServiceRecordWhereUniqueInput
-    | Prisma.ClientServiceRecordWhereUniqueInput[];
-  delete?:
-    | Prisma.ClientServiceRecordWhereUniqueInput
-    | Prisma.ClientServiceRecordWhereUniqueInput[];
-  connect?:
-    | Prisma.ClientServiceRecordWhereUniqueInput
-    | Prisma.ClientServiceRecordWhereUniqueInput[];
-  update?:
-    | Prisma.ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput[];
-  updateMany?:
-    | Prisma.ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput[];
-  deleteMany?:
-    | Prisma.ClientServiceRecordScalarWhereInput
-    | Prisma.ClientServiceRecordScalarWhereInput[];
-};
-
-export type ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
-        Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
-      >
-    | Prisma.ClientServiceRecordCreateWithoutProviderAccountInput[]
-    | Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput[];
-  connectOrCreate?:
-    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordCreateOrConnectWithoutProviderAccountInput[];
-  upsert?:
-    | Prisma.ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput[];
-  createMany?: Prisma.ClientServiceRecordCreateManyProviderAccountInputEnvelope;
-  set?: Prisma.ClientServiceRecordWhereUniqueInput | Prisma.ClientServiceRecordWhereUniqueInput[];
-  disconnect?:
-    | Prisma.ClientServiceRecordWhereUniqueInput
-    | Prisma.ClientServiceRecordWhereUniqueInput[];
-  delete?:
-    | Prisma.ClientServiceRecordWhereUniqueInput
-    | Prisma.ClientServiceRecordWhereUniqueInput[];
-  connect?:
-    | Prisma.ClientServiceRecordWhereUniqueInput
-    | Prisma.ClientServiceRecordWhereUniqueInput[];
-  update?:
-    | Prisma.ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput[];
-  updateMany?:
-    | Prisma.ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput
-    | Prisma.ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput[];
-  deleteMany?:
-    | Prisma.ClientServiceRecordScalarWhereInput
-    | Prisma.ClientServiceRecordScalarWhereInput[];
-};
-
-export type EnumClientServiceTypeFieldUpdateOperationsInput = {
-  set?: $Enums.ClientServiceType;
-};
-
-export type EnumClientServiceStatusFieldUpdateOperationsInput = {
-  set?: $Enums.ClientServiceStatus;
-};
-
-export type EnumClientServiceBillingModelFieldUpdateOperationsInput = {
-  set?: $Enums.ClientServiceBillingModel;
-};
-
-export type EnumClientServicePricingModelFieldUpdateOperationsInput = {
-  set?: $Enums.ClientServicePricingModel;
-};
-
-export type ClientServiceRecordCreateWithoutProjectInput = {
+export type ClientServiceRecordCreateWithoutProviderAccountInput = {
   id?: string;
   type: $Enums.ClientServiceType;
   name: string;
@@ -1312,20 +1332,20 @@ export type ClientServiceRecordCreateWithoutProjectInput = {
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutClientServiceRecordsInput;
   product?: Prisma.ProductCreateNestedOneWithoutClientServiceRecordsInput;
-  providerAccount?: Prisma.CredentialCreateNestedOneWithoutClientServiceRecordsInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutClientServiceRecordInput;
   expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutClientServiceRecordInput;
   expenses?: Prisma.ExpenseCreateNestedManyWithoutClientServiceRecordInput;
 };
 
-export type ClientServiceRecordUncheckedCreateWithoutProjectInput = {
+export type ClientServiceRecordUncheckedCreateWithoutProviderAccountInput = {
   id?: string;
+  projectId: string;
   productId?: string | null;
   type: $Enums.ClientServiceType;
   name: string;
   provider?: string | null;
-  providerAccountId?: string | null;
   status?: $Enums.ClientServiceStatus;
   billingModel?: $Enums.ClientServiceBillingModel;
   pricingModel?: $Enums.ClientServicePricingModel;
@@ -1344,46 +1364,46 @@ export type ClientServiceRecordUncheckedCreateWithoutProjectInput = {
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutClientServiceRecordInput;
 };
 
-export type ClientServiceRecordCreateOrConnectWithoutProjectInput = {
+export type ClientServiceRecordCreateOrConnectWithoutProviderAccountInput = {
   where: Prisma.ClientServiceRecordWhereUniqueInput;
   create: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutProjectInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutProjectInput
+    Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
   >;
 };
 
-export type ClientServiceRecordCreateManyProjectInputEnvelope = {
+export type ClientServiceRecordCreateManyProviderAccountInputEnvelope = {
   data:
-    | Prisma.ClientServiceRecordCreateManyProjectInput
-    | Prisma.ClientServiceRecordCreateManyProjectInput[];
+    | Prisma.ClientServiceRecordCreateManyProviderAccountInput
+    | Prisma.ClientServiceRecordCreateManyProviderAccountInput[];
   skipDuplicates?: boolean;
 };
 
-export type ClientServiceRecordUpsertWithWhereUniqueWithoutProjectInput = {
+export type ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput = {
   where: Prisma.ClientServiceRecordWhereUniqueInput;
   update: Prisma.XOR<
-    Prisma.ClientServiceRecordUpdateWithoutProjectInput,
-    Prisma.ClientServiceRecordUncheckedUpdateWithoutProjectInput
+    Prisma.ClientServiceRecordUpdateWithoutProviderAccountInput,
+    Prisma.ClientServiceRecordUncheckedUpdateWithoutProviderAccountInput
   >;
   create: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutProjectInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutProjectInput
+    Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
   >;
 };
 
-export type ClientServiceRecordUpdateWithWhereUniqueWithoutProjectInput = {
+export type ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput = {
   where: Prisma.ClientServiceRecordWhereUniqueInput;
   data: Prisma.XOR<
-    Prisma.ClientServiceRecordUpdateWithoutProjectInput,
-    Prisma.ClientServiceRecordUncheckedUpdateWithoutProjectInput
+    Prisma.ClientServiceRecordUpdateWithoutProviderAccountInput,
+    Prisma.ClientServiceRecordUncheckedUpdateWithoutProviderAccountInput
   >;
 };
 
-export type ClientServiceRecordUpdateManyWithWhereWithoutProjectInput = {
+export type ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput = {
   where: Prisma.ClientServiceRecordScalarWhereInput;
   data: Prisma.XOR<
     Prisma.ClientServiceRecordUpdateManyMutationInput,
-    Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectInput
+    Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountInput
   >;
 };
 
@@ -1427,99 +1447,6 @@ export type ClientServiceRecordScalarWhereInput = {
   notes?: Prisma.StringNullableFilter<'ClientServiceRecord'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'ClientServiceRecord'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'ClientServiceRecord'> | Date | string;
-};
-
-export type ClientServiceRecordCreateWithoutProductInput = {
-  id?: string;
-  type: $Enums.ClientServiceType;
-  name: string;
-  provider?: string | null;
-  status?: $Enums.ClientServiceStatus;
-  billingModel?: $Enums.ClientServiceBillingModel;
-  pricingModel?: $Enums.ClientServicePricingModel;
-  frequency?: $Enums.ExpenseFrequency;
-  ourCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  clientCharge?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  taxStatus?: $Enums.TaxStatus;
-  notificationsEnabled?: boolean;
-  startDate?: Date | string | null;
-  renewalDate?: Date | string | null;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  project: Prisma.ProjectCreateNestedOneWithoutClientServiceRecordsInput;
-  providerAccount?: Prisma.CredentialCreateNestedOneWithoutClientServiceRecordsInput;
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutClientServiceRecordInput;
-  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutClientServiceRecordInput;
-  expenses?: Prisma.ExpenseCreateNestedManyWithoutClientServiceRecordInput;
-};
-
-export type ClientServiceRecordUncheckedCreateWithoutProductInput = {
-  id?: string;
-  projectId: string;
-  type: $Enums.ClientServiceType;
-  name: string;
-  provider?: string | null;
-  providerAccountId?: string | null;
-  status?: $Enums.ClientServiceStatus;
-  billingModel?: $Enums.ClientServiceBillingModel;
-  pricingModel?: $Enums.ClientServicePricingModel;
-  frequency?: $Enums.ExpenseFrequency;
-  ourCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  clientCharge?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  taxStatus?: $Enums.TaxStatus;
-  notificationsEnabled?: boolean;
-  startDate?: Date | string | null;
-  renewalDate?: Date | string | null;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutClientServiceRecordInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutClientServiceRecordInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutClientServiceRecordInput;
-};
-
-export type ClientServiceRecordCreateOrConnectWithoutProductInput = {
-  where: Prisma.ClientServiceRecordWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutProductInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutProductInput
-  >;
-};
-
-export type ClientServiceRecordCreateManyProductInputEnvelope = {
-  data:
-    | Prisma.ClientServiceRecordCreateManyProductInput
-    | Prisma.ClientServiceRecordCreateManyProductInput[];
-  skipDuplicates?: boolean;
-};
-
-export type ClientServiceRecordUpsertWithWhereUniqueWithoutProductInput = {
-  where: Prisma.ClientServiceRecordWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.ClientServiceRecordUpdateWithoutProductInput,
-    Prisma.ClientServiceRecordUncheckedUpdateWithoutProductInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutProductInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutProductInput
-  >;
-};
-
-export type ClientServiceRecordUpdateWithWhereUniqueWithoutProductInput = {
-  where: Prisma.ClientServiceRecordWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.ClientServiceRecordUpdateWithoutProductInput,
-    Prisma.ClientServiceRecordUncheckedUpdateWithoutProductInput
-  >;
-};
-
-export type ClientServiceRecordUpdateManyWithWhereWithoutProductInput = {
-  where: Prisma.ClientServiceRecordScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.ClientServiceRecordUpdateManyMutationInput,
-    Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductInput
-  >;
 };
 
 export type ClientServiceRecordCreateWithoutInvoicesInput = {
@@ -2002,7 +1929,100 @@ export type ClientServiceRecordUncheckedUpdateWithoutExpensesInput = {
   expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutClientServiceRecordNestedInput;
 };
 
-export type ClientServiceRecordCreateWithoutProviderAccountInput = {
+export type ClientServiceRecordCreateWithoutProjectInput = {
+  id?: string;
+  type: $Enums.ClientServiceType;
+  name: string;
+  provider?: string | null;
+  status?: $Enums.ClientServiceStatus;
+  billingModel?: $Enums.ClientServiceBillingModel;
+  pricingModel?: $Enums.ClientServicePricingModel;
+  frequency?: $Enums.ExpenseFrequency;
+  ourCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  clientCharge?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  taxStatus?: $Enums.TaxStatus;
+  notificationsEnabled?: boolean;
+  startDate?: Date | string | null;
+  renewalDate?: Date | string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  product?: Prisma.ProductCreateNestedOneWithoutClientServiceRecordsInput;
+  providerAccount?: Prisma.CredentialCreateNestedOneWithoutClientServiceRecordsInput;
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutClientServiceRecordInput;
+  expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutClientServiceRecordInput;
+  expenses?: Prisma.ExpenseCreateNestedManyWithoutClientServiceRecordInput;
+};
+
+export type ClientServiceRecordUncheckedCreateWithoutProjectInput = {
+  id?: string;
+  productId?: string | null;
+  type: $Enums.ClientServiceType;
+  name: string;
+  provider?: string | null;
+  providerAccountId?: string | null;
+  status?: $Enums.ClientServiceStatus;
+  billingModel?: $Enums.ClientServiceBillingModel;
+  pricingModel?: $Enums.ClientServicePricingModel;
+  frequency?: $Enums.ExpenseFrequency;
+  ourCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  clientCharge?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  taxStatus?: $Enums.TaxStatus;
+  notificationsEnabled?: boolean;
+  startDate?: Date | string | null;
+  renewalDate?: Date | string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutClientServiceRecordInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutClientServiceRecordInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutClientServiceRecordInput;
+};
+
+export type ClientServiceRecordCreateOrConnectWithoutProjectInput = {
+  where: Prisma.ClientServiceRecordWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutProjectInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type ClientServiceRecordCreateManyProjectInputEnvelope = {
+  data:
+    | Prisma.ClientServiceRecordCreateManyProjectInput
+    | Prisma.ClientServiceRecordCreateManyProjectInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ClientServiceRecordUpsertWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.ClientServiceRecordWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ClientServiceRecordUpdateWithoutProjectInput,
+    Prisma.ClientServiceRecordUncheckedUpdateWithoutProjectInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutProjectInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutProjectInput
+  >;
+};
+
+export type ClientServiceRecordUpdateWithWhereUniqueWithoutProjectInput = {
+  where: Prisma.ClientServiceRecordWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ClientServiceRecordUpdateWithoutProjectInput,
+    Prisma.ClientServiceRecordUncheckedUpdateWithoutProjectInput
+  >;
+};
+
+export type ClientServiceRecordUpdateManyWithWhereWithoutProjectInput = {
+  where: Prisma.ClientServiceRecordScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ClientServiceRecordUpdateManyMutationInput,
+    Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProjectInput
+  >;
+};
+
+export type ClientServiceRecordCreateWithoutProductInput = {
   id?: string;
   type: $Enums.ClientServiceType;
   name: string;
@@ -2021,13 +2041,81 @@ export type ClientServiceRecordCreateWithoutProviderAccountInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutClientServiceRecordsInput;
-  product?: Prisma.ProductCreateNestedOneWithoutClientServiceRecordsInput;
+  providerAccount?: Prisma.CredentialCreateNestedOneWithoutClientServiceRecordsInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutClientServiceRecordInput;
   expensePlans?: Prisma.ExpensePlanCreateNestedManyWithoutClientServiceRecordInput;
   expenses?: Prisma.ExpenseCreateNestedManyWithoutClientServiceRecordInput;
 };
 
-export type ClientServiceRecordUncheckedCreateWithoutProviderAccountInput = {
+export type ClientServiceRecordUncheckedCreateWithoutProductInput = {
+  id?: string;
+  projectId: string;
+  type: $Enums.ClientServiceType;
+  name: string;
+  provider?: string | null;
+  providerAccountId?: string | null;
+  status?: $Enums.ClientServiceStatus;
+  billingModel?: $Enums.ClientServiceBillingModel;
+  pricingModel?: $Enums.ClientServicePricingModel;
+  frequency?: $Enums.ExpenseFrequency;
+  ourCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  clientCharge?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  taxStatus?: $Enums.TaxStatus;
+  notificationsEnabled?: boolean;
+  startDate?: Date | string | null;
+  renewalDate?: Date | string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutClientServiceRecordInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutClientServiceRecordInput;
+  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutClientServiceRecordInput;
+};
+
+export type ClientServiceRecordCreateOrConnectWithoutProductInput = {
+  where: Prisma.ClientServiceRecordWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutProductInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type ClientServiceRecordCreateManyProductInputEnvelope = {
+  data:
+    | Prisma.ClientServiceRecordCreateManyProductInput
+    | Prisma.ClientServiceRecordCreateManyProductInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ClientServiceRecordUpsertWithWhereUniqueWithoutProductInput = {
+  where: Prisma.ClientServiceRecordWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ClientServiceRecordUpdateWithoutProductInput,
+    Prisma.ClientServiceRecordUncheckedUpdateWithoutProductInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ClientServiceRecordCreateWithoutProductInput,
+    Prisma.ClientServiceRecordUncheckedCreateWithoutProductInput
+  >;
+};
+
+export type ClientServiceRecordUpdateWithWhereUniqueWithoutProductInput = {
+  where: Prisma.ClientServiceRecordWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ClientServiceRecordUpdateWithoutProductInput,
+    Prisma.ClientServiceRecordUncheckedUpdateWithoutProductInput
+  >;
+};
+
+export type ClientServiceRecordUpdateManyWithWhereWithoutProductInput = {
+  where: Prisma.ClientServiceRecordScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ClientServiceRecordUpdateManyMutationInput,
+    Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductInput
+  >;
+};
+
+export type ClientServiceRecordCreateManyProviderAccountInput = {
   id?: string;
   projectId: string;
   productId?: string | null;
@@ -2047,52 +2135,126 @@ export type ClientServiceRecordUncheckedCreateWithoutProviderAccountInput = {
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutClientServiceRecordInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedCreateNestedManyWithoutClientServiceRecordInput;
-  expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutClientServiceRecordInput;
 };
 
-export type ClientServiceRecordCreateOrConnectWithoutProviderAccountInput = {
-  where: Prisma.ClientServiceRecordWhereUniqueInput;
-  create: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
-  >;
+export type ClientServiceRecordUpdateWithoutProviderAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumClientServiceTypeFieldUpdateOperationsInput | $Enums.ClientServiceType;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumClientServiceStatusFieldUpdateOperationsInput | $Enums.ClientServiceStatus;
+  billingModel?:
+    | Prisma.EnumClientServiceBillingModelFieldUpdateOperationsInput
+    | $Enums.ClientServiceBillingModel;
+  pricingModel?:
+    | Prisma.EnumClientServicePricingModelFieldUpdateOperationsInput
+    | $Enums.ClientServicePricingModel;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  ourCost?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  clientCharge?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  notificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  renewalDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutClientServiceRecordsNestedInput;
+  product?: Prisma.ProductUpdateOneWithoutClientServiceRecordsNestedInput;
+  invoices?: Prisma.InvoiceUpdateManyWithoutClientServiceRecordNestedInput;
+  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutClientServiceRecordNestedInput;
+  expenses?: Prisma.ExpenseUpdateManyWithoutClientServiceRecordNestedInput;
 };
 
-export type ClientServiceRecordCreateManyProviderAccountInputEnvelope = {
-  data:
-    | Prisma.ClientServiceRecordCreateManyProviderAccountInput
-    | Prisma.ClientServiceRecordCreateManyProviderAccountInput[];
-  skipDuplicates?: boolean;
+export type ClientServiceRecordUncheckedUpdateWithoutProviderAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  type?: Prisma.EnumClientServiceTypeFieldUpdateOperationsInput | $Enums.ClientServiceType;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumClientServiceStatusFieldUpdateOperationsInput | $Enums.ClientServiceStatus;
+  billingModel?:
+    | Prisma.EnumClientServiceBillingModelFieldUpdateOperationsInput
+    | $Enums.ClientServiceBillingModel;
+  pricingModel?:
+    | Prisma.EnumClientServicePricingModelFieldUpdateOperationsInput
+    | $Enums.ClientServicePricingModel;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  ourCost?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  clientCharge?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  notificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  renewalDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutClientServiceRecordNestedInput;
+  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutClientServiceRecordNestedInput;
+  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutClientServiceRecordNestedInput;
 };
 
-export type ClientServiceRecordUpsertWithWhereUniqueWithoutProviderAccountInput = {
-  where: Prisma.ClientServiceRecordWhereUniqueInput;
-  update: Prisma.XOR<
-    Prisma.ClientServiceRecordUpdateWithoutProviderAccountInput,
-    Prisma.ClientServiceRecordUncheckedUpdateWithoutProviderAccountInput
-  >;
-  create: Prisma.XOR<
-    Prisma.ClientServiceRecordCreateWithoutProviderAccountInput,
-    Prisma.ClientServiceRecordUncheckedCreateWithoutProviderAccountInput
-  >;
-};
-
-export type ClientServiceRecordUpdateWithWhereUniqueWithoutProviderAccountInput = {
-  where: Prisma.ClientServiceRecordWhereUniqueInput;
-  data: Prisma.XOR<
-    Prisma.ClientServiceRecordUpdateWithoutProviderAccountInput,
-    Prisma.ClientServiceRecordUncheckedUpdateWithoutProviderAccountInput
-  >;
-};
-
-export type ClientServiceRecordUpdateManyWithWhereWithoutProviderAccountInput = {
-  where: Prisma.ClientServiceRecordScalarWhereInput;
-  data: Prisma.XOR<
-    Prisma.ClientServiceRecordUpdateManyMutationInput,
-    Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountInput
-  >;
+export type ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  type?: Prisma.EnumClientServiceTypeFieldUpdateOperationsInput | $Enums.ClientServiceType;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?: Prisma.EnumClientServiceStatusFieldUpdateOperationsInput | $Enums.ClientServiceStatus;
+  billingModel?:
+    | Prisma.EnumClientServiceBillingModelFieldUpdateOperationsInput
+    | $Enums.ClientServiceBillingModel;
+  pricingModel?:
+    | Prisma.EnumClientServicePricingModelFieldUpdateOperationsInput
+    | $Enums.ClientServicePricingModel;
+  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
+  ourCost?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  clientCharge?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  notificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  renewalDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
 export type ClientServiceRecordCreateManyProjectInput = {
@@ -2348,148 +2510,6 @@ export type ClientServiceRecordUncheckedUpdateManyWithoutProductInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string;
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   providerAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumClientServiceStatusFieldUpdateOperationsInput | $Enums.ClientServiceStatus;
-  billingModel?:
-    | Prisma.EnumClientServiceBillingModelFieldUpdateOperationsInput
-    | $Enums.ClientServiceBillingModel;
-  pricingModel?:
-    | Prisma.EnumClientServicePricingModelFieldUpdateOperationsInput
-    | $Enums.ClientServicePricingModel;
-  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
-  ourCost?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  clientCharge?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
-  notificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  renewalDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-};
-
-export type ClientServiceRecordCreateManyProviderAccountInput = {
-  id?: string;
-  projectId: string;
-  productId?: string | null;
-  type: $Enums.ClientServiceType;
-  name: string;
-  provider?: string | null;
-  status?: $Enums.ClientServiceStatus;
-  billingModel?: $Enums.ClientServiceBillingModel;
-  pricingModel?: $Enums.ClientServicePricingModel;
-  frequency?: $Enums.ExpenseFrequency;
-  ourCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  clientCharge?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-  taxStatus?: $Enums.TaxStatus;
-  notificationsEnabled?: boolean;
-  startDate?: Date | string | null;
-  renewalDate?: Date | string | null;
-  notes?: string | null;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
-};
-
-export type ClientServiceRecordUpdateWithoutProviderAccountInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  type?: Prisma.EnumClientServiceTypeFieldUpdateOperationsInput | $Enums.ClientServiceType;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumClientServiceStatusFieldUpdateOperationsInput | $Enums.ClientServiceStatus;
-  billingModel?:
-    | Prisma.EnumClientServiceBillingModelFieldUpdateOperationsInput
-    | $Enums.ClientServiceBillingModel;
-  pricingModel?:
-    | Prisma.EnumClientServicePricingModelFieldUpdateOperationsInput
-    | $Enums.ClientServicePricingModel;
-  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
-  ourCost?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  clientCharge?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
-  notificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  renewalDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  project?: Prisma.ProjectUpdateOneRequiredWithoutClientServiceRecordsNestedInput;
-  product?: Prisma.ProductUpdateOneWithoutClientServiceRecordsNestedInput;
-  invoices?: Prisma.InvoiceUpdateManyWithoutClientServiceRecordNestedInput;
-  expensePlans?: Prisma.ExpensePlanUpdateManyWithoutClientServiceRecordNestedInput;
-  expenses?: Prisma.ExpenseUpdateManyWithoutClientServiceRecordNestedInput;
-};
-
-export type ClientServiceRecordUncheckedUpdateWithoutProviderAccountInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumClientServiceTypeFieldUpdateOperationsInput | $Enums.ClientServiceType;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  status?: Prisma.EnumClientServiceStatusFieldUpdateOperationsInput | $Enums.ClientServiceStatus;
-  billingModel?:
-    | Prisma.EnumClientServiceBillingModelFieldUpdateOperationsInput
-    | $Enums.ClientServiceBillingModel;
-  pricingModel?:
-    | Prisma.EnumClientServicePricingModelFieldUpdateOperationsInput
-    | $Enums.ClientServicePricingModel;
-  frequency?: Prisma.EnumExpenseFrequencyFieldUpdateOperationsInput | $Enums.ExpenseFrequency;
-  ourCost?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  clientCharge?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null;
-  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
-  notificationsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean;
-  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  renewalDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutClientServiceRecordNestedInput;
-  expensePlans?: Prisma.ExpensePlanUncheckedUpdateManyWithoutClientServiceRecordNestedInput;
-  expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutClientServiceRecordNestedInput;
-};
-
-export type ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string;
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-  type?: Prisma.EnumClientServiceTypeFieldUpdateOperationsInput | $Enums.ClientServiceType;
-  name?: Prisma.StringFieldUpdateOperationsInput | string;
-  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   status?: Prisma.EnumClientServiceStatusFieldUpdateOperationsInput | $Enums.ClientServiceStatus;
   billingModel?:
     | Prisma.EnumClientServiceBillingModelFieldUpdateOperationsInput

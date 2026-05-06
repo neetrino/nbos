@@ -161,6 +161,35 @@ export function TransitionBlockerDialog<TItem>({
               </section>
             )}
 
+            {inlineOnly && directActions.length > 0 && (
+              <section className="space-y-2 pt-1">
+                <h4 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+                  Jump to
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {directActions.map((action) => (
+                    <Button
+                      key={action.key}
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={action.onClick}
+                    >
+                      {action.label}
+                    </Button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {inlineOnly && onBusinessAction && businessActionLabel && (
+              <div className="pt-1">
+                <Button type="button" variant="outline" size="sm" onClick={onBusinessAction}>
+                  {businessActionLabel}
+                </Button>
+              </div>
+            )}
+
             {actionError && (
               <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                 {actionError}
@@ -234,6 +263,11 @@ function formatFieldLabel(field: string): string {
     paymentType: 'Payment type',
     productCategory: 'Product category',
     productType: 'Product type',
+    offerSentAt: 'Offer sent date',
+    offerProof: 'Offer attachment / proof',
+    responseDueAt: 'Response due date',
+    companyId: 'Company',
+    contractProof: 'Contract proof',
     pmId: 'Project manager',
     deadline: 'Deadline',
     existingProductId: 'Existing product',

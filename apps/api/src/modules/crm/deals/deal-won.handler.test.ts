@@ -214,7 +214,7 @@ function productDeal(overrides: Record<string, unknown> = {}) {
       {
         invoices: [
           {
-            status: 'PAID',
+            moneyStatus: 'PAID',
             amount: 5000,
             paidDate: new Date('2026-04-15'),
           },

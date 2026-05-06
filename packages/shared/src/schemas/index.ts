@@ -67,6 +67,7 @@ export const createDealSchema = z.object({
   amount: z.number().positive().optional(),
   paymentType: z.enum(PAYMENT_TYPES).optional(),
   sellerId: z.string().uuid(),
+  sellerAssistantId: z.string().uuid().nullable().optional(),
   projectId: z.string().uuid().optional(),
   source: z.enum(LEAD_SOURCES).optional(),
   sourceDetail: z.string().max(100).optional(),
@@ -80,6 +81,8 @@ export const createDealSchema = z.object({
 
 export const updateDealSchema = z.object({
   name: z.string().min(1).max(200).optional(),
+  sellerId: z.string().uuid().optional(),
+  sellerAssistantId: z.string().uuid().nullable().optional(),
   status: z.enum(DEAL_STATUSES).optional(),
   amount: z.number().positive().optional(),
   paymentType: z.enum(PAYMENT_TYPES).optional(),

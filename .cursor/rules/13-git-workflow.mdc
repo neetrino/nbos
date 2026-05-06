@@ -11,3 +11,12 @@ alwaysApply: false
 - **PRs** — small, focused, green CI, description template, self-review first.
 - **No force-push** to `main`/`develop`; no secrets in commits.
 - **CHANGELOG** maintained if project ships versions.
+
+## Agent: commit after each implementation cycle
+
+When the agent finishes a **coherent slice** (feature/bugfix tied to one goal):
+
+1. Run **checks** for the touched surface (at minimum `typecheck` for affected packages; `vitest` for changed modules).
+2. **`git commit`** immediately with a **Conventional Commit** subject (and short body if useful). Do not leave the cycle “done in files but uncommitted” unless the user explicitly asked to hold commits.
+
+If the slice spans many files or is incomplete by design, split into **multiple small commits** rather than skipping commits entirely.

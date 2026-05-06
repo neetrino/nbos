@@ -44,6 +44,30 @@ export class SubscriptionsController {
     return this.subscriptionsService.getStats({ dateFrom, dateTo, partnerId });
   }
 
+  @Get('grid')
+  @ApiOperation({
+    summary: 'Subscription coverage grid for a calendar year (Invoice Card coverage + money state)',
+  })
+  async getGrid(
+    @Query('year') year?: string,
+    @Query('projectId') projectId?: string,
+    @Query('partnerId') partnerId?: string,
+    @Query('status') status?: string,
+    @Query('type') type?: string,
+    @Query('search') search?: string,
+  ) {
+    const y = year ? parseInt(year, 10) : new Date().getFullYear();
+    const safeYear = Number.isFinite(y) ? y : new Date().getFullYear();
+    return this.subscriptionsService.getGrid({
+      year: safeYear,
+      projectId,
+      partnerId,
+      status,
+      type,
+      search,
+    });
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get subscription by ID' })
   async findOne(@Param('id') id: string) {

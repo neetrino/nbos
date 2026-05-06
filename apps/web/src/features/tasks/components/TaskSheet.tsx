@@ -9,6 +9,7 @@ import { StatusBadge } from '@/components/shared';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { getTaskStatus, getTaskPriority } from '../constants/tasks';
+import { resolveTaskOrderContext } from '../utils/task-order-context';
 import { TaskActionButtons } from './TaskActionButtons';
 import { TaskChatPlaceholder } from './TaskChatPlaceholder';
 import { TaskChecklistSection } from './TaskChecklistSection';
@@ -134,6 +135,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
 
   const status = task ? getTaskStatus(task.status) : null;
   const priority = task ? getTaskPriority(task.priority) : null;
+  const orderContext = task ? resolveTaskOrderContext(task) : null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -164,6 +166,18 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
                   {priority && <StatusBadge label={priority.label} variant={priority.variant} />}
                   <Badge variant="outline">{task.code}</Badge>
                 </div>
+
+                {orderContext && (
+                  <div>
+                    <h4 className="text-muted-foreground mb-1 text-xs font-medium uppercase">
+                      Order context
+                    </h4>
+                    <p className="text-sm">
+                      <span className="font-medium">{orderContext.orderCode}</span>
+                      <span className="text-muted-foreground"> · {orderContext.scopeLabel}</span>
+                    </p>
+                  </div>
+                )}
 
                 {task.description && (
                   <div>

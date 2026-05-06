@@ -37,6 +37,8 @@ export function MessengerClient() {
   const [active, setActive] = useState<MessengerActiveView | null>(null);
   const [messages, setMessages] = useState<MessengerViewMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [hasMoreOlder, setHasMoreOlder] = useState(false);
+  const [olderLoading, setOlderLoading] = useState(false);
   const [sendBusy, setSendBusy] = useState(false);
   const [bootError, setBootError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
@@ -55,6 +57,8 @@ export function MessengerClient() {
 
   const typingClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastLocalTypingEmitRef = useRef(0);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   const activeRef = useRef(active);
   activeRef.current = active;
@@ -81,6 +85,7 @@ export function MessengerClient() {
       try {
         const res = await messengerApi.listChannelMessages(a.id);
         setMessages(res.items.map(mapMessengerRowToView));
+        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
         setChannelReadReceipt({
           seen: res.lastOwnMessageSeenByOthers,
           anchorId: res.lastOwnMessageId,
@@ -90,6 +95,43 @@ export function MessengerClient() {
       }
     })();
   }, []);
+
+  const loadOlderMessages = useCallback(async () => {
+    if (!me || !active) return;
+    const list = messagesRef.current;
+    if (list.length === 0) return;
+    const oldest = list[0];
+    if (!oldest) return;
+    setOlderLoading(true);
+    try {
+      if (active.type === 'channel') {
+        const res = await messengerApi.listChannelMessages(active.id, {
+          before: oldest.timestamp,
+        });
+        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
+        setMessages((prev) => {
+          const existing = new Set(prev.map((m) => m.id));
+          const incoming = res.items.map(mapMessengerRowToView).filter((m) => !existing.has(m.id));
+          return [...incoming, ...prev];
+        });
+      } else {
+        const res = await messengerApi.listDirectMessages(me.id, active.userId, {
+          before: oldest.timestamp,
+        });
+        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
+        setMessages((prev) => {
+          const existing = new Set(prev.map((m) => m.id));
+          const incoming = res.items.map(mapMessengerRowToView).filter((m) => !existing.has(m.id));
+          return [...incoming, ...prev];
+        });
+        setDmPeerLastReadAt(res.peerLastReadAt ?? null);
+      }
+    } catch {
+      /* noop */
+    } finally {
+      setOlderLoading(false);
+    }
+  }, [me, active]);
 
   const onChannelPeerRead = useCallback(
     (p: MessengerWsChannelPeerReadPayload) => {
@@ -302,6 +344,7 @@ export function MessengerClient() {
           const res = await messengerApi.listChannelMessages(activeSnapshot.id);
           if (cancelled) return;
           setMessages(res.items.map(mapMessengerRowToView));
+          setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
           setChannelReadReceipt({
             seen: res.lastOwnMessageSeenByOthers,
             anchorId: res.lastOwnMessageId,
@@ -313,6 +356,7 @@ export function MessengerClient() {
           const res = await messengerApi.listDirectMessages(meId, activeSnapshot.userId);
           if (cancelled) return;
           setMessages(res.items.map(mapMessengerRowToView));
+          setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
           setDmPeerLastReadAt(res.peerLastReadAt ?? null);
           await messengerApi.markDmRead(activeSnapshot.userId);
           if (!cancelled) refreshMessengerLists();
@@ -353,6 +397,7 @@ export function MessengerClient() {
         await messengerApi.sendChannelMessage(active.id, { content: text, fileAssetIds });
         const res = await messengerApi.listChannelMessages(active.id);
         setMessages(res.items.map(mapMessengerRowToView));
+        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
         setChannelReadReceipt({
           seen: res.lastOwnMessageSeenByOthers,
           anchorId: res.lastOwnMessageId,
@@ -367,6 +412,7 @@ export function MessengerClient() {
         });
         const res = await messengerApi.listDirectMessages(me.id, active.userId);
         setMessages(res.items.map(mapMessengerRowToView));
+        setHasMoreOlder(Boolean(res.meta.hasMoreOlder));
         setDmPeerLastReadAt(res.peerLastReadAt ?? null);
         await messengerApi.markDmRead(active.userId);
         refreshMessengerLists();
@@ -508,6 +554,9 @@ export function MessengerClient() {
               dmInitials={active.type === 'dm' ? (dmPeer?.initials ?? '?') : ''}
               messages={messages}
               messagesLoading={messagesLoading}
+              hasMoreOlder={hasMoreOlder}
+              olderLoading={olderLoading}
+              onLoadOlder={() => loadOlderMessages()}
               newMessage={newMessage}
               onNewMessageChange={setNewMessage}
               attachmentDraft={attachmentDraft}

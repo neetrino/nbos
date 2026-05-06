@@ -19,11 +19,12 @@ describe('BillingService', () => {
           id: 'sub-1',
           code: 'SUB-2026-0001',
           projectId: 'proj-1',
+          type: 'MAINTENANCE_ONLY',
           amount: 5000,
           taxStatus: 'TAX_FREE',
           billingDay: 15,
           status: 'ACTIVE',
-          project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test' },
+          project: { id: 'proj-1', code: 'P-2026-0001', name: 'Test', products: [] },
         },
       ]);
       prisma.invoice.findFirst.mockResolvedValueOnce(null);
@@ -34,6 +35,7 @@ describe('BillingService', () => {
       expect(result.generatedInvoices).toBe(1);
       expect(result.totalAmount).toBe(5000);
       expect(result.errors.length).toBe(0);
+      expect(result.skippedLateDelivery).toEqual([]);
       expect(prisma.invoice.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -42,6 +44,9 @@ describe('BillingService', () => {
             amount: 5000,
             taxStatus: 'TAX_FREE',
             type: 'SUBSCRIPTION',
+            moneyStatus: 'NEW',
+            coverageStartMonth: '2026-03',
+            coverageMonthCount: 1,
           }),
         }),
       );
@@ -54,8 +59,10 @@ describe('BillingService', () => {
           id: 'sub-1',
           code: 'SUB-2026-0001',
           projectId: 'proj-1',
+          type: 'MAINTENANCE_ONLY',
           amount: 5000,
           billingDay: 15,
+          project: { id: 'proj-1', code: 'P-1', name: 'T', products: [] },
         },
       ]);
       prisma.invoice.findFirst.mockResolvedValueOnce({ id: 'existing-inv' });
@@ -63,6 +70,7 @@ describe('BillingService', () => {
       const result = await service.runMonthlyBilling(today);
 
       expect(result.generatedInvoices).toBe(0);
+      expect(result.skippedLateDelivery).toEqual([]);
       expect(prisma.invoice.create).not.toHaveBeenCalled();
     });
 
@@ -73,13 +81,30 @@ describe('BillingService', () => {
 
       expect(result.generatedInvoices).toBe(0);
       expect(result.totalAmount).toBe(0);
+      expect(result.skippedLateDelivery).toEqual([]);
     });
 
     it('should collect errors without stopping', async () => {
       const today = new Date(2026, 2, 15);
       prisma.subscription.findMany.mockResolvedValue([
-        { id: 'sub-1', code: 'SUB-1', projectId: 'p1', amount: 100, billingDay: 15 },
-        { id: 'sub-2', code: 'SUB-2', projectId: 'p2', amount: 200, billingDay: 15 },
+        {
+          id: 'sub-1',
+          code: 'SUB-1',
+          projectId: 'p1',
+          type: 'MAINTENANCE_ONLY',
+          amount: 100,
+          billingDay: 15,
+          project: { id: 'p1', code: 'PR-1', name: 'A', products: [] },
+        },
+        {
+          id: 'sub-2',
+          code: 'SUB-2',
+          projectId: 'p2',
+          type: 'MAINTENANCE_ONLY',
+          amount: 200,
+          billingDay: 15,
+          project: { id: 'p2', code: 'PR-2', name: 'B', products: [] },
+        },
       ]);
       prisma.invoice.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
       prisma.invoice.create
@@ -91,6 +116,7 @@ describe('BillingService', () => {
       expect(result.generatedInvoices).toBe(1);
       expect(result.errors.length).toBe(1);
       expect(result.errors[0]).toContain('SUB-1');
+      expect(result.skippedLateDelivery).toEqual([]);
     });
 
     it('uses the target billing date year when generating invoice codes', async () => {
@@ -100,11 +126,12 @@ describe('BillingService', () => {
           id: 'sub-legacy',
           code: 'SUB-2025-0008',
           projectId: 'proj-1',
+          type: 'MAINTENANCE_ONLY',
           amount: 7500,
           taxStatus: 'TAX',
           billingDay: 15,
           status: 'ACTIVE',
-          project: { id: 'proj-1', code: 'P-2025-0001', name: 'Legacy' },
+          project: { id: 'proj-1', code: 'P-2025-0001', name: 'Legacy', products: [] },
         },
       ]);
       prisma.invoice.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
@@ -116,6 +143,43 @@ describe('BillingService', () => {
         where: { code: { startsWith: 'INV-2025-' } },
         orderBy: { code: 'desc' },
       });
+    });
+
+    it('skips DEV_ONLY invoice when product is past deadline and undelivered', async () => {
+      const today = new Date(2026, 4, 15);
+      prisma.subscription.findMany.mockResolvedValue([
+        {
+          id: 'sub-dev',
+          code: 'SUB-DEV-1',
+          projectId: 'proj-1',
+          type: 'DEV_ONLY',
+          amount: 100_000,
+          taxStatus: 'TAX',
+          billingDay: 15,
+          status: 'ACTIVE',
+          project: {
+            id: 'proj-1',
+            code: 'P-2026-0001',
+            name: 'Late',
+            products: [
+              {
+                deadline: new Date(2026, 3, 1),
+                status: 'DEVELOPMENT',
+                deliveryResolution: null,
+                extensions: [],
+              },
+            ],
+          },
+        },
+      ]);
+
+      const result = await service.runMonthlyBilling(today);
+
+      expect(result.generatedInvoices).toBe(0);
+      expect(result.skippedLateDelivery).toEqual([
+        { subscriptionCode: 'SUB-DEV-1', projectCode: 'P-2026-0001' },
+      ]);
+      expect(prisma.invoice.create).not.toHaveBeenCalled();
     });
   });
 

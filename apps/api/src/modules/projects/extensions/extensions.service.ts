@@ -9,6 +9,7 @@ import {
   type DeliveryWorkStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { NotificationService } from '../../notifications/notification.service';
 import {
   attachExtensionReadiness,
   validateExtensionStageGate,
@@ -21,6 +22,9 @@ import {
   extensionLegacyStatusForStage,
   requireDeliveryStage,
 } from '../delivery-lifecycle';
+import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
+import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
+import { SupportService } from '../../support/support.service';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -71,6 +75,9 @@ export class ExtensionsService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+    private readonly partnerAccrualClassic: PartnerAccrualClassicService,
+    private readonly supportService: SupportService,
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
@@ -138,7 +145,7 @@ export class ExtensionsService {
         order: {
           include: {
             invoices: {
-              select: { id: true, code: true, status: true, amount: true, dueDate: true },
+              select: { id: true, code: true, moneyStatus: true, amount: true, dueDate: true },
             },
           },
         },
@@ -296,7 +303,7 @@ export class ExtensionsService {
     return attachExtensionReadiness(updated);
   }
 
-  async complete(id: string) {
+  async complete(id: string, actorId: string) {
     const extension = await this.findById(id);
     this.ensureActiveForStageMove(extension.deliveryLifecycle);
     const target = 'DONE' as ExtensionStatusEnum;
@@ -313,6 +320,15 @@ export class ExtensionsService {
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    const linkedOrder = await this.prisma.order.findUnique({
+      where: { extensionId: id },
+      select: { id: true },
+    });
+    if (linkedOrder) {
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
+      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
+    }
+    await this.supportService.closeLinkedTicketsAfterExtensionDelivered(id, actorId);
     return attachExtensionReadiness(updated);
   }
 

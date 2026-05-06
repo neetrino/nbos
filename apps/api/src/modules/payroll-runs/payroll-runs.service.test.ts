@@ -1,16 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { PayrollRunsService } from './payroll-runs.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import type { NotificationService } from '../notifications/notification.service';
 
 describe('PayrollRunsService', () => {
   let service: PayrollRunsService;
   let prisma: MockPrisma;
+  let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new PayrollRunsService(prisma as never);
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    service = new PayrollRunsService(prisma as never, notifications);
   });
 
   describe('findAll', () => {
@@ -155,6 +158,20 @@ describe('PayrollRunsService', () => {
     });
   });
 
+  describe('getSalaryBoard', () => {
+    it('returns an empty grid when no employees match', async () => {
+      prisma.employee.findMany.mockResolvedValue([]);
+      prisma.payrollRun.findMany.mockResolvedValue([]);
+      prisma.salaryLine.findMany.mockResolvedValue([]);
+      const result = await service.getSalaryBoard({
+        payrollMonthFrom: '2026-02',
+        payrollMonthTo: '2026-02',
+      });
+      expect(result.months).toEqual(['2026-02']);
+      expect(result.rows).toEqual([]);
+    });
+  });
+
   describe('findById', () => {
     it('throws NotFoundException when missing', async () => {
       await expect(service.findById('missing')).rejects.toThrow(NotFoundException);
@@ -182,7 +199,9 @@ describe('PayrollRunsService', () => {
         createdBy: { id: 'e1', firstName: 'A', lastName: 'B' },
         approvedBy: { id: 'e2', firstName: 'C', lastName: 'D' },
       });
+      prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: new Decimal('99.10') } });
       const result = await service.findById('p1');
+      expect(result.kpiSalesActualSuggestedAmount).toBe('99.10');
       expect(result.materializedExpenseLineCount).toBe(2);
       expect(result.journal).toHaveLength(3);
       expect(result.journal.map((j: { kind: string }) => j.kind)).toEqual([

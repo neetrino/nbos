@@ -7,11 +7,14 @@ import {
 } from '@nestjs/common';
 import { Decimal, PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { NotificationService } from '../notifications/notification.service';
 import { isValidPayrollMonth } from './payroll-runs.constants';
+import { parsePayrollRunStatusQuery } from './payroll-run-list-scope';
 import {
-  buildPayrollRunWhereFromScope,
-  parsePayrollRunStatusQuery,
-} from './payroll-run-list-scope';
+  queryPayrollRunList,
+  queryPayrollRunListStats,
+  type PayrollRunListParams,
+} from './payroll-run-list-queries';
 import { canTransitionPayrollRun } from './payroll-run-status-transitions';
 import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
@@ -23,33 +26,29 @@ import {
 } from './payroll-run-audit.constants';
 import { loadPayrollRunAuditTrail } from './payroll-run-audit-trail';
 import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-materialized-line-counts';
-import { computePayrollRunListStats, type PayrollRunStatsResult } from './payroll-run-list-stats';
+import { type PayrollRunStatsResult } from './payroll-run-list-stats';
+import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
+import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detach';
+import {
+  refreshBonusEntryStatusesForReleases,
+  syncProductBonusPoolsForBonusReleases,
+} from './payroll-run-bonus-release-side-effects';
+import {
+  notifyEmployeesOnPayrollRunClosed,
+  notifyEmployeesOnPayrollRunCreated,
+} from './payroll-run-employee-wallet-notify';
+import { applyPayrollRunKpiPatch, type PatchPayrollRunBody } from './payroll-run-kpi-patch';
+import { sumPaymentsForPayrollMonthSuggestedSalesKpi } from './payroll-run-suggested-sales-actual';
+import {
+  querySalaryBoard,
+  type SalaryBoardQueryParams,
+  type SalaryBoardResponseDto,
+} from './payroll-salary-board';
 
-const LIST_SORT_FIELDS = new Set(['createdAt', 'payrollMonth', 'status']);
-
-function normalizeListPage(page?: number): number {
-  const n = page ?? 1;
-  return n < 1 ? 1 : n;
-}
-
-function normalizeListPageSize(pageSize?: number): number {
-  const n = pageSize ?? 20;
-  return Math.min(500, Math.max(1, n));
-}
-
-export interface PayrollRunListParams {
-  page?: number;
-  pageSize?: number;
-  status?: string;
-  /** Inclusive lower bound `YYYY-MM` (string order matches calendar). */
-  payrollMonthFrom?: string;
-  /** Inclusive upper bound `YYYY-MM`. */
-  payrollMonthTo?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
+export type { PayrollRunListParams } from './payroll-run-list-queries';
 export type { PayrollRunStatsResult } from './payroll-run-list-stats';
+export type { PatchPayrollRunBody };
+export type { SalaryBoardQueryParams, SalaryBoardResponseDto } from './payroll-salary-board';
 
 export interface CreatePayrollRunBody {
   payrollMonth: string;
@@ -65,57 +64,24 @@ export interface PayrollRunStatusMeta {
 
 @Injectable()
 export class PayrollRunsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+  ) {}
 
   async findAll(params: PayrollRunListParams) {
-    const page = normalizeListPage(params.page);
-    const pageSize = normalizeListPageSize(params.pageSize);
-    const sortBy =
-      params.sortBy && LIST_SORT_FIELDS.has(params.sortBy) ? params.sortBy : 'createdAt';
-    const sortOrder = params.sortOrder === 'asc' ? 'asc' : 'desc';
-
-    const where = buildPayrollRunWhereFromScope({
-      status: params.status,
-      payrollMonthFrom: params.payrollMonthFrom,
-      payrollMonthTo: params.payrollMonthTo,
-    });
-
-    const [items, total] = await Promise.all([
-      this.prisma.payrollRun.findMany({
-        where,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        include: {
-          _count: { select: { salaryLines: true } },
-        },
-      }),
-      this.prisma.payrollRun.count({ where }),
-    ]);
-
-    const materializedByRun = await fetchMaterializedSalaryLineCountByPayrollRunId(
-      this.prisma,
-      items.map((row) => row.id),
-    );
-
-    return {
-      items: items.map((row) => ({
-        ...row,
-        materializedExpenseLineCount: materializedByRun.get(row.id) ?? 0,
-      })),
-      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
-    };
+    return queryPayrollRunList(this.prisma, params);
   }
 
   async getStats(
     params: Pick<PayrollRunListParams, 'status' | 'payrollMonthFrom' | 'payrollMonthTo'>,
   ): Promise<PayrollRunStatsResult> {
-    const where = buildPayrollRunWhereFromScope({
-      status: params.status,
-      payrollMonthFrom: params.payrollMonthFrom,
-      payrollMonthTo: params.payrollMonthTo,
-    });
-    return computePayrollRunListStats(this.prisma, where);
+    return queryPayrollRunListStats(this.prisma, params);
+  }
+
+  /** NBOS Salary Board: employees × payroll months with salary line status and links to runs/lines. */
+  async getSalaryBoard(params: SalaryBoardQueryParams): Promise<SalaryBoardResponseDto> {
+    return querySalaryBoard(this.prisma, params);
   }
 
   async findById(id: string) {
@@ -135,9 +101,18 @@ export class PayrollRunsService {
     });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
 
-    const [materializedByRun, auditTrail] = await Promise.all([
+    const [
+      materializedByRun,
+      auditTrail,
+      includedBonusReleaseCount,
+      kpiSalesActualSuggestedAmount,
+    ] = await Promise.all([
       fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
       loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
+      this.prisma.bonusRelease.count({
+        where: { payrollRunId: id, status: 'INCLUDED_IN_PAYROLL' },
+      }),
+      sumPaymentsForPayrollMonthSuggestedSalesKpi(this.prisma, run.payrollMonth),
     ]);
 
     return {
@@ -145,7 +120,14 @@ export class PayrollRunsService {
       materializedExpenseLineCount: materializedByRun.get(id) ?? 0,
       journal: buildPayrollRunJournal(run),
       auditTrail,
+      includedBonusReleaseCount,
+      kpiSalesActualSuggestedAmount: kpiSalesActualSuggestedAmount.toFixed(2),
     };
+  }
+
+  async patchPayrollRun(id: string, body: PatchPayrollRunBody) {
+    await applyPayrollRunKpiPatch(this.prisma, id, body);
+    return this.findById(id);
   }
 
   async create(body: CreatePayrollRunBody, createdById?: string | null) {
@@ -212,6 +194,10 @@ export class PayrollRunsService {
       return run.id;
     });
 
+    if (seedLines) {
+      await notifyEmployeesOnPayrollRunCreated(this.prisma, this.notifications, newId, month);
+    }
+
     return this.findById(newId);
   }
 
@@ -263,6 +249,43 @@ export class PayrollRunsService {
       });
     });
 
+    if (status === 'CLOSED') {
+      await notifyEmployeesOnPayrollRunClosed(
+        this.prisma,
+        this.notifications,
+        id,
+        run.payrollMonth,
+      );
+    }
+
     return this.findById(id);
+  }
+
+  /** NBOS: attach APPROVED bonus releases to this run’s salary lines (DRAFT/REVIEW). */
+  async attachBonusReleases(payrollRunId: string, body: { releaseIds: string[] }) {
+    const uniqueIds = [...new Set(body.releaseIds)];
+    await this.prisma.$transaction(async (tx) => {
+      await attachBonusReleasesToPayrollRun(tx, {
+        payrollRunId,
+        releaseIds: uniqueIds,
+      });
+    });
+    await refreshBonusEntryStatusesForReleases(this.prisma, uniqueIds);
+    await syncProductBonusPoolsForBonusReleases(this.prisma, uniqueIds, this.notifications);
+    return this.findById(payrollRunId);
+  }
+
+  /** NBOS: detach INCLUDED_IN_PAYROLL releases back to APPROVED (DRAFT/REVIEW). */
+  async detachBonusReleases(payrollRunId: string, body: { releaseIds: string[] }) {
+    const uniqueIds = [...new Set(body.releaseIds)];
+    await this.prisma.$transaction(async (tx) => {
+      await detachBonusReleasesFromPayrollRun(tx, {
+        payrollRunId,
+        releaseIds: uniqueIds,
+      });
+    });
+    await refreshBonusEntryStatusesForReleases(this.prisma, uniqueIds);
+    await syncProductBonusPoolsForBonusReleases(this.prisma, uniqueIds, this.notifications);
+    return this.findById(payrollRunId);
   }
 }

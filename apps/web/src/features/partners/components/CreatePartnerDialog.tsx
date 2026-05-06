@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  PARTNER_TYPES,
+  PARTNER_LEVELS,
   PARTNER_DIRECTIONS,
   PARTNER_STATUSES,
   DEFAULT_PARTNER_DEFAULT_PERCENT,
@@ -47,7 +47,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
   const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
-    type: 'REGULAR',
+    level: 'REGULAR',
     direction: 'INBOUND',
     defaultPercent: String(DEFAULT_PARTNER_DEFAULT_PERCENT),
     status: 'ACTIVE',
@@ -89,7 +89,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
   const reset = () => {
     setForm({
       name: '',
-      type: 'REGULAR',
+      level: 'REGULAR',
       direction: 'INBOUND',
       defaultPercent: String(DEFAULT_PARTNER_DEFAULT_PERCENT),
       status: 'ACTIVE',
@@ -113,7 +113,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
     try {
       await partnersApi.create({
         name: form.name.trim(),
-        type: form.type,
+        level: form.level,
         direction: form.direction,
         defaultPercent: pct,
         status: form.status,
@@ -166,18 +166,18 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Tier</Label>
+              <Label>Level</Label>
               <Select
-                value={form.type}
+                value={form.level}
                 onValueChange={(v) => {
-                  if (v) setForm({ ...form, type: v });
+                  if (v) setForm({ ...form, level: v });
                 }}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {PARTNER_TYPES.map((t) => (
+                  {PARTNER_LEVELS.map((t) => (
                     <SelectItem key={t.value} value={t.value}>
                       {t.label}
                     </SelectItem>

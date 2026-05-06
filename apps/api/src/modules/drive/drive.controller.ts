@@ -8,8 +8,10 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { buildDocumentsReadAccess } from '../documents/documents-read-access.dto';
 import { DriveService } from './drive.service';
@@ -42,6 +44,8 @@ export class DriveController {
   @ApiQuery({ name: 'sourceModule', required: false })
   @ApiQuery({ name: 'search', required: false })
   async listFileAssets(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
     @Query('purpose') purpose?: string,
@@ -49,14 +53,21 @@ export class DriveController {
     @Query('sourceModule') sourceModule?: string,
     @Query('search') search?: string,
   ) {
-    return this.driveService.listFileAssets({
-      entityType,
-      entityId,
-      purpose,
-      status,
-      sourceModule,
-      search,
-    });
+    return this.driveService.listFileAssets(
+      {
+        entityType,
+        entityId,
+        purpose,
+        status,
+        sourceModule,
+        search,
+      },
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+    );
   }
 
   @Get('files/:id/preview-url')
@@ -73,6 +84,7 @@ export class DriveController {
   })
   async getFileAssetPreviewUrl(
     @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
     @Query('forDocumentId') forDocumentId?: string,
   ) {
@@ -80,14 +92,27 @@ export class DriveController {
     return this.driveService.getAssetViewUrl(
       id,
       docId ? { forDocumentId: docId, documentsAccess: buildDocumentsReadAccess(user) } : undefined,
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
     );
   }
 
   @Get('files/:id')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'Get DB-backed Drive file asset detail' })
-  async getFileAsset(@Param('id') id: string) {
-    return this.driveService.getFileAsset(id);
+  async getFileAsset(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+  ) {
+    return this.driveService.getFileAsset(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Get('library')
@@ -148,15 +173,33 @@ export class DriveController {
   @Post('files/:id/links')
   @RequirePermission('DRIVE', 'ADD')
   @ApiOperation({ summary: 'Link Drive file asset to another entity' })
-  async linkFileAsset(@Param('id') id: string, @Body() body: CreateFileLinkDto) {
-    return this.driveService.linkFileAsset(id, body);
+  async linkFileAsset(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Body() body: CreateFileLinkDto,
+  ) {
+    return this.driveService.linkFileAsset(id, body, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Post('files/:id/version-upload-url')
   @RequirePermission('DRIVE', 'ADD')
   @ApiOperation({ summary: 'Create presigned upload URL for a new File Asset version' })
-  async createVersionUploadUrl(@Param('id') id: string, @Body() body: CreateFileVersionUploadDto) {
-    return this.driveService.createVersionUploadUrl(id, body);
+  async createVersionUploadUrl(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Body() body: CreateFileVersionUploadDto,
+  ) {
+    return this.driveService.createVersionUploadUrl(id, body, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Post('files/:id/versions')
@@ -164,25 +207,94 @@ export class DriveController {
   @ApiOperation({ summary: 'Complete new version upload for an existing File Asset' })
   async completeFileVersion(
     @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
     @Body() body: CompleteFileVersionDto,
   ) {
-    return this.driveService.completeFileVersion(id, user.id, body);
+    return this.driveService.completeFileVersion(id, user.id, body, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Delete('files/:id/links/:linkId')
   @RequirePermission('DRIVE', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft unlink Drive file asset from an entity' })
-  async unlinkFileAsset(@Param('id') id: string, @Param('linkId') linkId: string) {
-    await this.driveService.unlinkFileAsset(id, linkId);
+  async unlinkFileAsset(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Param('linkId') linkId: string,
+  ) {
+    await this.driveService.unlinkFileAsset(id, linkId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Post('files/:id/archive')
   @RequirePermission('DRIVE', 'DELETE')
   @ApiOperation({ summary: 'Archive Drive file asset metadata' })
-  async archiveFileAsset(@Param('id') id: string, @Body() body: { actorId?: string }) {
-    return this.driveService.archiveFileAsset(id, body.actorId);
+  async archiveFileAsset(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Body() body: { actorId?: string },
+  ) {
+    return this.driveService.archiveFileAsset(id, body.actorId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/:id/restore')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Restore archived Drive file asset metadata' })
+  async restoreFileAsset(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Body() body: { actorId?: string },
+  ) {
+    return this.driveService.restoreFileAsset(id, body.actorId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/archive-batch')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Archive multiple Drive file assets' })
+  async archiveFileAssets(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: { ids: string[]; actorId?: string },
+  ) {
+    return this.driveService.archiveFileAssets(body.ids ?? [], body.actorId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/restore-batch')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Restore multiple archived Drive file assets' })
+  async restoreFileAssets(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: { ids: string[]; actorId?: string },
+  ) {
+    return this.driveService.restoreFileAssets(body.ids ?? [], body.actorId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Get(':projectId')

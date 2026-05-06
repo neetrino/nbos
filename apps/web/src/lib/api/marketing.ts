@@ -38,21 +38,26 @@ export interface MarketingActivity {
 }
 
 export interface MarketingDashboardSummary {
+  period: { dateFrom: string; dateTo: string } | null;
   totals: {
     accounts: number;
     activities: number;
     launchedActivities: number;
     activitiesWithFinanceExpense: number;
     missingFinanceLinks: number;
+    attributedLeads: number;
     attributedDeals: number;
     wonAttributedDeals: number;
   };
   money: {
     plannedSpend: number;
+    paidMarketingSpend: number;
+    roiMetricsAvailable: boolean;
     paidRevenue: number;
-    netReturn: number;
+    netReturn: number | null;
     roas: number | null;
     costPerWonDeal: number | null;
+    costPerAttributedLead: number | null;
   };
   efficiency: {
     isReliable: boolean;
@@ -82,6 +87,13 @@ export interface AttributionOption {
   subtitle?: string;
 }
 
+export interface MarketingCrmWhereOption {
+  channel: string;
+  label: string;
+  sortOrder: number;
+  isActive: boolean;
+}
+
 interface MarketingQueryParams {
   channel?: string;
   status?: string;
@@ -90,8 +102,36 @@ interface MarketingQueryParams {
 }
 
 export const marketingApi = {
-  async getDashboardSummary(): Promise<MarketingDashboardSummary> {
-    const resp = await api.get<MarketingDashboardSummary>('/api/marketing/dashboard');
+  async getCrmWhereOptions(params?: {
+    includeInactive?: boolean;
+  }): Promise<MarketingCrmWhereOption[]> {
+    const resp = await api.get<MarketingCrmWhereOption[]>('/api/marketing/crm-where-options', {
+      params: params?.includeInactive ? { includeInactive: true } : undefined,
+    });
+    return resp.data;
+  },
+
+  async updateCrmWhereOption(
+    channel: string,
+    data: Partial<Pick<MarketingCrmWhereOption, 'label' | 'sortOrder' | 'isActive'>>,
+  ): Promise<MarketingCrmWhereOption> {
+    const resp = await api.patch<MarketingCrmWhereOption>(
+      `/api/marketing/crm-where-options/${encodeURIComponent(channel)}`,
+      data,
+    );
+    return resp.data;
+  },
+
+  async getDashboardSummary(params?: {
+    dateFrom?: string;
+    dateTo?: string;
+  }): Promise<MarketingDashboardSummary> {
+    const resp = await api.get<MarketingDashboardSummary>('/api/marketing/dashboard', {
+      params:
+        params?.dateFrom && params?.dateTo
+          ? { dateFrom: params.dateFrom, dateTo: params.dateTo }
+          : undefined,
+    });
     return resp.data;
   },
 

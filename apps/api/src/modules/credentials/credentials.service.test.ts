@@ -9,6 +9,12 @@ vi.mock('../../common/utils/crypto', () => ({
   encrypt: vi.fn((text: string) => `enc:tag:${text}`),
   decrypt: vi.fn((text: string) => text.replace('enc:tag:', '')),
 }));
+vi.mock('argon2', () => ({
+  default: {
+    verify: vi.fn(async () => true),
+  },
+  verify: vi.fn(async () => true),
+}));
 
 const TEST_KEY = 'test-key-for-credentials';
 
@@ -29,20 +35,29 @@ function createMockAuditService(): Partial<AuditService> {
   };
 }
 
+function createMockNotificationService() {
+  return {
+    create: vi.fn(),
+  };
+}
+
 describe('CredentialsService', () => {
   let service: CredentialsService;
   let prisma: MockPrisma;
   let auditService: ReturnType<typeof createMockAuditService>;
+  let notifications: ReturnType<typeof createMockNotificationService>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
     auditService = createMockAuditService();
+    notifications = createMockNotificationService();
     const configService = createMockConfigService();
 
     service = new CredentialsService(
       prisma as never,
       configService as never,
       auditService as never,
+      notifications as never,
     );
   });
 
@@ -133,6 +148,27 @@ describe('CredentialsService', () => {
         }),
       );
     });
+
+    it('adds health metadata for rotation due/overdue flags', async () => {
+      prisma.credential.findMany.mockResolvedValue([
+        {
+          id: '1',
+          name: 'Critical Vault',
+          criticality: 'CRITICAL',
+          accessLevel: 'ALL',
+          ownerId: null,
+          nextRotationAt: new Date('2020-01-01T00:00:00.000Z'),
+        },
+      ]);
+      prisma.credential.count.mockResolvedValue(1);
+
+      const result = await service.findAll({ page: 1, pageSize: 10 });
+      const first = result.items[0] as { health?: { status: string; flags: string[] } };
+
+      expect(first.health?.status).toBe('OVERDUE');
+      expect(first.health?.flags).toContain('MISSING_OWNER');
+      expect(first.health?.flags).toContain('BROAD_ACCESS');
+    });
   });
 
   describe('findById', () => {
@@ -190,7 +226,9 @@ describe('CredentialsService', () => {
         projectId: 'p1',
       });
 
-      const result = await service.revealSecretField('1', 'password', accessUser1);
+      prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'enc:tag:hash' });
+
+      const result = await service.revealSecretField('1', 'password', 'step-up', accessUser1);
 
       expect(result).toEqual({ field: 'password', value: 'secret' });
       expect(auditService.log).toHaveBeenCalledWith(
@@ -202,7 +240,9 @@ describe('CredentialsService', () => {
     });
 
     it('should reject invalid field name', async () => {
-      await expect(service.revealSecretField('1', 'login', accessUser1)).rejects.toThrow(
+      prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'enc:tag:hash' });
+
+      await expect(service.revealSecretField('1', 'login', 'step-up', accessUser1)).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -216,9 +256,11 @@ describe('CredentialsService', () => {
         projectId: null,
       });
 
-      await expect(service.revealSecretField('1', 'password', accessUser1)).rejects.toThrow(
-        BadRequestException,
-      );
+      prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'enc:tag:hash' });
+
+      await expect(
+        service.revealSecretField('1', 'password', 'step-up', accessUser1),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -232,13 +274,57 @@ describe('CredentialsService', () => {
         projectId: null,
       });
 
-      const result = await service.copySecretField('1', 'password', accessUser1);
+      prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'enc:tag:hash' });
+
+      const result = await service.copySecretField('1', 'password', 'step-up', accessUser1);
 
       expect(result).toEqual({ field: 'password', value: 'x' });
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'credential.secret_copied',
           changes: ['password'],
+        }),
+      );
+    });
+
+    it('should reject copy without step-up password', async () => {
+      await expect(
+        service.copySecretField('1', 'password', undefined, accessUser1),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('exportCredentials', () => {
+    it('should export visible credentials after step-up', async () => {
+      prisma.employee.findUnique.mockResolvedValue({ passwordHash: 'enc:tag:hash' });
+      prisma.credential.findMany.mockResolvedValue([
+        {
+          id: 'c-1',
+          name: 'Prod DB',
+          category: 'DATABASE',
+          credentialType: 'DATABASE',
+          criticality: 'CRITICAL',
+          accessLevel: 'SECRET',
+          ownerId: 'owner-1',
+          projectId: 'p-1',
+          password: 'enc:tag:db-pass',
+          apiKey: null,
+          envData: null,
+          secureNotes: null,
+          createdAt: new Date('2026-01-01T00:00:00.000Z'),
+          updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+        },
+      ]);
+      prisma.employee.findMany.mockResolvedValue([{ id: 'admin-1' }]);
+
+      const result = await service.exportCredentials({ stepUpPassword: 'step-up' }, accessUser1);
+
+      expect(result.count).toBe(1);
+      expect(result.items[0]?.secrets.password).toBe('db-pass');
+      expect(notifications.create).toHaveBeenCalled();
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'credential.exported',
         }),
       );
     });

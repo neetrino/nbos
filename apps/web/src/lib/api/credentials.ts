@@ -37,6 +37,11 @@ export interface CredentialDetail {
   createdAt: string;
   updatedAt?: string;
   secretsPresent: CredentialSecretsPresent;
+  health?: {
+    status: 'HEALTHY' | 'DUE_SOON' | 'OVERDUE' | 'UNKNOWN';
+    dueInDays: number | null;
+    flags: string[];
+  };
   project?: { id: string; code?: string; name: string } | null;
   department?: { id: string; name: string } | null;
   owner?: { id: string; firstName: string; lastName: string } | null;
@@ -78,20 +83,22 @@ export const credentialsApi = {
   async revealSecret(
     id: string,
     field: CredentialSecretField,
+    stepUpPassword: string,
   ): Promise<{ field: CredentialSecretField; value: string }> {
     const resp = await api.post<{ field: CredentialSecretField; value: string }>(
       `/api/credentials/${id}/secrets/reveal`,
-      { field },
+      { field, stepUpPassword },
     );
     return resp.data;
   },
   async copySecret(
     id: string,
     field: CredentialSecretField,
+    stepUpPassword: string,
   ): Promise<{ field: CredentialSecretField; value: string }> {
     const resp = await api.post<{ field: CredentialSecretField; value: string }>(
       `/api/credentials/${id}/secrets/copy`,
-      { field },
+      { field, stepUpPassword },
     );
     return resp.data;
   },

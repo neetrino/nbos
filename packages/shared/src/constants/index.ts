@@ -1,5 +1,6 @@
 export const LEAD_STATUSES = [
   'NEW',
+  'ON_HOLD',
   'DIDNT_GET_THROUGH',
   'CONTACT_ESTABLISHED',
   'MQL',
@@ -62,7 +63,14 @@ export const SUBSCRIPTION_TYPES = [
 /** Query param value for listing subscriptions with no linked partner (`partnerId IS NULL`). */
 export const SUBSCRIPTION_PARTNER_FILTER_UNLINKED = '__unlinked__' as const;
 
-export const TASK_STATUSES = ['NEW', 'IN_PROGRESS', 'DONE', 'DEFERRED', 'CANCELLED'] as const;
+export const TASK_STATUSES = [
+  'OPEN',
+  'IN_PROGRESS',
+  'REVIEW',
+  'COMPLETED',
+  'DEFERRED',
+  'CANCELLED',
+] as const;
 
 export const TASK_PRIORITIES = ['CRITICAL', 'HIGH', 'NORMAL', 'LOW'] as const;
 
@@ -92,7 +100,6 @@ export const BONUS_STATUSES = [
   'EARNED',
   'PENDING_ELIGIBILITY',
   'VESTED',
-  'HOLDBACK',
   'ACTIVE',
   'PAID',
   'CLAWBACK',
@@ -253,5 +260,4 @@ export const BONUS_PERCENTAGES = {
     CUSTOM_CODE: 15,
   },
   PARTNER_DEFAULT: 30,
-  HOLDBACK: 20,
 } as const;

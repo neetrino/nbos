@@ -38,6 +38,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       console.error('Unhandled exception:', exception);
     }
 
+    if (status === HttpStatus.INTERNAL_SERVER_ERROR && process.env.NODE_ENV === 'production') {
+      message = 'Internal server error';
+      error = 'Internal Server Error';
+      exceptionDetails = {};
+    }
+
     const body: Record<string, unknown> = {
       statusCode: status,
       message,

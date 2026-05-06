@@ -16,6 +16,7 @@ import { MarkMessengerDmReadDto } from './dto/mark-messenger-dm-read.dto';
 import { SendMessengerChannelMessageDto } from './dto/send-messenger-channel-message.dto';
 import { SendMessengerDmDto } from './dto/send-messenger-dm.dto';
 import { messengerUserDisplayName } from './messenger-user-display-name';
+import { clampMessengerListPageSize, parseMessengerBeforeCursor } from './messenger-list-page-size';
 import { MessengerService } from './messenger.service';
 
 @ApiTags('Messenger')
@@ -59,18 +60,22 @@ export class MessengerController {
   @ApiOperation({
     summary: 'Get messages in a channel (includes last-own read receipt hints for the viewer)',
   })
-  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({
+    name: 'before',
+    required: false,
+    description:
+      'ISO-8601 cursor: return messages strictly older than this (exclusive). Omit for latest window.',
+  })
   @ApiQuery({ name: 'pageSize', required: false })
   getMessages(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
+    @Query('before') beforeRaw?: string,
+    @Query('pageSize') pageSizeRaw?: string,
   ) {
-    return this.messengerService.getMessages(id, user.id, {
-      page: page ? parseInt(page, 10) : undefined,
-      pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
-    });
+    const before = parseMessengerBeforeCursor(beforeRaw);
+    const pageSize = clampMessengerListPageSize(pageSizeRaw);
+    return this.messengerService.getMessages(id, user.id, { before, pageSize });
   }
 
   @Post('channels/:id/messages')
@@ -113,23 +118,27 @@ export class MessengerController {
   @ApiOperation({
     summary: 'Get direct messages (includes peerLastReadAt for DM read receipts on your sends)',
   })
-  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({
+    name: 'before',
+    required: false,
+    description:
+      'ISO-8601 cursor: messages strictly older than this (exclusive). Omit for latest window.',
+  })
   @ApiQuery({ name: 'pageSize', required: false })
   getDirectMessages(
     @CurrentUser() user: CurrentUserPayload,
     @Param('userId1') userId1: string,
     @Param('userId2') userId2: string,
-    @Query('page') page?: string,
-    @Query('pageSize') pageSize?: string,
+    @Query('before') beforeRaw?: string,
+    @Query('pageSize') pageSizeRaw?: string,
   ) {
     if (user.id !== userId1 && user.id !== userId2) {
       throw new ForbiddenException('You may only read your own direct messages');
     }
     const peerId = user.id === userId1 ? userId2 : userId1;
-    return this.messengerService.getDirectMessages(user.id, peerId, {
-      page: page ? parseInt(page, 10) : undefined,
-      pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
-    });
+    const before = parseMessengerBeforeCursor(beforeRaw);
+    const pageSize = clampMessengerListPageSize(pageSizeRaw);
+    return this.messengerService.getDirectMessages(user.id, peerId, { before, pageSize });
   }
 
   @Post('dm')

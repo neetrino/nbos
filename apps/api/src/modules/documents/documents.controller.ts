@@ -17,6 +17,7 @@ import { DocumentsService } from './documents.service';
 import type {
   AddDocumentAttachmentDto,
   CreateDocumentDto,
+  ExportDocumentQuery,
   CreateDocumentTagDto,
   UpdateDocumentDto,
   UpdateDocumentSectionDto,
@@ -111,6 +112,23 @@ export class DocumentsController {
   @ApiOperation({ summary: 'Get document by id' })
   async getDocument(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     return this.documentsService.getDocument(id, buildDocumentsDetailAccess(user));
+  }
+
+  @Get(':id/export')
+  @RequirePermission('DOCUMENTS', 'EXPORT')
+  @ApiOperation({ summary: 'Export document content (json/html/txt)' })
+  @ApiQuery({ name: 'format', required: false, description: 'json | html | txt (default json)' })
+  async exportDocument(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Query() query: ExportDocumentQuery,
+  ) {
+    return this.documentsService.exportDocument(
+      id,
+      query,
+      user.id,
+      buildDocumentsDetailAccess(user),
+    );
   }
 
   @Post()

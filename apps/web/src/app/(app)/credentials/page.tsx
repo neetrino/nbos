@@ -47,6 +47,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import type { StatusVariant } from '@/components/shared/StatusBadge';
 import {
   CREDENTIAL_CATEGORIES,
   CREDENTIAL_CRITICALITIES,
@@ -85,12 +86,27 @@ interface CredentialListItem {
   owner: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
   nextRotationAt?: string | null;
+  health?: {
+    status: 'HEALTHY' | 'DUE_SOON' | 'OVERDUE' | 'UNKNOWN';
+    dueInDays: number | null;
+    flags: string[];
+  };
   secretsPresent?: {
     password: boolean;
     apiKey: boolean;
     envData: boolean;
     secureNotes: boolean;
   };
+}
+
+function credentialHealthBadge(
+  health?: CredentialListItem['health'],
+): { label: string; variant: StatusVariant } | null {
+  if (!health) return null;
+  if (health.status === 'OVERDUE') return { label: 'Overdue', variant: 'red' };
+  if (health.status === 'DUE_SOON') return { label: 'Due soon', variant: 'amber' };
+  if (health.status === 'HEALTHY') return { label: 'Healthy', variant: 'green' };
+  return { label: 'Unknown', variant: 'default' };
 }
 
 const TAB_CONFIG: { value: CredentialTab; label: string; icon: React.ReactNode }[] = [
@@ -374,6 +390,7 @@ function CredentialTable({
           {credentials.map((cred) => {
             const access = getAccessLevel(cred.accessLevel);
             const criticality = getCredentialCriticality(cred.criticality);
+            const healthBadge = credentialHealthBadge(cred.health);
             const isVisible = visibleLogins.has(cred.id);
             return (
               <TableRow key={cred.id}>
@@ -396,9 +413,6 @@ function CredentialTable({
                   {cred.provider ?? '—'}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-xs">
-                  {cred.nextRotationAt ? new Date(cred.nextRotationAt).toLocaleDateString() : '—'}
-                </TableCell>
-                <TableCell>
                   <div className="flex items-center gap-1.5">
                     <span className="font-mono text-xs">
                       {cred.login ? (isVisible ? cred.login : '••••••••') : '—'}
@@ -449,6 +463,23 @@ function CredentialTable({
                   ) : (
                     '—'
                   )}
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-muted-foreground text-xs">
+                      {cred.nextRotationAt
+                        ? new Date(cred.nextRotationAt).toLocaleDateString()
+                        : 'No date'}
+                    </span>
+                    {healthBadge && (
+                      <StatusBadge label={healthBadge.label} variant={healthBadge.variant} />
+                    )}
+                    {!!cred.health?.flags?.length && (
+                      <span className="text-muted-foreground text-[10px]">
+                        {cred.health.flags.join(', ')}
+                      </span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   {cred.url && !isArchivedList ? (

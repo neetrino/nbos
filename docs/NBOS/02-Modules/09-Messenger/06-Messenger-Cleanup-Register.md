@@ -11,7 +11,7 @@
 - Development, Maintenance и Extension не создают отдельные чаты по умолчанию.
 - Task Chats визуально отдельные, чаще используются для ответа на сообщения из задач.
 - WhatsApp Groups живут во External Messenger и связаны с Project/Product.
-- WhatsApp primary integration: `WhatsAppWebAdapter -> WAHA -> QR-connected WhatsApp account`.
+- WhatsApp primary integration: логический `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA → QR-connected WhatsApp account (см. `../../06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`).
 - `WhatsAppOfficialAdapter / Meta Cloud API` не является MVP и не является планом на ближайшие годы.
 - WhatsApp/QR/provider logic должна быть adapter layer.
 - WebSocket - только live transport, база данных - source of truth.
@@ -97,7 +97,7 @@
 - Project WhatsApp Groups;
 - Support/Finance Conversations;
 - `External Channel Adapter` interface;
-- `WhatsAppWebAdapter` на базе WAHA;
+- `WhatsAppWebAdapter` как контракт; реализация транспорта — **WhatsApp Gateway** + WAHA;
 - QR session management;
 - fallback strategy: Whapi/Wazzup/Wappi или Evolution API, если WAHA не подойдёт.
 

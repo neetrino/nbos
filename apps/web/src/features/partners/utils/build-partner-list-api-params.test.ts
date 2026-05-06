@@ -11,11 +11,11 @@ describe('buildPartnerListApiParams', () => {
   it('passes filters when not all', () => {
     const p = buildPartnerListApiParams({
       search: 'Acme',
-      filters: { status: 'ACTIVE', type: 'PREMIUM', direction: 'OUTBOUND' },
+      filters: { status: 'ACTIVE', level: 'PREMIUM', direction: 'OUTBOUND' },
     });
     expect(p.search).toBe('Acme');
     expect(p.status).toBe('ACTIVE');
-    expect(p.type).toBe('PREMIUM');
+    expect(p.level).toBe('PREMIUM');
     expect(p.direction).toBe('OUTBOUND');
   });
 });

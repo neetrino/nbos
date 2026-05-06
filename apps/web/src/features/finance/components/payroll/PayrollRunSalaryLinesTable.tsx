@@ -57,7 +57,7 @@ export function PayrollRunSalaryLinesTable(props: { lines: SalaryLineRow[] }) {
             </TableRow>
           ) : (
             lines.map((line) => (
-              <TableRow key={line.id}>
+              <TableRow key={line.id} id={`salary-line-${line.id}`}>
                 <TableCell className="font-medium">{employeeName(line.employee)}</TableCell>
                 <TableCell className="text-right">
                   {formatAmount(parseAmount(line.baseSalary))}

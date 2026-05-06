@@ -95,14 +95,16 @@ Finance status меняется в Finance module, не вручную из ча
 
 ```text
 NBOS Messenger / CRM
-  -> WhatsAppWebAdapter
-    -> WAHA
-      -> QR-connected WhatsApp account
-        -> WhatsApp Groups / 1:1 chats
+  -> WhatsAppWebAdapter (контракт)
+    -> WhatsApp Gateway
+      -> WAHA (internal)
+        -> QR-connected WhatsApp account
+          -> WhatsApp Groups / 1:1 chats
 ```
 
-`WhatsAppWebAdapter` - тип адаптера внутри NBOS.
-`WAHA` - первый технический инструмент для реализации этого адаптера.
+`WhatsAppWebAdapter` — **логическое** имя контракта внешнего канала; **физически** транспорт WAHA инкапсулируется в **WhatsApp Gateway**, а не в модулях CRM/Messenger напрямую. Подробности: `../../06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`.
+
+`WAHA` - первый технический инструмент для реализации этого адаптера на стороне Gateway.
 `QR-connected WhatsApp account` - способ подключения нашего WhatsApp-аккаунта, как обычный WhatsApp Web.
 
 Этот путь покрывает:

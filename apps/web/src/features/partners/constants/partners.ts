@@ -1,7 +1,7 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 
-/** `Partner.type` in Prisma (tier). */
-export const PARTNER_TYPES = [
+/** Partner tier (`Partner.level` in API; Prisma `Partner.type`). */
+export const PARTNER_LEVELS = [
   { value: 'REGULAR', label: 'Regular', variant: 'gray' as StatusVariant },
   { value: 'PREMIUM', label: 'Premium', variant: 'amber' as StatusVariant },
 ] as const;
@@ -18,8 +18,8 @@ export const PARTNER_STATUSES = [
   { value: 'INACTIVE', label: 'Inactive', variant: 'gray' as StatusVariant },
 ] as const;
 
-export function getPartnerType(value: string) {
-  return PARTNER_TYPES.find((t) => t.value === value);
+export function getPartnerLevel(value: string) {
+  return PARTNER_LEVELS.find((t) => t.value === value);
 }
 
 export function getPartnerDirection(value: string) {

@@ -17,8 +17,16 @@ import {
 } from './messenger-channel-type.util';
 import { orderedParticipantIds } from './messenger-participants.util';
 import { MessengerGateway } from './messenger.gateway';
+import { loadMessengerChannelMessageWindow } from './messenger-channel-message-window.ops';
 import { getChannelLastOwnReadReceipt } from './messenger-channel-read-receipt.ops';
+import { loadMessengerDmMessageWindow } from './messenger-dm-message-window.ops';
 import { loadMessengerDmConversations } from './messenger-dm-conversations.query';
+import { clampMessengerPageSizeValue } from './messenger-list-page-size';
+import {
+  MESSENGER_MESSAGES_DEFAULT_PAGE_SIZE,
+  MESSENGER_SEARCH_MIN_QUERY_LEN,
+  MESSENGER_SEARCH_PAGE_SIZE,
+} from './messenger-messages.constants';
 import {
   mapPrismaChannelMessageToDto,
   mapPrismaDmMessageToDto,
@@ -29,6 +37,7 @@ import {
   markChannelReadForEmployee,
   markDmThreadReadForEmployee,
 } from './messenger-read-state.ops';
+import { listMessengerVisibleChannelIds } from './messenger-visible-channel-ids.ops';
 import type {
   MessengerChannelDto,
   MessengerChannelPagedMessagesDto,
@@ -46,14 +55,11 @@ export type {
   MessengerMessageDto,
 } from './messenger.types';
 
-interface PaginationParams {
-  page?: number;
+export interface MessengerHistoryListParams {
+  /** Load messages strictly older than this timestamp (exclusive). Omit for the latest window. */
+  before?: Date;
   pageSize?: number;
 }
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_PAGE_SIZE = 50;
-const SEARCH_PAGE_SIZE = 25;
 
 function attachmentCreateMany(fileAssetIds: string[] | undefined, actorId: string) {
   const uniqueIds = [...new Set(fileAssetIds?.map((id) => id.trim()).filter(Boolean) ?? [])];
@@ -130,14 +136,18 @@ export class MessengerService {
   async getMessages(
     channelId: string,
     viewerId: string,
-    pagination: PaginationParams = {},
+    params: MessengerHistoryListParams = {},
   ): Promise<MessengerChannelPagedMessagesDto> {
     const channel = await this.prisma.messengerChannel.findUnique({ where: { id: channelId } });
+    const pageSize = clampMessengerPageSizeValue(
+      params.pageSize ?? MESSENGER_MESSAGES_DEFAULT_PAGE_SIZE,
+    );
     const emptyMeta = {
       total: 0,
-      page: DEFAULT_PAGE,
-      pageSize: DEFAULT_PAGE_SIZE,
+      page: 1,
+      pageSize,
       totalPages: 1,
+      hasMoreOlder: false,
     };
     if (!channel) {
       return {
@@ -147,26 +157,24 @@ export class MessengerService {
         lastOwnMessageSeenByOthers: false,
       };
     }
-    const { page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE } = pagination;
-    const skip = (page - 1) * pageSize;
-    const [total, rows, receipt] = await Promise.all([
+    const [total, { rowsAsc, hasMoreOlder }, receipt] = await Promise.all([
       this.prisma.messengerChannelMessage.count({ where: { channelId } }),
-      this.prisma.messengerChannelMessage.findMany({
-        where: { channelId },
-        include: { attachments: true },
-        orderBy: { createdAt: 'asc' },
-        skip,
-        take: pageSize,
+      loadMessengerChannelMessageWindow(this.prisma, channelId, {
+        before: params.before,
+        limit: pageSize,
       }),
       getChannelLastOwnReadReceipt(this.prisma, channelId, viewerId),
     ]);
+    const totalPages = Math.ceil(total / pageSize) || 1;
+    const tailMode = params.before === undefined;
     return {
-      items: rows.map((m) => mapPrismaChannelMessageToDto(m)),
+      items: rowsAsc.map((m) => mapPrismaChannelMessageToDto(m)),
       meta: {
         total,
-        page,
+        page: tailMode ? totalPages : 1,
         pageSize,
-        totalPages: Math.ceil(total / pageSize) || 1,
+        totalPages,
+        hasMoreOlder,
       },
       lastOwnMessageId: receipt.lastOwnMessageId,
       lastOwnMessageSeenByOthers: receipt.lastOwnMessageSeenByOthers,
@@ -214,17 +222,21 @@ export class MessengerService {
   async getDirectMessages(
     viewerId: string,
     peerId: string,
-    pagination: PaginationParams = {},
+    params: MessengerHistoryListParams = {},
   ): Promise<MessengerDmPagedMessagesDto> {
     const [a, b] = orderedParticipantIds(viewerId, peerId);
     const thread = await this.prisma.messengerDirectThread.findUnique({
       where: { participantAId_participantBId: { participantAId: a, participantBId: b } },
     });
+    const pageSize = clampMessengerPageSizeValue(
+      params.pageSize ?? MESSENGER_MESSAGES_DEFAULT_PAGE_SIZE,
+    );
     const emptyMeta = {
       total: 0,
-      page: DEFAULT_PAGE,
-      pageSize: DEFAULT_PAGE_SIZE,
+      page: 1,
+      pageSize,
       totalPages: 1,
+      hasMoreOlder: false,
     };
     if (!thread) {
       return {
@@ -233,30 +245,28 @@ export class MessengerService {
         peerLastReadAt: null,
       };
     }
-    const { page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE } = pagination;
-    const skip = (page - 1) * pageSize;
     const where = { threadId: thread.id };
-    const [total, rows, peerRead] = await Promise.all([
+    const [total, { rowsAsc, hasMoreOlder }, peerRead] = await Promise.all([
       this.prisma.messengerDirectMessage.count({ where }),
-      this.prisma.messengerDirectMessage.findMany({
-        where,
-        include: { attachments: true },
-        orderBy: { createdAt: 'asc' },
-        skip,
-        take: pageSize,
+      loadMessengerDmMessageWindow(this.prisma, thread.id, {
+        before: params.before,
+        limit: pageSize,
       }),
       this.prisma.messengerDirectThreadReadState.findUnique({
         where: { threadId_employeeId: { threadId: thread.id, employeeId: peerId } },
         select: { lastReadAt: true },
       }),
     ]);
+    const totalPages = Math.ceil(total / pageSize) || 1;
+    const tailMode = params.before === undefined;
     return {
-      items: rows.map((m) => mapPrismaDmMessageToDto(m, thread.id)),
+      items: rowsAsc.map((m) => mapPrismaDmMessageToDto(m, thread.id)),
       meta: {
         total,
-        page,
+        page: tailMode ? totalPages : 1,
         pageSize,
-        totalPages: Math.ceil(total / pageSize) || 1,
+        totalPages,
+        hasMoreOlder,
       },
       peerLastReadAt: peerRead?.lastReadAt ?? null,
     };
@@ -308,13 +318,19 @@ export class MessengerService {
 
   async search(userId: string, query: string): Promise<{ items: MessengerSearchResultDto[] }> {
     const q = query.trim();
-    if (q.length < 2) return { items: [] };
+    if (q.length < MESSENGER_SEARCH_MIN_QUERY_LEN) return { items: [] };
+    const visibleChannelIds = await listMessengerVisibleChannelIds(this.prisma, userId);
     const [channels, dms] = await Promise.all([
-      this.prisma.messengerChannelMessage.findMany({
-        where: { content: { contains: q, mode: 'insensitive' } },
-        orderBy: { createdAt: 'desc' },
-        take: SEARCH_PAGE_SIZE,
-      }),
+      visibleChannelIds.length === 0
+        ? Promise.resolve([])
+        : this.prisma.messengerChannelMessage.findMany({
+            where: {
+              content: { contains: q, mode: 'insensitive' },
+              channelId: { in: visibleChannelIds },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: MESSENGER_SEARCH_PAGE_SIZE,
+          }),
       this.prisma.messengerDirectMessage.findMany({
         where: {
           content: { contains: q, mode: 'insensitive' },
@@ -322,7 +338,7 @@ export class MessengerService {
         },
         include: { thread: true },
         orderBy: { createdAt: 'desc' },
-        take: SEARCH_PAGE_SIZE,
+        take: MESSENGER_SEARCH_PAGE_SIZE,
       }),
     ]);
     const items: MessengerSearchResultDto[] = [
@@ -346,7 +362,7 @@ export class MessengerService {
         createdAt: m.createdAt,
       })),
     ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    return { items: items.slice(0, SEARCH_PAGE_SIZE) };
+    return { items: items.slice(0, MESSENGER_SEARCH_PAGE_SIZE) };
   }
 
   async markChannelRead(channelId: string, employeeId: string): Promise<void> {

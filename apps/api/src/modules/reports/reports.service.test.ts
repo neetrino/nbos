@@ -1,4 +1,8 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { AuditService } from '../audit/audit.service';
 import { DriveService } from '../drive/drive.service';
@@ -17,7 +21,10 @@ function createDriveService(): Partial<DriveService> {
 }
 
 function createReportsQueueService(): Partial<ReportsQueueService> {
-  return { enqueueExport: vi.fn().mockResolvedValue(true) };
+  return {
+    isQueueAvailable: vi.fn().mockReturnValue(true),
+    enqueueExport: vi.fn().mockResolvedValue(true),
+  };
 }
 
 const QUEUED_JOB = {
@@ -28,6 +35,22 @@ const QUEUED_JOB = {
   format: 'CSV',
   requestedById: 'employee-1',
   filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
+};
+
+const FAILED_JOB = {
+  ...QUEUED_JOB,
+  id: 'job-failed',
+  status: 'FAILED',
+  errorMessage: 'Worker failed',
+};
+
+const FINANCE_PERMISSIONS = {
+  FINANCE_INVOICES_VIEW: 'ALL',
+};
+
+const CROSS_MODULE_PERMISSIONS = {
+  ...FINANCE_PERMISSIONS,
+  CRM_LEADS_VIEW: 'ALL',
 };
 
 describe('ReportsService', () => {
@@ -64,12 +87,18 @@ describe('ReportsService', () => {
   });
 
   it('creates an audited queued export job for a registered report definition', async () => {
-    await service.createExportJob('employee-1', {
-      reportKey: 'company-pnl',
-      ownerModule: 'FINANCE',
-      format: 'CSV',
-      filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
-    });
+    await service.createExportJob(
+      'employee-1',
+      {
+        ...FINANCE_PERMISSIONS,
+      },
+      {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        format: 'CSV',
+        filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
+      },
+    );
 
     expect(prisma.reportExportJob.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -115,32 +144,76 @@ describe('ReportsService', () => {
     );
   });
 
+  it('processes a queued XLSX export into a Drive file', async () => {
+    prisma.reportExportJob.findUnique.mockResolvedValueOnce({ ...QUEUED_JOB, format: 'XLSX' });
+
+    await service.processExportJob('job-1', 'employee-1');
+
+    expect(drive.createGeneratedFileAsset).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fileType: 'SPREADSHEET',
+        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      }),
+    );
+  });
+
+  it('processes a queued PDF export into a Drive file', async () => {
+    prisma.reportExportJob.findUnique.mockResolvedValueOnce({ ...QUEUED_JOB, format: 'PDF' });
+
+    await service.processExportJob('job-1', 'employee-1');
+
+    expect(drive.createGeneratedFileAsset).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fileType: 'DOCUMENT',
+        contentType: 'application/pdf',
+      }),
+    );
+  });
+
   it('rejects mismatched report owner modules', async () => {
     await expect(
-      service.createExportJob('employee-1', {
-        reportKey: 'company-pnl',
-        ownerModule: 'MARKETING',
-        format: 'CSV',
-      }),
+      service.createExportJob(
+        'employee-1',
+        {
+          ...FINANCE_PERMISSIONS,
+        },
+        {
+          reportKey: 'company-pnl',
+          ownerModule: 'MARKETING',
+          format: 'CSV',
+        },
+      ),
     ).rejects.toThrow(NotFoundException);
   });
 
-  it('rejects formats that the report definition does not support', async () => {
+  it('rejects unknown export formats', async () => {
     await expect(
-      service.createExportJob('employee-1', {
-        reportKey: 'marketing-source-performance',
-        ownerModule: 'MARKETING',
-        format: 'PDF',
-      }),
+      service.createExportJob(
+        'employee-1',
+        {
+          ...CROSS_MODULE_PERMISSIONS,
+        },
+        {
+          reportKey: 'marketing-source-performance',
+          ownerModule: 'MARKETING',
+          format: 'DOCX',
+        },
+      ),
     ).rejects.toThrow(BadRequestException);
   });
 
   it('creates an export job for a non-Finance report definition', async () => {
-    await service.createExportJob('employee-1', {
-      reportKey: 'marketing-source-performance',
-      ownerModule: 'MARKETING',
-      format: 'CSV',
-    });
+    await service.createExportJob(
+      'employee-1',
+      {
+        ...CROSS_MODULE_PERMISSIONS,
+      },
+      {
+        reportKey: 'marketing-source-performance',
+        ownerModule: 'MARKETING',
+        format: 'CSV',
+      },
+    );
 
     expect(prisma.reportExportJob.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -154,16 +227,22 @@ describe('ReportsService', () => {
   });
 
   it('creates an audited scheduled report model without sending a fake report', async () => {
-    await service.createSchedule('employee-1', {
-      reportKey: 'company-pnl',
-      ownerModule: 'FINANCE',
-      format: 'CSV',
-      recipientEmails: ['finance@example.com'],
-      scheduleLabel: 'Monthly finance packet',
-      frequency: 'MONTHLY',
-      timeOfDay: '09:00',
-      dayOfMonth: 5,
-    });
+    await service.createSchedule(
+      'employee-1',
+      {
+        ...FINANCE_PERMISSIONS,
+      },
+      {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        format: 'CSV',
+        recipientEmails: ['finance@example.com'],
+        scheduleLabel: 'Monthly finance packet',
+        frequency: 'MONTHLY',
+        timeOfDay: '09:00',
+        dayOfMonth: 5,
+      },
+    );
 
     expect(prisma.reportSchedule.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -195,12 +274,18 @@ describe('ReportsService', () => {
   });
 
   it('creates a personal saved report view with validated filters', async () => {
-    await service.createSavedView('employee-1', {
-      reportKey: 'company-pnl',
-      ownerModule: 'FINANCE',
-      name: 'Current month P&L',
-      filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
-    });
+    await service.createSavedView(
+      'employee-1',
+      {
+        ...FINANCE_PERMISSIONS,
+      },
+      {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        name: 'Current month P&L',
+        filters: { dateFrom: '2026-04-01', dateTo: '2026-04-30' },
+      },
+    );
 
     expect(prisma.savedReportView.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -221,8 +306,8 @@ describe('ReportsService', () => {
     );
   });
 
-  it('exposes data-quality warnings from module-owned report definitions', () => {
-    const result = service.listDataQualityWarnings();
+  it('exposes data-quality warnings from module-owned report definitions', async () => {
+    const result = await service.listDataQualityWarnings(FINANCE_PERMISSIONS);
 
     expect(result.items).toEqual(
       expect.arrayContaining([
@@ -234,6 +319,36 @@ describe('ReportsService', () => {
         expect.objectContaining({
           reportKey: 'company-pnl',
           code: 'REPORT_NOTE',
+          sourceKind: 'REGISTRY',
+        }),
+      ]),
+    );
+  });
+
+  it('adds runtime marketing data-quality warnings for accessible cross-module reports', async () => {
+    prisma.marketingAccount.findMany.mockResolvedValueOnce([{ financeExpensePlanId: null }]);
+    prisma.marketingActivity.findMany.mockResolvedValueOnce([
+      { budget: 100, expenseCardId: null, status: 'LAUNCHED' },
+    ]);
+    prisma.deal.findMany.mockResolvedValueOnce([]);
+
+    const result = await service.listDataQualityWarnings(CROSS_MODULE_PERMISSIONS);
+
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reportKey: 'marketing-source-performance',
+          code: 'MISSING_ACCOUNT_FINANCE_LINKS',
+          severity: 'WARNING',
+          sourceKind: 'RUNTIME',
+          details: expect.objectContaining({ count: 1 }),
+        }),
+        expect.objectContaining({
+          reportKey: 'marketing-source-performance',
+          code: 'MISSING_ACTIVITY_EXPENSE_LINKS',
+          severity: 'WARNING',
+          sourceKind: 'RUNTIME',
+          details: expect.objectContaining({ count: 1 }),
         }),
       ]),
     );
@@ -245,5 +360,118 @@ describe('ReportsService', () => {
       service.completeExportJobWithDriveFile('job-1', 'missing-file', 'employee-1'),
     ).rejects.toThrow(NotFoundException);
     expect(prisma.reportExportJob.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects export creation when source permissions are missing', async () => {
+    await expect(
+      service.createExportJob(
+        'employee-1',
+        {},
+        {
+          reportKey: 'marketing-source-performance',
+          ownerModule: 'MARKETING',
+          format: 'CSV',
+        },
+      ),
+    ).rejects.toThrow('source-module permissions');
+  });
+
+  it('retries a failed export job by creating a new queued job', async () => {
+    prisma.reportExportJob.findUnique.mockResolvedValueOnce(FAILED_JOB);
+    prisma.reportExportJob.create.mockResolvedValueOnce({ ...QUEUED_JOB, id: 'job-retry-1' });
+
+    const retried = await service.retryExportJob('employee-1', FINANCE_PERMISSIONS, 'job-failed');
+
+    expect(retried.id).toBe('job-retry-1');
+    expect(prisma.reportExportJob.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          reportKey: FAILED_JOB.reportKey,
+          ownerModule: FAILED_JOB.ownerModule,
+          format: FAILED_JOB.format,
+          requestedById: 'employee-1',
+        }),
+      }),
+    );
+    expect(queue.enqueueExport).toHaveBeenCalledWith({
+      jobId: 'job-retry-1',
+      actorId: 'employee-1',
+    });
+  });
+
+  it('cancels a queued export job', async () => {
+    prisma.reportExportJob.findUnique.mockResolvedValueOnce(QUEUED_JOB);
+    prisma.reportExportJob.update.mockResolvedValueOnce({ ...QUEUED_JOB, status: 'CANCELLED' });
+
+    const cancelled = await service.cancelExportJob('employee-1', FINANCE_PERMISSIONS, 'job-1');
+
+    expect(cancelled.status).toBe('CANCELLED');
+    expect(prisma.reportExportJob.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'job-1' },
+        data: expect.objectContaining({ status: 'CANCELLED' }),
+      }),
+    );
+  });
+
+  it('rejects export creation when BullMQ is not configured and sync fallback is off', async () => {
+    vi.mocked(queue.isQueueAvailable!).mockReturnValue(false);
+    delete process.env.REPORT_EXPORT_SYNC_FALLBACK;
+
+    await expect(
+      service.createExportJob('employee-1', FINANCE_PERMISSIONS, {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        format: 'CSV',
+      }),
+    ).rejects.toThrow(ServiceUnavailableException);
+
+    expect(prisma.reportExportJob.create).not.toHaveBeenCalled();
+  });
+
+  it('uses in-process export when sync fallback is enabled without Redis', async () => {
+    vi.mocked(queue.isQueueAvailable!).mockReturnValue(false);
+    process.env.REPORT_EXPORT_SYNC_FALLBACK = 'true';
+    const spy = vi
+      .spyOn(service, 'processExportJob')
+      .mockImplementation(
+        async () =>
+          ({ ...QUEUED_JOB, fileAsset: null }) as unknown as Awaited<
+            ReturnType<ReportsService['processExportJob']>
+          >,
+      );
+
+    await service.createExportJob('employee-1', FINANCE_PERMISSIONS, {
+      reportKey: 'company-pnl',
+      ownerModule: 'FINANCE',
+      format: 'CSV',
+    });
+
+    expect(spy).toHaveBeenCalledWith('job-1', 'employee-1');
+    spy.mockRestore();
+    delete process.env.REPORT_EXPORT_SYNC_FALLBACK;
+    vi.mocked(queue.isQueueAvailable!).mockReturnValue(true);
+  });
+
+  it('marks export failed and throws when enqueue returns false', async () => {
+    vi.mocked(queue.isQueueAvailable!).mockReturnValue(true);
+    vi.mocked(queue.enqueueExport!).mockResolvedValue(false);
+
+    await expect(
+      service.createExportJob('employee-1', FINANCE_PERMISSIONS, {
+        reportKey: 'company-pnl',
+        ownerModule: 'FINANCE',
+        format: 'CSV',
+      }),
+    ).rejects.toThrow(ServiceUnavailableException);
+
+    expect(prisma.reportExportJob.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'job-1' },
+        data: expect.objectContaining({ status: 'FAILED' }),
+      }),
+    );
+
+    vi.mocked(queue.enqueueExport!).mockResolvedValue(true);
   });
 });

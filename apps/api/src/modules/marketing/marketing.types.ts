@@ -87,3 +87,16 @@ export interface AttributionOption {
   channel: string;
   subtitle?: string;
 }
+
+export interface MarketingCrmWhereOptionRow {
+  channel: string;
+  label: string;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+export interface UpdateMarketingCrmWhereOptionDto {
+  label?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}

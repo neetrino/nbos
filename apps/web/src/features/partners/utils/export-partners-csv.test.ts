@@ -6,12 +6,13 @@ function minimalPartner(overrides: Partial<Partner>): Partner {
   return {
     id: 'p1',
     name: 'Acme',
-    type: 'REGULAR',
+    level: 'REGULAR',
     direction: 'OUTBOUND',
     defaultPercent: '10',
     status: 'ACTIVE',
     contactId: null,
     createdAt: '2026-04-28T12:00:00.000Z',
+    updatedAt: '2026-04-28T12:00:00.000Z',
     contact: null,
     _count: { orders: 1, subscriptions: 2 },
     ...overrides,
@@ -23,6 +24,8 @@ describe('buildPartnersCsvContent', () => {
     const csv = buildPartnersCsvContent([]);
     expect(csv.split('\r\n')).toHaveLength(1);
     expect(csv).toContain('defaultPercent');
+    expect(csv).toContain('level');
+    expect(csv).toContain('updatedAt');
   });
 
   it('escapes name with comma', () => {

@@ -22,11 +22,14 @@ Notifications - кросс-модульный engine. Он получает со
 ```text
 Notifications
   -> External Channel Adapter
-    -> WhatsAppWebAdapter
-      -> WAHA
-        -> QR-connected WhatsApp account
-          -> WhatsApp Group / 1:1 chat
+    -> WhatsAppWebAdapter (контракт)
+      -> WhatsApp Gateway
+        -> WAHA (internal)
+          -> QR-connected WhatsApp account
+            -> WhatsApp Group / 1:1 chat
 ```
+
+Граница NBOS ↔ Gateway: `../../06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`.
 
 Главный сценарий - WhatsApp Groups:
 

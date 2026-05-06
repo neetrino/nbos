@@ -2,8 +2,11 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { BillingService } from '../finance/billing/billing.service';
+import { InvoiceCardRemindersService } from '../finance/invoices/invoice-card-reminders.service';
+import { ExpenseBacklogRemindersService } from '../expenses/expense-backlog-reminders.service';
 import { ExpensePlansService } from '../expenses/expense-plans.service';
 import { ReportsScheduleRunnerService } from '../reports/reports-schedule-runner.service';
+import { SupportSlaOrchestrationService } from '../support/support-sla-orchestration.service';
 
 interface OverdueResult {
   marked: number;
@@ -18,16 +21,23 @@ export class SchedulerService {
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly billingService: BillingService,
+    private readonly invoiceCardRemindersService: InvoiceCardRemindersService,
+    private readonly expenseBacklogRemindersService: ExpenseBacklogRemindersService,
     private readonly expensePlansService: ExpensePlansService,
     private readonly reportsScheduleRunnerService: ReportsScheduleRunnerService,
+    private readonly supportSlaOrchestrationService: SupportSlaOrchestrationService,
   ) {}
 
   /** Monthly subscription billing (generates invoices). */
   async runBilling() {
     this.logger.log('Scheduler: running monthly billing');
     const result = await this.billingService.runMonthlyBilling();
+    const skipNote =
+      result.skippedLateDelivery.length > 0
+        ? `; skipped (late delivery): ${result.skippedLateDelivery.length}`
+        : '';
     this.logger.log(
-      `Billing complete: ${result.generatedInvoices} invoices, $${result.totalAmount}`,
+      `Billing complete: ${result.generatedInvoices} invoices, $${result.totalAmount}${skipNote}`,
     );
     return result;
   }
@@ -47,8 +57,13 @@ export class SchedulerService {
     const now = new Date();
     const overdueInvoices = await this.prisma.invoice.findMany({
       where: {
-        status: {
-          notIn: ['PAID', 'FAIL', 'DELAYED'] as Prisma.EnumInvoiceStatusEnumFilter['notIn'],
+        moneyStatus: {
+          notIn: [
+            'PAID',
+            'CANCELLED',
+            'ON_HOLD',
+            'OVERDUE',
+          ] as Prisma.EnumInvoiceMoneyStatusEnumFilter['notIn'],
         },
         dueDate: { lt: now },
       },
@@ -63,7 +78,9 @@ export class SchedulerService {
     const ids = overdueInvoices.map((inv) => inv.id);
     await this.prisma.invoice.updateMany({
       where: { id: { in: ids } },
-      data: { status: 'DELAYED' as Prisma.InvoiceUpdateManyMutationInput['status'] },
+      data: {
+        moneyStatus: 'OVERDUE' as Prisma.InvoiceUpdateManyMutationInput['moneyStatus'],
+      },
     });
 
     this.logger.log(
@@ -85,11 +102,40 @@ export class SchedulerService {
     return result;
   }
 
+  async runInvoiceCardReminders() {
+    this.logger.log('Scheduler: invoice card reminders due');
+    const result = await this.invoiceCardRemindersService.runDueInvoiceCardReminders();
+    this.logger.log(
+      `Invoice card reminders: eligible=${result.eligibleCount}, created=${result.created.length}, skipped=${result.skippedExisting}`,
+    );
+    return result;
+  }
+
+  /** Expense Backlog: weekly finance digest + daily due reminders (idempotent jobs). */
+  async runExpenseBacklogReminders() {
+    this.logger.log('Scheduler: expense backlog reminders');
+    const result = await this.expenseBacklogRemindersService.runExpenseBacklogReminders();
+    this.logger.log(
+      `Expense backlog reminders: digest=${JSON.stringify(result.digest)}, dueCreated=${result.due.created.length}, dueSkipped=${result.due.skippedExisting}`,
+    );
+    return result;
+  }
+
   async runReportSchedulesDue() {
     this.logger.log('Scheduler: report schedules due');
     const result = await this.reportsScheduleRunnerService.runDueSchedules();
     this.logger.log(
       `Report schedules due: processed=${result.processed}, failures=${result.failed}`,
+    );
+    return result;
+  }
+
+  /** Support: SLA warning / breach in-app orchestration (idempotent per ticket + recipient). */
+  async runSupportSlaEscalation() {
+    this.logger.log('Scheduler: support SLA escalation scan');
+    const result = await this.supportSlaOrchestrationService.runSlaEscalationScan();
+    this.logger.log(
+      `Support SLA scan: scanned=${result.scanned}, warnings=${result.warnings}, responseBreaches=${result.responseBreaches}, resolveBreaches=${result.resolveBreaches}`,
     );
     return result;
   }

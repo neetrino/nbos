@@ -240,7 +240,7 @@ export default function SubscriptionDetailPage() {
             {subscription.invoices.slice(0, 12).map((inv) => (
               <li key={inv.id} className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="font-mono text-xs">{inv.code}</span>
-                <span className="text-muted-foreground">{inv.status}</span>
+                <span className="text-muted-foreground">{inv.moneyStatus}</span>
                 <span className="tabular-nums">{formatAmount(parseFloat(inv.amount))}</span>
               </li>
             ))}

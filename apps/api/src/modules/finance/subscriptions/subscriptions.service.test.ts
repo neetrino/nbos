@@ -36,7 +36,7 @@ describe('SubscriptionsService', () => {
       expect(result.meta.page).toBe(1);
     });
 
-    it('attaches coverage metadata', async () => {
+    it('attaches coverage metadata from paid subscription invoices', async () => {
       prisma.subscription.findMany.mockResolvedValue([
         {
           id: '1',
@@ -44,6 +44,18 @@ describe('SubscriptionsService', () => {
           status: 'ACTIVE',
           startDate: new Date('2026-03-01T00:00:00.000Z'),
           endDate: null,
+          project: { id: 'p', code: 'P', name: 'Proj' },
+          partner: null,
+          _count: { invoices: 1 },
+          invoices: [
+            {
+              type: 'SUBSCRIPTION',
+              amount: 1000,
+              coverageStartMonth: '2026-03',
+              coverageMonthCount: 2,
+              payments: [{ amount: 1000 }],
+            },
+          ],
         },
       ]);
 
@@ -51,8 +63,8 @@ describe('SubscriptionsService', () => {
       expect(result.items[0]).toMatchObject({
         coverage: {
           firstCoveredMonth: 2,
-          activeMonthCount: 10,
-          annualizedAmount: 10000,
+          activeMonthCount: 2,
+          annualizedAmount: 2000,
         },
       });
     });
@@ -159,7 +171,11 @@ describe('SubscriptionsService', () => {
           data: { status: 'ACTIVE' },
         }),
       );
-      expect(result.coverage).toMatchObject({ firstCoveredMonth: 0, activeMonthCount: 12 });
+      expect(result.coverage).toMatchObject({
+        firstCoveredMonth: null,
+        activeMonthCount: 0,
+        annualizedAmount: 0,
+      });
     });
 
     it('rejects invalid subscription status', async () => {

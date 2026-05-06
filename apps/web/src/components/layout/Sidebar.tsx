@@ -177,6 +177,18 @@ const NAV_ITEMS: NavItem[] = [
     href: '/support',
     icon: <Headphones size={20} />,
     permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
+    children: [
+      {
+        label: 'Tickets',
+        href: '/support',
+        permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
+      },
+      {
+        label: 'Change Control',
+        href: '/support/change-control',
+        permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
+      },
+    ],
   },
   {
     label: 'Clients',

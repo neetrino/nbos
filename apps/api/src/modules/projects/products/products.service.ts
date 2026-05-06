@@ -10,6 +10,7 @@ import {
   type DeliveryWorkStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { NotificationService } from '../../notifications/notification.service';
 import {
   PRODUCT_STATUS_ORDER,
   validateKickoffChecklistGate,
@@ -26,6 +27,8 @@ import {
   requireDeliveryStage,
 } from '../delivery-lifecycle';
 import { buildProductDoneReadiness } from './product-done-readiness';
+import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
+import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 
 interface CreateProductDto {
   projectId: string;
@@ -85,6 +88,8 @@ export class ProductsService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+    private readonly partnerAccrualClassic: PartnerAccrualClassicService,
   ) {}
 
   async findAll(params: ProductQueryParams) {
@@ -173,7 +178,7 @@ export class ProductsService {
               },
             },
             invoices: {
-              select: { id: true, code: true, status: true, amount: true, dueDate: true },
+              select: { id: true, code: true, moneyStatus: true, amount: true, dueDate: true },
             },
           },
         },
@@ -352,6 +357,14 @@ export class ProductsService {
       data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
       include: { project: { select: { id: true, code: true, name: true } } },
     });
+    const linkedOrder = await this.prisma.order.findUnique({
+      where: { productId: id },
+      select: { id: true },
+    });
+    if (linkedOrder) {
+      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
+      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
+    }
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 

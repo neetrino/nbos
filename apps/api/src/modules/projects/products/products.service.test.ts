@@ -1,15 +1,23 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ProductsService } from './products.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import type { NotificationService } from '../../notifications/notification.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
   let prisma: MockPrisma;
+  let notifications: NotificationService;
+
+  const partnerAccrualClassic = {
+    tryInboundClassicAfterDelivery: vi.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new ProductsService(prisma as never);
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
+    service = new ProductsService(prisma as never, notifications, partnerAccrualClassic as never);
   });
 
   describe('findAll', () => {
@@ -98,7 +106,7 @@ describe('ProductsService', () => {
             offerFileUrl: 'https://cdn.example.com/offer.pdf',
             contractFileUrl: 'https://cdn.example.com/contract.pdf',
           },
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
@@ -130,7 +138,11 @@ describe('ProductsService', () => {
         name: 'Test',
         status: 'TRANSFER',
         project: { credentials: [], domains: [], _count: { credentials: 0, domains: 0 } },
-        order: { status: 'PARTIALLY_PAID', deal: null, invoices: [{ status: 'WAITING' }] },
+        order: {
+          status: 'PARTIALLY_PAID',
+          deal: null,
+          invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
+        },
         extensions: [{ status: 'DEVELOPMENT' }],
         tasks: [{ status: 'IN_PROGRESS' }],
         tickets: [{ status: 'NEW' }],
@@ -191,7 +203,7 @@ describe('ProductsService', () => {
             offerFileUrl: 'https://cdn.example.com/offer.pdf',
             contractFileUrl: 'https://cdn.example.com/contract.pdf',
           },
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
@@ -229,7 +241,7 @@ describe('ProductsService', () => {
         order: {
           status: 'FULLY_PAID',
           deal: { offerFileUrl: null, contractFileUrl: null },
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
         extensions: [{ status: 'DONE' }],
         tasks: [{ status: 'DONE' }],
@@ -449,7 +461,7 @@ describe('ProductsService', () => {
         order: {
           id: 'ord-1',
           status: 'FULLY_PAID',
-          invoices: [{ status: 'PAID' }, { status: 'WAITING' }],
+          invoices: [{ moneyStatus: 'PAID' }, { moneyStatus: 'AWAITING_PAYMENT' }],
         },
       });
 
@@ -474,7 +486,7 @@ describe('ProductsService', () => {
         order: {
           id: 'ord-1',
           status: 'PARTIALLY_PAID',
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
       });
 
@@ -499,7 +511,7 @@ describe('ProductsService', () => {
         order: {
           id: 'ord-1',
           status: 'FULLY_PAID',
-          invoices: [{ status: 'PAID' }],
+          invoices: [{ moneyStatus: 'PAID' }],
         },
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DONE' });

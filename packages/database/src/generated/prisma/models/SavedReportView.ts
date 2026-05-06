@@ -364,6 +364,16 @@ export type SavedReportViewUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
+export type SavedReportViewListRelationFilter = {
+  every?: Prisma.SavedReportViewWhereInput;
+  some?: Prisma.SavedReportViewWhereInput;
+  none?: Prisma.SavedReportViewWhereInput;
+};
+
+export type SavedReportViewOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder;
+};
+
 export type SavedReportViewOwnerIdReportKeyNameCompoundUniqueInput = {
   ownerId: string;
   reportKey: string;
@@ -402,16 +412,6 @@ export type SavedReportViewMinOrderByAggregateInput = {
   ownerId?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
-};
-
-export type SavedReportViewListRelationFilter = {
-  every?: Prisma.SavedReportViewWhereInput;
-  some?: Prisma.SavedReportViewWhereInput;
-  none?: Prisma.SavedReportViewWhereInput;
-};
-
-export type SavedReportViewOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder;
 };
 
 export type SavedReportViewCreateNestedManyWithoutOwnerInput = {

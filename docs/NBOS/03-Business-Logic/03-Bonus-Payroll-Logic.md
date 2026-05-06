@@ -83,7 +83,7 @@
 
 **Данные и UI (требования к продукту)**
 
-- **БД:** модель ставок с ключами минимум `from_category` (Sales | Marketing | Partner | Client), `payment_model` (CLASSIC | SUBSCRIPTION_FIRST_MONTH), `seller_percent`, `assistant_percent`, `effective_from`, `is_active`; опционально audit и комментарий.
+- **БД:** модель ставок с ключами минимум `from_category` (Sales | Marketing | Partner | Client), `payment_model` (CLASSIC | SUBSCRIPTION_FIRST_MONTH | SUBSCRIPTION_RECURRING для 2+ месяца подписки), `seller_percent`, `assistant_percent`, `effective_from`, `is_active`; опционально audit и комментарий.
 - **UI:** экран настройки (например Settings → Bonus Policy / Compensation) — таблица как выше, **редактирование каждого процента отдельно**, предпросмотр по тестовой сумме.
 - Без заполненного **`From`** на сделке выбор строки политики невозможен → **блокировать** начисление sales bonus до заполнения (как и прочие marketing gates в CRM), если нет явно утверждённого fallback.
 

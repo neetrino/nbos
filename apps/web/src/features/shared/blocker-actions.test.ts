@@ -12,8 +12,8 @@ describe('resolveBlockerDirectActions', () => {
     });
 
     expect(actions).toEqual([
-      { key: 'attribution', label: 'Open attribution fields', target: 'details' },
-      { key: 'finance', label: 'Open deal finance', target: 'finance' },
+      { key: 'attribution', label: 'Go to attribution & contact', target: 'details' },
+      { key: 'finance', label: 'Go to invoice', target: 'finance' },
     ]);
   });
 
@@ -23,7 +23,9 @@ describe('resolveBlockerDirectActions', () => {
       errors: [{ field: 'kickoffChecklist.scope', message: 'Scope approved' }],
     });
 
-    expect(actions).toEqual([{ key: 'pm-intake', label: 'Open PM intake', target: 'project' }]);
+    expect(actions).toEqual([
+      { key: 'pm-intake', label: 'Open product overview', target: 'project' },
+    ]);
   });
 
   it('maps product Done blockers to delivery context', () => {
@@ -33,7 +35,7 @@ describe('resolveBlockerDirectActions', () => {
     });
 
     expect(actions).toEqual([
-      { key: 'delivery-context', label: 'Open delivery context', target: 'project' },
+      { key: 'product-workspace-tasks', label: 'Open Work Space', target: 'project' },
     ]);
   });
 
@@ -44,7 +46,7 @@ describe('resolveBlockerDirectActions', () => {
     });
 
     expect(actions).toEqual([
-      { key: 'extension-readiness', label: 'Open extension context', target: 'project' },
+      { key: 'extension-intake', label: 'Open extension on product', target: 'project' },
     ]);
   });
 
@@ -55,7 +57,7 @@ describe('resolveBlockerDirectActions', () => {
     });
 
     expect(actions).toEqual([
-      { key: 'extension-readiness', label: 'Open extension context', target: 'project' },
+      { key: 'extension-workspace-tasks', label: 'Open Work Space', target: 'project' },
     ]);
   });
 });

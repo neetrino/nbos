@@ -13,6 +13,7 @@ import { useInvoicesCsvExport } from '@/features/finance/components/invoices/use
 import { useInvoicesScopeStatsCsvExport } from '@/features/finance/components/invoices/use-invoices-scope-stats-csv-export';
 import { useInvoicesPageState } from '@/features/finance/components/invoices/useInvoicesPageState';
 import { invoicesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-invoice-drilldown';
 import { getFinancePeriodParams } from '@/features/finance/constants/finance';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -23,8 +24,9 @@ function InvoicesPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const subscriptionIdFromUrl = searchParams.get(SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY);
+  const openInvoiceIdFromUrl = searchParams.get(OPEN_INVOICE_QUERY);
 
-  const state = useInvoicesPageState({ subscriptionIdFromUrl });
+  const state = useInvoicesPageState({ subscriptionIdFromUrl, openInvoiceIdFromUrl });
   const { exportCsvSubmitting, handleExportCsv } = useInvoicesCsvExport(
     state.invoiceListExportParams,
   );
@@ -86,7 +88,7 @@ function InvoicesPageInner() {
         view={state.view}
         onRetry={state.fetchInvoices}
         onInvoiceClick={state.handleInvoiceClick}
-        onMove={(itemId, _from, toColumn) => state.handleStatusChange(itemId, toColumn)}
+        onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}
       />
       <InvoiceSheet
         invoice={state.selectedInvoice}

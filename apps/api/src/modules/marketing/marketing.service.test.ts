@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MarketingService } from './marketing.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
@@ -135,41 +136,52 @@ describe('MarketingService', () => {
     prisma.deal.findMany.mockResolvedValue([
       {
         status: 'WON',
+        createdAt: new Date('2026-01-01'),
         orders: [
           {
             invoices: [
               {
-                payments: [{ amount: 40000 }, { amount: 10000 }],
+                payments: [
+                  { amount: 40000, paymentDate: new Date('2026-01-05') },
+                  { amount: 10000, paymentDate: new Date('2026-01-06') },
+                ],
               },
             ],
           },
         ],
       },
-      { status: 'SEND_OFFER', orders: [] },
+      { status: 'SEND_OFFER', createdAt: new Date('2026-01-02'), orders: [] },
     ]);
+    prisma.lead.count.mockResolvedValue(4);
+    prisma.expensePayment.aggregate.mockResolvedValue({ _sum: { amount: 30000 } });
 
     const summary = await service.getDashboardSummary();
 
     expect(summary).toMatchObject({
+      period: null,
       totals: {
         accounts: 2,
         activities: 2,
         launchedActivities: 1,
         activitiesWithFinanceExpense: 1,
         missingFinanceLinks: 2,
+        attributedLeads: 4,
         attributedDeals: 2,
         wonAttributedDeals: 1,
       },
       money: {
         plannedSpend: 75000,
+        paidMarketingSpend: 30000,
+        roiMetricsAvailable: true,
         paidRevenue: 50000,
-        netReturn: -25000,
-        roas: 50000 / 75000,
-        costPerWonDeal: 75000,
+        netReturn: null,
+        roas: null,
+        costPerWonDeal: null,
+        costPerAttributedLead: null,
       },
       efficiency: {
         isReliable: false,
-        reason: 'Missing Finance links',
+        reason: 'Missing Finance links; ROI and CPL stay hidden until coverage is complete',
       },
     });
     expect(summary.warnings).toEqual([
@@ -177,6 +189,122 @@ describe('MarketingService', () => {
       expect.objectContaining({ code: 'MISSING_ACTIVITY_EXPENSE_LINKS', count: 1 }),
       expect.objectContaining({ code: 'EFFICIENCY_PARTIAL_DATA', count: 2 }),
     ]);
+  });
+
+  it('withholds ROI and CPL fields when no paid marketing spend is recorded', async () => {
+    prisma.marketingAccount.findMany.mockResolvedValue([{ financeExpensePlanId: 'plan-1' }]);
+    prisma.marketingActivity.findMany.mockResolvedValue([
+      { status: 'LAUNCHED', budget: 50000, expenseCardId: 'expense-1' },
+    ]);
+    prisma.deal.findMany.mockResolvedValue([]);
+    prisma.lead.count.mockResolvedValue(0);
+    prisma.expensePayment.aggregate.mockResolvedValue({ _sum: { amount: null } });
+
+    const summary = await service.getDashboardSummary();
+
+    expect(summary.money).toMatchObject({
+      paidMarketingSpend: 0,
+      roiMetricsAvailable: false,
+      netReturn: null,
+      roas: null,
+      costPerWonDeal: null,
+      costPerAttributedLead: null,
+    });
+    expect(summary.efficiency).toMatchObject({
+      isReliable: false,
+      reason: 'No paid marketing spend recorded',
+    });
+    expect(summary.period).toBeNull();
+  });
+
+  it('rejects partial marketing dashboard period query params', async () => {
+    await expect(service.getDashboardSummary({ dateFrom: '2026-01-01' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  it('scopes marketing dashboard to date range when both params are provided', async () => {
+    prisma.marketingAccount.findMany.mockResolvedValue([{ financeExpensePlanId: 'plan-1' }]);
+    prisma.marketingActivity.findMany.mockResolvedValue([
+      { status: 'LAUNCHED', budget: 0, expenseCardId: 'expense-1' },
+    ]);
+    prisma.deal.findMany.mockResolvedValue([
+      {
+        status: 'WON',
+        createdAt: new Date('2026-02-01'),
+        orders: [
+          {
+            invoices: [
+              {
+                payments: [
+                  { amount: 1000, paymentDate: new Date('2026-01-15') },
+                  { amount: 5000, paymentDate: new Date('2026-02-10') },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    prisma.lead.count.mockResolvedValue(2);
+    prisma.expensePayment.aggregate.mockResolvedValue({ _sum: { amount: 800 } });
+
+    const summary = await service.getDashboardSummary({
+      dateFrom: '2026-02-01T00:00:00.000Z',
+      dateTo: '2026-02-28T23:59:59.999Z',
+    });
+
+    expect(summary.period).toEqual({
+      dateFrom: '2026-02-01T00:00:00.000Z',
+      dateTo: '2026-02-28T23:59:59.999Z',
+    });
+    expect(summary.money.paidRevenue).toBe(5000);
+    expect(summary.money.paidMarketingSpend).toBe(800);
+    expect(summary.totals.attributedDeals).toBe(1);
+    expect(summary.totals.wonAttributedDeals).toBe(1);
+    expect(summary.totals.attributedLeads).toBe(2);
+  });
+
+  it('returns active CRM Where options only', async () => {
+    prisma.marketingCrmWhereOption.findMany.mockResolvedValue([
+      { channel: 'LIST_AM', label: 'List.am', sortOrder: 30, isActive: true },
+    ]);
+
+    const rows = await service.getCrmWhereOptions(false);
+
+    expect(prisma.marketingCrmWhereOption.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { isActive: true } }),
+    );
+    expect(rows).toEqual([{ channel: 'LIST_AM', label: 'List.am', sortOrder: 30, isActive: true }]);
+  });
+
+  it('returns all CRM Where options when includeInactive is true', async () => {
+    prisma.marketingCrmWhereOption.findMany.mockResolvedValue([]);
+
+    await service.getCrmWhereOptions(true);
+
+    expect(prisma.marketingCrmWhereOption.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: undefined }),
+    );
+  });
+
+  it('updates CRM Where option label', async () => {
+    prisma.marketingCrmWhereOption.findUnique.mockResolvedValue({
+      channel: 'LIST_AM',
+      label: 'List.am',
+      sortOrder: 30,
+      isActive: true,
+    });
+    prisma.marketingCrmWhereOption.update.mockResolvedValue({
+      channel: 'LIST_AM',
+      label: 'List.am (primary)',
+      sortOrder: 30,
+      isActive: true,
+    });
+
+    const updated = await service.updateCrmWhereOption('list_am', { label: 'List.am (primary)' });
+
+    expect(updated.label).toBe('List.am (primary)');
   });
 });
 

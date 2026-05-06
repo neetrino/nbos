@@ -1,8 +1,10 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient, type Prisma } from '@nbos/database';
+import * as argon2 from 'argon2';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { NotificationService } from '../notifications/notification.service';
 import { encrypt, decrypt } from '../../common/utils/crypto';
 
 const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData', 'secureNotes'] as const;
@@ -15,6 +17,14 @@ export interface CredentialSecretsPresent {
   apiKey: boolean;
   envData: boolean;
   secureNotes: boolean;
+}
+
+type CredentialHealthStatus = 'HEALTHY' | 'DUE_SOON' | 'OVERDUE' | 'UNKNOWN';
+
+interface CredentialHealthMetadata {
+  status: CredentialHealthStatus;
+  dueInDays: number | null;
+  flags: string[];
 }
 
 function isSensitiveField(value: string): value is SensitiveField {
@@ -54,6 +64,12 @@ interface CredentialQueryParams {
   departmentIds?: string[];
   /** When true, list only archived rows (same visibility rules). */
   includeArchived?: boolean;
+}
+
+interface ExportCredentialsInput {
+  credentialIds?: string[];
+  fields?: string[];
+  stepUpPassword?: string;
 }
 
 interface CreateCredentialDto {
@@ -119,6 +135,15 @@ function nullableDate(value: string | null | undefined): Date | null | undefined
   return new Date(value);
 }
 
+function startOfUtcDay(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
+function daysDiffUtc(from: Date, to: Date): number {
+  const DAY = 24 * 60 * 60 * 1000;
+  return Math.floor((startOfUtcDay(to).getTime() - startOfUtcDay(from).getTime()) / DAY);
+}
+
 @Injectable()
 export class CredentialsService {
   private readonly encryptionKey: string;
@@ -127,6 +152,7 @@ export class CredentialsService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly configService: ConfigService,
     private readonly auditService: AuditService,
+    private readonly notifications: NotificationService,
   ) {
     const key = this.configService.get<string>('CREDENTIALS_ENCRYPTION_KEY');
     if (!key) throw new Error('CREDENTIALS_ENCRYPTION_KEY is not configured');
@@ -329,8 +355,14 @@ export class CredentialsService {
   /**
    * Returns one decrypted secret; audit `credential.secret_revealed` (no plaintext in audit payload).
    */
-  async revealSecretField(id: string, field: string, access: CredentialsAccessContext) {
+  async revealSecretField(
+    id: string,
+    field: string,
+    stepUpPassword: string | undefined,
+    access: CredentialsAccessContext,
+  ) {
     const secretField = this.parseSecretField(field);
+    await this.assertStepUpPassword(access.employeeId, stepUpPassword, `reveal:${secretField}`);
     const row = await this.getAccessibleCredentialRow(id, access);
     const raw = row[secretField];
     if (!raw || typeof raw !== 'string') {
@@ -346,6 +378,7 @@ export class CredentialsService {
       projectId: row.projectId ?? undefined,
       changes: [secretField],
     });
+    await this.notifyHighRiskIfNeeded(row, access.employeeId, 'reveal', secretField);
 
     return { field: secretField, value };
   }
@@ -353,8 +386,14 @@ export class CredentialsService {
   /**
    * Returns one decrypted secret; audit `credential.secret_copied` (client should call when user copies).
    */
-  async copySecretField(id: string, field: string, access: CredentialsAccessContext) {
+  async copySecretField(
+    id: string,
+    field: string,
+    stepUpPassword: string | undefined,
+    access: CredentialsAccessContext,
+  ) {
     const secretField = this.parseSecretField(field);
+    await this.assertStepUpPassword(access.employeeId, stepUpPassword, `copy:${secretField}`);
     const row = await this.getAccessibleCredentialRow(id, access);
     const raw = row[secretField];
     if (!raw || typeof raw !== 'string') {
@@ -370,8 +409,91 @@ export class CredentialsService {
       projectId: row.projectId ?? undefined,
       changes: [secretField],
     });
+    await this.notifyHighRiskIfNeeded(row, access.employeeId, 'copy', secretField);
 
     return { field: secretField, value };
+  }
+
+  async exportCredentials(input: ExportCredentialsInput, access: CredentialsAccessContext) {
+    await this.assertStepUpPassword(access.employeeId, input.stepUpPassword, 'export');
+    const requestedFields = input.fields?.length ? input.fields : [...SENSITIVE_FIELDS];
+    const fields = requestedFields.map((f) => this.parseSecretField(f));
+
+    const where: Prisma.CredentialWhereInput = {
+      archivedAt: null,
+      OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+    };
+    if (input.credentialIds && input.credentialIds.length > 0) {
+      where.id = { in: input.credentialIds };
+    }
+
+    const rows = await this.prisma.credential.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        credentialType: true,
+        criticality: true,
+        accessLevel: true,
+        ownerId: true,
+        projectId: true,
+        password: true,
+        apiKey: true,
+        envData: true,
+        secureNotes: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    const exported = rows.map((row) => {
+      const secrets: Partial<Record<SensitiveField, string>> = {};
+      for (const field of fields) {
+        const raw = row[field];
+        if (typeof raw === 'string' && raw.length > 0) {
+          secrets[field] = this.decryptFieldIfEncrypted(raw);
+        }
+      }
+      return {
+        id: row.id,
+        name: row.name,
+        category: row.category,
+        credentialType: row.credentialType,
+        criticality: row.criticality,
+        accessLevel: row.accessLevel,
+        projectId: row.projectId,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        secrets,
+      };
+    });
+
+    await this.auditService.log({
+      entityType: 'credential',
+      entityId: 'bulk_export',
+      action: 'credential.exported',
+      userId: access.employeeId,
+      changes: {
+        count: exported.length,
+        fields,
+      },
+    });
+    await this.notifyCredentialHighRiskRecipients({
+      actorId: access.employeeId,
+      title: 'Credentials export performed',
+      body: `A credentials export was completed (${exported.length} records).`,
+      entityId: 'bulk_export',
+      dedupeSuffix: `${access.employeeId}:${exported.length}`,
+    });
+
+    return {
+      exportedAt: new Date().toISOString(),
+      count: exported.length,
+      fields,
+      items: exported,
+    };
   }
 
   /**
@@ -609,6 +731,89 @@ export class CredentialsService {
     return field;
   }
 
+  private async assertStepUpPassword(
+    employeeId: string,
+    stepUpPassword: string | undefined,
+    purpose: string,
+  ) {
+    const password = stepUpPassword?.trim();
+    if (!password) {
+      throw new BadRequestException('stepUpPassword is required for high-risk action');
+    }
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      select: { passwordHash: true },
+    });
+    if (!employee?.passwordHash) {
+      throw new NotFoundException(`Employee ${employeeId} not found`);
+    }
+    const ok = await argon2.verify(employee.passwordHash, password);
+    if (!ok) {
+      throw new BadRequestException('Invalid step-up password');
+    }
+    await this.auditService.log({
+      entityType: 'credential',
+      entityId: employeeId,
+      action: 'credential.step_up_verified',
+      userId: employeeId,
+      changes: { purpose },
+    });
+  }
+
+  private async notifyHighRiskIfNeeded(
+    row: { id: string; name?: string | null; ownerId?: string | null; criticality?: string | null },
+    actorId: string,
+    action: 'reveal' | 'copy',
+    field: SensitiveField,
+  ) {
+    const isHighRisk = row.criticality === 'HIGH' || row.criticality === 'CRITICAL';
+    if (!isHighRisk) return;
+    await this.notifyCredentialHighRiskRecipients({
+      actorId,
+      title: 'High-risk credential action',
+      body: `${action.toUpperCase()} on ${field} for credential ${row.name ?? row.id}.`,
+      entityId: row.id,
+      ownerId: row.ownerId ?? null,
+      dedupeSuffix: `${action}:${field}:${row.id}:${actorId}`,
+    });
+  }
+
+  private async notifyCredentialHighRiskRecipients(params: {
+    actorId: string;
+    title: string;
+    body: string;
+    entityId: string;
+    ownerId?: string | null;
+    dedupeSuffix: string;
+  }) {
+    const recipients = new Set<string>();
+    if (params.ownerId) recipients.add(params.ownerId);
+
+    const admins = await this.prisma.employee.findMany({
+      where: {
+        role: { slug: { in: ['ceo', 'admin'] } },
+      },
+      select: { id: true },
+    });
+    for (const admin of admins) recipients.add(admin.id);
+    recipients.delete(params.actorId);
+
+    await Promise.all(
+      [...recipients].map((recipientId) =>
+        this.notifications.create({
+          type: 'credentials.high_risk_action',
+          recipientId,
+          title: params.title,
+          body: params.body,
+          entityType: 'credential',
+          entityId: params.entityId,
+          sourceModule: 'credentials',
+          dedupeKey: `credentials.high_risk_action:${recipientId}:${params.dedupeSuffix}`,
+        }),
+      ),
+    );
+  }
+
   private async getAccessibleCredentialRow(id: string, access: CredentialsAccessContext) {
     const row = await this.prisma.credential.findFirst({
       where: {
@@ -630,6 +835,27 @@ export class CredentialsService {
 
   private toCredentialWithoutSecrets(credential: Record<string, unknown>) {
     const { password, apiKey, envData, secureNotes, ...rest } = credential;
+    const nextRotationAt =
+      credential.nextRotationAt instanceof Date ? credential.nextRotationAt : null;
+    const now = new Date();
+    const dueInDays = nextRotationAt ? daysDiffUtc(now, nextRotationAt) : null;
+    let status: CredentialHealthStatus = 'UNKNOWN';
+    if (dueInDays !== null) {
+      if (dueInDays < 0) status = 'OVERDUE';
+      else if (dueInDays <= 14) status = 'DUE_SOON';
+      else status = 'HEALTHY';
+    }
+    const flags: string[] = [];
+    const criticality = typeof credential.criticality === 'string' ? credential.criticality : null;
+    const accessLevel = typeof credential.accessLevel === 'string' ? credential.accessLevel : null;
+    const ownerId = typeof credential.ownerId === 'string' ? credential.ownerId : null;
+    if ((criticality === 'HIGH' || criticality === 'CRITICAL') && !ownerId) {
+      flags.push('MISSING_OWNER');
+    }
+    if ((criticality === 'HIGH' || criticality === 'CRITICAL') && accessLevel === 'ALL') {
+      flags.push('BROAD_ACCESS');
+    }
+
     return {
       ...rest,
       secretsPresent: {
@@ -638,6 +864,11 @@ export class CredentialsService {
         envData: typeof envData === 'string' && envData.length > 0,
         secureNotes: typeof secureNotes === 'string' && secureNotes.length > 0,
       } satisfies CredentialSecretsPresent,
+      health: {
+        status,
+        dueInDays,
+        flags,
+      } satisfies CredentialHealthMetadata,
     };
   }
 

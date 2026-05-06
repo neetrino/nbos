@@ -1,12 +1,36 @@
 import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import type { BonusReleaseStatusEnum, BonusReleaseTypeEnum } from '@nbos/database';
 import { BonusService } from './bonus.service';
+import { BonusReleaseService } from './bonus-release.service';
+import {
+  SalesBonusPolicyService,
+  type UpdateSalesBonusPolicyDto,
+} from './sales-bonus-policy.service';
 
 @ApiTags('Bonus')
 @ApiBearerAuth()
 @Controller('bonus')
 export class BonusController {
-  constructor(private readonly bonusService: BonusService) {}
+  constructor(
+    private readonly bonusService: BonusService,
+    private readonly bonusReleaseService: BonusReleaseService,
+    private readonly salesBonusPolicyService: SalesBonusPolicyService,
+  ) {}
+
+  @Get('sales-policies')
+  @ApiOperation({
+    summary: 'List sales bonus policy rows (Seller / Assistant by From + payment model)',
+  })
+  async listSalesBonusPolicies() {
+    return this.salesBonusPolicyService.listAll();
+  }
+
+  @Patch('sales-policies/:id')
+  @ApiOperation({ summary: 'Update percentages or active flag on a sales bonus policy row' })
+  async patchSalesBonusPolicy(@Param('id') id: string, @Body() body: UpdateSalesBonusPolicyDto) {
+    return this.salesBonusPolicyService.update(id, body);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Get all bonus entries with filters' })
@@ -47,13 +71,65 @@ export class BonusController {
     return this.bonusService.getStats();
   }
 
-  @Get('projects/pools')
+  @Get('products/pools')
   @ApiOperation({
     summary:
-      'Project-level bonus roll-ups from bonus entries (pipeline vs paid vs clawback; read-only aggregate)',
+      'Product / extension / order bonus roll-ups from bonus entries (NBOS Product Bonus Pool view; read-only aggregate)',
   })
-  async getProjectPools() {
-    return this.bonusService.getProjectPools();
+  async getProductPools() {
+    return this.bonusService.getProductPools();
+  }
+
+  @Get('entries/:entryId/releases')
+  @ApiOperation({ summary: 'List bonus releases for a bonus entry (NBOS Bonus Release ledger)' })
+  async listBonusReleases(@Param('entryId') entryId: string) {
+    return this.bonusReleaseService.listForEntry(entryId);
+  }
+
+  @Post('entries/:entryId/releases')
+  @ApiOperation({ summary: 'Create a bonus release row and refresh product bonus pool totals' })
+  async createBonusRelease(
+    @Param('entryId') entryId: string,
+    @Body()
+    body: {
+      amount: number;
+      releaseType: string;
+      reason?: string;
+      payrollRunId?: string;
+      approvedById?: string;
+      status?: string;
+    },
+  ) {
+    return this.bonusReleaseService.createForEntry(entryId, {
+      amount: body.amount,
+      releaseType: body.releaseType as BonusReleaseTypeEnum,
+      reason: body.reason,
+      payrollRunId: body.payrollRunId,
+      approvedById: body.approvedById,
+      status: body.status as BonusReleaseStatusEnum | undefined,
+    });
+  }
+
+  @Patch('entries/:entryId/releases/:releaseId')
+  @ApiOperation({
+    summary:
+      'Adjust an APPROVED/DRAFT release amount (e.g. override proportional AUTO split); refreshes pool',
+  })
+  async patchBonusRelease(
+    @Param('entryId') entryId: string,
+    @Param('releaseId') releaseId: string,
+    @Body()
+    body: {
+      amount: number;
+      reason: string;
+      approvedById?: string;
+    },
+  ) {
+    return this.bonusReleaseService.patchForEntry(entryId, releaseId, {
+      amount: body.amount,
+      reason: body.reason,
+      approvedById: body.approvedById,
+    });
   }
 
   @Get(':id')
@@ -75,8 +151,6 @@ export class BonusController {
       percent: number;
       status?: string;
       kpiGatePassed?: boolean;
-      holdbackPercent?: number;
-      holdbackReleaseDate?: string;
       payoutMonth?: string;
     },
   ) {

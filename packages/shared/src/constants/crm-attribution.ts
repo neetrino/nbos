@@ -46,7 +46,7 @@ export function isDealAttributionLocked(status: string): boolean {
   return idx >= discussIdx && discussIdx >= 0;
 }
 
-/** Lead attribution is optional only in New and Spam. */
+/** Lead attribution is optional only in New, On Hold, and Spam. */
 export function isLeadAttributionLocked(status: string): boolean {
-  return !['NEW', 'SPAM'].includes(status);
+  return !['NEW', 'ON_HOLD', 'SPAM'].includes(status);
 }

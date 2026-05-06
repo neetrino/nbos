@@ -5,7 +5,7 @@ const CSV_UTF8_BOM = '\uFEFF';
 const HEADER = ['section', 'col1', 'col2', 'col3', 'col4', 'col5'] as const;
 
 const STATS_SCOPE_NOTE =
-  'GET /api/partners/stats returns workspace-wide aggregates only: total partners, subscriptions with any partner link, and average defaultPercent across all partners. List search, tier (type), direction, and status filters are not applied to these figures.';
+  'GET /api/partners/stats returns workspace-wide aggregates only: total partners, subscriptions with any partner link, and average defaultPercent across all partners. List search, level, direction, and status filters are not applied to these figures.';
 
 export interface PartnersScopeStatsCsvMeta {
   exportedAtIso: string;

@@ -179,7 +179,7 @@ function getFallbackIntake(project: FullProject): ProjectIntakeSummary {
     hasPm: project.products.some((product) => Boolean(product.pm)),
     hasDeadline: project.products.some((product) => Boolean(product.deadline)),
     hasPaidInvoice: project.orders.some((order) =>
-      order.invoices.some((invoice) => invoice.status === 'PAID' || Boolean(invoice.paidDate)),
+      order.invoices.some((invoice) => invoice.moneyStatus === 'PAID' || Boolean(invoice.paidDate)),
     ),
     hasSubscriptionContext: project.subscriptions.length > 0,
     hasCredentials: project.credentials.length > 0,

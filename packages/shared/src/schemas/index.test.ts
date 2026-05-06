@@ -144,6 +144,16 @@ describe('Schemas', () => {
         }),
       ).toThrow();
     });
+
+    it('accepts optional sellerAssistantId', () => {
+      const result = createDealSchema.parse({
+        contactId: '550e8400-e29b-41d4-a716-446655440000',
+        type: 'PRODUCT',
+        sellerId: '550e8400-e29b-41d4-a716-446655440001',
+        sellerAssistantId: '550e8400-e29b-41d4-a716-446655440002',
+      });
+      expect(result.sellerAssistantId).toBe('550e8400-e29b-41d4-a716-446655440002');
+    });
   });
 
   describe('updateDealSchema', () => {
@@ -166,6 +176,13 @@ describe('Schemas', () => {
         maintenanceStartAt: '2026-05-15T00:00:00.000Z',
       });
       expect(result.maintenanceStartAt).toBe('2026-05-15T00:00:00.000Z');
+    });
+
+    it('accepts sellerAssistantId null', () => {
+      const result = updateDealSchema.parse({
+        sellerAssistantId: null,
+      });
+      expect(result.sellerAssistantId).toBeNull();
     });
   });
 });

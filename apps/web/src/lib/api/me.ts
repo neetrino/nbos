@@ -12,8 +12,17 @@ export interface EmployeeWalletBonusRow {
   type: string;
   status: string;
   walletGroup: WalletBonusPipelineGroup;
+  /** Planned amount on the bonus entry. */
   amount: string;
   percent: string;
+  releasedAmount: string;
+  paidAmount: string;
+  remainingAmount: string;
+  payrollMonth: string | null;
+  orderPaymentType: string | null;
+  salesAccrualHint: string | null;
+  /** Product / extension scope for this order (from bonus pool). */
+  productLabel: string;
   project: { code: string; name: string };
   order: { code: string };
   createdAt: string;
@@ -33,6 +42,52 @@ export interface EmployeeWalletSalaryRow {
   expenseId: string | null;
 }
 
+export interface EmployeeWalletProjectBreakdownRow {
+  orderId: string;
+  projectId: string;
+  project: { code: string; name: string };
+  order: { code: string };
+  productLabel: string;
+  bonusTypesSummary: string;
+  plannedBonus: string;
+  releasedBonus: string;
+  paidBonus: string;
+  remainingBonus: string;
+  fundingStatusLabels: string[];
+  poolAvailableFunding: string | null;
+  poolOverFunding: string | null;
+  entryStatusesSummary: string;
+  payoutState: 'UNPAID' | 'PARTIAL' | 'PAID';
+}
+
+export type EmployeeWalletActivityKind = 'BONUS_RELEASE' | 'SALARY_PAYMENT' | 'PAYROLL_CLOSED';
+
+export interface EmployeeWalletActivityItem {
+  id: string;
+  kind: EmployeeWalletActivityKind;
+  occurredAt: string;
+  title: string;
+  detail: string | null;
+  linkHref: string | null;
+}
+
+export interface EmployeeWalletNextPayroll {
+  salaryLineId: string;
+  payrollRunId: string;
+  payrollMonth: string;
+  runStatus: string;
+  baseSalary: string;
+  bonusesTotal: string;
+  adjustmentsTotal: string;
+  deductionsTotal: string;
+  totalPayable: string;
+  paidAmount: string;
+  remainingAmount: string;
+  lineStatus: string;
+  expenseId: string | null;
+  partialPayments: Array<{ paymentDate: string; amount: string }>;
+}
+
 export interface EmployeeWalletSnapshot {
   employee: {
     id: string;
@@ -44,6 +99,9 @@ export interface EmployeeWalletSnapshot {
     roleName: string;
   };
   bonuses: EmployeeWalletBonusRow[];
+  nextPayroll: EmployeeWalletNextPayroll | null;
+  projectBreakdown: EmployeeWalletProjectBreakdownRow[];
+  activity: EmployeeWalletActivityItem[];
   salaryHistory: EmployeeWalletSalaryRow[];
 }
 

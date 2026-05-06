@@ -1,3 +1,4 @@
+import { bonusSalesAccrualHint } from '@/features/finance/utils/bonus-sales-accrual-hint';
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 
@@ -15,11 +16,11 @@ const CSV_HEADERS = [
   'percent',
   'status',
   'kpiGatePassed',
-  'holdbackPercent',
-  'holdbackReleaseDate',
   'payoutMonth',
   'createdAt',
   'updatedAt',
+  'salesAccrualHint',
+  'salesAccrualInvoiceId',
 ] as const;
 
 const CSV_UTF8_BOM = '\uFEFF';
@@ -57,37 +58,24 @@ function rowToCsvCells(row: BonusEntryListRow): string[] {
     row.percent,
     row.status,
     boolToCell(row.kpiGatePassed),
-    row.holdbackPercent ?? '',
-    row.holdbackReleaseDate ?? '',
     row.payoutMonth ?? '',
     row.createdAt,
     row.updatedAt,
+    bonusSalesAccrualHint(row) ?? '',
+    row.salesAccrualInvoiceId ?? '',
   ];
   return cells.map((c) => escapeCsvCell(String(c)));
 }
 
 function grandTotalBonusBoardCsvLine(rows: BonusEntryListRow[]): string {
   const amountSum = sumMoneyStringsMajorUnits(rows.map((r) => r.amount)).toFixed(2);
-  const cells = [
-    '_grand_total',
-    '',
-    `Visible rows (${rows.length})`,
-    '',
-    '—',
-    '—',
-    '',
-    '—',
-    '',
-    amountSum,
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ];
+  const cells = new Array(CSV_HEADERS.length).fill('');
+  cells[0] = '_grand_total';
+  cells[2] = `Visible rows (${rows.length})`;
+  cells[4] = '—';
+  cells[5] = '—';
+  cells[7] = '—';
+  cells[9] = amountSum;
   return cells.map((c) => escapeCsvCell(String(c))).join(',');
 }
 

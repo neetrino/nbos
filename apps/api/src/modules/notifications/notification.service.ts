@@ -63,6 +63,23 @@ interface PaginationParams {
   includeArchived?: boolean;
 }
 
+export interface NotificationPreferenceRow {
+  eventType: string;
+  enabled: boolean;
+  channels: string[];
+}
+
+export interface NotificationAdminRuleRow {
+  code: string;
+  eventType: string;
+  recipientResolver: string;
+  enabled: boolean;
+  priority: string;
+  channels: string[];
+}
+
+const USER_PREF_RULE_PREFIX = 'user_pref';
+
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
 const DIRECT_IN_APP_RESOLVER = 'EXPLICIT_RECIPIENT';
@@ -84,6 +101,10 @@ function notificationFingerprint(params: CreateNotificationParams): string {
 
 function directRuleCode(eventType: string): string {
   return `in_app.${eventType}`;
+}
+
+function userPreferenceRuleCode(employeeId: string, eventType: string): string {
+  return `${USER_PREF_RULE_PREFIX}:${employeeId}:${eventType}`;
 }
 
 function notificationWhere(params: CreateNotificationParams) {
@@ -128,6 +149,28 @@ export class NotificationService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async create(params: CreateNotificationParams): Promise<NotificationRow> {
+    const userPref = await this.resolveUserPreference(params.recipientId, params.type);
+    if (!userPref.enabled || !userPref.channels.includes('IN_APP')) {
+      const skippedAt = new Date();
+      return {
+        id: `skipped:${params.recipientId}:${params.type}:${skippedAt.getTime()}`,
+        type: params.type,
+        recipientId: params.recipientId,
+        category: params.category ?? 'informational',
+        priority: params.priority ?? 'normal',
+        title: params.title,
+        body: params.body,
+        link: params.link ?? null,
+        actionLabel: params.actionLabel ?? null,
+        entityType: params.entityType ?? null,
+        entityId: params.entityId ?? null,
+        isRead: true,
+        createdAt: skippedAt,
+        readAt: skippedAt,
+        archivedAt: skippedAt,
+      };
+    }
+
     const ruleConfig = resolveNotificationRuleConfig(params.type);
     const priority = params.priority ?? ruleConfig.priority;
     const category = params.category ?? ruleConfig.category;
@@ -300,4 +343,166 @@ export class NotificationService {
     });
     return { count };
   }
+
+  async getUserPreferences(userId: string): Promise<NotificationPreferenceRow[]> {
+    const knownTypes = new Set<string>(resolveKnownNotificationEventTypes());
+    const rows = await this.prisma.notificationRule.findMany({
+      where: { code: { startsWith: `${USER_PREF_RULE_PREFIX}:${userId}:` } },
+      orderBy: { eventType: 'asc' },
+      select: {
+        eventType: true,
+        enabled: true,
+        channels: true,
+      },
+    });
+    for (const row of rows) knownTypes.add(row.eventType);
+    return [...knownTypes]
+      .sort((a, b) => a.localeCompare(b))
+      .map((eventType) => {
+        const override = rows.find((r) => r.eventType === eventType);
+        return {
+          eventType,
+          enabled: override?.enabled ?? true,
+          channels: override?.channels?.length ? override.channels : ['IN_APP'],
+        };
+      });
+  }
+
+  async listAdminRules(): Promise<NotificationAdminRuleRow[]> {
+    const rows = await this.prisma.notificationRule.findMany({
+      orderBy: [{ eventType: 'asc' }, { code: 'asc' }],
+      select: {
+        code: true,
+        eventType: true,
+        recipientResolver: true,
+        enabled: true,
+        priority: true,
+        channels: true,
+      },
+    });
+    return rows
+      .filter((row) => !row.code.startsWith(`${USER_PREF_RULE_PREFIX}:`))
+      .map((row) => ({
+        code: row.code,
+        eventType: row.eventType,
+        recipientResolver: row.recipientResolver,
+        enabled: row.enabled,
+        priority: row.priority,
+        channels: row.channels?.length ? row.channels : ['IN_APP'],
+      }));
+  }
+
+  async patchAdminRule(
+    code: string,
+    patch: { enabled?: boolean; priority?: string; channels?: string[] },
+  ): Promise<NotificationAdminRuleRow> {
+    const channels = this.normalizeChannels(patch.channels);
+    const priority = patch.priority?.trim().toLowerCase();
+    const normalizedPriority =
+      priority === 'critical' || priority === 'high' || priority === 'normal' || priority === 'low'
+        ? priority
+        : undefined;
+
+    const row = await this.prisma.notificationRule.update({
+      where: { code },
+      data: {
+        ...(patch.enabled !== undefined ? { enabled: patch.enabled } : {}),
+        ...(normalizedPriority ? { priority: normalizedPriority } : {}),
+        ...(channels ? { channels } : {}),
+      },
+      select: {
+        code: true,
+        eventType: true,
+        recipientResolver: true,
+        enabled: true,
+        priority: true,
+        channels: true,
+      },
+    });
+    return {
+      code: row.code,
+      eventType: row.eventType,
+      recipientResolver: row.recipientResolver,
+      enabled: row.enabled,
+      priority: row.priority,
+      channels: row.channels?.length ? row.channels : ['IN_APP'],
+    };
+  }
+
+  async updateUserPreference(
+    userId: string,
+    eventType: string,
+    patch: { enabled?: boolean; channels?: string[] },
+  ): Promise<NotificationPreferenceRow> {
+    const normalizedChannels = this.normalizeChannels(patch.channels);
+    const row = await this.prisma.notificationRule.upsert({
+      where: { code: userPreferenceRuleCode(userId, eventType) },
+      update: {
+        ...(patch.enabled !== undefined ? { enabled: patch.enabled } : {}),
+        ...(normalizedChannels ? { channels: normalizedChannels } : {}),
+      },
+      create: {
+        code: userPreferenceRuleCode(userId, eventType),
+        eventType,
+        recipientResolver: DIRECT_IN_APP_RESOLVER,
+        enabled: patch.enabled ?? true,
+        channels: normalizedChannels ?? ['IN_APP'],
+        priority: resolveNotificationRuleConfig(eventType).priority,
+      },
+      select: { eventType: true, enabled: true, channels: true },
+    });
+    return {
+      eventType: row.eventType,
+      enabled: row.enabled,
+      channels: row.channels,
+    };
+  }
+
+  private async resolveUserPreference(
+    userId: string,
+    eventType: string,
+  ): Promise<NotificationPreferenceRow> {
+    const row = await this.prisma.notificationRule.findUnique({
+      where: { code: userPreferenceRuleCode(userId, eventType) },
+      select: { eventType: true, enabled: true, channels: true },
+    });
+    if (!row) {
+      return { eventType, enabled: true, channels: ['IN_APP'] };
+    }
+    return {
+      eventType: row.eventType,
+      enabled: row.enabled,
+      channels: row.channels?.length ? row.channels : ['IN_APP'],
+    };
+  }
+
+  private normalizeChannels(channels: string[] | undefined): string[] | undefined {
+    if (!channels) return undefined;
+    const normalized = [...new Set(channels.map((c) => c.trim().toUpperCase()).filter(Boolean))];
+    const allowed = new Set(['IN_APP', 'EMAIL', 'TELEGRAM', 'WHATSAPP']);
+    const filtered = normalized.filter((c) => allowed.has(c));
+    if (filtered.length === 0) return ['IN_APP'];
+    return filtered;
+  }
+}
+
+function resolveKnownNotificationEventTypes(): string[] {
+  return [
+    'finance.wallet.bonus_active',
+    'finance.wallet.bonus_paid',
+    'finance.wallet.bonus_corrected',
+    'finance.wallet.payroll_created',
+    'finance.wallet.payroll_closed',
+    'finance.wallet.salary_payment',
+    'finance.invoice.official_request_due',
+    'finance.invoice.payment_reminder_due',
+    'finance.expense.backlog_weekly_digest',
+    'finance.expense.backlog_due_overdue',
+    'task.overdue',
+    'finance.overdue',
+    'mail.health_degraded',
+    'mail.send_failed',
+    'document.access_changed',
+    'credentials.high_risk_action',
+  ];
 }

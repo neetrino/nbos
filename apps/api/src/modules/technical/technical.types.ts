@@ -55,3 +55,20 @@ export interface TechnicalReadinessItem {
   label: string;
   message: string;
 }
+
+export interface RecordTechnicalDeployDto {
+  status?: TechnicalDeployStatus;
+  environment?: TechnicalEnvironmentKind | null;
+  version?: string | null;
+  notes?: string | null;
+  deployedAt?: string | null;
+}
+
+export interface UpdateTechnicalBackupPolicyDto {
+  backupStatus?: TechnicalBackupStatus;
+  policyName?: string | null;
+  rpoHours?: number | null;
+  rtoHours?: number | null;
+  restoreTestCadenceDays?: number | null;
+  notes?: string | null;
+}

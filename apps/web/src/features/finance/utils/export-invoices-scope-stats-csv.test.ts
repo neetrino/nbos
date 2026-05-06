@@ -17,7 +17,7 @@ const SAMPLE_STATS: InvoiceStats = {
   total: 5,
   byStatus: [
     { status: 'PAID', _count: 2, _sum: { amount: 100 } },
-    { status: 'WAITING', _count: 3, _sum: { amount: 250.5 } },
+    { status: 'AWAITING_PAYMENT', _count: 3, _sum: { amount: 250.5 } },
   ],
   totalRevenue: 350.5,
   outstanding: { count: 1, amount: 50 },
@@ -25,7 +25,7 @@ const SAMPLE_STATS: InvoiceStats = {
 };
 
 describe('buildInvoicesScopeStatsCsvContent', () => {
-  it('includes header meta totals and by_status', () => {
+  it('includes header meta totals and by_money_status', () => {
     const csv = buildInvoicesScopeStatsCsvContent(SAMPLE_STATS, META);
     const lines = csv.split('\r\n');
     expect(lines[0]).toBe('section,col1,col2,col3,col4,col5');
@@ -35,7 +35,7 @@ describe('buildInvoicesScopeStatsCsvContent', () => {
     expect(lines.some((l) => l.startsWith('meta,scope_note,'))).toBe(true);
     expect(lines).toContain('totals,totalInvoiceCount,5,,,');
     expect(lines).toContain('totals,totalRevenue,350.5,,,');
-    expect(lines).toContain('by_status,PAID,2,100,,');
-    expect(lines).toContain('by_status,WAITING,3,250.5,,');
+    expect(lines).toContain('by_money_status,PAID,2,100,,');
+    expect(lines).toContain('by_money_status,AWAITING_PAYMENT,3,250.5,,');
   });
 });

@@ -25,13 +25,25 @@ export class PartnersController {
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiQuery({ name: 'status', required: false, type: String })
-  @ApiQuery({ name: 'type', required: false, type: String })
+  @ApiQuery({
+    name: 'level',
+    required: false,
+    type: String,
+    description: 'Partner tier: REGULAR | PREMIUM (Prisma `Partner.type`).',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    type: String,
+    description: 'Deprecated: use `level`. Same semantics as `level`.',
+  })
   @ApiQuery({ name: 'direction', required: false, type: String })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('search') search?: string,
     @Query('status') status?: string,
+    @Query('level') level?: string,
     @Query('type') type?: string,
     @Query('direction') direction?: string,
   ) {
@@ -40,6 +52,7 @@ export class PartnersController {
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       search,
       status,
+      level,
       type,
       direction,
     });
@@ -49,6 +62,153 @@ export class PartnersController {
   @ApiOperation({ summary: 'Get partners statistics' })
   async getStats() {
     return this.partnersService.getStats();
+  }
+
+  @Get(':id/commission-policy')
+  @ApiOperation({
+    summary: 'Partner commission policy by deal type',
+    description:
+      'Returns all four deal types. `percent` is null when the partner falls back to `fallbackPercent` (`Partner.defaultPercent`).',
+  })
+  async getCommissionPolicy(@Param('id') id: string) {
+    return this.partnersService.getCommissionPolicy(id);
+  }
+
+  @Put(':id/commission-policy')
+  @ApiOperation({
+    summary: 'Replace partner commission policy rows',
+    description:
+      'Body must include all four deal types. Set `percent` to null to clear the override for that type (use partner default).',
+  })
+  async putCommissionPolicy(
+    @Param('id') id: string,
+    @Body() body: { rows: Array<{ dealType: string; percent: number | null }> },
+  ) {
+    return this.partnersService.putCommissionPolicy(id, body);
+  }
+
+  @Get(':id/accruals')
+  @ApiOperation({
+    summary: 'Partner accruals (inbound referral commissions from client payments)',
+  })
+  async listPartnerAccruals(@Param('id') id: string) {
+    return this.partnersService.listPartnerAccruals(id);
+  }
+
+  @Get(':id/balance')
+  @ApiOperation({
+    summary: 'Partner inbound accrual balance by status (unpaid vs paid roll-up)',
+  })
+  async getPartnerAccrualBalance(@Param('id') id: string) {
+    return this.partnersService.getPartnerAccrualBalance(id);
+  }
+
+  @Get(':id/payout-batches')
+  @ApiOperation({ summary: 'List partner payout batches' })
+  async listPartnerPayoutBatches(@Param('id') id: string) {
+    return this.partnersService.listPartnerPayoutBatches(id);
+  }
+
+  @Post(':id/payout-batches')
+  @ApiOperation({ summary: 'Create a draft payout batch from eligible partner accruals' })
+  async createPartnerPayoutBatch(
+    @Param('id') id: string,
+    @Body() body: { accrualIds: string[]; payoutDate?: string; notes?: string },
+  ) {
+    return this.partnersService.createPartnerPayoutBatch(id, body);
+  }
+
+  @Post(':id/payout-batches/:batchId/approve')
+  @ApiOperation({
+    summary: 'Approve payout batch and create Partner Payout expense card',
+  })
+  async approvePartnerPayoutBatch(
+    @Param('id') id: string,
+    @Param('batchId') batchId: string,
+    @Body() body: { payoutDate?: string; approvedBy?: string; notes?: string },
+  ) {
+    return this.partnersService.approvePartnerPayoutBatch(id, batchId, body);
+  }
+
+  @Post(':id/payout-batches/:batchId/cancel')
+  @ApiOperation({
+    summary: 'Cancel draft payout batch and release accruals back to eligible pool',
+  })
+  async cancelPartnerPayoutBatch(
+    @Param('id') id: string,
+    @Param('batchId') batchId: string,
+    @Body() body: { notes?: string },
+  ) {
+    return this.partnersService.cancelPartnerPayoutBatch(id, batchId, body);
+  }
+
+  @Get(':id/service-terms')
+  @ApiOperation({
+    summary: 'List outbound partner service terms (partner pays Neetrino)',
+  })
+  async listPartnerServiceTerms(@Param('id') id: string) {
+    return this.partnersService.listPartnerServiceTerms(id);
+  }
+
+  @Post(':id/service-terms')
+  @ApiOperation({
+    summary: 'Create outbound partner service terms case',
+  })
+  async createPartnerServiceTerm(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      clientContactId?: string | null;
+      clientCompanyId?: string | null;
+      projectId?: string | null;
+      serviceType: string;
+      paymentModel: string;
+      amount: number;
+      billingStartDate?: string;
+      subscriptionId?: string | null;
+      invoiceId?: string | null;
+      status?: string;
+      notes?: string;
+    },
+  ) {
+    return this.partnersService.createPartnerServiceTerm(id, body);
+  }
+
+  @Put(':id/service-terms/:termId')
+  @ApiOperation({
+    summary: 'Update outbound partner service terms case',
+  })
+  async updatePartnerServiceTerm(
+    @Param('id') id: string,
+    @Param('termId') termId: string,
+    @Body()
+    body: {
+      clientContactId?: string | null;
+      clientCompanyId?: string | null;
+      projectId?: string | null;
+      serviceType?: string;
+      paymentModel?: string;
+      amount?: number;
+      billingStartDate?: string | null;
+      subscriptionId?: string | null;
+      invoiceId?: string | null;
+      status?: string;
+      notes?: string;
+    },
+  ) {
+    return this.partnersService.updatePartnerServiceTerm(id, termId, body);
+  }
+
+  @Post(':id/service-terms/:termId/create-finance')
+  @ApiOperation({
+    summary: 'Create Finance invoice/subscription from outbound partner service terms',
+  })
+  async createFinanceFromPartnerServiceTerm(
+    @Param('id') id: string,
+    @Param('termId') termId: string,
+    @Body() body: { dueDate?: string },
+  ) {
+    return this.partnersService.createFinanceFromPartnerServiceTerm(id, termId, body);
   }
 
   @Get(':id')
@@ -63,6 +223,8 @@ export class PartnersController {
     @Body()
     body: {
       name: string;
+      level?: string;
+      /** @deprecated Use `level`. */
       type?: string;
       direction?: string;
       defaultPercent?: number;
@@ -80,6 +242,8 @@ export class PartnersController {
     @Body()
     body: {
       name?: string;
+      level?: string;
+      /** @deprecated Use `level`. */
       type?: string;
       direction?: string;
       defaultPercent?: number;

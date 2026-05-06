@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckCircle2, ClipboardList, Flame, ListTodo } from 'lucide-react';
-import type { ReportDefinition } from '@/lib/api/reports';
+import type { ReportDefinition, ReportExportFormat } from '@/lib/api/reports';
 import type { TaskStats } from '@/lib/api/tasks';
 import type { LazyReportTabState } from '../../hooks/useLazyReportTabData';
 import { count } from '../../report-number-format';
@@ -14,14 +14,14 @@ import { ReportTabState } from './ReportTabState';
 interface SpecialistsReportsTabProps {
   definitions: ReportDefinition[];
   state: LazyReportTabState<TaskStats>;
-  creatingExportKey: string | null;
-  onExport: (definition: ReportDefinition) => void;
+  creatingExportToken: string | null;
+  onExport: (definition: ReportDefinition, format: ReportExportFormat) => void;
 }
 
 export function SpecialistsReportsTab({
   definitions,
   state,
-  creatingExportKey,
+  creatingExportToken,
   onExport,
 }: SpecialistsReportsTabProps) {
   const data = state.data;
@@ -44,7 +44,7 @@ export function SpecialistsReportsTab({
       ) : null}
       <ReportActions
         definitions={definitions}
-        creatingExportKey={creatingExportKey}
+        creatingExportToken={creatingExportToken}
         onExport={onExport}
       />
     </div>

@@ -121,6 +121,7 @@ Later depth, not required for current MVP:
 - delivery attempts and recipient channel integration;
 - link last run to real export job execution.
 - richer run history beyond `lastRunAt` / `lastExportJobId`.
+- product decision (2026-05-06): keep export+history path active; recipient delivery channels stay deferred until real sending is required.
 
 Note: Bitrix-like recurring task templates belong to the Tasks module, not Reports. Reports scheduled exports use the simpler recurrence above.
 
@@ -135,37 +136,46 @@ Shipped foundation:
 - audit event when an export job is requested;
 - `/reports` export history and CSV export request action over Finance-owned definitions.
 - real CSV writer over Finance-owned aggregate services, stored as Drive/R2 `FileAsset`;
+- XLSX and PDF writers over the same report payload path, saved as Drive/R2 `FileAsset`;
 - failure state and audit event when export writing fails.
 - BullMQ export queue/worker wiring when `REDIS_URL` is configured; HTTP requests no longer write export files inline.
 - finance-sensitive audit context is explicit on export request/completion/failure and scheduled export queue events.
+- export job management actions: retry (`POST /api/reports/export-jobs/:jobId/retry`) and cancel (`.../:jobId/cancel`) with status guards; cancelled jobs are skipped by worker completion path.
 
 Later depth, not required for current MVP:
 
 - approved retry/backoff and queue retention policy;
-- XLSX/PDF generators;
-- retry/cancellation flow;
-- source-permission centralization before cross-module exports.
+- recipient delivery channels and per-recipient delivery attempts;
+- source-permission-aware export/schedule warnings in UI.
 
 ### B6. Data quality warnings are missing
 
-Статус: `P0 DONE / LATER DEPTH` (2026-04-30)
+Статус: `DONE` (2026-05-06)
 
 Shipped:
 
 - `GET /api/reports/data-quality-warnings`;
 - `/reports` Data quality tab;
-- warning/info projection over Finance-owned report definitions, source endpoints and deferred limitations.
+- warning/info projection over module-owned report definitions and source endpoints;
+- runtime missing-data warnings from Marketing attribution and cross-module projections (`marketing-source-performance`, `sales-pipeline-health`, `project-delivery-overview`, `specialist-workload-scorecard`);
+- warnings stay permission-aware because report definitions are filtered by source permissions before runtime checks are projected.
 
 Later depth, not required for current MVP:
 
-- runtime missing-data warnings from Marketing attribution, cross-module projections and scheduled runs;
-- source-permission-aware warnings when centralized report permissions are added.
+- runtime warning projections for scheduled-run delivery attempts.
 
 ### B7. Report permissions are not centralized
 
-Статус: `LATER / NEEDS PRODUCT CLARITY`
+Статус: `DONE` (2026-05-06)
 
 Reports must enforce source permissions and cannot bypass module access.
+
+Shipped:
+
+- centralized source-permission helper over `ReportDefinition.requiredPermissions`;
+- `GET /api/reports/definitions`, `.../schedules`, `.../saved-views`, `.../data-quality-warnings` return only definitions accessible to the current user;
+- `POST /api/reports/export-jobs`, `.../schedules`, `.../saved-views` return `403` when source permissions are missing;
+- `ReportsController` is guarded by `DASHBOARDS.VIEW` and keeps source checks in `ReportsService`.
 
 ---
 
@@ -177,9 +187,9 @@ Reports must enforce source permissions and cannot bypass module access.
 4. ~~Add basic reports links to existing module reports.~~ Done for Finance reports (2026-04-30).
 5. ~~Add report period/filter shell.~~ Done foundation (2026-04-30): `dateFrom`, `dateTo` and `asOf` are passed to export jobs and schedules.
 6. ~~Add export job model.~~ Done foundation (2026-04-30).
-7. ~~Link exports to Drive.~~ Done as `FileAsset` output relation; real writer worker still needed.
-8. ~~Add scheduled reports model.~~ Done foundation (2026-04-30); runner still needed.
-9. ~~Add data quality warnings.~~ Done foundation (2026-04-30); cross-module/runtime depth still needed.
+7. ~~Link exports to Drive.~~ Done: `FileAsset` output; BullMQ worker when `REDIS_URL` (см. §B5).
+8. ~~Add scheduled reports model + runner.~~ Done foundation + due runner (`POST /scheduler/report-schedules-due`) — см. §B4.
+9. ~~Add data quality warnings.~~ Done including runtime cross-module projections — см. §B6.
 10. ~~Add sensitive report audit.~~ Done foundation (2026-04-30): finance-sensitive audit markers are explicit on export and scheduled-run events.
 11. ~~Add saved report views.~~ Done foundation (2026-04-30): personal filter presets only; sharing is later.
 

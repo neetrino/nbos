@@ -8,7 +8,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
-import { formatAmount, getInvoiceStage } from '@/features/finance/constants/finance';
+import { formatAmount, getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoicesTableProps {
@@ -49,7 +49,7 @@ function InvoiceTableRow({
   invoice: Invoice;
   onInvoiceClick: (invoice: Invoice) => void;
 }) {
-  const stage = getInvoiceStage(invoice.status);
+  const money = getInvoiceMoneyStage(invoice.moneyStatus);
 
   return (
     <TableRow className="cursor-pointer" onClick={() => onInvoiceClick(invoice)}>
@@ -59,7 +59,7 @@ function InvoiceTableRow({
       </TableCell>
       <TableCell className="text-xs">{invoice.type}</TableCell>
       <InvoiceAmountCell amount={invoice.amount} />
-      <TableCell>{stage && <StatusBadge label={stage.label} variant={stage.variant} />}</TableCell>
+      <TableCell>{money && <StatusBadge label={money.label} variant={money.variant} />}</TableCell>
       <InvoiceTaxCell taxStatus={invoice.taxStatus} />
       <InvoiceDueDateCell invoice={invoice} />
       <TableCell className="text-xs text-green-600">
@@ -106,7 +106,7 @@ function InvoiceTaxCell({ taxStatus }: { taxStatus: string }) {
 
 function InvoiceDueDateCell({ invoice }: { invoice: Invoice }) {
   const isOverdue =
-    invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.status !== 'PAID';
+    invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.moneyStatus !== 'PAID';
 
   return (
     <TableCell

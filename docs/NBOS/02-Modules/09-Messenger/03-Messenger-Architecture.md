@@ -87,15 +87,16 @@ NBOS core не должен знать, какой конкретный серв
 
 ### WhatsApp adapter decision
 
-Для WhatsApp primary adapter:
+Для WhatsApp primary adapter (логический контракт — `WhatsAppWebAdapter`):
 
 ```text
-WhatsAppWebAdapter
-  -> WAHA
-    -> QR-connected WhatsApp account
+WhatsAppWebAdapter (контракт)
+  -> WhatsApp Gateway (NestJS, отдельный сервис)
+    -> WAHA (internal Docker, например http://waha:3000)
+      -> QR-connected WhatsApp account
 ```
 
-Этот adapter покрывает и `WhatsApp Groups`, и редкие `WhatsApp 1:1 chats`.
+Этот путь покрывает и `WhatsApp Groups`, и редкие `WhatsApp 1:1 chats`. Детали границы NBOS ↔ Gateway: `../../06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`.
 
 `WhatsAppOfficialAdapter / Meta Cloud API` не входит в MVP и не планируется на ближайшие годы. Его нельзя закладывать как обязательную зависимость для Messenger или Notifications.
 

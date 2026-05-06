@@ -4,6 +4,33 @@ import type { Expense, Invoice } from './finance';
 import type { ListData } from './finance-common';
 import type { Task } from './tasks';
 
+/** Linked finance/tasks for a client service (present on `getById`, create, update responses). */
+export interface ClientServiceFinanceLinks {
+  invoices: Array<{
+    id: string;
+    code: string;
+    moneyStatus: string;
+    amount: string;
+    type: string;
+  }>;
+  expensePlans: Array<{ id: string; name: string; category: string; amount: string }>;
+  expenses: Array<{
+    id: string;
+    name: string;
+    status: string;
+    amount: string;
+    type: string;
+    category: string;
+  }>;
+  tasks: Array<{
+    id: string;
+    title: string;
+    status: string;
+    dueDate: string | null;
+    workspaceId: string | null;
+  }>;
+}
+
 export interface ClientServiceRecord {
   id: string;
   projectId: string;
@@ -29,6 +56,7 @@ export interface ClientServiceRecord {
   product: { id: string; name: string } | null;
   providerAccount: { id: string; name: string; provider: string | null } | null;
   _count: { invoices: number; expensePlans: number; expenses: number };
+  financeLinks?: ClientServiceFinanceLinks;
 }
 
 export interface ClientServiceRecordPayload {

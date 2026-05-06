@@ -156,7 +156,7 @@ export function ContactSheet({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Role *</Label>
+              <Label>Contact Type *</Label>
               <Select
                 value={form.role}
                 onValueChange={(v) => setForm({ ...form, role: v as string })}
@@ -247,7 +247,7 @@ export function ContactSheet({
               Details
             </h4>
             <div className="grid grid-cols-2 gap-y-3 text-sm">
-              <div className="text-muted-foreground">Role</div>
+              <div className="text-muted-foreground">Contact Type</div>
               <div>{role && <StatusBadge label={role.label} variant={role.variant} />}</div>
               <div className="text-muted-foreground">Created</div>
               <div className="flex items-center gap-1.5 font-medium">

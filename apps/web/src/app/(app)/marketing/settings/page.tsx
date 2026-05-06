@@ -13,12 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { marketingApi, type MarketingAccount } from '@/lib/api/marketing';
+import {
+  marketingApi,
+  type MarketingAccount,
+  type MarketingCrmWhereOption,
+} from '@/lib/api/marketing';
 import {
   MARKETING_ACCOUNT_STATUSES,
   MARKETING_CHANNELS,
   getMarketingLabel,
 } from '@/features/marketing/constants';
+import { MarketingAccountExpensePlanLink } from '@/features/marketing/components/MarketingAccountExpensePlanLink';
+import { MarketingCrmWhereSettingsSection } from '@/features/marketing/components/MarketingCrmWhereSettingsSection';
+import type { ExpensePlan } from '@/lib/api/expense-plans';
+import { loadExpensePlansForMarketingAccounts } from '@/features/marketing/utils/load-expense-plans-for-marketing-accounts';
 
 export default function MarketingSettingsPage() {
   const [accounts, setAccounts] = useState<MarketingAccount[]>([]);
@@ -27,6 +35,13 @@ export default function MarketingSettingsPage() {
   const [savingLinkId, setSavingLinkId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [financeLinks, setFinanceLinks] = useState<Record<string, string>>({});
+  const [expensePlans, setExpensePlans] = useState<ExpensePlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+  const [crmWhereRows, setCrmWhereRows] = useState<MarketingCrmWhereOption[]>([]);
+  const [crmWhereDraft, setCrmWhereDraft] = useState<
+    Record<string, { label: string; sortOrder: string; isActive: boolean }>
+  >({});
+  const [savingWhereChannel, setSavingWhereChannel] = useState<string | null>(null);
   const [form, setForm] = useState({
     channel: 'LIST_AM',
     name: '',
@@ -36,9 +51,28 @@ export default function MarketingSettingsPage() {
 
   const fetchAccounts = async () => {
     setLoading(true);
+    setPlansLoading(true);
     try {
-      const nextAccounts = await marketingApi.getAccounts();
+      const [nextAccounts, whereRows] = await Promise.all([
+        marketingApi.getAccounts(),
+        marketingApi.getCrmWhereOptions({ includeInactive: true }),
+      ]);
+      const plans = await loadExpensePlansForMarketingAccounts(nextAccounts);
+      setExpensePlans(plans);
       setAccounts(nextAccounts);
+      setCrmWhereRows(whereRows);
+      setCrmWhereDraft(
+        Object.fromEntries(
+          whereRows.map((row) => [
+            row.channel,
+            {
+              label: row.label,
+              sortOrder: String(row.sortOrder),
+              isActive: row.isActive,
+            },
+          ]),
+        ),
+      );
       setFinanceLinks(
         Object.fromEntries(
           nextAccounts.map((account) => [account.id, account.financeExpensePlanId ?? '']),
@@ -49,6 +83,7 @@ export default function MarketingSettingsPage() {
       setError('Marketing accounts could not be loaded.');
     } finally {
       setLoading(false);
+      setPlansLoading(false);
     }
   };
 
@@ -74,6 +109,31 @@ export default function MarketingSettingsPage() {
     }
   };
 
+  const handleSaveCrmWhereRow = async (channel: string) => {
+    const rowDraft = crmWhereDraft[channel];
+    if (!rowDraft || !rowDraft.label.trim()) return;
+    setSavingWhereChannel(channel);
+    try {
+      await marketingApi.updateCrmWhereOption(channel, {
+        label: rowDraft.label.trim(),
+        sortOrder: Number.parseInt(rowDraft.sortOrder, 10) || 0,
+        isActive: rowDraft.isActive,
+      });
+      await fetchAccounts();
+    } finally {
+      setSavingWhereChannel(null);
+    }
+  };
+
+  const handleCrmWhereDraftChange = (
+    channel: string,
+    patch: Partial<{ label: string; sortOrder: string; isActive: boolean }>,
+  ) => {
+    const prev = crmWhereDraft[channel];
+    if (!prev) return;
+    setCrmWhereDraft({ ...crmWhereDraft, [channel]: { ...prev, ...patch } });
+  };
+
   const handleSaveFinanceLink = async (account: MarketingAccount) => {
     setSavingLinkId(account.id);
     try {
@@ -90,12 +150,20 @@ export default function MarketingSettingsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Marketing Settings"
-        description="Channels and accounts that power CRM attribution."
+        description="Channels and accounts that power CRM attribution. List.am accounts should be linked to a Finance Marketing expense plan for paid spend in dashboards (manual link per canon)."
       >
         <Button variant="outline" size="icon" onClick={fetchAccounts}>
           <RefreshCcw size={16} />
         </Button>
       </PageHeader>
+
+      <MarketingCrmWhereSettingsSection
+        rows={crmWhereRows}
+        draft={crmWhereDraft}
+        onDraftChange={handleCrmWhereDraftChange}
+        onSaveRow={handleSaveCrmWhereRow}
+        savingChannel={savingWhereChannel}
+      />
 
       <form
         onSubmit={handleCreate}
@@ -182,25 +250,17 @@ export default function MarketingSettingsPage() {
                 <p>Phone: {account.phone ?? 'Not set'}</p>
                 <p>Attribution works without a Finance link; spend analytics stay incomplete.</p>
               </div>
-              <div className="mt-4 space-y-2">
-                <Label>Finance Expense Plan ID</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={financeLinks[account.id] ?? ''}
-                    onChange={(event) =>
-                      setFinanceLinks({ ...financeLinks, [account.id]: event.target.value })
-                    }
-                    placeholder="Manual finance plan id"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => handleSaveFinanceLink(account)}
-                    disabled={savingLinkId === account.id}
-                  >
-                    {savingLinkId === account.id ? 'Saving...' : 'Link'}
-                  </Button>
-                </div>
-              </div>
+              <MarketingAccountExpensePlanLink
+                account={account}
+                expensePlans={expensePlans}
+                selectedPlanId={financeLinks[account.id] ?? ''}
+                onSelectedPlanIdChange={(planId) =>
+                  setFinanceLinks({ ...financeLinks, [account.id]: planId })
+                }
+                onSave={() => handleSaveFinanceLink(account)}
+                saving={savingLinkId === account.id}
+                plansLoading={plansLoading}
+              />
             </div>
           ))}
         </div>

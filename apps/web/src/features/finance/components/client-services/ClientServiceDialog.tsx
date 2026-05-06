@@ -40,6 +40,7 @@ import {
 } from '@/lib/api/client-services';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { ClientServiceFinanceLinksPanel } from './ClientServiceFinanceLinksPanel';
 
 const PROJECTS_PAGE_SIZE = 100;
 
@@ -80,6 +81,8 @@ export function ClientServiceDialog({
   const [projects, setProjects] = useState<Project[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [linkDetail, setLinkDetail] = useState<ClientServiceRecord | null>(null);
+  const [linksLoading, setLinksLoading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -88,6 +91,29 @@ export function ClientServiceDialog({
       serviceToEdit ? clientServiceToFormState(serviceToEdit) : { ...EMPTY_CLIENT_SERVICE_FORM },
     );
   }, [open, serviceToEdit]);
+
+  useEffect(() => {
+    if (!open || !serviceToEdit?.id) {
+      setLinkDetail(null);
+      return;
+    }
+    let cancelled = false;
+    setLinksLoading(true);
+    clientServicesApi
+      .getById(serviceToEdit.id)
+      .then((row) => {
+        if (!cancelled) setLinkDetail(row);
+      })
+      .catch(() => {
+        if (!cancelled) setLinkDetail(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLinksLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, serviceToEdit?.id]);
 
   useEffect(() => {
     if (!open) return;
@@ -249,6 +275,18 @@ export function ClientServiceDialog({
             />
             Renewal notifications enabled
           </label>
+          {serviceToEdit ? (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Connections</p>
+              {linksLoading ? (
+                <p className="text-muted-foreground text-sm">Loading linked records…</p>
+              ) : linkDetail?.financeLinks ? (
+                <ClientServiceFinanceLinksPanel links={linkDetail.financeLinks} />
+              ) : (
+                <p className="text-muted-foreground text-sm">Links could not be loaded.</p>
+              )}
+            </div>
+          ) : null}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel

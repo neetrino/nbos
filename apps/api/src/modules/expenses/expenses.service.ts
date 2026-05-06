@@ -10,6 +10,7 @@ import {
   type ExpenseFrequency,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { NotificationService } from '../notifications/notification.service';
 import {
   pickExpenseBacklogReasonFilter,
   pickExpenseCategoryFilter,
@@ -54,7 +55,10 @@ const EXPENSE_LIST_SORT_FIELDS = new Set(['createdAt', 'dueDate', 'amount', 'nam
 
 @Injectable()
 export class ExpensesService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+  ) {}
 
   async findAll(params: ExpenseQueryParams) {
     const {
@@ -166,7 +170,7 @@ export class ExpensesService {
   }
 
   async addPayment(id: string, input: AddExpensePaymentInput) {
-    await createExpensePaymentRecord(this.prisma, id, input);
+    await createExpensePaymentRecord(this.prisma, id, input, { notify: this.notifications });
     return this.findById(id);
   }
 
@@ -179,7 +183,7 @@ export class ExpensesService {
     }
     await this.prisma.expensePayment.delete({ where: { id: paymentId } });
     await syncExpenseStatusWithPaymentLedger(this.prisma, expenseId);
-    await syncSalaryLinePaidFromExpenseLedger(this.prisma, expenseId);
+    await syncSalaryLinePaidFromExpenseLedger(this.prisma, expenseId, this.notifications);
     return this.findById(expenseId);
   }
 

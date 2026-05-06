@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FilterBar } from '@/components/shared';
-import { INVOICE_STAGES, INVOICE_TYPES } from '@/features/finance/constants/finance';
+import { INVOICE_MONEY_STAGES, INVOICE_TYPES } from '@/features/finance/constants/finance';
 
 interface InvoiceFiltersProps {
   search: string;
@@ -13,9 +13,9 @@ interface InvoiceFiltersProps {
 
 const FILTER_CONFIGS = [
   {
-    key: 'status',
-    label: 'Status',
-    options: INVOICE_STAGES.map((stage) => ({ value: stage.value, label: stage.label })),
+    key: 'moneyStatus',
+    label: 'Money status',
+    options: INVOICE_MONEY_STAGES.map((stage) => ({ value: stage.value, label: stage.label })),
   },
   {
     key: 'type',

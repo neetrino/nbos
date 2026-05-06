@@ -43,7 +43,7 @@ export function computeFinance(deal: Deal) {
 function getPaidInvoiceTotal(deal: Deal) {
   return (deal.orders ?? []).reduce((sum, order) => {
     const orderPaid = (order.invoices ?? [])
-      .filter((invoice) => invoice.status === 'PAID')
+      .filter((invoice) => invoice.moneyStatus === 'PAID')
       .reduce((invoiceSum, invoice) => invoiceSum + Number(invoice.amount), 0);
 
     return sum + orderPaid;

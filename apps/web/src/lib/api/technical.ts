@@ -81,10 +81,61 @@ export interface TechnicalReadiness {
   };
 }
 
+export interface TechnicalDeployRecord {
+  id: string;
+  createdAt: string;
+  createdById: string | null;
+  payload: {
+    status?: TechnicalDeployStatus;
+    environment?: TechnicalEnvironmentKind | null;
+    version?: string | null;
+    notes?: string | null;
+    deployedAt?: string | null;
+  };
+}
+
+export interface TechnicalBackupPolicySnapshot {
+  updatedAt: string;
+  updatedById: string | null;
+  payload: {
+    backupStatus?: TechnicalBackupStatus | null;
+    policyName?: string | null;
+    rpoHours?: number | null;
+    rtoHours?: number | null;
+    restoreTestCadenceDays?: number | null;
+    notes?: string | null;
+  };
+}
+
 export interface TechnicalProductProfileResponse {
   profile: ProductTechnicalProfile;
   assets: TechnicalAsset[];
   environments: TechnicalEnvironment[];
+  support: {
+    openIncidentCount: number;
+    criticalIncidentCount: number;
+    recentIncidents: Array<{
+      id: string;
+      code: string;
+      title: string;
+      priority: string;
+      status: string;
+      createdAt: string;
+      assignedTo: string | null;
+    }>;
+  };
+  monitoringBaseline: {
+    monitoringStatus: TechnicalHealthStatus;
+    backupStatus: TechnicalBackupStatus;
+    warningAssetCount: number;
+    criticalAssetCount: number;
+    missingOwnerCount: number;
+    missingCredentialLinkCount: number;
+  };
+  deployment: {
+    records: TechnicalDeployRecord[];
+  };
+  backupPolicy: TechnicalBackupPolicySnapshot | null;
   readiness: TechnicalReadiness;
 }
 
@@ -96,6 +147,20 @@ export type CreateTechnicalAssetData = Partial<TechnicalAsset> & {
 export type CreateTechnicalEnvironmentData = Partial<TechnicalEnvironment> & {
   name: string;
   kind: TechnicalEnvironmentKind;
+};
+export type RecordTechnicalDeployData = {
+  status: TechnicalDeployStatus;
+  environment?: TechnicalEnvironmentKind | null;
+  version?: string | null;
+  notes?: string | null;
+};
+export type UpdateTechnicalBackupPolicyData = {
+  backupStatus?: TechnicalBackupStatus;
+  policyName?: string | null;
+  rpoHours?: number | null;
+  rtoHours?: number | null;
+  restoreTestCadenceDays?: number | null;
+  notes?: string | null;
 };
 
 export const technicalApi = {
@@ -125,6 +190,22 @@ export const technicalApi = {
   async createEnvironment(productId: string, data: CreateTechnicalEnvironmentData) {
     const resp = await api.post<TechnicalProductProfileResponse>(
       `/api/technical/products/${productId}/environments`,
+      data,
+    );
+    return resp.data;
+  },
+
+  async recordDeploy(productId: string, data: RecordTechnicalDeployData) {
+    const resp = await api.post<TechnicalProductProfileResponse>(
+      `/api/technical/products/${productId}/deploy-records`,
+      data,
+    );
+    return resp.data;
+  },
+
+  async updateBackupPolicy(productId: string, data: UpdateTechnicalBackupPolicyData) {
+    const resp = await api.patch<TechnicalProductProfileResponse>(
+      `/api/technical/products/${productId}/backup-policy`,
       data,
     );
     return resp.data;

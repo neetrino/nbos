@@ -41,6 +41,10 @@ export const contactsApi = {
     const resp = await api.post<Contact>('/api/clients/contacts', data);
     return resp.data;
   },
+  async update(id: string, data: Record<string, unknown>): Promise<Contact> {
+    const resp = await api.put<Contact>(`/api/clients/contacts/${id}`, data);
+    return resp.data;
+  },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/clients/contacts/${id}`);
   },
@@ -53,6 +57,10 @@ export const companiesApi = {
   },
   async create(data: Record<string, unknown>): Promise<Company> {
     const resp = await api.post<Company>('/api/clients/companies', data);
+    return resp.data;
+  },
+  async update(id: string, data: Record<string, unknown>): Promise<Company> {
+    const resp = await api.put<Company>(`/api/clients/companies/${id}`, data);
     return resp.data;
   },
   async delete(id: string): Promise<void> {

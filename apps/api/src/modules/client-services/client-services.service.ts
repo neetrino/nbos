@@ -16,14 +16,18 @@ import {
   resolveClientServiceTaxStatus,
 } from './client-service-record-enum-validators';
 import {
-  buildClientServiceInclude,
+  buildClientServiceDetailInclude,
+  buildClientServiceListInclude,
   CLIENT_SERVICE_RENEWAL_WINDOW_DAYS,
   CLIENT_SERVICE_SORT_FIELDS,
+  fetchLinkedTasksForClientService,
   normalizeClientServicePage,
   normalizeClientServicePageSize,
   parseOptionalDate,
+  serializeClientServiceDetail,
   serializeClientServiceRow,
   toOptionalMoneyDecimal,
+  type ClientServiceDetailRow,
 } from './client-services.helpers';
 import type {
   ClientServiceRecordBody,
@@ -44,7 +48,7 @@ export class ClientServicesService {
     const [items, total] = await Promise.all([
       this.prisma.clientServiceRecord.findMany({
         where,
-        include: buildClientServiceInclude(),
+        include: buildClientServiceListInclude(),
         orderBy,
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -83,19 +87,19 @@ export class ClientServicesService {
   async findById(id: string) {
     const row = await this.prisma.clientServiceRecord.findUnique({
       where: { id },
-      include: buildClientServiceInclude(),
+      include: buildClientServiceDetailInclude(),
     });
     if (!row) throw new NotFoundException('Client service record not found');
-    return serializeClientServiceRow(row);
+    return this.toDetailResponse(row);
   }
 
   async create(body: ClientServiceRecordBody) {
     const data = await this.buildCreateData(body);
     const row = await this.prisma.clientServiceRecord.create({
       data,
-      include: buildClientServiceInclude(),
+      include: buildClientServiceDetailInclude(),
     });
-    return serializeClientServiceRow(row);
+    return this.toDetailResponse(row);
   }
 
   async update(id: string, body: UpdateClientServiceRecordBody) {
@@ -104,9 +108,14 @@ export class ClientServicesService {
     const row = await this.prisma.clientServiceRecord.update({
       where: { id },
       data,
-      include: buildClientServiceInclude(),
+      include: buildClientServiceDetailInclude(),
     });
-    return serializeClientServiceRow(row);
+    return this.toDetailResponse(row);
+  }
+
+  private async toDetailResponse(row: ClientServiceDetailRow) {
+    const tasks = await fetchLinkedTasksForClientService(this.prisma, row.id);
+    return serializeClientServiceDetail(row, tasks);
   }
 
   async delete(id: string) {

@@ -8,7 +8,7 @@ interface TaskActionButtonsProps {
 }
 
 export function TaskActionButtons({ task, onAction }: TaskActionButtonsProps) {
-  if (task.status === 'NEW') {
+  if (task.status === 'OPEN') {
     return (
       <Button size="sm" variant="outline" onClick={() => onAction('start')}>
         <Play size={14} /> Start
@@ -16,7 +16,7 @@ export function TaskActionButtons({ task, onAction }: TaskActionButtonsProps) {
     );
   }
 
-  if (task.status === 'IN_PROGRESS') {
+  if (task.status === 'IN_PROGRESS' || task.status === 'REVIEW') {
     return (
       <>
         <Button size="sm" variant="outline" onClick={() => onAction('defer')}>
@@ -29,7 +29,7 @@ export function TaskActionButtons({ task, onAction }: TaskActionButtonsProps) {
     );
   }
 
-  if (['DONE', 'DEFERRED', 'CANCELLED'].includes(task.status)) {
+  if (['COMPLETED', 'DONE', 'DEFERRED', 'CANCELLED'].includes(task.status)) {
     return (
       <Button size="sm" variant="outline" onClick={() => onAction('reopen')}>
         <RotateCcw size={14} /> Reopen

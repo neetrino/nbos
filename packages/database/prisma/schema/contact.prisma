@@ -1,0 +1,67 @@
+// ─── CONTACT & COMPANY ────────────────────────────────────
+
+enum ContactRole {
+  CLIENT
+  PARTNER
+  CONTRACTOR
+  OTHER
+}
+
+model Contact {
+  id             String      @id @default(uuid())
+  firstName      String      @map("first_name")
+  lastName       String      @map("last_name")
+  phone          String?
+  email          String?
+  messengerLinks Json?       @map("messenger_links")
+  role           ContactRole @default(CLIENT)
+  notes          String?
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  companies     Company[]
+  projects      Project[]
+  leads         Lead[]
+  deals         Deal[]
+  tickets       SupportTicket[]
+  leadsAsSource Lead[]          @relation("LeadSourceContact")
+  dealsAsSource Deal[]          @relation("DealSourceContact")
+  partners      Partner[]
+  partnerServiceTerms PartnerServiceTerm[]
+
+  @@map("contacts")
+}
+
+enum CompanyType {
+  LEGAL
+  INDIVIDUAL
+  SOLE_PROPRIETOR
+}
+
+enum TaxStatus {
+  TAX
+  TAX_FREE
+}
+
+model Company {
+  id           String      @id @default(uuid())
+  name         String
+  type         CompanyType @default(LEGAL)
+  taxId        String?     @map("tax_id")
+  legalAddress String?     @map("legal_address")
+  bankDetails  Json?       @map("bank_details")
+  taxStatus    TaxStatus   @default(TAX)
+  contactId    String      @map("contact_id")
+  notes        String?
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  contact                   Contact                   @relation(fields: [contactId], references: [id])
+  projects                  Project[]
+  invoices                  Invoice[]
+  deals                     Deal[]
+  operationalJournalEntries OperationalJournalEntry[]
+  partnerServiceTerms       PartnerServiceTerm[]
+
+  @@map("companies")
+}

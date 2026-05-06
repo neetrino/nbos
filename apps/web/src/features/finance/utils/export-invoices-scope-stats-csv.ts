@@ -68,11 +68,11 @@ function appendTotals(rows: string[], stats: InvoiceStats): void {
   );
 }
 
-function appendByStatus(rows: string[], stats: InvoiceStats): void {
+function appendByMoneyStatus(rows: string[], stats: InvoiceStats): void {
   for (const row of stats.byStatus) {
     rows.push(
       csvLine([
-        'by_status',
+        'by_money_status',
         row.status,
         String(row._count),
         formatNullableNumber(row._sum.amount),
@@ -91,7 +91,7 @@ export function buildInvoicesScopeStatsCsvContent(
   rows.push(csvLine(HEADER));
   appendMetaRows(rows, meta);
   appendTotals(rows, stats);
-  appendByStatus(rows, stats);
+  appendByMoneyStatus(rows, stats);
   return rows.join('\r\n');
 }
 

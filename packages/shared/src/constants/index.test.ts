@@ -19,10 +19,11 @@ import {
 } from './index';
 
 describe('Constants', () => {
-  it('LEAD_STATUSES has 6 statuses', () => {
-    expect(LEAD_STATUSES).toHaveLength(6);
+  it('LEAD_STATUSES has 7 statuses', () => {
+    expect(LEAD_STATUSES).toHaveLength(7);
     expect(LEAD_STATUSES[0]).toBe('NEW');
-    expect(LEAD_STATUSES[5]).toBe('SQL');
+    expect(LEAD_STATUSES[1]).toBe('ON_HOLD');
+    expect(LEAD_STATUSES[6]).toBe('SQL');
   });
 
   it('DEAL_STATUSES has 9 statuses', () => {
@@ -64,13 +65,13 @@ describe('Constants', () => {
     expect(BONUS_PERCENTAGES.SALES.COLD_CALL).toBe(10);
     expect(BONUS_PERCENTAGES.DELIVERY.CUSTOM_CODE).toBe(15);
     expect(BONUS_PERCENTAGES.PARTNER_DEFAULT).toBe(30);
-    expect(BONUS_PERCENTAGES.HOLDBACK).toBe(20);
   });
 
-  it('TASK_STATUSES includes NEW and DONE', () => {
-    expect(TASK_STATUSES).toContain('NEW');
-    expect(TASK_STATUSES).toContain('DONE');
-    expect(TASK_STATUSES).toHaveLength(5);
+  it('TASK_STATUSES follows canonical workflow values', () => {
+    expect(TASK_STATUSES).toContain('OPEN');
+    expect(TASK_STATUSES).toContain('REVIEW');
+    expect(TASK_STATUSES).toContain('COMPLETED');
+    expect(TASK_STATUSES).toHaveLength(6);
   });
 
   it('TICKET_PRIORITIES has P1 P2 P3', () => {

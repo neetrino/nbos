@@ -15,6 +15,14 @@ import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
 import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';
+import { assertDealSellerRefs, validateDealCreate } from './deal-create-validation';
+import {
+  dealNeedsPartnerReferralTerms,
+  patchPartnerReferralTerms as persistPartnerReferralTerms,
+  syncPartnerReferralTermsForDeal,
+  type PartnerReferralTermsDealSnapshot,
+  type PatchPartnerReferralTermsBody,
+} from './partner-referral-terms.ops';
 
 @Injectable()
 export class DealsService {
@@ -93,7 +101,8 @@ export class DealsService {
     return this.attachHandoffReferences(deal);
   }
 
-  async create(data: CreateDealDto) {
+  async create(data: CreateDealDto, meta: { actorId?: string } = {}) {
+    await validateDealCreate(this.prisma, data);
     const code = await this.generateCode();
     const deal = await this.prisma.deal.create({
       data: {
@@ -107,6 +116,7 @@ export class DealsService {
         taxStatus: (data.taxStatus as Prisma.DealCreateInput['taxStatus']) ?? 'TAX',
         companyId: data.companyId ?? undefined,
         sellerId: data.sellerId,
+        sellerAssistantId: data.sellerAssistantId?.trim() || undefined,
         source: data.source as Prisma.DealCreateInput['source'],
         sourceDetail: data.sourceDetail,
         sourcePartnerId: data.sourcePartnerId,
@@ -131,7 +141,28 @@ export class DealsService {
       },
       include: dealCreateInclude,
     });
-    return this.attachHandoffReferences(deal);
+    if (meta.actorId) {
+      await this.auditService.log({
+        entityType: 'DEAL',
+        entityId: deal.id,
+        action: 'DEAL_CREATED',
+        userId: meta.actorId,
+        changes: {
+          code: deal.code,
+          withoutPriorLead: !data.leadId?.trim(),
+          type: data.type,
+        },
+      });
+    }
+    await syncPartnerReferralTermsForDeal(this.prisma, deal.id, this.partnerTermsSnapshot(deal));
+    const withTerms = await this.prisma.deal.findUnique({
+      where: { id: deal.id },
+      include: dealCreateInclude,
+    });
+    if (!withTerms) {
+      throw new NotFoundException(`Deal ${deal.id} not found after create`);
+    }
+    return this.attachHandoffReferences(withTerms);
   }
 
   async update(id: string, data: UpdateDealDto) {
@@ -146,6 +177,16 @@ export class DealsService {
       locked: attributionLocked,
     });
 
+    const nextSellerId = data.sellerId ?? existing.sellerId;
+    const nextAssistantId =
+      data.sellerAssistantId !== undefined ? data.sellerAssistantId : existing.sellerAssistantId;
+    if (data.sellerId !== undefined || data.sellerAssistantId !== undefined) {
+      await assertDealSellerRefs(this.prisma, {
+        sellerId: nextSellerId,
+        sellerAssistantId: nextAssistantId,
+      });
+    }
+
     const deal = await this.prisma.deal.update({
       where: { id },
       data: {
@@ -158,6 +199,10 @@ export class DealsService {
         }),
         ...(data.taxStatus && { taxStatus: data.taxStatus as Prisma.DealUpdateInput['taxStatus'] }),
         ...(data.companyId !== undefined && { companyId: data.companyId }),
+        ...(data.sellerId !== undefined && { sellerId: data.sellerId }),
+        ...(data.sellerAssistantId !== undefined && {
+          sellerAssistantId: data.sellerAssistantId,
+        }),
         ...(data.contactId && { contactId: data.contactId }),
         ...(data.projectId !== undefined && { projectId: data.projectId }),
         ...(data.source !== undefined && {
@@ -205,15 +250,33 @@ export class DealsService {
       },
       include: dealUpdateInclude,
     });
-    return this.attachHandoffReferences(deal);
+    await syncPartnerReferralTermsForDeal(this.prisma, id, this.partnerTermsSnapshot(deal));
+    const refreshed = await this.prisma.deal.findUnique({
+      where: { id },
+      include: dealUpdateInclude,
+    });
+    if (!refreshed) {
+      throw new NotFoundException(`Deal ${id} not found after update`);
+    }
+    return this.attachHandoffReferences(refreshed);
+  }
+
+  async patchPartnerReferralTerms(dealId: string, body: PatchPartnerReferralTermsBody) {
+    await persistPartnerReferralTerms(this.prisma, dealId, body);
+    return this.findById(dealId);
   }
 
   async updateStatus(id: string, status: string, override: DealWonOverrideContext = {}) {
-    const current = await this.findById(id);
+    let current = await this.findById(id);
     if (current.status === status) {
       return current;
     }
     this.assertStatusTransitionAllowed(current.status, status);
+
+    if (dealNeedsPartnerReferralTerms(current)) {
+      await syncPartnerReferralTermsForDeal(this.prisma, id, this.partnerTermsSnapshot(current));
+      current = await this.findById(id);
+    }
 
     validateDealStageGate(current, status);
     if (status === 'WON') {
@@ -293,6 +356,20 @@ export class DealsService {
     const nextNum = lastDeal ? parseInt(lastDeal.code.split('-')[2] ?? '0', 10) + 1 : 1;
 
     return `D-${year}-${String(nextNum).padStart(4, '0')}`;
+  }
+
+  private partnerTermsSnapshot(deal: {
+    source: string | null;
+    sourcePartnerId: string | null;
+    type: string;
+    paymentType: string | null;
+  }): PartnerReferralTermsDealSnapshot {
+    return {
+      source: deal.source,
+      sourcePartnerId: deal.sourcePartnerId,
+      type: deal.type as PartnerReferralTermsDealSnapshot['type'],
+      paymentType: deal.paymentType as PartnerReferralTermsDealSnapshot['paymentType'],
+    };
   }
 
   private appendOverrideNote(notes: string | null, reason: string): string {

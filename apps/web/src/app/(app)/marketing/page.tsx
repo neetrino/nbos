@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Megaphone, Plus, RefreshCcw } from 'lucide-react';
 import { EmptyState, ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -59,6 +61,23 @@ export default function MarketingPage() {
     fetchActivities();
   }, []);
 
+  const columns = useMemo(() => {
+    const byStatus = new Map<string, MarketingActivity[]>();
+    for (const row of MARKETING_ACTIVITY_STATUSES) {
+      byStatus.set(row.value, []);
+    }
+    for (const activity of activities) {
+      const bucket = byStatus.get(activity.status) ?? [];
+      bucket.push(activity);
+      byStatus.set(activity.status, bucket);
+    }
+    return MARKETING_ACTIVITY_STATUSES.map((row) => ({
+      status: row.value,
+      label: row.label,
+      items: byStatus.get(row.value) ?? [],
+    }));
+  }, [activities]);
+
   const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!form.title.trim()) return;
@@ -84,9 +103,22 @@ export default function MarketingPage() {
         title="Marketing Board"
         description="Demand generation activities that can become CRM attribution sources."
       >
-        <Button variant="outline" size="icon" onClick={fetchActivities}>
-          <RefreshCcw size={16} />
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/marketing/attribution"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+          >
+            Attribution Review
+          </Link>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={fetchActivities}
+            aria-label="Refresh board"
+          >
+            <RefreshCcw size={16} />
+          </Button>
+        </div>
       </PageHeader>
 
       <form
@@ -173,48 +205,70 @@ export default function MarketingPage() {
           description="Create the first activity to start building the Marketing Board."
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {activities.map((activity) => (
-            <div key={activity.id} className="border-border bg-card rounded-2xl border p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold">{activity.title}</p>
-                  <p className="text-muted-foreground text-sm">
-                    {getMarketingLabel(MARKETING_CHANNELS, activity.channel)}
-                  </p>
-                </div>
-                <StatusBadge
-                  label={getMarketingLabel(MARKETING_ACTIVITY_STATUSES, activity.status)}
-                  variant={activity.status === 'LAUNCHED' ? 'green' : 'blue'}
-                />
+        <div className="flex gap-4 overflow-x-auto pb-2">
+          {columns.map((column) => (
+            <section
+              key={column.status}
+              className="border-border bg-muted/30 flex min-w-[min(100%,320px)] flex-1 flex-col rounded-2xl border"
+            >
+              <div className="border-border flex items-center justify-between border-b px-3 py-2">
+                <h2 className="text-sm font-semibold">{column.label}</h2>
+                <span className="text-muted-foreground text-xs">{column.items.length}</span>
               </div>
-              <p className="text-muted-foreground mt-3 text-sm">
-                {activity.description ?? 'No description yet.'}
-              </p>
-              <div className="text-muted-foreground mt-4 grid grid-cols-2 gap-2 text-xs">
-                <span>Type: {getMarketingLabel(MARKETING_ACTIVITY_TYPES, activity.type)}</span>
-                <span>
-                  Budget:{' '}
-                  {activity.budget ? `${activity.budget} ${activity.currency}` : 'No spend data'}
-                </span>
-                <span>Account: {activity.account?.name ?? 'Not linked'}</span>
-                <span>Expense: {activity.expenseCardId ? 'Linked' : 'Missing link'}</span>
-                <span>Start: {activity.startDate?.slice(0, 10) ?? 'Not scheduled'}</span>
-                <span>Pay by: {activity.expectedPayAt?.slice(0, 10) ?? 'Not set'}</span>
+              <div className="flex flex-col gap-3 p-3">
+                {column.items.length === 0 ? (
+                  <p className="text-muted-foreground px-1 text-xs">No activities in this stage.</p>
+                ) : (
+                  column.items.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="border-border bg-card rounded-xl border p-4 shadow-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold">{activity.title}</p>
+                          <p className="text-muted-foreground text-sm">
+                            {getMarketingLabel(MARKETING_CHANNELS, activity.channel)}
+                          </p>
+                        </div>
+                        <StatusBadge
+                          label={getMarketingLabel(MARKETING_ACTIVITY_STATUSES, activity.status)}
+                          variant={activity.status === 'LAUNCHED' ? 'green' : 'blue'}
+                        />
+                      </div>
+                      <p className="text-muted-foreground mt-3 line-clamp-3 text-sm">
+                        {activity.description ?? 'No description yet.'}
+                      </p>
+                      <div className="text-muted-foreground mt-4 grid grid-cols-2 gap-2 text-xs">
+                        <span>
+                          Type: {getMarketingLabel(MARKETING_ACTIVITY_TYPES, activity.type)}
+                        </span>
+                        <span>
+                          Budget:{' '}
+                          {activity.budget ? `${activity.budget} ${activity.currency}` : '—'}
+                        </span>
+                        <span>Account: {activity.account?.name ?? 'Not linked'}</span>
+                        <span>Expense: {activity.expenseCardId ? 'Linked' : 'Missing link'}</span>
+                        <span>Start: {activity.startDate?.slice(0, 10) ?? 'Not scheduled'}</span>
+                        <span>Pay by: {activity.expectedPayAt?.slice(0, 10) ?? 'Not set'}</span>
+                      </div>
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <p className="text-muted-foreground text-xs">
+                          {activity.expenseCardId
+                            ? 'Finance expense proposed. Payment is controlled in Finance.'
+                            : 'Without a Finance expense link, paid spend analytics stay incomplete.'}
+                        </p>
+                        <MarketingLaunchDialog
+                          activity={activity}
+                          accounts={accounts}
+                          onLaunched={fetchActivities}
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <p className="text-muted-foreground text-xs">
-                  {activity.expenseCardId
-                    ? 'Finance expense proposed. Payment is controlled in Finance.'
-                    : 'Missing finance link: spend analytics incomplete.'}
-                </p>
-                <MarketingLaunchDialog
-                  activity={activity}
-                  accounts={accounts}
-                  onLaunched={fetchActivities}
-                />
-              </div>
-            </div>
+            </section>
           ))}
         </div>
       )}

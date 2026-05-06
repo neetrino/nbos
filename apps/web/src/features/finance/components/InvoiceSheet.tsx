@@ -38,7 +38,7 @@ export function InvoiceSheet({
       open={open}
       onOpenChange={onOpenChange}
       title={invoice.code}
-      description={invoice.type}
+      description={`Invoice Card · ${invoice.type}`}
       badge={<InvoiceSheetBadge invoice={invoice} />}
     >
       <div className="space-y-6">

@@ -18,6 +18,7 @@ import { ProductLifecycleActions } from './ProductLifecycleActions';
 import { ProductAcceptanceAction } from './ProductAcceptanceAction';
 import { ProductDoneReadinessPanel } from './ProductDoneReadinessPanel';
 import { ProductStageGateSummary } from './ProductStageGateSummary';
+import { resolveProductStageGateActionHref } from '@/features/projects/utils/projects-hub-stage-gate-blocker-hrefs';
 
 const PRODUCT_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER'> = {
   NEW: 'STARTING',
@@ -148,7 +149,13 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
         onResume={handleResume}
         onCancel={() => setDialogAction('cancel')}
       />
-      {blocker && <StageGateBlockerPanel blocker={blocker} projectId={product.project.id} />}
+      {blocker && (
+        <StageGateBlockerPanel
+          blocker={blocker}
+          projectId={product.project.id}
+          productId={product.id}
+        />
+      )}
       <DeliveryLifecycleActionDialog
         action={dialogAction}
         entityLabel={product.name}
@@ -224,9 +231,11 @@ function StageButton({
 function StageGateBlockerPanel({
   blocker,
   projectId,
+  productId,
 }: {
   blocker: StageGateBlocker;
   projectId: string;
+  productId: string;
 }) {
   const directActions = resolveBlockerDirectActions({
     context: 'product',
@@ -246,7 +255,11 @@ function StageGateBlockerPanel({
               <li key={error.field}>- {error.message}</li>
             ))}
           </ul>
-          <ProductBlockerActions actions={directActions} projectId={projectId} />
+          <ProductBlockerActions
+            actions={directActions}
+            projectId={projectId}
+            productId={productId}
+          />
         </div>
       </div>
     </div>
@@ -256,19 +269,25 @@ function StageGateBlockerPanel({
 function ProductBlockerActions({
   actions,
   projectId,
+  productId,
 }: {
   actions: Array<{ key: string; label: string }>;
   projectId: string;
+  productId: string;
 }) {
   const visibleActions =
-    actions.length > 0 ? actions : [{ key: 'pm-intake', label: 'Open PM intake' }];
+    actions.length > 0 ? actions : [{ key: 'pm-intake', label: 'Open product overview' }];
 
   return (
     <div className="mt-3 flex flex-wrap gap-2">
       {visibleActions.map((action) => (
         <Link
           key={action.key}
-          href={`/projects/${projectId}`}
+          href={resolveProductStageGateActionHref({
+            projectId,
+            productId,
+            action,
+          })}
           className={buttonVariants({ variant: 'outline', size: 'sm' })}
         >
           {action.label}

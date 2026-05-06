@@ -23,6 +23,41 @@ export interface PayrollAuditTrailRow {
 
 export type SalaryLineStatus = 'PENDING' | 'APPROVED' | 'PARTIALLY_PAID' | 'PAID' | 'HELD';
 
+export interface SalaryBoardCell {
+  salaryLineId: string;
+  payrollRunId: string;
+  payrollMonth: string;
+  runStatus: PayrollRunStatus;
+  lineStatus: SalaryLineStatus;
+  totalPayable: string;
+  paidAmount: string;
+  remainingAmount: string;
+}
+
+export interface SalaryBoardColumn {
+  payrollMonth: string;
+  payrollRunId: string | null;
+  runStatus: PayrollRunStatus | null;
+}
+
+export interface SalaryBoardRow {
+  employee: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    position: string | null;
+  };
+  cells: (SalaryBoardCell | null)[];
+}
+
+export interface SalaryBoardResponse {
+  payrollMonthFrom: string;
+  payrollMonthTo: string;
+  months: string[];
+  columns: SalaryBoardColumn[];
+  rows: SalaryBoardRow[];
+}
+
 export interface PayrollRunListRow {
   id: string;
   payrollMonth: string;
@@ -33,6 +68,9 @@ export interface PayrollRunListRow {
   totalDeductions: string;
   totalPayable: string;
   totalPaid: string;
+  /** Monthly sales plan (major units) for seller KPI payout gate; pair with `kpiSalesActualAmount`. */
+  kpiSalesPlanAmount: string | null;
+  kpiSalesActualAmount: string | null;
   createdAt: string;
   updatedAt: string;
   _count: { salaryLines: number };
@@ -79,10 +117,22 @@ export interface PayrollRunDetail extends PayrollRunListRow {
   approvedBy: { id: string; firstName: string; lastName: string } | null;
   approvedAt: string | null;
   closedAt: string | null;
+  /** Bonus releases currently INCLUDED_IN_PAYROLL on this run (KPI inputs locked until detached). */
+  includedBonusReleaseCount: number;
+  /**
+   * Sum of `Payment.amount` with `paymentDate` in the run’s calendar month (UTC).
+   * Hint for sales actual; does not persist until saved via PATCH.
+   */
+  kpiSalesActualSuggestedAmount: string;
   /** Read-only milestones from run timestamps (no intermediate status audit yet). */
   journal: PayrollJournalEntry[];
   /** Audit log rows for this run (`CREATED`, `STATUS_CHANGED`, …). */
   auditTrail: PayrollAuditTrailRow[];
+}
+
+export interface PatchPayrollRunBody {
+  kpiSalesPlanAmount?: number | null;
+  kpiSalesActualAmount?: number | null;
 }
 
 export interface PayrollRunListParams {
@@ -94,6 +144,8 @@ export interface PayrollRunListParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+export type SalaryBoardParams = Pick<PayrollRunListParams, 'payrollMonthFrom' | 'payrollMonthTo'>;
 
 export interface PayrollRunStats {
   runCount: number;
@@ -131,6 +183,11 @@ export const payrollRunsApi = {
     return resp.data;
   },
 
+  async getSalaryBoard(params?: SalaryBoardParams): Promise<SalaryBoardResponse> {
+    const resp = await api.get<SalaryBoardResponse>('/api/payroll-runs/salary-board', { params });
+    return resp.data;
+  },
+
   async getById(id: string): Promise<PayrollRunDetail> {
     const resp = await api.get<PayrollRunDetail>(`/api/payroll-runs/${id}`);
     return resp.data;
@@ -143,6 +200,11 @@ export const payrollRunsApi = {
 
   async updateStatus(id: string, status: PayrollRunStatus): Promise<PayrollRunDetail> {
     const resp = await api.patch<PayrollRunDetail>(`/api/payroll-runs/${id}/status`, { status });
+    return resp.data;
+  },
+
+  async patch(id: string, body: PatchPayrollRunBody): Promise<PayrollRunDetail> {
+    const resp = await api.patch<PayrollRunDetail>(`/api/payroll-runs/${id}`, body);
     return resp.data;
   },
 };

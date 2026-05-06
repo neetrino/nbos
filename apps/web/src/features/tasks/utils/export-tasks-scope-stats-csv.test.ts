@@ -11,8 +11,8 @@ const META: TasksScopeStatsCsvMeta = {
 
 const SAMPLE: TaskStats = {
   byStatus: [
-    { status: 'NEW', _count: 5 },
-    { status: 'DONE', _count: 2 },
+    { status: 'OPEN', _count: 5 },
+    { status: 'COMPLETED', _count: 2 },
   ],
   byPriority: [{ priority: 'HIGH', _count: 3 }],
 };
@@ -24,7 +24,7 @@ describe('buildTasksScopeStatsCsvContent', () => {
     expect(lines[0]).toBe('section,col1,col2,col3,col4,col5');
     expect(lines.some((l) => l.startsWith('meta,scope_note,'))).toBe(true);
     expect(lines).toContain('totals,tasksCountedByStatus,7,,,');
-    expect(lines).toContain('by_status,NEW,5,,,');
+    expect(lines).toContain('by_status,OPEN,5,,,');
     expect(lines).toContain('by_priority,HIGH,3,,,');
   });
 });

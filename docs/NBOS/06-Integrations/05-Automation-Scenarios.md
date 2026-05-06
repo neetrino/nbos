@@ -97,12 +97,12 @@
 
 ### INV-04: Invoice → напоминание в WhatsApp-группу (Notification Engine)
 
-| Параметр       | Значение                                                                                                                                                   |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Триггер**    | Invoice готов к напоминанию по правилам Finance                                                                                                            |
-| **Условия**    | `notifications_enabled = On` AND есть связанная WhatsApp group / external conversation                                                                     |
-| **Действия**   | Notification Engine создаёт WhatsApp delivery job через `WhatsAppWebAdapter` → WAHA (группа / finance conversation), не «клиентский шаблон» Meta Cloud API |
-| **Получатели** | Project WhatsApp Group / Finance external conversation                                                                                                     |
+| Параметр       | Значение                                                                                                                                                                          |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Триггер**    | Invoice готов к напоминанию по правилам Finance                                                                                                                                   |
+| **Условия**    | `notifications_enabled = On` AND есть связанная WhatsApp group / external conversation                                                                                            |
+| **Действия**   | Notification Engine создаёт WhatsApp delivery job через `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA (группа / finance conversation), не «клиентский шаблон» Meta Cloud API |
+| **Получатели** | Project WhatsApp Group / Finance external conversation                                                                                                                            |
 
 ### INV-05: Просрочка — 1-е уведомление
 
@@ -302,7 +302,7 @@
 | **WhatsApp**         | Для внешних групп/клиентов    | Project groups, finance reminders, support updates |
 | **Email**            | Fallback + важные документы   | Договоры, официальные письма                       |
 
-**WhatsApp:** клиентская доставка по этим сценариям — преимущественно **сообщение в Project WhatsApp Group** (или связанный finance/support external conversation) через **Notification Engine** → `WhatsAppWebAdapter` → WAHA. Это не каноническая модель «одобренные заранее client templates» Meta Cloud API. Подробнее: `01-WhatsApp-Integration.md`, модуль Notifications — `../02-Modules/13-Notifications/01-Notifications-System.md`.
+**WhatsApp:** клиентская доставка по этим сценариям — преимущественно **сообщение в Project WhatsApp Group** (или связанный finance/support external conversation) через **Notification Engine** → `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA. Это не каноническая модель «одобренные заранее client templates» Meta Cloud API. Подробнее: `01-WhatsApp-Integration.md`, `06-WhatsApp-Gateway-NBOS-Boundary.md`, модуль Notifications — `../02-Modules/13-Notifications/01-Notifications-System.md`.
 
 **Email:** строка **Email** в таблице — **transactional / system email** канала Notification Engine. **NBOS Mail** (подключённые ящики, threads, ответы из Mail UI) — отдельный продуктовый модуль: `../02-Modules/17-Mail/00-Mail-Overview.md`.
 

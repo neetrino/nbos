@@ -26,9 +26,10 @@ import {
   PRODUCT_TYPES_BY_CATEGORY,
   PAYMENT_TYPES,
 } from '../constants/dealPipeline';
-import { LEAD_SOURCES, MARKETING_CHANNELS } from '../constants/leadPipeline';
+import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import { dealsApi } from '@/lib/api/deals';
 import { marketingApi, type AttributionOption } from '@/lib/api/marketing';
+import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 
 interface CreateDealDialogProps {
   open: boolean;
@@ -57,6 +58,7 @@ export function CreateDealDialog({
     amount: '',
     paymentType: 'CLASSIC',
     sellerId: '',
+    sellerAssistantId: '',
     source: 'MARKETING',
     sourceDetail: '',
     attributionOption: '',
@@ -74,8 +76,12 @@ export function CreateDealDialog({
     );
   })();
 
-  const canSubmit = form.contactId && form.type && form.sellerId;
+  const nameOkForDirectDeal = prefill?.leadId || form.name.trim().length >= 2;
+  const canSubmit = Boolean(form.contactId && form.type && form.sellerId && nameOkForDirectDeal);
   const [attributionOptions, setAttributionOptions] = useState<AttributionOption[]>([]);
+  const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
+    form.source === 'MARKETING',
+  );
 
   useEffect(() => {
     if (form.source !== 'MARKETING' || !form.sourceDetail) {
@@ -92,6 +98,13 @@ export function CreateDealDialog({
     (option) => `${option.type}:${option.id}` === form.attributionOption,
   );
 
+  const whereChannelOptions =
+    form.source === 'SALES'
+      ? SALES_CHANNELS.map((c) => ({ value: c.value, label: c.label }))
+      : form.source === 'MARKETING'
+        ? marketingWhereOptions
+        : [];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
@@ -99,12 +112,13 @@ export function CreateDealDialog({
     try {
       await dealsApi.create({
         name: form.name || undefined,
-        leadId: prefill?.leadId,
+        ...(prefill?.leadId ? { leadId: prefill.leadId } : {}),
         contactId: form.contactId,
         type: form.type,
         amount: form.amount ? Number(form.amount) : undefined,
         paymentType: form.paymentType || undefined,
         sellerId: form.sellerId,
+        sellerAssistantId: form.sellerAssistantId.trim() || undefined,
         source: form.source,
         sourceDetail: form.sourceDetail || undefined,
         marketingAccountId:
@@ -126,8 +140,17 @@ export function CreateDealDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>{prefill?.leadId ? 'Convert Lead to Deal' : 'New Deal'}</DialogTitle>
+          <DialogTitle>
+            {prefill?.leadId ? 'Convert Lead to Deal' : 'New Deal (no prior lead)'}
+          </DialogTitle>
         </DialogHeader>
+
+        {!prefill?.leadId && (
+          <p className="text-muted-foreground text-sm">
+            Direct entry: set deal name, From, and Where. Contact must exist in the directory (paste
+            Contact ID).
+          </p>
+        )}
 
         {prefill?.contactName && (
           <div className="bg-secondary rounded-lg p-3 text-sm">
@@ -137,7 +160,7 @@ export function CreateDealDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>Deal Name</Label>
+            <Label>{prefill?.leadId ? 'Deal Name' : 'Deal Name *'}</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -250,13 +273,23 @@ export function CreateDealDialog({
             />
           </div>
 
-          <div>
-            <Label>Seller ID *</Label>
-            <Input
-              value={form.sellerId}
-              onChange={(e) => setForm({ ...form, sellerId: e.target.value })}
-              placeholder="Seller employee ID"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Seller ID *</Label>
+              <Input
+                value={form.sellerId}
+                onChange={(e) => setForm({ ...form, sellerId: e.target.value })}
+                placeholder="Seller employee ID"
+              />
+            </div>
+            <div>
+              <Label>Sales assistant ID</Label>
+              <Input
+                value={form.sellerAssistantId}
+                onChange={(e) => setForm({ ...form, sellerAssistantId: e.target.value })}
+                placeholder="Optional"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -292,12 +325,13 @@ export function CreateDealDialog({
                 onValueChange={(v) =>
                   setForm({ ...form, sourceDetail: v as string, attributionOption: '' })
                 }
+                disabled={whereChannelOptions.length === 0}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Channel" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MARKETING_CHANNELS.map((channel) => (
+                  {whereChannelOptions.map((channel) => (
                     <SelectItem key={channel.value} value={channel.value}>
                       {channel.label}
                     </SelectItem>

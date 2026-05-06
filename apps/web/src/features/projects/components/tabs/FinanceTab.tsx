@@ -37,17 +37,16 @@ const ORDER_STATUS_MAP: Record<
   CLOSED: { label: 'Closed', variant: 'gray' },
 };
 
-const INVOICE_STATUS_MAP: Record<
+const INVOICE_MONEY_STATUS_MAP: Record<
   string,
-  { label: string; variant: 'blue' | 'indigo' | 'purple' | 'red' | 'gray' | 'green' | 'amber' }
+  { label: string; variant: 'blue' | 'purple' | 'red' | 'gray' | 'green' }
 > = {
   NEW: { label: 'New', variant: 'blue' },
-  CREATED_IN_GOV: { label: 'Gov', variant: 'indigo' },
-  SENT: { label: 'Sent', variant: 'purple' },
+  AWAITING_PAYMENT: { label: 'Awaiting', variant: 'purple' },
   OVERDUE: { label: 'Overdue', variant: 'red' },
   ON_HOLD: { label: 'Hold', variant: 'gray' },
   PAID: { label: 'Paid', variant: 'green' },
-  UNPAID: { label: 'Unpaid', variant: 'amber' },
+  CANCELLED: { label: 'Cancelled', variant: 'gray' },
 };
 
 const SUB_STATUS_MAP: Record<
@@ -69,7 +68,7 @@ export function FinanceTab({
   projectId,
 }: FinanceTabProps) {
   const totalRevenue = orders.reduce((s, o) => s + Number(o.totalAmount), 0);
-  const paidInvoices = orders.flatMap((o) => o.invoices).filter((i) => i.status === 'PAID');
+  const paidInvoices = orders.flatMap((o) => o.invoices).filter((i) => i.moneyStatus === 'PAID');
   const totalPaid = paidInvoices.reduce((s, i) => s + Number(i.amount), 0);
   const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const monthlyMRR = subscriptions
@@ -118,7 +117,7 @@ export function FinanceTab({
             {orders.map((order) => {
               const st = ORDER_STATUS_MAP[order.status];
               const paidAmount = order.invoices
-                .filter((i) => i.status === 'PAID')
+                .filter((i) => i.moneyStatus === 'PAID')
                 .reduce((s, i) => s + Number(i.amount), 0);
               const progress =
                 Number(order.totalAmount) > 0 ? (paidAmount / Number(order.totalAmount)) * 100 : 0;
@@ -151,7 +150,7 @@ export function FinanceTab({
                   {order.invoices.length > 0 && (
                     <div className="mt-3 space-y-1">
                       {order.invoices.map((inv) => {
-                        const invSt = INVOICE_STATUS_MAP[inv.status];
+                        const invSt = INVOICE_MONEY_STATUS_MAP[inv.moneyStatus];
                         return (
                           <div key={inv.id} className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-2">

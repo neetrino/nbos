@@ -5,6 +5,8 @@ import { TechnicalService } from './technical.service';
 import type {
   CreateTechnicalAssetDto,
   CreateTechnicalEnvironmentDto,
+  RecordTechnicalDeployDto,
+  UpdateTechnicalBackupPolicyDto,
   UpdateTechnicalAssetDto,
   UpdateTechnicalEnvironmentDto,
   UpdateTechnicalProfileDto,
@@ -78,5 +80,27 @@ export class TechnicalController {
     @Body() body: UpdateTechnicalEnvironmentDto,
   ) {
     return this.technicalService.updateEnvironment(productId, environmentId, user.id, body);
+  }
+
+  @Post('products/:productId/deploy-records')
+  @RequirePermission('PROJECTS', 'EDIT')
+  @ApiOperation({ summary: 'Record technical deploy event for product' })
+  recordDeploy(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('productId') productId: string,
+    @Body() body: RecordTechnicalDeployDto,
+  ) {
+    return this.technicalService.recordDeploy(productId, user.id, body);
+  }
+
+  @Patch('products/:productId/backup-policy')
+  @RequirePermission('PROJECTS', 'EDIT')
+  @ApiOperation({ summary: 'Update product backup policy summary and status' })
+  updateBackupPolicy(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('productId') productId: string,
+    @Body() body: UpdateTechnicalBackupPolicyDto,
+  ) {
+    return this.technicalService.updateBackupPolicy(productId, user.id, body);
   }
 }

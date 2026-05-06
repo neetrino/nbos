@@ -18,6 +18,7 @@ describe('LeadConversionService', () => {
   const baseLead = {
     id: 'lead-1',
     code: 'L-2026-0001',
+    name: 'Corporate website',
     contactName: 'John Doe',
     status: 'SQL',
     source: 'MARKETING',
@@ -51,6 +52,11 @@ describe('LeadConversionService', () => {
 
     const result = await service.convertToDeal('lead-1', convertDto);
     expect(result.code).toBe('D-2026-0001');
+    expect(prisma.deal.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: 'Corporate website' }),
+      }),
+    );
   });
 
   it('creates contact if lead has no contactId', async () => {
@@ -174,6 +180,29 @@ describe('LeadConversionService', () => {
     });
 
     await expect(service.qualifyLeadAsSql('lead-1')).rejects.toThrow(BadRequestException);
+    expect(prisma.deal.create).not.toHaveBeenCalled();
+  });
+
+  it('blocks SQL qualification without inquiry title (name)', async () => {
+    prisma.lead.findUnique.mockResolvedValue({
+      ...baseLead,
+      status: 'MQL',
+      name: null,
+      assignedTo: 'seller-1',
+      contactId: 'c1',
+    });
+
+    await expect(service.qualifyLeadAsSql('lead-1')).rejects.toThrow(BadRequestException);
+    expect(prisma.deal.create).not.toHaveBeenCalled();
+  });
+
+  it('blocks convert-to-deal when inquiry title is blank', async () => {
+    prisma.lead.findUnique.mockResolvedValue({
+      ...baseLead,
+      name: '   ',
+    });
+
+    await expect(service.convertToDeal('lead-1', convertDto)).rejects.toThrow(BadRequestException);
     expect(prisma.deal.create).not.toHaveBeenCalled();
   });
 });

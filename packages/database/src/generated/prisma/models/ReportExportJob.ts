@@ -687,14 +687,6 @@ export type ReportExportJobUncheckedUpdateManyWithoutFileAssetNestedInput = {
   deleteMany?: Prisma.ReportExportJobScalarWhereInput | Prisma.ReportExportJobScalarWhereInput[];
 };
 
-export type EnumReportExportFormatEnumFieldUpdateOperationsInput = {
-  set?: $Enums.ReportExportFormatEnum;
-};
-
-export type EnumReportExportJobStatusEnumFieldUpdateOperationsInput = {
-  set?: $Enums.ReportExportJobStatusEnum;
-};
-
 export type ReportExportJobCreateNestedManyWithoutRequestedByInput = {
   create?:
     | Prisma.XOR<
@@ -779,6 +771,14 @@ export type ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput = {
     | Prisma.ReportExportJobUpdateManyWithWhereWithoutRequestedByInput
     | Prisma.ReportExportJobUpdateManyWithWhereWithoutRequestedByInput[];
   deleteMany?: Prisma.ReportExportJobScalarWhereInput | Prisma.ReportExportJobScalarWhereInput[];
+};
+
+export type EnumReportExportFormatEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ReportExportFormatEnum;
+};
+
+export type EnumReportExportJobStatusEnumFieldUpdateOperationsInput = {
+  set?: $Enums.ReportExportJobStatusEnum;
 };
 
 export type ReportExportJobCreateWithoutFileAssetInput = {

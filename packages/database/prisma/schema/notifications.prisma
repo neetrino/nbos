@@ -1,0 +1,133 @@
+// ─── IN-APP NOTIFICATIONS ───────────────────────────────────
+
+model InAppNotification {
+  id                  String    @id @default(uuid())
+  recipientEmployeeId String    @map("recipient_employee_id")
+  type                String
+  category            String    @default("informational")
+  priority            String    @default("normal")
+  title               String
+  body                String    @db.Text
+  link                String?
+  actionLabel         String?   @map("action_label")
+  entityType          String?   @map("entity_type")
+  entityId            String?   @map("entity_id")
+  isRead              Boolean   @default(false) @map("is_read")
+  readAt              DateTime? @map("read_at")
+  archivedAt          DateTime? @map("archived_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  recipient Employee @relation(fields: [recipientEmployeeId], references: [id], onDelete: Cascade)
+
+  @@index([recipientEmployeeId, createdAt])
+  @@index([recipientEmployeeId, isRead])
+  @@index([recipientEmployeeId, archivedAt])
+  @@index([category])
+  @@index([priority])
+  @@map("in_app_notifications")
+}
+
+enum NotificationJobStatus {
+  PENDING
+  PROCESSING
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum NotificationDeliveryChannel {
+  IN_APP
+  TELEGRAM
+  WHATSAPP
+  EMAIL
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  DELIVERED
+  FAILED
+  SKIPPED
+}
+
+model NotificationEvent {
+  id               String   @id @default(uuid())
+  eventType        String   @map("event_type")
+  sourceModule     String   @map("source_module")
+  sourceEntityType String?  @map("source_entity_type")
+  sourceEntityId   String?  @map("source_entity_id")
+  payload          Json?
+  occurredAt       DateTime @default(now()) @map("occurred_at")
+  idempotencyKey   String   @unique @map("idempotency_key")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  jobs NotificationJob[]
+
+  @@index([eventType])
+  @@index([sourceModule])
+  @@index([sourceEntityType, sourceEntityId])
+  @@map("notification_events")
+}
+
+model NotificationRule {
+  id                String   @id @default(uuid())
+  code              String   @unique
+  eventType         String   @map("event_type")
+  recipientResolver String   @default("ACTOR") @map("recipient_resolver")
+  channels          String[] @default(["IN_APP"])
+  priority          String   @default("normal")
+  enabled           Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  jobs NotificationJob[]
+
+  @@index([eventType])
+  @@index([enabled])
+  @@map("notification_rules")
+}
+
+model NotificationJob {
+  id           String                @id @default(uuid())
+  eventId      String                @map("event_id")
+  ruleId       String                @map("rule_id")
+  status       NotificationJobStatus @default(PENDING)
+  scheduledFor DateTime              @default(now()) @map("scheduled_for")
+  attemptCount Int                   @default(0) @map("attempt_count")
+  nextRetryAt  DateTime?             @map("next_retry_at")
+  dedupeKey    String                @unique @map("dedupe_key")
+  createdAt    DateTime              @default(now()) @map("created_at")
+  processedAt  DateTime?             @map("processed_at")
+
+  event      NotificationEvent      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  rule       NotificationRule       @relation(fields: [ruleId], references: [id], onDelete: Restrict)
+  deliveries NotificationDelivery[]
+
+  @@index([eventId])
+  @@index([ruleId])
+  @@index([status])
+  @@index([scheduledFor])
+  @@map("notification_jobs")
+}
+
+model NotificationDelivery {
+  id                String                      @id @default(uuid())
+  jobId             String                      @map("job_id")
+  channel           NotificationDeliveryChannel
+  recipient         String
+  status            NotificationDeliveryStatus  @default(PENDING)
+  provider          String?
+  providerMessageId String?                     @map("provider_message_id")
+  errorCode         String?                     @map("error_code")
+  errorMessage      String?                     @map("error_message") @db.Text
+  sentAt            DateTime?                   @map("sent_at")
+  deliveredAt       DateTime?                   @map("delivered_at")
+  readAt            DateTime?                   @map("read_at")
+  createdAt         DateTime                    @default(now()) @map("created_at")
+
+  job NotificationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+  @@index([channel])
+  @@index([status])
+  @@map("notification_deliveries")
+}

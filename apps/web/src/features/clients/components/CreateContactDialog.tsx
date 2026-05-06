@@ -19,12 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  CONTACT_ROLES,
-  PREFERRED_CHANNELS,
-  LANGUAGES,
-  CONTACT_SOURCES,
-} from '../constants/clients';
+import { CONTACT_ROLES, PREFERRED_CHANNELS, LANGUAGES } from '../constants/clients';
 import { contactsApi } from '@/lib/api/clients';
 
 interface CreateContactDialogProps {
@@ -41,7 +36,6 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
     phone: '',
     email: '',
     role: 'CLIENT',
-    source: '',
     preferredChannel: '',
     language: '',
     whatsapp: '',
@@ -58,7 +52,6 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
       phone: '',
       email: '',
       role: 'CLIENT',
-      source: '',
       preferredChannel: '',
       language: '',
       whatsapp: '',
@@ -145,7 +138,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Role *</Label>
+              <Label>Contact Type *</Label>
               <Select
                 value={form.role}
                 onValueChange={(v) => setForm({ ...form, role: v as string })}
@@ -157,24 +150,6 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
                   {CONTACT_ROLES.map((r) => (
                     <SelectItem key={r.value} value={r.value}>
                       {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Source</Label>
-              <Select
-                value={form.source || undefined}
-                onValueChange={(v) => setForm({ ...form, source: v as string })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONTACT_SOURCES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -1,0 +1,8 @@
+ALTER TYPE "TaskStatusEnum" ADD VALUE IF NOT EXISTS 'OPEN';
+ALTER TYPE "TaskStatusEnum" ADD VALUE IF NOT EXISTS 'REVIEW';
+ALTER TYPE "TaskStatusEnum" ADD VALUE IF NOT EXISTS 'COMPLETED';
+
+UPDATE "tasks" SET "status" = 'OPEN' WHERE "status" = 'NEW';
+UPDATE "tasks" SET "status" = 'COMPLETED' WHERE "status" = 'DONE';
+
+ALTER TABLE "tasks" ALTER COLUMN "status" SET DEFAULT 'OPEN';

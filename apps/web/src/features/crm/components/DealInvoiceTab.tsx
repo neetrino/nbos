@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Plus, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
@@ -8,25 +8,30 @@ import { formatAmount } from '../constants/dealPipeline';
 import { invoicesApi } from '@/lib/api/finance';
 import type { Deal, DealInvoice } from '@/lib/api/deals';
 
-const INVOICE_STATUS_VARIANT: Record<
+const INVOICE_MONEY_STATUS_VARIANT: Record<
   string,
-  'blue' | 'amber' | 'red' | 'green' | 'gray' | 'orange'
+  'blue' | 'amber' | 'red' | 'green' | 'gray' | 'orange' | 'purple'
 > = {
-  THIS_MONTH: 'blue',
-  CREATE_INVOICE: 'amber',
-  WAITING: 'orange',
-  DELAYED: 'red',
+  NEW: 'blue',
+  AWAITING_PAYMENT: 'purple',
+  OVERDUE: 'orange',
   ON_HOLD: 'gray',
-  FAIL: 'red',
+  CANCELLED: 'red',
   PAID: 'green',
 };
 
 interface DealInvoiceTabProps {
   deal: Deal;
   onRefresh?: () => void;
+  /** Increment (e.g. from parent) to open the create-invoice form when the tab is shown. */
+  expandCreateFormNonce?: number;
 }
 
-export function DealInvoiceTab({ deal, onRefresh }: DealInvoiceTabProps) {
+export function DealInvoiceTab({
+  deal,
+  onRefresh,
+  expandCreateFormNonce = 0,
+}: DealInvoiceTabProps) {
   const [showForm, setShowForm] = useState(false);
   const [invoiceAmount, setInvoiceAmount] = useState('');
   const [creating, setCreating] = useState(false);
@@ -36,6 +41,12 @@ export function DealInvoiceTab({ deal, onRefresh }: DealInvoiceTabProps) {
   );
 
   const firstOrder = deal.orders?.[0];
+
+  useEffect(() => {
+    if (expandCreateFormNonce > 0 && firstOrder) {
+      setShowForm(true);
+    }
+  }, [expandCreateFormNonce, firstOrder]);
 
   const handleCreate = async () => {
     const amount = Number(invoiceAmount);
@@ -134,8 +145,8 @@ export function DealInvoiceTab({ deal, onRefresh }: DealInvoiceTabProps) {
                 <div>
                   <p className="text-foreground text-sm font-medium">{inv.code}</p>
                   <StatusBadge
-                    label={inv.status.replace(/_/g, ' ')}
-                    variant={INVOICE_STATUS_VARIANT[inv.status] ?? 'gray'}
+                    label={inv.moneyStatus.replace(/_/g, ' ')}
+                    variant={INVOICE_MONEY_STATUS_VARIANT[inv.moneyStatus] ?? 'gray'}
                   />
                 </div>
               </div>

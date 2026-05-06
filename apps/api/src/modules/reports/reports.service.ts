@@ -1,5 +1,12 @@
 import { createHash } from 'node:crypto';
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
@@ -15,7 +22,11 @@ import {
   buildSensitiveReportAuditContext,
   REPORT_FINANCE_CONFIDENTIALITY,
 } from './reports-audit-context';
+import { renderReportExportFile } from './reports-export-content';
+import { buildRuntimeDataQualityWarnings } from './reports-data-quality-runtime';
+import { hasReportSourceAccess } from './reports-permissions';
 import { findReportDefinition, getReportDefinitions } from './report-definition-registry';
+import { assertReportExportDispatchForHttp } from './reports-export-availability';
 import { ReportsQueueService } from './reports-queue.service';
 import {
   parseReportExportJobInput,
@@ -51,8 +62,10 @@ export class ReportsService {
     private readonly reportsQueueService?: ReportsQueueService,
   ) {}
 
-  listDefinitions() {
-    const items = getReportDefinitions();
+  listDefinitions(userPermissions: Record<string, string>) {
+    const items = getReportDefinitions().filter((definition) =>
+      hasReportSourceAccess(definition, userPermissions),
+    );
     return {
       items,
       meta: {
@@ -62,76 +75,110 @@ export class ReportsService {
     };
   }
 
-  async listExportJobs(requestedById: string) {
-    return this.prisma.reportExportJob.findMany({
+  async listExportJobs(requestedById: string, userPermissions: Record<string, string>) {
+    const jobs = await this.prisma.reportExportJob.findMany({
       where: { requestedById },
       include: { fileAsset: true },
       orderBy: { queuedAt: 'desc' },
       take: REPORT_EXPORT_JOB_LIMIT,
     });
+    return jobs.filter((job) => {
+      const definition = findReportDefinition(job.reportKey, job.ownerModule);
+      return definition ? hasReportSourceAccess(definition, userPermissions) : false;
+    });
   }
 
-  async listSchedules(ownerId: string) {
-    return this.prisma.reportSchedule.findMany({
+  async listSchedules(ownerId: string, userPermissions: Record<string, string>) {
+    const schedules = await this.prisma.reportSchedule.findMany({
       where: { ownerId },
       orderBy: [{ status: 'asc' }, { nextRunAt: 'asc' }],
       take: REPORT_SCHEDULE_LIMIT,
     });
+    return schedules.filter((schedule) => {
+      const definition = findReportDefinition(schedule.reportKey, schedule.ownerModule);
+      return definition ? hasReportSourceAccess(definition, userPermissions) : false;
+    });
   }
 
-  async listSavedViews(ownerId: string) {
-    return this.prisma.savedReportView.findMany({
+  async listSavedViews(ownerId: string, userPermissions: Record<string, string>) {
+    const savedViews = await this.prisma.savedReportView.findMany({
       where: { ownerId },
       orderBy: [{ reportTitle: 'asc' }, { name: 'asc' }],
       take: SAVED_REPORT_VIEW_LIMIT,
     });
+    return savedViews.filter((view) => {
+      const definition = findReportDefinition(view.reportKey, view.ownerModule);
+      return definition ? hasReportSourceAccess(definition, userPermissions) : false;
+    });
   }
 
-  listDataQualityWarnings(): { items: ReportDataQualityWarning[]; meta: { count: number } } {
-    const definitions = getReportDefinitions();
-    const items = definitions.flatMap((definition) => {
-      const warnings: ReportDataQualityWarning[] = [
-        {
-          reportKey: definition.key,
-          reportTitle: definition.title,
-          ownerModule: definition.ownerModule,
-          severity: 'INFO',
-          code: 'MODULE_OWNED_SOURCES',
-          message: `${definition.ownerModule} owns this report projection; Reports exposes discovery, exports and schedules.`,
-          sourceEndpoints: definition.sourceEndpoints,
-        },
-      ];
-      for (const note of definition.dataQualityNotes) {
-        warnings.push({
-          reportKey: definition.key,
-          reportTitle: definition.title,
-          ownerModule: definition.ownerModule,
-          severity: 'INFO',
-          code: 'REPORT_NOTE',
-          message: note,
-          sourceEndpoints: definition.sourceEndpoints,
-        });
-      }
-      if (definition.status !== 'READY') {
-        warnings.push({
-          reportKey: definition.key,
-          reportTitle: definition.title,
-          ownerModule: definition.ownerModule,
-          severity: 'WARNING',
-          code: 'INCOMPLETE_PROJECTION',
-          message: 'This report is visible in the catalog but its live projection is incomplete.',
-          sourceEndpoints: definition.sourceEndpoints,
-        });
-      }
-      return warnings;
-    });
+  async listDataQualityWarnings(userPermissions: Record<string, string>): Promise<{
+    items: ReportDataQualityWarning[];
+    meta: { count: number };
+  }> {
+    const definitions = getReportDefinitions().filter((definition) =>
+      hasReportSourceAccess(definition, userPermissions),
+    );
+    const warningsByDefinition = await Promise.all(
+      definitions.map(async (definition) => {
+        const warnings: ReportDataQualityWarning[] = [
+          {
+            reportKey: definition.key,
+            reportTitle: definition.title,
+            ownerModule: definition.ownerModule,
+            severity: 'INFO',
+            code: 'MODULE_OWNED_SOURCES',
+            message: `${definition.ownerModule} owns this report projection; Reports exposes discovery, exports and schedules.`,
+            sourceEndpoints: definition.sourceEndpoints,
+            sourceKind: 'REGISTRY',
+          },
+        ];
+        for (const note of definition.dataQualityNotes) {
+          warnings.push({
+            reportKey: definition.key,
+            reportTitle: definition.title,
+            ownerModule: definition.ownerModule,
+            severity: 'INFO',
+            code: 'REPORT_NOTE',
+            message: note,
+            sourceEndpoints: definition.sourceEndpoints,
+            sourceKind: 'REGISTRY',
+          });
+        }
+        if (definition.status !== 'READY') {
+          warnings.push({
+            reportKey: definition.key,
+            reportTitle: definition.title,
+            ownerModule: definition.ownerModule,
+            severity: 'WARNING',
+            code: 'INCOMPLETE_PROJECTION',
+            message: 'This report is visible in the catalog but its live projection is incomplete.',
+            sourceEndpoints: definition.sourceEndpoints,
+            sourceKind: 'REGISTRY',
+          });
+        }
+        const runtimeWarnings = await buildRuntimeDataQualityWarnings(this.prisma, definition);
+        warnings.push(...runtimeWarnings);
+        return warnings;
+      }),
+    );
+    const items = warningsByDefinition.flat();
     return { items, meta: { count: items.length } };
   }
 
-  async createExportJob(requestedById: string, input: CreateReportExportJobDto) {
+  async createExportJob(
+    requestedById: string,
+    userPermissions: Record<string, string>,
+    input: CreateReportExportJobDto,
+  ) {
     const parsed = parseReportExportJobInput(input);
-    const definition = this.getRegisteredDefinition(parsed.reportKey, parsed.ownerModule);
+    const definition = this.getAccessibleDefinition(
+      parsed.reportKey,
+      parsed.ownerModule,
+      userPermissions,
+    );
     this.assertExportFormatSupported(definition.supportedExports, parsed.format);
+    assertReportExportDispatchForHttp(this.reportsQueueService?.isQueueAvailable() ?? false);
     const job = await this.prisma.reportExportJob.create({
       data: {
         reportKey: definition.key,
@@ -152,13 +199,116 @@ export class ReportsService {
       changes: this.buildAuditChanges(job.reportKey, job.format, parsed.filters),
     });
 
-    await this.reportsQueueService?.enqueueExport({ jobId: job.id, actorId: requestedById });
+    await this.dispatchReportExportJob(job.id, requestedById);
     return job;
   }
 
-  async createSchedule(ownerId: string, input: CreateReportScheduleDto) {
+  async retryExportJob(
+    requestedById: string,
+    userPermissions: Record<string, string>,
+    jobId: string,
+  ) {
+    const sourceJob = await this.getOwnedExportJob(jobId, requestedById);
+    if (sourceJob.status !== 'FAILED' && sourceJob.status !== 'CANCELLED') {
+      throw new BadRequestException('Only failed or cancelled export jobs can be retried.');
+    }
+    const definition = this.getAccessibleDefinition(
+      sourceJob.reportKey,
+      sourceJob.ownerModule,
+      userPermissions,
+    );
+    this.assertExportFormatSupported(definition.supportedExports, sourceJob.format);
+    assertReportExportDispatchForHttp(this.reportsQueueService?.isQueueAvailable() ?? false);
+    const retriedJob = await this.prisma.reportExportJob.create({
+      data: {
+        reportKey: sourceJob.reportKey,
+        reportTitle: sourceJob.reportTitle,
+        ownerModule: sourceJob.ownerModule,
+        format: sourceJob.format,
+        requestedById,
+        filters: sourceJob.filters === null ? undefined : (sourceJob.filters as InputJsonValue),
+      },
+      include: { fileAsset: true },
+    });
+    await this.auditService.log({
+      entityType: REPORT_EXPORT_AUDIT_ENTITY,
+      entityId: retriedJob.id,
+      action: 'report_export.retried',
+      userId: requestedById,
+      changes: {
+        sourceJobId: sourceJob.id,
+        format: retriedJob.format,
+        filters: retriedJob.filters ?? null,
+        driveOutput: 'pending',
+        ...buildSensitiveReportAuditContext(retriedJob.reportKey),
+      },
+    });
+    await this.dispatchReportExportJob(retriedJob.id, requestedById);
+    return retriedJob;
+  }
+
+  /**
+   * After a `ReportExportJob` row exists: enqueue to BullMQ when Redis is configured,
+   * otherwise process in-process when `REPORT_EXPORT_SYNC_FALLBACK=true` (dev only).
+   */
+  async dispatchReportExportJob(jobId: string, actorId: string): Promise<void> {
+    const queueOk = this.reportsQueueService?.isQueueAvailable() ?? false;
+    if (queueOk) {
+      const enqueued = await this.reportsQueueService!.enqueueExport({ jobId, actorId });
+      if (!enqueued) {
+        await this.failExportJob(jobId, actorId, 'Could not enqueue export job to Redis.');
+        throw new ServiceUnavailableException(
+          'Report export queue is unavailable. Try again later.',
+        );
+      }
+      return;
+    }
+    void this.processExportJob(jobId, actorId);
+  }
+
+  async cancelExportJob(
+    requestedById: string,
+    userPermissions: Record<string, string>,
+    jobId: string,
+  ) {
+    const job = await this.getOwnedExportJob(jobId, requestedById);
+    this.getAccessibleDefinition(job.reportKey, job.ownerModule, userPermissions);
+    if (job.status === 'CANCELLED') return job;
+    if (job.status === 'COMPLETED') {
+      throw new BadRequestException('Completed export jobs cannot be cancelled.');
+    }
+    if (job.status === 'FAILED') {
+      throw new BadRequestException('Failed export jobs cannot be cancelled.');
+    }
+    const cancelled = await this.prisma.reportExportJob.update({
+      where: { id: job.id },
+      data: {
+        status: 'CANCELLED',
+        errorMessage: null,
+      },
+      include: { fileAsset: true },
+    });
+    await this.auditService.log({
+      entityType: REPORT_EXPORT_AUDIT_ENTITY,
+      entityId: cancelled.id,
+      action: 'report_export.cancelled',
+      userId: requestedById,
+      changes: { ...buildSensitiveReportAuditContext(cancelled.reportKey) },
+    });
+    return cancelled;
+  }
+
+  async createSchedule(
+    ownerId: string,
+    userPermissions: Record<string, string>,
+    input: CreateReportScheduleDto,
+  ) {
     const parsed = parseReportScheduleInput(input);
-    const definition = this.getRegisteredDefinition(parsed.reportKey, parsed.ownerModule);
+    const definition = this.getAccessibleDefinition(
+      parsed.reportKey,
+      parsed.ownerModule,
+      userPermissions,
+    );
     this.assertExportFormatSupported(definition.supportedExports, parsed.format);
     const schedule = await this.prisma.reportSchedule.create({
       data: {
@@ -200,9 +350,17 @@ export class ReportsService {
     return schedule;
   }
 
-  async createSavedView(ownerId: string, input: CreateSavedReportViewDto) {
+  async createSavedView(
+    ownerId: string,
+    userPermissions: Record<string, string>,
+    input: CreateSavedReportViewDto,
+  ) {
     const parsed = parseSavedReportViewInput(input);
-    const definition = this.getRegisteredDefinition(parsed.reportKey, parsed.ownerModule);
+    const definition = this.getAccessibleDefinition(
+      parsed.reportKey,
+      parsed.ownerModule,
+      userPermissions,
+    );
     const view = await this.prisma.savedReportView.create({
       data: {
         reportKey: definition.key,
@@ -230,6 +388,12 @@ export class ReportsService {
   async completeExportJobWithDriveFile(jobId: string, fileAssetId: string, actorId: string) {
     const file = await this.prisma.fileAsset.findUnique({ where: { id: fileAssetId } });
     if (!file) throw new NotFoundException('Drive output file was not found.');
+    const current = await this.prisma.reportExportJob.findUnique({
+      where: { id: jobId },
+      include: { fileAsset: true },
+    });
+    if (!current) throw new NotFoundException('Report export job not found.');
+    if (current.status === 'CANCELLED') return current;
 
     const job = await this.prisma.reportExportJob.update({
       where: { id: jobId },
@@ -254,11 +418,12 @@ export class ReportsService {
   }
 
   async processExportJob(jobId: string, actorId: string) {
-    const job = await this.prisma.reportExportJob.findUnique({ where: { id: jobId } });
+    const job = await this.prisma.reportExportJob.findUnique({
+      where: { id: jobId },
+      include: { fileAsset: true },
+    });
     if (!job) throw new NotFoundException('Report export job not found.');
-    if (job.format !== 'CSV') {
-      return this.failExportJob(job.id, actorId, 'Only CSV export writing is implemented.');
-    }
+    if (job.status === 'CANCELLED') return job;
 
     await this.prisma.reportExportJob.update({
       where: { id: job.id },
@@ -267,22 +432,22 @@ export class ReportsService {
 
     try {
       const payload = await this.getReportPayload(job.reportKey, job.ownerModule, job.filters);
-      const csv = toCsvRows(payload);
-      const file = await this.driveService.createGeneratedFileAsset({
-        displayName: buildExportFileName(job.reportKey, job.id),
-        fileType: 'SPREADSHEET',
+      const exportFile = await renderReportExportFile(job.format, payload);
+      const driveFile = await this.driveService.createGeneratedFileAsset({
+        displayName: buildExportFileName(job.reportKey, job.id, exportFile.extension),
+        fileType: exportFile.fileType,
         purpose: 'OTHER',
         sourceModule: 'REPORTS',
         createdById: actorId,
         visibility: 'RESTRICTED',
         confidentiality: REPORT_FINANCE_CONFIDENTIALITY,
-        storageKey: buildExportStorageKey(job.reportKey, job.id),
-        content: csv,
-        contentType: 'text/csv; charset=utf-8',
-        checksum: createHash('sha256').update(csv).digest('hex'),
+        storageKey: buildExportStorageKey(job.reportKey, job.id, exportFile.extension),
+        content: exportFile.content,
+        contentType: exportFile.contentType,
+        checksum: createHash('sha256').update(exportFile.content).digest('hex'),
         link: { entityType: REPORT_EXPORT_AUDIT_ENTITY, entityId: job.id, linkType: 'OTHER' },
       });
-      return this.completeExportJobWithDriveFile(job.id, file.id, actorId);
+      return this.completeExportJobWithDriveFile(job.id, driveFile.id, actorId);
     } catch (caught) {
       return this.failExportJob(job.id, actorId, errorMessage(caught));
     }
@@ -304,6 +469,31 @@ export class ReportsService {
   private getRegisteredDefinition(reportKey: string, ownerModule: string) {
     const definition = findReportDefinition(reportKey, ownerModule);
     if (!definition) throw new NotFoundException('Report definition was not found.');
+    return definition;
+  }
+
+  private async getOwnedExportJob(jobId: string, requestedById: string) {
+    const job = await this.prisma.reportExportJob.findUnique({
+      where: { id: jobId },
+      include: { fileAsset: true },
+    });
+    if (!job || job.requestedById !== requestedById) {
+      throw new NotFoundException('Report export job was not found.');
+    }
+    return job;
+  }
+
+  private getAccessibleDefinition(
+    reportKey: string,
+    ownerModule: string,
+    userPermissions: Record<string, string>,
+  ) {
+    const definition = this.getRegisteredDefinition(reportKey, ownerModule);
+    if (!hasReportSourceAccess(definition, userPermissions)) {
+      throw new ForbiddenException(
+        'You do not have source-module permissions for this report definition.',
+      );
+    }
     return definition;
   }
 
@@ -388,34 +578,12 @@ function stringField(source: object, key: string): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
-function toCsvRows(payload: unknown): string {
-  const rows = [['path', 'value'], ...flattenPayload(payload)];
-  return rows.map((row) => row.map(escapeCsvCell).join(',')).join('\n') + '\n';
+function buildExportFileName(reportKey: string, jobId: string, extension: string): string {
+  return `${dateStamp()}__report-export__${sanitizeSegment(reportKey)}__${jobId}.${extension}`;
 }
 
-function flattenPayload(value: unknown, path = 'report'): string[][] {
-  if (value === null || typeof value !== 'object') return [[path, scalarValue(value)]];
-  if (Array.isArray(value)) return [[path, JSON.stringify(value)]];
-  return Object.entries(value).flatMap(([key, item]) => flattenPayload(item, `${path}.${key}`));
-}
-
-function scalarValue(value: unknown): string {
-  if (value === null || value === undefined) return '';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
-  return JSON.stringify(value);
-}
-
-function escapeCsvCell(value: string): string {
-  return `"${value.replaceAll('"', '""')}"`;
-}
-
-function buildExportFileName(reportKey: string, jobId: string): string {
-  return `${dateStamp()}__report-export__${sanitizeSegment(reportKey)}__${jobId}.csv`;
-}
-
-function buildExportStorageKey(reportKey: string, jobId: string): string {
-  return `${R2_DRIVE_PREFIX}_exports/reports/${buildExportFileName(reportKey, jobId)}`;
+function buildExportStorageKey(reportKey: string, jobId: string, extension: string): string {
+  return `${R2_DRIVE_PREFIX}_exports/reports/${buildExportFileName(reportKey, jobId, extension)}`;
 }
 
 function dateStamp(): string {

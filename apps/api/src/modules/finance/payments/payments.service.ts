@@ -1,12 +1,14 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import {
-  getLatestPaymentDate,
-  resolveInvoiceStatus,
-  resolveOrderStatus,
-  sumAmounts,
-} from '../finance-status.utils';
+import { NotificationService } from '../../notifications/notification.service';
+import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.service';
+import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
+import { getLatestPaymentDate, resolveOrderStatus, sumAmounts } from '../finance-status.utils';
+import { syncInvoiceMoneyStatusFromPayments } from '../invoices/invoice-money-status';
+import { OperationalJournalService } from '../journal/operational-journal.service';
+import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual-classic.service';
+import { PartnerAccrualSubscriptionService } from '../partner-accrual/partner-accrual-subscription.service';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -31,6 +33,11 @@ export class PaymentsService {
   constructor(
     @Inject(PRISMA_TOKEN)
     private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly salesBonusAccrual: SalesBonusAccrualService,
+    private readonly notifications: NotificationService,
+    private readonly operationalJournal: OperationalJournalService,
+    private readonly partnerAccrualClassic: PartnerAccrualClassicService,
+    private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
@@ -57,7 +64,7 @@ export class PaymentsService {
               id: true,
               code: true,
               amount: true,
-              status: true,
+              moneyStatus: true,
               type: true,
               projectId: true,
               company: { select: { id: true, name: true } },
@@ -130,11 +137,15 @@ export class PaymentsService {
       where: { id: data.invoiceId },
       select: {
         id: true,
+        code: true,
         orderId: true,
+        projectId: true,
+        companyId: true,
         amount: true,
-        status: true,
+        moneyStatus: true,
         dueDate: true,
         payments: { select: { amount: true } },
+        order: { select: { productId: true } },
       },
     });
     if (!invoice) throw new NotFoundException(`Invoice ${data.invoiceId} not found`);
@@ -147,7 +158,7 @@ export class PaymentsService {
     const nextPaid = currentPaid + data.amount;
     const invoiceAmount = Number(invoice.amount);
 
-    if (invoice.status === 'PAID' || currentPaid >= invoiceAmount) {
+    if (invoice.moneyStatus === 'PAID' || currentPaid >= invoiceAmount) {
       throw new BadRequestException(`Invoice ${data.invoiceId} is already fully paid`);
     }
 
@@ -157,21 +168,57 @@ export class PaymentsService {
       );
     }
 
+    const paymentDate = new Date(data.paymentDate);
     const created = await this.prisma.payment.create({
       data: {
         invoiceId: data.invoiceId,
         amount: data.amount,
-        paymentDate: new Date(data.paymentDate),
+        paymentDate,
         paymentMethod: data.paymentMethod,
         confirmedBy: data.confirmedBy,
         notes: data.notes,
       },
     });
 
+    await this.operationalJournal.appendCashPaymentLine({
+      paymentId: created.id,
+      invoiceCode: invoice.code,
+      amount: data.amount,
+      bookedAt: paymentDate,
+      companyId: invoice.companyId,
+      projectId: invoice.projectId,
+      productId: invoice.order?.productId,
+      orderId: invoice.orderId,
+    });
+
     await this.syncInvoiceStatus(data.invoiceId);
 
     if (invoice.orderId) {
       await this.syncOrderStatus(invoice.orderId);
+      await syncProductBonusPoolForOrder(this.prisma, invoice.orderId, this.notifications);
+      const ord = await this.prisma.order.findUnique({
+        where: { id: invoice.orderId },
+        select: { status: true },
+      });
+      if (ord?.status === 'FULLY_PAID') {
+        await this.partnerAccrualClassic.tryInboundClassicAfterClientPayment({
+          orderId: invoice.orderId,
+          paymentId: created.id,
+          invoiceId: data.invoiceId,
+        });
+      }
+    }
+
+    const refreshed = await this.prisma.invoice.findUnique({
+      where: { id: data.invoiceId },
+      select: { moneyStatus: true },
+    });
+    if (refreshed?.moneyStatus === 'PAID') {
+      await this.salesBonusAccrual.onInvoicePaid(data.invoiceId);
+      await this.partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment({
+        invoiceId: data.invoiceId,
+        paymentId: created.id,
+      });
     }
 
     return this.findById(created.id);
@@ -184,6 +231,7 @@ export class PaymentsService {
     await this.syncInvoiceStatus(payment.invoiceId);
     if (payment.invoice.orderId) {
       await this.syncOrderStatus(payment.invoice.orderId);
+      await syncProductBonusPoolForOrder(this.prisma, payment.invoice.orderId, this.notifications);
     }
   }
 
@@ -249,25 +297,28 @@ export class PaymentsService {
       select: {
         amount: true,
         dueDate: true,
-        status: true,
+        moneyStatus: true,
         payments: { select: { amount: true, paymentDate: true } },
       },
     });
     if (!invoice) return;
 
     const paid = sumAmounts(invoice.payments);
-    const status = resolveInvoiceStatus({
-      amount: Number(invoice.amount),
+    const amount = Number(invoice.amount);
+    const now = new Date();
+    const moneyStatus = syncInvoiceMoneyStatusFromPayments({
+      currentMoneyStatus: invoice.moneyStatus,
+      amount,
       paid,
       dueDate: invoice.dueDate,
-      currentStatus: invoice.status,
+      now,
     });
 
     await this.prisma.invoice.update({
       where: { id: invoiceId },
       data: {
-        status,
-        paidDate: status === 'PAID' ? getLatestPaymentDate(invoice.payments) : null,
+        moneyStatus,
+        paidDate: moneyStatus === 'PAID' ? getLatestPaymentDate(invoice.payments) : null,
       },
     });
   }
@@ -276,7 +327,7 @@ export class PaymentsService {
     const invoices = await this.prisma.invoice.findMany({
       where: { orderId },
       select: {
-        status: true,
+        moneyStatus: true,
         amount: true,
         payments: { select: { amount: true } },
       },

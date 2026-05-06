@@ -6,6 +6,7 @@ function createModelMock() {
     findUnique: vi.fn().mockResolvedValue(null),
     findFirst: vi.fn().mockResolvedValue(null),
     create: vi.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'test-id', ...data })),
+    createMany: vi.fn().mockResolvedValue({ count: 1 }),
     update: vi.fn().mockImplementation(({ data }) => Promise.resolve({ id: 'test-id', ...data })),
     upsert: vi
       .fn()
@@ -37,6 +38,8 @@ export function createMockPrisma() {
     subscription: createModelMock(),
     workSpace: createModelMock(),
     task: createModelMock(),
+    recurringTaskTemplate: createModelMock(),
+    taskLink: createModelMock(),
     fileAsset: createModelMock(),
     fileVersion: createModelMock(),
     fileLink: createModelMock(),
@@ -55,6 +58,8 @@ export function createMockPrisma() {
     documentTagOnDocument: createModelMock(),
     documentAttachment: createModelMock(),
     documentActivityEvent: createModelMock(),
+    technicalAsset: createModelMock(),
+    technicalEnvironment: createModelMock(),
     supportTicket: createModelMock(),
     expense: createModelMock(),
     expensePlan: createModelMock(),
@@ -66,16 +71,38 @@ export function createMockPrisma() {
     credential: createModelMock(),
     auditLog: createModelMock(),
     partner: createModelMock(),
+    partnerCommissionPolicyRow: createModelMock(),
+    partnerReferralTerms: createModelMock(),
+    partnerAccrual: createModelMock(),
+    partnerPayoutBatch: createModelMock(),
+    partnerServiceTerm: createModelMock(),
     marketingAccount: createModelMock(),
     marketingActivity: createModelMock(),
+    marketingCrmWhereOption: createModelMock(),
+    salesBonusPolicy: createModelMock(),
+    productBonusPool: createModelMock(),
+    bonusRelease: createModelMock(),
+    financePostingPeriod: createModelMock(),
+    operationalJournalEntry: createModelMock(),
+    notificationEvent: createModelMock(),
+    notificationRule: createModelMock(),
+    notificationJob: createModelMock(),
+    notificationDelivery: createModelMock(),
+    inAppNotification: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),
     $transaction: vi.fn(),
   };
 
-  prisma.$transaction.mockImplementation(async (fn: (tx: typeof prisma) => Promise<unknown>) =>
-    fn(prisma),
-  );
+  prisma.$transaction.mockImplementation(async (arg: unknown) => {
+    if (Array.isArray(arg)) {
+      return Promise.all(arg);
+    }
+    if (typeof arg === 'function') {
+      return (arg as (tx: typeof prisma) => Promise<unknown>)(prisma);
+    }
+    return undefined;
+  });
 
   return prisma;
 }

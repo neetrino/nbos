@@ -7,7 +7,7 @@ This file tracks what must be removed, rewritten, or implemented for Notificatio
 - Notifications is a `Notification Engine`, not just a topbar dropdown.
 - Event -> Rule -> Job -> Delivery -> Log is the core flow.
 - Messenger stores conversation history; Notifications creates system deliveries.
-- WhatsApp uses `WhatsAppWebAdapter -> WAHA -> QR-connected WhatsApp account`.
+- WhatsApp uses logical `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA → QR-connected WhatsApp account.
 - WhatsApp messages mainly go to groups, not 1:1 contacts.
 - `WhatsAppOfficialAdapter / Meta Cloud API` is not MVP and not planned for the next years.
 - External notification delivery must create Messenger outbound copy.
@@ -34,7 +34,8 @@ Problems:
 - no scheduler queue/retry/backoff yet;
 - no channel adapters;
 - no integration with Messenger outbound copy;
-- no user preferences beyond mock UI;
+- **Done (2026-05-06):** user preferences by event type/channel (`GET/PATCH /api/notifications/preferences/*`) + Notification Center settings UI; runtime respects disabled event/channel for in-app delivery.
+- **Done (2026-05-06):** low-complexity admin rules UI (`Settings -> Module Settings`) with backend `GET/PATCH /api/notifications/admin/rules*` for safe edits (`enabled`, `priority`, `channels`) on non-user rules.
 - no websocket/live unread count.
 
 ## C. Stale documentation removed
@@ -81,7 +82,7 @@ New docs replace this with:
 ### Phase 4 - Channel adapters
 
 - Telegram Bot Adapter;
-- WhatsAppWebAdapter via WAHA;
+- WhatsAppWebAdapter via Gateway + WAHA;
 - Email Adapter;
 - channel health alerts.
 

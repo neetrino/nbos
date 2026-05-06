@@ -28,7 +28,7 @@ interface ProductForStageGate {
   description?: string | null;
   deadline?: Date | string | null;
   clientAcceptedAt?: Date | string | null;
-  order?: { id: string; status?: string; invoices?: Array<{ status: string }> } | null;
+  order?: { id: string; status?: string; invoices?: Array<{ moneyStatus: string }> } | null;
   extensions?: Array<{ status: string }>;
   tasks?: Array<{ status: string }>;
   tickets?: Array<{ status: string }>;
@@ -165,8 +165,8 @@ function buildOpenOrderError(order: ProductForStageGate['order']) {
   ];
 }
 
-function buildUnpaidInvoiceError(invoices: Array<{ status: string }>) {
-  const unpaidCount = invoices.filter((invoice) => invoice.status !== 'PAID').length;
+function buildUnpaidInvoiceError(invoices: Array<{ moneyStatus: string }>) {
+  const unpaidCount = invoices.filter((invoice) => invoice.moneyStatus !== 'PAID').length;
   if (unpaidCount === 0) return [];
 
   return [

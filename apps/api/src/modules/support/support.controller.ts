@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { SupportService } from './support.service';
 
 @ApiTags('Support')
@@ -31,6 +32,7 @@ export class SupportController {
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'coverageDecision', required: false })
   @ApiQuery({ name: 'assignedTo', required: false })
+  @ApiQuery({ name: 'waitingState', required: false })
   @ApiQuery({ name: 'search', required: false })
   async findAll(
     @Query('page') page?: string,
@@ -42,6 +44,7 @@ export class SupportController {
     @Query('category') category?: string,
     @Query('coverageDecision') coverageDecision?: string,
     @Query('assignedTo') assignedTo?: string,
+    @Query('waitingState') waitingState?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
@@ -56,6 +59,7 @@ export class SupportController {
       category,
       coverageDecision,
       assignedTo,
+      waitingState,
       search,
       sortBy,
       sortOrder,
@@ -89,6 +93,8 @@ export class SupportController {
       priority?: string;
       billable?: boolean;
       assignedTo?: string;
+      technicalAssetId?: string | null;
+      technicalEnvironmentId?: string | null;
     },
   ) {
     return this.supportService.create(body);
@@ -102,6 +108,7 @@ export class SupportController {
     body: {
       title?: string;
       description?: string;
+      resolutionSummary?: string | null;
       projectId?: string;
       productId?: string | null;
       contactId?: string;
@@ -110,6 +117,8 @@ export class SupportController {
       priority?: string;
       billable?: boolean;
       assignedTo?: string;
+      technicalAssetId?: string | null;
+      technicalEnvironmentId?: string | null;
     },
   ) {
     return this.supportService.update(id, body);
@@ -117,8 +126,49 @@ export class SupportController {
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update support ticket status' })
-  async updateStatus(@Param('id') id: string, @Body('status') status: string) {
-    return this.supportService.updateStatus(id, status);
+  async updateStatus(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body()
+    body: { status: string; resolutionSummary?: string; closeReason?: string },
+  ) {
+    return this.supportService.updateStatus(id, body.status, user.id, {
+      resolutionSummary: body.resolutionSummary,
+      closeReason: body.closeReason,
+    });
+  }
+
+  @Post(':id/actions/reopen')
+  @ApiOperation({
+    summary:
+      'Reopen resolved/closed ticket as transition event (status -> IN_PROGRESS, not REOPENED)',
+  })
+  async reopenTicket(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.supportService.reopen(id, user.id, body.reason);
+  }
+
+  @Patch(':id/waiting')
+  @ApiOperation({ summary: 'Set waiting overlay (SLA pause when not NONE)' })
+  async updateWaiting(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { waitingState: string; waitingReason?: string | null },
+  ) {
+    return this.supportService.updateWaitingState(id, body, user.id);
+  }
+
+  @Post(':id/actions/escalate')
+  @ApiOperation({ summary: 'Managerial escalation (overlay + in-app notify)' })
+  async escalate(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.supportService.recordManagerialEscalation(id, user.id, body.reason);
   }
 
   @Post(':id/actions/create-task')

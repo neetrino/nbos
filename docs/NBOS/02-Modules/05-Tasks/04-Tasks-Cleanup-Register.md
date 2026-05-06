@@ -173,22 +173,16 @@
 
 ## C. Устарело в коде и потом потребует реального рефакторинга
 
-### C1. Shared и frontend task statuses пока старые
+### C1. Shared и frontend task statuses
+
+Статус: `PHASE 4 CANON ALIGNMENT SHIPPED` (**2026-05-06**)
 
 Подтверждение в коде:
 
 - [packages/shared/src/constants/index.ts](/Users/user/{} Development/1. Production/nbos/packages/shared/src/constants/index.ts:47)
 - [apps/web/src/features/tasks/constants/tasks.ts](/Users/user/{} Development/1. Production/nbos/apps/web/src/features/tasks/constants/tasks.ts:3)
 
-Текущий runtime shape:
-
-- `NEW`
-- `IN_PROGRESS`
-- `DONE`
-- `DEFERRED`
-- `CANCELLED`
-
-Целевой канон:
+Целевой канон в продукте:
 
 - `OPEN`
 - `IN_PROGRESS`
@@ -197,31 +191,31 @@
 - `DEFERRED`
 - `CANCELLED`
 
-Что потом нужно сделать:
+Сделано:
 
-- обновить shared enums и frontend badges;
-- добавить `REVIEW`;
-- заменить `NEW` на `OPEN`;
-- заменить `DONE` на `COMPLETED`.
+- миграция `20260506150000_task_status_canon_alignment` (`NEW`→`OPEN`, `DONE`→`COMPLETED`, default `OPEN`);
+- shared + frontend badges/константы выровнены под канон.
 
-### C2. В базе и миграциях виден старый и уже конфликтный task-status legacy
+Остаточный техдолг:
+
+- в Prisma `TaskStatusEnum` временно могут сосуществовать legacy-лейблы для backward-compat — удалить отдельным срезом, когда данные/клиенты безопасны.
+
+### C2. История миграций task-status
 
 Подтверждение в коде:
 
 - [packages/database/prisma/migrations/20260311090945_init/migration.sql](/Users/user/{} Development/1. Production/nbos/packages/database/prisma/migrations/20260311090945_init/migration.sql:77)
 - [packages/database/prisma/migrations/20260314150000_tasks_system_refactor/migration.sql](/Users/user/{} Development/1. Production/nbos/packages/database/prisma/migrations/20260314150000_tasks_system_refactor/migration.sql:91)
+- [packages/database/prisma/migrations/20260506150000_task_status_canon_alignment/migration.sql](/Users/user/{} Development/1. Production/nbos/packages/database/prisma/migrations/20260506150000_task_status_canon_alignment/migration.sql)
 
 Что видно:
 
-- изначально enum был `BACKLOG / TODO / IN_PROGRESS / REVIEW / DONE / CANCELLED`;
-- потом в рефакторе добавили `NEW` и `DEFERRED`, а старые значения частично мигрировали;
-- это уже отдельный технический долг даже до нового канона.
+- ранняя история enum (`BACKLOG`/`TODO`/…) и промежуточные шаги;
+- **2026-05:** data migration на канонические `OPEN`/`COMPLETED` и default `OPEN`.
 
-Что потом нужно сделать:
+Что потом:
 
-- привести DB enum к финальной целевой модели;
-- аккуратно спланировать data migration;
-- синхронизировать БД, API и frontend в одном refactor step.
+- сузить Prisma enum до финального набора без legacy-значений (отдельное решение + deploy window).
 
 ### C3. TasksService has first completion rules runtime
 
@@ -234,7 +228,7 @@
 Что уже сделано:
 
 - Task stores explicit `completionRules`;
-- `complete()` validates enabled rules before moving to `DONE`;
+- `complete()` validates enabled rules before moving to **`COMPLETED`** (ранее `DONE`);
 - unmet rules return human-readable blockers;
 - checklist completion and open subtask rules are enforced from real runtime data;
 - future rules such as review, attachment and creator approval block with clear `RUNTIME_NOT_AVAILABLE` instead of silently passing.
@@ -242,7 +236,7 @@
 Проблема:
 
 - full `Review` / approval runtime is intentionally deferred beyond Phase 4;
-- final task status enum cleanup is still pending.
+- финальное **сжатие** Prisma enum (удаление legacy-значений) может остаться отдельным шагом после C1/C2.
 
 Что потом нужно сделать:
 

@@ -1,0 +1,111 @@
+// ─── REPORTS / ANALYTICS EXPORT JOBS ────────────────────────
+
+enum ReportExportJobStatusEnum {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ReportExportFormatEnum {
+  CSV
+  XLSX
+  PDF
+}
+
+enum ReportScheduleStatusEnum {
+  ACTIVE
+  PAUSED
+  FAILED
+  ARCHIVED
+}
+
+enum ReportScheduleFrequencyEnum {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+model ReportExportJob {
+  id            String                    @id @default(uuid())
+  reportKey     String                    @map("report_key")
+  reportTitle   String                    @map("report_title")
+  ownerModule   String                    @map("owner_module")
+  format        ReportExportFormatEnum
+  status        ReportExportJobStatusEnum @default(QUEUED)
+  requestedById String                    @map("requested_by_id")
+  filters       Json?
+  fileAssetId   String?                   @map("file_asset_id")
+  errorMessage  String?                   @map("error_message")
+  queuedAt      DateTime                  @default(now()) @map("queued_at")
+  startedAt     DateTime?                 @map("started_at")
+  completedAt   DateTime?                 @map("completed_at")
+  failedAt      DateTime?                 @map("failed_at")
+  createdAt     DateTime                  @default(now()) @map("created_at")
+  updatedAt     DateTime                  @updatedAt @map("updated_at")
+
+  requestedBy Employee   @relation(fields: [requestedById], references: [id], onDelete: Restrict)
+  fileAsset   FileAsset? @relation(fields: [fileAssetId], references: [id], onDelete: SetNull)
+
+  @@index([reportKey])
+  @@index([ownerModule])
+  @@index([status, queuedAt])
+  @@index([requestedById])
+  @@index([fileAssetId])
+  @@map("report_export_jobs")
+}
+
+model ReportSchedule {
+  id              String                      @id @default(uuid())
+  reportKey       String                      @map("report_key")
+  reportTitle     String                      @map("report_title")
+  ownerModule     String                      @map("owner_module")
+  format          ReportExportFormatEnum
+  status          ReportScheduleStatusEnum    @default(ACTIVE)
+  ownerId         String                      @map("owner_id")
+  recipientEmails String[]                    @map("recipient_emails")
+  scheduleLabel   String                      @map("schedule_label")
+  filters         Json?
+  frequency       ReportScheduleFrequencyEnum @default(MONTHLY)
+  timezone        String                      @default("Asia/Yerevan")
+  timeOfDay       String                      @default("09:00") @map("time_of_day")
+  startDate       DateTime                    @default(now()) @map("start_date")
+  dayOfWeek       Int?                        @map("day_of_week")
+  dayOfMonth      Int?                        @map("day_of_month")
+  nextRunAt       DateTime                    @map("next_run_at")
+  lastRunAt       DateTime?                   @map("last_run_at")
+  lastExportJobId String?                     @map("last_export_job_id")
+  lastFailureAt   DateTime?                   @map("last_failure_at")
+  failureReason   String?                     @map("failure_reason")
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
+
+  owner Employee @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+
+  @@index([reportKey])
+  @@index([ownerModule])
+  @@index([status, nextRunAt])
+  @@index([ownerId])
+  @@map("report_schedules")
+}
+
+model SavedReportView {
+  id          String   @id @default(uuid())
+  reportKey   String   @map("report_key")
+  reportTitle String   @map("report_title")
+  ownerModule String   @map("owner_module")
+  name        String
+  filters     Json?
+  ownerId     String   @map("owner_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner Employee @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+
+  @@unique([ownerId, reportKey, name])
+  @@index([ownerId])
+  @@index([reportKey])
+  @@index([ownerModule])
+  @@map("saved_report_views")
+}

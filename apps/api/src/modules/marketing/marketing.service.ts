@@ -9,10 +9,13 @@ import {
   LaunchMarketingActivityDto,
   MarketingAccountQuery,
   MarketingActivityQuery,
+  MarketingCrmWhereOptionRow,
   UpdateMarketingAccountDto,
   UpdateMarketingActivityDto,
+  UpdateMarketingCrmWhereOptionDto,
 } from './marketing.types';
 import { getMarketingDashboardSummary } from './marketing-dashboard-summary';
+import { resolveMarketingDashboardPeriodQuery } from './marketing-dashboard-period';
 import {
   buildAccountWhere,
   buildActivityWhere,
@@ -139,6 +142,35 @@ export class MarketingService {
     return [...toAccountOptions(accounts), ...toActivityOptions(activities), ...organic(channel)];
   }
 
+  async getCrmWhereOptions(includeInactive = false): Promise<MarketingCrmWhereOptionRow[]> {
+    const rows = await this.prisma.marketingCrmWhereOption.findMany({
+      where: includeInactive ? undefined : { isActive: true },
+      orderBy: [{ sortOrder: 'asc' }, { channel: 'asc' }],
+    });
+    return rows.map((row) => ({
+      channel: row.channel,
+      label: row.label,
+      sortOrder: row.sortOrder,
+      isActive: row.isActive,
+    }));
+  }
+
+  async updateCrmWhereOption(channel: string, data: UpdateMarketingCrmWhereOptionDto) {
+    const normalized = normalizeChannel(channel);
+    await this.ensureCrmWhereOption(normalized);
+    if (data.label !== undefined && !data.label.trim()) {
+      throw new BadRequestException('Label cannot be empty');
+    }
+    return this.prisma.marketingCrmWhereOption.update({
+      where: { channel: normalized },
+      data: {
+        ...(data.label !== undefined && { label: data.label.trim() }),
+        ...(data.sortOrder !== undefined && { sortOrder: Math.round(data.sortOrder) }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+      },
+    });
+  }
+
   async getAttributionReview() {
     const [leads, deals] = await Promise.all([
       this.prisma.lead.findMany({
@@ -157,8 +189,16 @@ export class MarketingService {
     return { leads, deals };
   }
 
-  async getDashboardSummary() {
-    return getMarketingDashboardSummary(this.prisma);
+  async getDashboardSummary(query: { dateFrom?: string; dateTo?: string } = {}) {
+    const period = resolveMarketingDashboardPeriodQuery(query);
+    return getMarketingDashboardSummary(this.prisma, period);
+  }
+
+  private async ensureCrmWhereOption(channel: ReturnType<typeof normalizeChannel>): Promise<void> {
+    const row = await this.prisma.marketingCrmWhereOption.findUnique({ where: { channel } });
+    if (!row) {
+      throw new NotFoundException(`CRM Where option ${channel} not found`);
+    }
   }
 
   private async ensureAccount(id: string): Promise<void> {

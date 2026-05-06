@@ -11,7 +11,7 @@ interface ProjectIntakeProduct {
 }
 
 interface ProjectIntakeInvoice {
-  status: string;
+  moneyStatus: string;
   paidDate?: Date | string | null;
 }
 
@@ -93,7 +93,7 @@ function toPrimaryProduct(product: ProjectIntakeProduct) {
 function hasPaidInvoice(orders: ProjectIntakeOrder[]) {
   return orders.some((order) =>
     (order.invoices ?? []).some(
-      (invoice) => invoice.status === 'PAID' || Boolean(invoice.paidDate),
+      (invoice) => invoice.moneyStatus === 'PAID' || Boolean(invoice.paidDate),
     ),
   );
 }

@@ -32,6 +32,8 @@ export class TasksController {
   @ApiQuery({ name: 'planningStatus', required: false })
   @ApiQuery({ name: 'entityType', required: false })
   @ApiQuery({ name: 'entityId', required: false })
+  @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'orderId', required: false })
   @ApiQuery({ name: 'search', required: false })
   async findAll(
     @Query('page') page?: string,
@@ -46,6 +48,8 @@ export class TasksController {
     @Query('hasParent') hasParent?: string,
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
+    @Query('projectId') projectId?: string,
+    @Query('orderId') orderId?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
@@ -63,6 +67,8 @@ export class TasksController {
       hasParent: hasParent === 'false' ? false : undefined,
       entityType,
       entityId,
+      projectId,
+      orderId,
       search,
       sortBy,
       sortOrder,

@@ -27,7 +27,14 @@ export interface Subscription {
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   partner?: { id: string; name: string } | null;
-  invoices: Array<{ id: string; code: string; status: string; amount: string }>;
+  invoices: Array<{
+    id: string;
+    code: string;
+    moneyStatus: string;
+    amount: string;
+    coverageStartMonth?: string | null;
+    coverageMonthCount?: number | null;
+  }>;
   coverage?: SubscriptionCoverageSummary;
 }
 
@@ -50,6 +57,46 @@ export interface SubscriptionCoverageSummary {
 /** Query params for `subscriptionsApi.getStats` (optional partner drill-down parity with list). */
 export interface SubscriptionStatsQueryParams extends FinanceDateRangeParams {
   partnerId?: string;
+}
+
+export type SubscriptionGridCellKind =
+  | 'NA'
+  | 'SUBSCRIPTION_PENDING'
+  | 'PAID'
+  | 'PENDING_INVOICE'
+  | 'OVERDUE_INVOICE'
+  | 'FORECAST'
+  | 'MISSED';
+
+export interface SubscriptionGridCell {
+  kind: SubscriptionGridCellKind;
+  invoiceId: string | null;
+}
+
+export interface SubscriptionGridRow {
+  subscriptionId: string;
+  projectId: string;
+  projectName: string;
+  amountMonthly: number;
+  subscriptionStatus: string;
+  months: SubscriptionGridCell[];
+  annualTotal: number;
+}
+
+export interface SubscriptionGridPayload {
+  year: number;
+  rows: SubscriptionGridRow[];
+  monthTotals: number[];
+  grandAnnualTotal: number;
+}
+
+export interface SubscriptionGridQueryParams {
+  year?: number;
+  projectId?: string;
+  partnerId?: string;
+  status?: string;
+  type?: string;
+  search?: string;
 }
 
 export interface SubscriptionStats {
@@ -93,6 +140,19 @@ export const subscriptionsApi = {
   },
   async getStats(params?: SubscriptionStatsQueryParams): Promise<SubscriptionStats> {
     const resp = await api.get<SubscriptionStats>('/api/finance/subscriptions/stats', { params });
+    return resp.data;
+  },
+  async getGrid(params?: SubscriptionGridQueryParams): Promise<SubscriptionGridPayload> {
+    const resp = await api.get<SubscriptionGridPayload>('/api/finance/subscriptions/grid', {
+      params: {
+        year: params?.year ?? new Date().getFullYear(),
+        projectId: params?.projectId,
+        partnerId: params?.partnerId,
+        status: params?.status,
+        type: params?.type,
+        search: params?.search,
+      },
+    });
     return resp.data;
   },
 };

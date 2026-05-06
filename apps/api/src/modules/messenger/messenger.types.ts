@@ -35,9 +35,12 @@ export interface MessengerDmConversationDto {
 
 export interface MessengerListMetaDto {
   total: number;
+  /** Legacy offset page (1-based). For tail loads equals `totalPages` (latest window). */
   page: number;
   pageSize: number;
   totalPages: number;
+  /** True when older messages exist before the oldest item in this response. */
+  hasMoreOlder?: boolean;
 }
 
 /** DM history page: includes the peer’s read cursor for receipts on the viewer’s own messages. */

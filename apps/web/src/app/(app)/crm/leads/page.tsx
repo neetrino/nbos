@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +14,7 @@ import {
   type KanbanColumn,
 } from '@/components/shared';
 import { LeadCard } from '@/features/crm/components/LeadCard';
-import { LeadSheet } from '@/features/crm/components/LeadSheet';
+import { LeadSheet, type LeadSheetBlockerNavigation } from '@/features/crm/components/LeadSheet';
 import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import { LeadTransitionInlineEditor } from '@/features/crm/components/LeadTransitionInlineEditor';
@@ -29,7 +30,10 @@ import {
   isStageGateApiError,
   type ApiFieldError,
 } from '@/lib/api-errors';
-import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
+import {
+  resolveBlockerDirectActions,
+  resolveLeadSheetSectionFromErrors,
+} from '@/features/shared/blocker-actions';
 import {
   Table,
   TableHeader,
@@ -60,6 +64,7 @@ interface PendingLeadTransition {
 }
 
 export default function LeadsPipelinePage() {
+  const searchParams = useSearchParams();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +80,10 @@ export default function LeadsPipelinePage() {
   const [pendingTransition, setPendingTransition] = useState<PendingLeadTransition | null>(null);
   const [inlineSaving, setInlineSaving] = useState(false);
   const [blockerEditorRevision, setBlockerEditorRevision] = useState(0);
+  const [leadBlockerNav, setLeadBlockerNav] = useState<LeadSheetBlockerNavigation | null>(null);
+  const leadNavTokenRef = useRef(0);
+
+  const clearLeadBlockerNav = useCallback(() => setLeadBlockerNav(null), []);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -98,12 +107,51 @@ export default function LeadsPipelinePage() {
     fetchLeads();
   }, [fetchLeads]);
 
+  const openLeadId = searchParams.get('openLeadId');
+  const deepLinkLeadAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    deepLinkLeadAttemptedRef.current = null;
+  }, [openLeadId]);
+
+  useEffect(() => {
+    if (!openLeadId || loading) return;
+    const match = leads.find((lead) => lead.id === openLeadId);
+    if (match) {
+      setSelectedLead(match);
+      setLeadBlockerNav(null);
+      setSheetOpen(true);
+      return;
+    }
+    if (deepLinkLeadAttemptedRef.current === openLeadId) return;
+    deepLinkLeadAttemptedRef.current = openLeadId;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const lead = await leadsApi.getById(openLeadId);
+        if (cancelled) return;
+        setLeads((prev) => (prev.some((l) => l.id === lead.id) ? prev : [lead, ...prev]));
+        setSelectedLead(lead);
+        setLeadBlockerNav(null);
+        setSheetOpen(true);
+      } catch {
+        if (!cancelled) {
+          toast.error('Lead not found or you cannot open it.');
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openLeadId, loading, leads]);
+
   const handleLeadCreated = async (lead: Lead, options?: { openFull?: boolean }) => {
     setLeads((prev) => [lead, ...prev.filter((item) => item.id !== lead.id)]);
     setError(null);
 
     if (options?.openFull) {
       setSelectedLead(lead);
+      setLeadBlockerNav(null);
       setSheetOpen(true);
     }
 
@@ -210,11 +258,27 @@ export default function LeadsPipelinePage() {
     await handleStatusChange(id, status);
   };
 
+  const openLeadFromBlocker = useCallback(
+    (options?: { keepBlockerDialogOpen?: boolean }) => {
+      if (!transitionBlocker) return;
+      const currentLead =
+        leads.find((lead) => lead.id === transitionBlocker.item.id) ?? transitionBlocker.item;
+      setSelectedLead(currentLead);
+      leadNavTokenRef.current += 1;
+      setLeadBlockerNav({
+        token: leadNavTokenRef.current,
+        sectionId: resolveLeadSheetSectionFromErrors(transitionBlocker.errors),
+      });
+      setSheetOpen(true);
+      if (!options?.keepBlockerDialogOpen) {
+        setTransitionBlocker(null);
+      }
+    },
+    [leads, transitionBlocker],
+  );
+
   const handleOpenBlockedLead = () => {
-    if (!transitionBlocker) return;
-    const currentLead = leads.find((lead) => lead.id === transitionBlocker.item.id);
-    setSelectedLead(currentLead ?? transitionBlocker.item);
-    setSheetOpen(true);
+    openLeadFromBlocker({ keepBlockerDialogOpen: true });
   };
 
   const blockerActions = transitionBlocker
@@ -222,7 +286,7 @@ export default function LeadsPipelinePage() {
         (action) => ({
           key: action.key,
           label: action.label,
-          onClick: handleOpenBlockedLead,
+          onClick: () => openLeadFromBlocker({ keepBlockerDialogOpen: true }),
         }),
       )
     : [];
@@ -328,6 +392,7 @@ export default function LeadsPipelinePage() {
 
   const handleCardClick = (lead: Lead) => {
     setSelectedLead(lead);
+    setLeadBlockerNav(null);
     setSheetOpen(true);
   };
 
@@ -507,6 +572,8 @@ export default function LeadsPipelinePage() {
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
         onDelete={handleDelete}
+        blockerNavigation={leadBlockerNav}
+        onBlockerNavigationConsumed={clearLeadBlockerNav}
       />
 
       <TransitionBlockerDialog
@@ -592,6 +659,12 @@ function getLocalLeadTransitionErrors(lead: Lead, targetStatus: string): ApiFiel
   errors.push(...getLocalAttributionErrors(lead));
 
   if (targetStatus === 'SQL') {
+    if (!lead.name?.trim()) {
+      errors.push({
+        field: 'name',
+        message: 'Inquiry title (product/service) is required before Lead Won / Deal',
+      });
+    }
     if (!lead.contactName.trim()) {
       errors.push({ field: 'contactName', message: 'Contact name is required' });
     }

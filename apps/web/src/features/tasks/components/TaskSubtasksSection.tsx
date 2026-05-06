@@ -8,7 +8,9 @@ interface TaskSubtasksSectionProps {
 export function TaskSubtasksSection({ task }: TaskSubtasksSectionProps) {
   if (task.subtasks.length === 0) return null;
 
-  const completedCount = task.subtasks.filter((subtask) => subtask.status === 'DONE').length;
+  const completedCount = task.subtasks.filter(
+    (subtask) => subtask.status === 'COMPLETED' || subtask.status === 'DONE',
+  ).length;
 
   return (
     <div>
@@ -18,8 +20,17 @@ export function TaskSubtasksSection({ task }: TaskSubtasksSectionProps) {
       <div className="space-y-1">
         {task.subtasks.map((subtask) => (
           <div key={subtask.id} className="flex items-center gap-2 text-sm">
-            <Checkbox checked={subtask.status === 'DONE'} disabled />
-            <span className={subtask.status === 'DONE' ? 'text-muted-foreground line-through' : ''}>
+            <Checkbox
+              checked={subtask.status === 'COMPLETED' || subtask.status === 'DONE'}
+              disabled
+            />
+            <span
+              className={
+                subtask.status === 'COMPLETED' || subtask.status === 'DONE'
+                  ? 'text-muted-foreground line-through'
+                  : ''
+              }
+            >
               {subtask.title}
             </span>
           </div>

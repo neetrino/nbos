@@ -1,8 +1,11 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient } from '@nbos/database';
+import { notifySalaryExpensePayment } from '../employees/employee-wallet-notify.ops';
+import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
+import { syncPartnerPayoutPaidFromExpense } from '../partners/partner-payout-batch.ops';
+import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { sumExpensePaymentAmounts } from './expense-payment-rollup';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
-import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 
 export interface AddExpensePaymentInput {
   amount: number;
@@ -20,6 +23,7 @@ export async function createExpensePaymentRecord(
   prisma: InstanceType<typeof PrismaClient>,
   expenseId: string,
   input: AddExpensePaymentInput,
+  opts?: { notify?: WalletInAppNotifySink },
 ): Promise<void> {
   const expense = await prisma.expense.findUnique({
     where: { id: expenseId },
@@ -44,7 +48,7 @@ export async function createExpensePaymentRecord(
     throw new BadRequestException(PAYMENT_ERRORS.dateInvalid);
   }
 
-  await prisma.expensePayment.create({
+  const payment = await prisma.expensePayment.create({
     data: {
       expenseId,
       amount: input.amount,
@@ -54,5 +58,36 @@ export async function createExpensePaymentRecord(
   });
 
   await syncExpenseStatusWithPaymentLedger(prisma, expenseId);
-  await syncSalaryLinePaidFromExpenseLedger(prisma, expenseId);
+  await syncSalaryLinePaidFromExpenseLedger(prisma, expenseId, opts?.notify);
+  await syncPartnerPayoutPaidFromExpense(prisma, expenseId);
+
+  if (!opts?.notify) {
+    return;
+  }
+
+  const salaryCtx = await prisma.expense.findUnique({
+    where: { id: expenseId },
+    select: {
+      salaryLine: {
+        select: {
+          employeeId: true,
+          status: true,
+          payrollRun: { select: { payrollMonth: true } },
+        },
+      },
+    },
+  });
+  const sl = salaryCtx?.salaryLine;
+  if (!sl?.payrollRun) {
+    return;
+  }
+
+  await notifySalaryExpensePayment(opts.notify, {
+    employeeId: sl.employeeId,
+    paymentId: payment.id,
+    payrollMonth: sl.payrollRun.payrollMonth,
+    amountLabel: payment.amount.toFixed(2),
+    expenseId,
+    lineStatus: sl.status,
+  });
 }

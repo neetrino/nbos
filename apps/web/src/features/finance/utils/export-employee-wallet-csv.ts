@@ -1,5 +1,9 @@
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
-import type { EmployeeWalletBonusRow, EmployeeWalletSalaryRow } from '@/lib/api/me';
+import type {
+  EmployeeWalletBonusRow,
+  EmployeeWalletProjectBreakdownRow,
+  EmployeeWalletSalaryRow,
+} from '@/lib/api/me';
 
 const CSV_UTF8_BOM = '\uFEFF';
 
@@ -17,6 +21,13 @@ const BONUS_HEADERS = [
   'status',
   'amount',
   'percent',
+  'releasedAmount',
+  'paidAmount',
+  'remainingAmount',
+  'payrollMonth',
+  'orderPaymentType',
+  'salesAccrualHint',
+  'productLabel',
   'projectCode',
   'projectName',
   'orderCode',
@@ -37,6 +48,13 @@ export function buildWalletBonusesCsvContent(rows: EmployeeWalletBonusRow[]): st
         r.status,
         r.amount,
         r.percent,
+        r.releasedAmount,
+        r.paidAmount,
+        r.remainingAmount,
+        r.payrollMonth ?? '',
+        r.orderPaymentType ?? '',
+        r.salesAccrualHint ?? '',
+        r.productLabel,
         r.project.code,
         r.project.name,
         r.order.code,
@@ -51,19 +69,13 @@ export function buildWalletBonusesCsvContent(rows: EmployeeWalletBonusRow[]): st
 }
 
 function grandTotalWalletBonusesCsvLine(rows: EmployeeWalletBonusRow[]): string {
-  const amount = sumMoneyStringsMajorUnits(rows.map((r) => r.amount)).toFixed(2);
-  const cells = [
-    '_grand_total',
-    `All bonus rows (${rows.length})`,
-    '',
-    '',
-    amount,
-    '',
-    '',
-    '',
-    '',
-    '',
-  ];
+  const planned = sumMoneyStringsMajorUnits(rows.map((r) => r.amount)).toFixed(2);
+  const paid = sumMoneyStringsMajorUnits(rows.map((r) => r.paidAmount)).toFixed(2);
+  const cells: string[] = new Array(BONUS_HEADERS.length).fill('');
+  cells[0] = '_grand_total';
+  cells[1] = `All bonus rows (${rows.length})`;
+  cells[BONUS_HEADERS.indexOf('amount')] = planned;
+  cells[BONUS_HEADERS.indexOf('paidAmount')] = paid;
   return cells.map((c) => escapeCsvCell(String(c))).join(',');
 }
 
@@ -165,5 +177,70 @@ export function downloadWalletSalaryCsv(
   triggerCsvDownload(
     content,
     `nbos-wallet-payroll-${meta.employeeId.slice(0, 8)}-${dateStamp}.csv`,
+  );
+}
+
+const PROJECT_BREAKDOWN_HEADERS = [
+  'orderId',
+  'projectId',
+  'projectCode',
+  'projectName',
+  'orderCode',
+  'productLabel',
+  'bonusTypesSummary',
+  'plannedBonus',
+  'releasedBonus',
+  'paidBonus',
+  'remainingBonus',
+  'fundingStatusLabels',
+  'poolAvailableFunding',
+  'poolOverFunding',
+  'entryStatusesSummary',
+  'payoutState',
+] as const;
+
+export function buildWalletProjectBreakdownCsvContent(
+  rows: EmployeeWalletProjectBreakdownRow[],
+): string {
+  const headerLine = PROJECT_BREAKDOWN_HEADERS.join(',');
+  if (rows.length === 0) {
+    return headerLine;
+  }
+  const body = rows
+    .map((r) =>
+      [
+        r.orderId,
+        r.projectId,
+        r.project.code,
+        r.project.name,
+        r.order.code,
+        r.productLabel,
+        r.bonusTypesSummary,
+        r.plannedBonus,
+        r.releasedBonus,
+        r.paidBonus,
+        r.remainingBonus,
+        r.fundingStatusLabels.join(' | '),
+        r.poolAvailableFunding ?? '',
+        r.poolOverFunding ?? '',
+        r.entryStatusesSummary,
+        r.payoutState,
+      ]
+        .map((c) => escapeCsvCell(String(c)))
+        .join(','),
+    )
+    .join('\r\n');
+  return `${headerLine}\r\n${body}`;
+}
+
+export function downloadWalletProjectBreakdownCsv(
+  rows: EmployeeWalletProjectBreakdownRow[],
+  meta: { employeeId: string },
+): void {
+  const content = buildWalletProjectBreakdownCsvContent(rows);
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  triggerCsvDownload(
+    content,
+    `nbos-wallet-project-breakdown-${meta.employeeId.slice(0, 8)}-${dateStamp}.csv`,
   );
 }

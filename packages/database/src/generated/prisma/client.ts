@@ -30,8 +30,8 @@ export * from './enums';
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Contacts
- * const contacts = await prisma.contact.findMany()
+ * // Fetch zero or more AuditLogs
+ * const auditLogs = await prisma.auditLog.findMany()
  * ```
  *
  * Read more in our [docs](https://pris.ly/d/client).
@@ -45,6 +45,26 @@ export type PrismaClient<
 export { Prisma };
 
 /**
+ * Model AuditLog
+ *
+ */
+export type AuditLog = Prisma.AuditLogModel;
+/**
+ * Model CalendarMeeting
+ *
+ */
+export type CalendarMeeting = Prisma.CalendarMeetingModel;
+/**
+ * Model PersonalCalendarEvent
+ *
+ */
+export type PersonalCalendarEvent = Prisma.PersonalCalendarEventModel;
+/**
+ * Model ClientServiceRecord
+ *
+ */
+export type ClientServiceRecord = Prisma.ClientServiceRecordModel;
+/**
  * Model Contact
  *
  */
@@ -55,25 +75,15 @@ export type Contact = Prisma.ContactModel;
  */
 export type Company = Prisma.CompanyModel;
 /**
- * Model Project
+ * Model Credential
  *
  */
-export type Project = Prisma.ProjectModel;
+export type Credential = Prisma.CredentialModel;
 /**
- * Model ProjectKickoffChecklistItem
+ * Model Domain
  *
  */
-export type ProjectKickoffChecklistItem = Prisma.ProjectKickoffChecklistItemModel;
-/**
- * Model Product
- *
- */
-export type Product = Prisma.ProductModel;
-/**
- * Model Extension
- *
- */
-export type Extension = Prisma.ExtensionModel;
+export type Domain = Prisma.DomainModel;
 /**
  * Model MarketingAccount
  *
@@ -85,6 +95,11 @@ export type MarketingAccount = Prisma.MarketingAccountModel;
  */
 export type MarketingActivity = Prisma.MarketingActivityModel;
 /**
+ * Model MarketingCrmWhereOption
+ * CRM "Where" options when From = Marketing (labels/order/active; codes match `MarketingChannelEnum`).
+ */
+export type MarketingCrmWhereOption = Prisma.MarketingCrmWhereOptionModel;
+/**
  * Model Lead
  *
  */
@@ -94,121 +109,6 @@ export type Lead = Prisma.LeadModel;
  *
  */
 export type Deal = Prisma.DealModel;
-/**
- * Model Order
- *
- */
-export type Order = Prisma.OrderModel;
-/**
- * Model Invoice
- *
- */
-export type Invoice = Prisma.InvoiceModel;
-/**
- * Model Payment
- *
- */
-export type Payment = Prisma.PaymentModel;
-/**
- * Model Subscription
- *
- */
-export type Subscription = Prisma.SubscriptionModel;
-/**
- * Model ExpensePlan
- *
- */
-export type ExpensePlan = Prisma.ExpensePlanModel;
-/**
- * Model Expense
- *
- */
-export type Expense = Prisma.ExpenseModel;
-/**
- * Model ExpensePayment
- *
- */
-export type ExpensePayment = Prisma.ExpensePaymentModel;
-/**
- * Model BonusEntry
- *
- */
-export type BonusEntry = Prisma.BonusEntryModel;
-/**
- * Model PayrollRun
- *
- */
-export type PayrollRun = Prisma.PayrollRunModel;
-/**
- * Model SalaryLine
- *
- */
-export type SalaryLine = Prisma.SalaryLineModel;
-/**
- * Model WorkSpace
- *
- */
-export type WorkSpace = Prisma.WorkSpaceModel;
-/**
- * Model Task
- *
- */
-export type Task = Prisma.TaskModel;
-/**
- * Model TaskLink
- *
- */
-export type TaskLink = Prisma.TaskLinkModel;
-/**
- * Model TaskChecklist
- *
- */
-export type TaskChecklist = Prisma.TaskChecklistModel;
-/**
- * Model TaskChecklistItem
- *
- */
-export type TaskChecklistItem = Prisma.TaskChecklistItemModel;
-/**
- * Model FileAsset
- *
- */
-export type FileAsset = Prisma.FileAssetModel;
-/**
- * Model FileVersion
- *
- */
-export type FileVersion = Prisma.FileVersionModel;
-/**
- * Model FileLink
- *
- */
-export type FileLink = Prisma.FileLinkModel;
-/**
- * Model FileAuditEvent
- *
- */
-export type FileAuditEvent = Prisma.FileAuditEventModel;
-/**
- * Model FileUploadSession
- *
- */
-export type FileUploadSession = Prisma.FileUploadSessionModel;
-/**
- * Model ReportExportJob
- *
- */
-export type ReportExportJob = Prisma.ReportExportJobModel;
-/**
- * Model ReportSchedule
- *
- */
-export type ReportSchedule = Prisma.ReportScheduleModel;
-/**
- * Model SavedReportView
- *
- */
-export type SavedReportView = Prisma.SavedReportViewModel;
 /**
  * Model DocumentSection
  *
@@ -245,65 +145,30 @@ export type DocumentAttachment = Prisma.DocumentAttachmentModel;
  */
 export type DocumentActivityEvent = Prisma.DocumentActivityEventModel;
 /**
- * Model TaskBoardStage
+ * Model FileAsset
  *
  */
-export type TaskBoardStage = Prisma.TaskBoardStageModel;
+export type FileAsset = Prisma.FileAssetModel;
 /**
- * Model RecurringTaskTemplate
+ * Model FileVersion
  *
  */
-export type RecurringTaskTemplate = Prisma.RecurringTaskTemplateModel;
+export type FileVersion = Prisma.FileVersionModel;
 /**
- * Model SupportTicket
+ * Model FileLink
  *
  */
-export type SupportTicket = Prisma.SupportTicketModel;
+export type FileLink = Prisma.FileLinkModel;
 /**
- * Model Credential
+ * Model FileAuditEvent
  *
  */
-export type Credential = Prisma.CredentialModel;
+export type FileAuditEvent = Prisma.FileAuditEventModel;
 /**
- * Model Domain
+ * Model FileUploadSession
  *
  */
-export type Domain = Prisma.DomainModel;
-/**
- * Model ClientServiceRecord
- *
- */
-export type ClientServiceRecord = Prisma.ClientServiceRecordModel;
-/**
- * Model Department
- *
- */
-export type Department = Prisma.DepartmentModel;
-/**
- * Model EmployeeDepartment
- *
- */
-export type EmployeeDepartment = Prisma.EmployeeDepartmentModel;
-/**
- * Model Role
- *
- */
-export type Role = Prisma.RoleModel;
-/**
- * Model Permission
- *
- */
-export type Permission = Prisma.PermissionModel;
-/**
- * Model RolePermission
- *
- */
-export type RolePermission = Prisma.RolePermissionModel;
-/**
- * Model Invitation
- *
- */
-export type Invitation = Prisma.InvitationModel;
+export type FileUploadSession = Prisma.FileUploadSessionModel;
 /**
  * Model Employee
  *
@@ -325,10 +190,115 @@ export type PersonalLink = Prisma.PersonalLinkModel;
  */
 export type DashboardNote = Prisma.DashboardNoteModel;
 /**
- * Model Partner
+ * Model Order
  *
  */
-export type Partner = Prisma.PartnerModel;
+export type Order = Prisma.OrderModel;
+/**
+ * Model Invoice
+ *
+ */
+export type Invoice = Prisma.InvoiceModel;
+/**
+ * Model Payment
+ *
+ */
+export type Payment = Prisma.PaymentModel;
+/**
+ * Model FinancePostingPeriod
+ *
+ */
+export type FinancePostingPeriod = Prisma.FinancePostingPeriodModel;
+/**
+ * Model OperationalJournalEntry
+ *
+ */
+export type OperationalJournalEntry = Prisma.OperationalJournalEntryModel;
+/**
+ * Model Subscription
+ *
+ */
+export type Subscription = Prisma.SubscriptionModel;
+/**
+ * Model ExpensePlan
+ *
+ */
+export type ExpensePlan = Prisma.ExpensePlanModel;
+/**
+ * Model Expense
+ *
+ */
+export type Expense = Prisma.ExpenseModel;
+/**
+ * Model ExpensePayment
+ *
+ */
+export type ExpensePayment = Prisma.ExpensePaymentModel;
+/**
+ * Model SalesBonusPolicy
+ * Editable Seller / Assistant rates by CRM `From` and order payment model (NBOS § sales bonus).
+ */
+export type SalesBonusPolicy = Prisma.SalesBonusPolicyModel;
+/**
+ * Model BonusEntry
+ *
+ */
+export type BonusEntry = Prisma.BonusEntryModel;
+/**
+ * Model BonusRelease
+ * NBOS Bonus Release — amount earmarked for a payroll run (see `03-Bonus-Payroll-Logic.md`).
+ */
+export type BonusRelease = Prisma.BonusReleaseModel;
+/**
+ * Model ProductBonusPool
+ * NBOS Product Bonus Pool ledger row (one per `Order` that has bonus lines). Release events (`BonusRelease`) — follow-up.
+ */
+export type ProductBonusPool = Prisma.ProductBonusPoolModel;
+/**
+ * Model PayrollRun
+ *
+ */
+export type PayrollRun = Prisma.PayrollRunModel;
+/**
+ * Model SalaryLine
+ *
+ */
+export type SalaryLine = Prisma.SalaryLineModel;
+/**
+ * Model MailAccount
+ *
+ */
+export type MailAccount = Prisma.MailAccountModel;
+/**
+ * Model MailProviderConnection
+ *
+ */
+export type MailProviderConnection = Prisma.MailProviderConnectionModel;
+/**
+ * Model EmailThread
+ *
+ */
+export type EmailThread = Prisma.EmailThreadModel;
+/**
+ * Model EmailMessage
+ *
+ */
+export type EmailMessage = Prisma.EmailMessageModel;
+/**
+ * Model EmailAttachment
+ *
+ */
+export type EmailAttachment = Prisma.EmailAttachmentModel;
+/**
+ * Model MailDeliveryLog
+ *
+ */
+export type MailDeliveryLog = Prisma.MailDeliveryLogModel;
+/**
+ * Model EmailRecipient
+ *
+ */
+export type EmailRecipient = Prisma.EmailRecipientModel;
 /**
  * Model MessengerChannel
  *
@@ -370,41 +340,6 @@ export type MessengerDirectMessageAttachment = Prisma.MessengerDirectMessageAtta
  */
 export type MessengerDirectThreadReadState = Prisma.MessengerDirectThreadReadStateModel;
 /**
- * Model MailAccount
- *
- */
-export type MailAccount = Prisma.MailAccountModel;
-/**
- * Model MailProviderConnection
- *
- */
-export type MailProviderConnection = Prisma.MailProviderConnectionModel;
-/**
- * Model EmailThread
- *
- */
-export type EmailThread = Prisma.EmailThreadModel;
-/**
- * Model EmailMessage
- *
- */
-export type EmailMessage = Prisma.EmailMessageModel;
-/**
- * Model EmailAttachment
- *
- */
-export type EmailAttachment = Prisma.EmailAttachmentModel;
-/**
- * Model MailDeliveryLog
- *
- */
-export type MailDeliveryLog = Prisma.MailDeliveryLogModel;
-/**
- * Model EmailRecipient
- *
- */
-export type EmailRecipient = Prisma.EmailRecipientModel;
-/**
  * Model InAppNotification
  *
  */
@@ -430,6 +365,146 @@ export type NotificationJob = Prisma.NotificationJobModel;
  */
 export type NotificationDelivery = Prisma.NotificationDeliveryModel;
 /**
+ * Model Partner
+ *
+ */
+export type Partner = Prisma.PartnerModel;
+/**
+ * Model PartnerReferralTerms
+ * Frozen partner % and snapshots for inbound referral deals (NBOS § Inbound Referral Flow).
+ */
+export type PartnerReferralTerms = Prisma.PartnerReferralTermsModel;
+/**
+ * Model PartnerCommissionPolicyRow
+ * Per–deal-type partner payout percent (NBOS § Partner Commission Policy). Null row → use `Partner.defaultPercent`.
+ */
+export type PartnerCommissionPolicyRow = Prisma.PartnerCommissionPolicyRowModel;
+/**
+ * Model PartnerAccrual
+ * Inbound referral commission accrual from client cash (NBOS § Partner Payouts — PAR-01 / PAR-02).
+ */
+export type PartnerAccrual = Prisma.PartnerAccrualModel;
+/**
+ * Model PartnerPayoutBatch
+ * Finance-selected batch of partner accruals to be paid as one Partner Payout expense.
+ */
+export type PartnerPayoutBatch = Prisma.PartnerPayoutBatchModel;
+/**
+ * Model PartnerServiceTerm
+ * Outbound service terms for partner revenue cases (NBOS § Outbound Partner Services).
+ */
+export type PartnerServiceTerm = Prisma.PartnerServiceTermModel;
+/**
+ * Model Project
+ *
+ */
+export type Project = Prisma.ProjectModel;
+/**
+ * Model ProjectKickoffChecklistItem
+ *
+ */
+export type ProjectKickoffChecklistItem = Prisma.ProjectKickoffChecklistItemModel;
+/**
+ * Model Product
+ *
+ */
+export type Product = Prisma.ProductModel;
+/**
+ * Model Extension
+ *
+ */
+export type Extension = Prisma.ExtensionModel;
+/**
+ * Model Department
+ *
+ */
+export type Department = Prisma.DepartmentModel;
+/**
+ * Model EmployeeDepartment
+ *
+ */
+export type EmployeeDepartment = Prisma.EmployeeDepartmentModel;
+/**
+ * Model Role
+ *
+ */
+export type Role = Prisma.RoleModel;
+/**
+ * Model Permission
+ *
+ */
+export type Permission = Prisma.PermissionModel;
+/**
+ * Model RolePermission
+ *
+ */
+export type RolePermission = Prisma.RolePermissionModel;
+/**
+ * Model Invitation
+ *
+ */
+export type Invitation = Prisma.InvitationModel;
+/**
+ * Model ReportExportJob
+ *
+ */
+export type ReportExportJob = Prisma.ReportExportJobModel;
+/**
+ * Model ReportSchedule
+ *
+ */
+export type ReportSchedule = Prisma.ReportScheduleModel;
+/**
+ * Model SavedReportView
+ *
+ */
+export type SavedReportView = Prisma.SavedReportViewModel;
+/**
+ * Model SupportTicket
+ *
+ */
+export type SupportTicket = Prisma.SupportTicketModel;
+/**
+ * Model SystemListOption
+ *
+ */
+export type SystemListOption = Prisma.SystemListOptionModel;
+/**
+ * Model WorkSpace
+ *
+ */
+export type WorkSpace = Prisma.WorkSpaceModel;
+/**
+ * Model Task
+ *
+ */
+export type Task = Prisma.TaskModel;
+/**
+ * Model TaskLink
+ *
+ */
+export type TaskLink = Prisma.TaskLinkModel;
+/**
+ * Model TaskChecklist
+ *
+ */
+export type TaskChecklist = Prisma.TaskChecklistModel;
+/**
+ * Model TaskChecklistItem
+ *
+ */
+export type TaskChecklistItem = Prisma.TaskChecklistItemModel;
+/**
+ * Model TaskBoardStage
+ *
+ */
+export type TaskBoardStage = Prisma.TaskBoardStageModel;
+/**
+ * Model RecurringTaskTemplate
+ *
+ */
+export type RecurringTaskTemplate = Prisma.RecurringTaskTemplateModel;
+/**
  * Model ProductTechnicalProfile
  *
  */
@@ -444,23 +519,3 @@ export type TechnicalAsset = Prisma.TechnicalAssetModel;
  *
  */
 export type TechnicalEnvironment = Prisma.TechnicalEnvironmentModel;
-/**
- * Model CalendarMeeting
- *
- */
-export type CalendarMeeting = Prisma.CalendarMeetingModel;
-/**
- * Model PersonalCalendarEvent
- *
- */
-export type PersonalCalendarEvent = Prisma.PersonalCalendarEventModel;
-/**
- * Model AuditLog
- *
- */
-export type AuditLog = Prisma.AuditLogModel;
-/**
- * Model SystemListOption
- *
- */
-export type SystemListOption = Prisma.SystemListOptionModel;

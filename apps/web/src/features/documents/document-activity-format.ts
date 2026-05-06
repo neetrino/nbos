@@ -28,5 +28,8 @@ export function formatDocumentActivityDetail(action: string, metadata: unknown):
   if (action === 'restored' && typeof m.status === 'string') {
     return `Now ${m.status.toLowerCase()}`;
   }
+  if (action === 'exported' && typeof m.format === 'string') {
+    return `Format ${String(m.format).toLowerCase()}`;
+  }
   return null;
 }

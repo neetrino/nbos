@@ -3,6 +3,12 @@ import type { StatusVariant } from '@/components/shared/StatusBadge';
 export const LEAD_STAGES = [
   { key: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
   {
+    key: 'ON_HOLD',
+    label: 'On Hold',
+    variant: 'gray' as StatusVariant,
+    color: 'bg-amber-500',
+  },
+  {
     key: 'DIDNT_GET_THROUGH',
     label: "Didn't Get Through",
     variant: 'gray' as StatusVariant,
@@ -55,14 +61,7 @@ export const SALES_CHANNELS = [
   { value: 'NETWORKING', label: 'Networking' },
 ] as const;
 
-export const MARKETING_CHANNELS = [
-  { value: 'SMM', label: 'SMM' },
-  { value: 'WEBSITE', label: 'Website' },
-  { value: 'LIST_AM', label: 'List.am' },
-  { value: 'GOOGLE_ADS', label: 'Google Ads' },
-  { value: 'META_ADS', label: 'Meta Ads' },
-  { value: 'CONTENT', label: 'Content Marketing' },
-] as const;
+export { MARKETING_CHANNELS } from '@/features/marketing/constants';
 
 export const INTEREST_TYPES = [
   { value: 'BUSINESS_CARD_WEBSITE', label: 'Business Card Website' },

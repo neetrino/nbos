@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PaymentsService } from './payments.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import type { NotificationService } from '../../notifications/notification.service';
 
 /** Row returned by `findById` after `create` completes sync helpers. */
 function mockPaymentFindByIdRow(
@@ -25,7 +26,7 @@ function mockPaymentFindByIdRow(
       code: 'INV-TEST',
       projectId: 'proj-1',
       amount: 100000,
-      status: 'WAITING',
+      moneyStatus: 'AWAITING_PAYMENT',
       company: { id: 'comp-1', name: 'ACME' },
       order: {
         id: 'ord1',
@@ -43,10 +44,31 @@ function mockPaymentFindByIdRow(
 describe('PaymentsService', () => {
   let service: PaymentsService;
   let prisma: MockPrisma;
+  const salesBonusAccrual = { onInvoicePaid: vi.fn().mockResolvedValue(undefined) };
+  const operationalJournal = { appendCashPaymentLine: vi.fn().mockResolvedValue(undefined) };
+  const partnerAccrualClassic = {
+    tryInboundClassicAfterClientPayment: vi.fn().mockResolvedValue(undefined),
+  };
+  const partnerAccrualSubscription = {
+    tryInboundSubscriptionAfterClientPayment: vi.fn().mockResolvedValue(undefined),
+  };
+  let notifications: NotificationService;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new PaymentsService(prisma as never);
+    salesBonusAccrual.onInvoicePaid.mockClear();
+    operationalJournal.appendCashPaymentLine.mockClear();
+    partnerAccrualClassic.tryInboundClassicAfterClientPayment.mockClear();
+    partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment.mockClear();
+    notifications = { create: vi.fn() } as unknown as NotificationService;
+    service = new PaymentsService(
+      prisma as never,
+      salesBonusAccrual as never,
+      notifications,
+      operationalJournal as never,
+      partnerAccrualClassic as never,
+      partnerAccrualSubscription as never,
+    );
   });
 
   describe('findAll', () => {
@@ -117,23 +139,29 @@ describe('PaymentsService', () => {
       prisma.invoice.findUnique
         .mockResolvedValueOnce({
           id: 'inv1',
+          code: 'INV-1',
           orderId: 'ord1',
+          projectId: 'proj-1',
+          companyId: 'company-1',
           amount: 100000,
-          status: 'WAITING',
+          moneyStatus: 'AWAITING_PAYMENT',
           dueDate: new Date('2026-05-20'),
           payments: [],
+          order: { productId: 'product-1' },
         })
         .mockResolvedValueOnce({
           amount: 100000,
           dueDate: new Date('2026-05-20'),
-          status: 'WAITING',
+          moneyStatus: 'AWAITING_PAYMENT',
           payments: [{ amount: 50000 }],
-        });
+        })
+        .mockResolvedValueOnce({ moneyStatus: 'AWAITING_PAYMENT' });
       prisma.payment.create.mockResolvedValue({ id: '1', amount: 50000 });
       prisma.invoice.findMany.mockResolvedValue([
-        { status: 'WAITING', amount: 100000, payments: [{ amount: 50000 }] },
+        { moneyStatus: 'AWAITING_PAYMENT', amount: 100000, payments: [{ amount: 50000 }] },
       ]);
       prisma.payment.findUnique.mockResolvedValue(mockPaymentFindByIdRow('1'));
+      prisma.order.findUnique.mockResolvedValue({ status: 'PARTIALLY_PAID' });
 
       const result = await service.create({
         invoiceId: 'inv1',
@@ -143,12 +171,27 @@ describe('PaymentsService', () => {
       expect(result.amount).toBe(50000);
       expect(prisma.invoice.update).toHaveBeenCalledWith({
         where: { id: 'inv1' },
-        data: { status: 'WAITING', paidDate: null },
+        data: { moneyStatus: 'AWAITING_PAYMENT', paidDate: null },
       });
       expect(prisma.order.update).toHaveBeenCalledWith({
         where: { id: 'ord1' },
         data: { status: 'PARTIALLY_PAID' },
       });
+      expect(operationalJournal.appendCashPaymentLine).toHaveBeenCalledWith({
+        paymentId: '1',
+        invoiceCode: 'INV-1',
+        amount: 50000,
+        bookedAt: new Date('2026-03-11'),
+        companyId: 'company-1',
+        projectId: 'proj-1',
+        productId: 'product-1',
+        orderId: 'ord1',
+      });
+      expect(salesBonusAccrual.onInvoicePaid).not.toHaveBeenCalled();
+      expect(partnerAccrualClassic.tryInboundClassicAfterClientPayment).not.toHaveBeenCalled();
+      expect(
+        partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment,
+      ).not.toHaveBeenCalled();
     });
 
     it('marks invoice and order as paid when coverage reaches total amount', async () => {
@@ -158,32 +201,34 @@ describe('PaymentsService', () => {
           id: 'inv1',
           orderId: 'ord1',
           amount: 100000,
-          status: 'WAITING',
+          moneyStatus: 'AWAITING_PAYMENT',
           dueDate: new Date('2026-03-20'),
           payments: [{ amount: 60000 }],
         })
         .mockResolvedValueOnce({
           amount: 100000,
           dueDate: new Date('2026-03-20'),
-          status: 'WAITING',
+          moneyStatus: 'AWAITING_PAYMENT',
           payments: [
             { amount: 60000, paymentDate: new Date('2026-03-10T00:00:00.000Z') },
             { amount: 40000, paymentDate: latestPaymentDate },
           ],
-        });
+        })
+        .mockResolvedValueOnce({ moneyStatus: 'PAID' });
       prisma.payment.create.mockResolvedValue({ id: '2', amount: 40000 });
       prisma.invoice.findMany.mockResolvedValue([
-        { status: 'PAID', amount: 100000, payments: [{ amount: 100000 }] },
-        { status: 'PAID', amount: 50000, payments: [{ amount: 50000 }] },
+        { moneyStatus: 'PAID', amount: 100000, payments: [{ amount: 100000 }] },
+        { moneyStatus: 'PAID', amount: 50000, payments: [{ amount: 50000 }] },
       ]);
       prisma.payment.findUnique.mockResolvedValue(
         mockPaymentFindByIdRow('2', {
           amount: 40000,
           invoice: {
-            status: 'PAID',
+            moneyStatus: 'PAID',
           },
         }),
       );
+      prisma.order.findUnique.mockResolvedValue({ status: 'FULLY_PAID' });
 
       await service.create({
         invoiceId: 'inv1',
@@ -193,11 +238,23 @@ describe('PaymentsService', () => {
 
       expect(prisma.invoice.update).toHaveBeenCalledWith({
         where: { id: 'inv1' },
-        data: { status: 'PAID', paidDate: latestPaymentDate },
+        data: { moneyStatus: 'PAID', paidDate: latestPaymentDate },
       });
       expect(prisma.order.update).toHaveBeenCalledWith({
         where: { id: 'ord1' },
         data: { status: 'FULLY_PAID' },
+      });
+      expect(salesBonusAccrual.onInvoicePaid).toHaveBeenCalledWith('inv1');
+      expect(partnerAccrualClassic.tryInboundClassicAfterClientPayment).toHaveBeenCalledWith({
+        orderId: 'ord1',
+        paymentId: '2',
+        invoiceId: 'inv1',
+      });
+      expect(
+        partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment,
+      ).toHaveBeenCalledWith({
+        invoiceId: 'inv1',
+        paymentId: '2',
       });
     });
 
@@ -207,23 +264,25 @@ describe('PaymentsService', () => {
           id: 'inv1',
           orderId: 'ord1',
           amount: 100000,
-          status: 'THIS_MONTH',
+          moneyStatus: 'NEW',
           dueDate: new Date('2026-03-01'),
           payments: [],
         })
         .mockResolvedValueOnce({
           amount: 100000,
           dueDate: new Date('2026-03-01'),
-          status: 'THIS_MONTH',
+          moneyStatus: 'NEW',
           payments: [{ amount: 30000 }],
-        });
+        })
+        .mockResolvedValueOnce({ moneyStatus: 'OVERDUE' });
       prisma.payment.create.mockResolvedValue({ id: '3', amount: 30000 });
       prisma.invoice.findMany.mockResolvedValue([
-        { status: 'DELAYED', amount: 100000, payments: [{ amount: 30000 }] },
+        { moneyStatus: 'OVERDUE', amount: 100000, payments: [{ amount: 30000 }] },
       ]);
       prisma.payment.findUnique.mockResolvedValue(
-        mockPaymentFindByIdRow('3', { amount: 30000, invoice: { status: 'DELAYED' } }),
+        mockPaymentFindByIdRow('3', { amount: 30000, invoice: { moneyStatus: 'OVERDUE' } }),
       );
+      prisma.order.findUnique.mockResolvedValue({ status: 'PARTIALLY_PAID' });
 
       await service.create({
         invoiceId: 'inv1',
@@ -233,12 +292,16 @@ describe('PaymentsService', () => {
 
       expect(prisma.invoice.update).toHaveBeenCalledWith({
         where: { id: 'inv1' },
-        data: { status: 'DELAYED', paidDate: null },
+        data: { moneyStatus: 'OVERDUE', paidDate: null },
       });
       expect(prisma.order.update).toHaveBeenCalledWith({
         where: { id: 'ord1' },
         data: { status: 'PARTIALLY_PAID' },
       });
+      expect(salesBonusAccrual.onInvoicePaid).not.toHaveBeenCalled();
+      expect(
+        partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment,
+      ).not.toHaveBeenCalled();
     });
 
     it('rejects payment that exceeds remaining invoice balance', async () => {
@@ -246,7 +309,7 @@ describe('PaymentsService', () => {
         id: 'inv1',
         orderId: 'ord1',
         amount: 100000,
-        status: 'WAITING',
+        moneyStatus: 'AWAITING_PAYMENT',
         dueDate: new Date('2026-03-20'),
         payments: [{ amount: 90000 }],
       });
@@ -272,10 +335,12 @@ describe('PaymentsService', () => {
       });
       prisma.invoice.findUnique.mockResolvedValue({
         amount: 100000,
+        moneyStatus: 'NEW',
+        dueDate: null,
         payments: [],
       });
       prisma.invoice.findMany.mockResolvedValue([
-        { status: 'THIS_MONTH', amount: 100000, payments: [] },
+        { moneyStatus: 'NEW', amount: 100000, payments: [] },
       ]);
       await service.delete('1');
       expect(prisma.payment.delete).toHaveBeenCalled();

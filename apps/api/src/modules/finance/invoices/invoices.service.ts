@@ -3,14 +3,10 @@ import {
   PrismaClient,
   type Prisma,
   type InvoiceTypeEnum,
-  type InvoiceStatusEnum,
+  type InvoiceMoneyStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import {
-  getLatestPaymentDate,
-  resolveBaseInvoiceStatus,
-  sumAmounts,
-} from '../finance-status.utils';
+import { getLatestPaymentDate, sumAmounts } from '../finance-status.utils';
 import { attachInvoicePaymentCoverage } from './invoice-payment-coverage';
 import {
   buildDateRange,
@@ -18,6 +14,9 @@ import {
   resolveInvoiceTaxStatus,
   syncInvoiceOrderStatus,
 } from './invoice-service-helpers';
+import { assertFirstInvoiceMinimums } from './invoice-first-payment-minimums';
+import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice-money-status';
+import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -33,7 +32,8 @@ interface CreateInvoiceDto {
 interface InvoiceQueryParams {
   page?: number;
   pageSize?: number;
-  status?: string;
+  /** Filter by Invoice Card money layer (`Invoice.moneyStatus`). */
+  moneyStatus?: string;
   type?: string;
   projectId?: string;
   subscriptionId?: string;
@@ -56,7 +56,7 @@ export class InvoicesService {
     const {
       page = 1,
       pageSize = 20,
-      status,
+      moneyStatus,
       type,
       projectId,
       subscriptionId,
@@ -66,7 +66,11 @@ export class InvoicesService {
     } = params;
     const where: Prisma.InvoiceWhereInput = {};
 
-    if (status) where.status = status as InvoiceStatusEnum;
+    const money = moneyStatus ? parseInvoiceMoneyStatus(moneyStatus) : null;
+    if (moneyStatus && !money) {
+      throw new BadRequestException(`Unknown invoice moneyStatus: ${moneyStatus}`);
+    }
+    if (money) where.moneyStatus = money;
     if (type) where.type = type as InvoiceTypeEnum;
     if (projectId) where.projectId = projectId;
     if (subscriptionId) where.subscriptionId = subscriptionId;
@@ -83,7 +87,10 @@ export class InvoicesService {
       this.prisma.invoice.findMany({
         where,
         include: {
-          order: { select: { id: true, code: true } },
+          order: {
+            select: { id: true, code: true, project: { select: { id: true, name: true } } },
+          },
+          subscription: { select: { project: { select: { id: true, name: true } } } },
           company: { select: { id: true, name: true } },
           payments: { select: { id: true, amount: true, paymentDate: true } },
           _count: { select: { payments: true } },
@@ -96,7 +103,12 @@ export class InvoicesService {
     ]);
 
     return {
-      items: items.map(attachInvoicePaymentCoverage),
+      items: items.map((invoice) =>
+        attachInvoicePaymentCoverage({
+          ...invoice,
+          project: invoice.order?.project ?? invoice.subscription?.project ?? null,
+        }),
+      ),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -105,21 +117,30 @@ export class InvoicesService {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
       include: {
-        order: true,
-        subscription: true,
+        order: { include: { project: true } },
+        subscription: { include: { project: true } },
         company: true,
         payments: true,
       },
     });
     if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
-    return attachInvoicePaymentCoverage(invoice);
+    return attachInvoicePaymentCoverage({
+      ...invoice,
+      project: invoice.order?.project ?? invoice.subscription?.project ?? null,
+    });
   }
 
   async create(data: CreateInvoiceDto) {
     this.assertCreateInvoiceInput(data);
+    await assertFirstInvoiceMinimums(this.prisma, {
+      orderId: data.orderId,
+      subscriptionId: data.subscriptionId,
+      amount: data.amount,
+    });
     const code = await this.generateCode();
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
 
+    const due = data.dueDate ? new Date(data.dueDate) : undefined;
     const invoice = await this.prisma.invoice.create({
       data: {
         code,
@@ -131,13 +152,27 @@ export class InvoicesService {
         amount: data.amount,
         taxStatus,
         type: data.type as InvoiceTypeEnum,
-        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+        dueDate: due,
+        ...(data.subscriptionId && data.type === 'SUBSCRIPTION'
+          ? {
+              coverageStartMonth: financeCalendarMonthKey(due ?? new Date()),
+              coverageMonthCount: 1,
+            }
+          : {}),
       },
     });
     return this.findById(invoice.id);
   }
 
-  async updateStatus(id: string, status: string) {
+  /**
+   * Sets the canonical Invoice Card money status (`Invoice.moneyStatus`).
+   */
+  async updateMoneyStatus(id: string, moneyStatusRaw: string) {
+    const moneyStatus = parseInvoiceMoneyStatus(moneyStatusRaw);
+    if (!moneyStatus) {
+      throw new BadRequestException(`Unknown invoice moneyStatus: ${moneyStatusRaw}`);
+    }
+
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
       select: {
@@ -145,7 +180,6 @@ export class InvoicesService {
         orderId: true,
         amount: true,
         dueDate: true,
-        status: true,
         payments: {
           select: {
             amount: true,
@@ -158,18 +192,20 @@ export class InvoicesService {
 
     const amount = Number(invoice.amount);
     const paid = sumAmounts(invoice.payments);
-    const derivedStatus = resolveBaseInvoiceStatus({
+    const now = new Date();
+    const derivedBase = deriveBaseInvoiceMoneyStatus({
       amount,
       paid,
       dueDate: invoice.dueDate,
+      now,
     });
 
-    this.assertManualStatusTransitionAllowed(status as InvoiceStatusEnum, derivedStatus);
+    this.assertManualMoneyStatusAllowed(moneyStatus, derivedBase);
 
     const updateData: Prisma.InvoiceUpdateInput = {
-      status: status as InvoiceStatusEnum,
+      moneyStatus,
     };
-    if (status === 'PAID') {
+    if (moneyStatus === 'PAID') {
       updateData.paidDate = getLatestPaymentDate(invoice.payments);
     } else {
       updateData.paidDate = null;
@@ -183,7 +219,7 @@ export class InvoicesService {
       await syncInvoiceOrderStatus(this.prisma, invoice.orderId);
     }
 
-    if (status === 'PAID' && invoice.orderId) {
+    if (moneyStatus === 'PAID' && invoice.orderId) {
       await this.checkAndPromoteDeal(invoice.orderId);
     }
 
@@ -195,13 +231,13 @@ export class InvoicesService {
       where: { id: orderId },
       include: {
         deal: true,
-        invoices: { select: { status: true, amount: true } },
+        invoices: { select: { moneyStatus: true, amount: true } },
       },
     });
     if (!order?.deal || order.deal.status === 'WON' || order.deal.status === 'FAILED') return;
 
     const allPaid =
-      order.invoices.length > 0 && order.invoices.every((inv) => inv.status === 'PAID');
+      order.invoices.length > 0 && order.invoices.every((inv) => inv.moneyStatus === 'PAID');
     if (!allPaid) return;
 
     const paidTotal = order.invoices.reduce((sum, inv) => sum + Number(inv.amount), 0);
@@ -220,16 +256,16 @@ export class InvoicesService {
     return this.prisma.invoice.delete({ where: { id } });
   }
 
-  private assertManualStatusTransitionAllowed(
-    requestedStatus: InvoiceStatusEnum,
-    derivedStatus: InvoiceStatusEnum,
+  private assertManualMoneyStatusAllowed(
+    requested: InvoiceMoneyStatusEnum,
+    derivedBase: InvoiceMoneyStatusEnum,
   ) {
-    if (requestedStatus === 'PAID' && derivedStatus !== 'PAID') {
+    if (requested === 'PAID' && derivedBase !== 'PAID') {
       throw new BadRequestException('Cannot mark invoice as paid before payments fully cover it');
     }
 
-    if (derivedStatus === 'PAID' && requestedStatus !== 'PAID') {
-      throw new BadRequestException('Fully paid invoices must stay in PAID status');
+    if (derivedBase === 'PAID' && requested !== 'PAID') {
+      throw new BadRequestException('Fully paid invoices must stay in PAID money status');
     }
   }
 
