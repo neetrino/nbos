@@ -1,6 +1,6 @@
 # NBOS Implementation Progress
 
-> **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md). Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
+> **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
 **Обновлено:** 2026-05-06
 
@@ -31,7 +31,7 @@
 
 Каждая строка — отдельная задача. **Порядок глобальный:** сначала то, что закрывается без внешних поставщиков и кредов; затем внутренний фонд интеграций; потом внешние каналы и миграция. **Support (глубокий SLA/overlay)** — после основной массы, как договорено; **ручная приёмка** после каждого логического блока.
 
-**Выполненные пункты** перенесены в [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md) (блок «Выполненные срезы»).
+**Выполненные пункты** перенесены в `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)` (блок «Выполненные срезы»).
 
 ### Канон и технические решения (вне жёсткой привязки к 2A–2D)
 
@@ -49,14 +49,13 @@
 
 Эти задачи не подключают реальные внешние сервисы. Они создают безопасный каркас: реестр, статусы, аудит, адаптеры, required setup и документацию для владельца.
 
-Детальный нарез Phase 7 (треки, P0/P1/P2, **таблица статусов срезов §9**) — [`PHASE_7_INTEGRATIONS.md`](./PHASE_7_INTEGRATIONS.md). Ниже — операционная очередь в терминах продукта; при старте среза обновляйте §9 Phase 7 и по крупной вехе — этот файл.
+Детальный нарез Phase 7 (треки, P0/P1/P2, **таблица статусов срезов §9**) — `[PHASE_7_INTEGRATIONS.md](./PHASE_7_INTEGRATIONS.md)`. Ниже — операционная очередь в терминах продукта; при старте среза обновляйте §9 Phase 7 и по крупной вехе — этот файл.
 
 - Integration foundation: `IntegrationProvider` реестр, статусы, аудит, контракт адаптера — L
 - Admin UI: страница статусов интеграций и required setup — M
 - Messenger: **ExternalChannelAdapter** контракт + очереди send/receive — L
 - Mail: лимиты первичного импорта + retry policy — сначала зафиксировать лимиты, затем реализовать — M
 - Mail: многопровайдерность и health dashboard без реального внешнего sync — M
-- ⚠️ Calendar: внутренний sync-контракт и слои до внешнего Google sync — M
 - Settings: required setup / системные списки для интеграций — M
 - Документировать для владельца: **какие env/ключи** нужны по каждой интеграции (кроме банка) — S
 - Аудит: покрыть новые интеграционные события — M
@@ -70,14 +69,13 @@
 
 - Telegram: internal notification channel по канону + явные env/токены — M
 - WhatsApp Gateway + WAHA (VPS): контракт Gateway↔NBOS, health/send/webhook на Gateway, вложения Gateway→NBOS Drive — L
-- ⚠️Google: OAuth link scope для Mail/Calendar/Drive **как в каноне** (без банка) — M
-- ⚠️Google Calendar **sync** — только если подтверждён как цель текущего этапа — L
-- ⚠️Google Workspace Documents **v2 sync** по `20-Documents/05-` — L
-- ⚠️Marketing: внешние Ads API только после кредов — отдельный срез после фонда — L
 - Support: связь с external messenger conversation — M
 - Technical: webhooks GitHub / репозиторий links как интеграция — M
 - Observability: связка инцидентов Sentry ↔ Support ticket — M
 - Автоматизация сценариев по `docs/NBOS/06-Integrations/05-Automation-Scenarios.md` где зафиксировано в каноне — M
+- ⚠️Google: OAuth link scope для Mail/Drive **как в каноне** (без банка) — M
+- ⚠️Google Workspace Documents **v2 sync** по `20-Documents/05-` — только после отдельного решения и появления нужных доступов — L
+- ⚠️Google Calendar integration (OAuth scope, внутренний foundation, sync) — только при отдельном решении о возврате в scope — L
 - Ручная приёмка блока «внешние интеграции» — S
 
 ### Блок 2D — Не активная очередь сейчас: после core или только при явном решении
@@ -91,9 +89,9 @@
 - Documents: избранное и расширенная RBAC секций при необходимости канона — M
 - Drive: дедупликация/квоты если канон потребует — M
 - i18n: глубина UI по `20-i18n` если вошло в scope продукта — L
+- Marketing: внешние Ads API — только после отдельного решения и появления кредов; не активный срез текущего этапа — L
 - Reports: каналы доставки расписаний и delivery-attempt history по получателям — после явного решения о реальной рассылке — M
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
-- Web: E2E smoke для критичных flow (замена разовому precheck) — L → **в 2D:** до стабилизации UI и критичных маршрутов; контроль сейчас — ручная приёмка (стр. ниже) + `pnpm test:regression`. Поднять после явного решения или когда flow перестанут часто ломаться редизайном.
 
 ---
 
@@ -121,6 +119,7 @@
 - **Автоматический** provisioning WAHA без инфраструктуры — не обещать до хостинга.
 - **Репозиторий-wide format:check** зелёный по архивам — низкий приоритет.
 - Архивный чеклист: `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md` — история, не рабочий процесс.
+- Web: E2E smoke для критичных flow (замена разовому precheck) — L → **в 2D:** до стабилизации UI и критичных маршрутов; контроль сейчас — ручная приёмка (стр. ниже) + `pnpm test:regression`. Поднять после явного решения или когда flow перестанут часто ломаться редизайном.
 
 ---
 
@@ -145,9 +144,9 @@
 
 ## См. также
 
-- [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md) — закрытые фазы и срезы
-- [`AI-START-HERE.md`](./AI-START-HERE.md)
-- [`NBOS/00-Implementation-Roadmap.md`](./NBOS/00-Implementation-Roadmap.md)
-- [`Progress Archive/дожать до 100% описанного.md`](./Progress%20Archive/дожать%20до%20100%25%20описанного.md) (архивная матрица; чеклист — **Progress + Done**)
-- [`PHASE_7_INTEGRATIONS.md`](./PHASE_7_INTEGRATIONS.md)
-- [`archive/plans/DEVELOPMENT_PLAN.archived.md`](./archive/plans/DEVELOPMENT_PLAN.archived.md) — исторический unified plan
+- `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)` — закрытые фазы и срезы
+- `[AI-START-HERE.md](./AI-START-HERE.md)`
+- `[NBOS/00-Implementation-Roadmap.md](./NBOS/00-Implementation-Roadmap.md)`
+- `[Progress Archive/дожать до 100% описанного.md](./Progress%20Archive/дожать%20до%20100%25%20описанного.md)` (архивная матрица; чеклист — **Progress + Done**)
+- `[PHASE_7_INTEGRATIONS.md](./PHASE_7_INTEGRATIONS.md)`
+- `[archive/plans/DEVELOPMENT_PLAN.archived.md](./archive/plans/DEVELOPMENT_PLAN.archived.md)` — исторический unified plan
