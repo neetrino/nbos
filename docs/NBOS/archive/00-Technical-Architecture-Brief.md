@@ -235,7 +235,7 @@ Employee ──N:M──► Credential (access)
 
 ## 7. Интеграции
 
-> **Примечание (2026-04):** канон WhatsApp в NBOS — `WhatsAppWebAdapter` → WAHA, проектные группы и Notification Engine; Meta Cloud API не MVP. Актуально: `docs/NBOS/06-Integrations/01-WhatsApp-Integration.md`.
+> **Примечание (2026-04):** канон WhatsApp в NBOS — логический `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA, проектные группы и Notification Engine; Meta Cloud API не MVP. Актуально: `docs/NBOS/06-Integrations/01-WhatsApp-Integration.md`, `docs/NBOS/06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`.
 
 | Интеграция                      | Приоритет        | Назначение                                                                        |
 | ------------------------------- | ---------------- | --------------------------------------------------------------------------------- |

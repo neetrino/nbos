@@ -144,21 +144,23 @@ Owner decisions needed:
 
 Current state: WAHA is the canonical MVP candidate, but real runtime needs WAHA instance and QR-connected account.
 
+**Production target (agreed):** `WhatsAppWebAdapter` is implemented as a **standalone WhatsApp Gateway** (NestJS) on the same Hetzner VPS as WAHA; NBOS calls Gateway over HTTPS; Gateway calls WAHA over internal Docker (e.g. `http://waha:3000`). Gateway uses **Neon PostgreSQL** for its own data. Canon: `docs/NBOS/06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md` and `docs/archive/waha-server-deployment-brief.md`.
+
 `P0 Foundation`
 
-- Keep WAHA behind `WhatsAppWebAdapter`; no direct WAHA dependency in business modules.
-- Define WAHA session states: connected, qr_required, disconnected, degraded.
-- Define outbound payload shape for group message and 1:1 message.
-- Define webhook payload normalization before persisting to Messenger.
-- Define Drive handoff for incoming/outgoing attachments.
+- Keep WAHA behind **Gateway**; NBOS business modules depend on **Gateway API**, not WAHA REST.
+- Gateway: WAHA session states: connected, qr_required, disconnected, degraded.
+- Define **Gateway↔NBOS** contract: outbound payload for group and 1:1, inbound normalized message shape, auth (Bearer).
+- Gateway: webhook receive from WAHA, verify secret, persist raw/normalized events in Gateway DB.
+- Define Drive handoff: Gateway obtains media from WAHA; NBOS Drive remains source of truth for `File Asset` (server-to-server contract).
 
 `P1 Practical next`
 
-- WAHA health endpoint integration.
-- QR setup/admin status screen.
-- Send message to a test WhatsApp group.
-- Receive webhook from test group and store normalized message.
-- Attachment download to Drive in test flow.
+- Gateway: WAHA health/session integration; QR admin endpoints exposed only through Gateway.
+- NBOS: admin/status UI calling Gateway (not WAHA).
+- Send message to a test WhatsApp group via Gateway.
+- Receive WAHA webhook on Gateway; NBOS receives normalized copy per contract.
+- Attachment path: Gateway → NBOS Drive in test flow.
 
 `P2 Later`
 
@@ -381,7 +383,7 @@ This order reduces migration and external-provider risk before real integrations
 1. `integration-registry-foundation` - shared provider registry, status, audit and adapter contracts.
 2. `bitrix-migration-mapping` - mapping/runbook/dry-run validation shape without writing production data.
 3. `external-channel-contracts` - Messenger/Notifications external channel contracts and safety boundary.
-4. `whatsapp-waha-foundation` - WAHA health/session skeleton after runtime decision.
+4. `whatsapp-waha-foundation` - WhatsApp Gateway + WAHA on VPS; Gateway↔NBOS contract; health/session/webhook on Gateway after runtime decision.
 5. `telegram-notification-binding` - employee binding and internal notification adapter after bot token.
 6. `bank-statement-import-foundation` - import/matching dry-run before any bank API.
 7. `google-drive-folder-links` - low-risk project folder links without sync.

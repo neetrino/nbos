@@ -158,7 +158,7 @@ CEO + Heads of Departments (Sales, Delivery, Support, Finance).
 
 #### Integrations
 
-- WhatsAppWebAdapter через WAHA / QR-connected WhatsApp account (группы, редкие 1:1, клиентские уведомления)
+- WhatsAppWebAdapter → WhatsApp Gateway → WAHA / QR-connected WhatsApp account (группы, редкие 1:1, клиентские уведомления); см. `docs/NBOS/06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`
 - Instagram / Facebook (входящие обращения)
 - Telegram Bot API (внутренние чаты, уведомления)
 - Bank API (проверка поступлений)

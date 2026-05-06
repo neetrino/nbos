@@ -126,7 +126,7 @@ In-App запись для конкретного сотрудника.
 | ---------- | -------------------------------------- |
 | `IN_APP`   | NBOS database + WebSocket update       |
 | `TELEGRAM` | Telegram Bot Adapter                   |
-| `WHATSAPP` | `WhatsAppWebAdapter -> WAHA`           |
+| `WHATSAPP` | `WhatsAppWebAdapter` → Gateway → WAHA  |
 | `EMAIL`    | Email Adapter, likely Postmark for MVP |
 
 ## Messenger copy

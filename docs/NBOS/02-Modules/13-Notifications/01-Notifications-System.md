@@ -18,15 +18,15 @@ Business Event
 
 ## Что Notifications делает
 
-| Задача                  | Описание                                                           |
-| ----------------------- | ------------------------------------------------------------------ |
-| In-App alerts           | Уведомления в NBOS для сотрудников                                 |
-| Telegram alerts         | Срочные внутренние уведомления через Telegram Bot                  |
-| WhatsApp group messages | Клиентские/финансовые сообщения через `WhatsAppWebAdapter -> WAHA` |
-| Email messages          | Формальные письма, invites, reports, documents                     |
-| Reminders               | Повторные напоминания по правилам                                  |
-| Escalations             | Расширение получателей, если реакции нет                           |
-| Delivery audit          | Лог кому, когда, что и с каким статусом отправлено                 |
+| Задача                  | Описание                                                                                 |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| In-App alerts           | Уведомления в NBOS для сотрудников                                                       |
+| Telegram alerts         | Срочные внутренние уведомления через Telegram Bot                                        |
+| WhatsApp group messages | Клиентские/финансовые сообщения через `WhatsAppWebAdapter` → **WhatsApp Gateway** → WAHA |
+| Email messages          | Формальные письма, invites, reports, documents                                           |
+| Reminders               | Повторные напоминания по правилам                                                        |
+| Escalations             | Расширение получателей, если реакции нет                                                 |
+| Delivery audit          | Лог кому, когда, что и с каким статусом отправлено                                       |
 
 ## Что Notifications не делает
 
@@ -40,13 +40,13 @@ Business Event
 
 ## Каналы доставки
 
-| Channel              | Русское название       | Для кого                                        | Канон                               |
-| -------------------- | ---------------------- | ----------------------------------------------- | ----------------------------------- |
-| `In-App`             | Внутри NBOS            | Сотрудники                                      | Основной обязательный канал         |
-| `Telegram Bot`       | Telegram bot           | Сотрудники                                      | Срочные внутренние уведомления      |
-| `WhatsAppWebAdapter` | WhatsApp через WAHA/QR | Клиенты, проектные группы, бухгалтерская группа | Основной WhatsApp путь              |
-| `Email`              | Email                  | Сотрудники, клиенты, партнёры                   | Формальные письма, invites, reports |
-| `Messenger Copy`     | Копия в Messenger      | External Messenger                              | Не канал доставки, а запись истории |
+| Channel              | Русское название                 | Для кого                                        | Канон                               |
+| -------------------- | -------------------------------- | ----------------------------------------------- | ----------------------------------- |
+| `In-App`             | Внутри NBOS                      | Сотрудники                                      | Основной обязательный канал         |
+| `Telegram Bot`       | Telegram bot                     | Сотрудники                                      | Срочные внутренние уведомления      |
+| `WhatsAppWebAdapter` | WhatsApp через Gateway → WAHA/QR | Клиенты, проектные группы, бухгалтерская группа | Основной WhatsApp путь              |
+| `Email`              | Email                            | Сотрудники, клиенты, партнёры                   | Формальные письма, invites, reports |
+| `Messenger Copy`     | Копия в Messenger                | External Messenger                              | Не канал доставки, а запись истории |
 
 `WhatsAppOfficialAdapter / Meta Cloud API` не является MVP и не является планом на ближайшие годы.
 
@@ -60,7 +60,8 @@ Business Event
 ```text
 Invoice reminder due
   -> Notifications creates WhatsApp delivery job
-  -> WhatsAppWebAdapter sends message to Project WhatsApp Group
+  -> NBOS calls WhatsApp Gateway (логический WhatsAppWebAdapter)
+  -> Gateway sends via WAHA to Project WhatsApp Group
   -> Messenger stores outbound message copy in External conversation
 ```
 

@@ -170,7 +170,7 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
-- 🟢 [x] Регрессионные тесты на критичные гейты после крупных срезов — M → `pnpm test:regression` + `vitest.regression.config.ts` (15 файлов / ~223 теста); описание и правило расширения: [`docs/reference/Check/Quality/regression-gates.md`](./reference/Check/Quality/regression-gates.md); попутно починены моки `expenses.service` (addPayment + notify path) и `payroll-bonus-release-paid-mark`
+- 🟢 [x] Регрессионные тесты на критичные гейты после крупных срезов — M → `pnpm test:regression` + `vitest.regression.config.ts` (15 файлов / ~223 теста); описание и правило расширения: `docs/reference/Check/Quality/regression-gates.md`](./reference/Check/Quality/[regression-gates.md](http://regression-gates.md)); попутно починены моки `expenses.service` (addPayment + notify path) и `payroll-bonus-release-paid-mark`
 - Web: E2E smoke для критичных flow (замена разовому precheck) — L
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
@@ -185,7 +185,7 @@
 - Messenger: **ExternalChannelAdapter** контракт + очереди send/receive — L
 - Mail: лимиты первичного импорта + retry policy — сначала зафиксировать лимиты, затем реализовать — M
 - Mail: многопровайдерность и health dashboard без реального внешнего sync — M
--
+- ⚠️ Calendar: внутренний sync-контракт и слои до внешнего Google sync — M
 - Settings: required setup / системные списки для интеграций — M
 - Документировать для владельца: **какие env/ключи** нужны по каждой интеграции (кроме банка) — S
 - Аудит: покрыть новые интеграционные события — M
@@ -198,11 +198,11 @@
 Не держать эти строки в активной ежедневной очереди. Возвращать в работу, когда есть токены, доступы, тестовые аккаунты или подтверждённая инфраструктура.
 
 - Telegram: internal notification channel по канону + явные env/токены — M
-- WAHA / WhatsApp Web path: health, send, webhook receive, вложения через Drive — L
-- Google: OAuth link scope для Mail/Calendar/Drive **как в каноне** (без банка) — M
-- Google Calendar **sync** — только если подтверждён как цель текущего этапа — L
-- Google Workspace Documents **v2 sync** по `20-Documents/05-` — L
-- Marketing: внешние Ads API только после кредов — отдельный срез после фонда — L
+- WhatsApp Gateway + WAHA (VPS): контракт Gateway↔NBOS, health/send/webhook на Gateway, вложения Gateway→NBOS Drive — L
+- ⚠️Google: OAuth link scope для Mail/Calendar/Drive **как в каноне** (без банка) — M
+- ⚠️Google Calendar **sync** — только если подтверждён как цель текущего этапа — L
+- ⚠️Google Workspace Documents **v2 sync** по `20-Documents/05-` — L
+- ⚠️Marketing: внешние Ads API только после кредов — отдельный срез после фонда — L
 - Support: связь с external messenger conversation — M
 - Technical: webhooks GitHub / репозиторий links как интеграция — M
 - Observability: связка инцидентов Sentry ↔ Support ticket — M
@@ -222,7 +222,6 @@
 - i18n: глубина UI по `20-i18n` если вошло в scope продукта — L
 - Reports: каналы доставки расписаний и delivery-attempt history по получателям — после явного решения о реальной рассылке — M
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
-- Calendar: внутренний sync-контракт и слои до внешнего Google sync — M
 
 ### Блок 2P — Pending / временно заблокировано
 
