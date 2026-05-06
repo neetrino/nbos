@@ -77,6 +77,19 @@ describe('validateDealStageGate', () => {
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
   });
 
+  it('does not treat blank offer proof fields as valid', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerSentAt: new Date(),
+      offerFileUrl: '   ',
+    };
+    expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
+  });
+
   it('requires response deadline at GET_ANSWER', () => {
     const deal = {
       ...baseDeal,
@@ -127,6 +140,25 @@ describe('validateDealStageGate', () => {
       companyId: 'company-1',
       pmId: 'pm-1',
       deadline: new Date(),
+    };
+    expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).toThrow(BadRequestException);
+  });
+
+  it('does not treat blank contract file as contract proof', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerSentAt: new Date(),
+      offerLink: 'https://example.com/offer',
+      responseDueAt: new Date(),
+      companyId: 'company-1',
+      pmId: 'pm-1',
+      deadline: new Date(),
+      contractFileUrl: '   ',
+      orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
     expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).toThrow(BadRequestException);
   });

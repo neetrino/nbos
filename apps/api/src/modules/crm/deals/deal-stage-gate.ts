@@ -35,6 +35,10 @@ interface ValidationError {
   message: string;
 }
 
+function hasNonBlankValue(value: string | null | undefined): boolean {
+  return Boolean(value?.trim());
+}
+
 /**
  * Валидация обязательных полей при переходе Deal на определённую стадию.
  * Выбрасывает BadRequestException со списком отсутствующих полей.
@@ -51,8 +55,12 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
 
   const isProductLike = deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE';
   const isExtension = deal.type === 'EXTENSION';
-  const hasOfferProof = Boolean(deal.offerLink || deal.offerFileUrl || deal.offerScreenshotUrl);
-  const hasContractProof = Boolean(deal.contractSignedAt || deal.contractFileUrl);
+  const hasOfferProof = Boolean(
+    hasNonBlankValue(deal.offerLink) ||
+    hasNonBlankValue(deal.offerFileUrl) ||
+    hasNonBlankValue(deal.offerScreenshotUrl),
+  );
+  const hasContractProof = Boolean(deal.contractSignedAt || hasNonBlankValue(deal.contractFileUrl));
   const hasInvoice = deal.orders?.some((order) => (order.invoices?.length ?? 0) > 0) ?? false;
 
   const reachesStage = (stage: string) =>

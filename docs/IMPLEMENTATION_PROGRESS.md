@@ -142,7 +142,7 @@
 - 🟢 [x] Marketing: глубина Board / Attribution Review / popup polish из cleanup — M → `marketing/layout.tsx`, board `marketing/page`, `marketing/attribution`, `MarketingLaunchDialog`; CRM `openLeadId`/`openDealId` + `getById` если записи нет в первой странице списка; дашборд: query `dateFrom`/`dateTo` + UI период (week / month / prev / custom / all) по `04-Marketing-Analytics-and-KPI.md`
 - 🟢 [x] Marketing: CPL/ROI виджеты только при наличии spend (без фейка) — S → `marketing-dashboard-summary.ts` (`isReliable`, null ROAS/CPL при дырах); web `marketing/dashboard`, `MarketingReportsTab`; `marketing.service.test.ts`
 - 🟢 [x] Marketing: List.am ↔ Finance Expense Plan связь до UX канона — S → `MarketingAccountExpensePlanLink`, `load-expense-plans-for-marketing-accounts.ts`, `marketing/settings` (пикер плана + ссылки в Finance); модель линка была, UX доведён под `18-Marketing`
-- CRM: Offer attachment и deal-required fields — глубина если не закрыта — M
+- 🟢 [x] CRM: Offer attachment и deal-required fields — глубина если не закрыта — M → stage-gate hardening (`deal-stage-gate.ts`: blank-proof guard), inline Deal blocker editor в popup (`DealTransitionInlineEditor`, `crm/deals/page.tsx`, `TransitionBlockerDialog`) с `Save / Save and move` для обязательных полей и offer proof
 - Tasks: выравнивание статусов/enum под канон — M
 - Tasks: шаблоны повторяющихся задач (не Reports) — M
 - Projects Hub: linked orders block Transfer→Done — проверка гейтов — M

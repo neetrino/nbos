@@ -17,6 +17,7 @@ import {
 import { DealCard } from '@/features/crm/components/DealCard';
 import { DealSheet, type DealSheetBlockerNavigation } from '@/features/crm/components/DealSheet';
 import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
+import { DealTransitionInlineEditor } from '@/features/crm/components/DealTransitionInlineEditor';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import {
   TransitionBlockerDialog,
@@ -77,6 +78,8 @@ export default function DealsPipelinePage() {
   );
   const [pendingTransition, setPendingTransition] = useState<PendingDealTransition | null>(null);
   const [dealBlockerNav, setDealBlockerNav] = useState<DealSheetBlockerNavigation | null>(null);
+  const [inlineSaving, setInlineSaving] = useState(false);
+  const [blockerEditorRevision, setBlockerEditorRevision] = useState(0);
   const dealNavTokenRef = useRef(0);
 
   const pushDealBlockerNav = useCallback((intent: DealSheetBlockerIntent) => {
@@ -288,6 +291,56 @@ export default function DealsPipelinePage() {
     setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
     setTransitionBlocker(null);
     await fetchDeals();
+  };
+
+  const handleSaveBlockedDealOnly = async (data: Partial<Deal>) => {
+    const blocker = transitionBlocker;
+    if (!blocker) return;
+
+    if (Object.keys(data).length === 0) {
+      toast.info('No changes to save.');
+      return;
+    }
+
+    setInlineSaving(true);
+    try {
+      const updated = await dealsApi.update(blocker.item.id, data);
+      setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
+      setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
+      setTransitionBlocker((current) =>
+        current && current.item.id === updated.id ? { ...current, item: updated } : current,
+      );
+      setBlockerEditorRevision((n) => n + 1);
+      toast.success('Deal saved. You can continue stage move when ready.');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not save deal.'));
+    } finally {
+      setInlineSaving(false);
+    }
+  };
+
+  const handleSaveBlockedDealAndMove = async (data: Partial<Deal>) => {
+    const blocker = transitionBlocker;
+    if (!blocker) return;
+
+    setInlineSaving(true);
+    try {
+      const updated = await dealsApi.update(blocker.item.id, data);
+      setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
+      setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
+      setTransitionBlocker((current) => (current ? { ...current, item: updated } : current));
+      await handleStatusChange(updated.id, blocker.targetStatus);
+      setTransitionBlocker(null);
+    } catch (err) {
+      if (isStageGateApiError(err)) {
+        setTransitionBlocker((current) => (current ? { ...current, errors: err.errors } : current));
+        toast.error(getApiErrorMessage(err, 'Could not save deal.'));
+        return;
+      }
+      toast.error(err instanceof Error ? err.message : 'Deal update failed.');
+    } finally {
+      setInlineSaving(false);
+    }
   };
 
   const handleUpdate = async (id: string, data: Partial<Deal>) => {
@@ -539,6 +592,19 @@ export default function DealsPipelinePage() {
         onRetry={handleRetryBlockedMove}
         directActions={blockerActions}
         onOverride={handleOverrideBlockedMove}
+        inlineOnly
+        inlineEditor={
+          transitionBlocker ? (
+            <DealTransitionInlineEditor
+              key={`${transitionBlocker.item.id}-${transitionBlocker.targetStatus}-${blockerEditorRevision}`}
+              deal={transitionBlocker.item}
+              errors={transitionBlocker.errors}
+              saving={inlineSaving}
+              onSaveOnly={handleSaveBlockedDealOnly}
+              onSaveAndMove={handleSaveBlockedDealAndMove}
+            />
+          ) : null
+        }
         businessActionLabel={hasInvoiceOrPaymentGate ? 'Create invoice' : undefined}
         onBusinessAction={
           hasInvoiceOrPaymentGate
