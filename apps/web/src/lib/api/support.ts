@@ -31,6 +31,19 @@ export interface SupportTicket {
   } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
   assignee: { id: string; firstName: string; lastName: string } | null;
+  technicalAsset: {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    environment: string | null;
+  } | null;
+  technicalEnvironment: {
+    id: string;
+    name: string;
+    kind: string;
+    status: string;
+  } | null;
   slaState: {
     state: 'ON_TRACK' | 'AT_RISK' | 'HIGH_RISK' | 'BREACHED' | 'PAUSED' | 'CLOSED';
     responseDeadline: string | null;

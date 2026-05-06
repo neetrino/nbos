@@ -58,6 +58,8 @@ export function createMockPrisma() {
     documentTagOnDocument: createModelMock(),
     documentAttachment: createModelMock(),
     documentActivityEvent: createModelMock(),
+    technicalAsset: createModelMock(),
+    technicalEnvironment: createModelMock(),
     supportTicket: createModelMock(),
     expense: createModelMock(),
     expensePlan: createModelMock(),

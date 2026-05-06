@@ -93,6 +93,8 @@ export class SupportController {
       priority?: string;
       billable?: boolean;
       assignedTo?: string;
+      technicalAssetId?: string | null;
+      technicalEnvironmentId?: string | null;
     },
   ) {
     return this.supportService.create(body);
@@ -114,6 +116,8 @@ export class SupportController {
       priority?: string;
       billable?: boolean;
       assignedTo?: string;
+      technicalAssetId?: string | null;
+      technicalEnvironmentId?: string | null;
     },
   ) {
     return this.supportService.update(id, body);

@@ -97,6 +97,7 @@ model TechnicalAsset {
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  supportTickets SupportTicket[]
 
   @@index([productId])
   @@index([projectId])
@@ -123,6 +124,7 @@ model TechnicalEnvironment {
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  supportTickets SupportTicket[]
 
   @@index([productId])
   @@index([projectId])

@@ -14,6 +14,7 @@ import {
   FilePlus2,
   RotateCcw,
   AlertTriangle,
+  Server,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -57,6 +58,7 @@ import {
   getTicketWaitingState,
 } from '@/features/support/constants/support';
 import { supportApi, type SupportStats, type SupportTicket } from '@/lib/api/support';
+import { technicalApi, type TechnicalProductProfileResponse } from '@/lib/api/technical';
 import { useSupportScopeStatsCsvExport } from '@/features/support/use-support-scope-stats-csv-export';
 import { usePermission } from '@/lib/permissions';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -74,6 +76,13 @@ export default function SupportPage() {
   const [actionId, setActionId] = useState<string | null>(null);
   const [escalateTicket, setEscalateTicket] = useState<SupportTicket | null>(null);
   const [escalateReason, setEscalateReason] = useState('');
+  const [technicalTicket, setTechnicalTicket] = useState<SupportTicket | null>(null);
+  const [technicalProfile, setTechnicalProfile] = useState<TechnicalProductProfileResponse | null>(
+    null,
+  );
+  const [technicalProfileLoading, setTechnicalProfileLoading] = useState(false);
+  const [draftTechnicalAssetId, setDraftTechnicalAssetId] = useState('');
+  const [draftTechnicalEnvId, setDraftTechnicalEnvId] = useState('');
   const { me } = usePermission();
 
   const { handleExportScopeStatsCsv } = useSupportScopeStatsCsvExport(stats);
@@ -108,6 +117,53 @@ export default function SupportPage() {
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  useEffect(() => {
+    if (!technicalTicket?.productId) {
+      setTechnicalProfile(null);
+      return;
+    }
+    let cancelled = false;
+    setTechnicalProfileLoading(true);
+    void technicalApi
+      .getProductProfile(technicalTicket.productId)
+      .then((profile) => {
+        if (!cancelled) setTechnicalProfile(profile);
+      })
+      .catch(() => {
+        if (!cancelled) setTechnicalProfile(null);
+      })
+      .finally(() => {
+        if (!cancelled) setTechnicalProfileLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [technicalTicket]);
+
+  const openTechnicalDialog = (ticket: SupportTicket) => {
+    setTechnicalTicket(ticket);
+    setDraftTechnicalAssetId(ticket.technicalAsset?.id ?? '');
+    setDraftTechnicalEnvId(ticket.technicalEnvironment?.id ?? '');
+  };
+
+  const saveTechnicalContext = async () => {
+    if (!technicalTicket?.productId) return;
+    setActionId(`tech:${technicalTicket.id}`);
+    try {
+      await supportApi.update(technicalTicket.id, {
+        technicalAssetId: draftTechnicalAssetId || null,
+        technicalEnvironmentId: draftTechnicalEnvId || null,
+      });
+      setTechnicalTicket(null);
+      await fetchTickets();
+      setError(null);
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, 'Technical context could not be saved.'));
+    } finally {
+      setActionId(null);
+    }
+  };
 
   const openTickets = tickets.filter((t) => !['RESOLVED', 'CLOSED'].includes(t.status));
 
@@ -412,6 +468,31 @@ export default function SupportPage() {
                   disabled={!me?.id}
                   onCreateDeal={handleCreateExtensionDeal}
                 />
+                <div className="text-muted-foreground flex flex-col gap-1 text-[10px]">
+                  {(ticket.technicalAsset || ticket.technicalEnvironment) && (
+                    <span>
+                      {ticket.technicalAsset ? `Asset: ${ticket.technicalAsset.name}` : null}
+                      {ticket.technicalAsset && ticket.technicalEnvironment ? ' · ' : null}
+                      {ticket.technicalEnvironment
+                        ? `Env: ${ticket.technicalEnvironment.name}`
+                        : null}
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1 px-2 text-xs"
+                    disabled={
+                      ['RESOLVED', 'CLOSED'].includes(ticket.status) ||
+                      actionId === `tech:${ticket.id}`
+                    }
+                    onClick={() => openTechnicalDialog(ticket)}
+                  >
+                    <Server size={12} />
+                    Technical
+                  </Button>
+                </div>
               </div>
             );
           }}
@@ -431,6 +512,7 @@ export default function SupportPage() {
                 <TableHead>Coverage</TableHead>
                 <TableHead>Project</TableHead>
                 <TableHead>Product</TableHead>
+                <TableHead>Technical</TableHead>
                 <TableHead>Assignee</TableHead>
                 <TableHead>Billable</TableHead>
                 <TableHead>Execution</TableHead>
@@ -540,6 +622,44 @@ export default function SupportPage() {
                     <TableCell className="text-muted-foreground text-sm">
                       {ticket.product?.name ?? '—'}
                     </TableCell>
+                    <TableCell>
+                      <div className="flex max-w-[220px] flex-col gap-1">
+                        {ticket.technicalAsset ? (
+                          <p className="text-xs">
+                            <span className="text-muted-foreground">Asset: </span>
+                            {ticket.technicalAsset.name}
+                          </p>
+                        ) : null}
+                        {ticket.technicalEnvironment ? (
+                          <p className="text-xs">
+                            <span className="text-muted-foreground">Env: </span>
+                            {ticket.technicalEnvironment.name}
+                          </p>
+                        ) : null}
+                        {!ticket.technicalAsset && !ticket.technicalEnvironment ? (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        ) : null}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 gap-1 px-2 text-xs"
+                          disabled={
+                            ['RESOLVED', 'CLOSED'].includes(ticket.status) ||
+                            actionId === `tech:${ticket.id}`
+                          }
+                          onClick={() => openTechnicalDialog(ticket)}
+                          title={
+                            ticket.productId
+                              ? 'Link technical asset / environment'
+                              : 'Product context required'
+                          }
+                        >
+                          <Server size={12} />
+                          Context
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-sm">
                       {ticket.assignee
                         ? `${ticket.assignee.firstName} ${ticket.assignee.lastName}`
@@ -633,6 +753,82 @@ export default function SupportPage() {
               onClick={() => void handleSubmitEscalation()}
             >
               Confirm escalation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!technicalTicket}
+        onOpenChange={(open) => {
+          if (!open) setTechnicalTicket(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Technical context</DialogTitle>
+            <DialogDescription>
+              Link this incident to a Technical Asset and/or Environment registered for the same
+              product (Projects → Product → Technical).
+            </DialogDescription>
+          </DialogHeader>
+          {!technicalTicket?.productId ? (
+            <p className="text-muted-foreground text-sm">
+              This ticket has no product context. Set a product on the ticket before linking assets
+              or environments.
+            </p>
+          ) : technicalProfileLoading ? (
+            <p className="text-muted-foreground text-sm">Loading technical profile…</p>
+          ) : (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="support-tech-asset">Asset</Label>
+                <select
+                  id="support-tech-asset"
+                  className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                  value={draftTechnicalAssetId}
+                  onChange={(e) => setDraftTechnicalAssetId(e.target.value)}
+                >
+                  <option value="">None</option>
+                  {technicalProfile?.assets.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.type} — {a.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="support-tech-env">Environment</Label>
+                <select
+                  id="support-tech-env"
+                  className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                  value={draftTechnicalEnvId}
+                  onChange={(e) => setDraftTechnicalEnvId(e.target.value)}
+                >
+                  <option value="">None</option>
+                  {technicalProfile?.environments.map((env) => (
+                    <option key={env.id} value={env.id}>
+                      {env.kind} — {env.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setTechnicalTicket(null)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={
+                !technicalTicket?.productId ||
+                !!actionId?.startsWith('tech:') ||
+                technicalProfileLoading
+              }
+              onClick={() => void saveTechnicalContext()}
+            >
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>

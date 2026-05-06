@@ -59,6 +59,8 @@ model SupportTicket {
   waitingReason          String?                @map("waiting_reason")
   slaPausedTotalSeconds  Int                    @default(0) @map("sla_paused_total_seconds")
   slaPauseStartedAt      DateTime?              @map("sla_pause_started_at")
+  technicalAssetId       String?                @map("technical_asset_id")
+  technicalEnvironmentId String?                @map("technical_environment_id")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
 
@@ -67,6 +69,10 @@ model SupportTicket {
   extensionDeal Deal?     @relation(fields: [extensionDealId], references: [id])
   contact       Contact?  @relation(fields: [contactId], references: [id])
   assignee      Employee? @relation("TicketAssignee", fields: [assignedTo], references: [id])
+  technicalAsset       TechnicalAsset?       @relation(fields: [technicalAssetId], references: [id], onDelete: SetNull)
+  technicalEnvironment TechnicalEnvironment? @relation(fields: [technicalEnvironmentId], references: [id], onDelete: SetNull)
 
+  @@index([technicalAssetId])
+  @@index([technicalEnvironmentId])
   @@map("support_tickets")
 }

@@ -9293,6 +9293,8 @@ export const SupportTicketScalarFieldEnum = {
   waitingReason: 'waitingReason',
   slaPausedTotalSeconds: 'slaPausedTotalSeconds',
   slaPauseStartedAt: 'slaPauseStartedAt',
+  technicalAssetId: 'technicalAssetId',
+  technicalEnvironmentId: 'technicalEnvironmentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;

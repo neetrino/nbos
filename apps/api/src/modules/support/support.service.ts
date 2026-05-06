@@ -19,6 +19,7 @@ import {
   resetPauseForSlaRecalculation,
 } from './support-sla-pause';
 import { resolveSupportSlaNotificationRecipientIds } from './support-sla-recipients';
+import { assertSupportTechnicalLinksValid } from './support-technical-link.validation';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 
@@ -58,6 +59,12 @@ const SUPPORT_TICKET_INCLUDE = {
   extensionDeal: { select: { id: true, code: true, name: true, status: true, amount: true } },
   contact: { select: { id: true, firstName: true, lastName: true, phone: true, email: true } },
   assignee: { select: { id: true, firstName: true, lastName: true } },
+  technicalAsset: {
+    select: { id: true, name: true, type: true, status: true, environment: true },
+  },
+  technicalEnvironment: {
+    select: { id: true, name: true, kind: true, status: true },
+  },
 } satisfies Prisma.SupportTicketInclude;
 
 const SUPPORT_TASK_INCLUDE = {
@@ -83,6 +90,8 @@ interface CreateTicketDto {
   priority?: string;
   billable?: boolean;
   assignedTo?: string;
+  technicalAssetId?: string | null;
+  technicalEnvironmentId?: string | null;
 }
 
 interface UpdateTicketDto {
@@ -96,6 +105,8 @@ interface UpdateTicketDto {
   priority?: string;
   billable?: boolean;
   assignedTo?: string;
+  technicalAssetId?: string | null;
+  technicalEnvironmentId?: string | null;
 }
 
 interface TicketQueryParams {
@@ -198,6 +209,14 @@ export class SupportService {
     const code = await this.generateCode();
     const priority = (data.priority as TicketPriorityEnum) ?? 'P3';
     const sla = this.calculateSlaDeadlines(priority);
+    const productId = data.productId ?? null;
+
+    await assertSupportTechnicalLinksValid(this.prisma, {
+      projectId: data.projectId,
+      productId,
+      technicalAssetId: data.technicalAssetId,
+      technicalEnvironmentId: data.technicalEnvironmentId,
+    });
 
     const ticket = await this.prisma.supportTicket.create({
       data: {
@@ -214,6 +233,8 @@ export class SupportService {
         assignedTo: data.assignedTo,
         slaResponseDeadline: sla.responseDeadline,
         slaResolveDeadline: sla.resolveDeadline,
+        technicalAssetId: data.technicalAssetId ?? null,
+        technicalEnvironmentId: data.technicalEnvironmentId ?? null,
       },
       include: SUPPORT_TICKET_INCLUDE,
     });
@@ -223,6 +244,43 @@ export class SupportService {
   async update(id: string, data: UpdateTicketDto) {
     const existing = await this.prisma.supportTicket.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException(`Support ticket ${id} not found`);
+
+    const nextProjectId = data.projectId ?? existing.projectId;
+    const nextProductId = data.productId !== undefined ? data.productId : existing.productId;
+    let nextTechnicalAssetId =
+      data.technicalAssetId !== undefined
+        ? data.technicalAssetId
+        : (existing.technicalAssetId ?? null);
+    let nextTechnicalEnvironmentId =
+      data.technicalEnvironmentId !== undefined
+        ? data.technicalEnvironmentId
+        : (existing.technicalEnvironmentId ?? null);
+
+    if (data.projectId !== undefined && data.projectId !== existing.projectId) {
+      if (data.technicalAssetId === undefined && data.technicalEnvironmentId === undefined) {
+        nextTechnicalAssetId = null;
+        nextTechnicalEnvironmentId = null;
+      }
+    }
+
+    if (data.productId !== undefined && data.productId !== existing.productId) {
+      if (data.technicalAssetId === undefined && data.technicalEnvironmentId === undefined) {
+        nextTechnicalAssetId = null;
+        nextTechnicalEnvironmentId = null;
+      }
+    }
+
+    if (data.productId !== undefined && data.productId === null) {
+      nextTechnicalAssetId = null;
+      nextTechnicalEnvironmentId = null;
+    }
+
+    await assertSupportTechnicalLinksValid(this.prisma, {
+      projectId: nextProjectId,
+      productId: nextProductId,
+      technicalAssetId: nextTechnicalAssetId,
+      technicalEnvironmentId: nextTechnicalEnvironmentId,
+    });
 
     const updateData: Prisma.SupportTicketUpdateInput = {
       ...(data.title && { title: data.title }),
@@ -254,6 +312,21 @@ export class SupportService {
       updateData.slaResolveDeadline = sla.resolveDeadline;
       updateData.slaPausedTotalSeconds = pauseReset.slaPausedTotalSeconds;
       updateData.slaPauseStartedAt = pauseReset.slaPauseStartedAt;
+    }
+
+    const technicalTouched =
+      data.technicalAssetId !== undefined ||
+      data.technicalEnvironmentId !== undefined ||
+      data.productId !== undefined ||
+      data.projectId !== undefined;
+
+    if (technicalTouched) {
+      updateData.technicalAsset = nextTechnicalAssetId
+        ? { connect: { id: nextTechnicalAssetId } }
+        : { disconnect: true };
+      updateData.technicalEnvironment = nextTechnicalEnvironmentId
+        ? { connect: { id: nextTechnicalEnvironmentId } }
+        : { disconnect: true };
     }
 
     const ticket = await this.prisma.supportTicket.update({

@@ -262,6 +262,7 @@ export type TechnicalEnvironmentWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<'TechnicalEnvironment'> | Date | string;
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>;
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
+  supportTickets?: Prisma.SupportTicketListRelationFilter;
 };
 
 export type TechnicalEnvironmentOrderByWithRelationInput = {
@@ -281,6 +282,7 @@ export type TechnicalEnvironmentOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder;
   product?: Prisma.ProductOrderByWithRelationInput;
   project?: Prisma.ProjectOrderByWithRelationInput;
+  supportTickets?: Prisma.SupportTicketOrderByRelationAggregateInput;
 };
 
 export type TechnicalEnvironmentWhereUniqueInput = Prisma.AtLeast<
@@ -308,6 +310,7 @@ export type TechnicalEnvironmentWhereUniqueInput = Prisma.AtLeast<
     updatedAt?: Prisma.DateTimeFilter<'TechnicalEnvironment'> | Date | string;
     product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>;
     project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
+    supportTickets?: Prisma.SupportTicketListRelationFilter;
   },
   'id'
 >;
@@ -388,6 +391,7 @@ export type TechnicalEnvironmentCreateInput = {
   updatedAt?: Date | string;
   product: Prisma.ProductCreateNestedOneWithoutTechnicalEnvironmentsInput;
   project: Prisma.ProjectCreateNestedOneWithoutTechnicalEnvironmentsInput;
+  supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutTechnicalEnvironmentInput;
 };
 
 export type TechnicalEnvironmentUncheckedCreateInput = {
@@ -405,6 +409,7 @@ export type TechnicalEnvironmentUncheckedCreateInput = {
   lastCheckedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTechnicalEnvironmentInput;
 };
 
 export type TechnicalEnvironmentUpdateInput = {
@@ -426,6 +431,7 @@ export type TechnicalEnvironmentUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneRequiredWithoutTechnicalEnvironmentsNestedInput;
   project?: Prisma.ProjectUpdateOneRequiredWithoutTechnicalEnvironmentsNestedInput;
+  supportTickets?: Prisma.SupportTicketUpdateManyWithoutTechnicalEnvironmentNestedInput;
 };
 
 export type TechnicalEnvironmentUncheckedUpdateInput = {
@@ -447,6 +453,7 @@ export type TechnicalEnvironmentUncheckedUpdateInput = {
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTechnicalEnvironmentNestedInput;
 };
 
 export type TechnicalEnvironmentCreateManyInput = {
@@ -514,6 +521,11 @@ export type TechnicalEnvironmentListRelationFilter = {
 
 export type TechnicalEnvironmentOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder;
+};
+
+export type TechnicalEnvironmentNullableScalarRelationFilter = {
+  is?: Prisma.TechnicalEnvironmentWhereInput | null;
+  isNot?: Prisma.TechnicalEnvironmentWhereInput | null;
 };
 
 export type TechnicalEnvironmentCountOrderByAggregateInput = {
@@ -779,6 +791,34 @@ export type TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput = {
     | Prisma.TechnicalEnvironmentScalarWhereInput[];
 };
 
+export type TechnicalEnvironmentCreateNestedOneWithoutSupportTicketsInput = {
+  create?: Prisma.XOR<
+    Prisma.TechnicalEnvironmentCreateWithoutSupportTicketsInput,
+    Prisma.TechnicalEnvironmentUncheckedCreateWithoutSupportTicketsInput
+  >;
+  connectOrCreate?: Prisma.TechnicalEnvironmentCreateOrConnectWithoutSupportTicketsInput;
+  connect?: Prisma.TechnicalEnvironmentWhereUniqueInput;
+};
+
+export type TechnicalEnvironmentUpdateOneWithoutSupportTicketsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.TechnicalEnvironmentCreateWithoutSupportTicketsInput,
+    Prisma.TechnicalEnvironmentUncheckedCreateWithoutSupportTicketsInput
+  >;
+  connectOrCreate?: Prisma.TechnicalEnvironmentCreateOrConnectWithoutSupportTicketsInput;
+  upsert?: Prisma.TechnicalEnvironmentUpsertWithoutSupportTicketsInput;
+  disconnect?: Prisma.TechnicalEnvironmentWhereInput | boolean;
+  delete?: Prisma.TechnicalEnvironmentWhereInput | boolean;
+  connect?: Prisma.TechnicalEnvironmentWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.TechnicalEnvironmentUpdateToOneWithWhereWithoutSupportTicketsInput,
+      Prisma.TechnicalEnvironmentUpdateWithoutSupportTicketsInput
+    >,
+    Prisma.TechnicalEnvironmentUncheckedUpdateWithoutSupportTicketsInput
+  >;
+};
+
 export type EnumTechnicalEnvironmentKindFieldUpdateOperationsInput = {
   set?: $Enums.TechnicalEnvironmentKind;
 };
@@ -797,6 +837,7 @@ export type TechnicalEnvironmentCreateWithoutProjectInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   product: Prisma.ProductCreateNestedOneWithoutTechnicalEnvironmentsInput;
+  supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutTechnicalEnvironmentInput;
 };
 
 export type TechnicalEnvironmentUncheckedCreateWithoutProjectInput = {
@@ -813,6 +854,7 @@ export type TechnicalEnvironmentUncheckedCreateWithoutProjectInput = {
   lastCheckedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTechnicalEnvironmentInput;
 };
 
 export type TechnicalEnvironmentCreateOrConnectWithoutProjectInput = {
@@ -896,6 +938,7 @@ export type TechnicalEnvironmentCreateWithoutProductInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutTechnicalEnvironmentsInput;
+  supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutTechnicalEnvironmentInput;
 };
 
 export type TechnicalEnvironmentUncheckedCreateWithoutProductInput = {
@@ -912,6 +955,7 @@ export type TechnicalEnvironmentUncheckedCreateWithoutProductInput = {
   lastCheckedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTechnicalEnvironmentInput;
 };
 
 export type TechnicalEnvironmentCreateOrConnectWithoutProductInput = {
@@ -957,6 +1001,110 @@ export type TechnicalEnvironmentUpdateManyWithWhereWithoutProductInput = {
   >;
 };
 
+export type TechnicalEnvironmentCreateWithoutSupportTicketsInput = {
+  id?: string;
+  kind: $Enums.TechnicalEnvironmentKind;
+  name: string;
+  url?: string | null;
+  branch?: string | null;
+  deploymentTarget?: string | null;
+  envCredentialId?: string | null;
+  databaseAssetId?: string | null;
+  status?: $Enums.TechnicalHealthStatus;
+  lastCheckedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  product: Prisma.ProductCreateNestedOneWithoutTechnicalEnvironmentsInput;
+  project: Prisma.ProjectCreateNestedOneWithoutTechnicalEnvironmentsInput;
+};
+
+export type TechnicalEnvironmentUncheckedCreateWithoutSupportTicketsInput = {
+  id?: string;
+  productId: string;
+  projectId: string;
+  kind: $Enums.TechnicalEnvironmentKind;
+  name: string;
+  url?: string | null;
+  branch?: string | null;
+  deploymentTarget?: string | null;
+  envCredentialId?: string | null;
+  databaseAssetId?: string | null;
+  status?: $Enums.TechnicalHealthStatus;
+  lastCheckedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type TechnicalEnvironmentCreateOrConnectWithoutSupportTicketsInput = {
+  where: Prisma.TechnicalEnvironmentWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.TechnicalEnvironmentCreateWithoutSupportTicketsInput,
+    Prisma.TechnicalEnvironmentUncheckedCreateWithoutSupportTicketsInput
+  >;
+};
+
+export type TechnicalEnvironmentUpsertWithoutSupportTicketsInput = {
+  update: Prisma.XOR<
+    Prisma.TechnicalEnvironmentUpdateWithoutSupportTicketsInput,
+    Prisma.TechnicalEnvironmentUncheckedUpdateWithoutSupportTicketsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.TechnicalEnvironmentCreateWithoutSupportTicketsInput,
+    Prisma.TechnicalEnvironmentUncheckedCreateWithoutSupportTicketsInput
+  >;
+  where?: Prisma.TechnicalEnvironmentWhereInput;
+};
+
+export type TechnicalEnvironmentUpdateToOneWithWhereWithoutSupportTicketsInput = {
+  where?: Prisma.TechnicalEnvironmentWhereInput;
+  data: Prisma.XOR<
+    Prisma.TechnicalEnvironmentUpdateWithoutSupportTicketsInput,
+    Prisma.TechnicalEnvironmentUncheckedUpdateWithoutSupportTicketsInput
+  >;
+};
+
+export type TechnicalEnvironmentUpdateWithoutSupportTicketsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  kind?:
+    | Prisma.EnumTechnicalEnvironmentKindFieldUpdateOperationsInput
+    | $Enums.TechnicalEnvironmentKind;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  branch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deploymentTarget?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  envCredentialId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  databaseAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumTechnicalHealthStatusFieldUpdateOperationsInput
+    | $Enums.TechnicalHealthStatus;
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  product?: Prisma.ProductUpdateOneRequiredWithoutTechnicalEnvironmentsNestedInput;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutTechnicalEnvironmentsNestedInput;
+};
+
+export type TechnicalEnvironmentUncheckedUpdateWithoutSupportTicketsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  kind?:
+    | Prisma.EnumTechnicalEnvironmentKindFieldUpdateOperationsInput
+    | $Enums.TechnicalEnvironmentKind;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  branch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deploymentTarget?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  envCredentialId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  databaseAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  status?:
+    | Prisma.EnumTechnicalHealthStatusFieldUpdateOperationsInput
+    | $Enums.TechnicalHealthStatus;
+  lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
 export type TechnicalEnvironmentCreateManyProjectInput = {
   id?: string;
   productId: string;
@@ -991,6 +1139,7 @@ export type TechnicalEnvironmentUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneRequiredWithoutTechnicalEnvironmentsNestedInput;
+  supportTickets?: Prisma.SupportTicketUpdateManyWithoutTechnicalEnvironmentNestedInput;
 };
 
 export type TechnicalEnvironmentUncheckedUpdateWithoutProjectInput = {
@@ -1011,6 +1160,7 @@ export type TechnicalEnvironmentUncheckedUpdateWithoutProjectInput = {
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTechnicalEnvironmentNestedInput;
 };
 
 export type TechnicalEnvironmentUncheckedUpdateManyWithoutProjectInput = {
@@ -1067,6 +1217,7 @@ export type TechnicalEnvironmentUpdateWithoutProductInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutTechnicalEnvironmentsNestedInput;
+  supportTickets?: Prisma.SupportTicketUpdateManyWithoutTechnicalEnvironmentNestedInput;
 };
 
 export type TechnicalEnvironmentUncheckedUpdateWithoutProductInput = {
@@ -1087,6 +1238,7 @@ export type TechnicalEnvironmentUncheckedUpdateWithoutProductInput = {
   lastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTechnicalEnvironmentNestedInput;
 };
 
 export type TechnicalEnvironmentUncheckedUpdateManyWithoutProductInput = {
@@ -1109,6 +1261,41 @@ export type TechnicalEnvironmentUncheckedUpdateManyWithoutProductInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
+/**
+ * Count Type TechnicalEnvironmentCountOutputType
+ */
+
+export type TechnicalEnvironmentCountOutputType = {
+  supportTickets: number;
+};
+
+export type TechnicalEnvironmentCountOutputTypeSelect<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  supportTickets?: boolean | TechnicalEnvironmentCountOutputTypeCountSupportTicketsArgs;
+};
+
+/**
+ * TechnicalEnvironmentCountOutputType without action
+ */
+export type TechnicalEnvironmentCountOutputTypeDefaultArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the TechnicalEnvironmentCountOutputType
+   */
+  select?: Prisma.TechnicalEnvironmentCountOutputTypeSelect<ExtArgs> | null;
+};
+
+/**
+ * TechnicalEnvironmentCountOutputType without action
+ */
+export type TechnicalEnvironmentCountOutputTypeCountSupportTicketsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.SupportTicketWhereInput;
+};
+
 export type TechnicalEnvironmentSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -1129,6 +1316,8 @@ export type TechnicalEnvironmentSelect<
     updatedAt?: boolean;
     product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
+    supportTickets?: boolean | Prisma.TechnicalEnvironment$supportTicketsArgs<ExtArgs>;
+    _count?: boolean | Prisma.TechnicalEnvironmentCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['technicalEnvironment']
 >;
@@ -1222,6 +1411,8 @@ export type TechnicalEnvironmentInclude<
 > = {
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
+  supportTickets?: boolean | Prisma.TechnicalEnvironment$supportTicketsArgs<ExtArgs>;
+  _count?: boolean | Prisma.TechnicalEnvironmentCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type TechnicalEnvironmentIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
@@ -1243,6 +1434,7 @@ export type $TechnicalEnvironmentPayload<
   objects: {
     product: Prisma.$ProductPayload<ExtArgs>;
     project: Prisma.$ProjectPayload<ExtArgs>;
+    supportTickets: Prisma.$SupportTicketPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1829,6 +2021,17 @@ export interface Prisma__TechnicalEnvironmentClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  supportTickets<T extends Prisma.TechnicalEnvironment$supportTicketsArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.TechnicalEnvironment$supportTicketsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$SupportTicketPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2324,6 +2527,34 @@ export type TechnicalEnvironmentDeleteManyArgs<
    * Limit how many TechnicalEnvironments to delete.
    */
   limit?: number;
+};
+
+/**
+ * TechnicalEnvironment.supportTickets
+ */
+export type TechnicalEnvironment$supportTicketsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the SupportTicket
+   */
+  select?: Prisma.SupportTicketSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the SupportTicket
+   */
+  omit?: Prisma.SupportTicketOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SupportTicketInclude<ExtArgs> | null;
+  where?: Prisma.SupportTicketWhereInput;
+  orderBy?:
+    | Prisma.SupportTicketOrderByWithRelationInput
+    | Prisma.SupportTicketOrderByWithRelationInput[];
+  cursor?: Prisma.SupportTicketWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.SupportTicketScalarFieldEnum | Prisma.SupportTicketScalarFieldEnum[];
 };
 
 /**
