@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-06 (Finance: drop legacy invoice status; web strict typecheck cleanup)
+**Обновлено:** 2026-05-06 (cleanup registers wave: Finance, Support, Partners, Tasks, CRM, Projects Hub cross-ref; web typecheck)
 
 ---
 
@@ -144,7 +144,7 @@
 - 🟢 [x] Credentials: step-up на reveal/copy/export + high-risk уведомления — M → `POST /api/credentials/:id/secrets/reveal|copy` требуют `stepUpPassword` (проверка `Employee.passwordHash` + audit `credential.step_up_verified`), добавлен `POST /api/credentials/export` (step-up + audited `credential.exported`), high-risk in-app notifications `credentials.high_risk_action` для owner/admin/CEO при critical reveal/copy и export; web credential detail запрашивает пароль перед Reveal/Copy; tests: `credentials.service.test.ts`
 - 🟢 [x] Credentials: довести list API / health metadata (cleanup PARTIAL) — S → `GET /api/credentials` теперь отдаёт `health` metadata (`status: HEALTHY|DUE_SOON|OVERDUE|UNKNOWN`, `dueInDays`, flags `MISSING_OWNER`/`BROAD_ACCESS` для high/critical рисков); web `/credentials` показывает health badge + flags в колонке Rotation; tests: `credentials.service.test.ts`
 - 🟢 [x] Notifications: **пользовательские настройки** каналов/типов событий — M → API: `GET /api/notifications/preferences`, `PATCH /api/notifications/preferences/:eventType` (персональные overrides по `enabled/channels`); runtime `NotificationService.create` уважает user prefs и пропускает in-app delivery если тип отключён или `IN_APP` не выбран; web `/notifications`: блок `Your Notification Preferences` с toggle event type + channel chips (`IN_APP/EMAIL/TELEGRAM/WHATSAPP`)
-- 🟢 [x] Notifications: **админ-UI правил** если остаётся в рамках низкой сложности — M → API: `GET /api/notifications/admin/rules`, `PATCH /api/notifications/admin/rules/:code` (enabled/priority/channels, без user overrides `user_pref:`\*); web `Settings -> Module Settings` показывает `Notification Rules` с inline toggles (enabled, priority, channels)
+- 🟢 [x] Notifications: **админ-UI правил** если остаётся в рамках низкой сложности — M → API: `GET /api/notifications/admin/rules`, `PATCH /api/notifications/admin/rules/:code` (enabled/priority/channels, без user overrides `user_pref:`); web `Settings -> Module Settings` показывает `Notification Rules` с inline toggles (enabled, priority, channels)
 - 🟢 [x] My Company: Compensation / SOP / KPI Scorecard до глубины канона — L → убраны placeholders и добавлены runtime-страницы: `my-company/compensation` (live employee + base salary coverage + sales bonus policy coverage + links в payroll/policies), `my-company/kpi` (scorecard runtime через `dashboard/control-center` + KPI gate matrix 70/50/0 + module links), `my-company/sop` (SOP library runtime через Documents search `sop`, review queue, section coverage, links в Tasks/Team/Documents). **Граница:** seat-level versioned compensation/process-run persistence остаётся в следующих слоях канона, но экранов-заглушек больше нет.
 - 🟢 [x] My Company / header: My Account вне Settings везде — S → `Topbar` получил явный quick action `My Account` (desktop) + dropdown entry; доступ к `/my-account` теперь стабильно из header на любых страницах, без привязки к `Settings`
 - 🟢 [x] Technical Infrastructure: связи со Support и мониторинг baseline — M → `GET /api/technical/products/:productId/profile` теперь отдаёт `support` (open/critical incidents + recent incident list по product, category INCIDENT) и `monitoringBaseline` (warning/critical assets, missing owner/credential links, monitoring/backup status); UI Product → Technical (`ReadinessCard`) показывает support+baseline summary и shortcut в `/support`
@@ -159,22 +159,24 @@
 - 🟢 [x] Support: связь Ticket → Technical asset / environment — M → `technical_asset_id` / `technical_environment_id` + валидация project/product; `create`/`update`; include в API; UI диалог Context на `/support` (загрузка `GET /technical/products/:id/profile`)
 - 🟢 [x] Support: resolution requirements + auto-close после Extension Done где канон — M → `resolution_summary` + `close_reason`; Resolved требует summary; Closed только из Resolved с reason; `PATCH …/complete` extension → `closeLinkedTicketsAfterExtensionDelivered`; audit `support.closed_extension_delivered`
 - 🟢 [x] Support: product-context в UI create/filter — M → фильтры Project/Product на `/support` (загрузка продуктов по проекту); диалог New Ticket с project + optional product; API `productId` уже был в list
+- 🟢 [x] Finance: убрать legacy `InvoiceStatusEnum` и колонку `Invoice.status` — единый `money_status` — L → миграция `20260506210000_drop_invoice_legacy_status` (backfill `FAIL`→`money_status` `CANCELLED`); API без `PATCH …/status` и без фильтра `status`; web/DTO на `moneyStatus`; после среза **web:** `StatusBadge` variants на credentials/KPI/SOP, `Link`+`buttonVariants` на support (Base UI `Button` без `asChild`), `TechnicalBackupPolicyDraft` + `emptyBackupPolicyDraft` в Product Technical; `pnpm --filter @nbos/api typecheck` и `pnpm --filter @nbos/web typecheck` зелёные
 
 ### Блок 2A — Реализуем сейчас: внутренний канон без внешних факторов
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
-- 🟢 [x] Finance: убрать legacy `InvoiceStatusEnum` и колонку `Invoice.status` — единый `money_status` — L → миграция `20260506210000_drop_invoice_legacy_status` (backfill `FAIL`→`money_status` `CANCELLED`); API без `PATCH …/status` и без фильтра `status`; web/DTO на `moneyStatus`; после среза **web:** `StatusBadge` variants на credentials/KPI/SOP, `Link`+`buttonVariants` на support (Base UI `Button` без `asChild`), `TechnicalBackupPolicyDraft` + `emptyBackupPolicyDraft` в Product Technical; `pnpm --filter @nbos/api typecheck` и `pnpm --filter @nbos/web typecheck` зелёные
+**Порядок внутри блока:** сначала то, что можно **сделать в коде/доках и самостоятельно проверить**; **в конце** — автоматизированная проверка (регресс, E2E) и **полная ручная приёмка** по трём областям как финальные «ворота», а не параллельно разработке.
+
+- Обновить cleanup registers статусами по мере закрытия срезов — S → **wave 2026-05-06:** `10-Finance-Cleanup-Register`, `04-Support-Cleanup-Register`, `08-Partners-Cleanup-Register`, `04-Tasks-Cleanup-Register`, сноска CRM Won↔`moneyStatus`, сноска Projects Hub §A18↔`moneyStatus`; **следующие при необходимости:** остальной текст Projects Hub, Drive, Documents, Reports, Marketing, Settings, UI Shell (точечно)
+- Синхронизировать `docs/дожать до 100% описанного.md` или заменить ссылкой на этот файл — S
+- Производительность: тяжёлые отчёты только через очередь (контроль) — S
+- Messenger: поиск/история PostgreSQL — доработка UX при объёме — S
+- Production hardening: CORS/CSRF и security baseline по `docs/NBOS` / project rules — S
+- Регрессионные тесты на критичные гейты после крупных срезов — M
+- Web: E2E smoke для критичных flow (замена разовому precheck) — L
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
 - Ручная приёмка блока «Support глубина» — S
-- Обновить cleanup registers статусами по мере закрытия срезов — S
-- Синхронизировать `docs/дожать до 100% описанного.md` или заменить ссылкой на этот файл — S
-- Регрессионные тесты на критичные гейты после крупных срезов — M
-- Производительность: тяжёлые отчёты только через очередь (контроль) — S
-- Messenger: поиск/история PostgreSQL — доработка UX при объёме — S
-- Web: E2E smoke для критичных flow (замена разовому precheck) — L
-- Production hardening: CORS/CSRF и security baseline по `docs/NBOS` / project rules — S
 
 ### Блок 2B — Внутренний фонд интеграций: можно готовить сейчас, без внешних кредов
 

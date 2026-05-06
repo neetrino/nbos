@@ -260,7 +260,7 @@ This implements the canon rule that execution/QA work must be closed before the 
 
 Product Done gate now checks existing finance source data conservatively:
 
-- when the linked Product order has invoices, all of those invoices must be `PAID`;
+- when the linked Product order has invoices, all of those invoices must be paid (`moneyStatus = PAID`; legacy `Invoice.status` снят);
 - when the linked Product order has a status, it must be `FULLY_PAID` or `CLOSED`;
 - unpaid linked invoices block `Transfer -> Done` with the structured stage-gate error shape;
 - open linked orders block `Transfer -> Done` with the same structured stage-gate error shape;

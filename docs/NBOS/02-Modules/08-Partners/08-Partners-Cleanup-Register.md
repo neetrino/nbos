@@ -4,39 +4,32 @@
 
 ## 1. Current runtime status
 
-Сейчас runtime реализует только базовую часть:
+**Срез 2026-05:** runtime закрыл основной inbound-каркас (CRUD, commission policy, referral terms на сделке, accruals classic+subscription, balance read, payout batch + expense, outbound service terms + create finance). Ниже — **актуальная матрица**; разделы **P1–P8** сохранены как детальный backlog/история (часть пунктов уже закрыта — не дублировать как «MISSING»).
 
-- `Partner` model есть;
-- `Lead.sourcePartnerId` есть;
-- `Deal.sourcePartnerId` есть;
-- `Order.partnerId` есть;
-- `Subscription.partnerId` есть;
-- API Partners поддерживает CRUD;
-- UI Partners показывает простую таблицу.
+### Runtime matrix (актуальный снимок)
 
-### Runtime matrix
-
-| Area                        | Status  | Notes                                                                                                              |
-| --------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
-| Partner model               | PARTIAL | Есть `name`, `type`, `direction`, `defaultPercent`, `status`, `contactId`; нет policy, agreements, payout settings |
-| CRM source partner          | PARTIAL | Lead / Deal имеют `sourcePartnerId`, но нет Partner Referral Terms                                                 |
-| Order partner fields        | PARTIAL | Order имеет `partnerId`, `partnerPercent`, но процент не фиксируется через policy / terms                          |
-| Subscription partner fields | PARTIAL | Subscription имеет `partnerId`, но нет payout_rule на уровне subscription-связи                                    |
-| Partner CRUD API            | PARTIAL | CRUD есть, но DTO не покрывает новый канон                                                                         |
-| Partner UI                  | STALE   | UI ожидает поля, которых API не отдаёт                                                                             |
-| Partner Accrual             | MISSING | Нет модели начислений                                                                                              |
-| Partner Balance             | MISSING | Нет computed view / endpoint                                                                                       |
-| Payout Batch                | MISSING | Нет batch-выплаты перед Expense                                                                                    |
-| Partner Service Terms       | MISSING | Outbound не отделён как business case                                                                              |
-| Partner Account v2          | MISSING | Не реализуется сейчас, но нужно заложить видимость данных                                                          |
+| Area                      | Status  | Notes                                                                                                              |
+| ------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| Partner model             | PARTIAL | `level`/`direction`/contacts; agreements metadata / Partner Account v2 — позже                                     |
+| CRM source + terms        | OK      | Referral terms snapshot на Deal; WON-gate; UI Marketing block + `patchPartnerReferralTerms`                        |
+| Order / subscription link | OK      | Accrual от Payment; subscription accrual по инвойсу; balance, payout batch                                         |
+| Partner CRUD API + DTO    | OK      | Wire `level`, ISO dates, фильтры; create/update совместимы с каноном (см. IMPLEMENTATION_PROGRESS Partners)        |
+| Partner UI                | PARTIAL | Карточка: commission policy, referral, accruals, balance, batches, outbound services; analytics/agreements — позже |
+| Partner Accrual           | OK      | Classic + subscription; идемпотентность; journal line                                                              |
+| Partner Balance           | OK      | `GET …/balance` + web summary                                                                                      |
+| Payout Batch              | OK      | create/approve/cancel; Expense `PARTNER_PAYOUT`; web UI                                                            |
+| Partner Service Terms     | OK      | Outbound terms + `Create finance` (invoice/subscription)                                                           |
+| Partner Account v2        | MISSING | Портал партнёра read-only — позже                                                                                  |
 
 ---
 
 ## 2. Runtime gaps
 
-### P1. UI Partners не совпадает с API
+> **Примечание:** подзадачи P1–P8 описывали до-срезовые пробелы. Если матрица выше помечает область как `OK`, трактовать соответствующий текст P\* как архив деталей, а не как «всё ещё MISSING».
 
-UI ожидает поля:
+### P1. UI Partners не совпадает с API **(закрыто в срезе wire JSON / таблица level)**
+
+UI ранее ожидал поля:
 
 - `companyName`;
 - `level`;
@@ -58,9 +51,9 @@ API / DB сейчас имеют:
 
 Нужно привести UI/API к новому канону.
 
-### P2. Нет Commission Policy по Deal Type
+### P2. Commission Policy по Deal Type **(закрыто: `PartnerCommissionPolicyRow` + API + UI)**
 
-Сейчас есть только `defaultPercent`.
+Ранее был только `defaultPercent`.
 
 Нужно добавить Partner Commission Policy:
 
@@ -70,15 +63,15 @@ API / DB сейчас имеют:
 - Outsource percent;
 - fallback default percent.
 
-### P3. Нет Partner Referral Terms
+### P3. Partner Referral Terms **(закрыто: snapshot на сделке + WON-gate + UI)**
 
-Сейчас partner source хранится на Lead / Deal, но условия процента не фиксируются отдельно.
+Ранее partner source был на Lead / Deal без отдельного snapshot процента.
 
 Нужно фиксировать percent на момент сделки, чтобы будущие изменения policy не меняли старые deals.
 
-### P4. Нет Partner Accrual / Balance / Payout Batch
+### P4. Partner Accrual / Balance / Payout Batch **(закрыто в срезах PAR-01…05 + web)**
 
-Сейчас docs раньше предлагали сразу Expense.
+Ранее в доках обсуждался прямой jump в Expense без слоя accrual.
 
 Новый канон:
 
@@ -105,9 +98,9 @@ Classic payout:
 
 Если нужна задержка, это manual hold с reason.
 
-### P7. Outbound flow не отделён от inbound
+### P7. Outbound flow **(закрыто foundation: `PartnerServiceTerm` + create finance)**
 
-Outbound — это доход Neetrino от партнёра.
+Outbound — доход Neetrino от партнёра; базовый runtime есть, глубина UX/канон — дальше.
 
 Нужно:
 

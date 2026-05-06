@@ -8,17 +8,17 @@
 
 Эти части уже близки к новому канону и не требуют архитектурного разворота.
 
-| Область                                                                             | Статус    | Комментарий                                                                 |
-| ----------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------- |
-| `SupportTicket` как отдельная сущность                                              | `OK`      | В БД и API ticket уже отдельный объект, не смешан с задачей                 |
-| Категории `INCIDENT / SERVICE_REQUEST / CHANGE_REQUEST / PROBLEM`                   | `OK`      | Хорошо совпадают с каноном                                                  |
-| Базовый lifecycle `NEW -> TRIAGED -> ASSIGNED -> IN_PROGRESS -> RESOLVED -> CLOSED` | `OK`      | Основа правильная, нужна только логическая доочистка вокруг reopen/waiting  |
-| Связь `Ticket -> Project`                                                           | `OK`      | Уже обязательна в runtime                                                   |
-| Связь `Ticket -> Product`                                                           | `PARTIAL` | Поле есть и участвует в API/UI bridge, но product-context ещё неполный      |
-| Support -> execution task bridge                                                    | `PARTIAL` | Ticket can create linked Task without becoming a task itself                |
-| Change Request -> Extension Deal bridge                                             | `PARTIAL` | Change Request ticket can create/link an Extension Deal                     |
-| Coverage decision                                                                   | `PARTIAL` | Runtime field exists; Finance/Maintenance automation is not implemented     |
-| Базовые SLA deadlines                                                               | `PARTIAL` | Deadlines and read-only SLA state exist; pause/escalation orchestration нет |
+| Область                                                                             | Статус    | Комментарий                                                                                            |
+| ----------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------ |
+| `SupportTicket` как отдельная сущность                                              | `OK`      | В БД и API ticket уже отдельный объект, не смешан с задачей                                            |
+| Категории `INCIDENT / SERVICE_REQUEST / CHANGE_REQUEST / PROBLEM`                   | `OK`      | Хорошо совпадают с каноном                                                                             |
+| Базовый lifecycle `NEW -> TRIAGED -> ASSIGNED -> IN_PROGRESS -> RESOLVED -> CLOSED` | `OK`      | Основа правильная, нужна только логическая доочистка вокруг reopen/waiting                             |
+| Связь `Ticket -> Project`                                                           | `OK`      | Уже обязательна в runtime                                                                              |
+| Связь `Ticket -> Product`                                                           | `OK`      | **2026-05:** API + create/filter UI на `/support` (project → products, New Ticket)                     |
+| Support -> execution task bridge                                                    | `PARTIAL` | Ticket can create linked Task; richer timeline/detail — backlog                                        |
+| Change Request -> Extension Deal bridge                                             | `OK`      | **2026-05:** conversion + отдельный `/support/change-control`                                          |
+| Coverage decision                                                                   | `PARTIAL` | Runtime field exists; Finance/Maintenance automation — backlog                                         |
+| SLA deadlines + pause / breach / escalation                                         | `OK`      | **2026-05:** waiting overlay, `SupportSlaOrchestrationService`, scheduler escalation, pause accounting |
 
 ---
 
@@ -36,23 +36,23 @@
 
 ---
 
-## 3. Code/runtime stale
+## 3. Code/runtime gaps
 
-Эти части уже расходятся с каноном и потом потребуют рефакторинга.
+Здесь и **остаточный долг**, и строки со статусом `OK` для прозрачности (закрытые срезы 2026-05 не выносятся в отдельный файл).
 
-| Область                                            | Статус       | Что не совпадает                                                                                                                                                      |
-| -------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `REOPENED` в `TicketStatusEnum`                    | `PARTIAL`    | **2026-05-06:** `PATCH status` больше не принимает `REOPENED`, reopen вынесен в action endpoint + audit event; enum cleanup на уровне Prisma остаётся отдельным шагом |
-| Нет explicit waiting overlay model                 | `STALE CODE` | Нет `waiting for client / third party / escalated` как отдельного overlay-state                                                                                       |
-| API create/update ticket не работает с `productId` | `PARTIAL`    | Product context is accepted by API, deeper UI creation/filtering still needed                                                                                         |
-| Ticket detail and task bridge                      | `PARTIAL`    | Ticket can create linked execution tasks; richer detail/timeline still missing                                                                                        |
-| Change control bridge                              | `PARTIAL`    | Ticket can create/link Extension Deal; auto-close after Extension Done is still missing                                                                               |
-| SLA pause / breach / escalation logic              | `STALE CODE` | Есть только дедлайны, но нет зрелого pause/escalation orchestration                                                                                                   |
-| Support UI                                         | `PARTIAL`    | Есть base list/kanban + отдельный `change-control` view; waiting overlays и deeper product-context ещё не закрыты                                                     |
-| Support -> Technical Infrastructure link           | `MISSING`    | Нет связи ticket с Technical Asset / Environment / Deployment Record                                                                                                  |
-| Coverage decision                                  | `PARTIAL`    | Runtime field exists; maintenance/finance bridge remains manual                                                                                                       |
-| External Messenger message link                    | `MISSING`    | Нет связи ticket с external WhatsApp/CRM conversation/message                                                                                                         |
-| Resolution close requirements                      | `PARTIAL`    | Нет обязательных resolution summary, client confirmation / auto-close reason                                                                                          |
+| Область                                  | Статус    | Что не совпадает                                                                                                                                                      |
+| ---------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `REOPENED` в `TicketStatusEnum`          | `PARTIAL` | **2026-05-06:** `PATCH status` больше не принимает `REOPENED`, reopen вынесен в action endpoint + audit event; enum cleanup на уровне Prisma остаётся отдельным шагом |
+| Waiting overlay model                    | `OK`      | **2026-05:** `TicketWaitingStateEnum`, `PATCH …/waiting`, SLA pause projection                                                                                        |
+| API + UI `productId`                     | `OK`      | **2026-05:** create/list filters + New Ticket dialog (project → product)                                                                                              |
+| Ticket detail and task bridge            | `PARTIAL` | Ticket can create linked execution tasks; richer detail/timeline still missing                                                                                        |
+| Change control + Extension Done          | `OK`      | **2026-05:** Extension complete → `closeLinkedTicketsAfterExtensionDelivered`                                                                                         |
+| SLA pause / breach / escalation logic    | `OK`      | **2026-05:** orchestration + scheduler; см. канон SLA                                                                                                                 |
+| Support UI                               | `PARTIAL` | List/kanban, change-control, waiting select, escalate, reopen, filters; polish/метрики — backlog                                                                      |
+| Support -> Technical asset / environment | `OK`      | **2026-05:** `technical_asset_id` / `technical_environment_id`, Context dialog + profile bridge                                                                       |
+| Coverage decision                        | `PARTIAL` | Runtime field exists; maintenance/finance bridge remains manual                                                                                                       |
+| External Messenger message link          | `MISSING` | Нет связи ticket с external WhatsApp/CRM conversation/message                                                                                                         |
+| Resolution close requirements            | `OK`      | **2026-05:** `resolution_summary`, `close_reason`; Closed только из Resolved; auto-close linked tickets после Extension Done + audit                                  |
 
 ---
 
@@ -71,14 +71,10 @@
 
 ## 5. Recommended implementation sequence
 
-Когда дойдём до реализации, Support лучше приводить к канону в таком порядке:
+**Срезы 2026-05 уже закрыли пункты 1, 3, 5–6, 8 по сути** (`productId`, change-control, waiting/SLA orchestration, technical links, resolution + extension auto-close). Дальше по приоритету:
 
-1. Phase 4 done: `productId` context foundation;
-2. Phase 4 done: linked task / work space bridge;
-3. Phase 4 done: `Change Request` -> Extension Deal bridge;
-4. Phase 4 done: coverage decision runtime field and read-only SLA state;
-5. later: очистить enum/status model и ввести overlay-state для waiting/escalation;
-6. later: добавить Support -> Technical Infrastructure links для incidents;
-7. later: добавить bridge к Maintenance / Finance / CRM;
-8. later: добавить SLA pause / escalation / auto-close orchestration;
-9. only then: messenger automation and AI triage.
+1. Углубление **task / timeline** и execution bridge (без смешения с Task-сущностью).
+2. **Coverage → Finance/Maintenance** автоматизация (сейчас поле есть, мосты ручные/частичные).
+3. Очистка **enum/status** (например legacy `REOPENED` в Prisma) — отдельная миграция по согласованию.
+4. **External messenger** link к тикету (блок 2C).
+5. Messenger automation / AI triage — только после стабильного core.
