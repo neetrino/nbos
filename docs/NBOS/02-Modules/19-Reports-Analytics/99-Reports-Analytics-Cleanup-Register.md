@@ -150,18 +150,19 @@ Later depth, not required for current MVP:
 
 ### B6. Data quality warnings are missing
 
-Статус: `P0 DONE / LATER DEPTH` (2026-04-30)
+Статус: `DONE` (2026-05-06)
 
 Shipped:
 
 - `GET /api/reports/data-quality-warnings`;
 - `/reports` Data quality tab;
-- warning/info projection over Finance-owned report definitions, source endpoints and deferred limitations.
+- warning/info projection over module-owned report definitions and source endpoints;
+- runtime missing-data warnings from Marketing attribution and cross-module projections (`marketing-source-performance`, `sales-pipeline-health`, `project-delivery-overview`, `specialist-workload-scorecard`);
+- warnings stay permission-aware because report definitions are filtered by source permissions before runtime checks are projected.
 
 Later depth, not required for current MVP:
 
-- runtime missing-data warnings from Marketing attribution, cross-module projections and scheduled runs;
-- source-permission-aware warnings when centralized report permissions are added.
+- runtime warning projections for scheduled-run delivery attempts.
 
 ### B7. Report permissions are not centralized
 

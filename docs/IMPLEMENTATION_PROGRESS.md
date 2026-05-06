@@ -2,7 +2,7 @@
 
 > **Единый источник** прогресса: что закрыто, что делаем до полного канона, что отложено. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-05 (Partners: outbound services tab + create-from-terms + payouts)
+**Обновлено:** 2026-05-06 (Reports runtime data-quality warnings for Marketing + cross-module projections)
 
 ---
 
@@ -138,7 +138,7 @@
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
 - 🟢 [x] Reports: централизованные permissions на источники — M → API `reports` теперь permission-aware: `GET /api/reports/definitions|schedules|saved-views|data-quality-warnings` фильтруют выдачу по `requiredPermissions` каждого `ReportDefinition`; `POST /api/reports/export-jobs|schedules|saved-views` отклоняются с `403`, если нет source-module доступа; `ReportsController` защищён `DASHBOARDS.VIEW`; helper `reports-permissions.ts`
 - 🟢 [x] Reports: XLSX/PDF экспорт, retry/cancel, история **экспортов** (без каналов доставки) — L → API: `POST /api/reports/export-jobs/:jobId/retry|cancel`; worker поддерживает `CSV/XLSX/PDF` и не пишет файл для `CANCELLED`; web `/reports` экспорт по форматам `CSV/XLSX/PDF` + кнопки retry/cancel в Export History; Drive history остаётся source-of-truth, каналы доставки вынесены в 2D
-- Reports: data-quality предупреждения из Marketing и кросс-модульных проекций — M
+- 🟢 [x] Reports: data-quality предупреждения из Marketing и кросс-модульных проекций — M → `GET /api/reports/data-quality-warnings` теперь добавляет runtime warnings (не fake zero) для `marketing-source-performance`, `sales-pipeline-health`, `project-delivery-overview`, `specialist-workload-scorecard`; UI `/reports` Data quality показывает тип источника (definition/runtime) и affected records; выдача остаётся permission-aware через `requiredPermissions`
 - Marketing: глубина Board / Attribution Review / popup polish из cleanup — M
 - Marketing: CPL/ROI виджеты только при наличии spend (без фейка) — S
 - Marketing: List.am ↔ Finance Expense Plan связь до UX канона — S

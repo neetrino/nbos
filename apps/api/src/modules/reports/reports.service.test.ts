@@ -299,8 +299,8 @@ describe('ReportsService', () => {
     );
   });
 
-  it('exposes data-quality warnings from module-owned report definitions', () => {
-    const result = service.listDataQualityWarnings(FINANCE_PERMISSIONS);
+  it('exposes data-quality warnings from module-owned report definitions', async () => {
+    const result = await service.listDataQualityWarnings(FINANCE_PERMISSIONS);
 
     expect(result.items).toEqual(
       expect.arrayContaining([
@@ -312,6 +312,36 @@ describe('ReportsService', () => {
         expect.objectContaining({
           reportKey: 'company-pnl',
           code: 'REPORT_NOTE',
+          sourceKind: 'REGISTRY',
+        }),
+      ]),
+    );
+  });
+
+  it('adds runtime marketing data-quality warnings for accessible cross-module reports', async () => {
+    prisma.marketingAccount.findMany.mockResolvedValueOnce([{ financeExpensePlanId: null }]);
+    prisma.marketingActivity.findMany.mockResolvedValueOnce([
+      { budget: 100, expenseCardId: null, status: 'LAUNCHED' },
+    ]);
+    prisma.deal.findMany.mockResolvedValueOnce([]);
+
+    const result = await service.listDataQualityWarnings(CROSS_MODULE_PERMISSIONS);
+
+    expect(result.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reportKey: 'marketing-source-performance',
+          code: 'MISSING_ACCOUNT_FINANCE_LINKS',
+          severity: 'WARNING',
+          sourceKind: 'RUNTIME',
+          details: expect.objectContaining({ count: 1 }),
+        }),
+        expect.objectContaining({
+          reportKey: 'marketing-source-performance',
+          code: 'MISSING_ACTIVITY_EXPENSE_LINKS',
+          severity: 'WARNING',
+          sourceKind: 'RUNTIME',
+          details: expect.objectContaining({ count: 1 }),
         }),
       ]),
     );

@@ -22,6 +22,7 @@ import {
   REPORT_FINANCE_CONFIDENTIALITY,
 } from './reports-audit-context';
 import { renderReportExportFile } from './reports-export-content';
+import { buildRuntimeDataQualityWarnings } from './reports-data-quality-runtime';
 import { hasReportSourceAccess } from './reports-permissions';
 import { findReportDefinition, getReportDefinitions } from './report-definition-registry';
 import { ReportsQueueService } from './reports-queue.service';
@@ -109,49 +110,57 @@ export class ReportsService {
     });
   }
 
-  listDataQualityWarnings(userPermissions: Record<string, string>): {
+  async listDataQualityWarnings(userPermissions: Record<string, string>): Promise<{
     items: ReportDataQualityWarning[];
     meta: { count: number };
-  } {
+  }> {
     const definitions = getReportDefinitions().filter((definition) =>
       hasReportSourceAccess(definition, userPermissions),
     );
-    const items = definitions.flatMap((definition) => {
-      const warnings: ReportDataQualityWarning[] = [
-        {
-          reportKey: definition.key,
-          reportTitle: definition.title,
-          ownerModule: definition.ownerModule,
-          severity: 'INFO',
-          code: 'MODULE_OWNED_SOURCES',
-          message: `${definition.ownerModule} owns this report projection; Reports exposes discovery, exports and schedules.`,
-          sourceEndpoints: definition.sourceEndpoints,
-        },
-      ];
-      for (const note of definition.dataQualityNotes) {
-        warnings.push({
-          reportKey: definition.key,
-          reportTitle: definition.title,
-          ownerModule: definition.ownerModule,
-          severity: 'INFO',
-          code: 'REPORT_NOTE',
-          message: note,
-          sourceEndpoints: definition.sourceEndpoints,
-        });
-      }
-      if (definition.status !== 'READY') {
-        warnings.push({
-          reportKey: definition.key,
-          reportTitle: definition.title,
-          ownerModule: definition.ownerModule,
-          severity: 'WARNING',
-          code: 'INCOMPLETE_PROJECTION',
-          message: 'This report is visible in the catalog but its live projection is incomplete.',
-          sourceEndpoints: definition.sourceEndpoints,
-        });
-      }
-      return warnings;
-    });
+    const warningsByDefinition = await Promise.all(
+      definitions.map(async (definition) => {
+        const warnings: ReportDataQualityWarning[] = [
+          {
+            reportKey: definition.key,
+            reportTitle: definition.title,
+            ownerModule: definition.ownerModule,
+            severity: 'INFO',
+            code: 'MODULE_OWNED_SOURCES',
+            message: `${definition.ownerModule} owns this report projection; Reports exposes discovery, exports and schedules.`,
+            sourceEndpoints: definition.sourceEndpoints,
+            sourceKind: 'REGISTRY',
+          },
+        ];
+        for (const note of definition.dataQualityNotes) {
+          warnings.push({
+            reportKey: definition.key,
+            reportTitle: definition.title,
+            ownerModule: definition.ownerModule,
+            severity: 'INFO',
+            code: 'REPORT_NOTE',
+            message: note,
+            sourceEndpoints: definition.sourceEndpoints,
+            sourceKind: 'REGISTRY',
+          });
+        }
+        if (definition.status !== 'READY') {
+          warnings.push({
+            reportKey: definition.key,
+            reportTitle: definition.title,
+            ownerModule: definition.ownerModule,
+            severity: 'WARNING',
+            code: 'INCOMPLETE_PROJECTION',
+            message: 'This report is visible in the catalog but its live projection is incomplete.',
+            sourceEndpoints: definition.sourceEndpoints,
+            sourceKind: 'REGISTRY',
+          });
+        }
+        const runtimeWarnings = await buildRuntimeDataQualityWarnings(this.prisma, definition);
+        warnings.push(...runtimeWarnings);
+        return warnings;
+      }),
+    );
+    const items = warningsByDefinition.flat();
     return { items, meta: { count: items.length } };
   }
 

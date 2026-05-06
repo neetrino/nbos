@@ -126,7 +126,7 @@ export class ReportsController {
   @ApiOperation({
     summary: 'List report data-quality warnings',
     description:
-      'Read-only warning projection over module-owned report definitions. Reports does not recalculate module formulas.',
+      'Read-only warnings over module-owned report definitions with runtime missing-data checks for Marketing and cross-module projections.',
   })
   listDataQualityWarnings(@CurrentUser() user: CurrentUserPayload) {
     return this.reportsService.listDataQualityWarnings(user.permissions);

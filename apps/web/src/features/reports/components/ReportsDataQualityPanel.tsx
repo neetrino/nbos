@@ -11,6 +11,7 @@ interface ReportsDataQualityPanelProps {
 
 export function ReportsDataQualityPanel({ warnings, onRefresh }: ReportsDataQualityPanelProps) {
   const warningCount = warnings.filter((item) => item.severity === 'WARNING').length;
+  const runtimeCount = warnings.filter((item) => item.sourceKind === 'RUNTIME').length;
 
   return (
     <div className="border-border bg-card rounded-2xl border p-5 shadow-sm">
@@ -30,7 +31,7 @@ export function ReportsDataQualityPanel({ warnings, onRefresh }: ReportsDataQual
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <SummaryCard label="Warnings" value={warningCount} tone="warning" />
-        <SummaryCard label="Info notes" value={warnings.length - warningCount} tone="info" />
+        <SummaryCard label="Runtime checks" value={runtimeCount} tone="info" />
       </div>
 
       {warnings.length === 0 ? (
@@ -88,8 +89,16 @@ function WarningRow({ warning }: { warning: ReportDataQualityWarning }) {
             <span className="bg-muted rounded-full px-2 py-0.5 text-xs font-medium">
               {warning.code}
             </span>
+            <span className="bg-muted rounded-full px-2 py-0.5 text-xs font-medium">
+              {warning.sourceKind === 'RUNTIME' ? 'Runtime' : 'Definition'}
+            </span>
           </div>
           <p className="text-muted-foreground mt-1 text-sm">{warning.message}</p>
+          {typeof warning.details?.count === 'number' ? (
+            <p className="text-muted-foreground mt-1 text-xs">
+              Affected records: {warning.details.count}
+            </p>
+          ) : null}
           {warning.sourceEndpoints.length > 0 ? (
             <p className="text-muted-foreground mt-2 text-xs">
               Sources: {warning.sourceEndpoints.join(', ')}

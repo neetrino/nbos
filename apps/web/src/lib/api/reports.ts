@@ -115,6 +115,11 @@ export interface ReportDataQualityWarning {
   code: string;
   message: string;
   sourceEndpoints: string[];
+  sourceKind?: 'REGISTRY' | 'RUNTIME';
+  details?: {
+    count?: number;
+    affectedMetric?: string;
+  };
 }
 
 export interface ReportDataQualityWarningsResponse {
