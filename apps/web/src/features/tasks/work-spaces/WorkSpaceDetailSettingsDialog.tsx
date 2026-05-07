@@ -12,7 +12,7 @@ import {
 import type { Task } from '@/lib/api/tasks';
 
 import { buildWorkspaceTasksCsvRows } from './work-spaces-csv-rows';
-import { downloadCsvString, rowsToCsvString } from './download-tabular-csv';
+import { downloadCsvString, rowsToCsvString } from '@/lib/download-tabular-csv';
 
 function slugForFilename(name: string): string {
   const s = name
