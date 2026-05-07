@@ -13,5 +13,4 @@ export {
   taskBelongsInWorkspacePrimaryKanban,
 } from './workspace-kanban';
 export { buildMyPlanColumns } from './my-plan-columns';
-export { buildTasksPageKanbanColumns } from './tasks-page-kanban';
 export { TaskListTableView } from './TaskListTableView';

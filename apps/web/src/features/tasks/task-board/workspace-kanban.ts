@@ -1,7 +1,11 @@
 import type { KanbanColumn } from '@/components/shared';
 import type { Task } from '@/lib/api/tasks';
 
-/** Canonical workflow columns for Work Space boards (NBOS Tasks canon). */
+/**
+ * Canonical primary workflow columns for task boards driven by `task.status`
+ * (global Tasks list Board view and Work Space Kanban). DEFERRED/CANCELLED stay
+ * off this board — see `partitionWorkspaceSecondaryTasks`.
+ */
 export const WORKSPACE_KANBAN_COLUMN_DEFS = [
   { key: 'Open', label: 'Open', color: '#3B82F6', hexColor: '#3B82F6', sortOrder: 0 },
   { key: 'In Progress', label: 'In Progress', color: '#A855F7', hexColor: '#A855F7', sortOrder: 1 },

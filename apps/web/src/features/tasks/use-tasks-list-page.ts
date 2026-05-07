@@ -33,7 +33,6 @@ export function useTasksListPage() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [boardView, setBoardView] = useState<TasksListBoardView>('kanban');
-  const [kanbanStages, setKanbanStages] = useState<TaskBoardStage[]>([]);
   const [myPlanStages, setMyPlanStages] = useState<TaskBoardStage[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -67,14 +66,6 @@ export function useTasksListPage() {
     }
   }, [search, filters]);
 
-  const fetchKanbanStages = useCallback(async () => {
-    try {
-      setKanbanStages(await tasksApi.getKanbanStages());
-    } catch {
-      /* non-blocking */
-    }
-  }, []);
-
   const fetchMyPlanStages = useCallback(async () => {
     if (!creatorId) {
       setMyPlanStages([]);
@@ -89,8 +80,7 @@ export function useTasksListPage() {
 
   useEffect(() => {
     void fetchTasks();
-    void fetchKanbanStages();
-  }, [fetchTasks, fetchKanbanStages]);
+  }, [fetchTasks]);
 
   useEffect(() => {
     void fetchMyPlanStages();
@@ -248,7 +238,6 @@ export function useTasksListPage() {
     createElement(TasksListKanbanViews, {
       boardView,
       tasks,
-      kanbanStages,
       myPlanStages,
       onTaskAction: handleAction,
       onTaskClick: handleTaskClick,

@@ -8,10 +8,12 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
+/** Aligns with web `WORKSPACE_KANBAN_COLUMN_DEFS` (status-driven primary board). */
 const kanbanStages = [
-  { boardType: 'KANBAN', title: 'New', color: '#3B82F6', sortOrder: 0, isDefault: true },
-  { boardType: 'KANBAN', title: 'In Progress', color: '#F59E0B', sortOrder: 1, isDefault: false },
-  { boardType: 'KANBAN', title: 'Done', color: '#10B981', sortOrder: 2, isDefault: false },
+  { boardType: 'KANBAN', title: 'Open', color: '#3B82F6', sortOrder: 0, isDefault: true },
+  { boardType: 'KANBAN', title: 'In Progress', color: '#A855F7', sortOrder: 1, isDefault: false },
+  { boardType: 'KANBAN', title: 'Review', color: '#6366F1', sortOrder: 2, isDefault: false },
+  { boardType: 'KANBAN', title: 'Completed', color: '#22C55E', sortOrder: 3, isDefault: false },
 ];
 
 async function main() {

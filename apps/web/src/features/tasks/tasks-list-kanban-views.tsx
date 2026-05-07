@@ -7,15 +7,16 @@ import {
   TaskMiniCard,
   TaskListTableView,
   buildMyPlanColumns,
-  buildTasksPageKanbanColumns,
+  buildWorkspaceKanbanColumns,
+  partitionWorkspaceSecondaryTasks,
 } from '@/features/tasks/task-board';
+import { WorkSpaceSecondaryTasksSection } from '@/features/tasks/work-spaces/WorkSpaceSecondaryTasksSection';
 import type { Task, TaskBoardStage } from '@/lib/api/tasks';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
 export type TasksListKanbanViewsProps = {
   boardView: TasksListBoardView;
   tasks: Task[];
-  kanbanStages: TaskBoardStage[];
   myPlanStages: TaskBoardStage[];
   onTaskAction: (taskId: string, action: 'start' | 'complete' | 'reopen') => void;
   onTaskClick: (task: Task) => void;
@@ -31,7 +32,6 @@ export type TasksListKanbanViewsProps = {
 export function TasksListKanbanViews({
   boardView,
   tasks,
-  kanbanStages,
   myPlanStages,
   onTaskAction,
   onTaskClick,
@@ -82,17 +82,26 @@ export function TasksListKanbanViews({
   }
 
   if (boardView === 'kanban') {
+    const { deferred, cancelled } = partitionWorkspaceSecondaryTasks(tasks);
     return (
-      <div className="min-h-0 flex-1">
-        <KanbanBoard
-          columns={buildTasksPageKanbanColumns(tasks, kanbanStages)}
-          renderCard={renderCard}
-          getItemId={(t) => t.id}
-          onMove={onKanbanMove}
-          onAddItemInColumn={onAddTaskInColumn}
-          addButtonLabel="Quick"
-          columnWidth={270}
-          emptyMessage="No tasks"
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <div className="min-h-0 flex-1">
+          <KanbanBoard
+            columns={buildWorkspaceKanbanColumns(tasks)}
+            renderCard={renderCard}
+            getItemId={(t) => t.id}
+            onMove={onKanbanMove}
+            onAddItemInColumn={onAddTaskInColumn}
+            addButtonLabel="Quick"
+            columnWidth={270}
+            emptyMessage="No tasks"
+          />
+        </div>
+        <WorkSpaceSecondaryTasksSection
+          deferred={deferred}
+          cancelled={cancelled}
+          onAction={onTaskAction}
+          onOpenTask={onTaskClick}
         />
       </div>
     );
