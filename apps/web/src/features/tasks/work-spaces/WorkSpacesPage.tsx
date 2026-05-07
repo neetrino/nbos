@@ -16,7 +16,6 @@ import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDial
 import { WorkSpacesSettingsDialog } from './WorkSpacesSettingsDialog';
 import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
-import { WorkSpacesQuickCreate } from './WorkSpacesQuickCreate';
 import { WORK_SPACES_PAGE_SIZE_OPTIONS } from './work-spaces-page-constants';
 import { useWorkSpacesDirectory } from './use-work-spaces-directory';
 
@@ -141,7 +140,10 @@ export function WorkSpacesPage() {
               ]}
             />
             {tab === 'standalone' ? (
-              <WorkSpacesQuickCreate onCreated={() => void refetch()} />
+              <Button type="button" className="shrink-0 gap-2" onClick={() => setCreateOpen(true)}>
+                <Plus size={16} aria-hidden />
+                New Work Space
+              </Button>
             ) : null}
           </div>
         </div>
@@ -180,9 +182,9 @@ export function WorkSpacesPage() {
           }
           action={
             tab === 'standalone' ? (
-              <Button variant="secondary" onClick={() => setCreateOpen(true)}>
-                <Plus size={16} />
-                Full form (description & Scrum)
+              <Button type="button" onClick={() => setCreateOpen(true)}>
+                <Plus size={16} aria-hidden />
+                New Work Space
               </Button>
             ) : undefined
           }
