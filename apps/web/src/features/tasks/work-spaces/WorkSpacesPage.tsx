@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { FolderKanban, LayoutGrid, List, Package, Plus, RefreshCcw } from 'lucide-react';
+import { FolderKanban, LayoutGrid, List, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   EmptyState,
@@ -67,7 +67,7 @@ export function WorkSpacesPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <header className="space-y-3">
+      <header>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
             <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
@@ -123,19 +123,8 @@ export function WorkSpacesPage() {
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
             <WorkSpacesSettingsDialog items={items} />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => void refetch()}
-              aria-label="Refresh list"
-            >
-              <RefreshCcw size={16} />
-            </Button>
           </div>
         </div>
-        <p className="text-muted-foreground max-w-3xl text-sm">
-          Planning spaces for delivery and operations.
-        </p>
       </header>
 
       <FilterBar
