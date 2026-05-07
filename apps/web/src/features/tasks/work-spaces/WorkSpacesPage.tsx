@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { FolderKanban, Package, Plus, RefreshCcw } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, SegmentedControl } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
 import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
@@ -42,34 +41,53 @@ export function WorkSpacesPage() {
             <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
               Work Spaces
             </h1>
-            <Tabs
+            <SegmentedControl
               value={tab}
-              onValueChange={(value) => setTab(value as 'standalone' | 'product')}
+              onValueChange={(value) => setTab(value)}
+              size="md"
               className="min-w-0 flex-1 sm:w-auto sm:flex-initial"
-            >
-              <TabsList variant="pill" className="w-full min-w-0 sm:w-auto">
-                <TabsTrigger value="standalone" className="group">
-                  <FolderKanban size={16} strokeWidth={2} aria-hidden />
-                  Standalone
-                  <Badge
-                    variant="secondary"
-                    className="group-data-[state=active]:bg-foreground/10 group-data-[state=active]:text-foreground h-5 min-w-5 rounded-full px-1.5 text-xs font-medium tabular-nums"
-                  >
-                    {counts.standalone}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="product" className="group">
-                  <Package size={16} strokeWidth={2} aria-hidden />
-                  Product
-                  <Badge
-                    variant="secondary"
-                    className="group-data-[state=active]:bg-foreground/10 group-data-[state=active]:text-foreground h-5 min-w-5 rounded-full px-1.5 text-xs font-medium tabular-nums"
-                  >
-                    {counts.product}
-                  </Badge>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+              trackClassName="w-full min-w-0 sm:w-auto"
+              items={[
+                {
+                  value: 'standalone',
+                  icon: <FolderKanban size={14} aria-hidden />,
+                  label: (
+                    <span className="flex items-center gap-2">
+                      Standalone
+                      <span
+                        className={cn(
+                          'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums',
+                          tab === 'standalone'
+                            ? 'bg-primary-foreground/20 text-primary-foreground'
+                            : 'bg-secondary text-secondary-foreground',
+                        )}
+                      >
+                        {counts.standalone}
+                      </span>
+                    </span>
+                  ),
+                },
+                {
+                  value: 'product',
+                  icon: <Package size={14} aria-hidden />,
+                  label: (
+                    <span className="flex items-center gap-2">
+                      Product
+                      <span
+                        className={cn(
+                          'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums',
+                          tab === 'product'
+                            ? 'bg-primary-foreground/20 text-primary-foreground'
+                            : 'bg-secondary text-secondary-foreground',
+                        )}
+                      >
+                        {counts.product}
+                      </span>
+                    </span>
+                  ),
+                },
+              ]}
+            />
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
             <Button

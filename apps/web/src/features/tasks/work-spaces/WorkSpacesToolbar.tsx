@@ -1,7 +1,7 @@
 'use client';
 
 import { LayoutGrid, List, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { SegmentedControl } from '@/components/shared';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -16,7 +16,6 @@ import { WORK_SPACES_PAGE_SIZE_OPTIONS } from './work-spaces-page-constants';
 import {
   WORK_SPACES_CONTROL_PILL,
   WORK_SPACES_TOOLBAR_SURFACE,
-  WORK_SPACES_VIEW_TOGGLE_WRAP,
 } from './work-spaces-toolbar-constants';
 
 type WorkSpaceDirectoryTab = 'standalone' | 'product';
@@ -103,28 +102,23 @@ export function WorkSpacesToolbar({
             </SelectContent>
           </Select>
 
-          <div className={cn(WORK_SPACES_VIEW_TOGGLE_WRAP, 'ml-auto xl:ml-0')}>
-            <Button
-              type="button"
-              variant={view === 'grid' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-8 rounded-full px-3"
-              onClick={() => onViewChange('grid')}
-              aria-label="Card grid view"
-            >
-              <LayoutGrid size={16} />
-            </Button>
-            <Button
-              type="button"
-              variant={view === 'list' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-8 rounded-full px-3"
-              onClick={() => onViewChange('list')}
-              aria-label="List view"
-            >
-              <List size={16} />
-            </Button>
-          </div>
+          <SegmentedControl
+            value={view}
+            onValueChange={onViewChange}
+            className="ml-auto shrink-0 xl:ml-0"
+            items={[
+              {
+                value: 'grid',
+                label: <LayoutGrid size={14} aria-hidden />,
+                ariaLabel: 'Card grid view',
+              },
+              {
+                value: 'list',
+                label: <List size={14} aria-hidden />,
+                ariaLabel: 'List view',
+              },
+            ]}
+          />
         </div>
       </div>
     </div>

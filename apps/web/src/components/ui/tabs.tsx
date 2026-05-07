@@ -6,7 +6,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
-const TabsListVariantContext = React.createContext<'default' | 'line' | 'pill'>('default');
+const TabsListVariantContext = React.createContext<'default' | 'line'>('default');
 
 const Tabs = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Root>,
@@ -22,7 +22,6 @@ export const tabsListVariants = cva('', {
       default:
         'inline-flex h-10 items-center justify-center rounded-lg bg-muted p-0.5 text-muted-foreground/70',
       line: 'inline-flex h-auto w-full min-w-0 items-center justify-start gap-0 rounded-none border-b border-border bg-transparent p-0 text-muted-foreground/70',
-      pill: 'inline-flex h-auto w-full min-w-0 items-center justify-stretch gap-1 rounded-full bg-muted p-1 text-muted-foreground sm:inline-flex sm:w-auto sm:justify-start',
     },
   },
   defaultVariants: {
@@ -54,11 +53,6 @@ const tabsTriggerVariants = cva(
         default:
           'rounded-md px-3 py-1.5 text-sm hover:text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:shadow-black/5',
         line: 'relative gap-2 rounded-none border-0 bg-transparent px-3 py-2.5 text-sm shadow-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-transparent after:transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:bg-primary sm:px-4',
-        pill:
-          'flex-1 gap-2 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground/70 hover:text-muted-foreground sm:flex-initial [&_svg]:text-muted-foreground/55 ' +
-          'data-[state=active]:bg-background data-[state=active]:font-semibold data-[state=active]:text-foreground ' +
-          'data-[state=active]:shadow-[0_8px_20px_rgba(15,23,42,0.14),0_2px_8px_rgba(15,23,42,0.08)] ' +
-          'data-[state=active]:[&_svg]:text-foreground',
       },
     },
     defaultVariants: {

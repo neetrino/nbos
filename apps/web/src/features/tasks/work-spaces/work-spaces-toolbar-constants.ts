@@ -1,4 +1,4 @@
-/** Flat track — same idea as TabsList `pill` (muted, no heavy outer shadow). */
+/** Flat toolbar strip behind search and filters. */
 export const WORK_SPACES_TOOLBAR_SURFACE = 'rounded-2xl bg-muted p-2 sm:p-2.5';
 
 /**
@@ -8,10 +8,6 @@ export const WORK_SPACES_TOOLBAR_SURFACE = 'rounded-2xl bg-muted p-2 sm:p-2.5';
 export const WORK_SPACES_CONTROL_PILL =
   'rounded-full border-0 bg-background shadow-sm shadow-black/[0.05] ' +
   'transition-shadow focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-2 focus-visible:ring-offset-muted';
-
-/** Segmented view switch — white mini-capsule inside the muted toolbar. */
-export const WORK_SPACES_VIEW_TOGGLE_WRAP =
-  'inline-flex h-10 shrink-0 items-center gap-0.5 rounded-full bg-background p-1 shadow-sm shadow-black/[0.05]';
 
 /** Quick-create row — same white pill treatment. */
 export const WORK_SPACES_QUICK_CREATE_WRAP =

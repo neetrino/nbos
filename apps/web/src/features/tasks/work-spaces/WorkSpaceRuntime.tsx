@@ -1,10 +1,9 @@
 'use client';
 
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
-import { CheckSquare, Clock, LayoutGrid, List, Plus, RefreshCcw, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { CheckSquare, Plus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { KanbanBoard } from '@/components/shared';
+import { KanbanBoard, SegmentedControl } from '@/components/shared';
 import {
   TaskMiniCard,
   TaskListTableView,
@@ -16,6 +15,7 @@ import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { useWorkspaceRuntimeBoard } from './use-workspace-runtime-board';
 
@@ -172,60 +172,11 @@ export function WorkSpaceRuntime({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4" data-workspace-runtime={mode}>
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-        <div className="border-border bg-muted/50 flex flex-wrap items-center gap-0.5 rounded-lg border p-0.5">
-          <button
-            type="button"
-            onClick={() => setBoardView('deadline')}
-            className={cn(
-              'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
-              boardView === 'deadline'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-          >
-            <Clock size={14} />
-            Deadline
-          </button>
-          <button
-            type="button"
-            onClick={() => setBoardView('my-plan')}
-            className={cn(
-              'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
-              boardView === 'my-plan'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-          >
-            <User size={14} />
-            My Plan
-          </button>
-          <button
-            type="button"
-            onClick={() => setBoardView('kanban')}
-            className={cn(
-              'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
-              boardView === 'kanban'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-          >
-            <LayoutGrid size={14} />
-            Board
-          </button>
-          <button
-            type="button"
-            onClick={() => setBoardView('list')}
-            className={cn(
-              'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
-              boardView === 'list'
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-            )}
-          >
-            <List size={14} />
-            List
-          </button>
-        </div>
+        <SegmentedControl
+          value={boardView}
+          onValueChange={setBoardView}
+          items={TASKS_BOARD_VIEW_SEGMENTS}
+        />
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh work space">
             <RefreshCcw size={16} />

@@ -1,20 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Plus,
-  RefreshCcw,
-  CheckSquare,
-  Clock,
-  User,
-  LayoutGrid,
-  List,
-  FolderKanban,
-  TableProperties,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Plus, RefreshCcw, CheckSquare, FolderKanban, TableProperties } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { PageHeader, FilterBar, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import {
+  PageHeader,
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  SegmentedControl,
+} from '@/components/shared';
+import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import { useTasksListPage } from '@/features/tasks/use-tasks-list-page';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
@@ -72,60 +69,11 @@ export default function TasksPage() {
           >
             <TableProperties size={16} aria-hidden />
           </Button>
-          <div className="border-border bg-muted/50 flex rounded-lg border p-0.5">
-            <button
-              type="button"
-              onClick={() => setBoardView('deadline')}
-              className={cn(
-                'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
-                boardView === 'deadline'
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
-            >
-              <Clock size={14} />
-              Deadline
-            </button>
-            <button
-              type="button"
-              onClick={() => setBoardView('my-plan')}
-              className={cn(
-                'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
-                boardView === 'my-plan'
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
-            >
-              <User size={14} />
-              My Plan
-            </button>
-            <button
-              type="button"
-              onClick={() => setBoardView('kanban')}
-              className={cn(
-                'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
-                boardView === 'kanban'
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
-            >
-              <LayoutGrid size={14} />
-              Board
-            </button>
-            <button
-              type="button"
-              onClick={() => setBoardView('list')}
-              className={cn(
-                'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
-                boardView === 'list'
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
-            >
-              <List size={14} />
-              List
-            </button>
-          </div>
+          <SegmentedControl
+            value={boardView}
+            onValueChange={setBoardView}
+            items={TASKS_BOARD_VIEW_SEGMENTS}
+          />
           <Button
             onClick={() => setQuickCreateOpen(true)}
             disabled={newTaskDisabled}
