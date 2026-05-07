@@ -140,9 +140,14 @@ export function WorkSpacesPage() {
               ]}
             />
             {tab === 'standalone' ? (
-              <Button type="button" className="shrink-0 gap-2" onClick={() => setCreateOpen(true)}>
+              <Button
+                type="button"
+                className="shrink-0 gap-2"
+                aria-label="Create new work space"
+                onClick={() => setCreateOpen(true)}
+              >
                 <Plus size={16} aria-hidden />
-                New Work Space
+                Space
               </Button>
             ) : null}
           </div>
@@ -182,9 +187,13 @@ export function WorkSpacesPage() {
           }
           action={
             tab === 'standalone' ? (
-              <Button type="button" onClick={() => setCreateOpen(true)}>
+              <Button
+                type="button"
+                aria-label="Create new work space"
+                onClick={() => setCreateOpen(true)}
+              >
                 <Plus size={16} aria-hidden />
-                New Work Space
+                Space
               </Button>
             ) : undefined
           }
