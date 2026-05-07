@@ -121,8 +121,28 @@ export function WorkSpacesPage() {
               ]}
             />
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
             <WorkSpacesSettingsDialog items={items} />
+            <SegmentedControl
+              value={view}
+              onValueChange={setView}
+              className="shrink-0"
+              items={[
+                {
+                  value: 'grid',
+                  label: <LayoutGrid size={14} aria-hidden />,
+                  ariaLabel: 'Card grid view',
+                },
+                {
+                  value: 'list',
+                  label: <List size={14} aria-hidden />,
+                  ariaLabel: 'List view',
+                },
+              ]}
+            />
+            {tab === 'standalone' ? (
+              <WorkSpacesQuickCreate onCreated={() => void refetch()} />
+            ) : null}
           </div>
         </div>
       </header>
@@ -143,30 +163,6 @@ export function WorkSpacesPage() {
           }
         }}
         onClearFilters={mode !== 'all' ? () => setMode('all') : undefined}
-        actions={
-          <div className="flex w-full min-w-0 flex-wrap items-center gap-2.5 sm:ml-auto sm:w-auto">
-            {tab === 'standalone' ? (
-              <WorkSpacesQuickCreate onCreated={() => void refetch()} />
-            ) : null}
-            <SegmentedControl
-              value={view}
-              onValueChange={setView}
-              className="ml-auto shrink-0 sm:ml-0"
-              items={[
-                {
-                  value: 'grid',
-                  label: <LayoutGrid size={14} aria-hidden />,
-                  ariaLabel: 'Card grid view',
-                },
-                {
-                  value: 'list',
-                  label: <List size={14} aria-hidden />,
-                  ariaLabel: 'List view',
-                },
-              ]}
-            />
-          </div>
-        }
       />
 
       {loading ? (
