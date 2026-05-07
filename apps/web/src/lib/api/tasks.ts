@@ -43,7 +43,6 @@ export interface Task {
   parentId: string | null;
   workspaceId: string | null;
   planningStatus: string;
-  kanbanStageId: string | null;
   myPlanStageId: string | null;
   myPlanSortOrder: number;
   workspaceSortOrder: number;
@@ -130,11 +129,21 @@ export interface WorkSpace {
   _count?: { tasks: number };
 }
 
-interface WorkSpaceQueryParams {
+export interface WorkSpaceQueryParams {
   projectId?: string;
   productId?: string;
   extensionId?: string;
   type?: WorkSpace['type'];
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  mode?: 'all' | 'scrum' | 'kanban';
+}
+
+export interface WorkSpaceListPayload {
+  items: WorkSpace[];
+  meta: { total: number; page: number; pageSize: number; totalPages: number };
+  counts: { standalone: number; product: number; total: number };
 }
 
 interface ListData<T> {
@@ -229,8 +238,8 @@ export const tasksApi = {
   },
 
   // Work Spaces
-  async getWorkSpaces(params?: WorkSpaceQueryParams): Promise<WorkSpace[]> {
-    const resp = await api.get<WorkSpace[]>('/api/tasks/work-spaces', { params });
+  async getWorkSpaces(params?: WorkSpaceQueryParams): Promise<WorkSpaceListPayload> {
+    const resp = await api.get<WorkSpaceListPayload>('/api/tasks/work-spaces', { params });
     return resp.data;
   },
   async getWorkSpaceById(id: string): Promise<WorkSpace> {
@@ -296,11 +305,7 @@ export const tasksApi = {
     await api.delete(`/api/tasks/checklists/${checklistId}`);
   },
 
-  // Board stages
-  async getKanbanStages(): Promise<TaskBoardStage[]> {
-    const resp = await api.get<TaskBoardStage[]>('/api/task-boards/kanban/stages');
-    return resp.data;
-  },
+  // Board stages (MY_PLAN; global KANBAN columns are status-driven in the app)
   async getMyPlanStages(ownerId: string): Promise<TaskBoardStage[]> {
     const resp = await api.get<TaskBoardStage[]>('/api/task-boards/my-plan/stages', {
       params: { ownerId },
@@ -308,10 +313,9 @@ export const tasksApi = {
     return resp.data;
   },
   async createStage(data: {
-    boardType: 'KANBAN' | 'MY_PLAN';
     title: string;
     color?: string;
-    ownerId?: string;
+    ownerId: string;
   }): Promise<TaskBoardStage> {
     const resp = await api.post<TaskBoardStage>('/api/task-boards/stages', data);
     return resp.data;

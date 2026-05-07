@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { auth } from '@/auth';
 import {
   LayoutDashboard,
@@ -63,7 +62,14 @@ export default async function LandingPage() {
       <nav className="border-border/60 border-b">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center">
-            <Image src="/logo/logo.svg" alt="NBOS" width={172} height={28} className="h-7 w-auto" />
+            <img
+              src="/logo/logo.svg"
+              alt="NBOS"
+              width={168}
+              height={28}
+              fetchPriority="high"
+              className="h-7 w-auto"
+            />
           </div>
           <div className="flex items-center gap-3">
             {user ? (
@@ -222,7 +228,7 @@ export default async function LandingPage() {
       <footer className="border-border/60 border-t py-8">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6">
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
-            <Image src="/logo/logo.svg" alt="NBOS" width={129} height={20} className="h-5 w-auto" />
+            <img src="/logo/logo.svg" alt="NBOS" width={120} height={20} className="h-5 w-auto" />
             NBOS by Neetrino
           </div>
           <p className="text-muted-foreground text-xs">

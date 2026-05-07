@@ -101,15 +101,16 @@
 - [apps/api/src/modules/tasks/task-boards.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/task-boards.service.ts:17)
 - [apps/api/src/modules/tasks/tasks.service.ts](/Users/user/{} Development/1. Production/nbos/apps/api/src/modules/tasks/tasks.service.ts:190)
 
-Что уже хорошо:
+Что уже хорошо (актуально после выравнивания):
 
-- есть отдельные board stages для `KANBAN` и `MY_PLAN`;
-- у задачи есть `kanbanStageId` и `myPlanStageId`.
+- **Board** (глобальный Tasks и Work Space Kanban): колонки только из **`Task.status`** (Open / In Progress / Review / Completed; отложенные/отменённые вне основной доски).
+- **My Plan**: настраиваемые колонки в `task_board_stages` с `boardType = MY_PLAN` и поле задачи **`myPlanStageId`**; API стадий создаёт только MY_PLAN (`POST /task-boards/stages` с `ownerId`).
+- Поле **`kanbanStageId`** и строки KANBAN в `task_board_stages` удалены: общий KANBAN в БД не используется.
 
 Вывод:
 
-- архитектура уже понимает, что views могут быть разными;
-- это хороший промежуточный фундамент для будущего `Work Space`.
+- views разделены: статусная доска vs персональный план по стадиям;
+- это согласовано с `Work Space` и каноном primary board.
 
 ---
 

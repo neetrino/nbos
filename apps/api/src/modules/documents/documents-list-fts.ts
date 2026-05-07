@@ -19,12 +19,13 @@ export interface SearchDocumentsListFtsParams {
   colleagueIds: string[];
 }
 
-function sqlUuidArray(ids: string[]) {
-  if (ids.length === 0) return sql`ARRAY[]::uuid[]`;
+/** Document/employee FK columns are `TEXT` in PostgreSQL; `uuid[]` breaks `= ANY(...)` comparisons. */
+function sqlTextIdArray(ids: string[]) {
+  if (ids.length === 0) return sql`ARRAY[]::text[]`;
   return sql`ARRAY[${join(
-    ids.map((id) => sql`${id}::uuid`),
+    ids.map((id) => sql`${id}`),
     ', ',
-  )}]::uuid[]`;
+  )}]::text[]`;
 }
 
 function ftsListAccessSql(p: {
@@ -32,7 +33,7 @@ function ftsListAccessSql(p: {
   employeeId: string;
   colleagueIds: string[];
 }) {
-  const arr = sqlUuidArray(p.colleagueIds);
+  const arr = sqlTextIdArray(p.colleagueIds);
   const rbac =
     p.viewScope === 'ALL'
       ? sql`TRUE`

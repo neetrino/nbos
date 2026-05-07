@@ -2,18 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Plus,
-  RefreshCcw,
-  FolderKanban,
-  LayoutGrid,
-  List,
-  User,
-  Building2,
-  Archive,
-} from 'lucide-react';
+import { FolderKanban, LayoutGrid, List, Plus, User, Building2, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableHeader,
@@ -22,8 +12,16 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import {
+  FilterBar,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  SegmentedControl,
+} from '@/components/shared';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
+import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
+import { ProjectsPageSettingsDialog } from '@/features/projects/components/ProjectsPageSettingsDialog';
 import { projectsApi, type Project } from '@/lib/api/projects';
 
 type ViewMode = 'grid' | 'list';
@@ -36,6 +34,7 @@ export default function ProjectsPage() {
   const [search, setSearch] = useState('');
   const [view, setView] = useState<ViewMode>('grid');
   const [activeTab, setActiveTab] = useState('all');
+  const [createOpen, setCreateOpen] = useState(false);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -56,61 +55,72 @@ export default function ProjectsPage() {
   }, [search, activeTab]);
 
   useEffect(() => {
-    fetchProjects();
+    void fetchProjects();
   }, [fetchProjects]);
 
   const handleClick = (project: Project) => {
     router.push(`/projects/${project.id}`);
   };
 
+  const hasSearch = search.trim().length > 0;
+
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Project Hub" description={`${projects.length} projects`}>
-        <Button variant="outline" size="icon" onClick={fetchProjects}>
-          <RefreshCcw size={16} />
-        </Button>
-        <div className="border-border flex rounded-lg border">
-          <Button
-            variant={view === 'grid' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('grid')}
-            className="rounded-r-none"
-          >
-            <LayoutGrid size={14} />
-          </Button>
-          <Button
-            variant={view === 'list' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('list')}
-            className="rounded-l-none"
-          >
-            <List size={14} />
-          </Button>
+      <header>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
+            <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
+              Project Hub
+            </h1>
+            <SegmentedControl
+              value={activeTab}
+              onValueChange={setActiveTab}
+              size="md"
+              className="min-w-0 flex-1 sm:w-auto sm:flex-initial"
+              trackClassName="w-full min-w-0 sm:w-auto"
+              items={PROJECT_HUB_TABS.map((tab) => ({
+                value: tab.value,
+                label: tab.label,
+              }))}
+            />
+          </div>
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
+            <ProjectsPageSettingsDialog items={projects} />
+            <SegmentedControl
+              value={view}
+              onValueChange={(v) => setView(v as ViewMode)}
+              className="shrink-0"
+              items={[
+                {
+                  value: 'grid',
+                  label: <LayoutGrid size={14} aria-hidden />,
+                  ariaLabel: 'Card grid view',
+                },
+                {
+                  value: 'list',
+                  label: <List size={14} aria-hidden />,
+                  ariaLabel: 'List view',
+                },
+              ]}
+            />
+            <Button
+              type="button"
+              className="shrink-0 gap-2"
+              aria-label="Create new project"
+              onClick={() => setCreateOpen(true)}
+            >
+              <Plus size={16} aria-hidden />
+              Project
+            </Button>
+          </div>
         </div>
-        <Button>
-          <Plus size={16} />
-          New Project
-        </Button>
-      </PageHeader>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          {PROJECT_HUB_TABS.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      </header>
 
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search projects by name..."
-        filters={[]}
-        filterValues={{}}
-        onFilterChange={() => {}}
-        onClearFilters={() => {}}
+        searchPlaceholder="Search projects by name…"
+        onClearFilters={hasSearch ? () => setSearch('') : undefined}
       />
 
       {loading ? (
@@ -123,9 +133,13 @@ export default function ProjectsPage() {
           title="No projects found"
           description="Create your first project to get started"
           action={
-            <Button>
-              <Plus size={16} />
-              Create First Project
+            <Button
+              type="button"
+              aria-label="Create new project"
+              onClick={() => setCreateOpen(true)}
+            >
+              <Plus size={16} aria-hidden />
+              Project
             </Button>
           }
         />
@@ -219,6 +233,15 @@ export default function ProjectsPage() {
           </Table>
         </div>
       )}
+
+      <CreateProjectHubDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(project) => {
+          void fetchProjects();
+          router.push(`/projects/${project.id}`);
+        }}
+      />
     </div>
   );
 }

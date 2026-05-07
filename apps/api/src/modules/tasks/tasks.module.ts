@@ -10,10 +10,13 @@ import { WorkSpacesService } from './work-spaces.service';
 
 @Module({
   controllers: [
+    // WorkSpacesController must be registered before TasksController: otherwise
+    // GET /tasks/:id on TasksController captures the literal segment "work-spaces"
+    // and GET /api/tasks/work-spaces never reaches WorkSpacesController.
+    WorkSpacesController,
     TasksController,
     TaskBoardsController,
     RecurringTasksController,
-    WorkSpacesController,
   ],
   providers: [TasksService, TaskBoardsService, RecurringTasksService, WorkSpacesService],
   exports: [TasksService, TaskBoardsService, RecurringTasksService, WorkSpacesService],

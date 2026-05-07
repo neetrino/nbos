@@ -47,7 +47,7 @@
 ## 6. Seed սկրիպտեր
 
 - `packages/database/prisma/seed.ts`
-- `seed-admin.ts`, `seed-rbac.ts`, `seed-system-lists.ts`, `seed-messenger.ts`, `seed-mail.ts`, `seed-board-stages.ts`, …
+- `seed-admin.ts`, `seed-rbac.ts`, `seed-system-lists.ts`, `seed-messenger.ts`, `seed-mail.ts`, …
 
 `package.json` script՝ `pnpm db:seed` → `pnpm --filter @nbos/database seed`։
 

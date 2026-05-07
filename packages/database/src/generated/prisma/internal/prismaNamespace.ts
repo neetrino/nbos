@@ -9353,7 +9353,6 @@ export const TaskScalarFieldEnum = {
   completedAt: 'completedAt',
   completionRules: 'completionRules',
   parentId: 'parentId',
-  kanbanStageId: 'kanbanStageId',
   myPlanStageId: 'myPlanStageId',
   myPlanSortOrder: 'myPlanSortOrder',
   workspaceSortOrder: 'workspaceSortOrder',

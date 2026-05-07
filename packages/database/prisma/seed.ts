@@ -59,6 +59,7 @@ async function main() {
   await prisma.domain.deleteMany();
   await prisma.supportTicket.deleteMany();
   await prisma.task.deleteMany();
+  await prisma.workSpace.deleteMany();
   await prisma.extension.deleteMany();
   await prisma.product.deleteMany();
   await prisma.deal.deleteMany();
@@ -1227,6 +1228,89 @@ async function main() {
     });
   }
   console.log('  ✓ Tasks (10)');
+
+  // ── Work Spaces (demo) + workspace-scoped tasks ─────────────
+  const DEMO_WORKSPACE_FILLED_ID = 'a0000001-0000-4000-8000-000000000001';
+  const DEMO_WORKSPACE_EMPTY_ID = 'a0000002-0000-4000-8000-000000000002';
+
+  await prisma.workSpace.upsert({
+    where: { id: DEMO_WORKSPACE_FILLED_ID },
+    update: {},
+    create: {
+      id: DEMO_WORKSPACE_FILLED_ID,
+      name: 'Demo operational workspace',
+      type: 'STANDALONE_OPERATIONAL',
+      scrumEnabled: false,
+      description: 'Seeded with tasks for board, list, and secondary sections.',
+    },
+  });
+  await prisma.workSpace.upsert({
+    where: { id: DEMO_WORKSPACE_EMPTY_ID },
+    update: {},
+    create: {
+      id: DEMO_WORKSPACE_EMPTY_ID,
+      name: 'Empty demo workspace',
+      type: 'STANDALONE_OPERATIONAL',
+      scrumEnabled: false,
+      description: 'No tasks — open Board to verify empty columns.',
+    },
+  });
+
+  const workspaceTaskDefs = [
+    {
+      code: 'T-2026-WS-0001',
+      title: 'Demo WS — Open queue',
+      status: 'OPEN' as const,
+      priority: 'HIGH' as const,
+    },
+    {
+      code: 'T-2026-WS-0002',
+      title: 'Demo WS — In progress',
+      status: 'IN_PROGRESS' as const,
+      priority: 'NORMAL' as const,
+    },
+    {
+      code: 'T-2026-WS-0003',
+      title: 'Demo WS — In review',
+      status: 'REVIEW' as const,
+      priority: 'NORMAL' as const,
+    },
+    {
+      code: 'T-2026-WS-0004',
+      title: 'Demo WS — Completed',
+      status: 'COMPLETED' as const,
+      priority: 'LOW' as const,
+    },
+    {
+      code: 'T-2026-WS-0005',
+      title: 'Demo WS — Deferred',
+      status: 'DEFERRED' as const,
+      priority: 'LOW' as const,
+    },
+    {
+      code: 'T-2026-WS-0006',
+      title: 'Demo WS — Cancelled',
+      status: 'CANCELLED' as const,
+      priority: 'LOW' as const,
+    },
+  ];
+
+  for (const wt of workspaceTaskDefs) {
+    await prisma.task.upsert({
+      where: { code: wt.code },
+      update: { workspaceId: DEMO_WORKSPACE_FILLED_ID },
+      create: {
+        code: wt.code,
+        title: wt.title,
+        creatorId: pm.id,
+        assigneeId: dev.id,
+        workspaceId: DEMO_WORKSPACE_FILLED_ID,
+        status: wt.status,
+        priority: wt.priority,
+      },
+    });
+  }
+  console.log('  ✓ Work spaces (2) + workspace tasks (6)');
 
   // ── Support Tickets (5) ────────────────────────────────────
   await prisma.supportTicket.create({

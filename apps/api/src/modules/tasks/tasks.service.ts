@@ -38,7 +38,6 @@ interface UpdateTaskDto {
   startDate?: string | null;
   dueDate?: string | null;
   parentId?: string | null;
-  kanbanStageId?: string | null;
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
   workspaceId?: string | null;
@@ -156,7 +155,6 @@ export class TasksService {
           dueDate: data.dueDate ? new Date(data.dueDate) : null,
         }),
         ...(data.parentId !== undefined && { parentId: data.parentId }),
-        ...(data.kanbanStageId !== undefined && { kanbanStageId: data.kanbanStageId }),
         ...(data.myPlanStageId !== undefined && { myPlanStageId: data.myPlanStageId }),
         ...(data.myPlanSortOrder !== undefined && { myPlanSortOrder: data.myPlanSortOrder }),
         ...(data.workspaceId !== undefined && { workspaceId: data.workspaceId }),

@@ -49,7 +49,7 @@ acceptance criteria, and visible progress.
 - [ ] Add missing negative-path tests for payment/order synchronization.
 - [ ] Run baseline measurements for critical API routes.
 - [ ] Run baseline measurements for critical web pages.
-- [ ] Record baseline result in this document and `docs/DEVELOPMENT_PLAN.md`.
+- [ ] Record baseline result in this document and `docs/IMPLEMENTATION_PROGRESS.md`.
 
 ## Acceptance criteria
 
@@ -61,5 +61,5 @@ acceptance criteria, and visible progress.
 
 When Week 2 is complete:
 
-1. Update `docs/DEVELOPMENT_PLAN.md` progress log.
+1. Update `docs/IMPLEMENTATION_PROGRESS.md` / `docs/IMPLEMENTATION_DONE.md` when closing slices.
 2. Start module block 2 from `docs/execution/01-module-delivery-matrix.md`.

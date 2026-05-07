@@ -11,18 +11,35 @@ export class WorkSpacesController {
 
   @Get()
   @RequirePermission('TASKS', 'VIEW')
-  @ApiOperation({ summary: 'List Work Spaces' })
+  @ApiOperation({ summary: 'List Work Spaces (paginated)' })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'extensionId', required: false })
   @ApiQuery({ name: 'type', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'pageSize', required: false })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'mode', required: false, description: 'all | scrum | kanban' })
   async findAll(
     @Query('projectId') projectId?: string,
     @Query('productId') productId?: string,
     @Query('extensionId') extensionId?: string,
     @Query('type') type?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('search') search?: string,
+    @Query('mode') mode?: string,
   ) {
-    return this.workSpacesService.findAll({ projectId, productId, extensionId, type });
+    return this.workSpacesService.findAll({
+      projectId,
+      productId,
+      extensionId,
+      type,
+      page: page ? parseInt(page, 10) : undefined,
+      pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
+      search,
+      mode,
+    });
   }
 
   @Get(':id')

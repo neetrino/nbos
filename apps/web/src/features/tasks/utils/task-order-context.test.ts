@@ -16,7 +16,6 @@ const taskBase = {
   parentId: null,
   workspaceId: null,
   planningStatus: 'UNPLANNED',
-  kanbanStageId: null,
   myPlanStageId: null,
   myPlanSortOrder: 0,
   workspaceSortOrder: 0,

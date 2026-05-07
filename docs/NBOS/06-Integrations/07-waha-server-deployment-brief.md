@@ -77,7 +77,7 @@ WhatsApp Gateway
 - Реализовать **тонкий клиент** к Gateway (send, health/QR через Gateway, приём нормализованных сообщений).
 - Подключить Messenger External + Notifications к этому API; Drive — по контракту передачи вложений (см. boundary doc).
 
-Roadmap-срез: `docs/PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md` (блок WhatsApp / WAHA).
+Roadmap-срез: `docs/PHASE_7_INTEGRATIONS.md` (блок WhatsApp / WAHA).
 
 ---
 
@@ -86,4 +86,4 @@ Roadmap-срез: `docs/PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md` (блок W
 - `docs/NBOS/06-Integrations/01-WhatsApp-Integration.md`
 - `docs/NBOS/06-Integrations/06-WhatsApp-Gateway-NBOS-Boundary.md`
 - `docs/NBOS/02-Modules/13-Notifications/04-Notification-Integrations.md`
-- `docs/PHASE_7_INTEGRATIONS_MIGRATION_WORK_PLAN.md`
+- `docs/PHASE_7_INTEGRATIONS.md`

@@ -27,6 +27,10 @@ interface QuickCreateTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   creatorId: string;
+  /**
+   * When true and the user is loaded but `creatorId` is empty, creation is blocked (invalid employee FK).
+   */
+  creatorReady?: boolean;
   defaultLink?: { entityType: string; entityId: string };
   /** Prefill due date when opening from a column (e.g. Deadline view) */
   defaultDueDate?: string | null;
@@ -40,6 +44,7 @@ export function QuickCreateTaskDialog({
   open,
   onOpenChange,
   creatorId,
+  creatorReady = true,
   defaultLink,
   defaultDueDate,
   defaultWorkspaceId,
@@ -67,7 +72,7 @@ export function QuickCreateTaskDialog({
   };
 
   const handleCreate = async () => {
-    if (!title.trim()) return;
+    if (!title.trim() || !creatorId) return;
     setSaving(true);
     try {
       const task = await tasksApi.create({
@@ -106,6 +111,12 @@ export function QuickCreateTaskDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {creatorReady && !creatorId && (
+            <p className="text-destructive text-sm">
+              Your account is not linked to an employee record, so tasks cannot be created. Try
+              signing in again or contact an administrator.
+            </p>
+          )}
           <div>
             <Label htmlFor="task-title">Title *</Label>
             <Input
@@ -160,7 +171,10 @@ export function QuickCreateTaskDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreate} disabled={saving || !title.trim()}>
+          <Button
+            onClick={handleCreate}
+            disabled={saving || !title.trim() || (creatorReady && !creatorId)}
+          >
             {saving ? 'Creating...' : 'Create Task'}
           </Button>
         </DialogFooter>
