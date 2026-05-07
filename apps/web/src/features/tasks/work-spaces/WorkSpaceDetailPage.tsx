@@ -16,11 +16,11 @@ import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-seg
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
 import { EditWorkSpaceDialog } from './EditWorkSpaceDialog';
+import { WorkSpaceDetailSettingsDialog } from './WorkSpaceDetailSettingsDialog';
 import { WorkSpaceRuntime } from './WorkSpaceRuntime';
 import {
   buildWorkSpaceContextHref,
   buildDefaultTaskLink,
-  getWorkSpaceContextLabel,
   getWorkSpaceTypeLabel,
   getWorkSpaceTypeVariant,
 } from './work-space-utils';
@@ -34,6 +34,7 @@ export function WorkSpaceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
   const openQuickCreateRef = useRef<(() => void) | null>(null);
 
@@ -77,29 +78,16 @@ export function WorkSpaceDetailPage() {
       <PageHeader
         title={workspace.name}
         description={
-          <div className="space-y-2">
-            <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm">
-              <span>{getWorkSpaceContextLabel(workspace)}</span>
-              <span className="text-muted-foreground/40 hidden sm:inline" aria-hidden>
-                ·
-              </span>
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge
-                  label={getWorkSpaceTypeLabel(workspace.type)}
-                  variant={getWorkSpaceTypeVariant(workspace.type)}
-                />
-                <StatusBadge
-                  label={workspace.scrumEnabled ? 'Scrum' : 'Kanban'}
-                  variant={workspace.scrumEnabled ? 'blue' : 'gray'}
-                />
-                <span className="text-foreground/80 tabular-nums">{tasks.length} tasks</span>
-              </div>
-            </div>
-            {workspace.description ? (
-              <p className="text-muted-foreground line-clamp-2 max-w-3xl text-xs leading-relaxed">
-                {workspace.description}
-              </p>
-            ) : null}
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <StatusBadge
+              label={getWorkSpaceTypeLabel(workspace.type)}
+              variant={getWorkSpaceTypeVariant(workspace.type)}
+            />
+            <StatusBadge
+              label={workspace.scrumEnabled ? 'Scrum' : 'Kanban'}
+              variant={workspace.scrumEnabled ? 'blue' : 'gray'}
+            />
+            <span className="text-muted-foreground tabular-nums">{tasks.length} tasks</span>
           </div>
         }
       >
@@ -112,7 +100,7 @@ export function WorkSpaceDetailPage() {
           type="button"
           variant="outline"
           size="icon"
-          onClick={() => setEditOpen(true)}
+          onClick={() => setSettingsOpen(true)}
           aria-label="Work space settings"
         >
           <Settings size={16} />
@@ -143,6 +131,14 @@ export function WorkSpaceDetailPage() {
         boardView={boardView}
         setBoardView={setBoardView}
         quickCreateRef={openQuickCreateRef}
+      />
+
+      <WorkSpaceDetailSettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        workspaceName={workspace.name}
+        tasks={tasks}
+        onEditWorkSpace={() => setEditOpen(true)}
       />
 
       <EditWorkSpaceDialog

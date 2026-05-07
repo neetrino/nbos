@@ -13,6 +13,7 @@ import {
 } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
+import { WorkSpacesSettingsDialog } from './WorkSpacesSettingsDialog';
 import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
 import { WorkSpacesQuickCreate } from './WorkSpacesQuickCreate';
@@ -121,6 +122,7 @@ export function WorkSpacesPage() {
             />
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2 lg:justify-end">
+            <WorkSpacesSettingsDialog items={items} />
             <Button
               variant="outline"
               size="icon"

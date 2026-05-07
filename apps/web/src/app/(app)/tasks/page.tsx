@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Plus, CheckSquare, FolderKanban, TableProperties } from 'lucide-react';
+import { Plus, CheckSquare, FolderKanban } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   PageHeader,
@@ -15,6 +15,7 @@ import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-seg
 import { useTasksListPage } from '@/features/tasks/use-tasks-list-page';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
+import { TasksPageSettingsDialog } from '@/features/tasks/components/TasksPageSettingsDialog';
 
 export default function TasksPage() {
   const {
@@ -55,17 +56,10 @@ export default function TasksPage() {
             <FolderKanban size={16} />
             Work Spaces
           </Link>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || !stats}
-            onClick={() => handleExportScopeStatsCsv()}
-            aria-label="Export task scope statistics as CSV"
-            title="UTF-8 CSV snapshot from GET /api/tasks/stats (workspace-wide; list filters not applied—see scope_note row)"
-          >
-            <TableProperties size={16} aria-hidden />
-          </Button>
+          <TasksPageSettingsDialog
+            exportDisabled={loading || !stats}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+          />
           <SegmentedControl
             value={boardView}
             onValueChange={setBoardView}
