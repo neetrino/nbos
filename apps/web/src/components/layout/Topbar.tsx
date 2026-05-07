@@ -1,26 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { ChevronDown, LogOut, UserCircle2 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import { usePermission } from '@/lib/permissions';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { AccountMenuDropdown } from '@/components/layout/AccountMenuDropdown';
 import { NotificationDropdown } from '@/components/layout/NotificationDropdown';
 
 export function Topbar() {
-  const router = useRouter();
   const { me, meLoadError } = usePermission();
-  const displayName =
-    me?.firstName && me?.lastName
-      ? `${me.firstName} ${me.lastName}`
-      : (me?.firstName ?? me?.email ?? 'My Account');
-  const initials = me?.firstName?.[0] ?? me?.email?.[0]?.toUpperCase() ?? 'U';
 
   return (
     <>
@@ -41,40 +26,7 @@ export function Topbar() {
         {/* Actions */}
         <div className="flex items-center gap-2">
           <NotificationDropdown />
-          <button
-            type="button"
-            onClick={() => router.push('/my-account')}
-            className="text-muted-foreground hover:bg-secondary hover:text-foreground hidden items-center gap-1 rounded-lg px-3 py-2 text-sm md:inline-flex"
-          >
-            <UserCircle2 size={16} />
-            My Account
-          </button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger className="hover:bg-secondary flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors">
-              <span className="bg-secondary text-muted-foreground flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold">
-                {initials}
-              </span>
-              <span className="text-foreground hidden max-w-[160px] truncate text-sm font-medium md:inline">
-                {displayName}
-              </span>
-              <ChevronDown size={16} className="text-muted-foreground hidden md:block" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={() => router.push('/my-account')}>
-                <UserCircle2 size={16} />
-                <span>My Account</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => signOut({ callbackUrl: '/sign-in' })}
-                className="text-red-600 focus:text-red-600"
-              >
-                <LogOut size={16} />
-                <span>Sign Out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <AccountMenuDropdown me={me} />
         </div>
       </header>
     </>
