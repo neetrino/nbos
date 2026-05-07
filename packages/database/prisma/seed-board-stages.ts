@@ -1,5 +1,8 @@
 /**
- * Seed default KANBAN board stages (shared board, ownerId = null).
+ * Optional: seed `task_board_stages` rows for boardType KANBAN (ownerId = null).
+ * The web app does not call a list endpoint for these; primary boards use `Task.status`.
+ * Useful only if you add tooling or integrations that read this table.
+ *
  * Usage: cd packages/database && pnpm exec tsx prisma/seed-board-stages.ts
  */
 import { createPrismaClient } from '../src/client';

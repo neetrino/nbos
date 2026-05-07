@@ -19,12 +19,6 @@ import { TaskBoardsService } from './task-boards.service';
 export class TaskBoardsController {
   constructor(private readonly boardsService: TaskBoardsService) {}
 
-  @Get('kanban/stages')
-  @ApiOperation({ summary: 'Get shared KANBAN board stages' })
-  async getKanbanStages() {
-    return this.boardsService.getKanbanStages();
-  }
-
   @Get('my-plan/stages')
   @ApiOperation({ summary: 'Get personal MY_PLAN stages' })
   async getMyPlanStages(@Query('ownerId') ownerId: string) {

@@ -19,14 +19,6 @@ interface UpdateStageDto {
 export class TaskBoardsService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  /** Получить стадии для общей доски (KANBAN) */
-  async getKanbanStages() {
-    return this.prisma.taskBoardStage.findMany({
-      where: { boardType: 'KANBAN', ownerId: null },
-      orderBy: { sortOrder: 'asc' },
-    });
-  }
-
   /** Получить стадии персонального плана (MY_PLAN) для пользователя */
   async getMyPlanStages(ownerId: string) {
     return this.prisma.taskBoardStage.findMany({

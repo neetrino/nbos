@@ -296,11 +296,7 @@ export const tasksApi = {
     await api.delete(`/api/tasks/checklists/${checklistId}`);
   },
 
-  // Board stages
-  async getKanbanStages(): Promise<TaskBoardStage[]> {
-    const resp = await api.get<TaskBoardStage[]>('/api/task-boards/kanban/stages');
-    return resp.data;
-  },
+  // Board stages (MY_PLAN; global KANBAN columns are status-driven in the app)
   async getMyPlanStages(ownerId: string): Promise<TaskBoardStage[]> {
     const resp = await api.get<TaskBoardStage[]>('/api/task-boards/my-plan/stages', {
       params: { ownerId },
