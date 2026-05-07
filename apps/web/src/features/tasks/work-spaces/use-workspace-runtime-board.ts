@@ -161,7 +161,6 @@ export function useWorkspaceRuntimeBoard(
       if (!myPlanOwnerId) return;
       try {
         const stage = await tasksApi.createStage({
-          boardType: 'MY_PLAN',
           title,
           color,
           ownerId: myPlanOwnerId,

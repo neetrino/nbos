@@ -73,7 +73,6 @@ model Task {
   completedAt        DateTime?              @map("completed_at")
   completionRules    Json?                  @map("completion_rules")
   parentId           String?                @map("parent_id")
-  kanbanStageId      String?                @map("kanban_stage_id")
   myPlanStageId      String?                @map("my_plan_stage_id")
   myPlanSortOrder    Int                    @default(0) @map("my_plan_sort_order")
   workspaceSortOrder Int                    @default(0) @map("workspace_sort_order")

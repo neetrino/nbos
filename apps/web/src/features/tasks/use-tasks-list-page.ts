@@ -204,7 +204,6 @@ export function useTasksListPage() {
     if (!creatorId) return;
     try {
       const stage = await tasksApi.createStage({
-        boardType: 'MY_PLAN',
         title,
         color,
         ownerId: creatorId,

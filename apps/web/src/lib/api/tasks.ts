@@ -43,7 +43,6 @@ export interface Task {
   parentId: string | null;
   workspaceId: string | null;
   planningStatus: string;
-  kanbanStageId: string | null;
   myPlanStageId: string | null;
   myPlanSortOrder: number;
   workspaceSortOrder: number;
@@ -304,10 +303,9 @@ export const tasksApi = {
     return resp.data;
   },
   async createStage(data: {
-    boardType: 'KANBAN' | 'MY_PLAN';
     title: string;
     color?: string;
-    ownerId?: string;
+    ownerId: string;
   }): Promise<TaskBoardStage> {
     const resp = await api.post<TaskBoardStage>('/api/task-boards/stages', data);
     return resp.data;

@@ -132,7 +132,6 @@ export class TasksController {
       startDate?: string | null;
       dueDate?: string | null;
       parentId?: string | null;
-      kanbanStageId?: string | null;
       myPlanStageId?: string | null;
       myPlanSortOrder?: number;
       workspaceId?: string | null;

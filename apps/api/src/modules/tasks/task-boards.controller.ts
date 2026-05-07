@@ -26,14 +26,13 @@ export class TaskBoardsController {
   }
 
   @Post('stages')
-  @ApiOperation({ summary: 'Create a board stage' })
+  @ApiOperation({ summary: 'Create a MY_PLAN board stage (primary Kanban uses Task.status only)' })
   async createStage(
     @Body()
     body: {
-      boardType: 'KANBAN' | 'MY_PLAN';
       title: string;
       color?: string;
-      ownerId?: string;
+      ownerId: string;
     },
   ) {
     return this.boardsService.createStage(body);
