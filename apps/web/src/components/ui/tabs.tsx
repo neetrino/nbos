@@ -54,7 +54,11 @@ const tabsTriggerVariants = cva(
         default:
           'rounded-md px-3 py-1.5 text-sm hover:text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:shadow-black/5',
         line: 'relative gap-2 rounded-none border-0 bg-transparent px-3 py-2.5 text-sm shadow-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-transparent after:transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:after:bg-primary sm:px-4',
-        pill: 'flex-1 gap-2 rounded-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground sm:flex-initial [&_svg]:text-muted-foreground/80 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:shadow-black/[0.06] data-[state=active]:[&_svg]:text-foreground',
+        pill:
+          'flex-1 gap-2 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground/70 hover:text-muted-foreground sm:flex-initial [&_svg]:text-muted-foreground/55 ' +
+          'data-[state=active]:bg-background data-[state=active]:font-semibold data-[state=active]:text-foreground ' +
+          'data-[state=active]:shadow-[0_8px_20px_rgba(15,23,42,0.14),0_2px_8px_rgba(15,23,42,0.08)] ' +
+          'data-[state=active]:[&_svg]:text-foreground',
       },
     },
     defaultVariants: {

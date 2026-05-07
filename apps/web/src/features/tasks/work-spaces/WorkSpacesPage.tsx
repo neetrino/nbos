@@ -48,22 +48,22 @@ export function WorkSpacesPage() {
               className="min-w-0 flex-1 sm:w-auto sm:flex-initial"
             >
               <TabsList variant="pill" className="w-full min-w-0 sm:w-auto">
-                <TabsTrigger value="standalone" className="font-semibold">
+                <TabsTrigger value="standalone" className="group">
                   <FolderKanban size={16} strokeWidth={2} aria-hidden />
                   Standalone
                   <Badge
                     variant="secondary"
-                    className="h-5 min-w-5 rounded-full px-1.5 text-xs font-medium tabular-nums"
+                    className="group-data-[state=active]:bg-foreground/10 group-data-[state=active]:text-foreground h-5 min-w-5 rounded-full px-1.5 text-xs font-medium tabular-nums"
                   >
                     {counts.standalone}
                   </Badge>
                 </TabsTrigger>
-                <TabsTrigger value="product" className="font-semibold">
+                <TabsTrigger value="product" className="group">
                   <Package size={16} strokeWidth={2} aria-hidden />
                   Product
                   <Badge
                     variant="secondary"
-                    className="h-5 min-w-5 rounded-full px-1.5 text-xs font-medium tabular-nums"
+                    className="group-data-[state=active]:bg-foreground/10 group-data-[state=active]:text-foreground h-5 min-w-5 rounded-full px-1.5 text-xs font-medium tabular-nums"
                   >
                     {counts.product}
                   </Badge>
