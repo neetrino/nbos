@@ -1,24 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { FolderKanban, LayoutGrid, List, Package, Plus, RefreshCcw, Search } from 'lucide-react';
+import { FolderKanban, Package, Plus, RefreshCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
 import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
-import { WORK_SPACES_PAGE_SIZE_OPTIONS } from './work-spaces-page-constants';
+import { WorkSpacesToolbar } from './WorkSpacesToolbar';
 import { useWorkSpacesDirectory } from './use-work-spaces-directory';
 
 export function WorkSpacesPage() {
@@ -56,22 +47,24 @@ export function WorkSpacesPage() {
               onValueChange={(value) => setTab(value as 'standalone' | 'product')}
               className="min-w-0 flex-1 sm:w-auto sm:flex-initial"
             >
-              <TabsList variant="line" className="w-full min-w-0 sm:w-auto">
-                <TabsTrigger value="standalone" className="gap-2 text-sm font-semibold">
-                  <FolderKanban
-                    className="text-muted-foreground opacity-70"
-                    size={16}
-                    aria-hidden
-                  />
+              <TabsList variant="pill" className="w-full min-w-0 sm:w-auto">
+                <TabsTrigger value="standalone" className="font-semibold">
+                  <FolderKanban size={16} strokeWidth={2} aria-hidden />
                   Standalone
-                  <Badge variant="secondary" className="tabular-nums">
+                  <Badge
+                    variant="secondary"
+                    className="h-5 min-w-5 rounded-full px-1.5 text-xs font-medium tabular-nums"
+                  >
                     {counts.standalone}
                   </Badge>
                 </TabsTrigger>
-                <TabsTrigger value="product" className="gap-2 text-sm font-semibold">
-                  <Package className="text-muted-foreground opacity-70" size={16} aria-hidden />
+                <TabsTrigger value="product" className="font-semibold">
+                  <Package size={16} strokeWidth={2} aria-hidden />
                   Product
-                  <Badge variant="secondary" className="tabular-nums">
+                  <Badge
+                    variant="secondary"
+                    className="h-5 min-w-5 rounded-full px-1.5 text-xs font-medium tabular-nums"
+                  >
                     {counts.product}
                   </Badge>
                 </TabsTrigger>
@@ -87,12 +80,6 @@ export function WorkSpacesPage() {
             >
               <RefreshCcw size={16} />
             </Button>
-            {tab === 'standalone' ? (
-              <Button onClick={() => setCreateOpen(true)}>
-                <Plus size={16} />
-                New Standalone Work Space
-              </Button>
-            ) : null}
           </div>
         </div>
         <p className="text-muted-foreground max-w-3xl text-sm">
@@ -100,83 +87,18 @@ export function WorkSpacesPage() {
         </p>
       </header>
 
-      <Card className="border-border/80 shadow-sm">
-        <CardContent className="p-4 sm:p-5">
-          <div className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
-            <div className="relative min-h-10 min-w-0 flex-1">
-              <Search
-                size={16}
-                className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
-              />
-              <Input
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search by name, project, product…"
-                className="h-11 w-full pl-10"
-                aria-label="Search work spaces"
-              />
-            </div>
-            <div className="flex w-full min-w-0 flex-wrap items-center gap-3 lg:w-auto lg:flex-nowrap lg:justify-end">
-              <Select
-                value={mode}
-                onValueChange={(value) => setMode(value as 'all' | 'scrum' | 'kanban')}
-              >
-                <SelectTrigger
-                  className="h-11 min-w-[140px] flex-1 sm:flex-initial"
-                  aria-label="Planning mode filter"
-                >
-                  <SelectValue placeholder="Mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All modes</SelectItem>
-                  <SelectItem value="scrum">Scrum</SelectItem>
-                  <SelectItem value="kanban">Kanban</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={String(pageSize)}
-                onValueChange={(value) => setPageSize(Number(value))}
-              >
-                <SelectTrigger
-                  className="h-11 min-w-[120px] flex-1 sm:flex-initial"
-                  aria-label="Page size"
-                >
-                  <SelectValue placeholder="Page size" />
-                </SelectTrigger>
-                <SelectContent>
-                  {WORK_SPACES_PAGE_SIZE_OPTIONS.map((n) => (
-                    <SelectItem key={n} value={String(n)}>
-                      {n} / page
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="bg-muted/60 ml-auto flex h-11 shrink-0 rounded-lg p-1 lg:ml-0">
-                <Button
-                  type="button"
-                  variant={view === 'grid' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="h-9 px-3"
-                  onClick={() => setView('grid')}
-                  aria-label="Card grid view"
-                >
-                  <LayoutGrid size={16} />
-                </Button>
-                <Button
-                  type="button"
-                  variant={view === 'list' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="h-9 px-3"
-                  onClick={() => setView('list')}
-                  aria-label="List view"
-                >
-                  <List size={16} />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <WorkSpacesToolbar
+        tab={tab}
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        mode={mode}
+        onModeChange={setMode}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        view={view}
+        onViewChange={setView}
+        onQuickCreated={() => void refetch()}
+      />
 
       {loading ? (
         <LoadingState />
@@ -193,9 +115,9 @@ export function WorkSpacesPage() {
           }
           action={
             tab === 'standalone' ? (
-              <Button onClick={() => setCreateOpen(true)}>
+              <Button variant="secondary" onClick={() => setCreateOpen(true)}>
                 <Plus size={16} />
-                Create Standalone Work Space
+                Full form (description & Scrum)
               </Button>
             ) : undefined
           }
@@ -207,7 +129,7 @@ export function WorkSpacesPage() {
           ))}
         </div>
       ) : (
-        <div className="border-border rounded-xl border">
+        <div className="bg-card/40 overflow-hidden rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(15,23,42,0.04)] ring-1 ring-black/[0.04]">
           <WorkSpaceListTable workspaces={items} />
         </div>
       )}
