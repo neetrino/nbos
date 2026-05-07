@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Plus, RefreshCcw, CheckSquare, FolderKanban, TableProperties } from 'lucide-react';
+import { Plus, CheckSquare, FolderKanban, TableProperties } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   PageHeader,
@@ -51,9 +51,6 @@ export default function TasksPage() {
     <div className="flex h-full flex-col gap-5">
       <div className="shrink-0">
         <PageHeader title="Tasks" description={`${tasks.length} tasks`}>
-          <Button variant="outline" size="icon" onClick={fetchTasks} aria-label="Refresh tasks">
-            <RefreshCcw size={16} />
-          </Button>
           <Link href="/work-spaces" className={buttonVariants({ variant: 'outline' })}>
             <FolderKanban size={16} />
             Work Spaces
