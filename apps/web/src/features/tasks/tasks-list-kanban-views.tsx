@@ -9,8 +9,8 @@ import {
   buildMyPlanColumns,
   buildWorkspaceKanbanColumns,
   partitionWorkspaceSecondaryTasks,
+  TaskOffPrimaryBoardSection,
 } from '@/features/tasks/task-board';
-import { WorkSpaceSecondaryTasksSection } from '@/features/tasks/work-spaces/WorkSpaceSecondaryTasksSection';
 import type { Task, TaskBoardStage } from '@/lib/api/tasks';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
@@ -97,7 +97,7 @@ export function TasksListKanbanViews({
             emptyMessage="No tasks"
           />
         </div>
-        <WorkSpaceSecondaryTasksSection
+        <TaskOffPrimaryBoardSection
           deferred={deferred}
           cancelled={cancelled}
           onAction={onTaskAction}

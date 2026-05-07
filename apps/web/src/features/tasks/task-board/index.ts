@@ -14,3 +14,7 @@ export {
 } from './workspace-kanban';
 export { buildMyPlanColumns } from './my-plan-columns';
 export { TaskListTableView } from './TaskListTableView';
+export {
+  TaskOffPrimaryBoardSection,
+  type TaskOffPrimaryBoardSectionProps,
+} from './TaskOffPrimaryBoardSection';

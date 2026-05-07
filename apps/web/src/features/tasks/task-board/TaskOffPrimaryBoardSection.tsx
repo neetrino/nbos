@@ -1,20 +1,26 @@
 'use client';
 
 import { StatusBadge } from '@/components/shared';
-import { TaskMiniCard, type TaskBoardAction } from '@/features/tasks/task-board';
 import type { Task } from '@/lib/api/tasks';
+import { TaskMiniCard, type TaskBoardAction } from './TaskMiniCard';
 
-export function WorkSpaceSecondaryTasksSection({
-  deferred,
-  cancelled,
-  onAction,
-  onOpenTask,
-}: {
+export type TaskOffPrimaryBoardSectionProps = {
   deferred: Task[];
   cancelled: Task[];
   onAction: (taskId: string, action: TaskBoardAction) => void;
   onOpenTask: (task: Task) => void;
-}) {
+};
+
+/**
+ * Tasks with DEFERRED / CANCELLED status, shown below the primary status Kanban
+ * (global Tasks board and Work Space board).
+ */
+export function TaskOffPrimaryBoardSection({
+  deferred,
+  cancelled,
+  onAction,
+  onOpenTask,
+}: TaskOffPrimaryBoardSectionProps) {
   if (deferred.length === 0 && cancelled.length === 0) return null;
 
   return (

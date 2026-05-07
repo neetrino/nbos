@@ -8,6 +8,7 @@ import { KanbanBoard } from '@/components/shared';
 import {
   TaskMiniCard,
   TaskListTableView,
+  TaskOffPrimaryBoardSection,
   partitionWorkspaceSecondaryTasks,
   type TaskBoardAction,
 } from '@/features/tasks/task-board';
@@ -17,7 +18,6 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { useWorkspaceRuntimeBoard } from './use-workspace-runtime-board';
-import { WorkSpaceSecondaryTasksSection } from './WorkSpaceSecondaryTasksSection';
 
 export type WorkSpaceRuntimeProps = {
   workspace: WorkSpace;
@@ -268,7 +268,7 @@ export function WorkSpaceRuntime({
       {renderBoard()}
 
       {tasks.length > 0 && (
-        <WorkSpaceSecondaryTasksSection
+        <TaskOffPrimaryBoardSection
           deferred={deferred}
           cancelled={cancelled}
           onAction={handleCardAction}
