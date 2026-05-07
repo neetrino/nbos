@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { CheckSquare, Plus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard, SegmentedControl } from '@/components/shared';
@@ -18,6 +18,7 @@ import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { useWorkspaceRuntimeBoard } from './use-workspace-runtime-board';
+import { WorkspaceRuntimeFilterBar } from './workspace-runtime-filter-bar';
 
 export type WorkSpaceRuntimeProps = {
   workspace: WorkSpace;
@@ -37,6 +38,14 @@ export function WorkSpaceRuntime({
   defaultTaskLink,
 }: WorkSpaceRuntimeProps) {
   const { creatorId, creatorReady } = useTaskCreatorId();
+  const [taskSearch, setTaskSearch] = useState('');
+  const [taskFilters, setTaskFilters] = useState<Record<string, string>>({});
+
+  const workspaceViewFilters = useMemo(
+    () => ({ search: taskSearch, filterValues: taskFilters }),
+    [taskSearch, taskFilters],
+  );
+
   const {
     boardView,
     setBoardView,
@@ -55,7 +64,8 @@ export function WorkSpaceRuntime({
     buildWorkspaceKanbanColumns,
     buildMyPlanColumns,
     buildDeadlineColumns,
-  } = useWorkspaceRuntimeBoard(tasks, setTasks, creatorId);
+    viewTasks,
+  } = useWorkspaceRuntimeBoard(tasks, setTasks, creatorId, workspaceViewFilters);
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -97,6 +107,11 @@ export function WorkSpaceRuntime({
     setQuickCreateOpen(true);
   }, [setDefaultCreateDueDate, setQuickCreateOpen]);
 
+  const clearTaskViewFilters = useCallback(() => {
+    setTaskSearch('');
+    setTaskFilters({});
+  }, []);
+
   const renderCard = useCallback(
     (task: Task) => (
       <TaskMiniCard task={task} onAction={handleCardAction} onClick={handleTaskClick} />
@@ -108,7 +123,7 @@ export function WorkSpaceRuntime({
     if (boardView === 'list') {
       return (
         <div className="min-h-0 flex-1 overflow-auto">
-          <TaskListTableView tasks={tasks} onRowClick={handleTaskClick} />
+          <TaskListTableView tasks={viewTasks} onRowClick={handleTaskClick} />
         </div>
       );
     }
@@ -166,11 +181,22 @@ export function WorkSpaceRuntime({
     );
   };
 
-  const { deferred, cancelled } = partitionWorkspaceSecondaryTasks(tasks);
+  const { deferred, cancelled } = partitionWorkspaceSecondaryTasks(viewTasks);
   const newTaskDisabled = creatorReady && !creatorId;
+  const hasActiveTaskViewQuery =
+    Boolean(taskSearch.trim()) ||
+    Object.entries(taskFilters).some(([, v]) => Boolean(v) && v !== 'all');
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4" data-workspace-runtime={mode}>
+      <WorkspaceRuntimeFilterBar
+        search={taskSearch}
+        onSearchChange={setTaskSearch}
+        filterValues={taskFilters}
+        onFilterChange={(key, value) => setTaskFilters((prev) => ({ ...prev, [key]: value }))}
+        onClearFilters={clearTaskViewFilters}
+      />
+
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <SegmentedControl
           value={boardView}
@@ -216,16 +242,27 @@ export function WorkSpaceRuntime({
         </div>
       )}
 
-      {renderBoard()}
+      {tasks.length > 0 && viewTasks.length === 0 ? (
+        <div className="border-border bg-muted/20 text-muted-foreground rounded-xl border border-dashed px-4 py-10 text-center text-sm">
+          <p>No tasks match your search or filters.</p>
+          {hasActiveTaskViewQuery ? (
+            <Button className="mt-4" variant="outline" size="sm" onClick={clearTaskViewFilters}>
+              Clear search and filters
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
 
-      {tasks.length > 0 && (
+      {tasks.length > 0 && viewTasks.length > 0 ? renderBoard() : null}
+
+      {tasks.length > 0 && viewTasks.length > 0 ? (
         <TaskOffPrimaryBoardSection
           deferred={deferred}
           cancelled={cancelled}
           onAction={handleCardAction}
           onOpenTask={handleTaskClick}
         />
-      )}
+      ) : null}
 
       <TaskSheet
         taskId={selectedTaskId}

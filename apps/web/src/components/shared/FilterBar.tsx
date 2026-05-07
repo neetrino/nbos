@@ -44,10 +44,12 @@ export interface FilterBarProps {
   className?: string;
 }
 
-function filterBarHasActiveFilters(
+function filterBarHasActiveQuery(
+  search: string,
   filters: FilterConfig[] | undefined,
   filterValues: Record<string, string>,
 ): boolean {
+  if (search.trim().length > 0) return true;
   return (
     filters?.some((f) => {
       if (f.includeAllOption === false) return false;
@@ -184,7 +186,7 @@ export function FilterBar({
   actions,
   className,
 }: FilterBarProps) {
-  const hasActiveFilters = filterBarHasActiveFilters(filters, filterValues);
+  const hasActiveQuery = filterBarHasActiveQuery(search, filters, filterValues);
 
   return (
     <div className={cn(FILTER_BAR_TOOLBAR_SURFACE, className)}>
@@ -197,7 +199,7 @@ export function FilterBar({
         onFilterChange={onFilterChange}
         onClearFilters={onClearFilters}
         actions={actions}
-        hasActiveFilters={hasActiveFilters}
+        hasActiveFilters={hasActiveQuery}
       />
     </div>
   );

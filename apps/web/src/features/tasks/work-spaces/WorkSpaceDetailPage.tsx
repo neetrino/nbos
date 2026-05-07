@@ -61,7 +61,35 @@ export function WorkSpaceDetailPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title={workspace.name} description={getWorkSpaceContextLabel(workspace)}>
+      <PageHeader
+        title={workspace.name}
+        description={
+          <div className="space-y-2">
+            <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm">
+              <span>{getWorkSpaceContextLabel(workspace)}</span>
+              <span className="text-muted-foreground/40 hidden sm:inline" aria-hidden>
+                ·
+              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge
+                  label={getWorkSpaceTypeLabel(workspace.type)}
+                  variant={getWorkSpaceTypeVariant(workspace.type)}
+                />
+                <StatusBadge
+                  label={workspace.scrumEnabled ? 'Scrum' : 'Kanban'}
+                  variant={workspace.scrumEnabled ? 'blue' : 'gray'}
+                />
+                <span className="text-foreground/80 tabular-nums">{tasks.length} tasks</span>
+              </div>
+            </div>
+            {workspace.description ? (
+              <p className="text-muted-foreground line-clamp-2 max-w-3xl text-xs leading-relaxed">
+                {workspace.description}
+              </p>
+            ) : null}
+          </div>
+        }
+      >
         <Button variant="ghost" size="icon" onClick={() => router.push('/work-spaces')}>
           <ArrowLeft size={16} />
         </Button>
@@ -79,8 +107,6 @@ export function WorkSpaceDetailPage() {
         </Button>
       </PageHeader>
 
-      <WorkSpaceHeader workspace={workspace} taskCount={tasks.length} />
-
       <WorkSpaceRuntime
         workspace={workspace}
         tasks={tasks}
@@ -96,27 +122,6 @@ export function WorkSpaceDetailPage() {
         onOpenChange={setEditOpen}
         onUpdated={handleWorkspaceUpdate}
       />
-    </div>
-  );
-}
-
-function WorkSpaceHeader({ workspace, taskCount }: { workspace: WorkSpace; taskCount: number }) {
-  return (
-    <div className="border-border bg-card rounded-xl border p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <StatusBadge
-          label={getWorkSpaceTypeLabel(workspace.type)}
-          variant={getWorkSpaceTypeVariant(workspace.type)}
-        />
-        <StatusBadge
-          label={workspace.scrumEnabled ? 'Scrum-enabled' : 'Kanban'}
-          variant={workspace.scrumEnabled ? 'blue' : 'gray'}
-        />
-        <StatusBadge label={`${taskCount} tasks`} variant="default" />
-      </div>
-      {workspace.description && (
-        <p className="text-muted-foreground mt-3 text-sm">{workspace.description}</p>
-      )}
     </div>
   );
 }

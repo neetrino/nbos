@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import type { KanbanColumn } from '@/components/shared';
 import {
   DEADLINE_COLUMNS_DEF,
@@ -11,12 +18,25 @@ import {
 import type { TaskBoardAction } from '@/features/tasks/task-board';
 import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
 
+import { filterTasksForWorkspaceView } from './workspace-task-view-filter';
+
 export type WorkspaceBoardView = 'deadline' | 'my-plan' | 'kanban' | 'list';
+
+export type WorkspaceViewFilters = {
+  search: string;
+  filterValues: Record<string, string>;
+};
+
+const DEFAULT_WORKSPACE_VIEW_FILTERS: WorkspaceViewFilters = {
+  search: '',
+  filterValues: {},
+};
 
 export function useWorkspaceRuntimeBoard(
   tasks: Task[],
   setTasks: Dispatch<SetStateAction<Task[]>>,
   myPlanOwnerId: string | null,
+  viewFilters: WorkspaceViewFilters = DEFAULT_WORKSPACE_VIEW_FILTERS,
 ) {
   const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
   const [myPlanStages, setMyPlanStages] = useState<TaskBoardStage[]>([]);
@@ -40,6 +60,11 @@ export function useWorkspaceRuntimeBoard(
   }, [myPlanOwnerId]);
 
   const myPlanStagesForView = myPlanOwnerId ? myPlanStages : [];
+
+  const viewTasks = useMemo(
+    () => filterTasksForWorkspaceView(tasks, viewFilters.search, viewFilters.filterValues),
+    [tasks, viewFilters.search, viewFilters.filterValues],
+  );
 
   const handleAction = useCallback(
     async (taskId: string, action: TaskBoardAction) => {
@@ -204,9 +229,9 @@ export function useWorkspaceRuntimeBoard(
       label: col.label,
       color: col.color,
       hexColor: col.hexColor,
-      items: tasks.filter((t) => getDeadlineColumn(t) === col.key),
+      items: viewTasks.filter((t) => getDeadlineColumn(t) === col.key),
     }));
-  }, [tasks]);
+  }, [viewTasks]);
 
   return {
     boardView,
@@ -224,8 +249,9 @@ export function useWorkspaceRuntimeBoard(
     handleAddMyPlanStage,
     handleRenameMyPlanStage,
     handleDeleteMyPlanStage,
-    buildWorkspaceKanbanColumns: () => buildWorkspaceKanbanColumns(tasks),
-    buildMyPlanColumns: () => buildMyPlanColumns(tasks, myPlanStagesForView),
+    buildWorkspaceKanbanColumns: () => buildWorkspaceKanbanColumns(viewTasks),
+    buildMyPlanColumns: () => buildMyPlanColumns(viewTasks, myPlanStagesForView),
     buildDeadlineColumns,
+    viewTasks,
   };
 }
