@@ -1,6 +1,14 @@
 'use client';
 
-import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type MutableRefObject,
+  type SetStateAction,
+} from 'react';
 import { CheckSquare, Plus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard, SegmentedControl } from '@/components/shared';
@@ -17,7 +25,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
-import { useWorkspaceRuntimeBoard } from './use-workspace-runtime-board';
+import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
 import { WorkspaceRuntimeFilterBar } from './workspace-runtime-filter-bar';
 
 export type WorkSpaceRuntimeProps = {
@@ -27,6 +35,11 @@ export type WorkSpaceRuntimeProps = {
   onRefresh: () => void;
   mode: 'standalone' | 'embedded';
   defaultTaskLink?: { entityType: string; entityId: string };
+  /** When false, SegmentedControl + refresh + New Task live in the page header (standalone). */
+  hideInlineBoardToolbar?: boolean;
+  boardView?: WorkspaceBoardView;
+  setBoardView?: Dispatch<SetStateAction<WorkspaceBoardView>>;
+  quickCreateRef?: MutableRefObject<(() => void) | null>;
 };
 
 export function WorkSpaceRuntime({
@@ -36,6 +49,10 @@ export function WorkSpaceRuntime({
   onRefresh,
   mode,
   defaultTaskLink,
+  hideInlineBoardToolbar = false,
+  boardView: boardViewProp,
+  setBoardView: setBoardViewProp,
+  quickCreateRef,
 }: WorkSpaceRuntimeProps) {
   const { creatorId, creatorReady } = useTaskCreatorId();
   const [taskSearch, setTaskSearch] = useState('');
@@ -45,6 +62,11 @@ export function WorkSpaceRuntime({
     () => ({ search: taskSearch, filterValues: taskFilters }),
     [taskSearch, taskFilters],
   );
+
+  const controlledBoard =
+    hideInlineBoardToolbar && boardViewProp !== undefined && setBoardViewProp
+      ? { boardView: boardViewProp, setBoardView: setBoardViewProp }
+      : null;
 
   const {
     boardView,
@@ -65,7 +87,7 @@ export function WorkSpaceRuntime({
     buildMyPlanColumns,
     buildDeadlineColumns,
     viewTasks,
-  } = useWorkspaceRuntimeBoard(tasks, setTasks, creatorId, workspaceViewFilters);
+  } = useWorkspaceRuntimeBoard(tasks, setTasks, creatorId, workspaceViewFilters, controlledBoard);
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -106,6 +128,14 @@ export function WorkSpaceRuntime({
     setDefaultCreateDueDate(null);
     setQuickCreateOpen(true);
   }, [setDefaultCreateDueDate, setQuickCreateOpen]);
+
+  useEffect(() => {
+    if (!quickCreateRef) return;
+    quickCreateRef.current = openQuickCreate;
+    return () => {
+      quickCreateRef.current = null;
+    };
+  }, [quickCreateRef, openQuickCreate]);
 
   const clearTaskViewFilters = useCallback(() => {
     setTaskSearch('');
@@ -197,26 +227,33 @@ export function WorkSpaceRuntime({
         onClearFilters={clearTaskViewFilters}
       />
 
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-        <SegmentedControl
-          value={boardView}
-          onValueChange={setBoardView}
-          items={TASKS_BOARD_VIEW_SEGMENTS}
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh work space">
-            <RefreshCcw size={16} />
-          </Button>
-          <Button
-            onClick={openQuickCreate}
-            disabled={newTaskDisabled}
-            title={newTaskDisabled ? 'Employee profile required' : undefined}
-          >
-            <Plus size={16} />
-            New Task
-          </Button>
+      {!hideInlineBoardToolbar ? (
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
+          <SegmentedControl
+            value={boardView}
+            onValueChange={setBoardView}
+            items={TASKS_BOARD_VIEW_SEGMENTS}
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onRefresh}
+              aria-label="Refresh work space"
+            >
+              <RefreshCcw size={16} />
+            </Button>
+            <Button
+              onClick={openQuickCreate}
+              disabled={newTaskDisabled}
+              title={newTaskDisabled ? 'Employee profile required' : undefined}
+            >
+              <Plus size={16} />
+              New Task
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {actionError && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

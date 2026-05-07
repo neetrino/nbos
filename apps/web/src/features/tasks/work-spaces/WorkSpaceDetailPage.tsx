@@ -1,11 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowUpRight, Pencil, RefreshCcw } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { ArrowUpRight, Plus, Settings } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
+import {
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  SegmentedControl,
+  StatusBadge,
+} from '@/components/shared';
+import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
 import { EditWorkSpaceDialog } from './EditWorkSpaceDialog';
 import { WorkSpaceRuntime } from './WorkSpaceRuntime';
@@ -16,15 +24,20 @@ import {
   getWorkSpaceTypeLabel,
   getWorkSpaceTypeVariant,
 } from './work-space-utils';
+import type { WorkspaceBoardView } from './use-workspace-runtime-board';
 
 export function WorkSpaceDetailPage() {
   const params = useParams<{ id: string }>();
-  const router = useRouter();
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const [workspace, setWorkspace] = useState<WorkSpace | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
+  const openQuickCreateRef = useRef<(() => void) | null>(null);
+
+  const newTaskDisabled = creatorReady && !creatorId;
 
   const fetchWorkspace = useCallback(async () => {
     if (!params.id) return;
@@ -90,20 +103,32 @@ export function WorkSpaceDetailPage() {
           </div>
         }
       >
-        <Button variant="ghost" size="icon" onClick={() => router.push('/work-spaces')}>
-          <ArrowLeft size={16} />
-        </Button>
-        <Button variant="outline" size="icon" onClick={fetchWorkspace} aria-label="Refresh">
-          <RefreshCcw size={16} />
-        </Button>
         {contextHref && (
           <Link href={contextHref} className={buttonVariants({ variant: 'outline' })}>
             Context <ArrowUpRight size={14} />
           </Link>
         )}
-        <Button variant="outline" onClick={() => setEditOpen(true)}>
-          <Pencil size={16} />
-          Edit
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => setEditOpen(true)}
+          aria-label="Work space settings"
+        >
+          <Settings size={16} />
+        </Button>
+        <SegmentedControl
+          value={boardView}
+          onValueChange={setBoardView}
+          items={TASKS_BOARD_VIEW_SEGMENTS}
+        />
+        <Button
+          onClick={() => openQuickCreateRef.current?.()}
+          disabled={newTaskDisabled}
+          title={newTaskDisabled ? 'Employee profile required' : undefined}
+        >
+          <Plus size={16} />
+          New Task
         </Button>
       </PageHeader>
 
@@ -114,6 +139,10 @@ export function WorkSpaceDetailPage() {
         onRefresh={fetchWorkspace}
         mode="standalone"
         defaultTaskLink={defaultLink ?? undefined}
+        hideInlineBoardToolbar
+        boardView={boardView}
+        setBoardView={setBoardView}
+        quickCreateRef={openQuickCreateRef}
       />
 
       <EditWorkSpaceDialog

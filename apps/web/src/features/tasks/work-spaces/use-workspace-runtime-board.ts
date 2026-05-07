@@ -22,6 +22,11 @@ import { filterTasksForWorkspaceView } from './workspace-task-view-filter';
 
 export type WorkspaceBoardView = 'deadline' | 'my-plan' | 'kanban' | 'list';
 
+export type WorkspaceBoardControlledState = {
+  boardView: WorkspaceBoardView;
+  setBoardView: Dispatch<SetStateAction<WorkspaceBoardView>>;
+};
+
 export type WorkspaceViewFilters = {
   search: string;
   filterValues: Record<string, string>;
@@ -37,8 +42,11 @@ export function useWorkspaceRuntimeBoard(
   setTasks: Dispatch<SetStateAction<Task[]>>,
   myPlanOwnerId: string | null,
   viewFilters: WorkspaceViewFilters = DEFAULT_WORKSPACE_VIEW_FILTERS,
+  controlledBoard?: WorkspaceBoardControlledState | null,
 ) {
-  const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
+  const [internalBoardView, setInternalBoardView] = useState<WorkspaceBoardView>('kanban');
+  const boardView = controlledBoard?.boardView ?? internalBoardView;
+  const setBoardView = controlledBoard?.setBoardView ?? setInternalBoardView;
   const [myPlanStages, setMyPlanStages] = useState<TaskBoardStage[]>([]);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [defaultCreateDueDate, setDefaultCreateDueDate] = useState<string | null>(null);
