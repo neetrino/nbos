@@ -129,11 +129,21 @@ export interface WorkSpace {
   _count?: { tasks: number };
 }
 
-interface WorkSpaceQueryParams {
+export interface WorkSpaceQueryParams {
   projectId?: string;
   productId?: string;
   extensionId?: string;
   type?: WorkSpace['type'];
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  mode?: 'all' | 'scrum' | 'kanban';
+}
+
+export interface WorkSpaceListPayload {
+  items: WorkSpace[];
+  meta: { total: number; page: number; pageSize: number; totalPages: number };
+  counts: { standalone: number; product: number; total: number };
 }
 
 interface ListData<T> {
@@ -228,8 +238,8 @@ export const tasksApi = {
   },
 
   // Work Spaces
-  async getWorkSpaces(params?: WorkSpaceQueryParams): Promise<WorkSpace[]> {
-    const resp = await api.get<WorkSpace[]>('/api/tasks/work-spaces', { params });
+  async getWorkSpaces(params?: WorkSpaceQueryParams): Promise<WorkSpaceListPayload> {
+    const resp = await api.get<WorkSpaceListPayload>('/api/tasks/work-spaces', { params });
     return resp.data;
   },
   async getWorkSpaceById(id: string): Promise<WorkSpace> {

@@ -13,16 +13,23 @@ describe('WorkSpacesService', () => {
   });
 
   it('lists Work Spaces by connected context', async () => {
-    await service.findAll({ projectId: 'proj-1', type: 'PRODUCT_DELIVERY' });
+    const result = await service.findAll({ projectId: 'proj-1', type: 'PRODUCT_DELIVERY' });
 
     expect(prisma.workSpace.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          projectId: 'proj-1',
-          type: 'PRODUCT_DELIVERY',
+          AND: expect.arrayContaining([
+            expect.objectContaining({ projectId: 'proj-1', type: { not: 'EXTENSION_DELIVERY' } }),
+            { type: 'PRODUCT_DELIVERY' },
+          ]),
         }),
+        skip: 0,
+        take: expect.any(Number),
       }),
     );
+    expect(result.meta.page).toBe(1);
+    expect(Array.isArray(result.items)).toBe(true);
+    expect(prisma.workSpace.count).toHaveBeenCalled();
   });
 
   it('excludes legacy Extension Work Spaces from default listing', async () => {
