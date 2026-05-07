@@ -7,10 +7,9 @@ import { TasksListKanbanViews } from '@/features/tasks/tasks-list-kanban-views';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 import { tasksApi, type Task, type TaskBoardStage, type TaskStats } from '@/lib/api/tasks';
 import { useTasksScopeStatsCsvExport } from '@/features/tasks/use-tasks-scope-stats-csv-export';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 
 export type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
-
-const CURRENT_USER_ID = 'current-user';
 
 const FILTER_CONFIGS = [
   {
@@ -26,6 +25,7 @@ const FILTER_CONFIGS = [
 ];
 
 export function useTasksListPage() {
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<TaskStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,18 +76,25 @@ export function useTasksListPage() {
   }, []);
 
   const fetchMyPlanStages = useCallback(async () => {
+    if (!creatorId) {
+      setMyPlanStages([]);
+      return;
+    }
     try {
-      setMyPlanStages(await tasksApi.getMyPlanStages(CURRENT_USER_ID));
+      setMyPlanStages(await tasksApi.getMyPlanStages(creatorId));
     } catch {
       /* non-blocking */
     }
-  }, []);
+  }, [creatorId]);
 
   useEffect(() => {
     void fetchTasks();
     void fetchKanbanStages();
+  }, [fetchTasks, fetchKanbanStages]);
+
+  useEffect(() => {
     void fetchMyPlanStages();
-  }, [fetchTasks, fetchKanbanStages, fetchMyPlanStages]);
+  }, [fetchMyPlanStages]);
 
   const handleAction = async (taskId: string, action: 'start' | 'complete' | 'reopen') => {
     try {
@@ -204,12 +211,13 @@ export function useTasksListPage() {
   };
 
   const handleAddMyPlanStage = async (title: string, color: string) => {
+    if (!creatorId) return;
     try {
       const stage = await tasksApi.createStage({
         boardType: 'MY_PLAN',
         title,
         color,
-        ownerId: CURRENT_USER_ID,
+        ownerId: creatorId,
       });
       setMyPlanStages((prev) => [...prev, stage]);
     } catch {
@@ -254,6 +262,8 @@ export function useTasksListPage() {
     });
 
   return {
+    creatorId,
+    creatorReady,
     tasks,
     stats,
     loading,
@@ -274,7 +284,6 @@ export function useTasksListPage() {
     setQuickCreateOpen,
     defaultCreateDueDate,
     setDefaultCreateDueDate,
-    currentUserId: CURRENT_USER_ID,
     handleTaskUpdate,
     handleTaskCreated,
     renderBoard,

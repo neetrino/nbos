@@ -1,4 +1,4 @@
-import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import type { KanbanColumn } from '@/components/shared';
 import {
   DEADLINE_COLUMNS_DEF,
@@ -11,25 +11,35 @@ import {
 import type { TaskBoardAction } from '@/features/tasks/task-board';
 import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
 
-export type WorkspaceBoardView = 'deadline' | 'my-plan' | 'kanban';
+export type WorkspaceBoardView = 'deadline' | 'my-plan' | 'kanban' | 'list';
 
 export function useWorkspaceRuntimeBoard(
   tasks: Task[],
   setTasks: Dispatch<SetStateAction<Task[]>>,
+  myPlanOwnerId: string | null,
 ) {
   const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
   const [myPlanStages, setMyPlanStages] = useState<TaskBoardStage[]>([]);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [defaultCreateDueDate, setDefaultCreateDueDate] = useState<string | null>(null);
 
-  const fetchMyPlanStages = useCallback(async (ownerId: string) => {
-    try {
-      const stages = await tasksApi.getMyPlanStages(ownerId);
-      setMyPlanStages(stages);
-    } catch {
-      /* non-blocking */
-    }
-  }, []);
+  useEffect(() => {
+    if (!myPlanOwnerId) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const stages = await tasksApi.getMyPlanStages(myPlanOwnerId);
+        if (!cancelled) setMyPlanStages(stages);
+      } catch {
+        /* non-blocking */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [myPlanOwnerId]);
+
+  const myPlanStagesForView = myPlanOwnerId ? myPlanStages : [];
 
   const handleAction = useCallback(
     async (taskId: string, action: TaskBoardAction) => {
@@ -138,29 +148,30 @@ export function useWorkspaceRuntimeBoard(
 
   const handleAddTaskInColumn = useCallback(
     (columnKey: string) => {
-      setDefaultCreateDueDate(
-        boardView === 'deadline' ? (getDueDateForDeadlineColumn(columnKey) ?? null) : null,
-      );
+      const useDeadline =
+        boardView === 'deadline' ? (getDueDateForDeadlineColumn(columnKey) ?? null) : null;
+      setDefaultCreateDueDate(useDeadline);
       setQuickCreateOpen(true);
     },
     [boardView],
   );
 
   const handleAddMyPlanStage = useCallback(
-    async (title: string, color: string, ownerId: string) => {
+    async (title: string, color: string) => {
+      if (!myPlanOwnerId) return;
       try {
         const stage = await tasksApi.createStage({
           boardType: 'MY_PLAN',
           title,
           color,
-          ownerId,
+          ownerId: myPlanOwnerId,
         });
         setMyPlanStages((prev) => [...prev, stage]);
       } catch {
         /* non-blocking */
       }
     },
-    [],
+    [myPlanOwnerId],
   );
 
   const handleRenameMyPlanStage = useCallback(
@@ -202,7 +213,6 @@ export function useWorkspaceRuntimeBoard(
     boardView,
     setBoardView,
     myPlanStages,
-    fetchMyPlanStages,
     quickCreateOpen,
     setQuickCreateOpen,
     defaultCreateDueDate,
@@ -216,7 +226,7 @@ export function useWorkspaceRuntimeBoard(
     handleRenameMyPlanStage,
     handleDeleteMyPlanStage,
     buildWorkspaceKanbanColumns: () => buildWorkspaceKanbanColumns(tasks),
-    buildMyPlanColumns: () => buildMyPlanColumns(tasks, myPlanStages),
+    buildMyPlanColumns: () => buildMyPlanColumns(tasks, myPlanStagesForView),
     buildDeadlineColumns,
   };
 }

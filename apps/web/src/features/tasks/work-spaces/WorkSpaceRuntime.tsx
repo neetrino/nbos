@@ -1,23 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { CheckSquare, Clock, LayoutGrid, Plus, RefreshCcw, User } from 'lucide-react';
+import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+import { CheckSquare, Clock, LayoutGrid, List, Plus, RefreshCcw, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { EmptyState, KanbanBoard } from '@/components/shared';
+import { KanbanBoard } from '@/components/shared';
 import {
   TaskMiniCard,
+  TaskListTableView,
   partitionWorkspaceSecondaryTasks,
   type TaskBoardAction,
 } from '@/features/tasks/task-board';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { useWorkspaceRuntimeBoard } from './use-workspace-runtime-board';
 import { WorkSpaceSecondaryTasksSection } from './WorkSpaceSecondaryTasksSection';
-
-const CURRENT_USER_ID = 'current-user';
 
 export type WorkSpaceRuntimeProps = {
   workspace: WorkSpace;
@@ -36,10 +36,10 @@ export function WorkSpaceRuntime({
   mode,
   defaultTaskLink,
 }: WorkSpaceRuntimeProps) {
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const {
     boardView,
     setBoardView,
-    fetchMyPlanStages,
     quickCreateOpen,
     setQuickCreateOpen,
     defaultCreateDueDate,
@@ -55,15 +55,11 @@ export function WorkSpaceRuntime({
     buildWorkspaceKanbanColumns,
     buildMyPlanColumns,
     buildDeadlineColumns,
-  } = useWorkspaceRuntimeBoard(tasks, setTasks);
+  } = useWorkspaceRuntimeBoard(tasks, setTasks, creatorId);
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-
-  useEffect(() => {
-    void fetchMyPlanStages(CURRENT_USER_ID);
-  }, [fetchMyPlanStages]);
 
   const handleTaskClick = useCallback((task: Task) => {
     setSelectedTaskId(task.id);
@@ -109,6 +105,14 @@ export function WorkSpaceRuntime({
   );
 
   const renderBoard = () => {
+    if (boardView === 'list') {
+      return (
+        <div className="min-h-0 flex-1 overflow-auto">
+          <TaskListTableView tasks={tasks} onRowClick={handleTaskClick} />
+        </div>
+      );
+    }
+
     if (boardView === 'deadline') {
       return (
         <div className="min-h-0 flex-1">
@@ -150,7 +154,7 @@ export function WorkSpaceRuntime({
           renderCard={renderCard}
           getItemId={(t) => t.id}
           onMove={handleMyPlanMove}
-          onAddColumn={(title, color) => handleAddMyPlanStage(title, color, CURRENT_USER_ID)}
+          onAddColumn={handleAddMyPlanStage}
           onRenameColumn={handleRenameMyPlanStage}
           onDeleteColumn={handleDeleteMyPlanStage}
           onAddItemInColumn={handleAddTaskInColumn}
@@ -163,6 +167,7 @@ export function WorkSpaceRuntime({
   };
 
   const { deferred, cancelled } = partitionWorkspaceSecondaryTasks(tasks);
+  const newTaskDisabled = creatorReady && !creatorId;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4" data-workspace-runtime={mode}>
@@ -207,12 +212,29 @@ export function WorkSpaceRuntime({
             <LayoutGrid size={14} />
             Board
           </button>
+          <button
+            type="button"
+            onClick={() => setBoardView('list')}
+            className={cn(
+              'flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all',
+              boardView === 'list'
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
+          >
+            <List size={14} />
+            List
+          </button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh work space">
             <RefreshCcw size={16} />
           </Button>
-          <Button onClick={openQuickCreate}>
+          <Button
+            onClick={openQuickCreate}
+            disabled={newTaskDisabled}
+            title={newTaskDisabled ? 'Employee profile required' : undefined}
+          >
             <Plus size={16} />
             New Task
           </Button>
@@ -225,27 +247,33 @@ export function WorkSpaceRuntime({
         </div>
       )}
 
-      {tasks.length === 0 ? (
-        <EmptyState
-          icon={CheckSquare}
-          title="No tasks in this Work Space"
-          description="Create a task to start planning work here."
-          action={
-            <Button onClick={openQuickCreate}>
-              <Plus size={16} /> Create first task
-            </Button>
-          }
+      {tasks.length === 0 && (
+        <div className="border-border bg-muted/30 flex items-start gap-3 rounded-lg border px-4 py-3">
+          <CheckSquare className="text-muted-foreground mt-0.5 size-5 shrink-0" />
+          <div>
+            <p className="text-sm font-medium">No tasks in this Work Space yet</p>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Columns stay visible on Board, Deadline, and My Plan. Use New Task or Quick in a
+              column to add work.
+            </p>
+            {!newTaskDisabled && (
+              <Button className="mt-3" size="sm" onClick={openQuickCreate}>
+                <Plus size={14} /> Create first task
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {renderBoard()}
+
+      {tasks.length > 0 && (
+        <WorkSpaceSecondaryTasksSection
+          deferred={deferred}
+          cancelled={cancelled}
+          onAction={handleCardAction}
+          onOpenTask={handleTaskClick}
         />
-      ) : (
-        <>
-          {renderBoard()}
-          <WorkSpaceSecondaryTasksSection
-            deferred={deferred}
-            cancelled={cancelled}
-            onAction={handleCardAction}
-            onOpenTask={handleTaskClick}
-          />
-        </>
       )}
 
       <TaskSheet
@@ -261,7 +289,8 @@ export function WorkSpaceRuntime({
           setQuickCreateOpen(open);
           if (!open) setDefaultCreateDueDate(null);
         }}
-        creatorId={CURRENT_USER_ID}
+        creatorId={creatorId ?? ''}
+        creatorReady={creatorReady}
         defaultWorkspaceId={workspace.id}
         defaultPlanningStatus={workspace.scrumEnabled ? 'BACKLOG' : 'UNPLANNED'}
         defaultDueDate={defaultCreateDueDate}

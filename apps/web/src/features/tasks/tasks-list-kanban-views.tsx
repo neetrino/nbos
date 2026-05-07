@@ -5,6 +5,7 @@ import {
   DEADLINE_COLUMNS_DEF,
   getDeadlineColumn,
   TaskMiniCard,
+  TaskListTableView,
   buildMyPlanColumns,
   buildTasksPageKanbanColumns,
 } from '@/features/tasks/task-board';
@@ -54,6 +55,14 @@ export function TasksListKanbanViews({
   const renderCard = (task: Task) => (
     <TaskMiniCard task={task} onAction={onTaskAction} onClick={onTaskClick} />
   );
+
+  if (boardView === 'list') {
+    return (
+      <div className="min-h-0 flex-1 overflow-auto">
+        <TaskListTableView tasks={tasks} onRowClick={onTaskClick} />
+      </div>
+    );
+  }
 
   if (boardView === 'deadline') {
     return (
