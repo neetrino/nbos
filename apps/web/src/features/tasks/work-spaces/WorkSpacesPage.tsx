@@ -1,14 +1,22 @@
 'use client';
 
-import { useState } from 'react';
-import { FolderKanban, Package, Plus, RefreshCcw } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { FolderKanban, LayoutGrid, List, Package, Plus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, SegmentedControl } from '@/components/shared';
+import {
+  EmptyState,
+  ErrorState,
+  FilterBar,
+  type FilterConfig,
+  LoadingState,
+  SegmentedControl,
+} from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
 import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
-import { WorkSpacesToolbar } from './WorkSpacesToolbar';
+import { WorkSpacesQuickCreate } from './WorkSpacesQuickCreate';
+import { WORK_SPACES_PAGE_SIZE_OPTIONS } from './work-spaces-page-constants';
 import { useWorkSpacesDirectory } from './use-work-spaces-directory';
 
 export function WorkSpacesPage() {
@@ -32,6 +40,29 @@ export function WorkSpacesPage() {
     error,
     refetch,
   } = useWorkSpacesDirectory();
+
+  const workSpaceFilterConfigs = useMemo((): FilterConfig[] => {
+    const pageSizeOptions = WORK_SPACES_PAGE_SIZE_OPTIONS.map((n) => ({
+      value: String(n),
+      label: `${n} / page`,
+    }));
+    return [
+      {
+        key: 'mode',
+        label: 'modes',
+        options: [
+          { value: 'scrum', label: 'Scrum' },
+          { value: 'kanban', label: 'Kanban' },
+        ],
+      },
+      {
+        key: 'pageSize',
+        label: 'per page',
+        options: pageSizeOptions,
+        includeAllOption: false,
+      },
+    ];
+  }, []);
 
   return (
     <div className="flex h-full flex-col gap-5">
@@ -105,17 +136,46 @@ export function WorkSpacesPage() {
         </p>
       </header>
 
-      <WorkSpacesToolbar
-        tab={tab}
-        searchInput={searchInput}
+      <FilterBar
+        search={searchInput}
         onSearchChange={setSearchInput}
-        mode={mode}
-        onModeChange={setMode}
-        pageSize={pageSize}
-        onPageSizeChange={setPageSize}
-        view={view}
-        onViewChange={setView}
-        onQuickCreated={() => void refetch()}
+        searchPlaceholder="Search by name, project, product…"
+        filters={workSpaceFilterConfigs}
+        filterValues={{ mode, pageSize: String(pageSize) }}
+        onFilterChange={(key, value) => {
+          if (key === 'mode') {
+            setMode(value as 'all' | 'scrum' | 'kanban');
+            return;
+          }
+          if (key === 'pageSize') {
+            setPageSize(Number(value));
+          }
+        }}
+        onClearFilters={mode !== 'all' ? () => setMode('all') : undefined}
+        actions={
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-2.5 sm:ml-auto sm:w-auto">
+            {tab === 'standalone' ? (
+              <WorkSpacesQuickCreate onCreated={() => void refetch()} />
+            ) : null}
+            <SegmentedControl
+              value={view}
+              onValueChange={setView}
+              className="ml-auto shrink-0 sm:ml-0"
+              items={[
+                {
+                  value: 'grid',
+                  label: <LayoutGrid size={14} aria-hidden />,
+                  ariaLabel: 'Card grid view',
+                },
+                {
+                  value: 'list',
+                  label: <List size={14} aria-hidden />,
+                  ariaLabel: 'List view',
+                },
+              ]}
+            />
+          </div>
+        }
       />
 
       {loading ? (

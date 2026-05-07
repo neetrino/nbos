@@ -4,7 +4,7 @@ export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
 export { ModulePlaceholder } from './ModulePlaceholder';
-export { FilterBar } from './FilterBar';
+export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } from './FilterBar';
 export { EntitySheet } from './EntitySheet';
 export { KanbanBoard, type KanbanColumn } from './KanbanBoard';
 export { Spinner } from './Spinner';

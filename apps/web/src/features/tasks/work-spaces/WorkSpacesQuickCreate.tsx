@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { tasksApi } from '@/lib/api/tasks';
 import { cn } from '@/lib/utils';
-import {
-  WORK_SPACES_CREATE_CTA_CLASS,
-  WORK_SPACES_QUICK_CREATE_WRAP,
-} from './work-spaces-toolbar-constants';
+
+const QUICK_CREATE_WRAP =
+  'flex min-h-10 min-w-0 items-center gap-1.5 rounded-full border-0 bg-background py-1 pr-1 pl-3 shadow-sm shadow-black/[0.05]';
+
+const CREATE_CTA_CLASS =
+  'h-8 shrink-0 rounded-full bg-sky-500 px-4 text-sm font-medium text-white shadow-sm shadow-sky-700/20 hover:bg-sky-600';
 
 interface WorkSpacesQuickCreateProps {
   onCreated: () => void;
@@ -41,7 +43,7 @@ export function WorkSpacesQuickCreate({ onCreated }: WorkSpacesQuickCreateProps)
 
   return (
     <div className="flex w-full min-w-0 shrink-0 flex-col gap-1 sm:w-auto sm:max-w-[min(100%,280px)]">
-      <div className={cn(WORK_SPACES_QUICK_CREATE_WRAP)}>
+      <div className={cn(QUICK_CREATE_WRAP)}>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -57,7 +59,7 @@ export function WorkSpacesQuickCreate({ onCreated }: WorkSpacesQuickCreateProps)
           type="button"
           size="sm"
           disabled={saving || !name.trim()}
-          className={WORK_SPACES_CREATE_CTA_CLASS}
+          className={CREATE_CTA_CLASS}
           onClick={() => void submit()}
         >
           {saving ? '…' : 'Create'}
