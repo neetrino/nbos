@@ -47,7 +47,7 @@ export function WorkSpacesQuickCreate({ onCreated }: WorkSpacesQuickCreateProps)
           onChange={(e) => setName(e.target.value)}
           placeholder="Name…"
           disabled={saving}
-          className="h-9 min-w-0 flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0"
+          className="h-8 min-w-0 flex-1 border-0 bg-transparent text-sm shadow-none focus-visible:ring-0"
           aria-label="New standalone work space name"
           onKeyDown={(e) => {
             if (e.key === 'Enter') void submit();

@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { WorkSpacesQuickCreate } from './WorkSpacesQuickCreate';
 import { WORK_SPACES_PAGE_SIZE_OPTIONS } from './work-spaces-page-constants';
 import {
-  WORK_SPACES_CONTROL_INSET,
+  WORK_SPACES_CONTROL_PILL,
   WORK_SPACES_TOOLBAR_SURFACE,
   WORK_SPACES_VIEW_TOGGLE_WRAP,
 } from './work-spaces-toolbar-constants';
@@ -50,7 +50,7 @@ export function WorkSpacesToolbar({
     <div className={WORK_SPACES_TOOLBAR_SURFACE}>
       <div className="flex w-full min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:gap-3">
         <div className="flex w-full min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3 xl:min-w-0 xl:flex-1">
-          <div className="relative min-h-11 min-w-0 flex-1">
+          <div className="relative min-h-10 min-w-0 flex-1">
             <Search
               size={16}
               className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2"
@@ -59,7 +59,7 @@ export function WorkSpacesToolbar({
               value={searchInput}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search by name, project, product…"
-              className={cn('h-11 w-full pl-10', WORK_SPACES_CONTROL_INSET)}
+              className={cn('h-10 w-full pl-10', WORK_SPACES_CONTROL_PILL)}
               aria-label="Search work spaces"
             />
           </div>
@@ -72,7 +72,7 @@ export function WorkSpacesToolbar({
             onValueChange={(value) => onModeChange(value as 'all' | 'scrum' | 'kanban')}
           >
             <SelectTrigger
-              className={cn('h-11 min-w-[132px] flex-1 sm:flex-initial', WORK_SPACES_CONTROL_INSET)}
+              className={cn('h-10 min-w-[132px] flex-1 sm:flex-initial', WORK_SPACES_CONTROL_PILL)}
               aria-label="Planning mode filter"
             >
               <SelectValue placeholder="Mode" />
@@ -89,7 +89,7 @@ export function WorkSpacesToolbar({
             onValueChange={(value) => onPageSizeChange(Number(value))}
           >
             <SelectTrigger
-              className={cn('h-11 min-w-[112px] flex-1 sm:flex-initial', WORK_SPACES_CONTROL_INSET)}
+              className={cn('h-10 min-w-[112px] flex-1 sm:flex-initial', WORK_SPACES_CONTROL_PILL)}
               aria-label="Page size"
             >
               <SelectValue placeholder="Page size" />
@@ -108,7 +108,7 @@ export function WorkSpacesToolbar({
               type="button"
               variant={view === 'grid' ? 'secondary' : 'ghost'}
               size="sm"
-              className="h-9 px-3"
+              className="h-8 rounded-full px-3"
               onClick={() => onViewChange('grid')}
               aria-label="Card grid view"
             >
@@ -118,7 +118,7 @@ export function WorkSpacesToolbar({
               type="button"
               variant={view === 'list' ? 'secondary' : 'ghost'}
               size="sm"
-              className="h-9 px-3"
+              className="h-8 rounded-full px-3"
               onClick={() => onViewChange('list')}
               aria-label="List view"
             >
