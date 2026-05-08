@@ -134,8 +134,9 @@ Draft -> Review -> Active -> Archived
 | `source_filter`       | Marketing Lead, Cold Call, Partner, Existing Client |
 | `deal_type_filter`    | Product, Extension, Maintenance, Outsource          |
 | `payment_type_filter` | Classic, Subscription, Custom                       |
-| `product_category`    | Website, Mobile, CRM, Design                        |
-| `product_type`        | White Label, Mix, Custom Code                       |
+| `product_category`    | CODE, WORDPRESS, SHOPIFY, MARKETING, OTHER          |
+| `product_type`        | Website, Mobile App, CRM, Ecommerce, SaaS, Design   |
+| `complexity_policy`   | Template-based, mixed, custom, high-risk, override  |
 | `role_filter`         | Developer, PM, Designer, Seller                     |
 | `level_filter`        | Junior, Middle, Senior, Lead                        |
 | `kpi_gate_policy`     | Как KPI влияет на выплату                           |
@@ -156,9 +157,9 @@ From = Client     -> Classic seller 4%, assistant 1%; Subscription seller 40%, a
 ### Delivery example
 
 ```text
-Product Type: White Label -> 7%
-Product Type: Mix -> 10%
-Product Type: Custom Code -> 15%
+Template-based / low complexity -> 7%
+Mixed / medium complexity -> 10%
+Custom / high complexity -> 15%
 ```
 
 Это тоже шаблон. Для конкретного сотрудника или проекта CEO может задать override.

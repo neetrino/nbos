@@ -200,18 +200,18 @@ Planned Expense → Expense (автоматическое создание по 
 
 ### Deal (Сделка)
 
-| Поле        | Описание                                       |
-| ----------- | ---------------------------------------------- |
-| Стадия      | Start a Conversation → ... → Deal Won / Failed |
-| Сумма       | Ожидаемая сумма сделки                         |
-| Тип оплаты  | Classic / Subscription                         |
-| Тип проекта | WL / Mix / Custom Code                         |
-| Тег         | New / Extension                                |
-| Контакт     | Привязанный контакт                            |
-| Компания    | Привязанная компания                           |
-| Проект      | Привязанный проект (для Extension)             |
-| Продажник   | Ответственный Seller                           |
-| Дедлайн     | Срок сдачи проекта клиенту                     |
+| Поле             | Описание                                             |
+| ---------------- | ---------------------------------------------------- |
+| Стадия           | Start a Conversation → ... → Deal Won / Failed       |
+| Сумма            | Ожидаемая сумма сделки                               |
+| Тип оплаты       | Classic / Subscription                               |
+| Product taxonomy | Product category/type для будущего Product/Extension |
+| Тег              | New / Extension                                      |
+| Контакт          | Привязанный контакт                                  |
+| Компания         | Привязанная компания                                 |
+| Проект           | Привязанный проект (для Extension)                   |
+| Продажник        | Ответственный Seller                                 |
+| Дедлайн          | Срок сдачи проекта клиенту                           |
 
 ### Order (Заказ)
 
@@ -246,16 +246,16 @@ Planned Expense → Expense (автоматическое создание по 
 
 ### Product (Продукт)
 
-| Поле        | Описание                               |
-| ----------- | -------------------------------------- |
-| Тип         | Website / Mobile App / CRM / Other     |
-| Тип проекта | WL / Mix / Custom Code                 |
-| Стадия      | Starting → Development → QA → Transfer |
-| Work status | Active / On Hold                       |
-| Resolution  | Done / Cancelled                       |
-| Проект      | Родительский проект                    |
-| Спринты     | Привязанные спринты (1:N)              |
-| Задачи      | Все задачи продукта                    |
+| Поле             | Описание                                       |
+| ---------------- | ---------------------------------------------- |
+| Product Category | CODE / WORDPRESS / SHOPIFY / MARKETING / OTHER |
+| Product Type     | Website / Mobile App / CRM / Ecommerce / Other |
+| Стадия           | Starting → Development → QA → Transfer         |
+| Work status      | Active / On Hold                               |
+| Resolution       | Done / Cancelled                               |
+| Проект           | Родительский проект                            |
+| Спринты          | Привязанные спринты (1:N)                      |
+| Задачи           | Все задачи продукта                            |
 
 ### Extension (Доработка)
 

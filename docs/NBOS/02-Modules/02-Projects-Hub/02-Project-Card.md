@@ -29,13 +29,22 @@
 | -------------- | ------------------------------------------------------------------------- |
 | Project Name   | Название бизнеса / бренда                                                 |
 | Computed Views | В каких views проект сейчас виден: `Development`, `Maintenance`, `Closed` |
-| Project Type   | White Label / Mix / Custom Code                                           |
 | Contact        | Основной контакт                                                          |
 | Company        | Юрлицо для биллинга                                                       |
-| Seller         | Ответственный seller                                                      |
-| PM             | Ответственный PM                                                          |
 | Description    | Общий контекст проекта                                                    |
 | Created At     | Дата создания                                                             |
+
+`Project` не имеет отдельного поля delivery-классификации.
+
+Старый подход с project-level классификацией deprecated и не должен возвращаться в новый UX. Рабочая классификация ведётся на уровне `Product` / `Extension` через:
+
+- `productCategory`;
+- `productType`;
+- delivery stage;
+- stage requirements;
+- checklist templates.
+
+Seller, PM, deadline и order context показываются там, где они реально нужны для работы: в `Deal`, `Product`, `Extension`, `Order`, `Delivery Board` и product workspace. На Project Card они могут быть доступны как secondary context, но не являются core-полями проекта.
 
 ### Основные виджеты
 
@@ -57,16 +66,16 @@
 
 ### Карточка продукта в списке
 
-| Поле           | Описание                                 |
-| -------------- | ---------------------------------------- |
-| Name           | Название продукта                        |
-| Product Type   | Website, Mobile App, CRM и т.д.          |
-| Current Stage  | `Starting / Development / QA / Transfer` |
-| Work Status    | `Active / On Hold`                       |
-| Resolution     | `Done / Cancelled / null`                |
-| Deadline       | Дедлайн                                  |
-| PM             | Ответственный PM                         |
-| Tasks Snapshot | Открытые / все задачи                    |
+| Поле           | Описание                                          |
+| -------------- | ------------------------------------------------- |
+| Name           | Название продукта                                 |
+| Product Type   | Product taxonomy: Website, Mobile App, CRM и т.д. |
+| Current Stage  | `Starting / Development / QA / Transfer`          |
+| Work Status    | `Active / On Hold`                                |
+| Resolution     | `Done / Cancelled / null`                         |
+| Deadline       | Дедлайн                                           |
+| PM             | Ответственный PM                                  |
+| Tasks Snapshot | Открытые / все задачи                             |
 
 ### Поведение
 

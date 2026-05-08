@@ -46,6 +46,7 @@
 Закрытый UI/UX и сид см. [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md). Ниже только дельта до полного канона [`07-Delivery-Board.md`](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md) §6–8 и list API.
 
 - **Readiness в списках:** проекция `currentStageReadiness: { completed, total }` в `GET /api/projects/products` и `GET /api/projects/extensions` (или узкий batch) из тех же stage-gate правил, что detail/product gates — **M**
+- **Opened Delivery Card:** wide Deal-style drawer/full card для Product/Extension с sticky header, 2–3 колонками, daily-core fields, conditional fields и tabs `Overview / Requirements / Work Space / Accesses / Files / Calls / Finance-Bonus / History` по канону — **L**
 - **Фильтр клиент / компания:** поле в list DTO + серверный фильтр (`companyId` или имя компании с проекта) — **M**
 - **Closed metadata / audit:** явный `closedAt` / `closedBy` / история сверх `updatedAt` там, где канон §8 требует больше proxy — проекция из БД или миграция + запись при terminal transition — **M** (сверить с [`project-product.prisma`](../packages/database/prisma/schema/project-product.prisma))
 

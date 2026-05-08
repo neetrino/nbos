@@ -51,12 +51,28 @@ Left Menu
 `Project page` очищается и остаётся оболочкой проекта:
 
 - короткая информация о проекте;
-- клиент / компания / PM / seller;
+- клиент / компания как контекст;
 - список продуктов карточками;
 - короткие агрегаты;
 - ссылки в рабочие зоны.
 
 Project page не должен быть тяжёлым операционным экраном, где команда ведёт всю разработку.
+
+Важно:
+
+```text
+Project-level delivery classification is deprecated.
+```
+
+Delivery Board не использует старую project-level классификацию.
+
+Рабочая классификация lives on:
+
+- `Product.productCategory`;
+- `Product.productType`;
+- `Extension.size`;
+- stage requirements;
+- checklist template assignment.
 
 ---
 
@@ -308,6 +324,124 @@ Closed outside card может быть визуально проще active car
 - Support links;
 - Activity / Audit.
 
+### 8.1. Layout principle
+
+Opened card должна быть широкой, как Deal detail card / drawer, но содержательно оптимизированной под delivery.
+
+Правильный визуальный подход:
+
+- использовать знакомый Deal-style shell: wide drawer, sticky header, tabs, activity-friendly layout;
+- не копировать Deal card один-в-один;
+- сделать отдельный delivery-focused design внутри того же визуального языка платформы;
+- на desktop использовать 2-3 колонки, чтобы не превращать карточку в длинную простыню;
+- на mobile превращать колонки в последовательные sections.
+
+Header всегда sticky.
+
+Header показывает:
+
+- entity kind: `Product` / `Extension`;
+- name;
+- current stage;
+- work status: `Active` / `On Hold`;
+- resolution for closed items: `Done` / `Cancelled`;
+- segmented current-stage readiness;
+- deadline / risk;
+- main actions.
+
+Primary actions:
+
+- move to next stage;
+- pause / resume;
+- Done;
+- Cancel;
+- open Work Space;
+- open source Product / Extension page.
+
+### 8.2. First screen priority
+
+Первый экран opened card должен показывать не "всё, что мы знаем", а только то, что нужно каждый день для ведения работы.
+
+Daily core:
+
+- current stage;
+- readiness текущего stage;
+- blockers;
+- deadline;
+- PM / delivery owner;
+- active specialists: developer, designer, tech specialist, QA where relevant;
+- current stage requirements;
+- active checklist requirement;
+- key work links;
+- credentials readiness summary;
+- payment setup status only when applicable.
+
+Secondary context:
+
+- order link;
+- seller;
+- client / company details;
+- full files list;
+- comments;
+- full languages context;
+- full finance details;
+- full activity history.
+
+Secondary context не удаляется, но уходит в tabs / expandable blocks.
+
+### 8.3. Conditional fields
+
+Поля должны появляться только там, где они реально применимы.
+
+| Field                                                 | Когда показывать                                                  |
+| ----------------------------------------------------- | ----------------------------------------------------------------- |
+| Payment setup                                         | ecommerce, SaaS, paid portal, checkout, subscription/payment flow |
+| Platform design URL / ID                              | WordPress/platform/template-based delivery                        |
+| Languages                                             | multilingual delivery                                             |
+| Domain                                                | website/web app/app delivery with domain dependency               |
+| Hosting                                               | delivery with infrastructure dependency                           |
+| Admin / Client Admin / Mail / API Key / Service / ENV | when credentials/accesses are required                            |
+| App iOS / App Android                                 | mobile app delivery                                               |
+
+Credentials не должны превращать Overview в список паролей.
+
+Правильный UX:
+
+- Overview показывает status/count/readiness;
+- tab `Accesses` показывает полный список;
+- credentials выбираются из existing vault или создаются через controlled add flow;
+- raw secret visibility obeys Credentials RBAC.
+
+### 8.4. Tabs
+
+Opened Delivery Card имеет tabs для вторичных, но важных данных.
+
+Recommended tabs:
+
+| Tab               | Назначение                                                            |
+| ----------------- | --------------------------------------------------------------------- |
+| `Overview`        | ежедневное управление: stage, readiness, blockers, key fields         |
+| `Requirements`    | full Stage Gate Timeline, requirements, checklist instances           |
+| `Work Space`      | Product Work Space / tasks; MVP может показать кнопку перехода        |
+| `Accesses`        | credentials, domains, hosting, services, app accounts                 |
+| `Files`           | technical task, design, client files, handoff documents               |
+| `Calls`           | calls with client since this card was created; MVP placeholder/button |
+| `Finance / Bonus` | order/payment context and product bonus visibility                    |
+| `History`         | audit, stage movement, activity, important changes                    |
+
+`Calls` tab не обязан физически хранить звонки на Product.
+
+Канон:
+
+- calls остаются привязаны к client/contact/communication source;
+- Delivery Card показывает filtered projection: calls after card creation and relevant to this client/product context.
+
+`Finance / Bonus` tab:
+
+- employee видит свои bonuses по Product/Extension;
+- CEO / Founder / allowed finance roles видят all bonus entries;
+- finance-sensitive amounts obey Finance permissions.
+
 Для closed items дополнительно показывать:
 
 - final result: `Done` / `Cancelled`;
@@ -320,7 +454,7 @@ Closed outside card может быть визуально проще active car
 
 По умолчанию closed opened card read-only. Reopen или change resolution, если будут нужны, должны быть отдельными permissioned actions с audit.
 
-### 8.1. Stage Gate Timeline
+### 8.5. Stage Gate Timeline
 
 Главная секция opened card - `Stage Gate Timeline`.
 
@@ -357,7 +491,7 @@ QA            0/12 Future
 Transfer      0/6 Future
 ```
 
-### 8.2. Required items by stage
+### 8.6. Required items by stage
 
 У каждого stage свои обязательные пункты.
 
@@ -473,13 +607,24 @@ Checklist можно завершить, если все `decisionRequired` item
 
 ### 9.2. Stage template assignment
 
-Для каждого stage/product type/project type можно назначать разные checklist templates.
+Для каждого stage/entity kind/product taxonomy можно назначать разные checklist templates.
+
+Не использовать project-level delivery classification.
+
+Старый вариант на уровне project deprecated. Если нужна разная логика поставки, она должна выражаться через product taxonomy и configuration:
+
+- `Product.productCategory`;
+- `Product.productType`;
+- `Extension.size`;
+- payment model;
+- technical profile;
+- selected stage requirement set.
 
 Пример:
 
 ```text
-Product Type = Website
-Project Type = WordPress
+Product Category = WordPress
+Product Type = Company Website
 Stage = Development
 Requirement type = CHECKLIST
 Checklist Template = WordPress Development Checklist

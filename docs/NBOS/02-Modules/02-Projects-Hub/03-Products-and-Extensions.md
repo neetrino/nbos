@@ -48,12 +48,15 @@
 
 - name;
 - deadline;
+- product category;
 - product type;
 - scope / description;
 - seller;
 - PM;
 - linked order;
 - company / contact context через project.
+
+Project-level delivery classification не передаётся в Product, потому что отдельной delivery-классификации проекта больше нет. Если нужна логика "WordPress / custom / ecommerce / platform", она должна выражаться через `productCategory`, `productType`, stage requirements и checklist template assignment.
 
 ---
 
@@ -169,6 +172,99 @@ Terminal outcomes:
 
 - `Done`
 - `Cancelled`
+
+---
+
+## 4.8. Opened Product / Extension Card
+
+Открытая карточка `Product` / `Extension` должна быть главным рабочим cockpit для delivery-сущности.
+
+Визуальный принцип:
+
+- широкий drawer или full card в стиле Deal card;
+- не копия Deal один-в-один, а delivery-focused версия того же паттерна;
+- sticky header;
+- 2-3 рабочие колонки на desktop;
+- tabs для вторичных, но важных данных.
+
+### Header
+
+В header всегда видны:
+
+- name;
+- entity badge: `Product` / `Extension`;
+- current stage;
+- work status: `Active` / `On Hold`;
+- terminal resolution, если closed;
+- current-stage readiness indicator;
+- deadline / risk marker;
+- main actions: move stage, pause/resume, done/cancel, open workspace.
+
+### Daily core fields
+
+В первом экране показывать только то, что нужно каждый день для ведения работы:
+
+- current stage;
+- stage readiness;
+- current blockers;
+- deadline;
+- PM / owner;
+- active assignees: developer, designer, tech specialist, QA where relevant;
+- current stage requirements;
+- active checklist;
+- key work links: staging, production, repository, design, technical task where relevant;
+- credentials readiness summary;
+- payment integration status only when product scope needs payments.
+
+### Secondary fields
+
+Эти данные важны, но не должны перегружать первый экран:
+
+- order link;
+- seller;
+- client / company details;
+- attached files;
+- comments;
+- languages;
+- finance details;
+- full credentials list;
+- full activity history.
+
+Они должны быть доступны через tabs, side sections или expandable blocks.
+
+### Conditional fields
+
+Поля показываются только если они применимы:
+
+| Field                    | Когда показывать                                        |
+| ------------------------ | ------------------------------------------------------- |
+| Payment setup            | ecommerce, SaaS, paid portal, subscription/payment flow |
+| Platform design URL / ID | WordPress/platform/template-based delivery              |
+| Languages                | multilingual product                                    |
+| Domain / Hosting         | website/web app/app delivery where infra is needed      |
+| App iOS / App Android    | mobile app delivery                                     |
+| API keys / ENV           | custom/code/integration-heavy delivery                  |
+
+### Tabs
+
+Recommended tabs:
+
+| Tab               | Назначение                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `Overview`        | daily control: stage, readiness, blockers, key fields                                  |
+| `Requirements`    | full stage gate timeline and checklist instances                                       |
+| `Work Space`      | product tasks/workspace; MVP может иметь только кнопку перехода                        |
+| `Accesses`        | credentials, domains, hosting, services, app accounts                                  |
+| `Files`           | technical task, design, client files, handoff documents                                |
+| `Calls`           | all client calls since this Product/Extension card was created; MVP placeholder/button |
+| `Finance / Bonus` | order/payment context and product bonuses with RBAC                                    |
+| `History`         | audit, activity, stage movement, important changes                                     |
+
+`Bonus` visibility:
+
+- employee видит только свой bonus по продукту;
+- CEO / Founder / allowed finance roles видят все bonuses по продукту;
+- bonus tab не должен раскрывать чужие выплаты без permission.
 
 ### 4.1. Starting
 

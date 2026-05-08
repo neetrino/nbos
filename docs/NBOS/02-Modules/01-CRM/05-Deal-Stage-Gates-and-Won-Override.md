@@ -94,7 +94,7 @@ Examples:
 - amount
 - payment type
 - offer material
-- project type
+- product category/type
 - deadline
 - linked project / linked product
 - company
@@ -257,7 +257,7 @@ This is the canonical business matrix for current implementation planning.
 
 ### Common required fields
 
-- project implementation type (`White Label`, `Mix`, `Custom Code`) when applicable
+- delivery approach / technical profile when applicable
 - preliminary timeline estimate
 - preliminary commercial estimate
 - internal feasibility confirmation
@@ -412,7 +412,7 @@ Typical required data set:
 
 - product category
 - product type
-- project type
+- product category/type
 - marketing attribution
 - amount
 - payment type
