@@ -1,15 +1,4 @@
-import {
-  ArrowRight,
-  Building2,
-  Calendar,
-  CheckCircle2,
-  Package,
-  Play,
-  Puzzle,
-  User,
-  XCircle,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Building2, Calendar, Package, Puzzle, User } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import type {
   DeliveryLifecycleProjection,
@@ -24,10 +13,11 @@ import {
   getProductType,
   isDeliveryHoldExpired,
 } from '@/features/projects/constants/projects';
+import { DeliveryStageActionBar } from './DeliveryStageActionBar';
 import {
+  getItemId,
   getItemLifecycle,
   getNavigableProductId,
-  NEXT_DELIVERY_STAGE,
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
 import {
@@ -114,107 +104,19 @@ export function ProjectDeliveryBoardCard({
           onOpenProduct={() => productId && onOpenProduct(productId)}
         />
       ) : (
-        <DeliveryCardActions
+        <DeliveryStageActionBar
+          variant="card"
           item={item}
-          disabled={isActionBusy}
-          onOpenProduct={() => productId && onOpenProduct(productId)}
+          lifecycle={lifecycle}
+          busyItemId={isActionBusy ? getItemId(item) : null}
           onMoveNext={onMoveNext}
           onResume={onResume}
           onComplete={onComplete}
           onCancel={onCancel}
+          onOpenProduct={() => productId && onOpenProduct(productId)}
         />
       )}
     </div>
-  );
-}
-
-function DeliveryCardActions({
-  item,
-  disabled,
-  onOpenProduct,
-  onMoveNext,
-  onResume,
-  onComplete,
-  onCancel,
-}: {
-  item: DeliveryBoardItem;
-  disabled: boolean;
-  onOpenProduct: () => void;
-  onMoveNext: () => void;
-  onResume: () => void;
-  onComplete: () => void;
-  onCancel: () => void;
-}) {
-  const lifecycle = getItemLifecycle(item);
-  if (lifecycle?.isTerminal) {
-    return (
-      <div className="border-border mt-3 flex justify-end border-t pt-2">
-        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onOpenProduct}>
-          Open <ArrowRight size={12} className="ml-1" />
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="border-border mt-3 flex flex-wrap justify-end gap-1.5 border-t pt-2">
-      {lifecycle?.workStatus === 'ON_HOLD' ? (
-        <Button
-          variant="secondary"
-          size="sm"
-          className="h-7 text-xs"
-          disabled={disabled}
-          onClick={onResume}
-        >
-          <Play size={12} /> Resume
-        </Button>
-      ) : (
-        <NextStageButton lifecycle={lifecycle} disabled={disabled} onMoveNext={onMoveNext} />
-      )}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-7 text-xs"
-        disabled={disabled}
-        onClick={onComplete}
-      >
-        <CheckCircle2 size={12} /> Done
-      </Button>
-      <Button
-        variant="destructive"
-        size="sm"
-        className="h-7 text-xs"
-        disabled={disabled}
-        onClick={onCancel}
-      >
-        <XCircle size={12} /> Cancel
-      </Button>
-    </div>
-  );
-}
-
-function NextStageButton({
-  lifecycle,
-  disabled,
-  onMoveNext,
-}: {
-  lifecycle: DeliveryLifecycleProjection | undefined;
-  disabled: boolean;
-  onMoveNext: () => void;
-}) {
-  const nextStage = lifecycle?.stage ? NEXT_DELIVERY_STAGE[lifecycle.stage] : null;
-  if (!nextStage) return null;
-
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="h-7 text-xs"
-      disabled={disabled}
-      onClick={onMoveNext}
-    >
-      Move next
-    </Button>
   );
 }
 

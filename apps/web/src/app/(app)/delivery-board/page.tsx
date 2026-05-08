@@ -22,12 +22,14 @@ import {
 } from '@/features/projects/components/delivery-board/delivery-board-list-fetch';
 import {
   countDeliveryAggregates,
+  getItemId,
   getItemLifecycle,
   getProjectId,
   type DeliveryBoardItem,
   type DeliveryBoardKindFilter,
 } from '@/features/projects/components/delivery-board/project-delivery-board-model';
 import type { ProductBoardTab } from '@/features/projects/components/delivery-board/ProjectDeliveryBoardContextLinks';
+import { useDeliveryBoardMutations } from '@/features/projects/components/delivery-board/use-delivery-board-mutations';
 
 const DEFAULT_CLOSED_FILTERS: DeliveryBoardClosedFiltersInput = {
   search: '',
@@ -70,6 +72,8 @@ export default function DeliveryBoardPage() {
       setLoading(false);
     }
   }, []);
+
+  const deliveryMutations = useDeliveryBoardMutations(load);
 
   useEffect(() => {
     void load();
@@ -134,6 +138,15 @@ export default function DeliveryBoardPage() {
     [router, scopedItems, projectFilterId],
   );
 
+  useEffect(() => {
+    setDetailItem((cur) => {
+      if (!cur) return null;
+      const id = getItemId(cur);
+      const next = scopedItems.find((i) => getItemId(i) === id);
+      return next ?? cur;
+    });
+  }, [scopedItems]);
+
   return (
     <div className="flex h-full flex-col gap-4 p-1">
       <div>
@@ -165,10 +178,10 @@ export default function DeliveryBoardPage() {
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="closed">Closed</TabsTrigger>
           </TabsList>
-          <TabsContent value="active" className="mt-0">
+          <TabsContent value="active" className="mt-0" forceMount>
             <DeliveryBoardView
               items={scopedItems}
-              onRefresh={load}
+              mutations={deliveryMutations}
               onOpenProduct={openProduct}
               onOpenProductTab={openProductTab}
               includeClosedBoardSection={false}
@@ -253,6 +266,7 @@ export default function DeliveryBoardPage() {
           if (!open) setDetailItem(null);
         }}
         onEntityUpdated={load}
+        boardMutations={deliveryMutations}
       />
     </div>
   );

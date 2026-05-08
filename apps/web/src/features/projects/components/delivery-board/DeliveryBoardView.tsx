@@ -1,20 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { isStageGateApiError } from '@/lib/api-errors';
-import {
-  DeliveryLifecycleActionDialog,
-  type DeliveryLifecycleActionPayload,
-} from '../DeliveryLifecycleActionDialog';
+import { DeliveryLifecycleActionDialog } from '../DeliveryLifecycleActionDialog';
 import { DeliveryBoardStageGateBanner } from './DeliveryBoardStageGateBanner';
 import { DeliveryBoardActiveColumns } from './DeliveryBoardActiveColumns';
 import { DeliveryBoardClosedBoard } from './DeliveryBoardClosedBoard';
-import { runBoardAction, type BoardAction } from './project-delivery-board-actions';
-import {
-  toBoardStageGateBlocker,
-  toDeliveryBoardActionError,
-  type DeliveryBoardStageGateBlocker,
-} from './project-delivery-board-stage-gate';
 import type { ProductBoardTab } from './ProjectDeliveryBoardContextLinks';
 import { ProjectDeliveryBoardHeader } from './ProjectDeliveryBoardHeader';
 import {
@@ -23,11 +13,11 @@ import {
   getActiveBoardItems,
   getItemId,
   getItemLabel,
-  getProjectId,
   type DeliveryBoardItem,
   type DeliveryBoardKindFilter,
   type DeliveryBoardStatusFilter,
 } from './project-delivery-board-model';
+import type { UseDeliveryBoardMutationsResult } from './use-delivery-board-mutations';
 
 export interface DeliveryBoardSummaryCounts {
   active: number;
@@ -36,7 +26,7 @@ export interface DeliveryBoardSummaryCounts {
 
 export interface DeliveryBoardViewProps {
   items: DeliveryBoardItem[];
-  onRefresh: () => void | Promise<void>;
+  mutations: UseDeliveryBoardMutationsResult;
   onOpenProduct: (productId: string) => void;
   onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
   /** When false, omit embedded Closed section (separate Closed tab on global board). */
@@ -50,7 +40,7 @@ export interface DeliveryBoardViewProps {
 
 export function DeliveryBoardView({
   items,
-  onRefresh,
+  mutations,
   onOpenProduct,
   onOpenProductTab,
   includeClosedBoardSection = true,
@@ -62,60 +52,23 @@ export function DeliveryBoardView({
   const [statusFilter, setStatusFilter] = useState<DeliveryBoardStatusFilter>(
     lockedStatusFilter ?? 'ACTIVE',
   );
-  const [busyItemId, setBusyItemId] = useState<string | null>(null);
-  const [cancelItem, setCancelItem] = useState<DeliveryBoardItem | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [stageGateBlocker, setStageGateBlocker] = useState<DeliveryBoardStageGateBlocker | null>(
-    null,
-  );
+  const {
+    busyItemId,
+    cancelItem,
+    actionError,
+    stageGateBlocker,
+    handleBoardAction,
+    requestCancel,
+    handleCancelConfirm,
+    dismissStageGate,
+    clearActionDialog,
+  } = mutations;
   const effectiveStatus = lockedStatusFilter ?? statusFilter;
   const boardItems = filterBoardItems(items, kindFilter, effectiveStatus);
   const activeItems = getActiveBoardItems(boardItems);
   const closedItems = getClosedBoardItems(boardItems);
   const headerActive = summaryCounts?.active ?? activeItems.length;
   const headerClosed = summaryCounts?.closed ?? closedItems.length;
-
-  const handleBoardAction = async (item: DeliveryBoardItem, action: BoardAction) => {
-    const itemId = getItemId(item);
-    setBusyItemId(itemId);
-    setActionError(null);
-    setStageGateBlocker(null);
-    try {
-      await runBoardAction(item, action);
-      await onRefresh();
-    } catch (error) {
-      if (isStageGateApiError(error)) {
-        const pid = getProjectId(item);
-        if (pid) setStageGateBlocker(toBoardStageGateBlocker(item, pid, error));
-      } else {
-        setActionError(toDeliveryBoardActionError(error, 'Delivery board action failed.'));
-      }
-    } finally {
-      setBusyItemId(null);
-    }
-  };
-
-  const handleCancelConfirm = async (payload: DeliveryLifecycleActionPayload) => {
-    if (!cancelItem) return;
-    const item = cancelItem;
-    setBusyItemId(getItemId(item));
-    setActionError(null);
-    setStageGateBlocker(null);
-    try {
-      await runBoardAction(item, 'CANCEL', payload);
-      setCancelItem(null);
-      await onRefresh();
-    } catch (error) {
-      if (isStageGateApiError(error)) {
-        const pid = getProjectId(item);
-        if (pid) setStageGateBlocker(toBoardStageGateBlocker(item, pid, error));
-      } else {
-        setActionError(toDeliveryBoardActionError(error, 'Delivery item could not be cancelled.'));
-      }
-    } finally {
-      setBusyItemId(null);
-    }
-  };
 
   return (
     <section className="space-y-4">
@@ -129,10 +82,7 @@ export function DeliveryBoardView({
         hideStatusFilters={Boolean(lockedStatusFilter)}
       />
       {stageGateBlocker && (
-        <DeliveryBoardStageGateBanner
-          blocker={stageGateBlocker}
-          onDismiss={() => setStageGateBlocker(null)}
-        />
+        <DeliveryBoardStageGateBanner blocker={stageGateBlocker} onDismiss={dismissStageGate} />
       )}
       <DeliveryBoardActiveColumns
         items={activeItems}
@@ -140,7 +90,7 @@ export function DeliveryBoardView({
         onOpenProduct={onOpenProduct}
         onOpenProductTab={onOpenProductTab}
         onBoardAction={handleBoardAction}
-        onCancel={setCancelItem}
+        onCancel={requestCancel}
         onOpenDetails={onOpenDetails}
       />
       {includeClosedBoardSection ? (
@@ -150,7 +100,7 @@ export function DeliveryBoardView({
           onOpenProduct={onOpenProduct}
           onOpenProductTab={onOpenProductTab}
           onBoardAction={handleBoardAction}
-          onCancel={setCancelItem}
+          onCancel={requestCancel}
           onOpenDetails={onOpenDetails}
         />
       ) : null}
@@ -161,9 +111,7 @@ export function DeliveryBoardView({
         error={actionError}
         onOpenChange={(open) => {
           if (open) return;
-          setCancelItem(null);
-          setActionError(null);
-          setStageGateBlocker(null);
+          clearActionDialog();
         }}
         onConfirm={handleCancelConfirm}
       />

@@ -6,7 +6,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { extensionsApi, type FullExtension } from '@/lib/api/extensions';
 import { productsApi, type FullProduct } from '@/lib/api/products';
-import { getItemLabel, type DeliveryBoardItem } from './project-delivery-board-model';
+import {
+  getItemLabel,
+  getItemLifecycle,
+  type DeliveryBoardItem,
+} from './project-delivery-board-model';
+import { DeliveryStageActionBar } from './DeliveryStageActionBar';
+import type { UseDeliveryBoardMutationsResult } from './use-delivery-board-mutations';
 import { mergeDeliveryDetailLifecycle } from './delivery-item-detail-merge-lifecycle';
 import {
   DELIVERY_DETAIL_PRODUCT_NEXT,
@@ -24,6 +30,8 @@ interface DeliveryItemDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEntityUpdated: () => void;
+  /** When set (global Delivery Board), stage actions match board + server RBAC. */
+  boardMutations?: UseDeliveryBoardMutationsResult;
 }
 
 export function DeliveryItemDetailSheet({
@@ -31,6 +39,7 @@ export function DeliveryItemDetailSheet({
   open,
   onOpenChange,
   onEntityUpdated,
+  boardMutations,
 }: DeliveryItemDetailSheetProps) {
   const [product, setProduct] = useState<FullProduct | null>(null);
   const [extension, setExtension] = useState<FullExtension | null>(null);
@@ -77,6 +86,7 @@ export function DeliveryItemDetailSheet({
   const title = item ? getItemLabel(item) : '';
   const lifecycle = item ? mergeDeliveryDetailLifecycle(item, product, extension) : undefined;
   const terminal = Boolean(lifecycle?.isTerminal);
+  const stageLifecycle = lifecycle ?? (item ? getItemLifecycle(item) : undefined);
 
   const headerProps =
     item && item.kind === 'PRODUCT'
@@ -145,6 +155,18 @@ export function DeliveryItemDetailSheet({
               loading={loading}
               onRefresh={handleRefresh}
             />
+            {boardMutations && item && !loading ? (
+              <DeliveryStageActionBar
+                variant="drawer"
+                item={item}
+                lifecycle={stageLifecycle}
+                busyItemId={boardMutations.busyItemId}
+                onMoveNext={() => void boardMutations.handleBoardAction(item, 'MOVE_NEXT')}
+                onResume={() => void boardMutations.handleBoardAction(item, 'RESUME')}
+                onComplete={() => void boardMutations.handleBoardAction(item, 'COMPLETE')}
+                onCancel={() => boardMutations.requestCancel(item)}
+              />
+            ) : null}
             <DeliveryItemDetailRequirementsZone
               lifecycle={lifecycle}
               product={product}
