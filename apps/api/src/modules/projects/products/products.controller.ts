@@ -126,8 +126,12 @@ export class ProductsController {
     description: GENERIC_STATUS_DEPRECATION_DESCRIPTION,
     deprecated: true,
   })
-  async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
-    return this.productsService.updateStatus(id, body.status);
+  async updateStatus(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { status: string },
+  ) {
+    return this.productsService.updateStatus(id, body.status, user.id);
   }
 
   @Patch(':id/stage')

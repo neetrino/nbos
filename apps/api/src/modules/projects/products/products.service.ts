@@ -34,6 +34,10 @@ import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-syn
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 import { AuditService } from '../../audit/audit.service';
 import {
+  DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+  isLegacyPatchStatusTerminalOutcome,
+} from '../delivery-status-deprecation';
+import {
   loadStageChecklistProgressByOwner,
   pickProgressForEntity,
 } from '../../checklist-templates/checklist-instance-stage-progress';
@@ -341,7 +345,7 @@ export class ProductsService {
     return attachProductDeliveryLifecycle(product);
   }
 
-  async updateStatus(id: string, newStatus: string) {
+  async updateStatus(id: string, newStatus: string, actorId: string) {
     const product = await this.findById(id);
     const current = product.status as ProductStatusEnum;
     const target = newStatus as ProductStatusEnum;
@@ -362,6 +366,21 @@ export class ProductsService {
       },
     });
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
+    if (isLegacyPatchStatusTerminalOutcome(target)) {
+      await this.audit.log({
+        entityType: 'PRODUCT',
+        entityId: id,
+        action: DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+        userId: actorId,
+        projectId: product.projectId,
+        changes: {
+          deprecatedApiPath: 'PATCH /projects/products/:id/status',
+          previousStatus: current,
+          targetStatus: target,
+          deliveryResolution: target === 'DONE' ? 'DONE' : 'CANCELLED',
+        } as InputJsonValue,
+      });
+    }
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 

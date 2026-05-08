@@ -5,6 +5,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { EXTENSION_STAGE_GATE_ERROR_CODE } from './extension-stage-gates';
 import type { NotificationService } from '../../notifications/notification.service';
 import type { AuditService } from '../../audit/audit.service';
+import { DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION } from '../delivery-status-deprecation';
 
 describe('ExtensionsService', () => {
   let service: ExtensionsService;
@@ -270,7 +271,9 @@ describe('ExtensionsService', () => {
         order: null,
       });
 
-      await expect(service.updateStatus('e1', 'DEVELOPMENT')).rejects.toThrow(BadRequestException);
+      await expect(service.updateStatus('e1', 'DEVELOPMENT', 'emp-audit')).rejects.toThrow(
+        BadRequestException,
+      );
       expect(prisma.extension.update).not.toHaveBeenCalled();
     });
 
@@ -284,7 +287,7 @@ describe('ExtensionsService', () => {
       });
 
       const error = await service
-        .updateStatus('e1', 'DEVELOPMENT')
+        .updateStatus('e1', 'DEVELOPMENT', 'emp-audit')
         .catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
@@ -308,38 +311,59 @@ describe('ExtensionsService', () => {
         order: { id: 'ord-1' },
       });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DEVELOPMENT' });
-      const result = await service.updateStatus('e1', 'DEVELOPMENT');
+      const result = await service.updateStatus('e1', 'DEVELOPMENT', 'emp-audit');
       expect(result.status).toBe('DEVELOPMENT');
     });
 
     it('allows QA → TRANSFER', async () => {
       prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'QA' });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'TRANSFER' });
-      const result = await service.updateStatus('e1', 'TRANSFER');
+      const result = await service.updateStatus('e1', 'TRANSFER', 'emp-audit');
       expect(result.status).toBe('TRANSFER');
     });
 
     it('rejects DONE → DEVELOPMENT (terminal state)', async () => {
       prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'DONE' });
-      await expect(service.updateStatus('e1', 'DEVELOPMENT')).rejects.toThrow(BadRequestException);
+      await expect(service.updateStatus('e1', 'DEVELOPMENT', 'emp-audit')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rejects NEW → QA (skip not allowed)', async () => {
       prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'NEW' });
-      await expect(service.updateStatus('e1', 'QA')).rejects.toThrow(BadRequestException);
+      await expect(service.updateStatus('e1', 'QA', 'emp-audit')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('allows any → LOST', async () => {
-      prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'DEVELOPMENT' });
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'DEVELOPMENT',
+      });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'LOST' });
-      const result = await service.updateStatus('e1', 'LOST');
+      const result = await service.updateStatus('e1', 'LOST', 'emp-audit');
       expect(result.status).toBe('LOST');
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+          entityType: 'EXTENSION',
+          entityId: 'e1',
+          userId: 'emp-audit',
+          projectId: 'proj-1',
+          changes: expect.objectContaining({
+            deprecatedApiPath: 'PATCH /projects/extensions/:id/status',
+            targetStatus: 'LOST',
+          }),
+        }),
+      );
     });
 
     it('allows QA → DEVELOPMENT (back for fixes)', async () => {
       prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'QA' });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DEVELOPMENT' });
-      const result = await service.updateStatus('e1', 'DEVELOPMENT');
+      const result = await service.updateStatus('e1', 'DEVELOPMENT', 'emp-audit');
       expect(result.status).toBe('DEVELOPMENT');
     });
 
@@ -350,7 +374,9 @@ describe('ExtensionsService', () => {
         tasks: [{ status: 'IN_PROGRESS' }, { status: 'DONE' }],
       });
 
-      const error = await service.updateStatus('e1', 'DONE').catch((caught: unknown) => caught);
+      const error = await service
+        .updateStatus('e1', 'DONE', 'emp-audit')
+        .catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(readExceptionResponse(error)).toMatchObject({
@@ -363,15 +389,26 @@ describe('ExtensionsService', () => {
     it('allows TRANSFER → DONE when extension tasks are closed', async () => {
       prisma.extension.findUnique.mockResolvedValue({
         id: 'e1',
+        projectId: 'proj-1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }, { status: 'CANCELLED' }],
         order: { id: 'ord-1', status: 'FULLY_PAID', invoices: [{ moneyStatus: 'PAID' }] },
       });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
 
-      const result = await service.updateStatus('e1', 'DONE');
+      const result = await service.updateStatus('e1', 'DONE', 'emp-audit');
 
       expect(result.status).toBe('DONE');
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+          entityType: 'EXTENSION',
+          entityId: 'e1',
+          userId: 'emp-audit',
+          projectId: 'proj-1',
+          changes: expect.objectContaining({ targetStatus: 'DONE', deliveryResolution: 'DONE' }),
+        }),
+      );
     });
 
     it('blocks TRANSFER → DONE when linked order is not fully paid', async () => {
@@ -382,7 +419,9 @@ describe('ExtensionsService', () => {
         order: { id: 'ord-1', status: 'PARTIALLY_PAID', invoices: [{ moneyStatus: 'PAID' }] },
       });
 
-      const error = await service.updateStatus('e1', 'DONE').catch((caught: unknown) => caught);
+      const error = await service
+        .updateStatus('e1', 'DONE', 'emp-audit')
+        .catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(readExceptionResponse(error)).toMatchObject({

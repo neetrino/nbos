@@ -30,6 +30,10 @@ import { PartnerAccrualClassicService } from '../../finance/partner-accrual/part
 import { SupportService } from '../../support/support.service';
 import { AuditService } from '../../audit/audit.service';
 import {
+  DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+  isLegacyPatchStatusTerminalOutcome,
+} from '../delivery-status-deprecation';
+import {
   loadStageChecklistProgressByOwner,
   pickProgressForEntity,
 } from '../../checklist-templates/checklist-instance-stage-progress';
@@ -286,7 +290,7 @@ export class ExtensionsService {
     return attachExtensionReadiness(extension);
   }
 
-  async updateStatus(id: string, newStatus: string) {
+  async updateStatus(id: string, newStatus: string, actorId: string) {
     const extension = await this.findById(id);
     const current = extension.status as ExtensionStatusEnum;
     const target = newStatus as ExtensionStatusEnum;
@@ -304,6 +308,21 @@ export class ExtensionsService {
       },
     });
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
+    if (isLegacyPatchStatusTerminalOutcome(target)) {
+      await this.audit.log({
+        entityType: 'EXTENSION',
+        entityId: id,
+        action: DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+        userId: actorId,
+        projectId: extension.projectId,
+        changes: {
+          deprecatedApiPath: 'PATCH /projects/extensions/:id/status',
+          previousStatus: current,
+          targetStatus: target,
+          deliveryResolution: target === 'DONE' ? 'DONE' : 'CANCELLED',
+        } as InputJsonValue,
+      });
+    }
     return attachExtensionReadiness(updated);
   }
 

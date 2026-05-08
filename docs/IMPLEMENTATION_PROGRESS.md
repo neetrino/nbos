@@ -43,7 +43,6 @@
 
 Закрытые срезы (Delivery Board P0+, Opened Card 1–3, CTB-1 foundation, фильтры board, readiness, спеки карточки) — в `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Канон: `[07-Delivery-Board.md](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md)`, `[08-Checklist-Template-Builder.md](NBOS/02-Modules/07-My-Company/08-Checklist-Template-Builder.md)`, UI shell — `[07-Professional-Delivery-Card.md](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md)`. Лента звонков / ATS — **блок 2C**.
 
-- Delivery Card §8: опционально аудит при deprecated `PATCH …/status` product/extension → terminal — S
 - CTB-1 дельта: granular permissions по канону §13 (не только COMPANY VIEW/EDIT) — M
 - CTB-1 дельта: аудит событий шаблонов / версий / publish — M
 - CTB-1 дельта: duplicate, preview, version history в builder UI — M
