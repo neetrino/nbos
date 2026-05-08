@@ -1,5 +1,5 @@
 import { api } from '../api';
-import type { DeliveryLifecycleProjection } from './projects';
+import type { ChecklistStageProgress, DeliveryLifecycleProjection } from './projects';
 
 export interface ProductEmployee {
   id: string;
@@ -43,6 +43,7 @@ export interface Product {
   };
   pm: ProductEmployee | null;
   _count: { extensions: number; tasks: number; tickets: number };
+  checklistStageProgress?: ChecklistStageProgress | null;
 }
 
 export interface FullProduct extends Product {

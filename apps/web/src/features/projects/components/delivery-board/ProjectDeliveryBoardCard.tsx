@@ -262,6 +262,12 @@ function ProductCardMeta({ product }: { product: ProjectProductSummary }) {
         {product._count.tasks} Work Space tasks · {product._count.extensions} ext. ·{' '}
         {product._count.tickets} tickets
       </p>
+      {product.checklistStageProgress && product.checklistStageProgress.total > 0 ? (
+        <p className="text-muted-foreground text-xs">
+          Checklist {product.checklistStageProgress.completed}/
+          {product.checklistStageProgress.total}
+        </p>
+      ) : null}
       {holdCopy && <p className={getHoldCopyClassName(product.deliveryLifecycle)}>{holdCopy}</p>}
     </div>
   );
@@ -286,6 +292,12 @@ function ExtensionCardMeta({ extension }: { extension: ProjectExtensionSummary }
       <p className="text-muted-foreground text-xs">
         {extension.product?.name ?? 'No linked product'} · {extension._count.tasks} Work Space tasks
       </p>
+      {extension.checklistStageProgress && extension.checklistStageProgress.total > 0 ? (
+        <p className="text-muted-foreground text-xs">
+          Checklist {extension.checklistStageProgress.completed}/
+          {extension.checklistStageProgress.total}
+        </p>
+      ) : null}
       {holdCopy && <p className={getHoldCopyClassName(extension.deliveryLifecycle)}>{holdCopy}</p>}
     </div>
   );

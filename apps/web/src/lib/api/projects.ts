@@ -36,6 +36,9 @@ export interface Project {
   _count: { orders: number; products?: number; extensions?: number };
 }
 
+/** Aggregated checklist instance progress for the entity current delivery stage. */
+export type ChecklistStageProgress = { completed: number; total: number };
+
 export interface ProjectProductSummary {
   id: string;
   name: string;
@@ -62,6 +65,7 @@ export interface ProjectProductSummary {
     tasks: number;
     tickets: number;
   };
+  checklistStageProgress?: ChecklistStageProgress | null;
 }
 
 export interface ProjectExtensionSummary {
@@ -84,6 +88,7 @@ export interface ProjectExtensionSummary {
   /** List/global board: proxy for closed-at when terminal (ISO). */
   updatedAt?: string;
   _count: { tasks: number };
+  checklistStageProgress?: ChecklistStageProgress | null;
 }
 
 export interface ProjectOrder {

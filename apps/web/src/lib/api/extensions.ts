@@ -1,5 +1,5 @@
 import { api } from '../api';
-import type { DeliveryLifecycleProjection } from './projects';
+import type { ChecklistStageProgress, DeliveryLifecycleProjection } from './projects';
 
 export interface ExtensionEmployee {
   id: string;
@@ -41,6 +41,7 @@ export interface Extension {
   order?: { id: string; code: string; status: string } | null;
   readiness?: ExtensionReadinessSummary;
   _count: { tasks: number };
+  checklistStageProgress?: ChecklistStageProgress | null;
 }
 
 export interface FullExtension extends Extension {

@@ -29,6 +29,10 @@ import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-syn
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 import { SupportService } from '../../support/support.service';
 import { AuditService } from '../../audit/audit.service';
+import {
+  loadStageChecklistProgressByOwner,
+  pickProgressForEntity,
+} from '../../checklist-templates/checklist-instance-stage-progress';
 import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
 
 interface CreateExtensionDto {
@@ -162,6 +166,15 @@ export class ExtensionsService {
       items.map((e) => e.id),
     );
 
+    const checklistProgressMap = await loadStageChecklistProgressByOwner(
+      this.prisma,
+      items.map((extension) => ({
+        ownerEntityType: 'EXTENSION' as const,
+        ownerEntityId: extension.id,
+        stage: extension.deliveryStage,
+      })),
+    );
+
     return {
       items: items.map((extension) => {
         const base = attachExtensionReadiness(extension);
@@ -175,6 +188,12 @@ export class ExtensionsService {
             ...base.deliveryLifecycle,
             ...(readiness ? { currentStageReadiness: readiness } : {}),
           },
+          checklistStageProgress: pickProgressForEntity(
+            checklistProgressMap,
+            'EXTENSION',
+            extension.id,
+            extension.deliveryStage,
+          ),
         };
       }),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
@@ -205,7 +224,19 @@ export class ExtensionsService {
       },
     });
     if (!extension) throw new NotFoundException(`Extension ${id} not found`);
-    return attachExtensionReadiness(extension);
+    const base = attachExtensionReadiness(extension);
+    const checklistProgressMap = await loadStageChecklistProgressByOwner(this.prisma, [
+      { ownerEntityType: 'EXTENSION', ownerEntityId: extension.id, stage: extension.deliveryStage },
+    ]);
+    return {
+      ...base,
+      checklistStageProgress: pickProgressForEntity(
+        checklistProgressMap,
+        'EXTENSION',
+        extension.id,
+        extension.deliveryStage,
+      ),
+    };
   }
 
   async create(data: CreateExtensionDto) {

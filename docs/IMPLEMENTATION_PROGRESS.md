@@ -45,7 +45,6 @@
 
 - Delivery Card §8: действия стадий в drawer (RBAC/API), если потребует продукт — M
 - Delivery Card §8: опционально аудит при deprecated `PATCH …/status` product/extension → terminal — S
-- CTB-3 Delivery Board: прогресс checklist requirement на карточке и в drawer рядом с readiness / stage gate — M–L
 - CTB-1 дельта: granular permissions по канону §13 (не только COMPANY VIEW/EDIT) — M
 - CTB-1 дельта: аудит событий шаблонов / версий / publish — M
 - CTB-1 дельта: duplicate, preview, version history в builder UI — M

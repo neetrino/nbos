@@ -33,6 +33,10 @@ import { buildProductDoneReadiness } from './product-done-readiness';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 import { AuditService } from '../../audit/audit.service';
+import {
+  loadStageChecklistProgressByOwner,
+  pickProgressForEntity,
+} from '../../checklist-templates/checklist-instance-stage-progress';
 import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
 
 interface CreateProductDto {
@@ -173,6 +177,15 @@ export class ProductsService {
       items.map((p) => p.id),
     );
 
+    const checklistProgressMap = await loadStageChecklistProgressByOwner(
+      this.prisma,
+      items.map((product) => ({
+        ownerEntityType: 'PRODUCT' as const,
+        ownerEntityId: product.id,
+        stage: product.deliveryStage,
+      })),
+    );
+
     return {
       items: items.map((product) => {
         const withLc = attachProductDeliveryLifecycle(product);
@@ -192,6 +205,12 @@ export class ProductsService {
             ...withLc.deliveryLifecycle,
             ...(readiness ? { currentStageReadiness: readiness } : {}),
           },
+          checklistStageProgress: pickProgressForEntity(
+            checklistProgressMap,
+            'PRODUCT',
+            product.id,
+            product.deliveryStage,
+          ),
         };
       }),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
@@ -257,9 +276,18 @@ export class ProductsService {
       },
     });
     if (!product) throw new NotFoundException(`Product ${id} not found`);
+    const checklistProgressMap = await loadStageChecklistProgressByOwner(this.prisma, [
+      { ownerEntityType: 'PRODUCT', ownerEntityId: product.id, stage: product.deliveryStage },
+    ]);
     return {
       ...attachProductDeliveryLifecycle(product),
       doneReadiness: buildProductDoneReadiness(product),
+      checklistStageProgress: pickProgressForEntity(
+        checklistProgressMap,
+        'PRODUCT',
+        product.id,
+        product.deliveryStage,
+      ),
     };
   }
 

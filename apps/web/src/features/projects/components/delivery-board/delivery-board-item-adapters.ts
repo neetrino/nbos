@@ -21,6 +21,7 @@ export function productToDeliveryBoardItem(product: Product): DeliveryBoardItem 
     updatedAt: product.updatedAt,
     clientAcceptedAt: product.clientAcceptedAt,
     _count: product._count,
+    checklistStageProgress: product.checklistStageProgress,
   };
   return { kind: 'PRODUCT', product: summary };
 }
@@ -44,6 +45,7 @@ export function extensionToDeliveryBoardItem(extension: Extension): DeliveryBoar
     deliveryLifecycle: extension.deliveryLifecycle,
     updatedAt: extension.updatedAt,
     _count: extension._count,
+    checklistStageProgress: extension.checklistStageProgress,
   };
   return { kind: 'EXTENSION', extension: summary };
 }
