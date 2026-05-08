@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../../audit/audit.module';
+import { ChecklistTemplatesModule } from '../../checklist-templates/checklist-templates.module';
 import { PartnerAccrualModule } from '../../finance/partner-accrual/partner-accrual.module';
 import { NotificationModule } from '../../notifications/notification.module';
 import { SupportModule } from '../../support/support.module';
@@ -10,7 +11,13 @@ import { ExtensionsService } from './extensions.service';
  * so that `GET /api/projects/extensions` is not captured by `GET /api/projects/:id`.
  */
 @Module({
-  imports: [NotificationModule, PartnerAccrualModule, SupportModule, AuditModule],
+  imports: [
+    NotificationModule,
+    PartnerAccrualModule,
+    SupportModule,
+    AuditModule,
+    ChecklistTemplatesModule,
+  ],
   providers: [ExtensionsService],
   exports: [ExtensionsService],
 })

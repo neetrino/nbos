@@ -1730,10 +1730,6 @@ export type NullableEnumPaymentTypeEnumFieldUpdateOperationsInput = {
   set?: $Enums.PaymentTypeEnum | null;
 };
 
-export type NullableEnumProductCategoryEnumFieldUpdateOperationsInput = {
-  set?: $Enums.ProductCategoryEnum | null;
-};
-
 export type DealCreateNestedManyWithoutSellerInput = {
   create?:
     | Prisma.XOR<Prisma.DealCreateWithoutSellerInput, Prisma.DealUncheckedCreateWithoutSellerInput>

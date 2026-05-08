@@ -29,6 +29,7 @@ import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-syn
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 import { SupportService } from '../../support/support.service';
 import { AuditService } from '../../audit/audit.service';
+import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -85,6 +86,7 @@ export class ExtensionsService {
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
     private readonly supportService: SupportService,
     private readonly audit: AuditService,
+    private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
@@ -224,6 +226,7 @@ export class ExtensionsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(extension.id);
     return attachExtensionReadiness(extension);
   }
 
@@ -269,6 +272,7 @@ export class ExtensionsService {
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
     return attachExtensionReadiness(updated);
   }
 
@@ -290,6 +294,7 @@ export class ExtensionsService {
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
     return attachExtensionReadiness(updated);
   }
 
@@ -326,6 +331,7 @@ export class ExtensionsService {
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
     return attachExtensionReadiness(updated);
   }
 

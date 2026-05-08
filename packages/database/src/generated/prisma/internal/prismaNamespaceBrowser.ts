@@ -54,6 +54,7 @@ export const ModelName = {
   ChecklistTemplate: 'ChecklistTemplate',
   ChecklistTemplateVersion: 'ChecklistTemplateVersion',
   ChecklistInstance: 'ChecklistInstance',
+  DeliveryStageChecklistRule: 'DeliveryStageChecklistRule',
   ClientServiceRecord: 'ClientServiceRecord',
   Contact: 'Contact',
   Company: 'Company',
@@ -254,6 +255,7 @@ export const ChecklistInstanceScalarFieldEnum = {
   templateVersionId: 'templateVersionId',
   ownerEntityType: 'ownerEntityType',
   ownerEntityId: 'ownerEntityId',
+  deliveryStage: 'deliveryStage',
   snapshotItems: 'snapshotItems',
   completedAt: 'completedAt',
   completedById: 'completedById',
@@ -263,6 +265,23 @@ export const ChecklistInstanceScalarFieldEnum = {
 
 export type ChecklistInstanceScalarFieldEnum =
   (typeof ChecklistInstanceScalarFieldEnum)[keyof typeof ChecklistInstanceScalarFieldEnum];
+
+export const DeliveryStageChecklistRuleScalarFieldEnum = {
+  id: 'id',
+  target: 'target',
+  deliveryStage: 'deliveryStage',
+  checklistTemplateId: 'checklistTemplateId',
+  priority: 'priority',
+  filterProductCategory: 'filterProductCategory',
+  filterProductType: 'filterProductType',
+  filterExtensionSize: 'filterExtensionSize',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DeliveryStageChecklistRuleScalarFieldEnum =
+  (typeof DeliveryStageChecklistRuleScalarFieldEnum)[keyof typeof DeliveryStageChecklistRuleScalarFieldEnum];
 
 export const ClientServiceRecordScalarFieldEnum = {
   id: 'id',

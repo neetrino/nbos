@@ -1454,10 +1454,6 @@ export type EnumProductStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.ProductStatusEnum;
 };
 
-export type NullableEnumDeliveryStageEnumFieldUpdateOperationsInput = {
-  set?: $Enums.DeliveryStageEnum | null;
-};
-
 export type EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.DeliveryWorkStatusEnum;
 };

@@ -18,16 +18,22 @@ describe('ProductsService', () => {
     log: vi.fn().mockResolvedValue(undefined),
   };
 
+  const deliveryStageChecklistSync = {
+    syncProductAfterLifecycleWrite: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
     vi.mocked(auditService.log).mockClear();
+    deliveryStageChecklistSync.syncProductAfterLifecycleWrite.mockClear();
     service = new ProductsService(
       prisma as never,
       notifications,
       partnerAccrualClassic as never,
       auditService as never,
+      deliveryStageChecklistSync as never,
     );
   });
 

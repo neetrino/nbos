@@ -33,6 +33,7 @@ import { buildProductDoneReadiness } from './product-done-readiness';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 import { AuditService } from '../../audit/audit.service';
+import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
 
 interface CreateProductDto {
   projectId: string;
@@ -97,6 +98,7 @@ export class ProductsService {
     private readonly notifications: NotificationService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
     private readonly audit: AuditService,
+    private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
   ) {}
 
   async findAll(params: ProductQueryParams) {
@@ -278,6 +280,7 @@ export class ProductsService {
         pm: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
     return attachProductDeliveryLifecycle(product);
   }
 
@@ -330,6 +333,7 @@ export class ProductsService {
         project: { select: { id: true, code: true, name: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -348,6 +352,7 @@ export class ProductsService {
       data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
       include: { project: { select: { id: true, code: true, name: true } } },
     });
+    await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
@@ -379,6 +384,7 @@ export class ProductsService {
       data: { status: nextStatus as ProductStatusEnum, ...buildDeliveryResumeWrite(product) },
       include: { project: { select: { id: true, code: true, name: true } } },
     });
+    await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 

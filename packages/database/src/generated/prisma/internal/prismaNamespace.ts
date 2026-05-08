@@ -381,6 +381,7 @@ export const ModelName = {
   ChecklistTemplate: 'ChecklistTemplate',
   ChecklistTemplateVersion: 'ChecklistTemplateVersion',
   ChecklistInstance: 'ChecklistInstance',
+  DeliveryStageChecklistRule: 'DeliveryStageChecklistRule',
   ClientServiceRecord: 'ClientServiceRecord',
   Contact: 'Contact',
   Company: 'Company',
@@ -499,6 +500,7 @@ export type TypeMap<
       | 'checklistTemplate'
       | 'checklistTemplateVersion'
       | 'checklistInstance'
+      | 'deliveryStageChecklistRule'
       | 'clientServiceRecord'
       | 'contact'
       | 'company'
@@ -1044,6 +1046,82 @@ export type TypeMap<
           args: Prisma.ChecklistInstanceCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.ChecklistInstanceCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    DeliveryStageChecklistRule: {
+      payload: Prisma.$DeliveryStageChecklistRulePayload<ExtArgs>;
+      fields: Prisma.DeliveryStageChecklistRuleFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DeliveryStageChecklistRuleFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DeliveryStageChecklistRuleFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload>;
+        };
+        findFirst: {
+          args: Prisma.DeliveryStageChecklistRuleFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DeliveryStageChecklistRuleFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload>;
+        };
+        findMany: {
+          args: Prisma.DeliveryStageChecklistRuleFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload>[];
+        };
+        create: {
+          args: Prisma.DeliveryStageChecklistRuleCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload>;
+        };
+        createMany: {
+          args: Prisma.DeliveryStageChecklistRuleCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DeliveryStageChecklistRuleCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload>[];
+        };
+        delete: {
+          args: Prisma.DeliveryStageChecklistRuleDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload>;
+        };
+        update: {
+          args: Prisma.DeliveryStageChecklistRuleUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload>;
+        };
+        deleteMany: {
+          args: Prisma.DeliveryStageChecklistRuleDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DeliveryStageChecklistRuleUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DeliveryStageChecklistRuleUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload>[];
+        };
+        upsert: {
+          args: Prisma.DeliveryStageChecklistRuleUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeliveryStageChecklistRulePayload>;
+        };
+        aggregate: {
+          args: Prisma.DeliveryStageChecklistRuleAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeliveryStageChecklistRule>;
+        };
+        groupBy: {
+          args: Prisma.DeliveryStageChecklistRuleGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DeliveryStageChecklistRuleGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DeliveryStageChecklistRuleCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.DeliveryStageChecklistRuleCountAggregateOutputType>
             | number;
         };
       };
@@ -8103,6 +8181,7 @@ export const ChecklistInstanceScalarFieldEnum = {
   templateVersionId: 'templateVersionId',
   ownerEntityType: 'ownerEntityType',
   ownerEntityId: 'ownerEntityId',
+  deliveryStage: 'deliveryStage',
   snapshotItems: 'snapshotItems',
   completedAt: 'completedAt',
   completedById: 'completedById',
@@ -8112,6 +8191,23 @@ export const ChecklistInstanceScalarFieldEnum = {
 
 export type ChecklistInstanceScalarFieldEnum =
   (typeof ChecklistInstanceScalarFieldEnum)[keyof typeof ChecklistInstanceScalarFieldEnum];
+
+export const DeliveryStageChecklistRuleScalarFieldEnum = {
+  id: 'id',
+  target: 'target',
+  deliveryStage: 'deliveryStage',
+  checklistTemplateId: 'checklistTemplateId',
+  priority: 'priority',
+  filterProductCategory: 'filterProductCategory',
+  filterProductType: 'filterProductType',
+  filterExtensionSize: 'filterExtensionSize',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DeliveryStageChecklistRuleScalarFieldEnum =
+  (typeof DeliveryStageChecklistRuleScalarFieldEnum)[keyof typeof DeliveryStageChecklistRuleScalarFieldEnum];
 
 export const ClientServiceRecordScalarFieldEnum = {
   id: 'id',
@@ -10001,6 +10097,86 @@ export type ListEnumChecklistTemplateVersionStatusEnumFieldRefInput<$PrismaModel
   FieldRefInputType<$PrismaModel, 'ChecklistTemplateVersionStatusEnum[]'>;
 
 /**
+ * Reference to a field of type 'DeliveryStageEnum'
+ */
+export type EnumDeliveryStageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryStageEnum'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryStageEnum[]'
+ */
+export type ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryStageEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryChecklistTargetEnum'
+ */
+export type EnumDeliveryChecklistTargetEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryChecklistTargetEnum'
+>;
+
+/**
+ * Reference to a field of type 'DeliveryChecklistTargetEnum[]'
+ */
+export type ListEnumDeliveryChecklistTargetEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DeliveryChecklistTargetEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ProductCategoryEnum'
+ */
+export type EnumProductCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductCategoryEnum'
+>;
+
+/**
+ * Reference to a field of type 'ProductCategoryEnum[]'
+ */
+export type ListEnumProductCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductCategoryEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ProductTypeEnum'
+ */
+export type EnumProductTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'ProductTypeEnum[]'
+ */
+export type ListEnumProductTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ProductTypeEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ExtensionSizeEnum'
+ */
+export type EnumExtensionSizeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExtensionSizeEnum'
+>;
+
+/**
+ * Reference to a field of type 'ExtensionSizeEnum[]'
+ */
+export type ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ExtensionSizeEnum[]'
+>;
+
+/**
  * Reference to a field of type 'ClientServiceType'
  */
 export type EnumClientServiceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -10357,22 +10533,6 @@ export type EnumPaymentTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
 export type ListEnumPaymentTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'PaymentTypeEnum[]'
->;
-
-/**
- * Reference to a field of type 'ProductCategoryEnum'
- */
-export type EnumProductCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'ProductCategoryEnum'
->;
-
-/**
- * Reference to a field of type 'ProductCategoryEnum[]'
- */
-export type ListEnumProductCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'ProductCategoryEnum[]'
 >;
 
 /**
@@ -11378,22 +11538,6 @@ export type ListEnumPartnerServiceStatusEnumFieldRefInput<$PrismaModel> = FieldR
 >;
 
 /**
- * Reference to a field of type 'ProductTypeEnum'
- */
-export type EnumProductTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'ProductTypeEnum'
->;
-
-/**
- * Reference to a field of type 'ProductTypeEnum[]'
- */
-export type ListEnumProductTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'ProductTypeEnum[]'
->;
-
-/**
  * Reference to a field of type 'ProductStatusEnum'
  */
 export type EnumProductStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -11407,22 +11551,6 @@ export type EnumProductStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType
 export type ListEnumProductStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'ProductStatusEnum[]'
->;
-
-/**
- * Reference to a field of type 'DeliveryStageEnum'
- */
-export type EnumDeliveryStageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'DeliveryStageEnum'
->;
-
-/**
- * Reference to a field of type 'DeliveryStageEnum[]'
- */
-export type ListEnumDeliveryStageEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'DeliveryStageEnum[]'
 >;
 
 /**
@@ -11455,22 +11583,6 @@ export type EnumDeliveryResolutionEnumFieldRefInput<$PrismaModel> = FieldRefInpu
 export type ListEnumDeliveryResolutionEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'DeliveryResolutionEnum[]'
->;
-
-/**
- * Reference to a field of type 'ExtensionSizeEnum'
- */
-export type EnumExtensionSizeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'ExtensionSizeEnum'
->;
-
-/**
- * Reference to a field of type 'ExtensionSizeEnum[]'
- */
-export type ListEnumExtensionSizeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
-  $PrismaModel,
-  'ExtensionSizeEnum[]'
 >;
 
 /**
@@ -11928,6 +12040,7 @@ export type GlobalOmitConfig = {
   checklistTemplate?: Prisma.ChecklistTemplateOmit;
   checklistTemplateVersion?: Prisma.ChecklistTemplateVersionOmit;
   checklistInstance?: Prisma.ChecklistInstanceOmit;
+  deliveryStageChecklistRule?: Prisma.DeliveryStageChecklistRuleOmit;
   clientServiceRecord?: Prisma.ClientServiceRecordOmit;
   contact?: Prisma.ContactOmit;
   company?: Prisma.CompanyOmit;

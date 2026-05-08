@@ -22,18 +22,24 @@ describe('ExtensionsService', () => {
     log: vi.fn().mockResolvedValue(undefined),
   };
 
+  const deliveryStageChecklistSync = {
+    syncExtensionAfterLifecycleWrite: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
     supportService.closeLinkedTicketsAfterExtensionDelivered.mockClear();
     vi.mocked(auditService.log).mockClear();
+    deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite.mockClear();
     service = new ExtensionsService(
       prisma as never,
       notifications,
       partnerAccrualClassic as never,
       supportService as never,
       auditService as never,
+      deliveryStageChecklistSync as never,
     );
   });
 

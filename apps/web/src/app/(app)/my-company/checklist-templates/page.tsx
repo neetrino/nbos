@@ -51,15 +51,23 @@ export default function ChecklistTemplatesListPage() {
         title="Checklist templates"
         description="Reusable SOP checklists with versioning. Publish creates the active snapshot for new instances; drafts continue on a separate version."
       >
-        <PermissionGate module="COMPANY" action="EDIT">
+        <div className="flex flex-wrap gap-2">
           <Link
-            href="/my-company/checklist-templates/new"
-            className={cn(buttonVariants({ size: 'sm' }))}
+            href="/my-company/checklist-stage-rules"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
           >
-            <Plus className="mr-1 size-4" />
-            New template
+            Stage rules
           </Link>
-        </PermissionGate>
+          <PermissionGate module="COMPANY" action="EDIT">
+            <Link
+              href="/my-company/checklist-templates/new"
+              className={cn(buttonVariants({ size: 'sm' }))}
+            >
+              <Plus className="mr-1 size-4" />
+              New template
+            </Link>
+          </PermissionGate>
+        </div>
       </PageHeader>
 
       <div className="border-border bg-card rounded-2xl border">

@@ -71,6 +71,41 @@ export function parseChecklistTemplateItems(raw: unknown): ChecklistTemplateItem
     .filter((x): x is ChecklistTemplateItem => x !== null);
 }
 
+export type DeliveryChecklistTarget = 'PRODUCT' | 'EXTENSION';
+
+export type DeliveryStageCanon = 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER';
+
+export interface DeliveryStageChecklistRuleRow {
+  id: string;
+  target: DeliveryChecklistTarget;
+  deliveryStage: DeliveryStageCanon;
+  checklistTemplateId: string;
+  priority: number;
+  filterProductCategory: string | null;
+  filterProductType: string | null;
+  filterExtensionSize: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  checklistTemplate: {
+    id: string;
+    name: string;
+    status: string;
+    activeVersionId: string | null;
+  };
+}
+
+export interface CreateDeliveryStageChecklistRuleBody {
+  target: DeliveryChecklistTarget;
+  deliveryStage: DeliveryStageCanon;
+  checklistTemplateId: string;
+  priority?: number;
+  filterProductCategory?: string;
+  filterProductType?: string;
+  filterExtensionSize?: string;
+  isActive?: boolean;
+}
+
 export const checklistTemplatesApi = {
   async list(): Promise<ChecklistTemplateListItem[]> {
     const resp = await api.get<ChecklistTemplateListItem[]>('/api/checklist-templates');
@@ -122,5 +157,42 @@ export const checklistTemplatesApi = {
   async publish(id: string): Promise<ChecklistTemplateDetail> {
     const resp = await api.post<ChecklistTemplateDetail>(`/api/checklist-templates/${id}/publish`);
     return resp.data;
+  },
+
+  async listStageRules(): Promise<DeliveryStageChecklistRuleRow[]> {
+    const resp = await api.get<DeliveryStageChecklistRuleRow[]>(
+      '/api/checklist-templates/stage-rules',
+    );
+    return resp.data;
+  },
+
+  async createStageRule(
+    body: CreateDeliveryStageChecklistRuleBody,
+  ): Promise<DeliveryStageChecklistRuleRow> {
+    const resp = await api.post<DeliveryStageChecklistRuleRow>(
+      '/api/checklist-templates/stage-rules',
+      body,
+    );
+    return resp.data;
+  },
+
+  async updateStageRule(
+    ruleId: string,
+    body: Partial<{
+      deliveryStage: DeliveryStageCanon;
+      checklistTemplateId: string;
+      priority: number;
+      isActive: boolean;
+    }>,
+  ): Promise<DeliveryStageChecklistRuleRow> {
+    const resp = await api.patch<DeliveryStageChecklistRuleRow>(
+      `/api/checklist-templates/stage-rules/${ruleId}`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async deleteStageRule(ruleId: string): Promise<void> {
+    await api.delete(`/api/checklist-templates/stage-rules/${ruleId}`);
   },
 };

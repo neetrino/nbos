@@ -229,6 +229,7 @@ export type ChecklistTemplateWhereInput = {
   versions?: Prisma.ChecklistTemplateVersionListRelationFilter;
   products?: Prisma.ProductListRelationFilter;
   instances?: Prisma.ChecklistInstanceListRelationFilter;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleListRelationFilter;
 };
 
 export type ChecklistTemplateOrderByWithRelationInput = {
@@ -245,6 +246,7 @@ export type ChecklistTemplateOrderByWithRelationInput = {
   versions?: Prisma.ChecklistTemplateVersionOrderByRelationAggregateInput;
   products?: Prisma.ProductOrderByRelationAggregateInput;
   instances?: Prisma.ChecklistInstanceOrderByRelationAggregateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleOrderByRelationAggregateInput;
 };
 
 export type ChecklistTemplateWhereUniqueInput = Prisma.AtLeast<
@@ -274,6 +276,7 @@ export type ChecklistTemplateWhereUniqueInput = Prisma.AtLeast<
     versions?: Prisma.ChecklistTemplateVersionListRelationFilter;
     products?: Prisma.ProductListRelationFilter;
     instances?: Prisma.ChecklistInstanceListRelationFilter;
+    deliveryStageRules?: Prisma.DeliveryStageChecklistRuleListRelationFilter;
   },
   'id' | 'activeVersionId'
 >;
@@ -331,6 +334,7 @@ export type ChecklistTemplateCreateInput = {
   versions?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutTemplateInput;
   products?: Prisma.ProductCreateNestedManyWithoutChecklistTemplateInput;
   instances?: Prisma.ChecklistInstanceCreateNestedManyWithoutTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateUncheckedCreateInput = {
@@ -346,6 +350,7 @@ export type ChecklistTemplateUncheckedCreateInput = {
   versions?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutTemplateInput;
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutChecklistTemplateInput;
   instances?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateUpdateInput = {
@@ -367,6 +372,7 @@ export type ChecklistTemplateUpdateInput = {
   versions?: Prisma.ChecklistTemplateVersionUpdateManyWithoutTemplateNestedInput;
   products?: Prisma.ProductUpdateManyWithoutChecklistTemplateNestedInput;
   instances?: Prisma.ChecklistInstanceUpdateManyWithoutTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUpdateManyWithoutChecklistTemplateNestedInput;
 };
 
 export type ChecklistTemplateUncheckedUpdateInput = {
@@ -388,6 +394,7 @@ export type ChecklistTemplateUncheckedUpdateInput = {
   versions?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutTemplateNestedInput;
   products?: Prisma.ProductUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
   instances?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
 };
 
 export type ChecklistTemplateCreateManyInput = {
@@ -603,6 +610,32 @@ export type ChecklistTemplateUpdateOneRequiredWithoutInstancesNestedInput = {
   >;
 };
 
+export type ChecklistTemplateCreateNestedOneWithoutDeliveryStageRulesInput = {
+  create?: Prisma.XOR<
+    Prisma.ChecklistTemplateCreateWithoutDeliveryStageRulesInput,
+    Prisma.ChecklistTemplateUncheckedCreateWithoutDeliveryStageRulesInput
+  >;
+  connectOrCreate?: Prisma.ChecklistTemplateCreateOrConnectWithoutDeliveryStageRulesInput;
+  connect?: Prisma.ChecklistTemplateWhereUniqueInput;
+};
+
+export type ChecklistTemplateUpdateOneRequiredWithoutDeliveryStageRulesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ChecklistTemplateCreateWithoutDeliveryStageRulesInput,
+    Prisma.ChecklistTemplateUncheckedCreateWithoutDeliveryStageRulesInput
+  >;
+  connectOrCreate?: Prisma.ChecklistTemplateCreateOrConnectWithoutDeliveryStageRulesInput;
+  upsert?: Prisma.ChecklistTemplateUpsertWithoutDeliveryStageRulesInput;
+  connect?: Prisma.ChecklistTemplateWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ChecklistTemplateUpdateToOneWithWhereWithoutDeliveryStageRulesInput,
+      Prisma.ChecklistTemplateUpdateWithoutDeliveryStageRulesInput
+    >,
+    Prisma.ChecklistTemplateUncheckedUpdateWithoutDeliveryStageRulesInput
+  >;
+};
+
 export type ChecklistTemplateCreateNestedOneWithoutProductsInput = {
   create?: Prisma.XOR<
     Prisma.ChecklistTemplateCreateWithoutProductsInput,
@@ -643,6 +676,7 @@ export type ChecklistTemplateCreateWithoutVersionsInput = {
   activeVersion?: Prisma.ChecklistTemplateVersionCreateNestedOneWithoutTemplateAsActiveInput;
   products?: Prisma.ProductCreateNestedManyWithoutChecklistTemplateInput;
   instances?: Prisma.ChecklistInstanceCreateNestedManyWithoutTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateUncheckedCreateWithoutVersionsInput = {
@@ -657,6 +691,7 @@ export type ChecklistTemplateUncheckedCreateWithoutVersionsInput = {
   updatedAt?: Date | string;
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutChecklistTemplateInput;
   instances?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateCreateOrConnectWithoutVersionsInput = {
@@ -679,6 +714,7 @@ export type ChecklistTemplateCreateWithoutActiveVersionInput = {
   versions?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutTemplateInput;
   products?: Prisma.ProductCreateNestedManyWithoutChecklistTemplateInput;
   instances?: Prisma.ChecklistInstanceCreateNestedManyWithoutTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateUncheckedCreateWithoutActiveVersionInput = {
@@ -693,6 +729,7 @@ export type ChecklistTemplateUncheckedCreateWithoutActiveVersionInput = {
   versions?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutTemplateInput;
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutChecklistTemplateInput;
   instances?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateCreateOrConnectWithoutActiveVersionInput = {
@@ -741,6 +778,7 @@ export type ChecklistTemplateUpdateWithoutVersionsInput = {
   activeVersion?: Prisma.ChecklistTemplateVersionUpdateOneWithoutTemplateAsActiveNestedInput;
   products?: Prisma.ProductUpdateManyWithoutChecklistTemplateNestedInput;
   instances?: Prisma.ChecklistInstanceUpdateManyWithoutTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUpdateManyWithoutChecklistTemplateNestedInput;
 };
 
 export type ChecklistTemplateUncheckedUpdateWithoutVersionsInput = {
@@ -761,6 +799,7 @@ export type ChecklistTemplateUncheckedUpdateWithoutVersionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   products?: Prisma.ProductUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
   instances?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
 };
 
 export type ChecklistTemplateUpsertWithoutActiveVersionInput = {
@@ -801,6 +840,7 @@ export type ChecklistTemplateUpdateWithoutActiveVersionInput = {
   versions?: Prisma.ChecklistTemplateVersionUpdateManyWithoutTemplateNestedInput;
   products?: Prisma.ProductUpdateManyWithoutChecklistTemplateNestedInput;
   instances?: Prisma.ChecklistInstanceUpdateManyWithoutTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUpdateManyWithoutChecklistTemplateNestedInput;
 };
 
 export type ChecklistTemplateUncheckedUpdateWithoutActiveVersionInput = {
@@ -821,6 +861,7 @@ export type ChecklistTemplateUncheckedUpdateWithoutActiveVersionInput = {
   versions?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutTemplateNestedInput;
   products?: Prisma.ProductUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
   instances?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
 };
 
 export type ChecklistTemplateCreateWithoutInstancesInput = {
@@ -835,6 +876,7 @@ export type ChecklistTemplateCreateWithoutInstancesInput = {
   activeVersion?: Prisma.ChecklistTemplateVersionCreateNestedOneWithoutTemplateAsActiveInput;
   versions?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutTemplateInput;
   products?: Prisma.ProductCreateNestedManyWithoutChecklistTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateUncheckedCreateWithoutInstancesInput = {
@@ -849,6 +891,7 @@ export type ChecklistTemplateUncheckedCreateWithoutInstancesInput = {
   updatedAt?: Date | string;
   versions?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutTemplateInput;
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutChecklistTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateCreateOrConnectWithoutInstancesInput = {
@@ -897,6 +940,7 @@ export type ChecklistTemplateUpdateWithoutInstancesInput = {
   activeVersion?: Prisma.ChecklistTemplateVersionUpdateOneWithoutTemplateAsActiveNestedInput;
   versions?: Prisma.ChecklistTemplateVersionUpdateManyWithoutTemplateNestedInput;
   products?: Prisma.ProductUpdateManyWithoutChecklistTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUpdateManyWithoutChecklistTemplateNestedInput;
 };
 
 export type ChecklistTemplateUncheckedUpdateWithoutInstancesInput = {
@@ -917,6 +961,107 @@ export type ChecklistTemplateUncheckedUpdateWithoutInstancesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   versions?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutTemplateNestedInput;
   products?: Prisma.ProductUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
+};
+
+export type ChecklistTemplateCreateWithoutDeliveryStageRulesInput = {
+  id?: string;
+  name: string;
+  description?: string | null;
+  category: $Enums.ChecklistTemplateCategoryEnum;
+  ownerModule: $Enums.ChecklistOwnerModuleEnum;
+  status?: $Enums.ChecklistTemplateStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  activeVersion?: Prisma.ChecklistTemplateVersionCreateNestedOneWithoutTemplateAsActiveInput;
+  versions?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutTemplateInput;
+  products?: Prisma.ProductCreateNestedManyWithoutChecklistTemplateInput;
+  instances?: Prisma.ChecklistInstanceCreateNestedManyWithoutTemplateInput;
+};
+
+export type ChecklistTemplateUncheckedCreateWithoutDeliveryStageRulesInput = {
+  id?: string;
+  name: string;
+  description?: string | null;
+  category: $Enums.ChecklistTemplateCategoryEnum;
+  ownerModule: $Enums.ChecklistOwnerModuleEnum;
+  status?: $Enums.ChecklistTemplateStatusEnum;
+  activeVersionId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  versions?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutTemplateInput;
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutChecklistTemplateInput;
+  instances?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutTemplateInput;
+};
+
+export type ChecklistTemplateCreateOrConnectWithoutDeliveryStageRulesInput = {
+  where: Prisma.ChecklistTemplateWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ChecklistTemplateCreateWithoutDeliveryStageRulesInput,
+    Prisma.ChecklistTemplateUncheckedCreateWithoutDeliveryStageRulesInput
+  >;
+};
+
+export type ChecklistTemplateUpsertWithoutDeliveryStageRulesInput = {
+  update: Prisma.XOR<
+    Prisma.ChecklistTemplateUpdateWithoutDeliveryStageRulesInput,
+    Prisma.ChecklistTemplateUncheckedUpdateWithoutDeliveryStageRulesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ChecklistTemplateCreateWithoutDeliveryStageRulesInput,
+    Prisma.ChecklistTemplateUncheckedCreateWithoutDeliveryStageRulesInput
+  >;
+  where?: Prisma.ChecklistTemplateWhereInput;
+};
+
+export type ChecklistTemplateUpdateToOneWithWhereWithoutDeliveryStageRulesInput = {
+  where?: Prisma.ChecklistTemplateWhereInput;
+  data: Prisma.XOR<
+    Prisma.ChecklistTemplateUpdateWithoutDeliveryStageRulesInput,
+    Prisma.ChecklistTemplateUncheckedUpdateWithoutDeliveryStageRulesInput
+  >;
+};
+
+export type ChecklistTemplateUpdateWithoutDeliveryStageRulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?:
+    | Prisma.EnumChecklistTemplateCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ChecklistTemplateCategoryEnum;
+  ownerModule?:
+    | Prisma.EnumChecklistOwnerModuleEnumFieldUpdateOperationsInput
+    | $Enums.ChecklistOwnerModuleEnum;
+  status?:
+    | Prisma.EnumChecklistTemplateStatusEnumFieldUpdateOperationsInput
+    | $Enums.ChecklistTemplateStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  activeVersion?: Prisma.ChecklistTemplateVersionUpdateOneWithoutTemplateAsActiveNestedInput;
+  versions?: Prisma.ChecklistTemplateVersionUpdateManyWithoutTemplateNestedInput;
+  products?: Prisma.ProductUpdateManyWithoutChecklistTemplateNestedInput;
+  instances?: Prisma.ChecklistInstanceUpdateManyWithoutTemplateNestedInput;
+};
+
+export type ChecklistTemplateUncheckedUpdateWithoutDeliveryStageRulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?:
+    | Prisma.EnumChecklistTemplateCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ChecklistTemplateCategoryEnum;
+  ownerModule?:
+    | Prisma.EnumChecklistOwnerModuleEnumFieldUpdateOperationsInput
+    | $Enums.ChecklistOwnerModuleEnum;
+  status?:
+    | Prisma.EnumChecklistTemplateStatusEnumFieldUpdateOperationsInput
+    | $Enums.ChecklistTemplateStatusEnum;
+  activeVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  versions?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutTemplateNestedInput;
+  products?: Prisma.ProductUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
+  instances?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutTemplateNestedInput;
 };
 
 export type ChecklistTemplateCreateWithoutProductsInput = {
@@ -931,6 +1076,7 @@ export type ChecklistTemplateCreateWithoutProductsInput = {
   activeVersion?: Prisma.ChecklistTemplateVersionCreateNestedOneWithoutTemplateAsActiveInput;
   versions?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutTemplateInput;
   instances?: Prisma.ChecklistInstanceCreateNestedManyWithoutTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateUncheckedCreateWithoutProductsInput = {
@@ -945,6 +1091,7 @@ export type ChecklistTemplateUncheckedCreateWithoutProductsInput = {
   updatedAt?: Date | string;
   versions?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutTemplateInput;
   instances?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutTemplateInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedCreateNestedManyWithoutChecklistTemplateInput;
 };
 
 export type ChecklistTemplateCreateOrConnectWithoutProductsInput = {
@@ -993,6 +1140,7 @@ export type ChecklistTemplateUpdateWithoutProductsInput = {
   activeVersion?: Prisma.ChecklistTemplateVersionUpdateOneWithoutTemplateAsActiveNestedInput;
   versions?: Prisma.ChecklistTemplateVersionUpdateManyWithoutTemplateNestedInput;
   instances?: Prisma.ChecklistInstanceUpdateManyWithoutTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUpdateManyWithoutChecklistTemplateNestedInput;
 };
 
 export type ChecklistTemplateUncheckedUpdateWithoutProductsInput = {
@@ -1013,6 +1161,7 @@ export type ChecklistTemplateUncheckedUpdateWithoutProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   versions?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutTemplateNestedInput;
   instances?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutTemplateNestedInput;
+  deliveryStageRules?: Prisma.DeliveryStageChecklistRuleUncheckedUpdateManyWithoutChecklistTemplateNestedInput;
 };
 
 /**
@@ -1023,6 +1172,7 @@ export type ChecklistTemplateCountOutputType = {
   versions: number;
   products: number;
   instances: number;
+  deliveryStageRules: number;
 };
 
 export type ChecklistTemplateCountOutputTypeSelect<
@@ -1031,6 +1181,7 @@ export type ChecklistTemplateCountOutputTypeSelect<
   versions?: boolean | ChecklistTemplateCountOutputTypeCountVersionsArgs;
   products?: boolean | ChecklistTemplateCountOutputTypeCountProductsArgs;
   instances?: boolean | ChecklistTemplateCountOutputTypeCountInstancesArgs;
+  deliveryStageRules?: boolean | ChecklistTemplateCountOutputTypeCountDeliveryStageRulesArgs;
 };
 
 /**
@@ -1072,6 +1223,15 @@ export type ChecklistTemplateCountOutputTypeCountInstancesArgs<
   where?: Prisma.ChecklistInstanceWhereInput;
 };
 
+/**
+ * ChecklistTemplateCountOutputType without action
+ */
+export type ChecklistTemplateCountOutputTypeCountDeliveryStageRulesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.DeliveryStageChecklistRuleWhereInput;
+};
+
 export type ChecklistTemplateSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -1089,6 +1249,7 @@ export type ChecklistTemplateSelect<
     versions?: boolean | Prisma.ChecklistTemplate$versionsArgs<ExtArgs>;
     products?: boolean | Prisma.ChecklistTemplate$productsArgs<ExtArgs>;
     instances?: boolean | Prisma.ChecklistTemplate$instancesArgs<ExtArgs>;
+    deliveryStageRules?: boolean | Prisma.ChecklistTemplate$deliveryStageRulesArgs<ExtArgs>;
     _count?: boolean | Prisma.ChecklistTemplateCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['checklistTemplate']
@@ -1163,6 +1324,7 @@ export type ChecklistTemplateInclude<
   versions?: boolean | Prisma.ChecklistTemplate$versionsArgs<ExtArgs>;
   products?: boolean | Prisma.ChecklistTemplate$productsArgs<ExtArgs>;
   instances?: boolean | Prisma.ChecklistTemplate$instancesArgs<ExtArgs>;
+  deliveryStageRules?: boolean | Prisma.ChecklistTemplate$deliveryStageRulesArgs<ExtArgs>;
   _count?: boolean | Prisma.ChecklistTemplateCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type ChecklistTemplateIncludeCreateManyAndReturn<
@@ -1185,6 +1347,7 @@ export type $ChecklistTemplatePayload<
     versions: Prisma.$ChecklistTemplateVersionPayload<ExtArgs>[];
     products: Prisma.$ProductPayload<ExtArgs>[];
     instances: Prisma.$ChecklistInstancePayload<ExtArgs>[];
+    deliveryStageRules: Prisma.$DeliveryStageChecklistRulePayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -1784,6 +1947,17 @@ export interface Prisma__ChecklistTemplateClient<
       >
     | Null
   >;
+  deliveryStageRules<T extends Prisma.ChecklistTemplate$deliveryStageRulesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.ChecklistTemplate$deliveryStageRulesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$DeliveryStageChecklistRulePayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2373,6 +2547,36 @@ export type ChecklistTemplate$instancesArgs<
   take?: number;
   skip?: number;
   distinct?: Prisma.ChecklistInstanceScalarFieldEnum | Prisma.ChecklistInstanceScalarFieldEnum[];
+};
+
+/**
+ * ChecklistTemplate.deliveryStageRules
+ */
+export type ChecklistTemplate$deliveryStageRulesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the DeliveryStageChecklistRule
+   */
+  select?: Prisma.DeliveryStageChecklistRuleSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the DeliveryStageChecklistRule
+   */
+  omit?: Prisma.DeliveryStageChecklistRuleOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeliveryStageChecklistRuleInclude<ExtArgs> | null;
+  where?: Prisma.DeliveryStageChecklistRuleWhereInput;
+  orderBy?:
+    | Prisma.DeliveryStageChecklistRuleOrderByWithRelationInput
+    | Prisma.DeliveryStageChecklistRuleOrderByWithRelationInput[];
+  cursor?: Prisma.DeliveryStageChecklistRuleWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.DeliveryStageChecklistRuleScalarFieldEnum
+    | Prisma.DeliveryStageChecklistRuleScalarFieldEnum[];
 };
 
 /**

@@ -84,6 +84,14 @@ export const ChecklistTemplateVersionStatusEnum = {
 export type ChecklistTemplateVersionStatusEnum =
   (typeof ChecklistTemplateVersionStatusEnum)[keyof typeof ChecklistTemplateVersionStatusEnum];
 
+export const DeliveryChecklistTargetEnum = {
+  PRODUCT: 'PRODUCT',
+  EXTENSION: 'EXTENSION',
+} as const;
+
+export type DeliveryChecklistTargetEnum =
+  (typeof DeliveryChecklistTargetEnum)[keyof typeof DeliveryChecklistTargetEnum];
+
 export const ClientServiceType = {
   DOMAIN: 'DOMAIN',
   HOSTING: 'HOSTING',

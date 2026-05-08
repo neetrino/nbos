@@ -3,6 +3,7 @@ import {
   ChecklistTemplateStatusEnum,
   ChecklistTemplateVersionStatusEnum,
   PrismaClient,
+  type DeliveryStageEnum,
   type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -197,24 +198,54 @@ export class ChecklistTemplatesService {
   }
 
   async createInstance(templateId: string, body: CreateChecklistInstanceDto) {
+    return this.createInstanceFromActiveVersion({
+      templateId,
+      ownerEntityType: body.ownerEntityType,
+      ownerEntityId: body.ownerEntityId,
+    });
+  }
+
+  /**
+   * Creates an instance from the template active (published) version.
+   * When `deliveryStage` is set, skips if an instance already exists for the same owner + template + stage.
+   */
+  async createInstanceFromActiveVersion(input: {
+    templateId: string;
+    ownerEntityType: string;
+    ownerEntityId: string;
+    deliveryStage?: DeliveryStageEnum;
+  }) {
+    if (input.deliveryStage != null) {
+      const existing = await this.prisma.checklistInstance.findFirst({
+        where: {
+          templateId: input.templateId,
+          ownerEntityType: input.ownerEntityType,
+          ownerEntityId: input.ownerEntityId,
+          deliveryStage: input.deliveryStage,
+        },
+      });
+      if (existing) {
+        return existing;
+      }
+    }
+
     const template = await this.prisma.checklistTemplate.findUnique({
-      where: { id: templateId },
-      include: {
-        activeVersion: true,
-      },
+      where: { id: input.templateId },
+      include: { activeVersion: true },
     });
     if (!template) {
-      throw new NotFoundException(`Checklist template ${templateId} not found`);
+      throw new NotFoundException(`Checklist template ${input.templateId} not found`);
     }
     if (!template.activeVersionId || !template.activeVersion) {
       throw new BadRequestException('Template has no published active version');
     }
     return this.prisma.checklistInstance.create({
       data: {
-        templateId,
+        templateId: input.templateId,
         templateVersionId: template.activeVersionId,
-        ownerEntityType: body.ownerEntityType,
-        ownerEntityId: body.ownerEntityId,
+        ownerEntityType: input.ownerEntityType,
+        ownerEntityId: input.ownerEntityId,
+        deliveryStage: input.deliveryStage ?? null,
         snapshotItems: template.activeVersion.items as InputJsonValue,
       },
     });

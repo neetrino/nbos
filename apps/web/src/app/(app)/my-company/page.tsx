@@ -8,6 +8,7 @@ import {
   ClipboardList,
   ListChecks,
   Network,
+  Waypoints,
   Percent,
   ShieldCheck,
   Target,
@@ -72,6 +73,13 @@ const MY_COMPANY_SECTIONS = [
     href: '/my-company/checklist-templates',
     description: 'Versioned checklist builders for delivery, QA, maintenance, and SOP.',
     icon: ListChecks,
+  },
+  {
+    title: 'Delivery checklist rules',
+    href: '/my-company/checklist-stage-rules',
+    description:
+      'Bind published templates to Product / Extension stages; instances on stage entry.',
+    icon: Waypoints,
   },
 ] as const;
 

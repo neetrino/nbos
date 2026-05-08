@@ -30,6 +30,7 @@ export type ChecklistInstanceMinAggregateOutputType = {
   templateVersionId: string | null;
   ownerEntityType: string | null;
   ownerEntityId: string | null;
+  deliveryStage: $Enums.DeliveryStageEnum | null;
   completedAt: Date | null;
   completedById: string | null;
   createdAt: Date | null;
@@ -42,6 +43,7 @@ export type ChecklistInstanceMaxAggregateOutputType = {
   templateVersionId: string | null;
   ownerEntityType: string | null;
   ownerEntityId: string | null;
+  deliveryStage: $Enums.DeliveryStageEnum | null;
   completedAt: Date | null;
   completedById: string | null;
   createdAt: Date | null;
@@ -54,6 +56,7 @@ export type ChecklistInstanceCountAggregateOutputType = {
   templateVersionId: number;
   ownerEntityType: number;
   ownerEntityId: number;
+  deliveryStage: number;
   snapshotItems: number;
   completedAt: number;
   completedById: number;
@@ -68,6 +71,7 @@ export type ChecklistInstanceMinAggregateInputType = {
   templateVersionId?: true;
   ownerEntityType?: true;
   ownerEntityId?: true;
+  deliveryStage?: true;
   completedAt?: true;
   completedById?: true;
   createdAt?: true;
@@ -80,6 +84,7 @@ export type ChecklistInstanceMaxAggregateInputType = {
   templateVersionId?: true;
   ownerEntityType?: true;
   ownerEntityId?: true;
+  deliveryStage?: true;
   completedAt?: true;
   completedById?: true;
   createdAt?: true;
@@ -92,6 +97,7 @@ export type ChecklistInstanceCountAggregateInputType = {
   templateVersionId?: true;
   ownerEntityType?: true;
   ownerEntityId?: true;
+  deliveryStage?: true;
   snapshotItems?: true;
   completedAt?: true;
   completedById?: true;
@@ -183,6 +189,7 @@ export type ChecklistInstanceGroupByOutputType = {
   templateVersionId: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage: $Enums.DeliveryStageEnum | null;
   snapshotItems: runtime.JsonValue;
   completedAt: Date | null;
   completedById: string | null;
@@ -215,6 +222,10 @@ export type ChecklistInstanceWhereInput = {
   templateVersionId?: Prisma.StringFilter<'ChecklistInstance'> | string;
   ownerEntityType?: Prisma.StringFilter<'ChecklistInstance'> | string;
   ownerEntityId?: Prisma.StringFilter<'ChecklistInstance'> | string;
+  deliveryStage?:
+    | Prisma.EnumDeliveryStageEnumNullableFilter<'ChecklistInstance'>
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonFilter<'ChecklistInstance'>;
   completedAt?: Prisma.DateTimeNullableFilter<'ChecklistInstance'> | Date | string | null;
   completedById?: Prisma.StringNullableFilter<'ChecklistInstance'> | string | null;
@@ -240,6 +251,7 @@ export type ChecklistInstanceOrderByWithRelationInput = {
   templateVersionId?: Prisma.SortOrder;
   ownerEntityType?: Prisma.SortOrder;
   ownerEntityId?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrderInput | Prisma.SortOrder;
   snapshotItems?: Prisma.SortOrder;
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   completedById?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -260,6 +272,10 @@ export type ChecklistInstanceWhereUniqueInput = Prisma.AtLeast<
     templateVersionId?: Prisma.StringFilter<'ChecklistInstance'> | string;
     ownerEntityType?: Prisma.StringFilter<'ChecklistInstance'> | string;
     ownerEntityId?: Prisma.StringFilter<'ChecklistInstance'> | string;
+    deliveryStage?:
+      | Prisma.EnumDeliveryStageEnumNullableFilter<'ChecklistInstance'>
+      | $Enums.DeliveryStageEnum
+      | null;
     snapshotItems?: Prisma.JsonFilter<'ChecklistInstance'>;
     completedAt?: Prisma.DateTimeNullableFilter<'ChecklistInstance'> | Date | string | null;
     completedById?: Prisma.StringNullableFilter<'ChecklistInstance'> | string | null;
@@ -287,6 +303,7 @@ export type ChecklistInstanceOrderByWithAggregationInput = {
   templateVersionId?: Prisma.SortOrder;
   ownerEntityType?: Prisma.SortOrder;
   ownerEntityId?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrderInput | Prisma.SortOrder;
   snapshotItems?: Prisma.SortOrder;
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   completedById?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -310,6 +327,10 @@ export type ChecklistInstanceScalarWhereWithAggregatesInput = {
   templateVersionId?: Prisma.StringWithAggregatesFilter<'ChecklistInstance'> | string;
   ownerEntityType?: Prisma.StringWithAggregatesFilter<'ChecklistInstance'> | string;
   ownerEntityId?: Prisma.StringWithAggregatesFilter<'ChecklistInstance'> | string;
+  deliveryStage?:
+    | Prisma.EnumDeliveryStageEnumNullableWithAggregatesFilter<'ChecklistInstance'>
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonWithAggregatesFilter<'ChecklistInstance'>;
   completedAt?:
     | Prisma.DateTimeNullableWithAggregatesFilter<'ChecklistInstance'>
@@ -325,6 +346,7 @@ export type ChecklistInstanceCreateInput = {
   id?: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -340,6 +362,7 @@ export type ChecklistInstanceUncheckedCreateInput = {
   templateVersionId: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   completedById?: string | null;
@@ -351,6 +374,10 @@ export type ChecklistInstanceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -366,6 +393,10 @@ export type ChecklistInstanceUncheckedUpdateInput = {
   templateVersionId?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -379,6 +410,7 @@ export type ChecklistInstanceCreateManyInput = {
   templateVersionId: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   completedById?: string | null;
@@ -390,6 +422,10 @@ export type ChecklistInstanceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -402,6 +438,10 @@ export type ChecklistInstanceUncheckedUpdateManyInput = {
   templateVersionId?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -425,6 +465,7 @@ export type ChecklistInstanceCountOrderByAggregateInput = {
   templateVersionId?: Prisma.SortOrder;
   ownerEntityType?: Prisma.SortOrder;
   ownerEntityId?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrder;
   snapshotItems?: Prisma.SortOrder;
   completedAt?: Prisma.SortOrder;
   completedById?: Prisma.SortOrder;
@@ -438,6 +479,7 @@ export type ChecklistInstanceMaxOrderByAggregateInput = {
   templateVersionId?: Prisma.SortOrder;
   ownerEntityType?: Prisma.SortOrder;
   ownerEntityId?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrder;
   completedAt?: Prisma.SortOrder;
   completedById?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -450,6 +492,7 @@ export type ChecklistInstanceMinOrderByAggregateInput = {
   templateVersionId?: Prisma.SortOrder;
   ownerEntityType?: Prisma.SortOrder;
   ownerEntityId?: Prisma.SortOrder;
+  deliveryStage?: Prisma.SortOrder;
   completedAt?: Prisma.SortOrder;
   completedById?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -644,6 +687,10 @@ export type ChecklistInstanceUncheckedUpdateManyWithoutTemplateVersionNestedInpu
     | Prisma.ChecklistInstanceScalarWhereInput[];
 };
 
+export type NullableEnumDeliveryStageEnumFieldUpdateOperationsInput = {
+  set?: $Enums.DeliveryStageEnum | null;
+};
+
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null;
 };
@@ -746,6 +793,7 @@ export type ChecklistInstanceCreateWithoutTemplateInput = {
   id?: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -759,6 +807,7 @@ export type ChecklistInstanceUncheckedCreateWithoutTemplateInput = {
   templateVersionId: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   completedById?: string | null;
@@ -818,6 +867,10 @@ export type ChecklistInstanceScalarWhereInput = {
   templateVersionId?: Prisma.StringFilter<'ChecklistInstance'> | string;
   ownerEntityType?: Prisma.StringFilter<'ChecklistInstance'> | string;
   ownerEntityId?: Prisma.StringFilter<'ChecklistInstance'> | string;
+  deliveryStage?:
+    | Prisma.EnumDeliveryStageEnumNullableFilter<'ChecklistInstance'>
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonFilter<'ChecklistInstance'>;
   completedAt?: Prisma.DateTimeNullableFilter<'ChecklistInstance'> | Date | string | null;
   completedById?: Prisma.StringNullableFilter<'ChecklistInstance'> | string | null;
@@ -829,6 +882,7 @@ export type ChecklistInstanceCreateWithoutTemplateVersionInput = {
   id?: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -842,6 +896,7 @@ export type ChecklistInstanceUncheckedCreateWithoutTemplateVersionInput = {
   templateId: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   completedById?: string | null;
@@ -896,6 +951,7 @@ export type ChecklistInstanceCreateWithoutCompletedByInput = {
   id?: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -910,6 +966,7 @@ export type ChecklistInstanceUncheckedCreateWithoutCompletedByInput = {
   templateVersionId: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -964,6 +1021,7 @@ export type ChecklistInstanceCreateManyTemplateInput = {
   templateVersionId: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   completedById?: string | null;
@@ -975,6 +1033,10 @@ export type ChecklistInstanceUpdateWithoutTemplateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -988,6 +1050,10 @@ export type ChecklistInstanceUncheckedUpdateWithoutTemplateInput = {
   templateVersionId?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1000,6 +1066,10 @@ export type ChecklistInstanceUncheckedUpdateManyWithoutTemplateInput = {
   templateVersionId?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1012,6 +1082,7 @@ export type ChecklistInstanceCreateManyTemplateVersionInput = {
   templateId: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   completedById?: string | null;
@@ -1023,6 +1094,10 @@ export type ChecklistInstanceUpdateWithoutTemplateVersionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1036,6 +1111,10 @@ export type ChecklistInstanceUncheckedUpdateWithoutTemplateVersionInput = {
   templateId?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1048,6 +1127,10 @@ export type ChecklistInstanceUncheckedUpdateManyWithoutTemplateVersionInput = {
   templateId?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   completedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -1061,6 +1144,7 @@ export type ChecklistInstanceCreateManyCompletedByInput = {
   templateVersionId: string;
   ownerEntityType: string;
   ownerEntityId: string;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
   snapshotItems: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Date | string | null;
   createdAt?: Date | string;
@@ -1071,6 +1155,10 @@ export type ChecklistInstanceUpdateWithoutCompletedByInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1085,6 +1173,10 @@ export type ChecklistInstanceUncheckedUpdateWithoutCompletedByInput = {
   templateVersionId?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1097,6 +1189,10 @@ export type ChecklistInstanceUncheckedUpdateManyWithoutCompletedByInput = {
   templateVersionId?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityType?: Prisma.StringFieldUpdateOperationsInput | string;
   ownerEntityId?: Prisma.StringFieldUpdateOperationsInput | string;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
   snapshotItems?: Prisma.JsonNullValueInput | runtime.InputJsonValue;
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1112,6 +1208,7 @@ export type ChecklistInstanceSelect<
     templateVersionId?: boolean;
     ownerEntityType?: boolean;
     ownerEntityId?: boolean;
+    deliveryStage?: boolean;
     snapshotItems?: boolean;
     completedAt?: boolean;
     completedById?: boolean;
@@ -1133,6 +1230,7 @@ export type ChecklistInstanceSelectCreateManyAndReturn<
     templateVersionId?: boolean;
     ownerEntityType?: boolean;
     ownerEntityId?: boolean;
+    deliveryStage?: boolean;
     snapshotItems?: boolean;
     completedAt?: boolean;
     completedById?: boolean;
@@ -1154,6 +1252,7 @@ export type ChecklistInstanceSelectUpdateManyAndReturn<
     templateVersionId?: boolean;
     ownerEntityType?: boolean;
     ownerEntityId?: boolean;
+    deliveryStage?: boolean;
     snapshotItems?: boolean;
     completedAt?: boolean;
     completedById?: boolean;
@@ -1172,6 +1271,7 @@ export type ChecklistInstanceSelectScalar = {
   templateVersionId?: boolean;
   ownerEntityType?: boolean;
   ownerEntityId?: boolean;
+  deliveryStage?: boolean;
   snapshotItems?: boolean;
   completedAt?: boolean;
   completedById?: boolean;
@@ -1187,6 +1287,7 @@ export type ChecklistInstanceOmit<
   | 'templateVersionId'
   | 'ownerEntityType'
   | 'ownerEntityId'
+  | 'deliveryStage'
   | 'snapshotItems'
   | 'completedAt'
   | 'completedById'
@@ -1232,6 +1333,7 @@ export type $ChecklistInstancePayload<
       templateVersionId: string;
       ownerEntityType: string;
       ownerEntityId: string;
+      deliveryStage: $Enums.DeliveryStageEnum | null;
       snapshotItems: runtime.JsonValue;
       completedAt: Date | null;
       completedById: string | null;
@@ -1855,6 +1957,7 @@ export interface ChecklistInstanceFieldRefs {
   readonly templateVersionId: Prisma.FieldRef<'ChecklistInstance', 'String'>;
   readonly ownerEntityType: Prisma.FieldRef<'ChecklistInstance', 'String'>;
   readonly ownerEntityId: Prisma.FieldRef<'ChecklistInstance', 'String'>;
+  readonly deliveryStage: Prisma.FieldRef<'ChecklistInstance', 'DeliveryStageEnum'>;
   readonly snapshotItems: Prisma.FieldRef<'ChecklistInstance', 'Json'>;
   readonly completedAt: Prisma.FieldRef<'ChecklistInstance', 'DateTime'>;
   readonly completedById: Prisma.FieldRef<'ChecklistInstance', 'String'>;

@@ -75,6 +75,11 @@ export type ChecklistTemplateVersion = Prisma.ChecklistTemplateVersionModel;
  */
 export type ChecklistInstance = Prisma.ChecklistInstanceModel;
 /**
+ * Model DeliveryStageChecklistRule
+ * Binds a published checklist template to a delivery stage (CHECKLIST requirement); optional filters per canon §6.
+ */
+export type DeliveryStageChecklistRule = Prisma.DeliveryStageChecklistRuleModel;
+/**
  * Model ClientServiceRecord
  *
  */
