@@ -414,6 +414,15 @@ Links to Delivery Board filtered by project
 - blocker marker;
 - deadline risk.
 
+Большой Project-level `Tasks` block не должен рендериться на основной Project page.
+
+Правило:
+
+- delivery tasks живут в Product Work Space;
+- extension tasks живут в Work Space родительского Product;
+- Project page может показывать только compact task counters и ссылки;
+- полный execution UI открывается из Product, Work Space, Delivery Board card или global Tasks filter.
+
 Но full checklist editing и stage movement должны происходить в:
 
 - Delivery Board;

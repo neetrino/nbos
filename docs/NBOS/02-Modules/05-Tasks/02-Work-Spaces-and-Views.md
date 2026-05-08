@@ -203,13 +203,15 @@ PM-oriented вид по срокам, зависимостям и critical path.
 
 ## 9. Контексты отображения
 
-| Контекст             | Что открывается                                     |
-| -------------------- | --------------------------------------------------- |
-| `Product`            | connected `Work Space` продукта                     |
-| `Extension`          | `Product Work Space` родительского продукта         |
-| `Project`            | агрегированный просмотр задач и work spaces проекта |
-| top-level `Tasks`    | глобальные списки и personal views                  |
-| standalone workspace | самостоятельное operational пространство            |
+| Контекст          | Что открывается                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------- |
+| `Product`         | connected `Work Space` продукта                                                         |
+| `Extension`       | `Product Work Space` родительского продукта                                             |
+| `Project`         | compact task counters and links only; no full task execution block on main Project page |
+| top-level `Tasks` | глобальные списки и personal views                                                      |
+
+Project-level task aggregation может существовать только как отдельный lazy-loaded filtered view, если это понадобится позже. Основная Project page не должна дублировать Product Work Space.
+| standalone workspace | самостоятельное operational пространство |
 
 ## 10. Базовые правила отображения
 

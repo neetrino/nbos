@@ -41,7 +41,7 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
-- Delivery Board P0: отдельная left-menu page `/delivery-board`, Product+Extension board, current-stage segmented readiness indicator, opened card Stage Gate Timeline, Dashboard action rename `Product Board` -> `Delivery Board`, Project page cleanup from embedded Delivery Board/large PM Intake — L
+- Delivery Board P0: отдельная left-menu page `/delivery-board`, Product+Extension board, current-stage segmented readiness indicator, opened card Stage Gate Timeline, Dashboard action rename `Product Board` -> `Delivery Board`, Project page cleanup from embedded Delivery Board / large PM Intake / large Project-level Tasks block — L
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
 - Ручная приёмка блока «Support глубина» — S

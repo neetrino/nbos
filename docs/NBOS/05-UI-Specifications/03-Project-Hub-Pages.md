@@ -124,10 +124,10 @@ Project Detail не должен быть тяжёлой страницей оп
 - короткая business / client info;
 - products cards;
 - compact extension summary if needed;
-- ссылки на Product detail, Work Spaces, Finance, Credentials, Support;
+- ссылки на Product detail, Product Work Space, Finance, Credentials, Support;
 - link/button `Open in Delivery Board` с фильтром по project.
 
-Большой `PM Intake` panel и embedded `Project Delivery Board v1` считаются transitional UI. Их логика переносится в Delivery Board / Product stage-gate context.
+Большой `PM Intake` panel, embedded `Project Delivery Board v1` и большой Project-level `Tasks` block считаются transitional UI. Их логика переносится в Delivery Board / Product stage-gate context и Product Work Space.
 
 ---
 
@@ -362,9 +362,32 @@ Starting → Development → QA → Transfer
 
 ---
 
-## 10. Вкладка Tasks
+## 10. Project-level Tasks
 
 **Путь:** `/projects/:projectId/tasks`
+
+Статус: transitional / not MVP target.
+
+Большой Project-level Tasks block не должен жить на основной Project page.
+
+Причина:
+
+- задачи delivery исполняются в Product Work Space;
+- `Extension` tasks попадают в Work Space родительского продукта;
+- Project page должна оставаться чистой оболочкой проекта;
+- полный task execution UI уже есть в Product / Work Space context;
+- дублирование задач на Project page создаёт шум и риск рассинхронизации UX.
+
+На Project page допустимо показывать только compact summary:
+
+- open task count;
+- overdue task count;
+- link to Product Work Spaces;
+- link to global Tasks with project filter if needed.
+
+Если когда-нибудь понадобится агрегированный project-level task view, он должен быть отдельным lazy-loaded view / filtered route, а не блоком на основной Project page.
+
+Старое описание ниже считать historical/transitional:
 
 Объединяет все задачи по всем продуктам и расширениям проекта.
 

@@ -449,6 +449,7 @@ Runtime cleanup now needed:
 - rename Dashboard pinned action `Product Board` -> `Delivery Board`;
 - remove or demote embedded Project Delivery Board from Project page;
 - move PM Intake panel logic into Kickoff/Delivery Readiness in Delivery Board opened card and Product stage-gate context;
+- remove or demote the large Project-level Tasks block from Project page; delivery execution tasks belong in Product Work Space;
 - keep Project page limited to compact readiness/status indicators.
 
 ### B4. Старое описание extension как необязательной связи с product больше не подходит
