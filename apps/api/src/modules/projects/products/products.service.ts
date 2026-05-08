@@ -26,6 +26,8 @@ import {
   productLegacyStatusForStage,
   requireDeliveryStage,
 } from '../delivery-lifecycle';
+import { batchProductOpenCounts } from './batch-product-open-counts';
+import { buildProductCurrentStageReadiness } from './product-current-stage-readiness';
 import { buildProductDoneReadiness } from './product-done-readiness';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
@@ -130,7 +132,14 @@ export class ProductsService {
         include: {
           project: { select: { id: true, code: true, name: true } },
           pm: { select: { id: true, firstName: true, lastName: true } },
-          order: { select: { id: true, code: true, status: true } },
+          order: {
+            select: {
+              id: true,
+              code: true,
+              status: true,
+              invoices: { select: { moneyStatus: true } },
+            },
+          },
           _count: { select: { extensions: true, tasks: true, tickets: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -140,8 +149,32 @@ export class ProductsService {
       this.prisma.product.count({ where }),
     ]);
 
+    const openByProduct = await batchProductOpenCounts(
+      this.prisma,
+      items.map((p) => p.id),
+    );
+
     return {
-      items: items.map(attachProductDeliveryLifecycle),
+      items: items.map((product) => {
+        const withLc = attachProductDeliveryLifecycle(product);
+        const open = openByProduct.get(product.id) ?? {
+          openTasks: 0,
+          openTickets: 0,
+          openExtensions: 0,
+        };
+        const readiness = buildProductCurrentStageReadiness(
+          product,
+          withLc.deliveryLifecycle,
+          open,
+        );
+        return {
+          ...withLc,
+          deliveryLifecycle: {
+            ...withLc.deliveryLifecycle,
+            ...(readiness ? { currentStageReadiness: readiness } : {}),
+          },
+        };
+      }),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }

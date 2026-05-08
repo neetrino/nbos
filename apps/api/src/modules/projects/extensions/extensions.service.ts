@@ -10,6 +10,8 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { NotificationService } from '../../notifications/notification.service';
+import { batchExtensionOpenTaskCounts } from './batch-extension-open-task-counts';
+import { buildExtensionCurrentStageReadiness } from './extension-current-stage-readiness';
 import {
   attachExtensionReadiness,
   validateExtensionStageGate,
@@ -119,7 +121,14 @@ export class ExtensionsService {
           project: { select: { id: true, code: true, name: true } },
           product: { select: { id: true, name: true, productType: true } },
           assignee: { select: { id: true, firstName: true, lastName: true } },
-          order: { select: { id: true, code: true, status: true } },
+          order: {
+            select: {
+              id: true,
+              code: true,
+              status: true,
+              invoices: { select: { moneyStatus: true } },
+            },
+          },
           _count: { select: { tasks: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -129,8 +138,26 @@ export class ExtensionsService {
       this.prisma.extension.count({ where }),
     ]);
 
+    const openTasksByExt = await batchExtensionOpenTaskCounts(
+      this.prisma,
+      items.map((e) => e.id),
+    );
+
     return {
-      items: items.map(attachExtensionReadiness),
+      items: items.map((extension) => {
+        const base = attachExtensionReadiness(extension);
+        const openTasks = openTasksByExt.get(extension.id) ?? 0;
+        const readiness = buildExtensionCurrentStageReadiness(extension, base.deliveryLifecycle, {
+          openTasks,
+        });
+        return {
+          ...base,
+          deliveryLifecycle: {
+            ...base.deliveryLifecycle,
+            ...(readiness ? { currentStageReadiness: readiness } : {}),
+          },
+        };
+      }),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }

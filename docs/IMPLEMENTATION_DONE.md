@@ -121,6 +121,8 @@
 
 - 🟢 [x] **Delivery Board P0 — UX дельты, перенесённые из бэклога:** Closed **без DnD** между колонками архива + подпись в UI (`DeliveryBoardClosedFiltersBar`); **MVP фильтра «клиент»** — поиск по имени элемента и проекту в Closed до появления поля компании в list API — S → часть того же среза P0.
 
+- 🟢 [x] **Delivery Board list API — currentStageReadiness:** проекция `{ completed, total }` в `GET /api/projects/products` и `GET /api/projects/extensions` на основе stage-gate смыслов (STARTING поля, открытые tasks/tickets/extensions, TRANSFER/done-прокси); batch `groupBy` для открытых счётчиков — M → `batch-product-open-counts.ts`, `batch-extension-open-task-counts.ts`, `product-current-stage-readiness.ts`, `extension-current-stage-readiness.ts`; расширен `order.invoices` в list includes.
+
 ---
 
 ## Legacy: снимок репозитория (2026-04-27, бывший DEVELOPMENT_PLAN §2)
