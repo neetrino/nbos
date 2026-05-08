@@ -503,7 +503,50 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Products (12)');
+  // Delivery Board QA: on hold, cancelled, transfer stage
+  await prisma.product.create({
+    data: {
+      id: '00000000-0000-0000-0000-000000000032',
+      projectId: project1.id,
+      name: 'ACME Newsletter Module',
+      productCategory: 'MARKETING',
+      productType: 'OTHER',
+      status: 'ON_HOLD',
+      deliveryStage: 'DEVELOPMENT',
+      deliveryWorkStatus: 'ON_HOLD',
+      onHoldReason: 'Waiting for brand guidelines from client',
+      onHoldUntil: new Date('2026-06-15'),
+      pmId: pm.id,
+      deadline: new Date('2026-07-01'),
+    },
+  });
+  await prisma.product.create({
+    data: {
+      id: '00000000-0000-0000-0000-000000000033',
+      projectId: project2.id,
+      name: 'TechStart Wearables Integration',
+      productCategory: 'CODE',
+      productType: 'OTHER',
+      status: 'LOST',
+      cancellationReason: 'Client paused wearable initiative',
+      pmId: pm2.id,
+    },
+  });
+  await prisma.product.create({
+    data: {
+      id: '00000000-0000-0000-0000-000000000034',
+      projectId: project4.id,
+      name: 'Patient Portal Handoff Package',
+      productCategory: 'CODE',
+      productType: 'WEB_APP',
+      status: 'TRANSFER',
+      deliveryStage: 'TRANSFER',
+      pmId: pm.id,
+      deadline: new Date('2026-10-01'),
+    },
+  });
+
+  console.log('  ✓ Products (15)');
 
   // ── Extensions ─────────────────────────────────────────────
   const ext1 = await prisma.extension.create({
@@ -554,7 +597,62 @@ async function main() {
       assignedTo: dev.id,
     },
   });
-  console.log('  ✓ Extensions (5)');
+  await prisma.extension.create({
+    data: {
+      projectId: project4.id,
+      productId: prod9.id,
+      name: 'Blog GDPR banner',
+      size: 'SMALL',
+      status: 'QA',
+      deliveryStage: 'QA',
+      assignedTo: dev.id,
+    },
+  });
+  await prisma.extension.create({
+    data: {
+      projectId: project1.id,
+      productId: prod1.id,
+      name: 'Production deploy checklist',
+      size: 'MICRO',
+      status: 'TRANSFER',
+      deliveryStage: 'TRANSFER',
+      assignedTo: pm.id,
+    },
+  });
+  await prisma.extension.create({
+    data: {
+      projectId: project3.id,
+      productId: prod6.id,
+      name: 'Integration spike (abandoned)',
+      size: 'SMALL',
+      status: 'LOST',
+      cancellationReason: 'API vendor discontinued sandbox',
+      assignedTo: dev.id,
+    },
+  });
+  console.log('  ✓ Extensions (8)');
+
+  // Closed-tab filters: deadline on-time vs late (uses product.updatedAt as closed-at proxy)
+  await prisma.product.update({
+    where: { id: prod2.id },
+    data: {
+      deadline: new Date('2026-06-30'),
+      clientAcceptedAt: new Date('2026-05-01T14:00:00.000Z'),
+      clientAcceptanceNote: 'Signed PDF in Drive — Marketing folder',
+    },
+  });
+  await prisma.product.update({
+    where: { id: prod5.id },
+    data: { deadline: new Date('2026-04-01') },
+  });
+  await prisma.$executeRaw`
+    UPDATE products SET updated_at = ${new Date('2026-05-01T10:00:00.000Z')}
+    WHERE id = ${prod2.id}
+  `;
+  await prisma.$executeRaw`
+    UPDATE products SET updated_at = ${new Date('2026-05-15T10:00:00.000Z')}
+    WHERE id = ${prod5.id}
+  `;
 
   // ── Leads ──────────────────────────────────────────────────
   await prisma.lead.upsert({
@@ -1966,7 +2064,7 @@ async function main() {
   console.log('  ✓ System list options (21)');
 
   console.log('\n✅ Seed completed successfully!');
-  console.log('   5 projects, 12 products, 5 extensions');
+  console.log('   5 projects, 15 products, 8 extensions');
   console.log('   10 deals (7 WON), 8 orders, 9 invoices');
   console.log('   10 tasks, 5 tickets, 6 credentials');
   await prisma.$disconnect();
