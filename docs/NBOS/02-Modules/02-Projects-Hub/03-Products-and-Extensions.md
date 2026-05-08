@@ -221,6 +221,17 @@ Terminal outcomes:
 
 Карточка также уходит в `Closed`, но как cancelled outcome.
 
+### 4.7. Closed display
+
+Closed items должны быть доступны в `Delivery Board -> Closed`.
+
+Closed имеет два режима:
+
+- `Table / List` как default для поиска и анализа;
+- `Board` с колонками `Done | Cancelled` для привычного визуального просмотра.
+
+Внешняя карточка в Closed Board может быть compact, но opened card должна оставаться полной и показывать всю историю Product/Extension: stage gates, blockers, tasks/workspace links, credentials, files, finance/technical context, final result and audit.
+
 ---
 
 ## 5. On Hold

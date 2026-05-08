@@ -193,6 +193,13 @@ UI может позволять ввод:
 - отдельно видеть успешные и неуспешные результаты;
 - сохранять полноценную историю delivery.
 
+Closed view должен поддерживать:
+
+- default `Table / List` для поиска, фильтров и анализа;
+- optional `Board` view с двумя колонками `Done | Cancelled` для привычного визуального просмотра.
+
+Внешние closed cards могут быть compact, но opened closed card должна сохранять тот же полный delivery-card structure, что и active card: stage history, requirements, blockers, tasks/workspace links, credentials, files, finance/technical context and audit.
+
 ---
 
 ## 7. Project-level views

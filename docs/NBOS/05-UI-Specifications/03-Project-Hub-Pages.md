@@ -50,6 +50,8 @@ Projects Hub — центральный модуль управления про
 
 > **Важно:** проект может отображаться одновременно во вкладках Development и Maintenance, если у него есть продукты в разных состояниях. На карточке такого проекта видны индикаторы обоих состояний.
 
+Закрытые delivery items смотрятся в `Delivery Board -> Closed`, где есть default `Table / List` и optional `Board` view с колонками `Done | Cancelled`. Project tab `Closed` показывает закрытые project containers, а не заменяет archive закрытых Product/Extension.
+
 ### 2.2. Переключатель вида
 
 В правом верхнем углу: `Cards | List`

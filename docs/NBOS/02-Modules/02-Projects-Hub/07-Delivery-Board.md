@@ -137,7 +137,16 @@ On Hold
 
 ## 6. Board views and filters
 
-Default view:
+Top-level modes:
+
+```text
+Active
+Closed
+```
+
+### 6.1. Active view
+
+Default active view:
 
 ```text
 Active Board
@@ -165,11 +174,46 @@ Active Board
 - product type;
 - stage readiness.
 
+### 6.2. Closed view
+
+`Closed` показывает delivery items, которые завершились terminal outcome:
+
+- `Done`;
+- `Cancelled`.
+
+Closed view должен иметь два режима отображения:
+
+| View           | Назначение                                                             |
+| -------------- | ---------------------------------------------------------------------- |
+| `Table / List` | Default. Быстрый поиск, фильтры, анализ закрытых работ, причины и даты |
+| `Board`        | Привычный визуальный режим с двумя колонками: `Done` и `Cancelled`     |
+
+Closed Board layout:
+
+```text
+Done | Cancelled
+```
+
+В Closed Board нельзя свободно drag/drop между `Done` и `Cancelled`. Это archive mode. Изменение результата, если когда-нибудь понадобится, должно быть отдельным permissioned action с audit.
+
+Closed filters:
+
+- result: `Done` / `Cancelled` / `All`;
+- project;
+- client;
+- PM / owner;
+- entity kind: Product / Extension;
+- closed date range;
+- product type;
+- deadline result: on time / late.
+
+Closed view не удаляет и не урезает данные. Он меняет только способ отображения закрытых delivery items.
+
 ---
 
 ## 7. Delivery card outside view
 
-Внешняя карточка на board должна быть компактной.
+Внешняя карточка на active board должна быть компактной.
 
 Она не показывает длинные списки обязательных пунктов. Все детали открываются внутри карточки.
 
@@ -219,6 +263,26 @@ Starting
 - внешний board отвечает на вопрос "можно ли двигать текущий stage дальше?";
 - детали отвечает opened card.
 
+### 7.2. Closed outside card
+
+В Closed Board внешняя карточка может быть compact или normal density.
+
+Минимальный compact состав:
+
+- entity badge: `Product` / `Extension`;
+- name;
+- project / client;
+- result: `Done` / `Cancelled`;
+- PM / owner;
+- closed date;
+- deadline result: on time / late;
+- acceptance marker для `Done`;
+- cancellation reason marker для `Cancelled`.
+
+Closed outside card может быть визуально проще active card, потому что закрытые items уже не двигаются по lifecycle.
+
+Но это правило относится только к внешней карточке. Открытая карточка должна быть полной.
+
 ---
 
 ## 8. Opened Delivery Card
@@ -226,6 +290,10 @@ Starting
 При клике открывается detail drawer / full card.
 
 Она должна быть полноценной рабочей карточкой delivery-сущности.
+
+Это правило одинаково для active и closed items.
+
+Если карточка закрыта как `Done` или `Cancelled`, opened card всё равно показывает полный delivery context и историю. Закрытие не удаляет данные и не превращает карточку в урезанный архив.
 
 Основные зоны:
 
@@ -239,6 +307,18 @@ Starting
 - Files / handoff documents;
 - Support links;
 - Activity / Audit.
+
+Для closed items дополнительно показывать:
+
+- final result: `Done` / `Cancelled`;
+- closed date;
+- closed by;
+- client acceptance / final note for `Done`;
+- cancellation reason for `Cancelled`;
+- deadline result: on time / late;
+- immutable audit/history of stage movement and requirement completion.
+
+По умолчанию closed opened card read-only. Reopen или change resolution, если будут нужны, должны быть отдельными permissioned actions с audit.
 
 ### 8.1. Stage Gate Timeline
 
