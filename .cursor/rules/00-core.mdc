@@ -1,6 +1,5 @@
 ---
-description: Core project rules for AI. Always applied. Domain rules load by globs. CONTEXT/token economy lives in User Rules only — do not duplicate here.
-globs: ["**/*"]
+description: 
 alwaysApply: true
 ---
 
@@ -11,6 +10,9 @@ Other `.mdc` files apply by **globs** and task. If a rule seems missing, check t
 ## Project size
 
 `Size: C — large, layout: monorepo (apps/* + packages/*)`
+
+## Desigen
+Modern Creative minimalist design UI/UX Stnadart
 
 ## Start of work
 
@@ -85,7 +87,7 @@ Full DoD/PR/release checklists: [`docs/reference/Check/Quality/project-quality-c
 ## Rules index (by domain)
 
 | Area | File |
-|------|------|
+|---|---|
 | Architecture | `01-architecture.mdc` |
 | TypeScript | `03-typescript.mdc` |
 | React / Next | `04-react-nextjs.mdc` |
