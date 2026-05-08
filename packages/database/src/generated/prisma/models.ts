@@ -10,6 +10,9 @@
 export type * from './models/AuditLog';
 export type * from './models/CalendarMeeting';
 export type * from './models/PersonalCalendarEvent';
+export type * from './models/ChecklistTemplate';
+export type * from './models/ChecklistTemplateVersion';
+export type * from './models/ChecklistInstance';
 export type * from './models/ClientServiceRecord';
 export type * from './models/Contact';
 export type * from './models/Company';

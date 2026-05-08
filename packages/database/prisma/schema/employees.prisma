@@ -84,6 +84,8 @@ model Employee {
   personalLinks                PersonalLink[]
   dashboardNotes               DashboardNote[]
   operationalJournalEntries    OperationalJournalEntry[]
+  checklistTemplateVersionsCreated ChecklistTemplateVersion[] @relation("ChecklistTemplateVersionCreatedBy")
+  checklistInstancesCompleted      ChecklistInstance[]         @relation("ChecklistInstanceCompletedBy")
 
   @@map("employees")
 }

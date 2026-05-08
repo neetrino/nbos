@@ -45,6 +45,45 @@ export const PersonalCalendarEventStatus = {
 export type PersonalCalendarEventStatus =
   (typeof PersonalCalendarEventStatus)[keyof typeof PersonalCalendarEventStatus];
 
+export const ChecklistTemplateStatusEnum = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+
+export type ChecklistTemplateStatusEnum =
+  (typeof ChecklistTemplateStatusEnum)[keyof typeof ChecklistTemplateStatusEnum];
+
+export const ChecklistTemplateCategoryEnum = {
+  DELIVERY: 'DELIVERY',
+  MAINTENANCE: 'MAINTENANCE',
+  QA: 'QA',
+  TECHNICAL: 'TECHNICAL',
+  SOP: 'SOP',
+  OTHER: 'OTHER',
+} as const;
+
+export type ChecklistTemplateCategoryEnum =
+  (typeof ChecklistTemplateCategoryEnum)[keyof typeof ChecklistTemplateCategoryEnum];
+
+export const ChecklistOwnerModuleEnum = {
+  MY_COMPANY: 'MY_COMPANY',
+  PROJECTS: 'PROJECTS',
+  TASKS: 'TASKS',
+  TECHNICAL: 'TECHNICAL',
+} as const;
+
+export type ChecklistOwnerModuleEnum =
+  (typeof ChecklistOwnerModuleEnum)[keyof typeof ChecklistOwnerModuleEnum];
+
+export const ChecklistTemplateVersionStatusEnum = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+} as const;
+
+export type ChecklistTemplateVersionStatusEnum =
+  (typeof ChecklistTemplateVersionStatusEnum)[keyof typeof ChecklistTemplateVersionStatusEnum];
+
 export const ClientServiceType = {
   DOMAIN: 'DOMAIN',
   HOSTING: 'HOSTING',

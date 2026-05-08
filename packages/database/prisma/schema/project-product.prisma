@@ -157,6 +157,7 @@ model Product {
   technicalEnvironments     TechnicalEnvironment[]
   operationalJournalEntries OperationalJournalEntry[]
   partnerAccruals           PartnerAccrual[]
+  checklistTemplate         ChecklistTemplate?          @relation(fields: [checklistTemplateId], references: [id], onDelete: SetNull)
 
   @@index([deliveryStage])
   @@index([deliveryWorkStatus])

@@ -1,0 +1,126 @@
+import { api } from '../api';
+
+export type ChecklistTemplateCategory =
+  | 'DELIVERY'
+  | 'MAINTENANCE'
+  | 'QA'
+  | 'TECHNICAL'
+  | 'SOP'
+  | 'OTHER';
+
+export type ChecklistOwnerModule = 'MY_COMPANY' | 'PROJECTS' | 'TASKS' | 'TECHNICAL';
+
+export interface ChecklistTemplateItem {
+  id: string;
+  title: string;
+  instruction: string;
+  decisionRequired: boolean;
+  sortOrder: number;
+}
+
+export interface ChecklistTemplateListItem {
+  id: string;
+  name: string;
+  description: string | null;
+  category: ChecklistTemplateCategory;
+  ownerModule: ChecklistOwnerModule;
+  status: string;
+  activeVersionId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  activeVersion: { id: string; versionNumber: number; status: string } | null;
+}
+
+export interface ChecklistTemplateVersionSummary {
+  id: string;
+  versionNumber: number;
+  status: string;
+  createdAt: string;
+  createdById?: string;
+}
+
+export interface ChecklistTemplateDetail extends ChecklistTemplateListItem {
+  activeVersion: { id: string; versionNumber: number; status: string; createdAt: string } | null;
+  versions: ChecklistTemplateVersionSummary[];
+  draftVersion: {
+    id: string;
+    versionNumber: number;
+    status: string;
+    items: unknown;
+    createdAt: string;
+  } | null;
+}
+
+export function parseChecklistTemplateItems(raw: unknown): ChecklistTemplateItem[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  return raw
+    .map((row, index) => {
+      if (!row || typeof row !== 'object') {
+        return null;
+      }
+      const o = row as Record<string, unknown>;
+      const title = typeof o.title === 'string' ? o.title : '';
+      const instruction = typeof o.instruction === 'string' ? o.instruction : '';
+      const id = typeof o.id === 'string' ? o.id : `row-${index}`;
+      const decisionRequired = o.decisionRequired === true;
+      const sortOrder = typeof o.sortOrder === 'number' ? o.sortOrder : index;
+      return { id, title, instruction, decisionRequired, sortOrder };
+    })
+    .filter((x): x is ChecklistTemplateItem => x !== null);
+}
+
+export const checklistTemplatesApi = {
+  async list(): Promise<ChecklistTemplateListItem[]> {
+    const resp = await api.get<ChecklistTemplateListItem[]>('/api/checklist-templates');
+    return resp.data;
+  },
+
+  async getById(id: string): Promise<ChecklistTemplateDetail> {
+    const resp = await api.get<ChecklistTemplateDetail>(`/api/checklist-templates/${id}`);
+    return resp.data;
+  },
+
+  async create(data: {
+    name: string;
+    description?: string;
+    category: ChecklistTemplateCategory;
+    ownerModule: ChecklistOwnerModule;
+  }): Promise<ChecklistTemplateDetail> {
+    const resp = await api.post<ChecklistTemplateDetail>('/api/checklist-templates', data);
+    return resp.data;
+  },
+
+  async updateMetadata(
+    id: string,
+    data: Partial<{
+      name: string;
+      description: string | null;
+      category: ChecklistTemplateCategory;
+      ownerModule: ChecklistOwnerModule;
+      status: 'ARCHIVED';
+    }>,
+  ): Promise<ChecklistTemplateDetail> {
+    const resp = await api.patch<ChecklistTemplateDetail>(`/api/checklist-templates/${id}`, data);
+    return resp.data;
+  },
+
+  async updateDraftItems(
+    id: string,
+    items: ChecklistTemplateItem[],
+  ): Promise<ChecklistTemplateDetail> {
+    const resp = await api.put<ChecklistTemplateDetail>(
+      `/api/checklist-templates/${id}/draft-items`,
+      {
+        items,
+      },
+    );
+    return resp.data;
+  },
+
+  async publish(id: string): Promise<ChecklistTemplateDetail> {
+    const resp = await api.post<ChecklistTemplateDetail>(`/api/checklist-templates/${id}/publish`);
+    return resp.data;
+  },
+};

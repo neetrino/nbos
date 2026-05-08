@@ -388,6 +388,8 @@ export type EmployeeWhereInput = {
   personalLinks?: Prisma.PersonalLinkListRelationFilter;
   dashboardNotes?: Prisma.DashboardNoteListRelationFilter;
   operationalJournalEntries?: Prisma.OperationalJournalEntryListRelationFilter;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionListRelationFilter;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceListRelationFilter;
 };
 
 export type EmployeeOrderByWithRelationInput = {
@@ -457,6 +459,8 @@ export type EmployeeOrderByWithRelationInput = {
   personalLinks?: Prisma.PersonalLinkOrderByRelationAggregateInput;
   dashboardNotes?: Prisma.DashboardNoteOrderByRelationAggregateInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryOrderByRelationAggregateInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionOrderByRelationAggregateInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceOrderByRelationAggregateInput;
 };
 
 export type EmployeeWhereUniqueInput = Prisma.AtLeast<
@@ -545,6 +549,8 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<
     personalLinks?: Prisma.PersonalLinkListRelationFilter;
     dashboardNotes?: Prisma.DashboardNoteListRelationFilter;
     operationalJournalEntries?: Prisma.OperationalJournalEntryListRelationFilter;
+    checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionListRelationFilter;
+    checklistInstancesCompleted?: Prisma.ChecklistInstanceListRelationFilter;
   },
   'id' | 'email'
 >;
@@ -684,6 +690,8 @@ export type EmployeeCreateInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateInput = {
@@ -752,6 +760,8 @@ export type EmployeeUncheckedCreateInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUpdateInput = {
@@ -829,6 +839,8 @@ export type EmployeeUpdateInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateInput = {
@@ -906,6 +918,8 @@ export type EmployeeUncheckedUpdateInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateManyInput = {
@@ -994,14 +1008,14 @@ export type EmployeeUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 
-export type EmployeeNullableScalarRelationFilter = {
-  is?: Prisma.EmployeeWhereInput | null;
-  isNot?: Prisma.EmployeeWhereInput | null;
-};
-
 export type EmployeeScalarRelationFilter = {
   is?: Prisma.EmployeeWhereInput;
   isNot?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeNullableScalarRelationFilter = {
+  is?: Prisma.EmployeeWhereInput | null;
+  isNot?: Prisma.EmployeeWhereInput | null;
 };
 
 export type EmployeeCountOrderByAggregateInput = {
@@ -1087,6 +1101,60 @@ export type EmployeeListRelationFilter = {
 
 export type EmployeeOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder;
+};
+
+export type EmployeeCreateNestedOneWithoutChecklistTemplateVersionsCreatedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutChecklistTemplateVersionsCreatedInput,
+    Prisma.EmployeeUncheckedCreateWithoutChecklistTemplateVersionsCreatedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutChecklistTemplateVersionsCreatedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeUpdateOneRequiredWithoutChecklistTemplateVersionsCreatedNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutChecklistTemplateVersionsCreatedInput,
+    Prisma.EmployeeUncheckedCreateWithoutChecklistTemplateVersionsCreatedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutChecklistTemplateVersionsCreatedInput;
+  upsert?: Prisma.EmployeeUpsertWithoutChecklistTemplateVersionsCreatedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutChecklistTemplateVersionsCreatedInput,
+      Prisma.EmployeeUpdateWithoutChecklistTemplateVersionsCreatedInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutChecklistTemplateVersionsCreatedInput
+  >;
+};
+
+export type EmployeeCreateNestedOneWithoutChecklistInstancesCompletedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutChecklistInstancesCompletedInput,
+    Prisma.EmployeeUncheckedCreateWithoutChecklistInstancesCompletedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutChecklistInstancesCompletedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeUpdateOneWithoutChecklistInstancesCompletedNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutChecklistInstancesCompletedInput,
+    Prisma.EmployeeUncheckedCreateWithoutChecklistInstancesCompletedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutChecklistInstancesCompletedInput;
+  upsert?: Prisma.EmployeeUpsertWithoutChecklistInstancesCompletedInput;
+  disconnect?: Prisma.EmployeeWhereInput | boolean;
+  delete?: Prisma.EmployeeWhereInput | boolean;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutChecklistInstancesCompletedInput,
+      Prisma.EmployeeUpdateWithoutChecklistInstancesCompletedInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutChecklistInstancesCompletedInput
+  >;
 };
 
 export type EmployeeCreateNestedOneWithoutCredentialsOwnedInput = {
@@ -2399,6 +2467,650 @@ export type EmployeeUpdateOneWithoutRecurringTasksAssignedNestedInput = {
   >;
 };
 
+export type EmployeeCreateWithoutChecklistTemplateVersionsCreatedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
+  extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
+};
+
+export type EmployeeUncheckedCreateWithoutChecklistTemplateVersionsCreatedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
+};
+
+export type EmployeeCreateOrConnectWithoutChecklistTemplateVersionsCreatedInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutChecklistTemplateVersionsCreatedInput,
+    Prisma.EmployeeUncheckedCreateWithoutChecklistTemplateVersionsCreatedInput
+  >;
+};
+
+export type EmployeeUpsertWithoutChecklistTemplateVersionsCreatedInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutChecklistTemplateVersionsCreatedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutChecklistTemplateVersionsCreatedInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutChecklistTemplateVersionsCreatedInput,
+    Prisma.EmployeeUncheckedCreateWithoutChecklistTemplateVersionsCreatedInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutChecklistTemplateVersionsCreatedInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutChecklistTemplateVersionsCreatedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutChecklistTemplateVersionsCreatedInput
+  >;
+};
+
+export type EmployeeUpdateWithoutChecklistTemplateVersionsCreatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutChecklistTemplateVersionsCreatedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
+};
+
+export type EmployeeCreateWithoutChecklistInstancesCompletedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
+  extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+};
+
+export type EmployeeUncheckedCreateWithoutChecklistInstancesCompletedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+};
+
+export type EmployeeCreateOrConnectWithoutChecklistInstancesCompletedInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutChecklistInstancesCompletedInput,
+    Prisma.EmployeeUncheckedCreateWithoutChecklistInstancesCompletedInput
+  >;
+};
+
+export type EmployeeUpsertWithoutChecklistInstancesCompletedInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutChecklistInstancesCompletedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutChecklistInstancesCompletedInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutChecklistInstancesCompletedInput,
+    Prisma.EmployeeUncheckedCreateWithoutChecklistInstancesCompletedInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutChecklistInstancesCompletedInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutChecklistInstancesCompletedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutChecklistInstancesCompletedInput
+  >;
+};
+
+export type EmployeeUpdateWithoutChecklistInstancesCompletedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutChecklistInstancesCompletedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+};
+
 export type EmployeeCreateWithoutCredentialsOwnedInput = {
   id?: string;
   passwordHash?: string | null;
@@ -2464,6 +3176,8 @@ export type EmployeeCreateWithoutCredentialsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutCredentialsOwnedInput = {
@@ -2531,6 +3245,8 @@ export type EmployeeUncheckedCreateWithoutCredentialsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutCredentialsOwnedInput = {
@@ -2635,6 +3351,8 @@ export type EmployeeUpdateWithoutCredentialsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
@@ -2711,6 +3429,8 @@ export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMarketingAccountsOwnedInput = {
@@ -2778,6 +3498,8 @@ export type EmployeeCreateWithoutMarketingAccountsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMarketingAccountsOwnedInput = {
@@ -2845,6 +3567,8 @@ export type EmployeeUncheckedCreateWithoutMarketingAccountsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMarketingAccountsOwnedInput = {
@@ -2949,6 +3673,8 @@ export type EmployeeUpdateWithoutMarketingAccountsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMarketingAccountsOwnedInput = {
@@ -3025,6 +3751,8 @@ export type EmployeeUncheckedUpdateWithoutMarketingAccountsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMarketingActivitiesOwnedInput = {
@@ -3092,6 +3820,8 @@ export type EmployeeCreateWithoutMarketingActivitiesOwnedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMarketingActivitiesOwnedInput = {
@@ -3159,6 +3889,8 @@ export type EmployeeUncheckedCreateWithoutMarketingActivitiesOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMarketingActivitiesOwnedInput = {
@@ -3263,6 +3995,8 @@ export type EmployeeUpdateWithoutMarketingActivitiesOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMarketingActivitiesOwnedInput = {
@@ -3339,6 +4073,8 @@ export type EmployeeUncheckedUpdateWithoutMarketingActivitiesOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutLeadsAssignedInput = {
@@ -3406,6 +4142,8 @@ export type EmployeeCreateWithoutLeadsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
@@ -3473,6 +4211,8 @@ export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutLeadsAssignedInput = {
@@ -3577,6 +4317,8 @@ export type EmployeeUpdateWithoutLeadsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
@@ -3653,6 +4395,8 @@ export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutDealsSellingInput = {
@@ -3720,6 +4464,8 @@ export type EmployeeCreateWithoutDealsSellingInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
@@ -3787,6 +4533,8 @@ export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDealsSellingInput = {
@@ -3862,6 +4610,8 @@ export type EmployeeCreateWithoutDealsAsSellerAssistantInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDealsAsSellerAssistantInput = {
@@ -3929,6 +4679,8 @@ export type EmployeeUncheckedCreateWithoutDealsAsSellerAssistantInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDealsAsSellerAssistantInput = {
@@ -4004,6 +4756,8 @@ export type EmployeeCreateWithoutDealsPMInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDealsPMInput = {
@@ -4071,6 +4825,8 @@ export type EmployeeUncheckedCreateWithoutDealsPMInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDealsPMInput = {
@@ -4175,6 +4931,8 @@ export type EmployeeUpdateWithoutDealsSellingInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
@@ -4251,6 +5009,8 @@ export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutDealsAsSellerAssistantInput = {
@@ -4347,6 +5107,8 @@ export type EmployeeUpdateWithoutDealsAsSellerAssistantInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDealsAsSellerAssistantInput = {
@@ -4423,6 +5185,8 @@ export type EmployeeUncheckedUpdateWithoutDealsAsSellerAssistantInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutDealsPMInput = {
@@ -4519,6 +5283,8 @@ export type EmployeeUpdateWithoutDealsPMInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
@@ -4595,6 +5361,8 @@ export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutDashboardPreferenceInput = {
@@ -4662,6 +5430,8 @@ export type EmployeeCreateWithoutDashboardPreferenceInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDashboardPreferenceInput = {
@@ -4729,6 +5499,8 @@ export type EmployeeUncheckedCreateWithoutDashboardPreferenceInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDashboardPreferenceInput = {
@@ -4833,6 +5605,8 @@ export type EmployeeUpdateWithoutDashboardPreferenceInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDashboardPreferenceInput = {
@@ -4909,6 +5683,8 @@ export type EmployeeUncheckedUpdateWithoutDashboardPreferenceInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutPersonalLinksInput = {
@@ -4976,6 +5752,8 @@ export type EmployeeCreateWithoutPersonalLinksInput = {
   savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutPersonalLinksInput = {
@@ -5043,6 +5821,8 @@ export type EmployeeUncheckedCreateWithoutPersonalLinksInput = {
   savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutPersonalLinksInput = {
@@ -5147,6 +5927,8 @@ export type EmployeeUpdateWithoutPersonalLinksInput = {
   savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutPersonalLinksInput = {
@@ -5223,6 +6005,8 @@ export type EmployeeUncheckedUpdateWithoutPersonalLinksInput = {
   savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutDashboardNotesInput = {
@@ -5290,6 +6074,8 @@ export type EmployeeCreateWithoutDashboardNotesInput = {
   savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDashboardNotesInput = {
@@ -5357,6 +6143,8 @@ export type EmployeeUncheckedCreateWithoutDashboardNotesInput = {
   savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDashboardNotesInput = {
@@ -5461,6 +6249,8 @@ export type EmployeeUpdateWithoutDashboardNotesInput = {
   savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDashboardNotesInput = {
@@ -5537,6 +6327,8 @@ export type EmployeeUncheckedUpdateWithoutDashboardNotesInput = {
   savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutPaymentsConfirmedInput = {
@@ -5604,6 +6396,8 @@ export type EmployeeCreateWithoutPaymentsConfirmedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
@@ -5671,6 +6465,8 @@ export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutPaymentsConfirmedInput = {
@@ -5775,6 +6571,8 @@ export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
@@ -5851,6 +6649,8 @@ export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutOperationalJournalEntriesInput = {
@@ -5918,6 +6718,8 @@ export type EmployeeCreateWithoutOperationalJournalEntriesInput = {
   savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutOperationalJournalEntriesInput = {
@@ -5985,6 +6787,8 @@ export type EmployeeUncheckedCreateWithoutOperationalJournalEntriesInput = {
   savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutOperationalJournalEntriesInput = {
@@ -6089,6 +6893,8 @@ export type EmployeeUpdateWithoutOperationalJournalEntriesInput = {
   savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutOperationalJournalEntriesInput = {
@@ -6165,6 +6971,8 @@ export type EmployeeUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutBonusEntriesInput = {
@@ -6232,6 +7040,8 @@ export type EmployeeCreateWithoutBonusEntriesInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
@@ -6299,6 +7109,8 @@ export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutBonusEntriesInput = {
@@ -6403,6 +7215,8 @@ export type EmployeeUpdateWithoutBonusEntriesInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
@@ -6479,6 +7293,8 @@ export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutBonusReleasesInput = {
@@ -6546,6 +7362,8 @@ export type EmployeeCreateWithoutBonusReleasesInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutBonusReleasesInput = {
@@ -6613,6 +7431,8 @@ export type EmployeeUncheckedCreateWithoutBonusReleasesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutBonusReleasesInput = {
@@ -6688,6 +7508,8 @@ export type EmployeeCreateWithoutBonusReleasesApprovedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutBonusReleasesApprovedInput = {
@@ -6755,6 +7577,8 @@ export type EmployeeUncheckedCreateWithoutBonusReleasesApprovedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutBonusReleasesApprovedInput = {
@@ -6859,6 +7683,8 @@ export type EmployeeUpdateWithoutBonusReleasesInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutBonusReleasesInput = {
@@ -6935,6 +7761,8 @@ export type EmployeeUncheckedUpdateWithoutBonusReleasesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutBonusReleasesApprovedInput = {
@@ -7031,6 +7859,8 @@ export type EmployeeUpdateWithoutBonusReleasesApprovedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutBonusReleasesApprovedInput = {
@@ -7107,6 +7937,8 @@ export type EmployeeUncheckedUpdateWithoutBonusReleasesApprovedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutPayrollRunsCreatedInput = {
@@ -7174,6 +8006,8 @@ export type EmployeeCreateWithoutPayrollRunsCreatedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutPayrollRunsCreatedInput = {
@@ -7241,6 +8075,8 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutPayrollRunsCreatedInput = {
@@ -7316,6 +8152,8 @@ export type EmployeeCreateWithoutPayrollRunsApprovedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutPayrollRunsApprovedInput = {
@@ -7383,6 +8221,8 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsApprovedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutPayrollRunsApprovedInput = {
@@ -7487,6 +8327,8 @@ export type EmployeeUpdateWithoutPayrollRunsCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutPayrollRunsCreatedInput = {
@@ -7563,6 +8405,8 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutPayrollRunsApprovedInput = {
@@ -7659,6 +8503,8 @@ export type EmployeeUpdateWithoutPayrollRunsApprovedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutPayrollRunsApprovedInput = {
@@ -7735,6 +8581,8 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsApprovedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutSalaryLinesInput = {
@@ -7802,6 +8650,8 @@ export type EmployeeCreateWithoutSalaryLinesInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutSalaryLinesInput = {
@@ -7869,6 +8719,8 @@ export type EmployeeUncheckedCreateWithoutSalaryLinesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutSalaryLinesInput = {
@@ -7973,6 +8825,8 @@ export type EmployeeUpdateWithoutSalaryLinesInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutSalaryLinesInput = {
@@ -8049,6 +8903,8 @@ export type EmployeeUncheckedUpdateWithoutSalaryLinesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMailAccountsOwnedInput = {
@@ -8116,6 +8972,8 @@ export type EmployeeCreateWithoutMailAccountsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMailAccountsOwnedInput = {
@@ -8183,6 +9041,8 @@ export type EmployeeUncheckedCreateWithoutMailAccountsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMailAccountsOwnedInput = {
@@ -8258,6 +9118,8 @@ export type EmployeeCreateWithoutMailAccountsCreatedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMailAccountsCreatedInput = {
@@ -8325,6 +9187,8 @@ export type EmployeeUncheckedCreateWithoutMailAccountsCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMailAccountsCreatedInput = {
@@ -8429,6 +9293,8 @@ export type EmployeeUpdateWithoutMailAccountsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMailAccountsOwnedInput = {
@@ -8505,6 +9371,8 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutMailAccountsCreatedInput = {
@@ -8601,6 +9469,8 @@ export type EmployeeUpdateWithoutMailAccountsCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMailAccountsCreatedInput = {
@@ -8677,6 +9547,8 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMailDeliveryLogsActedInput = {
@@ -8744,6 +9616,8 @@ export type EmployeeCreateWithoutMailDeliveryLogsActedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMailDeliveryLogsActedInput = {
@@ -8811,6 +9685,8 @@ export type EmployeeUncheckedCreateWithoutMailDeliveryLogsActedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMailDeliveryLogsActedInput = {
@@ -8915,6 +9791,8 @@ export type EmployeeUpdateWithoutMailDeliveryLogsActedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMailDeliveryLogsActedInput = {
@@ -8991,6 +9869,8 @@ export type EmployeeUncheckedUpdateWithoutMailDeliveryLogsActedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerChannelMessagesSentInput = {
@@ -9058,6 +9938,8 @@ export type EmployeeCreateWithoutMessengerChannelMessagesSentInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerChannelMessagesSentInput = {
@@ -9125,6 +10007,8 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelMessagesSentInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerChannelMessagesSentInput = {
@@ -9229,6 +10113,8 @@ export type EmployeeUpdateWithoutMessengerChannelMessagesSentInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerChannelMessagesSentInput = {
@@ -9305,6 +10191,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelMessagesSentInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerChannelAttachmentsInput = {
@@ -9372,6 +10260,8 @@ export type EmployeeCreateWithoutMessengerChannelAttachmentsInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerChannelAttachmentsInput = {
@@ -9439,6 +10329,8 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelAttachmentsInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerChannelAttachmentsInput = {
@@ -9543,6 +10435,8 @@ export type EmployeeUpdateWithoutMessengerChannelAttachmentsInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerChannelAttachmentsInput = {
@@ -9619,6 +10513,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelAttachmentsInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerChannelReadStatesInput = {
@@ -9686,6 +10582,8 @@ export type EmployeeCreateWithoutMessengerChannelReadStatesInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerChannelReadStatesInput = {
@@ -9753,6 +10651,8 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelReadStatesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerChannelReadStatesInput = {
@@ -9857,6 +10757,8 @@ export type EmployeeUpdateWithoutMessengerChannelReadStatesInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerChannelReadStatesInput = {
@@ -9933,6 +10835,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelReadStatesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerDmThreadsAsAInput = {
@@ -10000,6 +10904,8 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsAInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsAInput = {
@@ -10067,6 +10973,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsAInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerDmThreadsAsAInput = {
@@ -10142,6 +11050,8 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsBInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsBInput = {
@@ -10209,6 +11119,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsBInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerDmThreadsAsBInput = {
@@ -10313,6 +11225,8 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsAInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsAInput = {
@@ -10389,6 +11303,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsAInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutMessengerDmThreadsAsBInput = {
@@ -10485,6 +11401,8 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsBInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsBInput = {
@@ -10561,6 +11479,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsBInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerDirectMessagesSentInput = {
@@ -10628,6 +11548,8 @@ export type EmployeeCreateWithoutMessengerDirectMessagesSentInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerDirectMessagesSentInput = {
@@ -10695,6 +11617,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDirectMessagesSentInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerDirectMessagesSentInput = {
@@ -10799,6 +11723,8 @@ export type EmployeeUpdateWithoutMessengerDirectMessagesSentInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerDirectMessagesSentInput = {
@@ -10875,6 +11801,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDirectMessagesSentInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerDirectAttachmentsInput = {
@@ -10942,6 +11870,8 @@ export type EmployeeCreateWithoutMessengerDirectAttachmentsInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerDirectAttachmentsInput = {
@@ -11009,6 +11939,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDirectAttachmentsInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerDirectAttachmentsInput = {
@@ -11113,6 +12045,8 @@ export type EmployeeUpdateWithoutMessengerDirectAttachmentsInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerDirectAttachmentsInput = {
@@ -11189,6 +12123,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDirectAttachmentsInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutMessengerDmThreadReadStatesInput = {
@@ -11256,6 +12192,8 @@ export type EmployeeCreateWithoutMessengerDmThreadReadStatesInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutMessengerDmThreadReadStatesInput = {
@@ -11323,6 +12261,8 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadReadStatesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutMessengerDmThreadReadStatesInput = {
@@ -11427,6 +12367,8 @@ export type EmployeeUpdateWithoutMessengerDmThreadReadStatesInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutMessengerDmThreadReadStatesInput = {
@@ -11503,6 +12445,8 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadReadStatesInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutInAppNotificationsReceivedInput = {
@@ -11570,6 +12514,8 @@ export type EmployeeCreateWithoutInAppNotificationsReceivedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput = {
@@ -11637,6 +12583,8 @@ export type EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutInAppNotificationsReceivedInput = {
@@ -11741,6 +12689,8 @@ export type EmployeeUpdateWithoutInAppNotificationsReceivedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutInAppNotificationsReceivedInput = {
@@ -11817,6 +12767,8 @@ export type EmployeeUncheckedUpdateWithoutInAppNotificationsReceivedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutProductsManagingInput = {
@@ -11884,6 +12836,8 @@ export type EmployeeCreateWithoutProductsManagingInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutProductsManagingInput = {
@@ -11951,6 +12905,8 @@ export type EmployeeUncheckedCreateWithoutProductsManagingInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutProductsManagingInput = {
@@ -12026,6 +12982,8 @@ export type EmployeeCreateWithoutProductsClosedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutProductsClosedInput = {
@@ -12093,6 +13051,8 @@ export type EmployeeUncheckedCreateWithoutProductsClosedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutProductsClosedInput = {
@@ -12197,6 +13157,8 @@ export type EmployeeUpdateWithoutProductsManagingInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutProductsManagingInput = {
@@ -12273,6 +13235,8 @@ export type EmployeeUncheckedUpdateWithoutProductsManagingInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutProductsClosedInput = {
@@ -12369,6 +13333,8 @@ export type EmployeeUpdateWithoutProductsClosedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutProductsClosedInput = {
@@ -12445,6 +13411,8 @@ export type EmployeeUncheckedUpdateWithoutProductsClosedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutExtensionsAssignedInput = {
@@ -12512,6 +13480,8 @@ export type EmployeeCreateWithoutExtensionsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutExtensionsAssignedInput = {
@@ -12579,6 +13549,8 @@ export type EmployeeUncheckedCreateWithoutExtensionsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutExtensionsAssignedInput = {
@@ -12654,6 +13626,8 @@ export type EmployeeCreateWithoutExtensionsClosedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutExtensionsClosedInput = {
@@ -12721,6 +13695,8 @@ export type EmployeeUncheckedCreateWithoutExtensionsClosedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutExtensionsClosedInput = {
@@ -12825,6 +13801,8 @@ export type EmployeeUpdateWithoutExtensionsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutExtensionsAssignedInput = {
@@ -12901,6 +13879,8 @@ export type EmployeeUncheckedUpdateWithoutExtensionsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutExtensionsClosedInput = {
@@ -12997,6 +13977,8 @@ export type EmployeeUpdateWithoutExtensionsClosedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutExtensionsClosedInput = {
@@ -13073,6 +14055,8 @@ export type EmployeeUncheckedUpdateWithoutExtensionsClosedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutDepartmentsInput = {
@@ -13140,6 +14124,8 @@ export type EmployeeCreateWithoutDepartmentsInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutDepartmentsInput = {
@@ -13207,6 +14193,8 @@ export type EmployeeUncheckedCreateWithoutDepartmentsInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutDepartmentsInput = {
@@ -13311,6 +14299,8 @@ export type EmployeeUpdateWithoutDepartmentsInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
@@ -13387,6 +14377,8 @@ export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutRoleInput = {
@@ -13454,6 +14446,8 @@ export type EmployeeCreateWithoutRoleInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutRoleInput = {
@@ -13521,6 +14515,8 @@ export type EmployeeUncheckedCreateWithoutRoleInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutRoleInput = {
@@ -13661,6 +14657,8 @@ export type EmployeeCreateWithoutInvitationsSentInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutInvitationsSentInput = {
@@ -13728,6 +14726,8 @@ export type EmployeeUncheckedCreateWithoutInvitationsSentInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutInvitationsSentInput = {
@@ -13803,6 +14803,8 @@ export type EmployeeCreateWithoutInvitationReceivedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutInvitationReceivedInput = {
@@ -13870,6 +14872,8 @@ export type EmployeeUncheckedCreateWithoutInvitationReceivedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutInvitationReceivedInput = {
@@ -13974,6 +14978,8 @@ export type EmployeeUpdateWithoutInvitationsSentInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutInvitationsSentInput = {
@@ -14050,6 +15056,8 @@ export type EmployeeUncheckedUpdateWithoutInvitationsSentInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutInvitationReceivedInput = {
@@ -14146,6 +15154,8 @@ export type EmployeeUpdateWithoutInvitationReceivedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
@@ -14222,6 +15232,8 @@ export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutReportExportJobsRequestedInput = {
@@ -14289,6 +15301,8 @@ export type EmployeeCreateWithoutReportExportJobsRequestedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutReportExportJobsRequestedInput = {
@@ -14356,6 +15370,8 @@ export type EmployeeUncheckedCreateWithoutReportExportJobsRequestedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutReportExportJobsRequestedInput = {
@@ -14460,6 +15476,8 @@ export type EmployeeUpdateWithoutReportExportJobsRequestedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutReportExportJobsRequestedInput = {
@@ -14536,6 +15554,8 @@ export type EmployeeUncheckedUpdateWithoutReportExportJobsRequestedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutReportSchedulesOwnedInput = {
@@ -14603,6 +15623,8 @@ export type EmployeeCreateWithoutReportSchedulesOwnedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutReportSchedulesOwnedInput = {
@@ -14670,6 +15692,8 @@ export type EmployeeUncheckedCreateWithoutReportSchedulesOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutReportSchedulesOwnedInput = {
@@ -14774,6 +15798,8 @@ export type EmployeeUpdateWithoutReportSchedulesOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutReportSchedulesOwnedInput = {
@@ -14850,6 +15876,8 @@ export type EmployeeUncheckedUpdateWithoutReportSchedulesOwnedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutSavedReportViewsInput = {
@@ -14917,6 +15945,8 @@ export type EmployeeCreateWithoutSavedReportViewsInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutSavedReportViewsInput = {
@@ -14984,6 +16014,8 @@ export type EmployeeUncheckedCreateWithoutSavedReportViewsInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutSavedReportViewsInput = {
@@ -15088,6 +16120,8 @@ export type EmployeeUpdateWithoutSavedReportViewsInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutSavedReportViewsInput = {
@@ -15164,6 +16198,8 @@ export type EmployeeUncheckedUpdateWithoutSavedReportViewsInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutTicketsAssignedInput = {
@@ -15231,6 +16267,8 @@ export type EmployeeCreateWithoutTicketsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
@@ -15298,6 +16336,8 @@ export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutTicketsAssignedInput = {
@@ -15402,6 +16442,8 @@ export type EmployeeUpdateWithoutTicketsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
@@ -15478,6 +16520,8 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutTasksCreatedInput = {
@@ -15545,6 +16589,8 @@ export type EmployeeCreateWithoutTasksCreatedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
@@ -15612,6 +16658,8 @@ export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutTasksCreatedInput = {
@@ -15687,6 +16735,8 @@ export type EmployeeCreateWithoutTasksAssignedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
@@ -15754,6 +16804,8 @@ export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutTasksAssignedInput = {
@@ -15858,6 +16910,8 @@ export type EmployeeUpdateWithoutTasksCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
@@ -15934,6 +16988,8 @@ export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutTasksAssignedInput = {
@@ -16030,6 +17086,8 @@ export type EmployeeUpdateWithoutTasksAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
@@ -16106,6 +17164,8 @@ export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
@@ -16173,6 +17233,8 @@ export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
@@ -16240,6 +17302,8 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutRecurringTasksCreatedInput = {
@@ -16315,6 +17379,8 @@ export type EmployeeCreateWithoutRecurringTasksAssignedInput = {
   personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
@@ -16382,6 +17448,8 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedCreateNestedManyWithoutCreatedByInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedCreateNestedManyWithoutCompletedByInput;
 };
 
 export type EmployeeCreateOrConnectWithoutRecurringTasksAssignedInput = {
@@ -16486,6 +17554,8 @@ export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
@@ -16562,6 +17632,8 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUpsertWithoutRecurringTasksAssignedInput = {
@@ -16658,6 +17730,8 @@ export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
@@ -16734,6 +17808,8 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeCreateManyRoleInput = {
@@ -16832,6 +17908,8 @@ export type EmployeeUpdateWithoutRoleInput = {
   personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateWithoutRoleInput = {
@@ -16908,6 +17986,8 @@ export type EmployeeUncheckedUpdateWithoutRoleInput = {
   personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
   dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  checklistTemplateVersionsCreated?: Prisma.ChecklistTemplateVersionUncheckedUpdateManyWithoutCreatedByNestedInput;
+  checklistInstancesCompleted?: Prisma.ChecklistInstanceUncheckedUpdateManyWithoutCompletedByNestedInput;
 };
 
 export type EmployeeUncheckedUpdateManyWithoutRoleInput = {
@@ -16989,6 +18069,8 @@ export type EmployeeCountOutputType = {
   personalLinks: number;
   dashboardNotes: number;
   operationalJournalEntries: number;
+  checklistTemplateVersionsCreated: number;
+  checklistInstancesCompleted: number;
 };
 
 export type EmployeeCountOutputTypeSelect<
@@ -17045,6 +18127,12 @@ export type EmployeeCountOutputTypeSelect<
   personalLinks?: boolean | EmployeeCountOutputTypeCountPersonalLinksArgs;
   dashboardNotes?: boolean | EmployeeCountOutputTypeCountDashboardNotesArgs;
   operationalJournalEntries?: boolean | EmployeeCountOutputTypeCountOperationalJournalEntriesArgs;
+  checklistTemplateVersionsCreated?:
+    | boolean
+    | EmployeeCountOutputTypeCountChecklistTemplateVersionsCreatedArgs;
+  checklistInstancesCompleted?:
+    | boolean
+    | EmployeeCountOutputTypeCountChecklistInstancesCompletedArgs;
 };
 
 /**
@@ -17446,6 +18534,24 @@ export type EmployeeCountOutputTypeCountOperationalJournalEntriesArgs<
   where?: Prisma.OperationalJournalEntryWhereInput;
 };
 
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountChecklistTemplateVersionsCreatedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ChecklistTemplateVersionWhereInput;
+};
+
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountChecklistInstancesCompletedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ChecklistInstanceWhereInput;
+};
+
 export type EmployeeSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetSelect<
@@ -17524,6 +18630,12 @@ export type EmployeeSelect<
     personalLinks?: boolean | Prisma.Employee$personalLinksArgs<ExtArgs>;
     dashboardNotes?: boolean | Prisma.Employee$dashboardNotesArgs<ExtArgs>;
     operationalJournalEntries?: boolean | Prisma.Employee$operationalJournalEntriesArgs<ExtArgs>;
+    checklistTemplateVersionsCreated?:
+      | boolean
+      | Prisma.Employee$checklistTemplateVersionsCreatedArgs<ExtArgs>;
+    checklistInstancesCompleted?:
+      | boolean
+      | Prisma.Employee$checklistInstancesCompletedArgs<ExtArgs>;
     _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['employee']
@@ -17686,6 +18798,10 @@ export type EmployeeInclude<
   personalLinks?: boolean | Prisma.Employee$personalLinksArgs<ExtArgs>;
   dashboardNotes?: boolean | Prisma.Employee$dashboardNotesArgs<ExtArgs>;
   operationalJournalEntries?: boolean | Prisma.Employee$operationalJournalEntriesArgs<ExtArgs>;
+  checklistTemplateVersionsCreated?:
+    | boolean
+    | Prisma.Employee$checklistTemplateVersionsCreatedArgs<ExtArgs>;
+  checklistInstancesCompleted?: boolean | Prisma.Employee$checklistInstancesCompletedArgs<ExtArgs>;
   _count?: boolean | Prisma.EmployeeCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type EmployeeIncludeCreateManyAndReturn<
@@ -17750,6 +18866,8 @@ export type $EmployeePayload<
     personalLinks: Prisma.$PersonalLinkPayload<ExtArgs>[];
     dashboardNotes: Prisma.$DashboardNotePayload<ExtArgs>[];
     operationalJournalEntries: Prisma.$OperationalJournalEntryPayload<ExtArgs>[];
+    checklistTemplateVersionsCreated: Prisma.$ChecklistTemplateVersionPayload<ExtArgs>[];
+    checklistInstancesCompleted: Prisma.$ChecklistInstancePayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -18799,6 +19917,32 @@ export interface Prisma__EmployeeClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$OperationalJournalEntryPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  checklistTemplateVersionsCreated<
+    T extends Prisma.Employee$checklistTemplateVersionsCreatedArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<T, Prisma.Employee$checklistTemplateVersionsCreatedArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ChecklistTemplateVersionPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  checklistInstancesCompleted<
+    T extends Prisma.Employee$checklistInstancesCompletedArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<T, Prisma.Employee$checklistInstancesCompletedArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ChecklistInstancePayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -20510,6 +21654,64 @@ export type Employee$operationalJournalEntriesArgs<
   distinct?:
     | Prisma.OperationalJournalEntryScalarFieldEnum
     | Prisma.OperationalJournalEntryScalarFieldEnum[];
+};
+
+/**
+ * Employee.checklistTemplateVersionsCreated
+ */
+export type Employee$checklistTemplateVersionsCreatedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ChecklistTemplateVersion
+   */
+  select?: Prisma.ChecklistTemplateVersionSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the ChecklistTemplateVersion
+   */
+  omit?: Prisma.ChecklistTemplateVersionOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChecklistTemplateVersionInclude<ExtArgs> | null;
+  where?: Prisma.ChecklistTemplateVersionWhereInput;
+  orderBy?:
+    | Prisma.ChecklistTemplateVersionOrderByWithRelationInput
+    | Prisma.ChecklistTemplateVersionOrderByWithRelationInput[];
+  cursor?: Prisma.ChecklistTemplateVersionWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.ChecklistTemplateVersionScalarFieldEnum
+    | Prisma.ChecklistTemplateVersionScalarFieldEnum[];
+};
+
+/**
+ * Employee.checklistInstancesCompleted
+ */
+export type Employee$checklistInstancesCompletedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ChecklistInstance
+   */
+  select?: Prisma.ChecklistInstanceSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the ChecklistInstance
+   */
+  omit?: Prisma.ChecklistInstanceOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChecklistInstanceInclude<ExtArgs> | null;
+  where?: Prisma.ChecklistInstanceWhereInput;
+  orderBy?:
+    | Prisma.ChecklistInstanceOrderByWithRelationInput
+    | Prisma.ChecklistInstanceOrderByWithRelationInput[];
+  cursor?: Prisma.ChecklistInstanceWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.ChecklistInstanceScalarFieldEnum | Prisma.ChecklistInstanceScalarFieldEnum[];
 };
 
 /**

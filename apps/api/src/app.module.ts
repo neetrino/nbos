@@ -35,6 +35,7 @@ import { TechnicalModule } from './modules/technical/technical.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
+import { ChecklistTemplatesModule } from './modules/checklist-templates/checklist-templates.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AuthGuard } from './common/guards/auth.guard';
@@ -82,6 +83,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     RolesModule,
     DepartmentsModule,
     InvitationsModule,
+    ChecklistTemplatesModule,
   ],
   controllers: [HealthController],
   providers: [

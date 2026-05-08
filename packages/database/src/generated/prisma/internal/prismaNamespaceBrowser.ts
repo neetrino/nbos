@@ -51,6 +51,9 @@ export const ModelName = {
   AuditLog: 'AuditLog',
   CalendarMeeting: 'CalendarMeeting',
   PersonalCalendarEvent: 'PersonalCalendarEvent',
+  ChecklistTemplate: 'ChecklistTemplate',
+  ChecklistTemplateVersion: 'ChecklistTemplateVersion',
+  ChecklistInstance: 'ChecklistInstance',
   ClientServiceRecord: 'ClientServiceRecord',
   Contact: 'Contact',
   Company: 'Company',
@@ -216,6 +219,50 @@ export const PersonalCalendarEventScalarFieldEnum = {
 
 export type PersonalCalendarEventScalarFieldEnum =
   (typeof PersonalCalendarEventScalarFieldEnum)[keyof typeof PersonalCalendarEventScalarFieldEnum];
+
+export const ChecklistTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  category: 'category',
+  ownerModule: 'ownerModule',
+  status: 'status',
+  activeVersionId: 'activeVersionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ChecklistTemplateScalarFieldEnum =
+  (typeof ChecklistTemplateScalarFieldEnum)[keyof typeof ChecklistTemplateScalarFieldEnum];
+
+export const ChecklistTemplateVersionScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  versionNumber: 'versionNumber',
+  status: 'status',
+  items: 'items',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+} as const;
+
+export type ChecklistTemplateVersionScalarFieldEnum =
+  (typeof ChecklistTemplateVersionScalarFieldEnum)[keyof typeof ChecklistTemplateVersionScalarFieldEnum];
+
+export const ChecklistInstanceScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  templateVersionId: 'templateVersionId',
+  ownerEntityType: 'ownerEntityType',
+  ownerEntityId: 'ownerEntityId',
+  snapshotItems: 'snapshotItems',
+  completedAt: 'completedAt',
+  completedById: 'completedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ChecklistInstanceScalarFieldEnum =
+  (typeof ChecklistInstanceScalarFieldEnum)[keyof typeof ChecklistInstanceScalarFieldEnum];
 
 export const ClientServiceRecordScalarFieldEnum = {
   id: 'id',
@@ -1900,6 +1947,12 @@ export const NullableJsonNullValueInput = {
 
 export type NullableJsonNullValueInput =
   (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull,
+} as const;
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
 
 export const QueryMode = {
   default: 'default',

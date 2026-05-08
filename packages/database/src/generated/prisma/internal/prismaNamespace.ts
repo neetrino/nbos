@@ -378,6 +378,9 @@ export const ModelName = {
   AuditLog: 'AuditLog',
   CalendarMeeting: 'CalendarMeeting',
   PersonalCalendarEvent: 'PersonalCalendarEvent',
+  ChecklistTemplate: 'ChecklistTemplate',
+  ChecklistTemplateVersion: 'ChecklistTemplateVersion',
+  ChecklistInstance: 'ChecklistInstance',
   ClientServiceRecord: 'ClientServiceRecord',
   Contact: 'Contact',
   Company: 'Company',
@@ -493,6 +496,9 @@ export type TypeMap<
       | 'auditLog'
       | 'calendarMeeting'
       | 'personalCalendarEvent'
+      | 'checklistTemplate'
+      | 'checklistTemplateVersion'
+      | 'checklistInstance'
       | 'clientServiceRecord'
       | 'contact'
       | 'company'
@@ -810,6 +816,234 @@ export type TypeMap<
           args: Prisma.PersonalCalendarEventCountArgs<ExtArgs>;
           result:
             | runtime.Types.Utils.Optional<Prisma.PersonalCalendarEventCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ChecklistTemplate: {
+      payload: Prisma.$ChecklistTemplatePayload<ExtArgs>;
+      fields: Prisma.ChecklistTemplateFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ChecklistTemplateFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ChecklistTemplateFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload>;
+        };
+        findFirst: {
+          args: Prisma.ChecklistTemplateFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ChecklistTemplateFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload>;
+        };
+        findMany: {
+          args: Prisma.ChecklistTemplateFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload>[];
+        };
+        create: {
+          args: Prisma.ChecklistTemplateCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload>;
+        };
+        createMany: {
+          args: Prisma.ChecklistTemplateCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ChecklistTemplateCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload>[];
+        };
+        delete: {
+          args: Prisma.ChecklistTemplateDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload>;
+        };
+        update: {
+          args: Prisma.ChecklistTemplateUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload>;
+        };
+        deleteMany: {
+          args: Prisma.ChecklistTemplateDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ChecklistTemplateUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ChecklistTemplateUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload>[];
+        };
+        upsert: {
+          args: Prisma.ChecklistTemplateUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplatePayload>;
+        };
+        aggregate: {
+          args: Prisma.ChecklistTemplateAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChecklistTemplate>;
+        };
+        groupBy: {
+          args: Prisma.ChecklistTemplateGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ChecklistTemplateGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ChecklistTemplateCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ChecklistTemplateCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ChecklistTemplateVersion: {
+      payload: Prisma.$ChecklistTemplateVersionPayload<ExtArgs>;
+      fields: Prisma.ChecklistTemplateVersionFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ChecklistTemplateVersionFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ChecklistTemplateVersionFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload>;
+        };
+        findFirst: {
+          args: Prisma.ChecklistTemplateVersionFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ChecklistTemplateVersionFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload>;
+        };
+        findMany: {
+          args: Prisma.ChecklistTemplateVersionFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload>[];
+        };
+        create: {
+          args: Prisma.ChecklistTemplateVersionCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload>;
+        };
+        createMany: {
+          args: Prisma.ChecklistTemplateVersionCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ChecklistTemplateVersionCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload>[];
+        };
+        delete: {
+          args: Prisma.ChecklistTemplateVersionDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload>;
+        };
+        update: {
+          args: Prisma.ChecklistTemplateVersionUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ChecklistTemplateVersionDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ChecklistTemplateVersionUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ChecklistTemplateVersionUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload>[];
+        };
+        upsert: {
+          args: Prisma.ChecklistTemplateVersionUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistTemplateVersionPayload>;
+        };
+        aggregate: {
+          args: Prisma.ChecklistTemplateVersionAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChecklistTemplateVersion>;
+        };
+        groupBy: {
+          args: Prisma.ChecklistTemplateVersionGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ChecklistTemplateVersionGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ChecklistTemplateVersionCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ChecklistTemplateVersionCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
+    ChecklistInstance: {
+      payload: Prisma.$ChecklistInstancePayload<ExtArgs>;
+      fields: Prisma.ChecklistInstanceFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ChecklistInstanceFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ChecklistInstanceFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload>;
+        };
+        findFirst: {
+          args: Prisma.ChecklistInstanceFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ChecklistInstanceFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload>;
+        };
+        findMany: {
+          args: Prisma.ChecklistInstanceFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload>[];
+        };
+        create: {
+          args: Prisma.ChecklistInstanceCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload>;
+        };
+        createMany: {
+          args: Prisma.ChecklistInstanceCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ChecklistInstanceCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload>[];
+        };
+        delete: {
+          args: Prisma.ChecklistInstanceDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload>;
+        };
+        update: {
+          args: Prisma.ChecklistInstanceUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload>;
+        };
+        deleteMany: {
+          args: Prisma.ChecklistInstanceDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ChecklistInstanceUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ChecklistInstanceUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload>[];
+        };
+        upsert: {
+          args: Prisma.ChecklistInstanceUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChecklistInstancePayload>;
+        };
+        aggregate: {
+          args: Prisma.ChecklistInstanceAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChecklistInstance>;
+        };
+        groupBy: {
+          args: Prisma.ChecklistInstanceGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ChecklistInstanceGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ChecklistInstanceCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ChecklistInstanceCountAggregateOutputType>
             | number;
         };
       };
@@ -7835,6 +8069,50 @@ export const PersonalCalendarEventScalarFieldEnum = {
 export type PersonalCalendarEventScalarFieldEnum =
   (typeof PersonalCalendarEventScalarFieldEnum)[keyof typeof PersonalCalendarEventScalarFieldEnum];
 
+export const ChecklistTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  category: 'category',
+  ownerModule: 'ownerModule',
+  status: 'status',
+  activeVersionId: 'activeVersionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ChecklistTemplateScalarFieldEnum =
+  (typeof ChecklistTemplateScalarFieldEnum)[keyof typeof ChecklistTemplateScalarFieldEnum];
+
+export const ChecklistTemplateVersionScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  versionNumber: 'versionNumber',
+  status: 'status',
+  items: 'items',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+} as const;
+
+export type ChecklistTemplateVersionScalarFieldEnum =
+  (typeof ChecklistTemplateVersionScalarFieldEnum)[keyof typeof ChecklistTemplateVersionScalarFieldEnum];
+
+export const ChecklistInstanceScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  templateVersionId: 'templateVersionId',
+  ownerEntityType: 'ownerEntityType',
+  ownerEntityId: 'ownerEntityId',
+  snapshotItems: 'snapshotItems',
+  completedAt: 'completedAt',
+  completedById: 'completedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ChecklistInstanceScalarFieldEnum =
+  (typeof ChecklistInstanceScalarFieldEnum)[keyof typeof ChecklistInstanceScalarFieldEnum];
+
 export const ClientServiceRecordScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
@@ -9519,6 +9797,12 @@ export const NullableJsonNullValueInput = {
 export type NullableJsonNullValueInput =
   (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput];
 
+export const JsonNullValueInput = {
+  JsonNull: JsonNull,
+} as const;
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive',
@@ -9643,6 +9927,78 @@ export type ListEnumPersonalCalendarEventStatusFieldRefInput<$PrismaModel> = Fie
   $PrismaModel,
   'PersonalCalendarEventStatus[]'
 >;
+
+/**
+ * Reference to a field of type 'ChecklistTemplateCategoryEnum'
+ */
+export type EnumChecklistTemplateCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ChecklistTemplateCategoryEnum'
+>;
+
+/**
+ * Reference to a field of type 'ChecklistTemplateCategoryEnum[]'
+ */
+export type ListEnumChecklistTemplateCategoryEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ChecklistTemplateCategoryEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ChecklistOwnerModuleEnum'
+ */
+export type EnumChecklistOwnerModuleEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ChecklistOwnerModuleEnum'
+>;
+
+/**
+ * Reference to a field of type 'ChecklistOwnerModuleEnum[]'
+ */
+export type ListEnumChecklistOwnerModuleEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ChecklistOwnerModuleEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'ChecklistTemplateStatusEnum'
+ */
+export type EnumChecklistTemplateStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ChecklistTemplateStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'ChecklistTemplateStatusEnum[]'
+ */
+export type ListEnumChecklistTemplateStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ChecklistTemplateStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>;
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>;
+
+/**
+ * Reference to a field of type 'ChecklistTemplateVersionStatusEnum'
+ */
+export type EnumChecklistTemplateVersionStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'ChecklistTemplateVersionStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'ChecklistTemplateVersionStatusEnum[]'
+ */
+export type ListEnumChecklistTemplateVersionStatusEnumFieldRefInput<$PrismaModel> =
+  FieldRefInputType<$PrismaModel, 'ChecklistTemplateVersionStatusEnum[]'>;
 
 /**
  * Reference to a field of type 'ClientServiceType'
@@ -9922,16 +10278,6 @@ export type ListEnumMarketingActivityStatusEnumFieldRefInput<$PrismaModel> = Fie
   $PrismaModel,
   'MarketingActivityStatusEnum[]'
 >;
-
-/**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>;
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>;
 
 /**
  * Reference to a field of type 'LeadSourceEnum'
@@ -11579,6 +11925,9 @@ export type GlobalOmitConfig = {
   auditLog?: Prisma.AuditLogOmit;
   calendarMeeting?: Prisma.CalendarMeetingOmit;
   personalCalendarEvent?: Prisma.PersonalCalendarEventOmit;
+  checklistTemplate?: Prisma.ChecklistTemplateOmit;
+  checklistTemplateVersion?: Prisma.ChecklistTemplateVersionOmit;
+  checklistInstance?: Prisma.ChecklistInstanceOmit;
   clientServiceRecord?: Prisma.ClientServiceRecordOmit;
   contact?: Prisma.ContactOmit;
   company?: Prisma.CompanyOmit;

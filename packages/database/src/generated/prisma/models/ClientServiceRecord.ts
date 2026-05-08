@@ -908,10 +908,6 @@ export type EnumTaxStatusFieldUpdateOperationsInput = {
   set?: $Enums.TaxStatus;
 };
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null;
-};
-
 export type ClientServiceRecordCreateNestedManyWithoutProviderAccountInput = {
   create?:
     | Prisma.XOR<

@@ -28,6 +28,7 @@
 
 ## Блок 2 — Выполненные срезы (перенесено из Progress)
 
+- 🟢 [x] **Checklist Template Builder — CTB-1 foundation** — L → Prisma + миграция `20260508193000_checklist_templates_foundation`; Nest `ChecklistTemplatesModule` (`/api/checklist-templates`, `/api/checklist-instances`); web My Company checklist builder UI; RBAC `COMPANY` VIEW/EDIT; publish оставляет прошлые instances неизменными (snapshot по активной версии). См. `IMPLEMENTATION_PROGRESS` CTB-2/CTB-3 и канон §13 для granular permissions / audit / consumption
 - 🟢 [x] Сводная таблица переходов Lead → Deal → Order → Project в одном каноническом документе — M → `docs/NBOS/03-Business-Logic/00-Lead-Deal-Order-Project-Transition-Matrix.md`
 - 🟢 [x] Пауза/штрафы подписки при задержке сдачи — правила в каноне и в runtime — M → `04-Subscription-Billing-Logic.md` § пауза; `billing-subscription-delivery-pause.ts` + `BillingService.runMonthlyBilling`
 - 🟢 [x] Создание **Deal без Lead** — backend, UI, валидация, аудит — M → `deal-create-validation.ts`, `DealsService.create` + audit `DEAL_CREATED`, `CreateDealDialog`, матрица §8

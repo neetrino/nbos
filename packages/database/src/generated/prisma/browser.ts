@@ -32,6 +32,21 @@ export type CalendarMeeting = Prisma.CalendarMeetingModel;
  */
 export type PersonalCalendarEvent = Prisma.PersonalCalendarEventModel;
 /**
+ * Model ChecklistTemplate
+ *
+ */
+export type ChecklistTemplate = Prisma.ChecklistTemplateModel;
+/**
+ * Model ChecklistTemplateVersion
+ *
+ */
+export type ChecklistTemplateVersion = Prisma.ChecklistTemplateVersionModel;
+/**
+ * Model ChecklistInstance
+ *
+ */
+export type ChecklistInstance = Prisma.ChecklistInstanceModel;
+/**
  * Model ClientServiceRecord
  *
  */

@@ -6,6 +6,7 @@ import {
   BadgeDollarSign,
   Building2,
   ClipboardList,
+  ListChecks,
   Network,
   Percent,
   ShieldCheck,
@@ -65,6 +66,12 @@ const MY_COMPANY_SECTIONS = [
     href: '/my-company/sop',
     description: 'SOP documents, process templates, and operational runs.',
     icon: ClipboardList,
+  },
+  {
+    title: 'Checklist templates',
+    href: '/my-company/checklist-templates',
+    description: 'Versioned checklist builders for delivery, QA, maintenance, and SOP.',
+    icon: ListChecks,
   },
 ] as const;
 

@@ -97,6 +97,12 @@ export default function SopPage() {
         </div>
         <div className="flex flex-wrap gap-2 text-sm">
           <Link
+            href="/my-company/checklist-templates"
+            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
+          >
+            Checklist Template Builder
+          </Link>
+          <Link
             href="/documents"
             className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
           >
