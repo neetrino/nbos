@@ -129,6 +129,8 @@
 
 - 🟢 [x] **Opened Delivery Card — срез 1 (web layout + cockpit):** реализация по [`07-Professional-Delivery-Card.md`](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md): `DeliveryItemDetailSheet` + `DeliveryItemDetailHeader`, `DeliveryLifecycleStrip`, `DeliveryItemDetailRequirementsZone`, `DeliveryItemDetailCockpit`, `DeliveryItemDetailTabBar`, `DeliveryItemDetailSecondaryPanels`, `ExtensionStageGateBlurb`, `delivery-item-detail-merge-lifecycle.ts` — M → коммит `911feaa3`
 
+- 🟢 [x] **Opened Delivery Card — срез 2 (Stage Gate timeline §8.5 baseline):** общий компонент `DeliveryStageTimelineCard` (четыре стадии, подсветка current/done/future, hold copy, строка `currentStageReadiness` completed/total); подключён в opened delivery cockpit (`DeliveryItemDetailCockpit`) и в `ProductOverviewTab` (рефактор без смены поведения страницы продукта) — S
+
 ---
 
 ## Legacy: снимок репозитория (2026-04-27, бывший DEVELOPMENT_PLAN §2)

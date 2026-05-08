@@ -146,6 +146,7 @@ export function DeliveryItemDetailSheet({
                 </div>
               ) : panel === 'cockpit' && (product || extension) ? (
                 <DeliveryItemDetailCockpit
+                  lifecycle={lifecycle}
                   product={product}
                   extension={extension}
                   terminal={terminal}

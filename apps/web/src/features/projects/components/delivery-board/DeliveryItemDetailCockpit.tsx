@@ -1,10 +1,13 @@
 import Link from 'next/link';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
+import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
+import { DeliveryStageTimelineCard } from '../product-tabs/DeliveryStageTimelineCard';
 import { ProductDoneReadinessPanel } from '../product-tabs/ProductDoneReadinessPanel';
 import { ExtensionReadiness } from '../extensions/ExtensionReadiness';
 
 interface DeliveryItemDetailCockpitProps {
+  lifecycle: DeliveryLifecycleProjection | undefined;
   product: FullProduct | null;
   extension: FullExtension | null;
   terminal: boolean;
@@ -15,6 +18,7 @@ interface DeliveryItemDetailCockpitProps {
 }
 
 export function DeliveryItemDetailCockpit({
+  lifecycle,
   product,
   extension,
   terminal,
@@ -31,6 +35,14 @@ export function DeliveryItemDetailCockpit({
           cancellationReason={cancellationReason}
           clientAcceptedAt={clientAcceptedAt}
           clientAcceptanceNote={clientAcceptanceNote}
+        />
+      ) : null}
+
+      {lifecycle ? (
+        <DeliveryStageTimelineCard
+          lifecycle={lifecycle}
+          title="Stage gate timeline"
+          description="Current stage is highlighted; completed stages read as done. Requirement counts reflect the active stage when the API provides them. Deep actions remain on the product page."
         />
       ) : null}
 

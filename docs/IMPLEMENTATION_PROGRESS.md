@@ -48,8 +48,8 @@
 - ✅ **Readiness в списках** — закрыто: `currentStageReadiness` в `GET /projects/products` и `GET /projects/extensions`; см. [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md).
 
 - ✅ **Professional Delivery Card design** — закрыто: UI-спецификация shell, header, табы, колонки, breakpoints и DoD в [`07-Professional-Delivery-Card.md`](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md); ссылка добавлена в [`07-Delivery-Board.md`](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md) §8.1.
-- ✅ **Opened Delivery Card — срез 1 (web):** wide drawer (`sm:max-w-[1400px]`), sticky header с readiness ring, полоса стадий + зона gate (`ProductStageGateSummary` / `ExtensionStageGateBlurb`), двухколоночный working cockpit, табы `Work Space / Calls / Bonus / History` (MVP-контент / плейсхолдеры), merge `currentStageReadiness` с борда в `delivery-item-detail-merge-lifecycle.ts`; см. [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md), коммит `911feaa3`.
-- **Opened Delivery Card — дельта до канона §8:** полноценный **Stage Gate Timeline** на первом экране (§8.5), реальные **Calls / Bonus / History** (не только ссылки), комментарии/notes в rail, при необходимости действия стадий в drawer при согласовании RBAC/API — **M–L** (продолжение той же фичи, не новый модуль).
+- ✅ **Opened Delivery Card — срез 1 (web shell + cockpit)** и **срез 2 (Stage Gate timeline)** — закрыто в [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md).
+- **Opened Delivery Card — дельта до канона §8:** реальные **Calls / Bonus / History** (проекции API, не плейсхолдеры), **комментарии/notes** в rail, при необходимости **действия стадий** в drawer (RBAC/API) — **M–L**
 - ✅ **Фильтр клиент / компания** — закрыто: `companyId` + `project.company` в list DTO, query `companyId` на list API, фильтр Company на Closed board; см. [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md).
 - **Closed metadata / audit:** явный `closedAt` / `closedBy` / история сверх `updatedAt` там, где канон §8 требует больше proxy — проекция из БД или миграция + запись при terminal transition — **M** (сверить с [`project-product.prisma`](../packages/database/prisma/schema/project-product.prisma))
 
