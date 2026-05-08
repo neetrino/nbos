@@ -183,12 +183,13 @@ export class ExtensionsService {
     const extension = await this.prisma.extension.findUnique({
       where: { id },
       include: {
-        project: { select: { id: true, code: true, name: true } },
+        project: { select: { id: true, code: true, name: true, contactId: true } },
         product: { select: { id: true, name: true, productType: true, status: true } },
         assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
         closedBy: { select: { id: true, firstName: true, lastName: true } },
         order: {
           include: {
+            deal: { select: { id: true, code: true } },
             invoices: {
               select: { id: true, code: true, moneyStatus: true, amount: true, dueDate: true },
             },

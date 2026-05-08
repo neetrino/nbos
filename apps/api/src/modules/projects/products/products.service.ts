@@ -205,6 +205,7 @@ export class ProductsService {
             id: true,
             code: true,
             name: true,
+            contactId: true,
             credentials: {
               where: { archivedAt: null },
               select: { category: true },
@@ -224,6 +225,8 @@ export class ProductsService {
           include: {
             deal: {
               select: {
+                id: true,
+                code: true,
                 offerFileUrl: true,
                 contractFileUrl: true,
               },

@@ -34,6 +34,7 @@ export interface Extension {
     code: string;
     companyId?: string | null;
     company?: { id: string; name: string } | null;
+    contactId?: string | null;
   };
   product: { id: string; name: string; productType?: string };
   assignee: ExtensionEmployee | null;
@@ -74,6 +75,7 @@ export interface ExtensionOrderRef {
   totalAmount: string;
   currency: string;
   status: string;
+  deal?: { id: string; code: string } | null;
 }
 
 export interface ExtensionStats {

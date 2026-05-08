@@ -106,6 +106,23 @@ export function DeliveryItemDetailSheet({
   const productNext =
     item?.kind === 'PRODUCT' && product ? (DELIVERY_DETAIL_PRODUCT_NEXT[product.status] ?? []) : [];
 
+  const panelProjectId =
+    item?.kind === 'PRODUCT'
+      ? item.product.projectId
+      : item?.kind === 'EXTENSION'
+        ? item.extension.projectId
+        : '';
+  const financeTabHref =
+    headerProps && panelProjectId
+      ? `/projects/${panelProjectId}/products/${headerProps.productId}?tab=finance`
+      : '#';
+  const projectHubHref = panelProjectId ? `/projects/${panelProjectId}` : '#';
+  const linkedDeal = product?.order?.deal ?? extension?.order?.deal;
+  const openDealHref =
+    linkedDeal?.id != null ? `/crm/deals?openDealId=${encodeURIComponent(linkedDeal.id)}` : null;
+  const dealCode = linkedDeal?.code ?? null;
+  const bonusOrderId = product?.order?.id ?? extension?.order?.id ?? null;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -165,6 +182,11 @@ export function DeliveryItemDetailSheet({
                   productId={headerProps.productId}
                   auditEntityType={item.kind === 'PRODUCT' ? 'PRODUCT' : 'EXTENSION'}
                   auditEntityId={item.kind === 'PRODUCT' ? item.product.id : item.extension.id}
+                  financeTabHref={financeTabHref}
+                  projectHubHref={projectHubHref}
+                  bonusOrderId={bonusOrderId}
+                  openDealHref={openDealHref}
+                  dealCode={dealCode}
                   onBack={() => setPanel('cockpit')}
                 />
               ) : (

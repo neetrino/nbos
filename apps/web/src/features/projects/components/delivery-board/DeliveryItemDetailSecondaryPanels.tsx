@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { DeliveryDetailSecondaryId } from './delivery-item-detail.constants';
+import { DeliveryItemDetailBonusPanel } from './DeliveryItemDetailBonusPanel';
+import { DeliveryItemDetailCallsPanel } from './DeliveryItemDetailCallsPanel';
 import { DeliveryItemDetailHistoryPanel } from './DeliveryItemDetailHistoryPanel';
 
 interface DeliveryItemDetailSecondaryPanelsProps {
@@ -9,6 +11,11 @@ interface DeliveryItemDetailSecondaryPanelsProps {
   productId: string;
   auditEntityType: 'PRODUCT' | 'EXTENSION';
   auditEntityId: string;
+  financeTabHref: string;
+  projectHubHref: string;
+  bonusOrderId: string | null;
+  openDealHref: string | null;
+  dealCode: string | null;
   onBack: () => void;
 }
 
@@ -18,6 +25,11 @@ export function DeliveryItemDetailSecondaryPanels({
   productId,
   auditEntityType,
   auditEntityId,
+  financeTabHref,
+  projectHubHref,
+  bonusOrderId,
+  openDealHref,
+  dealCode,
   onBack,
 }: DeliveryItemDetailSecondaryPanelsProps) {
   const base = `/projects/${projectId}/products/${productId}`;
@@ -50,25 +62,17 @@ export function DeliveryItemDetailSecondaryPanels({
 
       {view === 'calls' ? (
         <SecondaryCard title="Calls">
-          <p className="text-muted-foreground text-sm">
-            Call history for this delivery line is not wired to the board yet. The Calls API is
-            still in progress; this tab will show filtered CRM calls when it is ready.
-          </p>
+          <DeliveryItemDetailCallsPanel
+            projectHubHref={projectHubHref}
+            openDealHref={openDealHref}
+            dealCode={dealCode}
+          />
         </SecondaryCard>
       ) : null}
 
       {view === 'bonus' ? (
         <SecondaryCard title="Bonus">
-          <p className="text-muted-foreground text-sm">
-            Bonus breakdown for this line is not available in the sheet yet. The Bonus API is still
-            in progress; use Finance on the product for payout context in the meantime.
-          </p>
-          <Link
-            href={`${base}?tab=finance`}
-            className="text-primary mt-3 inline-block text-sm font-semibold hover:underline"
-          >
-            Open Finance tab →
-          </Link>
+          <DeliveryItemDetailBonusPanel orderId={bonusOrderId} financeTabHref={financeTabHref} />
         </SecondaryCard>
       ) : null}
 

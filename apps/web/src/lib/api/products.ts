@@ -39,6 +39,7 @@ export interface Product {
     code: string;
     companyId?: string | null;
     company?: { id: string; name: string } | null;
+    contactId?: string | null;
   };
   pm: ProductEmployee | null;
   _count: { extensions: number; tasks: number; tickets: number };
@@ -117,6 +118,7 @@ export interface ProductOrderRef {
   totalAmount: string;
   currency: string;
   status: string;
+  deal?: { id: string; code: string } | null;
 }
 
 export interface ProductStats {
