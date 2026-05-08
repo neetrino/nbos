@@ -11,7 +11,8 @@ import {
 } from 'react';
 import { CheckSquare, Plus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { KanbanBoard, SegmentedControl } from '@/components/shared';
+import { KanbanBoard } from '@/components/shared';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   TaskMiniCard,
   TaskListTableView,
@@ -35,7 +36,7 @@ export type WorkSpaceRuntimeProps = {
   onRefresh: () => void;
   mode: 'standalone' | 'embedded';
   defaultTaskLink?: { entityType: string; entityId: string };
-  /** When false, SegmentedControl + refresh + New Task live in the page header (standalone). */
+  /** When false, board view tabs + refresh + New Task live in the page header (standalone). */
   hideInlineBoardToolbar?: boolean;
   boardView?: WorkspaceBoardView;
   setBoardView?: Dispatch<SetStateAction<WorkspaceBoardView>>;
@@ -229,11 +230,24 @@ export function WorkSpaceRuntime({
 
       {!hideInlineBoardToolbar ? (
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-          <SegmentedControl
+          <Tabs
             value={boardView}
-            onValueChange={setBoardView}
-            items={TASKS_BOARD_VIEW_SEGMENTS}
-          />
+            onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
+          >
+            <TabsList variant="segmented">
+              {TASKS_BOARD_VIEW_SEGMENTS.map((segment) => (
+                <TabsTrigger
+                  key={segment.value}
+                  value={segment.value}
+                  aria-label={segment.ariaLabel}
+                  className="gap-1.5 px-3 py-2"
+                >
+                  {segment.icon}
+                  {segment.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"

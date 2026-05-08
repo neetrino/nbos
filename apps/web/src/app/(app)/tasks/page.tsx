@@ -3,14 +3,8 @@
 import Link from 'next/link';
 import { Plus, CheckSquare, FolderKanban } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import {
-  PageHeader,
-  FilterBar,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  SegmentedControl,
-} from '@/components/shared';
+import { PageHeader, FilterBar, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import { useTasksListPage } from '@/features/tasks/use-tasks-list-page';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
@@ -60,11 +54,24 @@ export default function TasksPage() {
             exportDisabled={loading || !stats}
             onExportScopeStatsCsv={handleExportScopeStatsCsv}
           />
-          <SegmentedControl
+          <Tabs
             value={boardView}
-            onValueChange={setBoardView}
-            items={TASKS_BOARD_VIEW_SEGMENTS}
-          />
+            onValueChange={(value) => setBoardView(value as typeof boardView)}
+          >
+            <TabsList variant="segmented">
+              {TASKS_BOARD_VIEW_SEGMENTS.map((segment) => (
+                <TabsTrigger
+                  key={segment.value}
+                  value={segment.value}
+                  aria-label={segment.ariaLabel}
+                  className="gap-1.5 px-3 py-2"
+                >
+                  {segment.icon}
+                  {segment.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
           <Button
             onClick={() => setQuickCreateOpen(true)}
             disabled={newTaskDisabled}

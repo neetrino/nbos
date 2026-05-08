@@ -12,13 +12,8 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import {
-  FilterBar,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  SegmentedControl,
-} from '@/components/shared';
+import { FilterBar, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
 import { ProjectsPageSettingsDialog } from '@/features/projects/components/ProjectsPageSettingsDialog';
@@ -72,37 +67,36 @@ export default function ProjectsPage() {
             <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
               Project Hub
             </h1>
-            <SegmentedControl
+            <Tabs
               value={activeTab}
-              onValueChange={setActiveTab}
-              size="md"
+              onValueChange={(value) => setActiveTab(value)}
               className="min-w-0 flex-1 sm:w-auto sm:flex-initial"
-              trackClassName="w-full min-w-0 sm:w-auto"
-              items={PROJECT_HUB_TABS.map((tab) => ({
-                value: tab.value,
-                label: tab.label,
-              }))}
-            />
+            >
+              <TabsList variant="segmented" className="w-full min-w-0 sm:w-auto">
+                {PROJECT_HUB_TABS.map((tab) => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="px-3 py-2.5 text-sm font-medium"
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
           <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
             <ProjectsPageSettingsDialog items={projects} />
-            <SegmentedControl
-              value={view}
-              onValueChange={(v) => setView(v as ViewMode)}
-              className="shrink-0"
-              items={[
-                {
-                  value: 'grid',
-                  label: <LayoutGrid size={14} aria-hidden />,
-                  ariaLabel: 'Card grid view',
-                },
-                {
-                  value: 'list',
-                  label: <List size={14} aria-hidden />,
-                  ariaLabel: 'List view',
-                },
-              ]}
-            />
+            <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
+              <TabsList variant="segmented" className="shrink-0">
+                <TabsTrigger value="grid" aria-label="Card grid view" className="px-3 py-2">
+                  <LayoutGrid size={14} aria-hidden />
+                </TabsTrigger>
+                <TabsTrigger value="list" aria-label="List view" className="px-3 py-2">
+                  <List size={14} aria-hidden />
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             <Button
               type="button"
               className="shrink-0 gap-2"

@@ -9,8 +9,8 @@ import {
   FilterBar,
   type FilterConfig,
   LoadingState,
-  SegmentedControl,
 } from '@/components/shared';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
 import { WorkSpacesSettingsDialog } from './WorkSpacesSettingsDialog';
@@ -72,73 +72,59 @@ export function WorkSpacesPage() {
             <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
               Work Spaces
             </h1>
-            <SegmentedControl
+            <Tabs
               value={tab}
-              onValueChange={(value) => setTab(value)}
-              size="md"
+              onValueChange={(value) => setTab(value as 'standalone' | 'product')}
               className="min-w-0 flex-1 sm:w-auto sm:flex-initial"
-              trackClassName="w-full min-w-0 sm:w-auto"
-              items={[
-                {
-                  value: 'standalone',
-                  icon: <FolderKanban size={14} aria-hidden />,
-                  label: (
-                    <span className="flex items-center gap-2">
-                      Standalone
-                      <span
-                        className={cn(
-                          'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums',
-                          tab === 'standalone'
-                            ? 'bg-primary-foreground/20 text-primary-foreground'
-                            : 'bg-secondary text-secondary-foreground',
-                        )}
-                      >
-                        {counts.standalone}
-                      </span>
+            >
+              <TabsList variant="segmented" className="w-full min-w-0 sm:w-auto">
+                <TabsTrigger value="standalone" className="gap-2 px-3 py-2.5 text-sm font-medium">
+                  <FolderKanban size={14} aria-hidden />
+                  <span className="flex items-center gap-2">
+                    Standalone
+                    <span
+                      className={cn(
+                        'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums',
+                        tab === 'standalone'
+                          ? 'bg-primary-foreground/20 text-primary-foreground'
+                          : 'bg-secondary text-secondary-foreground',
+                      )}
+                    >
+                      {counts.standalone}
                     </span>
-                  ),
-                },
-                {
-                  value: 'product',
-                  icon: <Package size={14} aria-hidden />,
-                  label: (
-                    <span className="flex items-center gap-2">
-                      Product
-                      <span
-                        className={cn(
-                          'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums',
-                          tab === 'product'
-                            ? 'bg-primary-foreground/20 text-primary-foreground'
-                            : 'bg-secondary text-secondary-foreground',
-                        )}
-                      >
-                        {counts.product}
-                      </span>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="product" className="gap-2 px-3 py-2.5 text-sm font-medium">
+                  <Package size={14} aria-hidden />
+                  <span className="flex items-center gap-2">
+                    Product
+                    <span
+                      className={cn(
+                        'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums',
+                        tab === 'product'
+                          ? 'bg-primary-foreground/20 text-primary-foreground'
+                          : 'bg-secondary text-secondary-foreground',
+                      )}
+                    >
+                      {counts.product}
                     </span>
-                  ),
-                },
-              ]}
-            />
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
             <WorkSpacesSettingsDialog items={items} />
-            <SegmentedControl
-              value={view}
-              onValueChange={setView}
-              className="shrink-0"
-              items={[
-                {
-                  value: 'grid',
-                  label: <LayoutGrid size={14} aria-hidden />,
-                  ariaLabel: 'Card grid view',
-                },
-                {
-                  value: 'list',
-                  label: <List size={14} aria-hidden />,
-                  ariaLabel: 'List view',
-                },
-              ]}
-            />
+            <Tabs value={view} onValueChange={(value) => setView(value as 'grid' | 'list')}>
+              <TabsList variant="segmented" className="shrink-0">
+                <TabsTrigger value="grid" aria-label="Card grid view" className="px-3 py-2">
+                  <LayoutGrid size={14} aria-hidden />
+                </TabsTrigger>
+                <TabsTrigger value="list" aria-label="List view" className="px-3 py-2">
+                  <List size={14} aria-hidden />
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             {tab === 'standalone' ? (
               <Button
                 type="button"

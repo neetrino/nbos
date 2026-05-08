@@ -11,8 +11,3 @@ export { Spinner } from './Spinner';
 export { InlineField } from './InlineField';
 export { SearchField } from './SearchField';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';
-export {
-  SegmentedControl,
-  type SegmentedControlItem,
-  type SegmentedControlProps,
-} from './SegmentedControl';
