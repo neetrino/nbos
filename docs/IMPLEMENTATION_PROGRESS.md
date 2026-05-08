@@ -41,7 +41,21 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
-- Delivery Board P0: отдельная left-menu page `/delivery-board`, Product+Extension board, current-stage segmented readiness indicator, opened card Stage Gate Timeline, Dashboard action rename `Product Board` -> `Delivery Board`, Project page cleanup from embedded Delivery Board / large PM Intake / large Project-level Tasks block — L
+### Delivery Board — дельта после P0 UI (ниже — **реальные** поля API/БД, без фиктивных процентов на фронте)
+
+Сид и `/delivery-board` уже дают мануальный QA по стадиям и Closed; от канона `07-Delivery-Board` §6–8 остаётся дозакрытие данными.
+
+**Статус в списке:** ✅ — уже есть в репозитории; ⏳ — ещё в бэклоге (оценка **S/M/L** без изменений).
+
+- ⏳ **Readiness 7/10 в списках:** проекция `currentStageReadiness: { completed, total }` в `GET /api/projects/products` и extensions list (или узкий batch) из тех же stage-gate правил, что detail — **M**  
+  _(частично без этой строки: тип в `deliveryLifecycle`, кольцо на карточке и честный fallback, если счётчиков нет — уже есть; заполнение счётчиков в **list** — нет.)_
+- ⏳ **Checklist Template Builder foundation:** reusable versioned checklist templates in My Company / SOP & Templates, checklist instances as snapshots, Delivery Board `CHECKLIST` stage requirement uses selected template — **L**
+- **Фильтр клиент/компания:** ✅ MVP — поиск по имени элемента и проекту в Closed (клиентский фильтр без отдельного поля компании); ⏳ поле в list DTO + серверный фильтр (`companyId` / имя компании с проекта) — **M**
+- ⏳ **Closed metadata / audit:** где канон требует явный closedAt/closedBy/историю сверх `updatedAt` — проекция из БД или миграция и запись при terminal transition — **M** (сверить §8 с текущей схемой)
+- ✅ **Закрытый Board без DnD:** архив без перетаскивания между колонками; подпись в UI есть (`DeliveryBoardClosedFiltersBar`: «Archive: no drag between Done and Cancelled») — было **S**, сделано
+
+---
+
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
 - Ручная приёмка блока «Support глубина» — S

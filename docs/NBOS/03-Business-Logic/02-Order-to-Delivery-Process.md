@@ -154,6 +154,10 @@ Project (один бренд / один бизнес)
 - Код задеплоен на staging-среду
 - Базовое self-тестирование проведено разработчиком
 
+Если stage requirement ссылается на development checklist, этот checklist является отдельным requirement типа `CHECKLIST`.
+
+Checklist помогает developer не забыть обязательные и рекомендуемые шаги. Его пункты не являются stage requirements напрямую. Stage видит только факт, что checklist instance completed по своим правилам.
+
 ---
 
 ### Стадия 3: QA / Checking (Проверка качества)

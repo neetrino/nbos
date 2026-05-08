@@ -272,6 +272,17 @@ Closed имеет два режима:
 
 На внешней Delivery Board card показывается только compact segmented readiness ring текущего stage, например `7/10`. Полный список текущих и будущих requirements показывается внутри opened Delivery Card в `Stage Gate Timeline`.
 
+Stage gate requirements и checklist items не являются одним и тем же.
+
+Правило:
+
+```text
+Stage readiness = Stage Requirements.
+Checklist = one possible Stage Requirement type.
+```
+
+Например `Development Checklist completed` может быть одним requirement внутри stage. Внутри checklist есть свои пункты, которые помогают developer пройти работу без забытых шагов. Эти checklist templates создаются и версионируются в `07-My-Company/08-Checklist-Template-Builder.md`.
+
 Если карточку переносят сразу в более поздний этап или сразу в `Done`, система должна проверять cumulative requirements по всем пропущенным этапам.
 
 Если чего-то не хватает:

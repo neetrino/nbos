@@ -398,6 +398,27 @@ Stage gate requirements должны быть configuration-driven.
 
 Не делать один общий checklist для всех.
 
+Важно:
+
+```text
+Stage readiness is calculated from Stage Requirements.
+Checklist is only one possible Stage Requirement type.
+```
+
+Пример:
+
+```text
+Starting requirements
+  - Developer selected
+  - Designer selected
+  - Tech specialist selected
+  - PM reviewed technical task
+  - Client data received
+  - Kickoff Checklist completed
+```
+
+`Kickoff Checklist completed` считается одним requirement на уровне stage. Внутри него есть собственные checklist items.
+
 Requirement shape:
 
 ```text
@@ -427,6 +448,55 @@ Evidence examples:
 - linked technical asset;
 - finance/payment condition;
 - client acceptance note.
+
+### 9.1. Checklist requirement type
+
+Если requirement имеет `type = CHECKLIST`, он создаёт checklist instance из reusable Checklist Template.
+
+Checklist template не хранится внутри Delivery Board. Он создаётся и версионируется в My Company / SOP & Templates.
+
+См. `../07-My-Company/08-Checklist-Template-Builder.md`.
+
+Checklist requirement считается completed, когда checklist instance completed.
+
+Checklist completion не означает, что все пункты внутри checklist отмечены `Done`.
+
+Внутри checklist есть лёгкие item marks:
+
+- `Pending`;
+- `Done`;
+- `Not Done`.
+
+Checklist можно завершить, если все `decisionRequired` items имеют решение `Done` или `Not Done`, а каждый `Not Done` имеет reason/comment.
+
+Это нужно, чтобы specialist обязательно прошёл важные пункты и принял решение по каждому, но не был вынужден искусственно отмечать `Done` для того, что не сделано.
+
+### 9.2. Stage template assignment
+
+Для каждого stage/product type/project type можно назначать разные checklist templates.
+
+Пример:
+
+```text
+Product Type = Website
+Project Type = WordPress
+Stage = Development
+Requirement type = CHECKLIST
+Checklist Template = WordPress Development Checklist
+```
+
+Для 80% случаев может использоваться default template, а для сложных случаев - alternative template:
+
+```text
+Website / Starting / Default
+Website / Starting / Complex
+WordPress / Development / Default
+WordPress / Development / Ecommerce
+Website / QA / Default
+Website / Transfer / Default
+```
+
+Это assignment живёт в Delivery Board stage requirement configuration, а сам checklist template живёт в Checklist Template Builder.
 
 ---
 

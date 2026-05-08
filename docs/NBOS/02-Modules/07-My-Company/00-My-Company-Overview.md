@@ -15,6 +15,7 @@
 - какие KPI и bonus policies применяются;
 - какие compensation profiles действуют;
 - какие SOP описывают работу отделов.
+- какие reusable checklist templates помогают повторяемым delivery, maintenance and operations процессам.
 
 Главный принцип: `My Company` описывает бизнес-структуру, а не системные настройки. Системная админка живёт в `Settings`.
 
@@ -22,15 +23,15 @@
 
 ## Основные разделы
 
-| Раздел            | Назначение                                                     |
-| ----------------- | -------------------------------------------------------------- |
-| `Org Structure`   | Визуальная структура отделов и seats                           |
-| `Team`            | Список сотрудников и карточки сотрудников                      |
-| `Departments`     | Отделы, владельцы, подотделы, KPI                              |
-| `Roles & Seats`   | Бизнес-функции и accountability                                |
-| `Compensation`    | Compensation profiles, bonus policies, KPI policies, overrides |
-| `KPI / Scorecard` | Company / department / employee KPI                            |
-| `SOP & Templates` | SOP library, process templates, onboarding/offboarding runs    |
+| Раздел            | Назначение                                                                       |
+| ----------------- | -------------------------------------------------------------------------------- |
+| `Org Structure`   | Визуальная структура отделов и seats                                             |
+| `Team`            | Список сотрудников и карточки сотрудников                                        |
+| `Departments`     | Отделы, владельцы, подотделы, KPI                                                |
+| `Roles & Seats`   | Бизнес-функции и accountability                                                  |
+| `Compensation`    | Compensation profiles, bonus policies, KPI policies, overrides                   |
+| `KPI / Scorecard` | Company / department / employee KPI                                              |
+| `SOP & Templates` | SOP library, process templates, checklist templates, onboarding/offboarding runs |
 
 ---
 
@@ -98,6 +99,21 @@ SOP Document -> Process Template -> Process Run -> Tasks / Checklists / Approval
 ```
 
 `SOP Document` объясняет процесс человеку. `Process Template` описывает исполняемые шаги. `Process Run` - конкретный запуск: onboarding сотрудника, monthly close, incident response.
+
+### Checklist Template / Checklist Instance
+
+Reusable checklist template - практическое руководство по пунктам для повторяемой работы.
+
+Он может использоваться в:
+
+- Delivery Board stage requirements;
+- Product / Extension development;
+- QA / Transfer;
+- maintenance update tasks;
+- automation tasks;
+- SOP process runs.
+
+Подробный канон builder: `08-Checklist-Template-Builder.md`.
 
 ---
 
