@@ -20,8 +20,14 @@ export interface Extension {
   description: string | null;
   createdAt: string;
   updatedAt: string;
-  project: { id: string; name: string; code: string };
-  product: { id: string; name: string };
+  project: {
+    id: string;
+    name: string;
+    code: string;
+    companyId?: string | null;
+    company?: { id: string; name: string } | null;
+  };
+  product: { id: string; name: string; productType?: string };
   assignee: ExtensionEmployee | null;
   order?: { id: string; code: string; status: string } | null;
   readiness?: ExtensionReadinessSummary;

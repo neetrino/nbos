@@ -32,6 +32,7 @@ import type { ProductBoardTab } from '@/features/projects/components/delivery-bo
 const DEFAULT_CLOSED_FILTERS: DeliveryBoardClosedFiltersInput = {
   search: '',
   projectId: '',
+  companyId: '',
   ownerId: '',
   productLineKey: '',
   closedFrom: '',
@@ -105,6 +106,7 @@ export default function DeliveryBoardPage() {
     return (
       closedFilters.search !== '' ||
       closedFilters.projectId !== '' ||
+      closedFilters.companyId !== '' ||
       closedFilters.ownerId !== '' ||
       closedFilters.productLineKey !== '' ||
       closedFilters.closedFrom !== '' ||

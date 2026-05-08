@@ -11,6 +11,8 @@ export type ClosedDeadlineResultFilter = 'ALL' | 'ON_TIME' | 'LATE';
 export interface DeliveryBoardClosedFiltersInput {
   search: string;
   projectId: string;
+  /** Billing company (CRM) on the item's project. */
+  companyId: string;
   ownerId: string;
   /** `ptype:${productType}` | `extsize:${size}` | '' */
   productLineKey: string;
@@ -38,6 +40,12 @@ function dateKey(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+function getProjectCompanyId(item: DeliveryBoardItem): string | null {
+  const p = item.kind === 'PRODUCT' ? item.product.project : item.extension.project;
+  if (!p) return null;
+  return p.company?.id ?? p.companyId ?? null;
+}
+
 function productDeadlineOnTime(closed: Date, deadlineIso: string): boolean {
   const dl = new Date(deadlineIso);
   if (Number.isNaN(dl.getTime())) return false;
@@ -56,6 +64,8 @@ export function applyDeliveryBoardClosedFilters(
     if (f.result !== 'ALL' && lc.resolution !== f.result) return false;
 
     if (f.projectId && getProjectId(item) !== f.projectId) return false;
+
+    if (f.companyId && getProjectCompanyId(item) !== f.companyId) return false;
 
     if (f.ownerId) {
       const oid = item.kind === 'PRODUCT' ? item.product.pm?.id : item.extension.assignee?.id;
@@ -104,12 +114,14 @@ export function applyDeliveryBoardClosedFilters(
 
 export interface ClosedFilterOptions {
   projects: Array<{ id: string; label: string }>;
+  companies: Array<{ id: string; label: string }>;
   owners: Array<{ id: string; label: string }>;
   productLines: Array<{ value: string; label: string }>;
 }
 
 export function buildClosedFilterOptions(items: DeliveryBoardItem[]): ClosedFilterOptions {
   const projectMap = new Map<string, string>();
+  const companyMap = new Map<string, string>();
   const ownerMap = new Map<string, string>();
   const lines: Array<{ value: string; label: string }> = [];
   const seenLine = new Set<string>();
@@ -122,6 +134,13 @@ export function buildClosedFilterOptions(items: DeliveryBoardItem[]): ClosedFilt
       const p = item.product.project;
       if (p && !projectMap.has(p.id)) {
         projectMap.set(p.id, `${p.name} (${p.code})`);
+      }
+      if (p) {
+        const cid = p.company?.id ?? p.companyId;
+        if (cid) {
+          const label = p.company?.name ?? cid;
+          if (!companyMap.has(cid)) companyMap.set(cid, label);
+        }
       }
       const pm = item.product.pm;
       if (pm && !ownerMap.has(pm.id)) {
@@ -136,6 +155,13 @@ export function buildClosedFilterOptions(items: DeliveryBoardItem[]): ClosedFilt
       const p = item.extension.project;
       if (p && !projectMap.has(p.id)) {
         projectMap.set(p.id, `${p.name} (${p.code})`);
+      }
+      if (p) {
+        const cid = p.company?.id ?? p.companyId;
+        if (cid) {
+          const label = p.company?.name ?? cid;
+          if (!companyMap.has(cid)) companyMap.set(cid, label);
+        }
       }
       const a = item.extension.assignee;
       if (a && !ownerMap.has(a.id)) {
@@ -153,6 +179,9 @@ export function buildClosedFilterOptions(items: DeliveryBoardItem[]): ClosedFilt
 
   return {
     projects: [...projectMap.entries()]
+      .map(([id, label]) => ({ id, label }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+    companies: [...companyMap.entries()]
       .map(([id, label]) => ({ id, label }))
       .sort((a, b) => a.label.localeCompare(b.label)),
     owners: [...ownerMap.entries()]

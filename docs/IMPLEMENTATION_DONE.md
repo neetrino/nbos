@@ -123,6 +123,8 @@
 
 - 🟢 [x] **Delivery Board list API — currentStageReadiness:** проекция `{ completed, total }` в `GET /api/projects/products` и `GET /api/projects/extensions` на основе stage-gate смыслов (STARTING поля, открытые tasks/tickets/extensions, TRANSFER/done-прокси); batch `groupBy` для открытых счётчиков — M → `batch-product-open-counts.ts`, `batch-extension-open-task-counts.ts`, `product-current-stage-readiness.ts`, `extension-current-stage-readiness.ts`; расширен `order.invoices` в list includes.
 
+- 🟢 [x] **Delivery Board — фильтр компании (list + Closed):** query `companyId` на `GET /api/projects/products` и `GET /api/projects/extensions` (фильтр по `project.companyId`); в list DTO — `project.companyId` и `project.company { id, name }`; Closed board: селектор Company + клиентский фильтр (`delivery-board-closed-filters.ts`, `DeliveryBoardClosedFiltersBar`); типы web: `apps/web/src/lib/api/products.ts`, `extensions.ts`, `projects.ts` — M
+
 ---
 
 ## Legacy: снимок репозитория (2026-04-27, бывший DEVELOPMENT_PLAN §2)

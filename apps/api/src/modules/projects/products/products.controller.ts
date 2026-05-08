@@ -30,6 +30,7 @@ export class ProductsController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'companyId', required: false, description: "Project's billing company (CRM)" })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'deliveryStage', required: false })
   @ApiQuery({ name: 'deliveryWorkStatus', required: false })
@@ -42,6 +43,7 @@ export class ProductsController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
+    @Query('companyId') companyId?: string,
     @Query('status') status?: string,
     @Query('deliveryStage') deliveryStage?: string,
     @Query('deliveryWorkStatus') deliveryWorkStatus?: string,
@@ -55,6 +57,7 @@ export class ProductsController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
+      companyId,
       status,
       deliveryStage,
       deliveryWorkStatus,

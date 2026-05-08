@@ -38,8 +38,8 @@ export function DeliveryBoardClosedFiltersBar({
   return (
     <div className="space-y-3 rounded-xl border p-3">
       <p className="text-muted-foreground text-xs">
-        Filters use list data (project replaces separate client until CRM handoff is on the row).
-        Archive: no drag between Done and Cancelled.
+        Filters use list data (project + billing company from CRM). Archive: no drag between Done
+        and Cancelled.
       </p>
       <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
         <div className="flex max-w-md min-w-[12rem] flex-1 flex-col gap-1">
@@ -83,6 +83,25 @@ export function DeliveryBoardClosedFiltersBar({
               {options.projects.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex min-w-[11rem] flex-col gap-1">
+          <span className="text-muted-foreground text-xs font-medium">Company</span>
+          <Select
+            value={value.companyId || 'ALL'}
+            onValueChange={(v) => patch({ companyId: !v || v === 'ALL' ? '' : v })}
+          >
+            <SelectTrigger className={CONTROL} size="sm" aria-label="Filter by billing company">
+              <SelectValue placeholder="All companies" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All companies</SelectItem>
+              {options.companies.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.label}
                 </SelectItem>
               ))}
             </SelectContent>

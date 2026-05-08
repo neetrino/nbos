@@ -71,6 +71,17 @@ describe('ExtensionsService', () => {
       );
     });
 
+    it('applies companyId filter on related project', async () => {
+      await service.findAll({ companyId: 'comp-1' });
+      expect(prisma.extension.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            project: { is: { companyId: 'comp-1' } },
+          }),
+        }),
+      );
+    });
+
     it('applies productId filter', async () => {
       await service.findAll({ productId: 'prod-1' });
       expect(prisma.extension.findMany).toHaveBeenCalledWith(

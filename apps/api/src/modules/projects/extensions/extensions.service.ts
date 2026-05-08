@@ -62,6 +62,8 @@ interface ExtensionQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
+  /** Filter by project's billing company (CRM). */
+  companyId?: string;
   productId?: string;
   status?: string;
   deliveryStage?: string;
@@ -87,6 +89,7 @@ export class ExtensionsService {
       page = 1,
       pageSize = 20,
       projectId,
+      companyId,
       productId,
       status,
       deliveryStage,
@@ -99,6 +102,9 @@ export class ExtensionsService {
     const where: Prisma.ExtensionWhereInput = {};
 
     if (projectId) where.projectId = projectId;
+    if (companyId) {
+      where.project = { is: { companyId } };
+    }
     if (productId) where.productId = productId;
     if (status) where.status = status as ExtensionStatusEnum;
     if (deliveryStage) where.deliveryStage = deliveryStage as DeliveryStageEnum;
@@ -118,7 +124,15 @@ export class ExtensionsService {
       this.prisma.extension.findMany({
         where,
         include: {
-          project: { select: { id: true, code: true, name: true } },
+          project: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              companyId: true,
+              company: { select: { id: true, name: true } },
+            },
+          },
           product: { select: { id: true, name: true, productType: true } },
           assignee: { select: { id: true, firstName: true, lastName: true } },
           order: {

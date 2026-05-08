@@ -75,6 +75,8 @@ interface ProductQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
+  /** Filter by project's billing company (CRM). */
+  companyId?: string;
   status?: string;
   deliveryStage?: string;
   deliveryWorkStatus?: string;
@@ -99,6 +101,7 @@ export class ProductsService {
       page = 1,
       pageSize = 20,
       projectId,
+      companyId,
       status,
       deliveryStage,
       deliveryWorkStatus,
@@ -111,6 +114,9 @@ export class ProductsService {
     const where: Prisma.ProductWhereInput = {};
 
     if (projectId) where.projectId = projectId;
+    if (companyId) {
+      where.project = { is: { companyId } };
+    }
     if (status) where.status = status as ProductStatusEnum;
     if (deliveryStage) where.deliveryStage = deliveryStage as DeliveryStageEnum;
     if (deliveryWorkStatus) {
@@ -130,7 +136,15 @@ export class ProductsService {
       this.prisma.product.findMany({
         where,
         include: {
-          project: { select: { id: true, code: true, name: true } },
+          project: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              companyId: true,
+              company: { select: { id: true, name: true } },
+            },
+          },
           pm: { select: { id: true, firstName: true, lastName: true } },
           order: {
             select: {

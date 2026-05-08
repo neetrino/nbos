@@ -38,7 +38,7 @@ export function extensionToDeliveryBoardItem(extension: Extension): DeliveryBoar
     product: {
       id: extension.product.id,
       name: extension.product.name,
-      productType: FALLBACK_PRODUCT_TYPE,
+      productType: extension.product.productType ?? FALLBACK_PRODUCT_TYPE,
       status: FALLBACK_STATUS,
     },
     deliveryLifecycle: extension.deliveryLifecycle,

@@ -47,7 +47,13 @@ export interface ProjectProductSummary {
   deliveryLifecycle?: DeliveryLifecycleProjection;
   /** Present when item comes from list/global board (not embedded project bundle). */
   projectId?: string;
-  project?: { id: string; name: string; code: string };
+  project?: {
+    id: string;
+    name: string;
+    code: string;
+    companyId?: string | null;
+    company?: { id: string; name: string } | null;
+  };
   /** List/global board: proxy for closed-at when terminal (ISO). */
   updatedAt?: string;
   clientAcceptedAt?: string | null;
@@ -67,7 +73,13 @@ export interface ProjectExtensionSummary {
   projectId?: string;
   assignee: EmployeeRef | null;
   product: { id: string; name: string; productType: string; status: string };
-  project?: { id: string; name: string; code: string };
+  project?: {
+    id: string;
+    name: string;
+    code: string;
+    companyId?: string | null;
+    company?: { id: string; name: string } | null;
+  };
   deliveryLifecycle?: DeliveryLifecycleProjection;
   /** List/global board: proxy for closed-at when terminal (ISO). */
   updatedAt?: string;

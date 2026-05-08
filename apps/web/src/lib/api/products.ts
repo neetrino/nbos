@@ -25,7 +25,13 @@ export interface Product {
   clientAcceptanceNote: string | null;
   createdAt: string;
   updatedAt: string;
-  project: { id: string; name: string; code: string };
+  project: {
+    id: string;
+    name: string;
+    code: string;
+    companyId?: string | null;
+    company?: { id: string; name: string } | null;
+  };
   pm: ProductEmployee | null;
   _count: { extensions: number; tasks: number; tickets: number };
 }
