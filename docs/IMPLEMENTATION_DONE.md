@@ -127,6 +127,8 @@
 
 - 🟢 [x] **Professional Delivery Card (UI design spec):** целевой wide drawer shell (паритет с Deal/Lead sheet), sticky header, first-screen working cockpit, focused tabs `Work Space / Calls / Bonus / History`, 2–3 колонки, conditional blocks, responsive и DoD перед кодом Opened Card — M → `docs/NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md`; перекрёстная ссылка в `07-Delivery-Board.md` §8.1
 
+- 🟢 [x] **Opened Delivery Card — срез 1 (web layout + cockpit):** реализация по [`07-Professional-Delivery-Card.md`](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md): `DeliveryItemDetailSheet` + `DeliveryItemDetailHeader`, `DeliveryLifecycleStrip`, `DeliveryItemDetailRequirementsZone`, `DeliveryItemDetailCockpit`, `DeliveryItemDetailTabBar`, `DeliveryItemDetailSecondaryPanels`, `ExtensionStageGateBlurb`, `delivery-item-detail-merge-lifecycle.ts` — M → коммит `911feaa3`
+
 ---
 
 ## Legacy: снимок репозитория (2026-04-27, бывший DEVELOPMENT_PLAN §2)
