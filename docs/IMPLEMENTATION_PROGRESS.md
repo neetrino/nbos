@@ -2,7 +2,7 @@
 
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-08
+**Обновлено:** 2026-05-09
 
 ---
 
@@ -50,7 +50,8 @@
 - ✅ **Professional Delivery Card design** — закрыто: UI-спецификация shell, header, табы, колонки, breakpoints и DoD в `[07-Professional-Delivery-Card.md](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md)`; ссылка добавлена в `[07-Delivery-Board.md](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md)` §8.1.
 - ✅ **Opened Delivery Card — срез 1 (web shell + cockpit)** и **срез 2 (Stage Gate timeline)** — закрыто в `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
 - ✅ **Opened Delivery Card — срез 3 (notes rail + History + closed metadata):** заметки/scope в правом rail (`description` продукта / extension + deep link на Overview / Extensions); вкладка **History** через `GET /api/audit` + `actor` из Employee; **`closedAt` / `closedBy`** в БД, backfill для терминальных, запись при `complete`/`cancel`, аудит `delivery.completed` / `delivery.cancelled`; вкладка **Bonus** — список `GET /api/bonus?orderId=` по заказу линии; **Calls** — без API логов, навигация на проект / сделку (`openDealId`) / pipeline. См. `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
-- **Opened Delivery Card — дельта до канона §8:** **Calls** — пер-сущность лента / телефония (когда появится API); **Bonus** — пагинация/релизы в drawer глубже, чем первый экран; при необходимости **действия стадий** в drawer (RBAC/API); опционально аудит на deprecated `PATCH …/status` → terminal — **M–L**
+- **Окружение (срез 3):** на каждой БД выполнить миграцию `20260508183000_product_extension_closed_metadata` (`closed_at` / `closed_by_id`), иначе API/UI closed metadata и часть аудита не совпадут со схемой — **S**
+- **Opened Delivery Card — дельта до канона §8:** **Calls** — пер-сущность лента / телефония (когда появится API); **Bonus** — пагинация / релизы в drawer глубже первого экрана; при необходимости **действия стадий** в drawer (RBAC/API); опционально аудит на deprecated `PATCH …/status` → terminal — **M–L**
 
 ### Checklist Template Builder (реализация)
 
@@ -151,12 +152,12 @@
 
 ## Текущий фокус (кратко)
 
-| Поле           | Значение                                                                                         |
-| -------------- | ------------------------------------------------------------------------------------------------ |
-| Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей                                        |
-| Исключения     | Банк; Bitrix mapping/import/cutover после core                                                   |
-| Активный 2A    | **Checklist Template Builder** (CTB-1→3); остаток Delivery Card — Calls/Bonus API + stage drawer |
-| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`                                            |
+| Поле           | Значение                                                                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей                                                                                       |
+| Исключения     | Банк; Bitrix mapping/import/cutover после core                                                                                                  |
+| Активный 2A    | **Checklist Template Builder** (CTB-1→3) — следующий крупный срез; Delivery Card — дельта §8 (лента Calls, углубление Bonus, опц. stage drawer) |
+| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`                                                                                           |
 
 ---
 
