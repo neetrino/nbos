@@ -177,6 +177,8 @@ Terminal outcomes:
 
 ## 4.8. Opened Product / Extension Card
 
+UI-композиция wide drawer, header, табы и breakpoints: [`../../05-UI-Specifications/07-Professional-Delivery-Card.md`](../../05-UI-Specifications/07-Professional-Delivery-Card.md).
+
 Открытая карточка `Product` / `Extension` должна быть главным рабочим cockpit для delivery-сущности.
 
 Визуальный принцип:
@@ -210,9 +212,11 @@ Terminal outcomes:
 - deadline;
 - PM / owner;
 - active assignees: developer, designer, tech specialist, QA where relevant;
-- current stage requirements;
+- requirements / stage timeline visible on the first screen;
 - active checklist;
 - key work links: staging, production, repository, design, technical task where relevant;
+- languages selector;
+- files summary / quick attach;
 - credentials readiness summary;
 - payment integration status only when product scope needs payments.
 
@@ -223,9 +227,7 @@ Terminal outcomes:
 - order link;
 - seller;
 - client / company details;
-- attached files;
 - comments;
-- languages;
 - finance details;
 - full credentials list;
 - full activity history.
@@ -236,29 +238,44 @@ Terminal outcomes:
 
 Поля показываются только если они применимы:
 
-| Field                    | Когда показывать                                        |
-| ------------------------ | ------------------------------------------------------- |
-| Payment setup            | ecommerce, SaaS, paid portal, subscription/payment flow |
-| Platform design URL / ID | WordPress/platform/template-based delivery              |
-| Languages                | multilingual product                                    |
-| Domain / Hosting         | website/web app/app delivery where infra is needed      |
-| App iOS / App Android    | mobile app delivery                                     |
-| API keys / ENV           | custom/code/integration-heavy delivery                  |
+| Field                    | Когда показывать                                         |
+| ------------------------ | -------------------------------------------------------- |
+| Payment setup            | ecommerce, SaaS, paid portal, subscription/payment flow  |
+| Platform design URL / ID | только для `Product.productCategory = WORDPRESS`         |
+| Languages                | всегда; первый выбранный язык = primary product language |
+| Domain / Hosting         | website/web app/app delivery where infra is needed       |
+| App iOS / App Android    | mobile app delivery                                      |
+| API keys / ENV           | custom/code/integration-heavy delivery                   |
 
 ### Tabs
 
+Tabs нужны только для отдельных рабочих миров.
+
 Recommended tabs:
 
-| Tab               | Назначение                                                                             |
-| ----------------- | -------------------------------------------------------------------------------------- |
-| `Overview`        | daily control: stage, readiness, blockers, key fields                                  |
-| `Requirements`    | full stage gate timeline and checklist instances                                       |
-| `Work Space`      | product tasks/workspace; MVP может иметь только кнопку перехода                        |
-| `Accesses`        | credentials, domains, hosting, services, app accounts                                  |
-| `Files`           | technical task, design, client files, handoff documents                                |
-| `Calls`           | all client calls since this Product/Extension card was created; MVP placeholder/button |
-| `Finance / Bonus` | order/payment context and product bonuses with RBAC                                    |
-| `History`         | audit, activity, stage movement, important changes                                     |
+| Tab          | Назначение                                                                             |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `Work Space` | product tasks/workspace; MVP может иметь только кнопку перехода                        |
+| `Calls`      | all client calls since this Product/Extension card was created; MVP placeholder/button |
+| `Bonus`      | product bonuses with RBAC                                                              |
+| `History`    | audit, activity, stage movement, important changes                                     |
+
+Главный экран opened card не должен быть отдельным tab `Overview`; он открывается сразу как working cockpit.
+
+Blocks on the first screen:
+
+- `Stage Summary`;
+- `Requirements / Stage Timeline`;
+- `Team`;
+- `Accesses`;
+- `Files`;
+- `Key Work Links`;
+- `Blockers / Risks`;
+- `Languages`;
+- `Conditional Setup`;
+- `Comments / Notes`.
+
+`Requirements / Stage Timeline` пока не имеет финального UX-решения. Он должен быть красивым, цветным и видимым на первом экране, но финальная форма может быть slim side rail, horizontal timeline, expanded panel или отдельный tab, если первый экран станет слишком тяжёлым.
 
 `Bonus` visibility:
 

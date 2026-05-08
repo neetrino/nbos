@@ -313,7 +313,7 @@ Closed outside card может быть визуально проще active car
 
 Основные зоны:
 
-- Overview;
+- Working cockpit;
 - Stage Gate Timeline;
 - Blockers;
 - Tasks / Work Space;
@@ -325,6 +325,8 @@ Closed outside card может быть визуально проще active car
 - Activity / Audit.
 
 ### 8.1. Layout principle
+
+Детализированная **UI-спецификация** shell, колонок, табов и breakpoints: [`../../05-UI-Specifications/07-Professional-Delivery-Card.md`](../../05-UI-Specifications/07-Professional-Delivery-Card.md).
 
 Opened card должна быть широкой, как Deal detail card / drawer, но содержательно оптимизированной под delivery.
 
@@ -370,9 +372,11 @@ Daily core:
 - deadline;
 - PM / delivery owner;
 - active specialists: developer, designer, tech specialist, QA where relevant;
-- current stage requirements;
+- requirements / stage timeline visible on the first screen;
 - active checklist requirement;
 - key work links;
+- languages selector;
+- files summary / quick attach;
 - credentials readiness summary;
 - payment setup status only when applicable.
 
@@ -381,9 +385,7 @@ Secondary context:
 - order link;
 - seller;
 - client / company details;
-- full files list;
 - comments;
-- full languages context;
 - full finance details;
 - full activity history.
 
@@ -396,38 +398,58 @@ Secondary context не удаляется, но уходит в tabs / expandabl
 | Field                                                 | Когда показывать                                                  |
 | ----------------------------------------------------- | ----------------------------------------------------------------- |
 | Payment setup                                         | ecommerce, SaaS, paid portal, checkout, subscription/payment flow |
-| Platform design URL / ID                              | WordPress/platform/template-based delivery                        |
-| Languages                                             | multilingual delivery                                             |
+| Platform design URL / ID                              | только `Product.productCategory = WORDPRESS`                      |
+| Languages                                             | всегда; первый выбранный язык считается primary product language  |
 | Domain                                                | website/web app/app delivery with domain dependency               |
 | Hosting                                               | delivery with infrastructure dependency                           |
 | Admin / Client Admin / Mail / API Key / Service / ENV | when credentials/accesses are required                            |
 | App iOS / App Android                                 | mobile app delivery                                               |
 
-Credentials не должны превращать Overview в список паролей.
+Credentials не должны превращать first screen в список паролей.
 
 Правильный UX:
 
-- Overview показывает status/count/readiness;
-- tab `Accesses` показывает полный список;
+- first screen показывает status/count/readiness и быстрые действия;
+- полный доступ к значениям идёт через access block/modal/drawer с RBAC;
 - credentials выбираются из existing vault или создаются через controlled add flow;
 - raw secret visibility obeys Credentials RBAC.
 
 ### 8.4. Tabs
 
-Opened Delivery Card имеет tabs для вторичных, но важных данных.
+Opened Delivery Card имеет tabs только для отдельных рабочих миров, которые не должны перегружать первый экран.
 
 Recommended tabs:
 
-| Tab               | Назначение                                                            |
-| ----------------- | --------------------------------------------------------------------- |
-| `Overview`        | ежедневное управление: stage, readiness, blockers, key fields         |
-| `Requirements`    | full Stage Gate Timeline, requirements, checklist instances           |
-| `Work Space`      | Product Work Space / tasks; MVP может показать кнопку перехода        |
-| `Accesses`        | credentials, domains, hosting, services, app accounts                 |
-| `Files`           | technical task, design, client files, handoff documents               |
-| `Calls`           | calls with client since this card was created; MVP placeholder/button |
-| `Finance / Bonus` | order/payment context and product bonus visibility                    |
-| `History`         | audit, stage movement, activity, important changes                    |
+| Tab          | Назначение                                                            |
+| ------------ | --------------------------------------------------------------------- |
+| `Work Space` | Product Work Space / tasks; MVP может показать кнопку перехода        |
+| `Calls`      | calls with client since this card was created; MVP placeholder/button |
+| `Bonus`      | product/extension bonus visibility by RBAC                            |
+| `History`    | audit, stage movement, activity, important changes                    |
+
+First screen is the main working cockpit, not a tab named `Overview`.
+
+First-screen blocks:
+
+- `Stage Summary`;
+- `Requirements / Stage Timeline`;
+- `Team`;
+- `Accesses`;
+- `Files`;
+- `Key Work Links`;
+- `Blockers / Risks`;
+- `Languages`;
+- `Conditional Setup`;
+- `Comments / Notes`.
+
+`Requirements / Stage Timeline` UX is intentionally not final yet. It must be visible from the first screen, but the final design may be:
+
+- a slim side rail;
+- a horizontal colorful timeline;
+- a dedicated expanded panel;
+- or, if the design becomes too heavy, a separate `Requirements` tab.
+
+Requirement items must be visually clear and colored by state, so a PM/developer can immediately see what is done, what remains, and what blocks the next stage.
 
 `Calls` tab не обязан физически хранить звонки на Product.
 

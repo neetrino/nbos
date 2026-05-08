@@ -125,6 +125,8 @@
 
 - 🟢 [x] **Delivery Board — фильтр компании (list + Closed):** query `companyId` на `GET /api/projects/products` и `GET /api/projects/extensions` (фильтр по `project.companyId`); в list DTO — `project.companyId` и `project.company { id, name }`; Closed board: селектор Company + клиентский фильтр (`delivery-board-closed-filters.ts`, `DeliveryBoardClosedFiltersBar`); типы web: `apps/web/src/lib/api/products.ts`, `extensions.ts`, `projects.ts` — M
 
+- 🟢 [x] **Professional Delivery Card (UI design spec):** целевой wide drawer shell (паритет с Deal/Lead sheet), sticky header, first-screen working cockpit, focused tabs `Work Space / Calls / Bonus / History`, 2–3 колонки, conditional blocks, responsive и DoD перед кодом Opened Card — M → `docs/NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md`; перекрёстная ссылка в `07-Delivery-Board.md` §8.1
+
 ---
 
 ## Legacy: снимок репозитория (2026-04-27, бывший DEVELOPMENT_PLAN §2)
