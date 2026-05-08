@@ -109,9 +109,9 @@
 
 ## 4. Delivery Board entry point
 
-У проекта должен быть явный вход в отдельную `Delivery Board`.
+У проекта должен быть явный вход в отдельную глобальную `Delivery Board`.
 
-Это не таб "все данные проекта подряд", а отдельная operational zone, где живут карточки:
+Это не таб "все данные проекта подряд" и не тяжёлая доска внутри Project page. Это ссылка в отдельную operational page, где живут карточки:
 
 - `Product`
 - `Extension`
@@ -121,6 +121,13 @@
 - работают стадии delivery;
 - работает `On Hold`;
 - работает drag-to-close в `Done / Cancelled`.
+
+Новый канон:
+
+- основной lifecycle ведётся на `/delivery-board`;
+- Project page показывает compact product cards и короткие readiness/status indicators;
+- старая embedded Delivery Board v1 внутри Project page считается transitional;
+- если позже нужен delivery block внутри Project page, он должен переиспользовать тот же Delivery Board core component с фильтром по `projectId`, а не иметь отдельную реализацию.
 
 ---
 

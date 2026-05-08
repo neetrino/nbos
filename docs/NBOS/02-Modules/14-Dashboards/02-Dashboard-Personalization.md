@@ -31,7 +31,7 @@ Add action
     Open Deals
     Open CRM Client Chats
   Delivery
-    Open Product Board
+    Open Delivery Board
     Open My Work Spaces
   Finance
     Open Invoices
@@ -73,7 +73,7 @@ Personal link может вести на:
 | Role / Seat | Default pinned actions                                         |
 | ----------- | -------------------------------------------------------------- |
 | Seller      | `New Lead`, `Open Deals`, `CRM Client Chats`, `Offers Pending` |
-| PM          | `Product Board`, `My Work Spaces`, `Tasks Review`, `Calendar`  |
+| PM          | `Delivery Board`, `My Work Spaces`, `Tasks Review`, `Calendar` |
 | Developer   | `My Tasks`, `My Work Spaces`, `Messenger`, `Credentials`       |
 | Finance     | `Invoices`, `Subscriptions`, `Expense Board`, `Salary Board`   |
 | Owner       | `Company Focus`, `Finance`, `Delivery Risks`, `Approvals`      |

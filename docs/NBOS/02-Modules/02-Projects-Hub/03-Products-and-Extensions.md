@@ -7,7 +7,7 @@
 - `Product`
 - `Extension`
 
-Обе сущности проходят lifecycle на `Delivery Board`, имеют связанный `Order`, получают данные из CRM handoff и участвуют в задачах, QA, transfer и closed outcomes.
+Обе сущности проходят lifecycle на отдельной `Delivery Board` page, имеют связанный `Order`, получают данные из CRM handoff и участвуют в задачах, QA, transfer и closed outcomes.
 
 ---
 
@@ -110,9 +110,17 @@
 
 ## 3. Delivery Board
 
-`Delivery Board` — отдельная рабочая доска внутри `Projects Hub`, где живут карточки `Product` и `Extension`.
+`Delivery Board` — отдельная рабочая страница в левом меню, где живут карточки `Product` и `Extension`.
 
 Это delivery-аналог board-представления CRM, но уже на этапе исполнения.
+
+Целевой route:
+
+```text
+/delivery-board
+```
+
+Подробный канон: `07-Delivery-Board.md`.
 
 ### 3.1. Что board показывает
 
@@ -122,6 +130,8 @@ Board показывает lifecycle уже созданных delivery-сущн
 
 - сначала появляется `Product` или `Extension` как сущность в данных;
 - потом этот же объект становится карточкой на `Delivery Board`.
+
+Project page может показывать только compact product cards/readiness badges. Полная работа со stage gates, blockers и stage movement происходит на `Delivery Board`, в opened Delivery Card или на Product detail.
 
 ### 3.2. Активные колонки board
 
@@ -247,6 +257,10 @@ Terminal outcomes:
 - обязательные связанные сущности;
 - обязательные внешние действия, если они нужны по сценарию.
 
+У каждого stage свой набор required items. Эти пункты могут заполнять разные роли: PM, Seller, Developer, Tech specialist, QA, Finance или Head of Delivery.
+
+На внешней Delivery Board card показывается только compact segmented readiness ring текущего stage, например `7/10`. Полный список текущих и будущих requirements показывается внутри opened Delivery Card в `Stage Gate Timeline`.
+
 Если карточку переносят сразу в более поздний этап или сразу в `Done`, система должна проверять cumulative requirements по всем пропущенным этапам.
 
 Если чего-то не хватает:
@@ -274,7 +288,7 @@ Terminal outcomes:
 
 1. `Product` — главный delivery-объект.
 2. `Extension` — отдельная доработка, но всегда в контексте `Project + Product`.
-3. `Delivery Board` показывает lifecycle сущностей, а не заменяет сами сущности.
+3. `Delivery Board` — отдельная operational page, которая показывает lifecycle сущностей, а не заменяет сами сущности.
 4. `Product` получает данные из `Deal + Project`.
 5. `Extension` получает данные из `Deal + Project + Product`.
 6. `On Hold` — pause-status, а не отдельная stage.

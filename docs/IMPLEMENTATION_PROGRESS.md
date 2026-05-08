@@ -2,7 +2,7 @@
 
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-06
+**Обновлено:** 2026-05-08
 
 ---
 
@@ -41,6 +41,7 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
+- Delivery Board P0: отдельная left-menu page `/delivery-board`, Product+Extension board, current-stage segmented readiness indicator, opened card Stage Gate Timeline, Dashboard action rename `Product Board` -> `Delivery Board`, Project page cleanup from embedded Delivery Board/large PM Intake — L
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
 - Ручная приёмка блока «Support глубина» — S
@@ -92,6 +93,7 @@
 - Marketing: внешние Ads API — только после отдельного решения и появления кредов; не активный срез текущего этапа — L
 - Reports: каналы доставки расписаний и delivery-attempt history по получателям — после явного решения о реальной рассылке — M
 - Reports: **кросс-модульный реестр** `ReportDefinition` (Phase 7 registry shape) — L
+- Delivery Board Project-page filtered reuse: вернуть compact/project-level delivery block только как lazy-loaded reuse of `DeliveryBoardCore` с `projectId` filter, если после P0 станет нужно — M
 
 ---
 

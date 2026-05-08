@@ -150,7 +150,7 @@ Contact (человек)
 
 Конкретный результат работы внутри проекта: website, mobile app, logo, CRM system.
 
-`Product` — центральная delivery-сущность внутри `Project`. Именно вокруг него строятся delivery board, задачи, QA, transfer, credentials и support context.
+`Product` — центральная delivery-сущность внутри `Project`. Именно вокруг него строятся задачи, QA, transfer, credentials, support context и карточка на отдельной `Delivery Board` page.
 
 | Поле               | Тип                               | Описание                                                                               |
 | ------------------ | --------------------------------- | -------------------------------------------------------------------------------------- |

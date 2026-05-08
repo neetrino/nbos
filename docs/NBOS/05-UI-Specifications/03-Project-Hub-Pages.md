@@ -1,24 +1,27 @@
 # Страницы Projects Hub
 
-## 0. Целевая модель навигации (утверждено 2026-03-31)
+## 0. Целевая модель навигации (обновлено 2026-05-08)
 
-**Основной рабочий контекст — страница Product**, а не полный набор вкладок на уровне Project. Проект остаётся ключевой сущностью в данных, но **оболочка проекта** в UI в первую очередь ведёт к списку **Product** и далее в **продукто-центричные** экраны.
+**Основной lifecycle разработки ведётся на отдельной `Delivery Board` page**, а глубокий рабочий контекст конкретной линии поставки остаётся на странице Product. Проект остаётся ключевой сущностью в данных, но **оболочка проекта** в UI в первую очередь показывает короткий контекст и список **Product**, а не тяжёлую операционную доску.
 
-| Уровень                                    | Назначение                                                                                                                                  |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/projects`                                | Список проектов (карточки / список) — как раньше по смыслу глобального каталога.                                                            |
-| `/projects/:projectId`                     | **Оболочка проекта:** сводка + **список всех Product** в проекте; вход в работу — выбор продукта.                                           |
-| `/projects/:projectId/products/:productId` | **Основной функционал** по линии поставки: вкладки вроде Overview, Work Space, Support, Credentials, Finance — **в разрезе этого Product**. |
+| Уровень                                    | Назначение                                                                                                                                     |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/delivery-board`                          | **Главный delivery lifecycle board:** все `Product` и `Extension` компании на одной доске `Starting / Development / QA / Transfer`.            |
+| `/projects`                                | Список проектов (карточки / список) — как раньше по смыслу глобального каталога.                                                               |
+| `/projects/:projectId`                     | **Оболочка проекта:** короткая сводка + **список всех Product** в проекте; вход в работу — выбор продукта или filtered link на Delivery Board. |
+| `/projects/:projectId/products/:productId` | **Основной функционал** по линии поставки: вкладки вроде Overview, Work Space, Support, Credentials, Finance — **в разрезе этого Product**.    |
 
 На странице Product: переключатель между продуктами **этого же** проекта без возврата к списку; кнопка **«Посмотреть всё»** — агрегированный просмотр по всем продуктам проекта (**редкий** сценарий; MVP может обойтись без неё — см. `../../02-Modules/02-Projects-Hub/05-Product-Centric-Navigation.md`).
 
-Разделы **ниже** описывают экраны и вкладки; при расхождении с § 0 приоритет у **продукто-центричной** модели; вкладки на уровне только проекта трактовать как **сводные / переходные**, пока UI не приведён полностью к целевой схеме.
+Delivery Board подробно описана в `../../02-Modules/02-Projects-Hub/07-Delivery-Board.md`.
+
+Разделы **ниже** описывают экраны и вкладки; при расхождении с § 0 приоритет у модели **глобальная Delivery Board + чистая Project shell + продуктовый deep dive**; вкладки на уровне только проекта трактовать как **сводные / переходные**, пока UI не приведён полностью к целевой схеме.
 
 ---
 
 ## 1. Общее описание
 
-Projects Hub — центральный модуль управления проектами в NBOS. Проект является ключевой сущностью платформы, объединяющей продукты, задачи, финансы, поддержку и коммуникации. Модуль обеспечивает полный обзор всех проектов компании и глубокое погружение в каждый конкретный проект и **в каждый продукт внутри проекта** (см. § 0).
+Projects Hub — центральный модуль управления проектами в NBOS. Проект является ключевой сущностью платформы, объединяющей продукты, задачи, финансы, поддержку и коммуникации. Модуль обеспечивает полный обзор всех проектов компании, а delivery lifecycle ведётся на отдельной `Delivery Board` и в продуктово-центричных экранах (см. § 0).
 
 **Доступ:**
 
@@ -111,15 +114,20 @@ Projects Hub — центральный модуль управления про
 - **Seller** — аватар + имя
 - **Дата создания** — когда проект был создан
 
-### 3.2. Панель вкладок проекта (Tab Bar)
+### 3.2. Структура Project Detail
 
-Под заголовком располагается горизонтальная панель вкладок:
+Project Detail не должен быть тяжёлой страницей операционного исполнения.
 
-```
-Overview | Products | Extensions | Orders | Finance | Subscription | Tasks | Support | Credentials | Drive | Domains | Chat | Audit
-```
+Целевой состав:
 
-Активная вкладка подсвечена. Вкладки с уведомлениями имеют бейдж (например, Tasks: 5, Support: 2).
+- Project header;
+- короткая business / client info;
+- products cards;
+- compact extension summary if needed;
+- ссылки на Product detail, Work Spaces, Finance, Credentials, Support;
+- link/button `Open in Delivery Board` с фильтром по project.
+
+Большой `PM Intake` panel и embedded `Project Delivery Board v1` считаются transitional UI. Их логика переносится в Delivery Board / Product stage-gate context.
 
 ---
 
@@ -145,14 +153,19 @@ Overview | Products | Extensions | Orders | Finance | Subscription | Tasks | Sup
 - Текущая стадия — текстовый бейдж
 - Ответственный PM/Developer
 
-### 4.3. Delivery Board
+### 4.3. Delivery Readiness summary
 
-Delivery Board — операционная доска Project detail поверх Product и Extension:
+Project Overview может показывать только compact readiness/status по продуктам:
 
-- активные карточки группируются по `Starting`, `Development`, `QA`, `Transfer`;
-- `On Hold` показывается как pause-status внутри текущей стадии;
-- `Done / Cancelled` показываются в closed view;
-- карточки дают быстрый переход к Product tasks, support tickets и extensions.
+- current stage;
+- compact segmented readiness indicator текущего stage (`7/10` или percentage);
+- blocker marker;
+- deadline risk marker;
+- link to opened Delivery Board card.
+
+Полная Delivery Board не должна рендериться внутри Project page как основной workflow.
+
+Если в будущем нужен project-level delivery block, он должен переиспользовать тот же `DeliveryBoardCore`, что и `/delivery-board`, с фильтром `projectId` и lazy-load.
 
 ### 4.4. Лента активности (Recent Activity Feed)
 
@@ -214,13 +227,15 @@ Starting → Development → QA → Transfer
 - Ответственные
 - Ссылки (staging, production, репозиторий)
 
-**Нижняя часть — чеклисты:**
-Секция чеклистов для продукта. Каждый чеклист:
+**Stage Gate / Readiness:**
+Секция stage gates для продукта. Каждый stage имеет свой набор required/optional items:
 
-- Название (например, «QA Checklist», «Transfer Checklist»)
-- Список пунктов с чекбоксами
-- Процент выполнения
-- Ответственный за каждый пункт
+- Starting;
+- Development;
+- QA;
+- Transfer.
+
+Текущий stage раскрыт по умолчанию. Future stages видны компактно. Эти данные должны совпадать с opened Delivery Card на `/delivery-board`.
 
 ---
 

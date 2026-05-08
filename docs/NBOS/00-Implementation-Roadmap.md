@@ -239,7 +239,7 @@ Goal: sold work becomes controlled product delivery.
 Scope:
 
 - Projects Hub;
-- Product/Extension delivery board;
+- global `/delivery-board` for Product/Extension lifecycle;
 - lifecycle gates;
 - On Hold status and pause date;
 - Closed / Done / Cancelled logic;
@@ -259,6 +259,7 @@ Exit criteria:
 Key docs:
 
 - `02-Modules/02-Projects-Hub/*`
+- `02-Modules/02-Projects-Hub/07-Delivery-Board.md`
 - `02-Modules/05-Tasks/*`
 - `02-Modules/06-Support/*`
 

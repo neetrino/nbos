@@ -154,7 +154,7 @@ Stage movement remains separate from pause/resume/cancel/complete, matching the 
 
 ### A10. Delivery Board v1 exists in Project shell
 
-Статус: `PHASE 4 UI ALIGNMENT`
+Статус: `PHASE 4 UI ALIGNMENT` / `SUPERSEDED BY 2026-05-08 CANON`
 
 Project shell now renders a first Delivery Board view over existing runtime entities:
 
@@ -164,6 +164,8 @@ Project shell now renders a first Delivery Board view over existing runtime enti
 - separate `Closed` strip for terminal outcomes.
 
 The board is a computed view over `Product` and `Extension`; no separate board storage or duplicate delivery entity was introduced.
+
+New canon (2026-05-08): this embedded Project-shell board is now considered transitional UI. The main delivery lifecycle must move to a separate left-menu page `/delivery-board`. Project page should become a clean shell with product cards and compact readiness/status indicators. If project-level delivery board is needed later, it must reuse the same Delivery Board core with a `projectId` filter.
 
 ### A11. Delivery Board filters and quick actions exist
 
@@ -429,14 +431,25 @@ Archived architecture notes remain historical and are not used as implementation
 
 ### B3. Отдельная Delivery Board ещё не прописана во всех UI docs
 
-Статус: `PHASE 4 DOCS CLEANUP DONE`
+Статус: `REOPENED 2026-05-08 / NEW CANON WRITTEN`
 
-UI docs now define `Delivery Board` inside Project detail as the operational board over Product and Extension cards:
+Old Phase 4 docs defined `Delivery Board` inside Project detail as the operational board over Product and Extension cards:
 
 - active cards group by canonical stages;
 - `On Hold` stays within the current stage as pause status;
 - `Done / Cancelled` are shown in closed view;
 - cards link into Product tasks, support tickets and extensions.
+
+New canon: `Delivery Board` is a separate left-menu page and main delivery lifecycle screen. See `07-Delivery-Board.md`.
+
+Runtime cleanup now needed:
+
+- add `/delivery-board` route;
+- add sidebar item;
+- rename Dashboard pinned action `Product Board` -> `Delivery Board`;
+- remove or demote embedded Project Delivery Board from Project page;
+- move PM Intake panel logic into Kickoff/Delivery Readiness in Delivery Board opened card and Product stage-gate context;
+- keep Project page limited to compact readiness/status indicators.
 
 ### B4. Старое описание extension как необязательной связи с product больше не подходит
 
@@ -545,9 +558,9 @@ Current deprecation rule:
 
 Текущее состояние:
 
-- Project Delivery Board uses canonical lifecycle for grouping, filtering, quick actions and badges;
+- Project Delivery Board uses canonical lifecycle for grouping, filtering, quick actions and badges, but is now transitional under the 2026-05-08 Delivery Board canon;
 - Product tab filters and badges prefer canonical lifecycle buckets;
-- PM Intake primary Product label prefers canonical lifecycle;
+- PM Intake primary Product label prefers canonical lifecycle, but the large Project page PM Intake panel is now transitional;
 - Product and Extension lifecycle controls call canonical endpoints for stage movement and terminal actions.
 - expired `ON_HOLD` states are highlighted from `deliveryLifecycle.onHoldUntil`.
 
