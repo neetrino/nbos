@@ -4,6 +4,7 @@ import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-pris
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { EXTENSION_STAGE_GATE_ERROR_CODE } from './extension-stage-gates';
 import type { NotificationService } from '../../notifications/notification.service';
+import type { AuditService } from '../../audit/audit.service';
 
 describe('ExtensionsService', () => {
   let service: ExtensionsService;
@@ -17,16 +18,22 @@ describe('ExtensionsService', () => {
     tryInboundClassicAfterDelivery: vi.fn().mockResolvedValue(undefined),
   };
 
+  const auditService: Pick<AuditService, 'log'> = {
+    log: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
     supportService.closeLinkedTicketsAfterExtensionDelivered.mockClear();
+    vi.mocked(auditService.log).mockClear();
     service = new ExtensionsService(
       prisma as never,
       notifications,
       partnerAccrualClassic as never,
       supportService as never,
+      auditService as never,
     );
   });
 
@@ -427,6 +434,7 @@ describe('ExtensionsService', () => {
     it('completes extension delivery through dedicated action', async () => {
       prisma.extension.findUnique.mockResolvedValue({
         id: 'e1',
+        projectId: 'proj-1',
         status: 'TRANSFER',
         deliveryStage: 'TRANSFER',
         deliveryWorkStatus: 'ACTIVE',
@@ -452,7 +460,15 @@ describe('ExtensionsService', () => {
             deliveryStage: null,
             deliveryWorkStatus: 'ACTIVE',
             deliveryResolution: 'DONE',
+            closedById: 'user-1',
           }),
+        }),
+      );
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'EXTENSION',
+          entityId: 'e1',
+          action: 'delivery.completed',
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('DONE');
@@ -529,7 +545,11 @@ describe('ExtensionsService', () => {
     });
 
     it('cancels extension delivery with a reason', async () => {
-      prisma.extension.findUnique.mockResolvedValue({ id: 'e1', status: 'DEVELOPMENT' });
+      prisma.extension.findUnique.mockResolvedValue({
+        id: 'e1',
+        projectId: 'proj-1',
+        status: 'DEVELOPMENT',
+      });
       prisma.extension.update.mockResolvedValue({
         id: 'e1',
         status: 'LOST',
@@ -537,7 +557,7 @@ describe('ExtensionsService', () => {
         cancellationReason: 'No longer needed',
       });
 
-      const result = await service.cancel('e1', { reason: 'No longer needed' });
+      const result = await service.cancel('e1', { reason: 'No longer needed' }, 'user-1');
 
       expect(prisma.extension.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -546,7 +566,14 @@ describe('ExtensionsService', () => {
             deliveryStage: null,
             deliveryResolution: 'CANCELLED',
             cancellationReason: 'No longer needed',
+            closedById: 'user-1',
           }),
+        }),
+      );
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'EXTENSION',
+          action: 'delivery.cancelled',
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('CANCELLED');

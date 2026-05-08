@@ -8,6 +8,12 @@ export interface ExtensionEmployee {
   email?: string;
 }
 
+export interface ExtensionClosedByRef {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface Extension {
   id: string;
   projectId: string;
@@ -18,6 +24,8 @@ export interface Extension {
   deliveryLifecycle?: DeliveryLifecycleProjection;
   assignedTo: string | null;
   description: string | null;
+  closedAt?: string | null;
+  closedBy?: ExtensionClosedByRef | null;
   createdAt: string;
   updatedAt: string;
   project: {

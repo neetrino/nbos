@@ -3,6 +3,7 @@ import { ProductsService } from './products.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import type { NotificationService } from '../../notifications/notification.service';
+import type { AuditService } from '../../audit/audit.service';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -13,11 +14,21 @@ describe('ProductsService', () => {
     tryInboundClassicAfterDelivery: vi.fn().mockResolvedValue(undefined),
   };
 
+  const auditService: Pick<AuditService, 'log'> = {
+    log: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
-    service = new ProductsService(prisma as never, notifications, partnerAccrualClassic as never);
+    vi.mocked(auditService.log).mockClear();
+    service = new ProductsService(
+      prisma as never,
+      notifications,
+      partnerAccrualClassic as never,
+      auditService as never,
+    );
   });
 
   describe('findAll', () => {
@@ -629,6 +640,7 @@ describe('ProductsService', () => {
     it('completes product delivery through dedicated action', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
+        projectId: 'proj-1',
         status: 'TRANSFER',
         deliveryStage: 'TRANSFER',
         deliveryWorkStatus: 'ACTIVE',
@@ -646,7 +658,7 @@ describe('ProductsService', () => {
         deliveryResolution: 'DONE',
       });
 
-      const result = await service.complete('p1');
+      const result = await service.complete('p1', 'emp-1');
 
       expect(prisma.product.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -655,7 +667,17 @@ describe('ProductsService', () => {
             deliveryStage: null,
             deliveryWorkStatus: 'ACTIVE',
             deliveryResolution: 'DONE',
+            closedById: 'emp-1',
           }),
+        }),
+      );
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'PRODUCT',
+          entityId: 'p1',
+          action: 'delivery.completed',
+          userId: 'emp-1',
+          projectId: 'proj-1',
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('DONE');
@@ -673,7 +695,7 @@ describe('ProductsService', () => {
         order: { status: 'FULLY_PAID', invoices: [] },
       });
 
-      const error = await service.complete('p1').catch((caught: unknown) => caught);
+      const error = await service.complete('p1', 'emp-1').catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(readExceptionResponse(error)).toMatchObject({
@@ -723,7 +745,7 @@ describe('ProductsService', () => {
         deliveryWorkStatus: 'ON_HOLD',
       });
 
-      await expect(service.complete('p1')).rejects.toThrow(BadRequestException);
+      await expect(service.complete('p1', 'emp-1')).rejects.toThrow(BadRequestException);
       expect(prisma.product.update).not.toHaveBeenCalled();
     });
 
@@ -787,7 +809,11 @@ describe('ProductsService', () => {
     });
 
     it('cancels product delivery with a reason', async () => {
-      prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'DEVELOPMENT',
+      });
       prisma.product.update.mockResolvedValue({
         id: 'p1',
         status: 'LOST',
@@ -795,7 +821,7 @@ describe('ProductsService', () => {
         cancellationReason: 'Scope cancelled',
       });
 
-      const result = await service.cancel('p1', { reason: 'Scope cancelled' });
+      const result = await service.cancel('p1', { reason: 'Scope cancelled' }, 'emp-1');
 
       expect(prisma.product.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -804,7 +830,15 @@ describe('ProductsService', () => {
             deliveryStage: null,
             deliveryResolution: 'CANCELLED',
             cancellationReason: 'Scope cancelled',
+            closedById: 'emp-1',
           }),
+        }),
+      );
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'PRODUCT',
+          action: 'delivery.cancelled',
+          userId: 'emp-1',
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('CANCELLED');

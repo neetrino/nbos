@@ -35,6 +35,8 @@ export function DeliveryItemDetailCockpit({
           cancellationReason={cancellationReason}
           clientAcceptedAt={clientAcceptedAt}
           clientAcceptanceNote={clientAcceptanceNote}
+          closedAt={product?.closedAt ?? extension?.closedAt ?? null}
+          closedBy={product?.closedBy ?? extension?.closedBy ?? null}
         />
       ) : null}
 
@@ -140,6 +142,23 @@ function ProductCockpitRail({ product }: { product: FullProduct }) {
         )}
       </CockpitSection>
 
+      <CockpitSection title="Delivery notes">
+        <p className="text-muted-foreground text-xs">
+          Scope and working notes stored on the product Overview description field.
+        </p>
+        {product.description?.trim() ? (
+          <p className="mt-2 text-sm whitespace-pre-wrap">{product.description.trim()}</p>
+        ) : (
+          <p className="text-muted-foreground mt-2 text-xs">No notes yet.</p>
+        )}
+        <Link
+          href={`/projects/${product.projectId}/products/${product.id}?tab=overview`}
+          className="text-primary mt-2 inline-block text-xs font-medium hover:underline"
+        >
+          Edit on product Overview →
+        </Link>
+      </CockpitSection>
+
       <CockpitSection title="Accesses readiness">
         {summary ? (
           <ul className="text-muted-foreground space-y-1 text-xs">
@@ -200,8 +219,7 @@ function ExtensionCockpitMain({ extension }: { extension: FullExtension }) {
   return (
     <CockpitSection title="Scope & execution">
       <ExtensionReadiness extension={extension} />
-      <p className="mt-3 text-sm">{extension.description?.trim() || 'No description.'}</p>
-      <p className="text-muted-foreground mt-2 text-xs">
+      <p className="text-muted-foreground mt-3 text-xs">
         Open tasks: {extension._count.tasks}. Full board lives under Work Space on the product page.
       </p>
     </CockpitSection>
@@ -225,6 +243,24 @@ function ExtensionCockpitRail({ extension }: { extension: FullExtension }) {
           <p className="text-muted-foreground text-xs">No assignee.</p>
         )}
       </CockpitSection>
+      <CockpitSection title="Delivery notes">
+        <p className="text-muted-foreground text-xs">
+          Scope and comments for this extension use the description field on the product Extensions
+          tab.
+        </p>
+        {extension.description?.trim() ? (
+          <p className="mt-2 text-sm whitespace-pre-wrap">{extension.description.trim()}</p>
+        ) : (
+          <p className="text-muted-foreground mt-2 text-xs">No notes yet.</p>
+        )}
+        <Link
+          href={`/projects/${extension.projectId}/products/${extension.productId}?tab=extensions`}
+          className="text-primary mt-2 inline-block text-xs font-medium hover:underline"
+        >
+          Edit on Extensions tab →
+        </Link>
+      </CockpitSection>
+
       <CockpitSection title="Product context">
         <p className="text-sm">{extension.product.name}</p>
         <Link
@@ -250,16 +286,28 @@ function ClosedOutcomeBanner({
   cancellationReason,
   clientAcceptedAt,
   clientAcceptanceNote,
+  closedAt,
+  closedBy,
 }: {
   resolution: 'DONE' | 'CANCELLED' | null | undefined;
   cancellationReason: string | null;
   clientAcceptedAt: string | null;
   clientAcceptanceNote: string | null;
+  closedAt: string | null;
+  closedBy: { firstName: string; lastName: string } | null;
 }) {
   return (
     <div className="bg-muted/40 rounded-xl border p-4 text-sm">
       <p className="font-semibold">Closed outcome</p>
       <p className="text-muted-foreground mt-1 text-xs">Result: {resolution ?? '—'}</p>
+      {closedAt ? (
+        <p className="text-muted-foreground mt-2 text-xs">
+          Closed: {new Date(closedAt).toLocaleString()}
+          {closedBy
+            ? ` · ${closedBy.firstName} ${closedBy.lastName}`.trim()
+            : ' · closer not recorded'}
+        </p>
+      ) : null}
       {resolution === 'CANCELLED' && cancellationReason ? (
         <p className="mt-2 text-xs">Reason: {cancellationReason}</p>
       ) : null}

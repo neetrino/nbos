@@ -339,7 +339,9 @@ export type EmployeeWhereInput = {
   role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
   departments?: Prisma.EmployeeDepartmentListRelationFilter;
   productsManaging?: Prisma.ProductListRelationFilter;
+  productsClosed?: Prisma.ProductListRelationFilter;
   extensionsAssigned?: Prisma.ExtensionListRelationFilter;
+  extensionsClosed?: Prisma.ExtensionListRelationFilter;
   leadsAssigned?: Prisma.LeadListRelationFilter;
   dealsSelling?: Prisma.DealListRelationFilter;
   dealsAsSellerAssistant?: Prisma.DealListRelationFilter;
@@ -412,7 +414,9 @@ export type EmployeeOrderByWithRelationInput = {
   role?: Prisma.RoleOrderByWithRelationInput;
   departments?: Prisma.EmployeeDepartmentOrderByRelationAggregateInput;
   productsManaging?: Prisma.ProductOrderByRelationAggregateInput;
+  productsClosed?: Prisma.ProductOrderByRelationAggregateInput;
   extensionsAssigned?: Prisma.ExtensionOrderByRelationAggregateInput;
+  extensionsClosed?: Prisma.ExtensionOrderByRelationAggregateInput;
   leadsAssigned?: Prisma.LeadOrderByRelationAggregateInput;
   dealsSelling?: Prisma.DealOrderByRelationAggregateInput;
   dealsAsSellerAssistant?: Prisma.DealOrderByRelationAggregateInput;
@@ -492,7 +496,9 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<
     role?: Prisma.XOR<Prisma.RoleScalarRelationFilter, Prisma.RoleWhereInput>;
     departments?: Prisma.EmployeeDepartmentListRelationFilter;
     productsManaging?: Prisma.ProductListRelationFilter;
+    productsClosed?: Prisma.ProductListRelationFilter;
     extensionsAssigned?: Prisma.ExtensionListRelationFilter;
+    extensionsClosed?: Prisma.ExtensionListRelationFilter;
     leadsAssigned?: Prisma.LeadListRelationFilter;
     dealsSelling?: Prisma.DealListRelationFilter;
     dealsAsSellerAssistant?: Prisma.DealListRelationFilter;
@@ -635,7 +641,9 @@ export type EmployeeCreateInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -701,7 +709,9 @@ export type EmployeeUncheckedCreateInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -776,7 +786,9 @@ export type EmployeeUpdateInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -851,7 +863,9 @@ export type EmployeeUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -1902,6 +1916,15 @@ export type EmployeeCreateNestedOneWithoutProductsManagingInput = {
   connect?: Prisma.EmployeeWhereUniqueInput;
 };
 
+export type EmployeeCreateNestedOneWithoutProductsClosedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutProductsClosedInput,
+    Prisma.EmployeeUncheckedCreateWithoutProductsClosedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutProductsClosedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
 export type EmployeeUpdateOneWithoutProductsManagingNestedInput = {
   create?: Prisma.XOR<
     Prisma.EmployeeCreateWithoutProductsManagingInput,
@@ -1921,12 +1944,40 @@ export type EmployeeUpdateOneWithoutProductsManagingNestedInput = {
   >;
 };
 
+export type EmployeeUpdateOneWithoutProductsClosedNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutProductsClosedInput,
+    Prisma.EmployeeUncheckedCreateWithoutProductsClosedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutProductsClosedInput;
+  upsert?: Prisma.EmployeeUpsertWithoutProductsClosedInput;
+  disconnect?: Prisma.EmployeeWhereInput | boolean;
+  delete?: Prisma.EmployeeWhereInput | boolean;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutProductsClosedInput,
+      Prisma.EmployeeUpdateWithoutProductsClosedInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutProductsClosedInput
+  >;
+};
+
 export type EmployeeCreateNestedOneWithoutExtensionsAssignedInput = {
   create?: Prisma.XOR<
     Prisma.EmployeeCreateWithoutExtensionsAssignedInput,
     Prisma.EmployeeUncheckedCreateWithoutExtensionsAssignedInput
   >;
   connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutExtensionsAssignedInput;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+};
+
+export type EmployeeCreateNestedOneWithoutExtensionsClosedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutExtensionsClosedInput,
+    Prisma.EmployeeUncheckedCreateWithoutExtensionsClosedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutExtensionsClosedInput;
   connect?: Prisma.EmployeeWhereUniqueInput;
 };
 
@@ -1946,6 +1997,25 @@ export type EmployeeUpdateOneWithoutExtensionsAssignedNestedInput = {
       Prisma.EmployeeUpdateWithoutExtensionsAssignedInput
     >,
     Prisma.EmployeeUncheckedUpdateWithoutExtensionsAssignedInput
+  >;
+};
+
+export type EmployeeUpdateOneWithoutExtensionsClosedNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutExtensionsClosedInput,
+    Prisma.EmployeeUncheckedCreateWithoutExtensionsClosedInput
+  >;
+  connectOrCreate?: Prisma.EmployeeCreateOrConnectWithoutExtensionsClosedInput;
+  upsert?: Prisma.EmployeeUpsertWithoutExtensionsClosedInput;
+  disconnect?: Prisma.EmployeeWhereInput | boolean;
+  delete?: Prisma.EmployeeWhereInput | boolean;
+  connect?: Prisma.EmployeeWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.EmployeeUpdateToOneWithWhereWithoutExtensionsClosedInput,
+      Prisma.EmployeeUpdateWithoutExtensionsClosedInput
+    >,
+    Prisma.EmployeeUncheckedUpdateWithoutExtensionsClosedInput
   >;
 };
 
@@ -2352,7 +2422,9 @@ export type EmployeeCreateWithoutCredentialsOwnedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -2417,7 +2489,9 @@ export type EmployeeUncheckedCreateWithoutCredentialsOwnedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -2519,7 +2593,9 @@ export type EmployeeUpdateWithoutCredentialsOwnedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -2593,7 +2669,9 @@ export type EmployeeUncheckedUpdateWithoutCredentialsOwnedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -2658,7 +2736,9 @@ export type EmployeeCreateWithoutMarketingAccountsOwnedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -2723,7 +2803,9 @@ export type EmployeeUncheckedCreateWithoutMarketingAccountsOwnedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -2825,7 +2907,9 @@ export type EmployeeUpdateWithoutMarketingAccountsOwnedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -2899,7 +2983,9 @@ export type EmployeeUncheckedUpdateWithoutMarketingAccountsOwnedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -2964,7 +3050,9 @@ export type EmployeeCreateWithoutMarketingActivitiesOwnedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -3029,7 +3117,9 @@ export type EmployeeUncheckedCreateWithoutMarketingActivitiesOwnedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -3131,7 +3221,9 @@ export type EmployeeUpdateWithoutMarketingActivitiesOwnedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -3205,7 +3297,9 @@ export type EmployeeUncheckedUpdateWithoutMarketingActivitiesOwnedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -3270,7 +3364,9 @@ export type EmployeeCreateWithoutLeadsAssignedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
   dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
@@ -3335,7 +3431,9 @@ export type EmployeeUncheckedCreateWithoutLeadsAssignedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
   dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
@@ -3437,7 +3535,9 @@ export type EmployeeUpdateWithoutLeadsAssignedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
   dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
@@ -3511,7 +3611,9 @@ export type EmployeeUncheckedUpdateWithoutLeadsAssignedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
   dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
@@ -3576,7 +3678,9 @@ export type EmployeeCreateWithoutDealsSellingInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
   dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
@@ -3641,7 +3745,9 @@ export type EmployeeUncheckedCreateWithoutDealsSellingInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
   dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
@@ -3714,7 +3820,9 @@ export type EmployeeCreateWithoutDealsAsSellerAssistantInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
@@ -3779,7 +3887,9 @@ export type EmployeeUncheckedCreateWithoutDealsAsSellerAssistantInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
@@ -3852,7 +3962,9 @@ export type EmployeeCreateWithoutDealsPMInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -3917,7 +4029,9 @@ export type EmployeeUncheckedCreateWithoutDealsPMInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -4019,7 +4133,9 @@ export type EmployeeUpdateWithoutDealsSellingInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
   dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
@@ -4093,7 +4209,9 @@ export type EmployeeUncheckedUpdateWithoutDealsSellingInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
   dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
@@ -4187,7 +4305,9 @@ export type EmployeeUpdateWithoutDealsAsSellerAssistantInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
@@ -4261,7 +4381,9 @@ export type EmployeeUncheckedUpdateWithoutDealsAsSellerAssistantInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
@@ -4355,7 +4477,9 @@ export type EmployeeUpdateWithoutDealsPMInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -4429,7 +4553,9 @@ export type EmployeeUncheckedUpdateWithoutDealsPMInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -4494,7 +4620,9 @@ export type EmployeeCreateWithoutDashboardPreferenceInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -4559,7 +4687,9 @@ export type EmployeeUncheckedCreateWithoutDashboardPreferenceInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -4661,7 +4791,9 @@ export type EmployeeUpdateWithoutDashboardPreferenceInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -4735,7 +4867,9 @@ export type EmployeeUncheckedUpdateWithoutDashboardPreferenceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -4800,7 +4934,9 @@ export type EmployeeCreateWithoutPersonalLinksInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -4865,7 +5001,9 @@ export type EmployeeUncheckedCreateWithoutPersonalLinksInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -4967,7 +5105,9 @@ export type EmployeeUpdateWithoutPersonalLinksInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -5041,7 +5181,9 @@ export type EmployeeUncheckedUpdateWithoutPersonalLinksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -5106,7 +5248,9 @@ export type EmployeeCreateWithoutDashboardNotesInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -5171,7 +5315,9 @@ export type EmployeeUncheckedCreateWithoutDashboardNotesInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -5273,7 +5419,9 @@ export type EmployeeUpdateWithoutDashboardNotesInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -5347,7 +5495,9 @@ export type EmployeeUncheckedUpdateWithoutDashboardNotesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -5412,7 +5562,9 @@ export type EmployeeCreateWithoutPaymentsConfirmedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -5477,7 +5629,9 @@ export type EmployeeUncheckedCreateWithoutPaymentsConfirmedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -5579,7 +5733,9 @@ export type EmployeeUpdateWithoutPaymentsConfirmedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -5653,7 +5809,9 @@ export type EmployeeUncheckedUpdateWithoutPaymentsConfirmedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -5718,7 +5876,9 @@ export type EmployeeCreateWithoutOperationalJournalEntriesInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -5783,7 +5943,9 @@ export type EmployeeUncheckedCreateWithoutOperationalJournalEntriesInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -5885,7 +6047,9 @@ export type EmployeeUpdateWithoutOperationalJournalEntriesInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -5959,7 +6123,9 @@ export type EmployeeUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -6024,7 +6190,9 @@ export type EmployeeCreateWithoutBonusEntriesInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -6089,7 +6257,9 @@ export type EmployeeUncheckedCreateWithoutBonusEntriesInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -6191,7 +6361,9 @@ export type EmployeeUpdateWithoutBonusEntriesInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -6265,7 +6437,9 @@ export type EmployeeUncheckedUpdateWithoutBonusEntriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -6330,7 +6504,9 @@ export type EmployeeCreateWithoutBonusReleasesInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -6395,7 +6571,9 @@ export type EmployeeUncheckedCreateWithoutBonusReleasesInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -6468,7 +6646,9 @@ export type EmployeeCreateWithoutBonusReleasesApprovedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -6533,7 +6713,9 @@ export type EmployeeUncheckedCreateWithoutBonusReleasesApprovedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -6635,7 +6817,9 @@ export type EmployeeUpdateWithoutBonusReleasesInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -6709,7 +6893,9 @@ export type EmployeeUncheckedUpdateWithoutBonusReleasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -6803,7 +6989,9 @@ export type EmployeeUpdateWithoutBonusReleasesApprovedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -6877,7 +7065,9 @@ export type EmployeeUncheckedUpdateWithoutBonusReleasesApprovedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -6942,7 +7132,9 @@ export type EmployeeCreateWithoutPayrollRunsCreatedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -7007,7 +7199,9 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsCreatedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -7080,7 +7274,9 @@ export type EmployeeCreateWithoutPayrollRunsApprovedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -7145,7 +7341,9 @@ export type EmployeeUncheckedCreateWithoutPayrollRunsApprovedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -7247,7 +7445,9 @@ export type EmployeeUpdateWithoutPayrollRunsCreatedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -7321,7 +7521,9 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsCreatedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -7415,7 +7617,9 @@ export type EmployeeUpdateWithoutPayrollRunsApprovedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -7489,7 +7693,9 @@ export type EmployeeUncheckedUpdateWithoutPayrollRunsApprovedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -7554,7 +7760,9 @@ export type EmployeeCreateWithoutSalaryLinesInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -7619,7 +7827,9 @@ export type EmployeeUncheckedCreateWithoutSalaryLinesInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -7721,7 +7931,9 @@ export type EmployeeUpdateWithoutSalaryLinesInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -7795,7 +8007,9 @@ export type EmployeeUncheckedUpdateWithoutSalaryLinesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -7860,7 +8074,9 @@ export type EmployeeCreateWithoutMailAccountsOwnedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -7925,7 +8141,9 @@ export type EmployeeUncheckedCreateWithoutMailAccountsOwnedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -7998,7 +8216,9 @@ export type EmployeeCreateWithoutMailAccountsCreatedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -8063,7 +8283,9 @@ export type EmployeeUncheckedCreateWithoutMailAccountsCreatedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -8165,7 +8387,9 @@ export type EmployeeUpdateWithoutMailAccountsOwnedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -8239,7 +8463,9 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsOwnedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -8333,7 +8559,9 @@ export type EmployeeUpdateWithoutMailAccountsCreatedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -8407,7 +8635,9 @@ export type EmployeeUncheckedUpdateWithoutMailAccountsCreatedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -8472,7 +8702,9 @@ export type EmployeeCreateWithoutMailDeliveryLogsActedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -8537,7 +8769,9 @@ export type EmployeeUncheckedCreateWithoutMailDeliveryLogsActedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -8639,7 +8873,9 @@ export type EmployeeUpdateWithoutMailDeliveryLogsActedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -8713,7 +8949,9 @@ export type EmployeeUncheckedUpdateWithoutMailDeliveryLogsActedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -8778,7 +9016,9 @@ export type EmployeeCreateWithoutMessengerChannelMessagesSentInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -8843,7 +9083,9 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelMessagesSentInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -8945,7 +9187,9 @@ export type EmployeeUpdateWithoutMessengerChannelMessagesSentInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -9019,7 +9263,9 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelMessagesSentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -9084,7 +9330,9 @@ export type EmployeeCreateWithoutMessengerChannelAttachmentsInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -9149,7 +9397,9 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelAttachmentsInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -9251,7 +9501,9 @@ export type EmployeeUpdateWithoutMessengerChannelAttachmentsInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -9325,7 +9577,9 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelAttachmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -9390,7 +9644,9 @@ export type EmployeeCreateWithoutMessengerChannelReadStatesInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -9455,7 +9711,9 @@ export type EmployeeUncheckedCreateWithoutMessengerChannelReadStatesInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -9557,7 +9815,9 @@ export type EmployeeUpdateWithoutMessengerChannelReadStatesInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -9631,7 +9891,9 @@ export type EmployeeUncheckedUpdateWithoutMessengerChannelReadStatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -9696,7 +9958,9 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsAInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -9761,7 +10025,9 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsAInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -9834,7 +10100,9 @@ export type EmployeeCreateWithoutMessengerDmThreadsAsBInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -9899,7 +10167,9 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadsAsBInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -10001,7 +10271,9 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsAInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -10075,7 +10347,9 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsAInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -10169,7 +10443,9 @@ export type EmployeeUpdateWithoutMessengerDmThreadsAsBInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -10243,7 +10519,9 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadsAsBInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -10308,7 +10586,9 @@ export type EmployeeCreateWithoutMessengerDirectMessagesSentInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -10373,7 +10653,9 @@ export type EmployeeUncheckedCreateWithoutMessengerDirectMessagesSentInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -10475,7 +10757,9 @@ export type EmployeeUpdateWithoutMessengerDirectMessagesSentInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -10549,7 +10833,9 @@ export type EmployeeUncheckedUpdateWithoutMessengerDirectMessagesSentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -10614,7 +10900,9 @@ export type EmployeeCreateWithoutMessengerDirectAttachmentsInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -10679,7 +10967,9 @@ export type EmployeeUncheckedCreateWithoutMessengerDirectAttachmentsInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -10781,7 +11071,9 @@ export type EmployeeUpdateWithoutMessengerDirectAttachmentsInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -10855,7 +11147,9 @@ export type EmployeeUncheckedUpdateWithoutMessengerDirectAttachmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -10920,7 +11214,9 @@ export type EmployeeCreateWithoutMessengerDmThreadReadStatesInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -10985,7 +11281,9 @@ export type EmployeeUncheckedCreateWithoutMessengerDmThreadReadStatesInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -11087,7 +11385,9 @@ export type EmployeeUpdateWithoutMessengerDmThreadReadStatesInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -11161,7 +11461,9 @@ export type EmployeeUncheckedUpdateWithoutMessengerDmThreadReadStatesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -11226,7 +11528,9 @@ export type EmployeeCreateWithoutInAppNotificationsReceivedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -11291,7 +11595,9 @@ export type EmployeeUncheckedCreateWithoutInAppNotificationsReceivedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -11393,7 +11699,9 @@ export type EmployeeUpdateWithoutInAppNotificationsReceivedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -11467,7 +11775,9 @@ export type EmployeeUncheckedUpdateWithoutInAppNotificationsReceivedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -11531,7 +11841,9 @@ export type EmployeeCreateWithoutProductsManagingInput = {
   updatedAt?: Date | string;
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -11596,7 +11908,9 @@ export type EmployeeUncheckedCreateWithoutProductsManagingInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -11644,6 +11958,148 @@ export type EmployeeCreateOrConnectWithoutProductsManagingInput = {
   create: Prisma.XOR<
     Prisma.EmployeeCreateWithoutProductsManagingInput,
     Prisma.EmployeeUncheckedCreateWithoutProductsManagingInput
+  >;
+};
+
+export type EmployeeCreateWithoutProductsClosedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+};
+
+export type EmployeeUncheckedCreateWithoutProductsClosedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+};
+
+export type EmployeeCreateOrConnectWithoutProductsClosedInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutProductsClosedInput,
+    Prisma.EmployeeUncheckedCreateWithoutProductsClosedInput
   >;
 };
 
@@ -11698,7 +12154,9 @@ export type EmployeeUpdateWithoutProductsManagingInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -11772,7 +12230,181 @@ export type EmployeeUncheckedUpdateWithoutProductsManagingInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+};
+
+export type EmployeeUpsertWithoutProductsClosedInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutProductsClosedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutProductsClosedInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutProductsClosedInput,
+    Prisma.EmployeeUncheckedCreateWithoutProductsClosedInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutProductsClosedInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutProductsClosedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutProductsClosedInput
+  >;
+};
+
+export type EmployeeUpdateWithoutProductsClosedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutProductsClosedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -11838,6 +12470,8 @@ export type EmployeeCreateWithoutExtensionsAssignedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -11903,6 +12537,8 @@ export type EmployeeUncheckedCreateWithoutExtensionsAssignedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -11950,6 +12586,148 @@ export type EmployeeCreateOrConnectWithoutExtensionsAssignedInput = {
   create: Prisma.XOR<
     Prisma.EmployeeCreateWithoutExtensionsAssignedInput,
     Prisma.EmployeeUncheckedCreateWithoutExtensionsAssignedInput
+  >;
+};
+
+export type EmployeeCreateWithoutExtensionsClosedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
+  departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
+  extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteCreateNestedManyWithoutOwnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutEmployeeInput;
+};
+
+export type EmployeeUncheckedCreateWithoutExtensionsClosedInput = {
+  id?: string;
+  passwordHash?: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  telegram?: string | null;
+  avatar?: string | null;
+  birthday?: Date | string | null;
+  notes?: string | null;
+  position?: string | null;
+  roleId: string;
+  level?: $Enums.EmployeeLevelEnum | null;
+  baseSalary?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Date | string | null;
+  fireDate?: Date | string | null;
+  status?: $Enums.EmployeeStatusEnum;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
+  productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
+  dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
+  dealsPM?: Prisma.DealUncheckedCreateNestedManyWithoutPmInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedCreateNestedManyWithoutConfirmerInput;
+  tasksCreated?: Prisma.TaskUncheckedCreateNestedManyWithoutCreatorInput;
+  tasksAssigned?: Prisma.TaskUncheckedCreateNestedManyWithoutAssigneeInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssigneeInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutEmployeeInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutApprovedByInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutCreatedByInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedCreateNestedManyWithoutApprovedByInput;
+  salaryLines?: Prisma.SalaryLineUncheckedCreateNestedManyWithoutEmployeeInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutCreatorInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedCreateNestedManyWithoutAssigneeInput;
+  invitationsSent?: Prisma.InvitationUncheckedCreateNestedManyWithoutInvitedByInput;
+  invitationReceived?: Prisma.InvitationUncheckedCreateNestedOneWithoutEmployeeInput;
+  credentialsOwned?: Prisma.CredentialUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedCreateNestedManyWithoutOwnerInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedCreateNestedManyWithoutSenderInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedCreateNestedManyWithoutAttachedByInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantAInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedCreateNestedManyWithoutParticipantBInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedCreateNestedManyWithoutEmployeeInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedCreateNestedManyWithoutOwnerInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedCreateNestedManyWithoutCreatedByInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedCreateNestedManyWithoutActorInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedCreateNestedManyWithoutRecipientInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedCreateNestedOneWithoutEmployeeInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedCreateNestedManyWithoutRequestedByInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedCreateNestedManyWithoutOwnerInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedCreateNestedManyWithoutOwnerInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedCreateNestedManyWithoutOwnerInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedCreateNestedManyWithoutOwnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutEmployeeInput;
+};
+
+export type EmployeeCreateOrConnectWithoutExtensionsClosedInput = {
+  where: Prisma.EmployeeWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutExtensionsClosedInput,
+    Prisma.EmployeeUncheckedCreateWithoutExtensionsClosedInput
   >;
 };
 
@@ -12005,6 +12783,8 @@ export type EmployeeUpdateWithoutExtensionsAssignedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -12079,6 +12859,180 @@ export type EmployeeUncheckedUpdateWithoutExtensionsAssignedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
+  leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUncheckedUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUncheckedUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUncheckedUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUncheckedUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUncheckedUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUncheckedUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUncheckedUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUncheckedUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUncheckedUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUncheckedUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUncheckedUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUncheckedUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUncheckedUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUncheckedUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUncheckedUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUncheckedUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUncheckedUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUncheckedUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUncheckedUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUncheckedUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUncheckedUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUncheckedUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUncheckedUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUncheckedUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUncheckedUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUncheckedUpdateManyWithoutOwnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutEmployeeNestedInput;
+};
+
+export type EmployeeUpsertWithoutExtensionsClosedInput = {
+  update: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutExtensionsClosedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutExtensionsClosedInput
+  >;
+  create: Prisma.XOR<
+    Prisma.EmployeeCreateWithoutExtensionsClosedInput,
+    Prisma.EmployeeUncheckedCreateWithoutExtensionsClosedInput
+  >;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+export type EmployeeUpdateToOneWithWhereWithoutExtensionsClosedInput = {
+  where?: Prisma.EmployeeWhereInput;
+  data: Prisma.XOR<
+    Prisma.EmployeeUpdateWithoutExtensionsClosedInput,
+    Prisma.EmployeeUncheckedUpdateWithoutExtensionsClosedInput
+  >;
+};
+
+export type EmployeeUpdateWithoutExtensionsClosedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
+  departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
+  dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
+  dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
+  dealsPM?: Prisma.DealUpdateManyWithoutPmNestedInput;
+  paymentsConfirmed?: Prisma.PaymentUpdateManyWithoutConfirmerNestedInput;
+  tasksCreated?: Prisma.TaskUpdateManyWithoutCreatorNestedInput;
+  tasksAssigned?: Prisma.TaskUpdateManyWithoutAssigneeNestedInput;
+  ticketsAssigned?: Prisma.SupportTicketUpdateManyWithoutAssigneeNestedInput;
+  bonusEntries?: Prisma.BonusEntryUpdateManyWithoutEmployeeNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutEmployeeNestedInput;
+  bonusReleasesApproved?: Prisma.BonusReleaseUpdateManyWithoutApprovedByNestedInput;
+  payrollRunsCreated?: Prisma.PayrollRunUpdateManyWithoutCreatedByNestedInput;
+  payrollRunsApproved?: Prisma.PayrollRunUpdateManyWithoutApprovedByNestedInput;
+  salaryLines?: Prisma.SalaryLineUpdateManyWithoutEmployeeNestedInput;
+  recurringTasksCreated?: Prisma.RecurringTaskTemplateUpdateManyWithoutCreatorNestedInput;
+  recurringTasksAssigned?: Prisma.RecurringTaskTemplateUpdateManyWithoutAssigneeNestedInput;
+  invitationsSent?: Prisma.InvitationUpdateManyWithoutInvitedByNestedInput;
+  invitationReceived?: Prisma.InvitationUpdateOneWithoutEmployeeNestedInput;
+  credentialsOwned?: Prisma.CredentialUpdateManyWithoutOwnerNestedInput;
+  marketingAccountsOwned?: Prisma.MarketingAccountUpdateManyWithoutOwnerNestedInput;
+  marketingActivitiesOwned?: Prisma.MarketingActivityUpdateManyWithoutOwnerNestedInput;
+  messengerChannelMessagesSent?: Prisma.MessengerChannelMessageUpdateManyWithoutSenderNestedInput;
+  messengerDirectMessagesSent?: Prisma.MessengerDirectMessageUpdateManyWithoutSenderNestedInput;
+  messengerChannelAttachments?: Prisma.MessengerChannelMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDirectAttachments?: Prisma.MessengerDirectMessageAttachmentUpdateManyWithoutAttachedByNestedInput;
+  messengerDmThreadsAsA?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantANestedInput;
+  messengerDmThreadsAsB?: Prisma.MessengerDirectThreadUpdateManyWithoutParticipantBNestedInput;
+  messengerChannelReadStates?: Prisma.MessengerChannelReadStateUpdateManyWithoutEmployeeNestedInput;
+  messengerDmThreadReadStates?: Prisma.MessengerDirectThreadReadStateUpdateManyWithoutEmployeeNestedInput;
+  mailAccountsOwned?: Prisma.MailAccountUpdateManyWithoutOwnerNestedInput;
+  mailAccountsCreated?: Prisma.MailAccountUpdateManyWithoutCreatedByNestedInput;
+  mailDeliveryLogsActed?: Prisma.MailDeliveryLogUpdateManyWithoutActorNestedInput;
+  inAppNotificationsReceived?: Prisma.InAppNotificationUpdateManyWithoutRecipientNestedInput;
+  dashboardPreference?: Prisma.DashboardPreferenceUpdateOneWithoutEmployeeNestedInput;
+  reportExportJobsRequested?: Prisma.ReportExportJobUpdateManyWithoutRequestedByNestedInput;
+  reportSchedulesOwned?: Prisma.ReportScheduleUpdateManyWithoutOwnerNestedInput;
+  savedReportViews?: Prisma.SavedReportViewUpdateManyWithoutOwnerNestedInput;
+  personalLinks?: Prisma.PersonalLinkUpdateManyWithoutOwnerNestedInput;
+  dashboardNotes?: Prisma.DashboardNoteUpdateManyWithoutOwnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutEmployeeNestedInput;
+};
+
+export type EmployeeUncheckedUpdateWithoutExtensionsClosedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  email?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  telegram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  birthday?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  roleId?: Prisma.StringFieldUpdateOperationsInput | string;
+  level?:
+    | Prisma.NullableEnumEmployeeLevelEnumFieldUpdateOperationsInput
+    | $Enums.EmployeeLevelEnum
+    | null;
+  baseSalary?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null;
+  workSchedule?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  hireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  fireDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  status?: Prisma.EnumEmployeeStatusEnumFieldUpdateOperationsInput | $Enums.EmployeeStatusEnum;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
+  productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
+  extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -12143,7 +13097,9 @@ export type EmployeeCreateWithoutDepartmentsInput = {
   updatedAt?: Date | string;
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -12208,7 +13164,9 @@ export type EmployeeUncheckedCreateWithoutDepartmentsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -12310,7 +13268,9 @@ export type EmployeeUpdateWithoutDepartmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -12384,7 +13344,9 @@ export type EmployeeUncheckedUpdateWithoutDepartmentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -12449,7 +13411,9 @@ export type EmployeeCreateWithoutRoleInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -12514,7 +13478,9 @@ export type EmployeeUncheckedCreateWithoutRoleInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -12653,7 +13619,9 @@ export type EmployeeCreateWithoutInvitationsSentInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -12718,7 +13686,9 @@ export type EmployeeUncheckedCreateWithoutInvitationsSentInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -12791,7 +13761,9 @@ export type EmployeeCreateWithoutInvitationReceivedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -12856,7 +13828,9 @@ export type EmployeeUncheckedCreateWithoutInvitationReceivedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -12958,7 +13932,9 @@ export type EmployeeUpdateWithoutInvitationsSentInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -13032,7 +14008,9 @@ export type EmployeeUncheckedUpdateWithoutInvitationsSentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -13126,7 +14104,9 @@ export type EmployeeUpdateWithoutInvitationReceivedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -13200,7 +14180,9 @@ export type EmployeeUncheckedUpdateWithoutInvitationReceivedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -13265,7 +14247,9 @@ export type EmployeeCreateWithoutReportExportJobsRequestedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -13330,7 +14314,9 @@ export type EmployeeUncheckedCreateWithoutReportExportJobsRequestedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -13432,7 +14418,9 @@ export type EmployeeUpdateWithoutReportExportJobsRequestedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -13506,7 +14494,9 @@ export type EmployeeUncheckedUpdateWithoutReportExportJobsRequestedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -13571,7 +14561,9 @@ export type EmployeeCreateWithoutReportSchedulesOwnedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -13636,7 +14628,9 @@ export type EmployeeUncheckedCreateWithoutReportSchedulesOwnedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -13738,7 +14732,9 @@ export type EmployeeUpdateWithoutReportSchedulesOwnedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -13812,7 +14808,9 @@ export type EmployeeUncheckedUpdateWithoutReportSchedulesOwnedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -13877,7 +14875,9 @@ export type EmployeeCreateWithoutSavedReportViewsInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -13942,7 +14942,9 @@ export type EmployeeUncheckedCreateWithoutSavedReportViewsInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -14044,7 +15046,9 @@ export type EmployeeUpdateWithoutSavedReportViewsInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -14118,7 +15122,9 @@ export type EmployeeUncheckedUpdateWithoutSavedReportViewsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -14183,7 +15189,9 @@ export type EmployeeCreateWithoutTicketsAssignedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -14248,7 +15256,9 @@ export type EmployeeUncheckedCreateWithoutTicketsAssignedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -14350,7 +15360,9 @@ export type EmployeeUpdateWithoutTicketsAssignedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -14424,7 +15436,9 @@ export type EmployeeUncheckedUpdateWithoutTicketsAssignedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -14489,7 +15503,9 @@ export type EmployeeCreateWithoutTasksCreatedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -14554,7 +15570,9 @@ export type EmployeeUncheckedCreateWithoutTasksCreatedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -14627,7 +15645,9 @@ export type EmployeeCreateWithoutTasksAssignedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -14692,7 +15712,9 @@ export type EmployeeUncheckedCreateWithoutTasksAssignedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -14794,7 +15816,9 @@ export type EmployeeUpdateWithoutTasksCreatedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -14868,7 +15892,9 @@ export type EmployeeUncheckedUpdateWithoutTasksCreatedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -14962,7 +15988,9 @@ export type EmployeeUpdateWithoutTasksAssignedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -15036,7 +16064,9 @@ export type EmployeeUncheckedUpdateWithoutTasksAssignedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -15101,7 +16131,9 @@ export type EmployeeCreateWithoutRecurringTasksCreatedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -15166,7 +16198,9 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksCreatedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -15239,7 +16273,9 @@ export type EmployeeCreateWithoutRecurringTasksAssignedInput = {
   role: Prisma.RoleCreateNestedOneWithoutEmployeesInput;
   departments?: Prisma.EmployeeDepartmentCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealCreateNestedManyWithoutSellerAssistantInput;
@@ -15304,7 +16340,9 @@ export type EmployeeUncheckedCreateWithoutRecurringTasksAssignedInput = {
   updatedAt?: Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedCreateNestedManyWithoutEmployeeInput;
   productsManaging?: Prisma.ProductUncheckedCreateNestedManyWithoutPmInput;
+  productsClosed?: Prisma.ProductUncheckedCreateNestedManyWithoutClosedByInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedCreateNestedManyWithoutAssigneeInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedCreateNestedManyWithoutClosedByInput;
   leadsAssigned?: Prisma.LeadUncheckedCreateNestedManyWithoutAssigneeInput;
   dealsSelling?: Prisma.DealUncheckedCreateNestedManyWithoutSellerInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedCreateNestedManyWithoutSellerAssistantInput;
@@ -15406,7 +16444,9 @@ export type EmployeeUpdateWithoutRecurringTasksCreatedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -15480,7 +16520,9 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksCreatedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -15574,7 +16616,9 @@ export type EmployeeUpdateWithoutRecurringTasksAssignedInput = {
   role?: Prisma.RoleUpdateOneRequiredWithoutEmployeesNestedInput;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -15648,7 +16692,9 @@ export type EmployeeUncheckedUpdateWithoutRecurringTasksAssignedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -15743,7 +16789,9 @@ export type EmployeeUpdateWithoutRoleInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUpdateManyWithoutSellerAssistantNestedInput;
@@ -15817,7 +16865,9 @@ export type EmployeeUncheckedUpdateWithoutRoleInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   departments?: Prisma.EmployeeDepartmentUncheckedUpdateManyWithoutEmployeeNestedInput;
   productsManaging?: Prisma.ProductUncheckedUpdateManyWithoutPmNestedInput;
+  productsClosed?: Prisma.ProductUncheckedUpdateManyWithoutClosedByNestedInput;
   extensionsAssigned?: Prisma.ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput;
+  extensionsClosed?: Prisma.ExtensionUncheckedUpdateManyWithoutClosedByNestedInput;
   leadsAssigned?: Prisma.LeadUncheckedUpdateManyWithoutAssigneeNestedInput;
   dealsSelling?: Prisma.DealUncheckedUpdateManyWithoutSellerNestedInput;
   dealsAsSellerAssistant?: Prisma.DealUncheckedUpdateManyWithoutSellerAssistantNestedInput;
@@ -15898,7 +16948,9 @@ export type EmployeeUncheckedUpdateManyWithoutRoleInput = {
 export type EmployeeCountOutputType = {
   departments: number;
   productsManaging: number;
+  productsClosed: number;
   extensionsAssigned: number;
+  extensionsClosed: number;
   leadsAssigned: number;
   dealsSelling: number;
   dealsAsSellerAssistant: number;
@@ -15944,7 +16996,9 @@ export type EmployeeCountOutputTypeSelect<
 > = {
   departments?: boolean | EmployeeCountOutputTypeCountDepartmentsArgs;
   productsManaging?: boolean | EmployeeCountOutputTypeCountProductsManagingArgs;
+  productsClosed?: boolean | EmployeeCountOutputTypeCountProductsClosedArgs;
   extensionsAssigned?: boolean | EmployeeCountOutputTypeCountExtensionsAssignedArgs;
+  extensionsClosed?: boolean | EmployeeCountOutputTypeCountExtensionsClosedArgs;
   leadsAssigned?: boolean | EmployeeCountOutputTypeCountLeadsAssignedArgs;
   dealsSelling?: boolean | EmployeeCountOutputTypeCountDealsSellingArgs;
   dealsAsSellerAssistant?: boolean | EmployeeCountOutputTypeCountDealsAsSellerAssistantArgs;
@@ -16026,7 +17080,25 @@ export type EmployeeCountOutputTypeCountProductsManagingArgs<
 /**
  * EmployeeCountOutputType without action
  */
+export type EmployeeCountOutputTypeCountProductsClosedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ProductWhereInput;
+};
+
+/**
+ * EmployeeCountOutputType without action
+ */
 export type EmployeeCountOutputTypeCountExtensionsAssignedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ExtensionWhereInput;
+};
+
+/**
+ * EmployeeCountOutputType without action
+ */
+export type EmployeeCountOutputTypeCountExtensionsClosedArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   where?: Prisma.ExtensionWhereInput;
@@ -16401,7 +17473,9 @@ export type EmployeeSelect<
     role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
     departments?: boolean | Prisma.Employee$departmentsArgs<ExtArgs>;
     productsManaging?: boolean | Prisma.Employee$productsManagingArgs<ExtArgs>;
+    productsClosed?: boolean | Prisma.Employee$productsClosedArgs<ExtArgs>;
     extensionsAssigned?: boolean | Prisma.Employee$extensionsAssignedArgs<ExtArgs>;
+    extensionsClosed?: boolean | Prisma.Employee$extensionsClosedArgs<ExtArgs>;
     leadsAssigned?: boolean | Prisma.Employee$leadsAssignedArgs<ExtArgs>;
     dealsSelling?: boolean | Prisma.Employee$dealsSellingArgs<ExtArgs>;
     dealsAsSellerAssistant?: boolean | Prisma.Employee$dealsAsSellerAssistantArgs<ExtArgs>;
@@ -16567,7 +17641,9 @@ export type EmployeeInclude<
   role?: boolean | Prisma.RoleDefaultArgs<ExtArgs>;
   departments?: boolean | Prisma.Employee$departmentsArgs<ExtArgs>;
   productsManaging?: boolean | Prisma.Employee$productsManagingArgs<ExtArgs>;
+  productsClosed?: boolean | Prisma.Employee$productsClosedArgs<ExtArgs>;
   extensionsAssigned?: boolean | Prisma.Employee$extensionsAssignedArgs<ExtArgs>;
+  extensionsClosed?: boolean | Prisma.Employee$extensionsClosedArgs<ExtArgs>;
   leadsAssigned?: boolean | Prisma.Employee$leadsAssignedArgs<ExtArgs>;
   dealsSelling?: boolean | Prisma.Employee$dealsSellingArgs<ExtArgs>;
   dealsAsSellerAssistant?: boolean | Prisma.Employee$dealsAsSellerAssistantArgs<ExtArgs>;
@@ -16631,7 +17707,9 @@ export type $EmployeePayload<
     role: Prisma.$RolePayload<ExtArgs>;
     departments: Prisma.$EmployeeDepartmentPayload<ExtArgs>[];
     productsManaging: Prisma.$ProductPayload<ExtArgs>[];
+    productsClosed: Prisma.$ProductPayload<ExtArgs>[];
     extensionsAssigned: Prisma.$ExtensionPayload<ExtArgs>[];
+    extensionsClosed: Prisma.$ExtensionPayload<ExtArgs>[];
     leadsAssigned: Prisma.$LeadPayload<ExtArgs>[];
     dealsSelling: Prisma.$DealPayload<ExtArgs>[];
     dealsAsSellerAssistant: Prisma.$DealPayload<ExtArgs>[];
@@ -17266,8 +18344,30 @@ export interface Prisma__EmployeeClient<
       >
     | Null
   >;
+  productsClosed<T extends Prisma.Employee$productsClosedArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Employee$productsClosedArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ProductPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   extensionsAssigned<T extends Prisma.Employee$extensionsAssignedArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Employee$extensionsAssignedArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ExtensionPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
+  extensionsClosed<T extends Prisma.Employee$extensionsClosedArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Employee$extensionsClosedArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$ExtensionPayload<ExtArgs>,
@@ -18233,9 +19333,61 @@ export type Employee$productsManagingArgs<
 };
 
 /**
+ * Employee.productsClosed
+ */
+export type Employee$productsClosedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Product
+   */
+  select?: Prisma.ProductSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Product
+   */
+  omit?: Prisma.ProductOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null;
+  where?: Prisma.ProductWhereInput;
+  orderBy?: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[];
+  cursor?: Prisma.ProductWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.ProductScalarFieldEnum | Prisma.ProductScalarFieldEnum[];
+};
+
+/**
  * Employee.extensionsAssigned
  */
 export type Employee$extensionsAssignedArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Extension
+   */
+  select?: Prisma.ExtensionSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Extension
+   */
+  omit?: Prisma.ExtensionOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExtensionInclude<ExtArgs> | null;
+  where?: Prisma.ExtensionWhereInput;
+  orderBy?: Prisma.ExtensionOrderByWithRelationInput | Prisma.ExtensionOrderByWithRelationInput[];
+  cursor?: Prisma.ExtensionWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.ExtensionScalarFieldEnum | Prisma.ExtensionScalarFieldEnum[];
+};
+
+/**
+ * Employee.extensionsClosed
+ */
+export type Employee$extensionsClosedArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   /**

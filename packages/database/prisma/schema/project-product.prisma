@@ -135,11 +135,14 @@ model Product {
   deadline             DateTime?
   description          String?
   checklistTemplateId  String?                 @map("checklist_template_id")
+  closedAt             DateTime?               @map("closed_at")
+  closedById           String?                 @map("closed_by_id")
   createdAt            DateTime                @default(now()) @map("created_at")
   updatedAt            DateTime                @updatedAt @map("updated_at")
 
   project                   Project                   @relation(fields: [projectId], references: [id])
   pm                        Employee?                 @relation("ProductPM", fields: [pmId], references: [id])
+  closedBy                  Employee?                 @relation("ProductClosedBy", fields: [closedById], references: [id])
   order                     Order?
   extensions                Extension[]
   tasks                     Task[]
@@ -160,6 +163,7 @@ model Product {
   @@index([deliveryResolution])
   @@index([onHoldUntil])
   @@index([clientAcceptedAt])
+  @@index([closedAt])
   @@map("products")
 }
 
@@ -195,12 +199,15 @@ model Extension {
   assignedTo         String?                 @map("assigned_to")
   deadline           DateTime?
   description        String?
+  closedAt           DateTime?               @map("closed_at")
+  closedById         String?                 @map("closed_by_id")
   createdAt          DateTime                @default(now()) @map("created_at")
   updatedAt          DateTime                @updatedAt @map("updated_at")
 
   project           Project            @relation(fields: [projectId], references: [id])
   product           Product            @relation(fields: [productId], references: [id])
   assignee          Employee?          @relation("ExtensionAssignee", fields: [assignedTo], references: [id])
+  closedBy          Employee?          @relation("ExtensionClosedBy", fields: [closedById], references: [id])
   order             Order?
   productBonusPools ProductBonusPool[]
   bonusReleases     BonusRelease[]
@@ -212,5 +219,6 @@ model Extension {
   @@index([deliveryResolution])
   @@index([onHoldUntil])
   @@index([deadline])
+  @@index([closedAt])
   @@map("extensions")
 }

@@ -18,6 +18,7 @@ import {
   GENERIC_STATUS_DEPRECATION_DESCRIPTION,
   GENERIC_STATUS_DEPRECATION_HEADER,
 } from '../delivery-status-deprecation';
+import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -149,14 +150,18 @@ export class ProductsController {
 
   @Patch(':id/cancel')
   @ApiOperation({ summary: 'Cancel product delivery with reason' })
-  async cancel(@Param('id') id: string, @Body() body: { reason: string }) {
-    return this.productsService.cancel(id, body);
+  async cancel(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { reason: string },
+  ) {
+    return this.productsService.cancel(id, body, user.id);
   }
 
   @Patch(':id/complete')
   @ApiOperation({ summary: 'Complete product delivery' })
-  async complete(@Param('id') id: string) {
-    return this.productsService.complete(id);
+  async complete(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.productsService.complete(id, user.id);
   }
 
   @Patch(':id/acceptance')

@@ -146,8 +146,12 @@ export class ExtensionsController {
 
   @Patch(':id/cancel')
   @ApiOperation({ summary: 'Cancel extension delivery with reason' })
-  async cancel(@Param('id') id: string, @Body() body: { reason: string }) {
-    return this.extensionsService.cancel(id, body);
+  async cancel(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { reason: string },
+  ) {
+    return this.extensionsService.cancel(id, body, user.id);
   }
 
   @Patch(':id/complete')

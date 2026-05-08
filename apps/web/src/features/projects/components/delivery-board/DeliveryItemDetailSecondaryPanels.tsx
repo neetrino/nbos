@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { DeliveryDetailSecondaryId } from './delivery-item-detail.constants';
+import { DeliveryItemDetailHistoryPanel } from './DeliveryItemDetailHistoryPanel';
 
 interface DeliveryItemDetailSecondaryPanelsProps {
   view: DeliveryDetailSecondaryId;
   projectId: string;
   productId: string;
+  auditEntityType: 'PRODUCT' | 'EXTENSION';
+  auditEntityId: string;
   onBack: () => void;
 }
 
@@ -13,6 +16,8 @@ export function DeliveryItemDetailSecondaryPanels({
   view,
   projectId,
   productId,
+  auditEntityType,
+  auditEntityId,
   onBack,
 }: DeliveryItemDetailSecondaryPanelsProps) {
   const base = `/projects/${projectId}/products/${productId}`;
@@ -46,8 +51,8 @@ export function DeliveryItemDetailSecondaryPanels({
       {view === 'calls' ? (
         <SecondaryCard title="Calls">
           <p className="text-muted-foreground text-sm">
-            Client calls stay on CRM timelines. Filtered call history for this delivery line will
-            appear here in a later slice (see Delivery Board canon §8.4).
+            Call history for this delivery line is not wired to the board yet. The Calls API is
+            still in progress; this tab will show filtered CRM calls when it is ready.
           </p>
         </SecondaryCard>
       ) : null}
@@ -55,8 +60,8 @@ export function DeliveryItemDetailSecondaryPanels({
       {view === 'bonus' ? (
         <SecondaryCard title="Bonus">
           <p className="text-muted-foreground text-sm">
-            Bonus entries follow Finance permissions. Use the product Finance tab for payout
-            context; employee-facing wallet views stay under Finance → Wallet.
+            Bonus breakdown for this line is not available in the sheet yet. The Bonus API is still
+            in progress; use Finance on the product for payout context in the meantime.
           </p>
           <Link
             href={`${base}?tab=finance`}
@@ -69,14 +74,7 @@ export function DeliveryItemDetailSecondaryPanels({
 
       {view === 'history' ? (
         <SecondaryCard title="History">
-          <p className="text-muted-foreground text-sm">
-            Immutable stage movement and audit history will be surfaced here when closed metadata is
-            projected from the API (see implementation backlog).
-          </p>
-          <p className="text-muted-foreground mt-2 text-xs">
-            Until then, use the product page and Delivery Board stage gate actions with their logged
-            outcomes.
-          </p>
+          <DeliveryItemDetailHistoryPanel entityType={auditEntityType} entityId={auditEntityId} />
         </SecondaryCard>
       ) : null}
     </div>

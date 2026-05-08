@@ -7,6 +7,7 @@ import {
   type DeliveryResolutionEnum,
   type DeliveryStageEnum,
   type DeliveryWorkStatusEnum,
+  type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { NotificationService } from '../../notifications/notification.service';
@@ -27,6 +28,7 @@ import {
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 import { SupportService } from '../../support/support.service';
+import { AuditService } from '../../audit/audit.service';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -82,6 +84,7 @@ export class ExtensionsService {
     private readonly notifications: NotificationService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
     private readonly supportService: SupportService,
+    private readonly audit: AuditService,
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
@@ -183,6 +186,7 @@ export class ExtensionsService {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true, productType: true, status: true } },
         assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
+        closedBy: { select: { id: true, firstName: true, lastName: true } },
         order: {
           include: {
             invoices: {
@@ -324,22 +328,34 @@ export class ExtensionsService {
     return attachExtensionReadiness(updated);
   }
 
-  async cancel(id: string, data: CancelDeliveryDto) {
+  async cancel(id: string, data: CancelDeliveryDto, actorId: string) {
     const extension = await this.findById(id);
     this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
     const reason = requireText(data.reason, 'reason');
+    const closedAt = new Date();
     const updated = await this.prisma.extension.update({
       where: { id },
       data: {
         status: 'LOST',
         ...buildDeliveryLifecycleWrite('LOST', extension),
         cancellationReason: reason,
+        closedAt,
+        closedById: actorId,
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true } },
         order: { select: { id: true, code: true, status: true } },
+        closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
+    });
+    await this.audit.log({
+      entityType: 'EXTENSION',
+      entityId: id,
+      action: 'delivery.cancelled',
+      userId: actorId,
+      projectId: extension.projectId,
+      changes: { reason } as InputJsonValue,
     });
     return attachExtensionReadiness(updated);
   }
@@ -352,13 +368,20 @@ export class ExtensionsService {
     validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
     validateExtensionStageGate(extension, target);
 
+    const closedAt = new Date();
     const updated = await this.prisma.extension.update({
       where: { id },
-      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
+      data: {
+        status: target,
+        ...buildDeliveryLifecycleWrite(target, extension),
+        closedAt,
+        closedById: actorId,
+      },
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true } },
         order: { select: { id: true, code: true, status: true } },
+        closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
     const linkedOrder = await this.prisma.order.findUnique({
@@ -370,6 +393,14 @@ export class ExtensionsService {
       await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
     }
     await this.supportService.closeLinkedTicketsAfterExtensionDelivered(id, actorId);
+    await this.audit.log({
+      entityType: 'EXTENSION',
+      entityId: id,
+      action: 'delivery.completed',
+      userId: actorId,
+      projectId: extension.projectId,
+      changes: { deliveryResolution: 'DONE' } as InputJsonValue,
+    });
     return attachExtensionReadiness(updated);
   }
 

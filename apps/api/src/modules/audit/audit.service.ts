@@ -2,6 +2,16 @@ import { Injectable, Inject } from '@nestjs/common';
 import { PrismaClient, type Prisma, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 
+export interface AuditActorSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
+type AuditLogRow = Prisma.AuditLogModel;
+
+export type AuditLogWithActor = AuditLogRow & { actor: AuditActorSummary | null };
+
 interface AuditLogParams {
   entityType: string;
   entityId: string;
@@ -49,8 +59,10 @@ export class AuditService {
       this.prisma.auditLog.count({ where }),
     ]);
 
+    const itemsWithActors = await this.attachActorsToLogs(items);
+
     return {
-      items,
+      items: itemsWithActors,
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -69,9 +81,29 @@ export class AuditService {
       this.prisma.auditLog.count({ where }),
     ]);
 
+    const itemsWithActors = await this.attachActorsToLogs(items);
+
     return {
-      items,
+      items: itemsWithActors,
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
+  }
+
+  private async attachActorsToLogs(rows: AuditLogRow[]): Promise<AuditLogWithActor[]> {
+    const ids = [...new Set(rows.map((row) => row.userId))];
+    if (ids.length === 0) {
+      return rows.map((row) => ({ ...row, actor: null }));
+    }
+
+    const employees = await this.prisma.employee.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const byId = new Map(employees.map((e) => [e.id, e]));
+
+    return rows.map((row) => ({
+      ...row,
+      actor: byId.get(row.userId) ?? null,
+    }));
   }
 }

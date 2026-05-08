@@ -39,6 +39,8 @@ export type ExtensionMinAggregateOutputType = {
   assignedTo: string | null;
   deadline: Date | null;
   description: string | null;
+  closedAt: Date | null;
+  closedById: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -59,6 +61,8 @@ export type ExtensionMaxAggregateOutputType = {
   assignedTo: string | null;
   deadline: Date | null;
   description: string | null;
+  closedAt: Date | null;
+  closedById: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -79,6 +83,8 @@ export type ExtensionCountAggregateOutputType = {
   assignedTo: number;
   deadline: number;
   description: number;
+  closedAt: number;
+  closedById: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
@@ -100,6 +106,8 @@ export type ExtensionMinAggregateInputType = {
   assignedTo?: true;
   deadline?: true;
   description?: true;
+  closedAt?: true;
+  closedById?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -120,6 +128,8 @@ export type ExtensionMaxAggregateInputType = {
   assignedTo?: true;
   deadline?: true;
   description?: true;
+  closedAt?: true;
+  closedById?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -140,6 +150,8 @@ export type ExtensionCountAggregateInputType = {
   assignedTo?: true;
   deadline?: true;
   description?: true;
+  closedAt?: true;
+  closedById?: true;
   createdAt?: true;
   updatedAt?: true;
   _all?: true;
@@ -236,6 +248,8 @@ export type ExtensionGroupByOutputType = {
   assignedTo: string | null;
   deadline: Date | null;
   description: string | null;
+  closedAt: Date | null;
+  closedById: string | null;
   createdAt: Date;
   updatedAt: Date;
   _count: ExtensionCountAggregateOutputType | null;
@@ -282,11 +296,17 @@ export type ExtensionWhereInput = {
   assignedTo?: Prisma.StringNullableFilter<'Extension'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  closedAt?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
+  closedById?: Prisma.StringNullableFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>;
   assignee?: Prisma.XOR<
+    Prisma.EmployeeNullableScalarRelationFilter,
+    Prisma.EmployeeWhereInput
+  > | null;
+  closedBy?: Prisma.XOR<
     Prisma.EmployeeNullableScalarRelationFilter,
     Prisma.EmployeeWhereInput
   > | null;
@@ -316,11 +336,14 @@ export type ExtensionOrderByWithRelationInput = {
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closedById?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   project?: Prisma.ProjectOrderByWithRelationInput;
   product?: Prisma.ProductOrderByWithRelationInput;
   assignee?: Prisma.EmployeeOrderByWithRelationInput;
+  closedBy?: Prisma.EmployeeOrderByWithRelationInput;
   order?: Prisma.OrderOrderByWithRelationInput;
   productBonusPools?: Prisma.ProductBonusPoolOrderByRelationAggregateInput;
   bonusReleases?: Prisma.BonusReleaseOrderByRelationAggregateInput;
@@ -356,11 +379,17 @@ export type ExtensionWhereUniqueInput = Prisma.AtLeast<
     assignedTo?: Prisma.StringNullableFilter<'Extension'> | string | null;
     deadline?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
     description?: Prisma.StringNullableFilter<'Extension'> | string | null;
+    closedAt?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
+    closedById?: Prisma.StringNullableFilter<'Extension'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
     project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
     product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>;
     assignee?: Prisma.XOR<
+      Prisma.EmployeeNullableScalarRelationFilter,
+      Prisma.EmployeeWhereInput
+    > | null;
+    closedBy?: Prisma.XOR<
       Prisma.EmployeeNullableScalarRelationFilter,
       Prisma.EmployeeWhereInput
     > | null;
@@ -392,6 +421,8 @@ export type ExtensionOrderByWithAggregationInput = {
   assignedTo?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closedById?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.ExtensionCountOrderByAggregateInput;
@@ -432,6 +463,8 @@ export type ExtensionScalarWhereWithAggregatesInput = {
   assignedTo?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
   deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Extension'> | Date | string | null;
   description?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
+  closedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Extension'> | Date | string | null;
+  closedById?: Prisma.StringNullableWithAggregatesFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Extension'> | Date | string;
 };
@@ -449,11 +482,13 @@ export type ExtensionCreateInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutExtensionsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
@@ -477,6 +512,8 @@ export type ExtensionUncheckedCreateInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
@@ -507,11 +544,13 @@ export type ExtensionUpdateInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutExtensionsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
   bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
@@ -543,6 +582,8 @@ export type ExtensionUncheckedUpdateInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
@@ -568,6 +609,8 @@ export type ExtensionCreateManyInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -593,6 +636,7 @@ export type ExtensionUpdateManyMutationInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -621,6 +665,8 @@ export type ExtensionUncheckedUpdateManyInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -656,6 +702,8 @@ export type ExtensionCountOrderByAggregateInput = {
   assignedTo?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
+  closedAt?: Prisma.SortOrder;
+  closedById?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -676,6 +724,8 @@ export type ExtensionMaxOrderByAggregateInput = {
   assignedTo?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
+  closedAt?: Prisma.SortOrder;
+  closedById?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -696,6 +746,8 @@ export type ExtensionMinOrderByAggregateInput = {
   assignedTo?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
+  closedAt?: Prisma.SortOrder;
+  closedById?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -715,6 +767,21 @@ export type ExtensionCreateNestedManyWithoutAssigneeInput = {
   connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
 };
 
+export type ExtensionCreateNestedManyWithoutClosedByInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExtensionCreateWithoutClosedByInput,
+        Prisma.ExtensionUncheckedCreateWithoutClosedByInput
+      >
+    | Prisma.ExtensionCreateWithoutClosedByInput[]
+    | Prisma.ExtensionUncheckedCreateWithoutClosedByInput[];
+  connectOrCreate?:
+    | Prisma.ExtensionCreateOrConnectWithoutClosedByInput
+    | Prisma.ExtensionCreateOrConnectWithoutClosedByInput[];
+  createMany?: Prisma.ExtensionCreateManyClosedByInputEnvelope;
+  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+};
+
 export type ExtensionUncheckedCreateNestedManyWithoutAssigneeInput = {
   create?:
     | Prisma.XOR<
@@ -727,6 +794,21 @@ export type ExtensionUncheckedCreateNestedManyWithoutAssigneeInput = {
     | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput
     | Prisma.ExtensionCreateOrConnectWithoutAssigneeInput[];
   createMany?: Prisma.ExtensionCreateManyAssigneeInputEnvelope;
+  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+};
+
+export type ExtensionUncheckedCreateNestedManyWithoutClosedByInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExtensionCreateWithoutClosedByInput,
+        Prisma.ExtensionUncheckedCreateWithoutClosedByInput
+      >
+    | Prisma.ExtensionCreateWithoutClosedByInput[]
+    | Prisma.ExtensionUncheckedCreateWithoutClosedByInput[];
+  connectOrCreate?:
+    | Prisma.ExtensionCreateOrConnectWithoutClosedByInput
+    | Prisma.ExtensionCreateOrConnectWithoutClosedByInput[];
+  createMany?: Prisma.ExtensionCreateManyClosedByInputEnvelope;
   connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
 };
 
@@ -758,6 +840,34 @@ export type ExtensionUpdateManyWithoutAssigneeNestedInput = {
   deleteMany?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
 };
 
+export type ExtensionUpdateManyWithoutClosedByNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExtensionCreateWithoutClosedByInput,
+        Prisma.ExtensionUncheckedCreateWithoutClosedByInput
+      >
+    | Prisma.ExtensionCreateWithoutClosedByInput[]
+    | Prisma.ExtensionUncheckedCreateWithoutClosedByInput[];
+  connectOrCreate?:
+    | Prisma.ExtensionCreateOrConnectWithoutClosedByInput
+    | Prisma.ExtensionCreateOrConnectWithoutClosedByInput[];
+  upsert?:
+    | Prisma.ExtensionUpsertWithWhereUniqueWithoutClosedByInput
+    | Prisma.ExtensionUpsertWithWhereUniqueWithoutClosedByInput[];
+  createMany?: Prisma.ExtensionCreateManyClosedByInputEnvelope;
+  set?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  disconnect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  delete?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  update?:
+    | Prisma.ExtensionUpdateWithWhereUniqueWithoutClosedByInput
+    | Prisma.ExtensionUpdateWithWhereUniqueWithoutClosedByInput[];
+  updateMany?:
+    | Prisma.ExtensionUpdateManyWithWhereWithoutClosedByInput
+    | Prisma.ExtensionUpdateManyWithWhereWithoutClosedByInput[];
+  deleteMany?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
+};
+
 export type ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput = {
   create?:
     | Prisma.XOR<
@@ -783,6 +893,34 @@ export type ExtensionUncheckedUpdateManyWithoutAssigneeNestedInput = {
   updateMany?:
     | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput
     | Prisma.ExtensionUpdateManyWithWhereWithoutAssigneeInput[];
+  deleteMany?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
+};
+
+export type ExtensionUncheckedUpdateManyWithoutClosedByNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ExtensionCreateWithoutClosedByInput,
+        Prisma.ExtensionUncheckedCreateWithoutClosedByInput
+      >
+    | Prisma.ExtensionCreateWithoutClosedByInput[]
+    | Prisma.ExtensionUncheckedCreateWithoutClosedByInput[];
+  connectOrCreate?:
+    | Prisma.ExtensionCreateOrConnectWithoutClosedByInput
+    | Prisma.ExtensionCreateOrConnectWithoutClosedByInput[];
+  upsert?:
+    | Prisma.ExtensionUpsertWithWhereUniqueWithoutClosedByInput
+    | Prisma.ExtensionUpsertWithWhereUniqueWithoutClosedByInput[];
+  createMany?: Prisma.ExtensionCreateManyClosedByInputEnvelope;
+  set?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  disconnect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  delete?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  connect?: Prisma.ExtensionWhereUniqueInput | Prisma.ExtensionWhereUniqueInput[];
+  update?:
+    | Prisma.ExtensionUpdateWithWhereUniqueWithoutClosedByInput
+    | Prisma.ExtensionUpdateWithWhereUniqueWithoutClosedByInput[];
+  updateMany?:
+    | Prisma.ExtensionUpdateManyWithWhereWithoutClosedByInput
+    | Prisma.ExtensionUpdateManyWithWhereWithoutClosedByInput[];
   deleteMany?: Prisma.ExtensionScalarWhereInput | Prisma.ExtensionScalarWhereInput[];
 };
 
@@ -1119,10 +1257,12 @@ export type ExtensionCreateWithoutAssigneeInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutExtensionsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
@@ -1145,6 +1285,8 @@ export type ExtensionUncheckedCreateWithoutAssigneeInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
@@ -1164,6 +1306,71 @@ export type ExtensionCreateOrConnectWithoutAssigneeInput = {
 
 export type ExtensionCreateManyAssigneeInputEnvelope = {
   data: Prisma.ExtensionCreateManyAssigneeInput | Prisma.ExtensionCreateManyAssigneeInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ExtensionCreateWithoutClosedByInput = {
+  id?: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
+  product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
+  assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutExtensionInput;
+};
+
+export type ExtensionUncheckedCreateWithoutClosedByInput = {
+  id?: string;
+  projectId: string;
+  productId: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  assignedTo?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutExtensionInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutExtensionInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutExtensionInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutExtensionInput;
+};
+
+export type ExtensionCreateOrConnectWithoutClosedByInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutClosedByInput,
+    Prisma.ExtensionUncheckedCreateWithoutClosedByInput
+  >;
+};
+
+export type ExtensionCreateManyClosedByInputEnvelope = {
+  data: Prisma.ExtensionCreateManyClosedByInput | Prisma.ExtensionCreateManyClosedByInput[];
   skipDuplicates?: boolean;
 };
 
@@ -1222,8 +1429,38 @@ export type ExtensionScalarWhereInput = {
   assignedTo?: Prisma.StringNullableFilter<'Extension'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Extension'> | string | null;
+  closedAt?: Prisma.DateTimeNullableFilter<'Extension'> | Date | string | null;
+  closedById?: Prisma.StringNullableFilter<'Extension'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Extension'> | Date | string;
+};
+
+export type ExtensionUpsertWithWhereUniqueWithoutClosedByInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutClosedByInput,
+    Prisma.ExtensionUncheckedUpdateWithoutClosedByInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ExtensionCreateWithoutClosedByInput,
+    Prisma.ExtensionUncheckedCreateWithoutClosedByInput
+  >;
+};
+
+export type ExtensionUpdateWithWhereUniqueWithoutClosedByInput = {
+  where: Prisma.ExtensionWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ExtensionUpdateWithoutClosedByInput,
+    Prisma.ExtensionUncheckedUpdateWithoutClosedByInput
+  >;
+};
+
+export type ExtensionUpdateManyWithWhereWithoutClosedByInput = {
+  where: Prisma.ExtensionScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ExtensionUpdateManyMutationInput,
+    Prisma.ExtensionUncheckedUpdateManyWithoutClosedByInput
+  >;
 };
 
 export type ExtensionCreateWithoutOrderInput = {
@@ -1239,11 +1476,13 @@ export type ExtensionCreateWithoutOrderInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutExtensionsClosedInput;
   productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
@@ -1266,6 +1505,8 @@ export type ExtensionUncheckedCreateWithoutOrderInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutExtensionInput;
@@ -1323,11 +1564,13 @@ export type ExtensionUpdateWithoutOrderInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutExtensionsClosedNestedInput;
   productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
   bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
@@ -1358,6 +1601,8 @@ export type ExtensionUncheckedUpdateWithoutOrderInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutExtensionNestedInput;
@@ -1379,11 +1624,13 @@ export type ExtensionCreateWithoutBonusReleasesInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutExtensionsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
@@ -1406,6 +1653,8 @@ export type ExtensionUncheckedCreateWithoutBonusReleasesInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
@@ -1463,11 +1712,13 @@ export type ExtensionUpdateWithoutBonusReleasesInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutExtensionsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
@@ -1498,6 +1749,8 @@ export type ExtensionUncheckedUpdateWithoutBonusReleasesInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
@@ -1519,11 +1772,13 @@ export type ExtensionCreateWithoutProductBonusPoolsInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutExtensionsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutExtensionInput;
@@ -1546,6 +1801,8 @@ export type ExtensionUncheckedCreateWithoutProductBonusPoolsInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
@@ -1603,11 +1860,13 @@ export type ExtensionUpdateWithoutProductBonusPoolsInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutExtensionsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
@@ -1638,6 +1897,8 @@ export type ExtensionUncheckedUpdateWithoutProductBonusPoolsInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
@@ -1659,10 +1920,12 @@ export type ExtensionCreateWithoutProjectInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutExtensionsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
@@ -1685,6 +1948,8 @@ export type ExtensionUncheckedCreateWithoutProjectInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
@@ -1748,10 +2013,12 @@ export type ExtensionCreateWithoutProductInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutExtensionsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
@@ -1774,6 +2041,8 @@ export type ExtensionUncheckedCreateWithoutProductInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
@@ -1837,11 +2106,13 @@ export type ExtensionCreateWithoutWorkSpaceInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutExtensionsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
@@ -1864,6 +2135,8 @@ export type ExtensionUncheckedCreateWithoutWorkSpaceInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
@@ -1921,11 +2194,13 @@ export type ExtensionUpdateWithoutWorkSpaceInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutExtensionsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
   bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
@@ -1956,6 +2231,8 @@ export type ExtensionUncheckedUpdateWithoutWorkSpaceInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
@@ -1977,11 +2254,13 @@ export type ExtensionCreateWithoutTasksInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutExtensionsInput;
   product: Prisma.ProductCreateNestedOneWithoutExtensionsInput;
   assignee?: Prisma.EmployeeCreateNestedOneWithoutExtensionsAssignedInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutExtensionsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutExtensionInput;
   productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutExtensionInput;
   bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutExtensionInput;
@@ -2004,6 +2283,8 @@ export type ExtensionUncheckedCreateWithoutTasksInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutExtensionInput;
@@ -2061,11 +2342,13 @@ export type ExtensionUpdateWithoutTasksInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutExtensionsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
   bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
@@ -2096,6 +2379,8 @@ export type ExtensionUncheckedUpdateWithoutTasksInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
@@ -2119,6 +2404,29 @@ export type ExtensionCreateManyAssigneeInput = {
   cancellationReason?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type ExtensionCreateManyClosedByInput = {
+  id?: string;
+  projectId: string;
+  productId: string;
+  name: string;
+  size?: $Enums.ExtensionSizeEnum;
+  status?: $Enums.ExtensionStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  assignedTo?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -2144,10 +2452,12 @@ export type ExtensionUpdateWithoutAssigneeInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutExtensionsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
   bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
@@ -2178,6 +2488,8 @@ export type ExtensionUncheckedUpdateWithoutAssigneeInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
@@ -2210,6 +2522,105 @@ export type ExtensionUncheckedUpdateManyWithoutAssigneeInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ExtensionUpdateWithoutClosedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
+  product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
+  assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutExtensionNestedInput;
+};
+
+export type ExtensionUncheckedUpdateWithoutClosedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutExtensionNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutExtensionNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutExtensionNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutExtensionNestedInput;
+};
+
+export type ExtensionUncheckedUpdateManyWithoutClosedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  size?: Prisma.EnumExtensionSizeEnumFieldUpdateOperationsInput | $Enums.ExtensionSizeEnum;
+  status?: Prisma.EnumExtensionStatusEnumFieldUpdateOperationsInput | $Enums.ExtensionStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -2229,6 +2640,8 @@ export type ExtensionCreateManyProjectInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -2254,10 +2667,12 @@ export type ExtensionUpdateWithoutProjectInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   product?: Prisma.ProductUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutExtensionsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
   bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
@@ -2288,6 +2703,8 @@ export type ExtensionUncheckedUpdateWithoutProjectInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
@@ -2320,6 +2737,8 @@ export type ExtensionUncheckedUpdateManyWithoutProjectInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -2339,6 +2758,8 @@ export type ExtensionCreateManyProductInput = {
   assignedTo?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -2364,10 +2785,12 @@ export type ExtensionUpdateWithoutProductInput = {
   cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutExtensionsNestedInput;
   assignee?: Prisma.EmployeeUpdateOneWithoutExtensionsAssignedNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutExtensionsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutExtensionNestedInput;
   productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutExtensionNestedInput;
   bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutExtensionNestedInput;
@@ -2398,6 +2821,8 @@ export type ExtensionUncheckedUpdateWithoutProductInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutExtensionNestedInput;
@@ -2430,6 +2855,8 @@ export type ExtensionUncheckedUpdateManyWithoutProductInput = {
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -2510,11 +2937,14 @@ export type ExtensionSelect<
     assignedTo?: boolean;
     deadline?: boolean;
     description?: boolean;
+    closedAt?: boolean;
+    closedById?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
     product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
+    closedBy?: boolean | Prisma.Extension$closedByArgs<ExtArgs>;
     order?: boolean | Prisma.Extension$orderArgs<ExtArgs>;
     productBonusPools?: boolean | Prisma.Extension$productBonusPoolsArgs<ExtArgs>;
     bonusReleases?: boolean | Prisma.Extension$bonusReleasesArgs<ExtArgs>;
@@ -2544,11 +2974,14 @@ export type ExtensionSelectCreateManyAndReturn<
     assignedTo?: boolean;
     deadline?: boolean;
     description?: boolean;
+    closedAt?: boolean;
+    closedById?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
     product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
+    closedBy?: boolean | Prisma.Extension$closedByArgs<ExtArgs>;
   },
   ExtArgs['result']['extension']
 >;
@@ -2572,11 +3005,14 @@ export type ExtensionSelectUpdateManyAndReturn<
     assignedTo?: boolean;
     deadline?: boolean;
     description?: boolean;
+    closedAt?: boolean;
+    closedById?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
     product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
     assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
+    closedBy?: boolean | Prisma.Extension$closedByArgs<ExtArgs>;
   },
   ExtArgs['result']['extension']
 >;
@@ -2597,6 +3033,8 @@ export type ExtensionSelectScalar = {
   assignedTo?: boolean;
   deadline?: boolean;
   description?: boolean;
+  closedAt?: boolean;
+  closedById?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
 };
@@ -2619,6 +3057,8 @@ export type ExtensionOmit<
   | 'assignedTo'
   | 'deadline'
   | 'description'
+  | 'closedAt'
+  | 'closedById'
   | 'createdAt'
   | 'updatedAt',
   ExtArgs['result']['extension']
@@ -2629,6 +3069,7 @@ export type ExtensionInclude<
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
+  closedBy?: boolean | Prisma.Extension$closedByArgs<ExtArgs>;
   order?: boolean | Prisma.Extension$orderArgs<ExtArgs>;
   productBonusPools?: boolean | Prisma.Extension$productBonusPoolsArgs<ExtArgs>;
   bonusReleases?: boolean | Prisma.Extension$bonusReleasesArgs<ExtArgs>;
@@ -2642,6 +3083,7 @@ export type ExtensionIncludeCreateManyAndReturn<
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
+  closedBy?: boolean | Prisma.Extension$closedByArgs<ExtArgs>;
 };
 export type ExtensionIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
@@ -2649,6 +3091,7 @@ export type ExtensionIncludeUpdateManyAndReturn<
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>;
   assignee?: boolean | Prisma.Extension$assigneeArgs<ExtArgs>;
+  closedBy?: boolean | Prisma.Extension$closedByArgs<ExtArgs>;
 };
 
 export type $ExtensionPayload<
@@ -2659,6 +3102,7 @@ export type $ExtensionPayload<
     project: Prisma.$ProjectPayload<ExtArgs>;
     product: Prisma.$ProductPayload<ExtArgs>;
     assignee: Prisma.$EmployeePayload<ExtArgs> | null;
+    closedBy: Prisma.$EmployeePayload<ExtArgs> | null;
     order: Prisma.$OrderPayload<ExtArgs> | null;
     productBonusPools: Prisma.$ProductBonusPoolPayload<ExtArgs>[];
     bonusReleases: Prisma.$BonusReleasePayload<ExtArgs>[];
@@ -2682,6 +3126,8 @@ export type $ExtensionPayload<
       assignedTo: string | null;
       deadline: Date | null;
       description: string | null;
+      closedAt: Date | null;
+      closedById: string | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -3263,6 +3709,19 @@ export interface Prisma__ExtensionClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  closedBy<T extends Prisma.Extension$closedByArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Extension$closedByArgs<ExtArgs>>,
+  ): Prisma.Prisma__EmployeeClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$EmployeePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   order<T extends Prisma.Extension$orderArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Extension$orderArgs<ExtArgs>>,
   ): Prisma.Prisma__OrderClient<
@@ -3363,6 +3822,8 @@ export interface ExtensionFieldRefs {
   readonly assignedTo: Prisma.FieldRef<'Extension', 'String'>;
   readonly deadline: Prisma.FieldRef<'Extension', 'DateTime'>;
   readonly description: Prisma.FieldRef<'Extension', 'String'>;
+  readonly closedAt: Prisma.FieldRef<'Extension', 'DateTime'>;
+  readonly closedById: Prisma.FieldRef<'Extension', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Extension', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Extension', 'DateTime'>;
 }
@@ -3797,6 +4258,27 @@ export type ExtensionDeleteManyArgs<
  * Extension.assignee
  */
 export type Extension$assigneeArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Employee
+   */
+  select?: Prisma.EmployeeSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Employee
+   */
+  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeInclude<ExtArgs> | null;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+/**
+ * Extension.closedBy
+ */
+export type Extension$closedByArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   /**

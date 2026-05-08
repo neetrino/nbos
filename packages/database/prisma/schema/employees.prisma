@@ -40,7 +40,9 @@ model Employee {
   updatedAt    DateTime             @updatedAt @map("updated_at")
 
   productsManaging         Product[]               @relation("ProductPM")
+  productsClosed           Product[]               @relation("ProductClosedBy")
   extensionsAssigned       Extension[]             @relation("ExtensionAssignee")
+  extensionsClosed         Extension[]             @relation("ExtensionClosedBy")
   leadsAssigned            Lead[]                  @relation("LeadAssignee")
   dealsSelling             Deal[]                  @relation("DealSeller")
   dealsAsSellerAssistant   Deal[]                  @relation("DealSellerAssistant")

@@ -1482,6 +1482,8 @@ export const ProductScalarFieldEnum = {
   deadline: 'deadline',
   description: 'description',
   checklistTemplateId: 'checklistTemplateId',
+  closedAt: 'closedAt',
+  closedById: 'closedById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;
@@ -1505,6 +1507,8 @@ export const ExtensionScalarFieldEnum = {
   assignedTo: 'assignedTo',
   deadline: 'deadline',
   description: 'description',
+  closedAt: 'closedAt',
+  closedById: 'closedById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;

@@ -43,23 +43,22 @@
 
 ### Delivery Board — оставшаяся реализация (после P0)
 
-Закрытый UI/UX и сид см. [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md). Ниже только дельта до полного канона [`07-Delivery-Board.md`](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md) §6–8 и list API.
+Закрытый UI/UX и сид см. `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Ниже только дельта до полного канона `[07-Delivery-Board.md](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md)` §6–8 и list API.
 
-- ✅ **Readiness в списках** — закрыто: `currentStageReadiness` в `GET /projects/products` и `GET /projects/extensions`; см. [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md).
-
-- ✅ **Professional Delivery Card design** — закрыто: UI-спецификация shell, header, табы, колонки, breakpoints и DoD в [`07-Professional-Delivery-Card.md`](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md); ссылка добавлена в [`07-Delivery-Board.md`](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md) §8.1.
-- ✅ **Opened Delivery Card — срез 1 (web shell + cockpit)** и **срез 2 (Stage Gate timeline)** — закрыто в [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md).
-- **Opened Delivery Card — дельта до канона §8:** реальные **Calls / Bonus / History** (проекции API, не плейсхолдеры), **комментарии/notes** в rail, при необходимости **действия стадий** в drawer (RBAC/API) — **M–L**
-- ✅ **Фильтр клиент / компания** — закрыто: `companyId` + `project.company` в list DTO, query `companyId` на list API, фильтр Company на Closed board; см. [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md).
-- **Closed metadata / audit:** явный `closedAt` / `closedBy` / история сверх `updatedAt` там, где канон §8 требует больше proxy — проекция из БД или миграция + запись при terminal transition — **M** (сверить с [`project-product.prisma`](../packages/database/prisma/schema/project-product.prisma))
+- ✅ **Фильтр клиент / компания** — закрыто: `companyId` + `project.company` в list DTO, query `companyId` на list API, фильтр Company на Closed board; см. `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
+- ✅ **Readiness в списках** — закрыто: `currentStageReadiness` в `GET /projects/products` и `GET /projects/extensions`; см. `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
+- ✅ **Professional Delivery Card design** — закрыто: UI-спецификация shell, header, табы, колонки, breakpoints и DoD в `[07-Professional-Delivery-Card.md](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md)`; ссылка добавлена в `[07-Delivery-Board.md](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md)` §8.1.
+- ✅ **Opened Delivery Card — срез 1 (web shell + cockpit)** и **срез 2 (Stage Gate timeline)** — закрыто в `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
+- ✅ **Opened Delivery Card — срез 3 (notes rail + History + closed metadata):** заметки/scope в правом rail (`description` продукта / extension + deep link на Overview / Extensions); вкладка **History** через `GET /api/audit` + `actor` из Employee; **`closedAt` / `closedBy`** в БД, backfill для терминальных, запись при `complete`/`cancel`, аудит `delivery.completed` / `delivery.cancelled`; **Calls / Bonus** — явные плейсхолдеры «API позже». См. `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
+- **Opened Delivery Card — дельта до канона §8:** реальные **Calls** и **Bonus** в табах (проекции API, не плейсхолдеры); при необходимости **действия стадий** в drawer (RBAC/API); опционально расширить аудит (например deprecated `PATCH …/status` → terminal) и пагинацию History — **M–L**
 
 ### Checklist Template Builder (реализация)
 
-**Канон (спека готова, код — бэклог):** [`08-Checklist-Template-Builder.md`](NBOS/02-Modules/07-My-Company/08-Checklist-Template-Builder.md). Детали модели и UX не дублировать здесь. Перекрёстные ссылки на канон — в [`00-Documentation-Hub.md`](NBOS/00-Documentation-Hub.md) §3 и [`05-SOP-Templates.md`](NBOS/02-Modules/07-My-Company/05-SOP-Templates.md).
+**Канон (спека готова, код — бэклог):** `[08-Checklist-Template-Builder.md](NBOS/02-Modules/07-My-Company/08-Checklist-Template-Builder.md)`. Детали модели и UX не дублировать здесь. Перекрёстные ссылки на канон — в `[00-Documentation-Hub.md](NBOS/00-Documentation-Hub.md)` §3 и `[05-SOP-Templates.md](NBOS/02-Modules/07-My-Company/05-SOP-Templates.md)`.
 
 | Фаза                             | Содержание                                                                                                                                                                                                                                                                                                                     | Оценка  |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
-| **CTB-1 Foundation**             | Prisma: шаблон, версия, instance (поля и правила версионирования — канон §4–5); CRUD API под RBAC; минимальный список/редактор в My Company / SOP & Templates (навигация — [`00-My-Company-Overview.md`](NBOS/02-Modules/07-My-Company/00-My-Company-Overview.md)); publish новой версии без изменения уже созданных instances | **L**   |
+| **CTB-1 Foundation**             | Prisma: шаблон, версия, instance (поля и правила версионирования — канон §4–5); CRUD API под RBAC; минимальный список/редактор в My Company / SOP & Templates (навигация — `[00-My-Company-Overview.md](NBOS/02-Modules/07-My-Company/00-My-Company-Overview.md)`); publish новой версии без изменения уже созданных instances | **L**   |
 | **CTB-2 Consumption — Projects** | Привязка шаблона к stage requirement (product type × stage, requirement type `CHECKLIST`); конфиг/таблица правил; создание **instance** при срабатывании правил (момент активации — по канону §6–7 doc 08)                                                                                                                     | **L**   |
 | **CTB-3 Delivery Board**         | Прогресс checklist requirement на карточке и в drawer рядом с существующим readiness / stage gate UI                                                                                                                                                                                                                           | **M–L** |
 
@@ -152,12 +151,12 @@
 
 ## Текущий фокус (кратко)
 
-| Поле           | Значение                                                                 |
-| -------------- | ------------------------------------------------------------------------ |
-| Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей                |
-| Исключения     | Банк; Bitrix mapping/import/cutover после core                           |
-| Активный 2A    | Delivery Board list/API-дельта; **Checklist Template Builder** (CTB-1→3) |
-| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`                    |
+| Поле           | Значение                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------ |
+| Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей                                        |
+| Исключения     | Банк; Bitrix mapping/import/cutover после core                                                   |
+| Активный 2A    | **Checklist Template Builder** (CTB-1→3); остаток Delivery Card — Calls/Bonus API + stage drawer |
+| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`                                            |
 
 ---
 

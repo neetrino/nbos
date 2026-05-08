@@ -93,6 +93,39 @@ describe('AuditService', () => {
         expect.objectContaining({ skip: 0, take: 20 }),
       );
     });
+
+    it('should batch-load employee actors for user ids', async () => {
+      const createdAt = new Date('2026-01-01T00:00:00.000Z');
+      prisma.auditLog.findMany.mockResolvedValue([
+        {
+          id: 'log-1',
+          projectId: 'proj-1',
+          entityType: 'PRODUCT',
+          entityId: 'prod-1',
+          action: 'delivery.completed',
+          userId: 'emp-1',
+          changes: null,
+          ipAddress: null,
+          createdAt,
+        },
+      ]);
+      prisma.auditLog.count.mockResolvedValue(1);
+      prisma.employee.findMany.mockResolvedValue([
+        { id: 'emp-1', firstName: 'Sam', lastName: 'Lee' },
+      ]);
+
+      const result = await service.findByEntity('PRODUCT', 'prod-1');
+
+      expect(prisma.employee.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ['emp-1'] } },
+        select: { id: true, firstName: true, lastName: true },
+      });
+      expect(result.items[0].actor).toEqual({
+        id: 'emp-1',
+        firstName: 'Sam',
+        lastName: 'Lee',
+      });
+    });
   });
 
   describe('findByUser', () => {

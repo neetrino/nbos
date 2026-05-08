@@ -163,6 +163,8 @@ export function DeliveryItemDetailSheet({
                     ''
                   }
                   productId={headerProps.productId}
+                  auditEntityType={item.kind === 'PRODUCT' ? 'PRODUCT' : 'EXTENSION'}
+                  auditEntityId={item.kind === 'PRODUCT' ? item.product.id : item.extension.id}
                   onBack={() => setPanel('cockpit')}
                 />
               ) : (

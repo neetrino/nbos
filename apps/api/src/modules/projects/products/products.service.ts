@@ -8,6 +8,7 @@ import {
   type DeliveryResolutionEnum,
   type DeliveryStageEnum,
   type DeliveryWorkStatusEnum,
+  type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { NotificationService } from '../../notifications/notification.service';
@@ -31,6 +32,7 @@ import { buildProductCurrentStageReadiness } from './product-current-stage-readi
 import { buildProductDoneReadiness } from './product-done-readiness';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
+import { AuditService } from '../../audit/audit.service';
 
 interface CreateProductDto {
   projectId: string;
@@ -94,6 +96,7 @@ export class ProductsService {
     private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
+    private readonly audit: AuditService,
   ) {}
 
   async findAll(params: ProductQueryParams) {
@@ -216,6 +219,7 @@ export class ProductsService {
           },
         },
         pm: { select: { id: true, firstName: true, lastName: true, email: true } },
+        closedBy: { select: { id: true, firstName: true, lastName: true } },
         order: {
           include: {
             deal: {
@@ -375,23 +379,37 @@ export class ProductsService {
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
-  async cancel(id: string, data: CancelDeliveryDto) {
+  async cancel(id: string, data: CancelDeliveryDto, actorId: string) {
     const product = await this.findById(id);
     this.ensureNotTerminal(product.deliveryLifecycle.resolution);
     const reason = requireText(data.reason, 'reason');
+    const closedAt = new Date();
     const updatedProduct = await this.prisma.product.update({
       where: { id },
       data: {
         status: 'LOST',
         ...buildDeliveryLifecycleWrite('LOST', product),
         cancellationReason: reason,
+        closedAt,
+        closedById: actorId,
       },
-      include: { project: { select: { id: true, code: true, name: true } } },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        closedBy: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+    await this.audit.log({
+      entityType: 'PRODUCT',
+      entityId: id,
+      action: 'delivery.cancelled',
+      userId: actorId,
+      projectId: product.projectId,
+      changes: { reason } as InputJsonValue,
     });
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
-  async complete(id: string) {
+  async complete(id: string, actorId: string) {
     const product = await this.findById(id);
     this.ensureActiveForStageMove(product.deliveryLifecycle);
     const target = 'DONE' as ProductStatusEnum;
@@ -399,10 +417,19 @@ export class ProductsService {
     validateProductTransition(product.status as ProductStatusEnum, target);
     validateProductStageGate(product, target);
 
+    const closedAt = new Date();
     const updatedProduct = await this.prisma.product.update({
       where: { id },
-      data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
-      include: { project: { select: { id: true, code: true, name: true } } },
+      data: {
+        status: target,
+        ...buildDeliveryLifecycleWrite(target, product),
+        closedAt,
+        closedById: actorId,
+      },
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        closedBy: { select: { id: true, firstName: true, lastName: true } },
+      },
     });
     const linkedOrder = await this.prisma.order.findUnique({
       where: { productId: id },
@@ -412,6 +439,14 @@ export class ProductsService {
       await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
       await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
     }
+    await this.audit.log({
+      entityType: 'PRODUCT',
+      entityId: id,
+      action: 'delivery.completed',
+      userId: actorId,
+      projectId: product.projectId,
+      changes: { deliveryResolution: 'DONE' } as InputJsonValue,
+    });
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 

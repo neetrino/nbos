@@ -43,6 +43,8 @@ export type ProductMinAggregateOutputType = {
   deadline: Date | null;
   description: string | null;
   checklistTemplateId: string | null;
+  closedAt: Date | null;
+  closedById: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -67,6 +69,8 @@ export type ProductMaxAggregateOutputType = {
   deadline: Date | null;
   description: string | null;
   checklistTemplateId: string | null;
+  closedAt: Date | null;
+  closedById: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -91,6 +95,8 @@ export type ProductCountAggregateOutputType = {
   deadline: number;
   description: number;
   checklistTemplateId: number;
+  closedAt: number;
+  closedById: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
@@ -116,6 +122,8 @@ export type ProductMinAggregateInputType = {
   deadline?: true;
   description?: true;
   checklistTemplateId?: true;
+  closedAt?: true;
+  closedById?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -140,6 +148,8 @@ export type ProductMaxAggregateInputType = {
   deadline?: true;
   description?: true;
   checklistTemplateId?: true;
+  closedAt?: true;
+  closedById?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -164,6 +174,8 @@ export type ProductCountAggregateInputType = {
   deadline?: true;
   description?: true;
   checklistTemplateId?: true;
+  closedAt?: true;
+  closedById?: true;
   createdAt?: true;
   updatedAt?: true;
   _all?: true;
@@ -262,6 +274,8 @@ export type ProductGroupByOutputType = {
   deadline: Date | null;
   description: string | null;
   checklistTemplateId: string | null;
+  closedAt: Date | null;
+  closedById: string | null;
   createdAt: Date;
   updatedAt: Date;
   _count: ProductCountAggregateOutputType | null;
@@ -312,10 +326,16 @@ export type ProductWhereInput = {
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
   checklistTemplateId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  closedAt?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
+  closedById?: Prisma.StringNullableFilter<'Product'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
   pm?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null;
+  closedBy?: Prisma.XOR<
+    Prisma.EmployeeNullableScalarRelationFilter,
+    Prisma.EmployeeWhereInput
+  > | null;
   order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null;
   extensions?: Prisma.ExtensionListRelationFilter;
   tasks?: Prisma.TaskListRelationFilter;
@@ -355,10 +375,13 @@ export type ProductOrderByWithRelationInput = {
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closedById?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   project?: Prisma.ProjectOrderByWithRelationInput;
   pm?: Prisma.EmployeeOrderByWithRelationInput;
+  closedBy?: Prisma.EmployeeOrderByWithRelationInput;
   order?: Prisma.OrderOrderByWithRelationInput;
   extensions?: Prisma.ExtensionOrderByRelationAggregateInput;
   tasks?: Prisma.TaskOrderByRelationAggregateInput;
@@ -407,10 +430,16 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
     description?: Prisma.StringNullableFilter<'Product'> | string | null;
     checklistTemplateId?: Prisma.StringNullableFilter<'Product'> | string | null;
+    closedAt?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
+    closedById?: Prisma.StringNullableFilter<'Product'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
     project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
     pm?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null;
+    closedBy?: Prisma.XOR<
+      Prisma.EmployeeNullableScalarRelationFilter,
+      Prisma.EmployeeWhereInput
+    > | null;
     order?: Prisma.XOR<Prisma.OrderNullableScalarRelationFilter, Prisma.OrderWhereInput> | null;
     extensions?: Prisma.ExtensionListRelationFilter;
     tasks?: Prisma.TaskListRelationFilter;
@@ -452,6 +481,8 @@ export type ProductOrderByWithAggregationInput = {
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+  closedById?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.ProductCountOrderByAggregateInput;
@@ -496,6 +527,8 @@ export type ProductScalarWhereWithAggregatesInput = {
   deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   checklistTemplateId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
+  closedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
+  closedById?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Product'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Product'> | Date | string;
 };
@@ -518,10 +551,12 @@ export type ProductCreateInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -558,6 +593,8 @@ export type ProductUncheckedCreateInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -604,10 +641,12 @@ export type ProductUpdateInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -654,6 +693,8 @@ export type ProductUncheckedUpdateInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -692,6 +733,8 @@ export type ProductCreateManyInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -724,6 +767,7 @@ export type ProductUpdateManyMutationInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -758,6 +802,8 @@ export type ProductUncheckedUpdateManyInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -797,6 +843,8 @@ export type ProductCountOrderByAggregateInput = {
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrder;
+  closedAt?: Prisma.SortOrder;
+  closedById?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -821,6 +869,8 @@ export type ProductMaxOrderByAggregateInput = {
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrder;
+  closedAt?: Prisma.SortOrder;
+  closedById?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -845,6 +895,8 @@ export type ProductMinOrderByAggregateInput = {
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrder;
+  closedAt?: Prisma.SortOrder;
+  closedById?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -922,6 +974,21 @@ export type ProductCreateNestedManyWithoutPmInput = {
   connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
 };
 
+export type ProductCreateNestedManyWithoutClosedByInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutClosedByInput,
+        Prisma.ProductUncheckedCreateWithoutClosedByInput
+      >
+    | Prisma.ProductCreateWithoutClosedByInput[]
+    | Prisma.ProductUncheckedCreateWithoutClosedByInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutClosedByInput
+    | Prisma.ProductCreateOrConnectWithoutClosedByInput[];
+  createMany?: Prisma.ProductCreateManyClosedByInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
 export type ProductUncheckedCreateNestedManyWithoutPmInput = {
   create?:
     | Prisma.XOR<Prisma.ProductCreateWithoutPmInput, Prisma.ProductUncheckedCreateWithoutPmInput>
@@ -931,6 +998,21 @@ export type ProductUncheckedCreateNestedManyWithoutPmInput = {
     | Prisma.ProductCreateOrConnectWithoutPmInput
     | Prisma.ProductCreateOrConnectWithoutPmInput[];
   createMany?: Prisma.ProductCreateManyPmInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
+export type ProductUncheckedCreateNestedManyWithoutClosedByInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutClosedByInput,
+        Prisma.ProductUncheckedCreateWithoutClosedByInput
+      >
+    | Prisma.ProductCreateWithoutClosedByInput[]
+    | Prisma.ProductUncheckedCreateWithoutClosedByInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutClosedByInput
+    | Prisma.ProductCreateOrConnectWithoutClosedByInput[];
+  createMany?: Prisma.ProductCreateManyClosedByInputEnvelope;
   connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
 };
 
@@ -959,6 +1041,34 @@ export type ProductUpdateManyWithoutPmNestedInput = {
   deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
 };
 
+export type ProductUpdateManyWithoutClosedByNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutClosedByInput,
+        Prisma.ProductUncheckedCreateWithoutClosedByInput
+      >
+    | Prisma.ProductCreateWithoutClosedByInput[]
+    | Prisma.ProductUncheckedCreateWithoutClosedByInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutClosedByInput
+    | Prisma.ProductCreateOrConnectWithoutClosedByInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutClosedByInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutClosedByInput[];
+  createMany?: Prisma.ProductCreateManyClosedByInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutClosedByInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutClosedByInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutClosedByInput
+    | Prisma.ProductUpdateManyWithWhereWithoutClosedByInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
 export type ProductUncheckedUpdateManyWithoutPmNestedInput = {
   create?:
     | Prisma.XOR<Prisma.ProductCreateWithoutPmInput, Prisma.ProductUncheckedCreateWithoutPmInput>
@@ -981,6 +1091,34 @@ export type ProductUncheckedUpdateManyWithoutPmNestedInput = {
   updateMany?:
     | Prisma.ProductUpdateManyWithWhereWithoutPmInput
     | Prisma.ProductUpdateManyWithWhereWithoutPmInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type ProductUncheckedUpdateManyWithoutClosedByNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutClosedByInput,
+        Prisma.ProductUncheckedCreateWithoutClosedByInput
+      >
+    | Prisma.ProductCreateWithoutClosedByInput[]
+    | Prisma.ProductUncheckedCreateWithoutClosedByInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutClosedByInput
+    | Prisma.ProductCreateOrConnectWithoutClosedByInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutClosedByInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutClosedByInput[];
+  createMany?: Prisma.ProductCreateManyClosedByInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutClosedByInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutClosedByInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutClosedByInput
+    | Prisma.ProductUpdateManyWithWhereWithoutClosedByInput[];
   deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
 };
 
@@ -1440,10 +1578,12 @@ export type ProductCreateWithoutClientServiceRecordsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -1479,6 +1619,8 @@ export type ProductUncheckedCreateWithoutClientServiceRecordsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -1552,10 +1694,12 @@ export type ProductUpdateWithoutClientServiceRecordsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -1601,6 +1745,8 @@ export type ProductUncheckedUpdateWithoutClientServiceRecordsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -1636,10 +1782,12 @@ export type ProductCreateWithoutDealsLinkedInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -1675,6 +1823,8 @@ export type ProductUncheckedCreateWithoutDealsLinkedInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -1748,10 +1898,12 @@ export type ProductUpdateWithoutDealsLinkedInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -1797,6 +1949,8 @@ export type ProductUncheckedUpdateWithoutDealsLinkedInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -1832,9 +1986,11 @@ export type ProductCreateWithoutPmInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -1870,6 +2026,8 @@ export type ProductUncheckedCreateWithoutPmInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -1898,6 +2056,97 @@ export type ProductCreateOrConnectWithoutPmInput = {
 
 export type ProductCreateManyPmInputEnvelope = {
   data: Prisma.ProductCreateManyPmInput | Prisma.ProductCreateManyPmInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ProductCreateWithoutClosedByInput = {
+  id?: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
+  pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  order?: Prisma.OrderCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
+};
+
+export type ProductUncheckedCreateWithoutClosedByInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
+};
+
+export type ProductCreateOrConnectWithoutClosedByInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutClosedByInput,
+    Prisma.ProductUncheckedCreateWithoutClosedByInput
+  >;
+};
+
+export type ProductCreateManyClosedByInputEnvelope = {
+  data: Prisma.ProductCreateManyClosedByInput | Prisma.ProductCreateManyClosedByInput[];
   skipDuplicates?: boolean;
 };
 
@@ -1957,8 +2206,38 @@ export type ProductScalarWhereInput = {
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
   checklistTemplateId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  closedAt?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
+  closedById?: Prisma.StringNullableFilter<'Product'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
+};
+
+export type ProductUpsertWithWhereUniqueWithoutClosedByInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ProductUpdateWithoutClosedByInput,
+    Prisma.ProductUncheckedUpdateWithoutClosedByInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutClosedByInput,
+    Prisma.ProductUncheckedCreateWithoutClosedByInput
+  >;
+};
+
+export type ProductUpdateWithWhereUniqueWithoutClosedByInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateWithoutClosedByInput,
+    Prisma.ProductUncheckedUpdateWithoutClosedByInput
+  >;
+};
+
+export type ProductUpdateManyWithWhereWithoutClosedByInput = {
+  where: Prisma.ProductScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateManyMutationInput,
+    Prisma.ProductUncheckedUpdateManyWithoutClosedByInput
+  >;
 };
 
 export type ProductCreateWithoutOrderInput = {
@@ -1979,10 +2258,12 @@ export type ProductCreateWithoutOrderInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
   workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
@@ -2018,6 +2299,8 @@ export type ProductUncheckedCreateWithoutOrderInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
@@ -2091,10 +2374,12 @@ export type ProductUpdateWithoutOrderInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
   workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
@@ -2140,6 +2425,8 @@ export type ProductUncheckedUpdateWithoutOrderInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
@@ -2175,10 +2462,12 @@ export type ProductCreateWithoutOperationalJournalEntriesInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -2214,6 +2503,8 @@ export type ProductUncheckedCreateWithoutOperationalJournalEntriesInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -2287,10 +2578,12 @@ export type ProductUpdateWithoutOperationalJournalEntriesInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -2336,6 +2629,8 @@ export type ProductUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -2371,10 +2666,12 @@ export type ProductCreateWithoutBonusReleasesInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -2410,6 +2707,8 @@ export type ProductUncheckedCreateWithoutBonusReleasesInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -2483,10 +2782,12 @@ export type ProductUpdateWithoutBonusReleasesInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -2532,6 +2833,8 @@ export type ProductUncheckedUpdateWithoutBonusReleasesInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -2567,10 +2870,12 @@ export type ProductCreateWithoutProductBonusPoolsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -2606,6 +2911,8 @@ export type ProductUncheckedCreateWithoutProductBonusPoolsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -2679,10 +2986,12 @@ export type ProductUpdateWithoutProductBonusPoolsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -2728,6 +3037,8 @@ export type ProductUncheckedUpdateWithoutProductBonusPoolsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -2763,10 +3074,12 @@ export type ProductCreateWithoutPartnerAccrualsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -2802,6 +3115,8 @@ export type ProductUncheckedCreateWithoutPartnerAccrualsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -2875,10 +3190,12 @@ export type ProductUpdateWithoutPartnerAccrualsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -2924,6 +3241,8 @@ export type ProductUncheckedUpdateWithoutPartnerAccrualsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -2959,9 +3278,11 @@ export type ProductCreateWithoutProjectInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -2997,6 +3318,8 @@ export type ProductUncheckedCreateWithoutProjectInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -3074,10 +3397,12 @@ export type ProductCreateWithoutExtensionsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
   workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
@@ -3113,6 +3438,8 @@ export type ProductUncheckedCreateWithoutExtensionsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -3186,10 +3513,12 @@ export type ProductUpdateWithoutExtensionsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
   workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
@@ -3235,6 +3564,8 @@ export type ProductUncheckedUpdateWithoutExtensionsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -3270,10 +3601,12 @@ export type ProductCreateWithoutTicketsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -3309,6 +3642,8 @@ export type ProductUncheckedCreateWithoutTicketsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -3382,10 +3717,12 @@ export type ProductUpdateWithoutTicketsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -3431,6 +3768,8 @@ export type ProductUncheckedUpdateWithoutTicketsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -3466,10 +3805,12 @@ export type ProductCreateWithoutWorkSpaceInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -3505,6 +3846,8 @@ export type ProductUncheckedCreateWithoutWorkSpaceInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -3578,10 +3921,12 @@ export type ProductUpdateWithoutWorkSpaceInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -3627,6 +3972,8 @@ export type ProductUncheckedUpdateWithoutWorkSpaceInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -3662,10 +4009,12 @@ export type ProductCreateWithoutTasksInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
@@ -3701,6 +4050,8 @@ export type ProductUncheckedCreateWithoutTasksInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -3774,10 +4125,12 @@ export type ProductUpdateWithoutTasksInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
@@ -3823,6 +4176,8 @@ export type ProductUncheckedUpdateWithoutTasksInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -3858,10 +4213,12 @@ export type ProductCreateWithoutTechnicalProfilesInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -3897,6 +4254,8 @@ export type ProductUncheckedCreateWithoutTechnicalProfilesInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -3970,10 +4329,12 @@ export type ProductUpdateWithoutTechnicalProfilesInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -4019,6 +4380,8 @@ export type ProductUncheckedUpdateWithoutTechnicalProfilesInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -4054,10 +4417,12 @@ export type ProductCreateWithoutTechnicalAssetsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -4093,6 +4458,8 @@ export type ProductUncheckedCreateWithoutTechnicalAssetsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -4166,10 +4533,12 @@ export type ProductUpdateWithoutTechnicalAssetsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -4215,6 +4584,8 @@ export type ProductUncheckedUpdateWithoutTechnicalAssetsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -4250,10 +4621,12 @@ export type ProductCreateWithoutTechnicalEnvironmentsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -4289,6 +4662,8 @@ export type ProductUncheckedCreateWithoutTechnicalEnvironmentsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
@@ -4362,10 +4737,12 @@ export type ProductUpdateWithoutTechnicalEnvironmentsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -4411,6 +4788,8 @@ export type ProductUncheckedUpdateWithoutTechnicalEnvironmentsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -4447,6 +4826,33 @@ export type ProductCreateManyPmInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type ProductCreateManyClosedByInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -4479,9 +4885,11 @@ export type ProductUpdateWithoutPmInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -4527,6 +4935,8 @@ export type ProductUncheckedUpdateWithoutPmInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -4574,6 +4984,141 @@ export type ProductUncheckedUpdateManyWithoutPmInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ProductUpdateWithoutClosedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
+  pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateWithoutClosedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateManyWithoutClosedByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -4597,6 +5142,8 @@ export type ProductCreateManyProjectInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  closedAt?: Date | string | null;
+  closedById?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -4629,9 +5176,11 @@ export type ProductUpdateWithoutProjectInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -4677,6 +5226,8 @@ export type ProductUncheckedUpdateWithoutProjectInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
@@ -4724,6 +5275,8 @@ export type ProductUncheckedUpdateManyWithoutProjectInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -4907,10 +5460,13 @@ export type ProductSelect<
     deadline?: boolean;
     description?: boolean;
     checklistTemplateId?: boolean;
+    closedAt?: boolean;
+    closedById?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
     pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+    closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
     order?: boolean | Prisma.Product$orderArgs<ExtArgs>;
     extensions?: boolean | Prisma.Product$extensionsArgs<ExtArgs>;
     tasks?: boolean | Prisma.Product$tasksArgs<ExtArgs>;
@@ -4953,10 +5509,13 @@ export type ProductSelectCreateManyAndReturn<
     deadline?: boolean;
     description?: boolean;
     checklistTemplateId?: boolean;
+    closedAt?: boolean;
+    closedById?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
     pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+    closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
   },
   ExtArgs['result']['product']
 >;
@@ -4984,10 +5543,13 @@ export type ProductSelectUpdateManyAndReturn<
     deadline?: boolean;
     description?: boolean;
     checklistTemplateId?: boolean;
+    closedAt?: boolean;
+    closedById?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
     pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+    closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
   },
   ExtArgs['result']['product']
 >;
@@ -5012,6 +5574,8 @@ export type ProductSelectScalar = {
   deadline?: boolean;
   description?: boolean;
   checklistTemplateId?: boolean;
+  closedAt?: boolean;
+  closedById?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
 };
@@ -5038,6 +5602,8 @@ export type ProductOmit<
   | 'deadline'
   | 'description'
   | 'checklistTemplateId'
+  | 'closedAt'
+  | 'closedById'
   | 'createdAt'
   | 'updatedAt',
   ExtArgs['result']['product']
@@ -5047,6 +5613,7 @@ export type ProductInclude<
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
   pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+  closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
   order?: boolean | Prisma.Product$orderArgs<ExtArgs>;
   extensions?: boolean | Prisma.Product$extensionsArgs<ExtArgs>;
   tasks?: boolean | Prisma.Product$tasksArgs<ExtArgs>;
@@ -5068,12 +5635,14 @@ export type ProductIncludeCreateManyAndReturn<
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
   pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+  closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
 };
 export type ProductIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
   pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+  closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
 };
 
 export type $ProductPayload<
@@ -5083,6 +5652,7 @@ export type $ProductPayload<
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>;
     pm: Prisma.$EmployeePayload<ExtArgs> | null;
+    closedBy: Prisma.$EmployeePayload<ExtArgs> | null;
     order: Prisma.$OrderPayload<ExtArgs> | null;
     extensions: Prisma.$ExtensionPayload<ExtArgs>[];
     tasks: Prisma.$TaskPayload<ExtArgs>[];
@@ -5119,6 +5689,8 @@ export type $ProductPayload<
       deadline: Date | null;
       description: string | null;
       checklistTemplateId: string | null;
+      closedAt: Date | null;
+      closedById: string | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -5663,6 +6235,19 @@ export interface Prisma__ProductClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  closedBy<T extends Prisma.Product$closedByArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Product$closedByArgs<ExtArgs>>,
+  ): Prisma.Prisma__EmployeeClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$EmployeePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   order<T extends Prisma.Product$orderArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Product$orderArgs<ExtArgs>>,
   ): Prisma.Prisma__OrderClient<
@@ -5861,6 +6446,8 @@ export interface ProductFieldRefs {
   readonly deadline: Prisma.FieldRef<'Product', 'DateTime'>;
   readonly description: Prisma.FieldRef<'Product', 'String'>;
   readonly checklistTemplateId: Prisma.FieldRef<'Product', 'String'>;
+  readonly closedAt: Prisma.FieldRef<'Product', 'DateTime'>;
+  readonly closedById: Prisma.FieldRef<'Product', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Product', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Product', 'DateTime'>;
 }
@@ -6289,6 +6876,27 @@ export type ProductDeleteManyArgs<
  * Product.pm
  */
 export type Product$pmArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Employee
+   */
+  select?: Prisma.EmployeeSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Employee
+   */
+  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeInclude<ExtArgs> | null;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+/**
+ * Product.closedBy
+ */
+export type Product$closedByArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   /**

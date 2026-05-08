@@ -8,6 +8,12 @@ export interface ProductEmployee {
   email?: string;
 }
 
+export interface ProductClosedByRef {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface Product {
   id: string;
   projectId: string;
@@ -23,6 +29,8 @@ export interface Product {
   clientAcceptedAt: string | null;
   clientAcceptedBy: string | null;
   clientAcceptanceNote: string | null;
+  closedAt?: string | null;
+  closedBy?: ProductClosedByRef | null;
   createdAt: string;
   updatedAt: string;
   project: {

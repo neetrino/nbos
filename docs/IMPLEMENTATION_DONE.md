@@ -131,6 +131,8 @@
 
 - 🟢 [x] **Opened Delivery Card — срез 2 (Stage Gate timeline §8.5 baseline):** общий компонент `DeliveryStageTimelineCard` (четыре стадии, подсветка current/done/future, hold copy, строка `currentStageReadiness` completed/total); подключён в opened delivery cockpit (`DeliveryItemDetailCockpit`) и в `ProductOverviewTab` (рефактор без смены поведения страницы продукта) — S
 
+- 🟢 [x] **Opened Delivery Card — срез 3 (notes rail, audit history, closed metadata):** Prisma `products.closed_at` / `closed_by_id`, `extensions.*` + FK на `employees`, миграция `20260508183000_product_extension_closed_metadata` (backfill `closed_at` для уже терминальных); `ProductsService` / `ExtensionsService` — запись при `complete`/`cancel`, `@CurrentUser` на cancel+complete (products) и cancel (extensions); `AuditService.log` `delivery.completed` / `delivery.cancelled` (`PRODUCT` / `EXTENSION`); `findByEntity` / `findByUser` обогащают строки полем `actor`; web: `DeliveryItemDetailHistoryPanel`, `lib/api/audit.ts`, rail «Delivery notes», баннер closedAt/closedBy, плейсхолдеры Calls/Bonus — M
+
 ---
 
 ## Legacy: снимок репозитория (2026-04-27, бывший DEVELOPMENT_PLAN §2)
