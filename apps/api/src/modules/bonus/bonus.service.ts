@@ -48,8 +48,8 @@ export class BonusService {
 
   async findAll(params: BonusQueryParams) {
     const {
-      page = 1,
-      pageSize = 20,
+      page: rawPage,
+      pageSize: rawPageSize,
       employeeId,
       orderId,
       projectId,
@@ -58,6 +58,15 @@ export class BonusService {
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = params;
+
+    const page =
+      typeof rawPage === 'number' && Number.isFinite(rawPage) && rawPage >= 1
+        ? Math.min(10_000, Math.floor(rawPage))
+        : 1;
+    const pageSize =
+      typeof rawPageSize === 'number' && Number.isFinite(rawPageSize) && rawPageSize >= 1
+        ? Math.min(200, Math.floor(rawPageSize))
+        : 20;
 
     const where = this.buildWhere({ employeeId, orderId, projectId, status, type });
 

@@ -28,6 +28,7 @@
 
 ## Блок 2 — Выполненные срезы (перенесено из Progress)
 
+- 🟢 [x] **Delivery Card §8 — Bonus tab** — M → пагинация `GET /api/bonus` (clamp page/pageSize в `BonusService.findAll`); `GET /api/bonus/entries/:id/releases` отдаёт `{ items, meta }` (`BonusReleaseService.listForEntry`); web: `bonusesApi.listReleasesForEntryPage` + полный обход в `listReleasesForEntry` для finance ledger; `DeliveryItemDetailBonusPanel` — load more по заказу, раскрытие entry с пагинацией релизов; `delivery-item-detail-bonus.constants.ts`
 - 🟢 [x] **Checklist Template Builder — CTB-1 foundation** — L → Prisma + миграция `20260508193000_checklist_templates_foundation`; Nest `ChecklistTemplatesModule` (`/api/checklist-templates`, `/api/checklist-instances`); web My Company checklist builder UI; RBAC `COMPANY` VIEW/EDIT; publish оставляет прошлые instances неизменными (snapshot по активной версии). См. `IMPLEMENTATION_PROGRESS` CTB-2/CTB-3 и канон §13 для granular permissions / audit / consumption
 - 🟢 [x] Сводная таблица переходов Lead → Deal → Order → Project в одном каноническом документе — M → `docs/NBOS/03-Business-Logic/00-Lead-Deal-Order-Project-Transition-Matrix.md`
 - 🟢 [x] Пауза/штрафы подписки при задержке сдачи — правила в каноне и в runtime — M → `04-Subscription-Billing-Logic.md` § пауза; `billing-subscription-delivery-pause.ts` + `BillingService.runMonthlyBilling`

@@ -31,13 +31,19 @@ describe('BonusReleaseService', () => {
     await expect(service.listForEntry('missing')).rejects.toThrow(NotFoundException);
   });
 
-  it('listForEntry returns releases', async () => {
+  it('listForEntry returns paginated releases', async () => {
     prisma.bonusEntry.findUnique.mockResolvedValue({ id: 'be1' });
     prisma.bonusRelease.findMany.mockResolvedValue([{ id: 'r1' }]);
-    const rows = await service.listForEntry('be1');
-    expect(rows).toEqual([{ id: 'r1' }]);
+    prisma.bonusRelease.count.mockResolvedValue(1);
+    const out = await service.listForEntry('be1', { page: 1, pageSize: 20 });
+    expect(out.items).toEqual([{ id: 'r1' }]);
+    expect(out.meta).toEqual({ total: 1, page: 1, pageSize: 20, totalPages: 1 });
     expect(prisma.bonusRelease.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { bonusEntryId: 'be1' } }),
+      expect.objectContaining({
+        where: { bonusEntryId: 'be1' },
+        skip: 0,
+        take: 20,
+      }),
     );
   });
 

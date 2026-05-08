@@ -82,8 +82,17 @@ export class BonusController {
 
   @Get('entries/:entryId/releases')
   @ApiOperation({ summary: 'List bonus releases for a bonus entry (NBOS Bonus Release ledger)' })
-  async listBonusReleases(@Param('entryId') entryId: string) {
-    return this.bonusReleaseService.listForEntry(entryId);
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'pageSize', required: false })
+  async listBonusReleases(
+    @Param('entryId') entryId: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.bonusReleaseService.listForEntry(entryId, {
+      page: page ? parseInt(page, 10) : undefined,
+      pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
+    });
   }
 
   @Post('entries/:entryId/releases')

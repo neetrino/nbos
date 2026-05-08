@@ -144,6 +144,9 @@ export const BONUS_LIST_PAGE_SIZE = 500;
 
 const BONUS_FETCH_MAX_PAGES = 40;
 
+const BONUS_RELEASE_LEDGER_PAGE_SIZE = 100;
+const BONUS_RELEASE_LEDGER_MAX_PAGES = 50;
+
 /** Matches `SalesBonusPaymentModelEnum` (sales bonus policy rows). */
 export type SalesBonusPaymentModel =
   | 'CLASSIC'
@@ -203,9 +206,36 @@ export const bonusesApi = {
     return resp.data;
   },
 
-  async listReleasesForEntry(entryId: string): Promise<BonusReleaseRow[]> {
-    const resp = await api.get<BonusReleaseRow[]>(`/api/bonus/entries/${entryId}/releases`);
+  async listReleasesForEntryPage(
+    entryId: string,
+    params?: { page?: number; pageSize?: number },
+  ): Promise<ListData<BonusReleaseRow>> {
+    const resp = await api.get<ListData<BonusReleaseRow>>(
+      `/api/bonus/entries/${entryId}/releases`,
+      {
+        params: {
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? 50,
+        },
+      },
+    );
     return resp.data;
+  },
+
+  /** Loads every release row for finance ledger flows (walks pages). */
+  async listReleasesForEntry(entryId: string): Promise<BonusReleaseRow[]> {
+    const combined: BonusReleaseRow[] = [];
+    for (let page = 1; page <= BONUS_RELEASE_LEDGER_MAX_PAGES; page += 1) {
+      const { items, meta } = await bonusesApi.listReleasesForEntryPage(entryId, {
+        page,
+        pageSize: BONUS_RELEASE_LEDGER_PAGE_SIZE,
+      });
+      combined.push(...items);
+      if (page >= meta.totalPages || items.length === 0) {
+        break;
+      }
+    }
+    return combined;
   },
 
   async patchRelease(
