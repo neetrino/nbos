@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  Building2,
   Calendar,
   CheckCircle2,
   Package,
@@ -33,16 +34,25 @@ import {
   ProjectDeliveryBoardContextLinks,
   type ProductBoardTab,
 } from './ProjectDeliveryBoardContextLinks';
+import { DeliveryStageReadinessRing } from './DeliveryStageReadinessRing';
+import {
+  ClosedCompactCardActions,
+  ClosedCompactCardMeta,
+} from './ProjectDeliveryBoardClosedCompact';
 
 interface ProjectDeliveryBoardCardProps {
   item: DeliveryBoardItem;
   isActionBusy: boolean;
   onOpenProduct: (productId: string) => void;
   onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
-  onMoveNext: (item: DeliveryBoardItem) => void;
-  onResume: (item: DeliveryBoardItem) => void;
-  onComplete: (item: DeliveryBoardItem) => void;
-  onCancel: (item: DeliveryBoardItem) => void;
+  /** Opens in-board detail drawer when provided (global Delivery Board). */
+  onOpenDetails?: () => void;
+  /** Closed Board: compact outside card per canon §7.2 */
+  displayMode?: 'full' | 'closedCompact';
+  onMoveNext: () => void;
+  onResume: () => void;
+  onComplete: () => void;
+  onCancel: () => void;
 }
 
 export function ProjectDeliveryBoardCard({
@@ -50,6 +60,8 @@ export function ProjectDeliveryBoardCard({
   isActionBusy,
   onOpenProduct,
   onOpenProductTab,
+  onOpenDetails,
+  displayMode = 'full',
   onMoveNext,
   onResume,
   onComplete,
@@ -60,37 +72,58 @@ export function ProjectDeliveryBoardCard({
   const isExtension = item.kind === 'EXTENSION';
   const title = isExtension ? item.extension.name : item.product.name;
   const metaLabel = isExtension ? getExtensionMeta(item.extension) : getProductMeta(item.product);
+  const isClosedCompact = displayMode === 'closedCompact' && Boolean(lifecycle?.isTerminal);
 
   return (
     <div className={getCardClassName(isExtension)}>
       <button
         type="button"
-        disabled={!productId}
-        onClick={() => productId && onOpenProduct(productId)}
-        className={getCardBodyClassName(Boolean(productId))}
+        disabled={!productId && !onOpenDetails}
+        onClick={() => {
+          if (onOpenDetails) {
+            onOpenDetails();
+            return;
+          }
+          if (productId) onOpenProduct(productId);
+        }}
+        className={getCardBodyClassName(Boolean(productId || onOpenDetails))}
       >
         <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 items-start gap-2">
+          <div className="flex min-w-0 flex-1 items-start gap-2">
             <CardKindIcon isExtension={isExtension} />
             <div className="min-w-0 text-left">
               <p className="truncate text-sm font-semibold">{title}</p>
               {metaLabel && <p className="text-muted-foreground truncate text-xs">{metaLabel}</p>}
             </div>
           </div>
-          {lifecycle && <LifecycleBadge lifecycle={lifecycle} />}
+          <div className="flex shrink-0 items-start gap-2">
+            {lifecycle && !lifecycle.isTerminal && lifecycle.stage ? (
+              <DeliveryStageReadinessRing lifecycle={lifecycle} />
+            ) : null}
+            {lifecycle && <LifecycleBadge lifecycle={lifecycle} />}
+          </div>
         </div>
-        <DeliveryCardMeta item={item} />
+        {isClosedCompact ? <ClosedCompactCardMeta item={item} /> : <DeliveryCardMeta item={item} />}
       </button>
-      <ProjectDeliveryBoardContextLinks item={item} onOpenProductTab={onOpenProductTab} />
-      <DeliveryCardActions
-        item={item}
-        disabled={isActionBusy}
-        onOpenProduct={() => productId && onOpenProduct(productId)}
-        onMoveNext={() => onMoveNext(item)}
-        onResume={() => onResume(item)}
-        onComplete={() => onComplete(item)}
-        onCancel={() => onCancel(item)}
-      />
+      {!isClosedCompact ? (
+        <ProjectDeliveryBoardContextLinks item={item} onOpenProductTab={onOpenProductTab} />
+      ) : null}
+      {isClosedCompact ? (
+        <ClosedCompactCardActions
+          onOpenDetails={onOpenDetails}
+          onOpenProduct={() => productId && onOpenProduct(productId)}
+        />
+      ) : (
+        <DeliveryCardActions
+          item={item}
+          disabled={isActionBusy}
+          onOpenProduct={() => productId && onOpenProduct(productId)}
+          onMoveNext={onMoveNext}
+          onResume={onResume}
+          onComplete={onComplete}
+          onCancel={onCancel}
+        />
+      )}
     </div>
   );
 }
@@ -216,6 +249,9 @@ function ProductCardMeta({ product }: { product: ProjectProductSummary }) {
   const holdCopy = getHoldCopy(product.deliveryLifecycle);
   return (
     <div className="mt-3 space-y-1.5 text-left">
+      {product.project && (
+        <MetaLine icon={Building2} label={`${product.project.name} (${product.project.code})`} />
+      )}
       {product.pm && (
         <MetaLine icon={User} label={`${product.pm.firstName} ${product.pm.lastName}`} />
       )}
@@ -235,6 +271,12 @@ function ExtensionCardMeta({ extension }: { extension: ProjectExtensionSummary }
   const holdCopy = getHoldCopy(extension.deliveryLifecycle);
   return (
     <div className="mt-3 space-y-1.5 text-left">
+      {extension.project && (
+        <MetaLine
+          icon={Building2}
+          label={`${extension.project.name} (${extension.project.code})`}
+        />
+      )}
       {extension.assignee && (
         <MetaLine
           icon={User}

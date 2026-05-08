@@ -24,6 +24,8 @@ interface ProjectDeliveryBoardHeaderProps {
   statusFilter: DeliveryBoardStatusFilter;
   onKindFilterChange: (filter: DeliveryBoardKindFilter) => void;
   onStatusFilterChange: (filter: DeliveryBoardStatusFilter) => void;
+  /** When set, status chips are hidden (global Active tab locks to active pipeline). */
+  hideStatusFilters?: boolean;
 }
 
 export function ProjectDeliveryBoardHeader({
@@ -33,6 +35,7 @@ export function ProjectDeliveryBoardHeader({
   statusFilter,
   onKindFilterChange,
   onStatusFilterChange,
+  hideStatusFilters = false,
 }: ProjectDeliveryBoardHeaderProps) {
   return (
     <div className="space-y-3">
@@ -49,11 +52,13 @@ export function ProjectDeliveryBoardHeader({
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        <FilterGroup
-          filters={STATUS_FILTERS}
-          value={statusFilter}
-          onChange={onStatusFilterChange}
-        />
+        {!hideStatusFilters ? (
+          <FilterGroup
+            filters={STATUS_FILTERS}
+            value={statusFilter}
+            onChange={onStatusFilterChange}
+          />
+        ) : null}
         <FilterGroup filters={KIND_FILTERS} value={kindFilter} onChange={onKindFilterChange} />
       </div>
     </div>

@@ -19,6 +19,8 @@ export interface DeliveryLifecycleProjection {
   cancellationReason: string | null;
   isActive: boolean;
   isTerminal: boolean;
+  /** When set (e.g. list API), powers segmented readiness ring for current stage. */
+  currentStageReadiness?: { completed: number; total: number };
 }
 
 export interface Project {
@@ -43,6 +45,12 @@ export interface ProjectProductSummary {
   deadline: string | null;
   pm: EmployeeRef | null;
   deliveryLifecycle?: DeliveryLifecycleProjection;
+  /** Present when item comes from list/global board (not embedded project bundle). */
+  projectId?: string;
+  project?: { id: string; name: string; code: string };
+  /** List/global board: proxy for closed-at when terminal (ISO). */
+  updatedAt?: string;
+  clientAcceptedAt?: string | null;
   _count: {
     extensions: number;
     tasks: number;
@@ -56,9 +64,13 @@ export interface ProjectExtensionSummary {
   status: string;
   size: string;
   productId: string;
+  projectId?: string;
   assignee: EmployeeRef | null;
   product: { id: string; name: string; productType: string; status: string };
+  project?: { id: string; name: string; code: string };
   deliveryLifecycle?: DeliveryLifecycleProjection;
+  /** List/global board: proxy for closed-at when terminal (ISO). */
+  updatedAt?: string;
   _count: { tasks: number };
 }
 

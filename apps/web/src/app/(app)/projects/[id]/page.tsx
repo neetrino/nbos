@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -8,14 +9,15 @@ import {
   type FullProject,
   type UpdateKickoffChecklistItemInput,
 } from '@/lib/api/projects';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
-import { ProjectDeliveryBoard } from '@/features/projects/components/ProjectDeliveryBoard';
 import { ProjectExtensionsSnapshot } from '@/features/projects/components/ProjectExtensionsSnapshot';
 import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
 import { ProjectInfoCard } from '@/features/projects/components/ProjectInfoCard';
 import { ProjectIntakePanel } from '@/features/projects/components/ProjectIntakePanel';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
-import { ProjectTasksSection } from '@/features/projects/components/ProjectTasksSection';
+import { ProjectTasksSummaryRow } from '@/features/projects/components/ProjectTasksSummaryRow';
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
@@ -66,21 +68,23 @@ export default function ProjectDetailPage() {
       <ProjectHeader project={project} onBack={() => router.push('/projects')} />
 
       <ProjectInfoCard project={project} />
+      <div className="flex flex-wrap items-center gap-2">
+        <Link
+          href={`/delivery-board?projectId=${project.id}`}
+          className={cn(buttonVariants({ variant: 'default', size: 'sm' }))}
+        >
+          Open Delivery Board
+        </Link>
+      </div>
+
       <ProjectIntakePanel
         project={project}
+        compact
         onKickoffChecklistItemUpdate={handleKickoffChecklistItemUpdate}
       />
       <ProjectExtensionsSnapshot project={project} />
-      <ProjectDeliveryBoard
-        project={project}
-        onOpenProduct={(productId) => router.push(`/projects/${params.id}/products/${productId}`)}
-        onOpenProductTab={(productId, tab) =>
-          router.push(`/projects/${params.id}/products/${productId}?tab=${tab}`)
-        }
-        onRefresh={fetchProject}
-      />
 
-      <ProjectTasksSection projectId={project.id} orders={project.orders} />
+      <ProjectTasksSummaryRow project={project} />
 
       <ProjectProductsSection
         project={project}

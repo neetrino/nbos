@@ -10,6 +10,7 @@ import {
   Users,
   Users2,
   FolderKanban,
+  Kanban,
   CheckSquare,
   DollarSign,
   Headphones,
@@ -85,6 +86,12 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Project Hub',
     href: '/projects',
     icon: <FolderKanban size={20} />,
+    permission: { module: 'PROJECTS', action: 'VIEW' },
+  },
+  {
+    label: 'Delivery Board',
+    href: '/delivery-board',
+    icon: <Kanban size={20} />,
     permission: { module: 'PROJECTS', action: 'VIEW' },
   },
   {

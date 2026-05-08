@@ -94,12 +94,12 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-products',
-    label: 'Product board',
-    href: '/projects/products',
+    label: 'Delivery Board',
+    href: '/delivery-board',
     icon: FolderKanban,
     module: 'PRODUCTS',
     action: 'VIEW',
-    description: 'Track product and extension delivery.',
+    description: 'Track Product and Extension delivery lifecycle and stage gates.',
   },
   {
     key: 'open-invoices',

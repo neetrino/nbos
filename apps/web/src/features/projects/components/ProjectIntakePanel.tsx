@@ -16,6 +16,8 @@ interface ProjectIntakePanelProps {
     itemId: string,
     data: UpdateKickoffChecklistItemInput,
   ) => Promise<ProjectKickoffChecklistItem>;
+  /** Slim shell: large PM Intake panel is deprecated in canon — use on project page. */
+  compact?: boolean;
 }
 
 interface IntakeRow {
@@ -27,20 +29,29 @@ interface IntakeRow {
 export function ProjectIntakePanel({
   project,
   onKickoffChecklistItemUpdate,
+  compact = false,
 }: ProjectIntakePanelProps) {
   const intake = project.intake ?? getFallbackIntake(project);
   const rows = getIntakeRows(intake);
 
   return (
-    <section className="rounded-xl border-2 border-sky-200 bg-gradient-to-br from-sky-50/80 to-white p-5 dark:border-sky-800 dark:from-sky-950/20 dark:to-transparent">
+    <section
+      className={
+        compact
+          ? 'border-border bg-card rounded-xl border p-4'
+          : 'rounded-xl border-2 border-sky-200 bg-gradient-to-br from-sky-50/80 to-white p-5 dark:border-sky-800 dark:from-sky-950/20 dark:to-transparent'
+      }
+    >
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <h3 className="flex items-center gap-2 text-sm font-semibold">
-            <ClipboardCheck className="size-4 text-sky-600 dark:text-sky-400" />
-            PM Intake
+            <ClipboardCheck className="text-muted-foreground size-4" />
+            {compact ? 'Kickoff / Delivery readiness' : 'PM Intake'}
           </h3>
           <p className="text-muted-foreground mt-1 text-xs">
-            Read-only handoff context from CRM, Projects, and Finance data.
+            {compact
+              ? 'Handoff signals and checklist — primary execution lives on Delivery Board and Product.'
+              : 'Read-only handoff context from CRM, Projects, and Finance data.'}
           </p>
         </div>
         <IntakeScore rows={rows} />
