@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Plus,
-  RefreshCcw,
   Headphones,
   LayoutGrid,
   List,
@@ -467,14 +466,6 @@ export default function SupportPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Support" description={`${openTickets.length} open tickets`}>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={fetchTickets}
-          aria-label="Refresh support tickets"
-        >
-          <RefreshCcw size={16} />
-        </Button>
         <Button
           type="button"
           variant="outline"

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, RefreshCcw, Building2, User } from 'lucide-react';
+import { Plus, Building2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -94,9 +94,6 @@ export default function CompaniesPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Companies" description={`${companies.length} companies`}>
-        <Button variant="outline" size="icon" onClick={fetchCompanies}>
-          <RefreshCcw size={16} />
-        </Button>
         <Button onClick={() => setShowCreate(true)}>
           <Plus size={16} />
           New Company

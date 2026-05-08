@@ -240,7 +240,6 @@ export function ExpensesPageContent({
         onViewChange={setView}
         hideViewToggle={pageVariant === 'backlog' || pageVariant === 'closed'}
         pageVariant={pageVariant}
-        onRefresh={fetchExpenses}
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}

@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, FolderKanban, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
 import type { FullProject } from '@/lib/api/projects';
@@ -8,10 +8,9 @@ import type { FullProject } from '@/lib/api/projects';
 interface ProjectHeaderProps {
   project: FullProject;
   onBack: () => void;
-  onRefresh: () => void;
 }
 
-export function ProjectHeader({ project, onBack, onRefresh }: ProjectHeaderProps) {
+export function ProjectHeader({ project, onBack }: ProjectHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -31,9 +30,6 @@ export function ProjectHeader({ project, onBack, onRefresh }: ProjectHeaderProps
           </div>
         </div>
       </div>
-      <Button variant="outline" size="icon" onClick={onRefresh}>
-        <RefreshCcw size={16} />
-      </Button>
     </div>
   );
 }

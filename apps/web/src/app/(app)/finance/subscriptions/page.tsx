@@ -114,7 +114,6 @@ function SubscriptionsPageInner() {
         totalMRR={totalMRR}
         period={page.period}
         onPeriodChange={page.setPeriod}
-        onRefresh={page.fetchSubscriptions}
         onExportCsv={handleExportCsv}
         exportDisabled={page.loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}

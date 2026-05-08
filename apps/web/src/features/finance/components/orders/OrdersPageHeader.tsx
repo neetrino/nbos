@@ -1,4 +1,4 @@
-import { Download, Loader2, Plus, RefreshCcw, TableProperties } from 'lucide-react';
+import { Download, Loader2, Plus, TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
@@ -7,7 +7,6 @@ interface OrdersPageHeaderProps {
   description: string;
   period: FinancePeriod;
   onPeriodChange: (period: FinancePeriod) => void;
-  onRefresh: () => void;
   onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
   exportInProgress: boolean;
@@ -19,7 +18,6 @@ export function OrdersPageHeader({
   description,
   period,
   onPeriodChange,
-  onRefresh,
   onExportCsv,
   exportDisabled,
   exportInProgress,
@@ -40,9 +38,6 @@ export function OrdersPageHeader({
           </Button>
         ))}
       </div>
-      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh orders">
-        <RefreshCcw size={16} />
-      </Button>
       <Button
         type="button"
         variant="outline"

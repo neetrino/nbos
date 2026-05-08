@@ -182,7 +182,6 @@ function OrdersPageContent() {
         description={description}
         period={period}
         onPeriodChange={setPeriod}
-        onRefresh={fetchOrders}
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}

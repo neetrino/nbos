@@ -3,15 +3,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import {
-  ArrowLeft,
-  Banknote,
-  ExternalLink,
-  FolderKanban,
-  Pencil,
-  RefreshCcw,
-  Trash2,
-} from 'lucide-react';
+import { ArrowLeft, Banknote, ExternalLink, FolderKanban, Pencil, Trash2 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { formatAmount, getExpenseStage } from '@/features/finance/constants/finance';
@@ -192,9 +184,6 @@ function ExpenseDetailPageInner() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="icon" type="button" onClick={fetchExpense}>
-            <RefreshCcw size={16} />
-          </Button>
           <Button type="button" variant="outline" onClick={() => setPaymentOpen(true)}>
             <Banknote size={16} />
             Add payment

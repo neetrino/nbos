@@ -1,4 +1,4 @@
-import { Download, LayoutGrid, List, Loader2, RefreshCcw, TableProperties } from 'lucide-react';
+import { Download, LayoutGrid, List, Loader2, TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
@@ -10,7 +10,6 @@ interface InvoicesPageHeaderProps {
   view: InvoiceViewMode;
   onPeriodChange: (period: FinancePeriod) => void;
   onViewChange: (view: InvoiceViewMode) => void;
-  onRefresh: () => void;
   onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
   exportInProgress: boolean;
@@ -24,7 +23,6 @@ export function InvoicesPageHeader({
   view,
   onPeriodChange,
   onViewChange,
-  onRefresh,
   onExportCsv,
   exportDisabled,
   exportInProgress,
@@ -45,9 +43,6 @@ export function InvoicesPageHeader({
           </Button>
         ))}
       </div>
-      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh invoices">
-        <RefreshCcw size={16} />
-      </Button>
       <Button
         type="button"
         variant="outline"

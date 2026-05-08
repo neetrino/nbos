@@ -1,15 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Download,
-  Loader2,
-  Plus,
-  RefreshCcw,
-  LayoutGrid,
-  List,
-  TableProperties,
-} from 'lucide-react';
+import { Download, Loader2, Plus, LayoutGrid, List, TableProperties } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import { FINANCE_PERIOD_OPTIONS, type FinancePeriod } from '@/features/finance/constants/finance';
@@ -31,7 +23,6 @@ interface ExpensesPageHeaderProps {
   /** Backlog route uses list-only layout (see NBOS Finance UI spec). */
   hideViewToggle?: boolean;
   pageVariant?: 'default' | 'backlog' | 'closed';
-  onRefresh: () => void;
   /** Fetches all pages matching current list filters and downloads CSV. */
   onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
@@ -49,7 +40,6 @@ export function ExpensesPageHeader({
   onViewChange,
   hideViewToggle = false,
   pageVariant = 'default',
-  onRefresh,
   onExportCsv,
   exportDisabled,
   exportInProgress,
@@ -111,9 +101,6 @@ export function ExpensesPageHeader({
           </Button>
         ))}
       </div>
-      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh expenses">
-        <RefreshCcw size={16} />
-      </Button>
       <Button
         type="button"
         variant="outline"

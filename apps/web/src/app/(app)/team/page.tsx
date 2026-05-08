@@ -1,17 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus,
-  RefreshCcw,
-  Users2,
-  LayoutGrid,
-  List,
-  Mail,
-  Phone,
-  Calendar,
-  Building2,
-} from 'lucide-react';
+import { Plus, Users2, LayoutGrid, List, Mail, Phone, Calendar, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -137,9 +127,6 @@ export default function TeamPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Team" description={`${activeCount} active employees`}>
-        <Button variant="outline" size="icon" onClick={fetchEmployees}>
-          <RefreshCcw size={16} />
-        </Button>
         <div className="border-border flex rounded-lg border">
           <Button
             variant={view === 'grid' ? 'secondary' : 'ghost'}

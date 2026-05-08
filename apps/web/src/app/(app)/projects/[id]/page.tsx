@@ -63,13 +63,7 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="flex h-full flex-col gap-6">
-      <ProjectHeader
-        project={project}
-        onBack={() => router.push('/projects')}
-        onRefresh={() => {
-          fetchProject();
-        }}
-      />
+      <ProjectHeader project={project} onBack={() => router.push('/projects')} />
 
       <ProjectInfoCard project={project} />
       <ProjectIntakePanel

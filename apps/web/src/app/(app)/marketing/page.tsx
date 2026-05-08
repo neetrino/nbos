@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Megaphone, Plus, RefreshCcw } from 'lucide-react';
+import { Megaphone, Plus } from 'lucide-react';
 import { EmptyState, ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -110,14 +110,6 @@ export default function MarketingPage() {
           >
             Attribution Review
           </Link>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={fetchActivities}
-            aria-label="Refresh board"
-          >
-            <RefreshCcw size={16} />
-          </Button>
         </div>
       </PageHeader>
 

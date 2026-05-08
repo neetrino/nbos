@@ -5,14 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import {
-  ArrowDownLeft,
-  ArrowLeft,
-  ArrowLeftRight,
-  ArrowUpRight,
-  Pencil,
-  RefreshCcw,
-} from 'lucide-react';
+import { ArrowDownLeft, ArrowLeft, ArrowLeftRight, ArrowUpRight, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { EditPartnerDialog } from '@/features/partners/components/EditPartnerDialog';
@@ -130,9 +123,6 @@ export default function PartnerDetailPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="icon" type="button" onClick={fetchPartner}>
-            <RefreshCcw size={16} />
-          </Button>
           <Button type="button" onClick={() => setEditOpen(true)}>
             <Pencil size={16} />
             Edit

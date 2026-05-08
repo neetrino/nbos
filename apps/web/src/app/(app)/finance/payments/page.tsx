@@ -96,7 +96,6 @@ export default function PaymentsPage() {
         visiblePaymentCount={payments.length}
         period={period}
         onPeriodChange={setPeriod}
-        onRefresh={fetchPayments}
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}

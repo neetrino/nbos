@@ -122,7 +122,6 @@ export default function PartnersPage() {
     <div className="flex h-full flex-col gap-5">
       <PartnersPageHeader
         description={`${listTotal} partner${listTotal === 1 ? '' : 's'}`}
-        onRefresh={fetchPartners}
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}

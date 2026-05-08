@@ -1,4 +1,4 @@
-import { Download, Loader2, Plus, RefreshCcw, TableProperties } from 'lucide-react';
+import { Download, Loader2, Plus, TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 import {
@@ -12,7 +12,6 @@ interface SubscriptionsPageHeaderProps {
   totalMRR: number;
   period: FinancePeriod;
   onPeriodChange: (period: FinancePeriod) => void;
-  onRefresh: () => void;
   onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
   exportInProgress: boolean;
@@ -25,7 +24,6 @@ export function SubscriptionsPageHeader({
   totalMRR,
   period,
   onPeriodChange,
-  onRefresh,
   onExportCsv,
   exportDisabled,
   exportInProgress,
@@ -49,9 +47,6 @@ export function SubscriptionsPageHeader({
           </Button>
         ))}
       </div>
-      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh subscriptions">
-        <RefreshCcw size={16} />
-      </Button>
       <Button
         type="button"
         variant="outline"

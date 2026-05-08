@@ -54,7 +54,6 @@ function InvoicesPageInner() {
         view={state.view}
         onPeriodChange={state.setPeriod}
         onViewChange={state.setView}
-        onRefresh={state.fetchInvoices}
         onExportCsv={handleExportCsv}
         exportDisabled={state.loading || exportCsvSubmitting}
         exportInProgress={exportCsvSubmitting}

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, FileText, Plus, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, FileText, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -119,9 +119,6 @@ export default function DocumentSectionPage() {
           description={section?.description ?? 'Documents in this section.'}
         >
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="gap-1" onClick={load} disabled={loading}>
-              <RefreshCcw size={14} /> Refresh
-            </Button>
             {canAdd ? (
               <Button size="sm" className="gap-1" onClick={() => setCreateOpen(true)}>
                 <Plus size={14} /> New in section

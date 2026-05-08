@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FileText, FolderOpen, LayoutGrid, Plus, RefreshCcw } from 'lucide-react';
+import { FileText, FolderOpen, LayoutGrid, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,9 +72,6 @@ export default function DocumentsHomePage() {
         description="Company knowledge: sections, drafts, and published pages. Search matches title, description, body text, section and tag names."
       >
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1" onClick={load} disabled={loading}>
-            <RefreshCcw size={14} /> Refresh
-          </Button>
           {canAdd ? (
             <Button size="sm" className="gap-1" onClick={() => setCreateOpen(true)}>
               <Plus size={14} /> New document

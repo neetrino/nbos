@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, ExternalLink, FileText, FolderKanban, RefreshCcw } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { ArrowLeft, ExternalLink, FileText, FolderKanban } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
 import {
   ErrorState,
   ListMutationErrorBanner,
@@ -120,9 +120,6 @@ export default function SubscriptionDetailPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="icon" type="button" onClick={fetchSubscription}>
-            <RefreshCcw size={16} />
-          </Button>
           <SubscriptionDetailActions
             subscription={subscription}
             onSubscriptionChange={setSubscription}

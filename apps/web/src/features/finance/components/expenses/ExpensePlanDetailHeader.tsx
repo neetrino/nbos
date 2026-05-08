@@ -1,14 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, FileOutput, Pencil, RefreshCcw, Trash2 } from 'lucide-react';
+import { ArrowLeft, FileOutput, Pencil, Trash2 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 
 export interface ExpensePlanDetailHeaderProps {
   plan: ExpensePlan;
-  onRefresh: () => void;
   onGenerateClick: () => void;
   onEditClick: () => void;
   onDeleteClick: () => void;
@@ -16,7 +15,6 @@ export interface ExpensePlanDetailHeaderProps {
 
 export function ExpensePlanDetailHeader({
   plan,
-  onRefresh,
   onGenerateClick,
   onEditClick,
   onDeleteClick,
@@ -38,9 +36,6 @@ export function ExpensePlanDetailHeader({
         <p className="text-muted-foreground mt-1 font-mono text-xs">{plan.id}</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" size="icon" onClick={() => void onRefresh()}>
-          <RefreshCcw size={16} />
-        </Button>
         <Button type="button" variant="outline" size="sm" onClick={onEditClick}>
           <Pencil size={16} />
           Edit plan

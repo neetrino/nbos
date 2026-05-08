@@ -1,10 +1,9 @@
-import { Download, Loader2, Plus, RefreshCcw, TableProperties } from 'lucide-react';
+import { Download, Loader2, Plus, TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared';
 
 interface PartnersPageHeaderProps {
   description: string;
-  onRefresh: () => void;
   onExportCsv: () => void | Promise<void>;
   exportDisabled: boolean;
   exportInProgress: boolean;
@@ -15,7 +14,6 @@ interface PartnersPageHeaderProps {
 
 export function PartnersPageHeader({
   description,
-  onRefresh,
   onExportCsv,
   exportDisabled,
   exportInProgress,
@@ -25,9 +23,6 @@ export function PartnersPageHeader({
 }: PartnersPageHeaderProps) {
   return (
     <PageHeader title="Partners" description={description}>
-      <Button variant="outline" size="icon" onClick={onRefresh} aria-label="Refresh partners">
-        <RefreshCcw size={16} />
-      </Button>
       <Button
         type="button"
         variant="outline"

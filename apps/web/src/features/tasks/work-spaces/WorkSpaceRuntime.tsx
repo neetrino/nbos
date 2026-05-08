@@ -9,7 +9,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { CheckSquare, Plus, RefreshCcw } from 'lucide-react';
+import { CheckSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard } from '@/components/shared';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -33,10 +33,9 @@ export type WorkSpaceRuntimeProps = {
   workspace: WorkSpace;
   tasks: Task[];
   setTasks: Dispatch<SetStateAction<Task[]>>;
-  onRefresh: () => void;
   mode: 'standalone' | 'embedded';
   defaultTaskLink?: { entityType: string; entityId: string };
-  /** When false, board view tabs + refresh + New Task live in the page header (standalone). */
+  /** When false, board view tabs + New Task live in the page header (standalone). */
   hideInlineBoardToolbar?: boolean;
   boardView?: WorkspaceBoardView;
   setBoardView?: Dispatch<SetStateAction<WorkspaceBoardView>>;
@@ -47,7 +46,6 @@ export function WorkSpaceRuntime({
   workspace,
   tasks,
   setTasks,
-  onRefresh,
   mode,
   defaultTaskLink,
   hideInlineBoardToolbar = false,
@@ -248,24 +246,14 @@ export function WorkSpaceRuntime({
               ))}
             </TabsList>
           </Tabs>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onRefresh}
-              aria-label="Refresh work space"
-            >
-              <RefreshCcw size={16} />
-            </Button>
-            <Button
-              onClick={openQuickCreate}
-              disabled={newTaskDisabled}
-              title={newTaskDisabled ? 'Employee profile required' : undefined}
-            >
-              <Plus size={16} />
-              New Task
-            </Button>
-          </div>
+          <Button
+            onClick={openQuickCreate}
+            disabled={newTaskDisabled}
+            title={newTaskDisabled ? 'Employee profile required' : undefined}
+          >
+            <Plus size={16} />
+            New Task
+          </Button>
         </div>
       ) : null}
 

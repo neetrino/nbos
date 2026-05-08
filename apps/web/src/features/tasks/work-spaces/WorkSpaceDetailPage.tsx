@@ -132,7 +132,6 @@ export function WorkSpaceDetailPage() {
         workspace={workspace}
         tasks={tasks}
         setTasks={setTasks}
-        onRefresh={fetchWorkspace}
         mode="standalone"
         defaultTaskLink={defaultLink ?? undefined}
         hideInlineBoardToolbar

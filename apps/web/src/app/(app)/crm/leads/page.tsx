@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Plus, RefreshCcw, LayoutGrid, List } from 'lucide-react';
+import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   PageHeader,
@@ -430,9 +430,6 @@ export default function LeadsPipelinePage() {
           title="Lead Pipeline"
           description={`${totalCount} leads total · ${activeCount} active`}
         >
-          <Button variant="outline" size="icon" onClick={fetchLeads}>
-            <RefreshCcw size={16} />
-          </Button>
           <div className="border-border flex rounded-lg border">
             <Button
               variant={view === 'kanban' ? 'secondary' : 'ghost'}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, RefreshCcw, Users, Phone, Mail, Building2 } from 'lucide-react';
+import { Plus, Users, Phone, Mail, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -84,9 +84,6 @@ export default function ContactsPage() {
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader title="Contacts" description={`${contacts.length} contacts`}>
-        <Button variant="outline" size="icon" onClick={fetchContacts}>
-          <RefreshCcw size={16} />
-        </Button>
         <Button onClick={() => setShowCreate(true)}>
           <Plus size={16} />
           New Contact

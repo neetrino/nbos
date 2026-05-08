@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
-  RefreshCcw,
   Package,
   LayoutDashboard,
   ListChecks,
@@ -231,9 +230,6 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
-        <Button variant="outline" size="icon" onClick={fetchProduct}>
-          <RefreshCcw size={16} />
-        </Button>
       </div>
 
       <Tabs

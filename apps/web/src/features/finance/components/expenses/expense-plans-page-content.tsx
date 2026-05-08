@@ -3,16 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  CalendarDays,
-  Download,
-  FileOutput,
-  Loader2,
-  Plus,
-  RefreshCcw,
-  Trash2,
-  Wand2,
-} from 'lucide-react';
+import { CalendarDays, Download, FileOutput, Loader2, Plus, Trash2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -275,10 +266,6 @@ export function ExpensePlansPageContent() {
               <Download size={16} className="mr-1" aria-hidden />
             )}
             Export CSV
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void fetchPlans()}>
-            <RefreshCcw size={16} className="mr-1" />
-            Refresh
           </Button>
           <Button
             type="button"

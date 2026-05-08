@@ -6,7 +6,6 @@ import {
   Pencil,
   Trash2,
   RotateCcw,
-  RefreshCcw,
   KeyRound,
   Eye,
   EyeOff,
@@ -204,9 +203,6 @@ export default function CredentialsPage() {
             Archived
           </Button>
         </div>
-        <Button variant="outline" size="icon" onClick={fetchCredentials}>
-          <RefreshCcw size={16} />
-        </Button>
         <PermissionGate module="CREDENTIALS" action="ADD">
           <Button onClick={() => setCreateOpen(true)} disabled={vaultListScope === 'archived'}>
             <Plus size={16} />

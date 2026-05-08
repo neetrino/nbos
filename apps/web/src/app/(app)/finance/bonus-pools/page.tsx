@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Download, ExternalLink, Loader2, PieChart, RefreshCcw } from 'lucide-react';
+import { Download, ExternalLink, Loader2, PieChart } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Table,
@@ -80,9 +80,6 @@ export default function BonusPoolsPage() {
             Bonus board
             <ExternalLink size={14} className="ml-1.5" />
           </Link>
-          <Button variant="outline" size="icon" onClick={() => void load()} aria-label="Refresh">
-            <RefreshCcw size={16} />
-          </Button>
           <Button
             type="button"
             variant="outline"

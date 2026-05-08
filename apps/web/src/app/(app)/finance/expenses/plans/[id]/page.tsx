@@ -87,7 +87,6 @@ export default function ExpensePlanDetailPage() {
     <div className="flex flex-col gap-6">
       <ExpensePlanDetailHeader
         plan={plan}
-        onRefresh={fetchPlan}
         onGenerateClick={() => setGenerateOpen(true)}
         onEditClick={() => setEditOpen(true)}
         onDeleteClick={handleDeletePlan}

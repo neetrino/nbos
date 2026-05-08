@@ -8,12 +8,10 @@ import {
   ClipboardList,
   Network,
   Percent,
-  RefreshCcw,
   ShieldCheck,
   Target,
   Users2,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
 import {
   departmentsApi,
@@ -126,12 +124,7 @@ export default function MyCompanyPage() {
       <PageHeader
         title="My Company"
         description="Org Structure is the company control center for departments, seats, employees, KPI, compensation, and SOP."
-      >
-        <Button variant="outline" size="sm" onClick={fetchFoundation}>
-          <RefreshCcw size={16} />
-          Refresh
-        </Button>
-      </PageHeader>
+      />
 
       {loading ? (
         <LoadingState variant="cards" count={6} />
