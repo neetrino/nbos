@@ -2,7 +2,7 @@
 
 > **Архив закрытых вех и выполненных срезов.** Активный бэклог — [`IMPLEMENTATION_PROGRESS.md`](./IMPLEMENTATION_PROGRESS.md). Последовательность по продукту — [`NBOS/00-Implementation-Roadmap.md`](./NBOS/00-Implementation-Roadmap.md). Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-06
+**Обновлено:** 2026-05-08
 
 ---
 
@@ -117,6 +117,9 @@
 - 🟢 [x] Messenger: поиск/история PostgreSQL — доработка UX при объёме — S → история: по умолчанию **последнее** окно (`before` cursor + `hasMoreOlder`, кнопка «Load older» + сохранение scroll); поиск: только по **видимым** каналам (`listMessengerVisibleChannelIds`, MVP = все каналы); GIN `pg_trgm` на `messenger_*_messages.content`; лимит `pageSize` с `BadRequest` при мусоре
 - 🟢 [x] Production hardening: CORS/CSRF и security baseline по `docs/NBOS` / project rules — S → единый allowlist `CORS_ORIGIN` (HTTP + Socket.IO + Messenger WS), в `production` запрет `*` и пустого списка; Helmet без CSP на JSON API + `crossOriginResourcePolicy: cross-origin`; `trust proxy` в prod; глобальный `ThrottlerGuard` + `@SkipThrottle()` на `/health`; 500 в prod без деталей в теле; мутации API — Bearer JWT (cookie CSRF на Nest не применяется; NextAuth — по `TECH_CARD`)
 - 🟢 [x] Регрессионные тесты на критичные гейты после крупных срезов — M → `pnpm test:regression` + `vitest.regression.config.ts` (15 файлов / ~223 теста); описание и правило расширения: `[regression-gates.md](./reference/Check/Quality/regression-gates.md)`; попутно починены моки `expenses.service` (addPayment + notify path) и `payroll-bonus-release-paid-mark`
+- 🟢 [x] **Delivery Board P0 (реализация)** — L → глобальный маршрут `/delivery-board`, пункт меню и dashboard pin (`open-products` → `/delivery-board`), `DeliveryBoardView` + адаптеры list→board item, Active/Closed, Closed по умолчанию таблица и опциональный Board `Done|Cancelled`, фильтры Closed, drawer деталей с таймлайном stage gate, readiness ring с честным fallback, компактная страница проекта и deep link `?projectId=`; API: опциональное поле `currentStageReadiness` в projection lifecycle. Канон: [`07-Delivery-Board.md`](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md). Код: `apps/web/src/app/(app)/delivery-board`, `apps/web/src/features/projects/components/delivery-board/*`, `apps/api/src/modules/projects/delivery-lifecycle.ts`. Коммиты: `45d5a36e`, `933b9932` (seed для ручного QA).
+
+- 🟢 [x] **Delivery Board P0 — UX дельты, перенесённые из бэклога:** Closed **без DnD** между колонками архива + подпись в UI (`DeliveryBoardClosedFiltersBar`); **MVP фильтра «клиент»** — поиск по имени элемента и проекту в Closed до появления поля компании в list API — S → часть того же среза P0.
 
 ---
 

@@ -41,18 +41,25 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
-### Delivery Board — дельта после P0 UI (ниже — **реальные** поля API/БД, без фиктивных процентов на фронте)
+### Delivery Board — оставшаяся реализация (после P0)
 
-Сид и `/delivery-board` уже дают мануальный QA по стадиям и Closed; от канона `07-Delivery-Board` §6–8 остаётся дозакрытие данными.
+Закрытый UI/UX и сид см. [`IMPLEMENTATION_DONE.md`](./IMPLEMENTATION_DONE.md). Ниже только дельта до полного канона [`07-Delivery-Board.md`](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md) §6–8 и list API.
 
-**Статус в списке:** ✅ — уже есть в репозитории; ⏳ — ещё в бэклоге (оценка **S/M/L** без изменений).
+- **Readiness в списках:** проекция `currentStageReadiness: { completed, total }` в `GET /api/projects/products` и `GET /api/projects/extensions` (или узкий batch) из тех же stage-gate правил, что detail/product gates — **M**
+- **Фильтр клиент / компания:** поле в list DTO + серверный фильтр (`companyId` или имя компании с проекта) — **M**
+- **Closed metadata / audit:** явный `closedAt` / `closedBy` / история сверх `updatedAt` там, где канон §8 требует больше proxy — проекция из БД или миграция + запись при terminal transition — **M** (сверить с [`project-product.prisma`](../packages/database/prisma/schema/project-product.prisma))
 
-- ⏳ **Readiness 7/10 в списках:** проекция `currentStageReadiness: { completed, total }` в `GET /api/projects/products` и extensions list (или узкий batch) из тех же stage-gate правил, что detail — **M**  
-  _(частично без этой строки: тип в `deliveryLifecycle`, кольцо на карточке и честный fallback, если счётчиков нет — уже есть; заполнение счётчиков в **list** — нет.)_
-- ⏳ **Checklist Template Builder foundation:** reusable versioned checklist templates in My Company / SOP & Templates, checklist instances as snapshots, Delivery Board `CHECKLIST` stage requirement uses selected template — **L**
-- **Фильтр клиент/компания:** ✅ MVP — поиск по имени элемента и проекту в Closed (клиентский фильтр без отдельного поля компании); ⏳ поле в list DTO + серверный фильтр (`companyId` / имя компании с проекта) — **M**
-- ⏳ **Closed metadata / audit:** где канон требует явный closedAt/closedBy/историю сверх `updatedAt` — проекция из БД или миграция и запись при terminal transition — **M** (сверить §8 с текущей схемой)
-- ✅ **Закрытый Board без DnD:** архив без перетаскивания между колонками; подпись в UI есть (`DeliveryBoardClosedFiltersBar`: «Archive: no drag between Done and Cancelled») — было **S**, сделано
+### Checklist Template Builder (реализация)
+
+**Канон (спека готова, код — бэклог):** [`08-Checklist-Template-Builder.md`](NBOS/02-Modules/07-My-Company/08-Checklist-Template-Builder.md). Детали модели и UX не дублировать здесь. Перекрёстные ссылки на канон — в [`00-Documentation-Hub.md`](NBOS/00-Documentation-Hub.md) §3 и [`05-SOP-Templates.md`](NBOS/02-Modules/07-My-Company/05-SOP-Templates.md).
+
+| Фаза                             | Содержание                                                                                                                                                                                                                                                                                                                     | Оценка  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| **CTB-1 Foundation**             | Prisma: шаблон, версия, instance (поля и правила версионирования — канон §4–5); CRUD API под RBAC; минимальный список/редактор в My Company / SOP & Templates (навигация — [`00-My-Company-Overview.md`](NBOS/02-Modules/07-My-Company/00-My-Company-Overview.md)); publish новой версии без изменения уже созданных instances | **L**   |
+| **CTB-2 Consumption — Projects** | Привязка шаблона к stage requirement (product type × stage, requirement type `CHECKLIST`); конфиг/таблица правил; создание **instance** при срабатывании правил (момент активации — по канону §6–7 doc 08)                                                                                                                     | **L**   |
+| **CTB-3 Delivery Board**         | Прогресс checklist requirement на карточке и в drawer рядом с существующим readiness / stage gate UI                                                                                                                                                                                                                           | **M–L** |
+
+**UI:** выравнивание с существующими экранами My Company (`apps/web/src/app/(app)/my-company/*`), общие компоненты и Tailwind-классы, без inline styles по правилам репозитория; отдельный Figma-артефакт — только при явном ТЗ, иначе консистентность с существующими страницами SOP / KPI / Compensation.
 
 ---
 
@@ -141,11 +148,12 @@
 
 ## Текущий фокус (кратко)
 
-| Поле           | Значение                                                  |
-| -------------- | --------------------------------------------------------- |
-| Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей |
-| Исключения     | Банк; Bitrix mapping/import/cutover после core            |
-| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`     |
+| Поле           | Значение                                                                 |
+| -------------- | ------------------------------------------------------------------------ |
+| Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей                |
+| Исключения     | Банк; Bitrix mapping/import/cutover после core                           |
+| Активный 2A    | Delivery Board list/API-дельта; **Checklist Template Builder** (CTB-1→3) |
+| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`                    |
 
 ---
 
