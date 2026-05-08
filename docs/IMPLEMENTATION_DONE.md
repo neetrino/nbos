@@ -2,7 +2,7 @@
 
 > **Архив закрытых вех и выполненных срезов.** Активный бэклог — [`IMPLEMENTATION_PROGRESS.md`](./IMPLEMENTATION_PROGRESS.md). Последовательность по продукту — [`NBOS/00-Implementation-Roadmap.md`](./NBOS/00-Implementation-Roadmap.md). Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-08
+**Обновлено:** 2026-05-09
 
 ---
 
@@ -132,7 +132,7 @@
 
 - 🟢 [x] **Opened Delivery Card — срез 2 (Stage Gate timeline §8.5 baseline):** общий компонент `DeliveryStageTimelineCard` (четыре стадии, подсветка current/done/future, hold copy, строка `currentStageReadiness` completed/total); подключён в opened delivery cockpit (`DeliveryItemDetailCockpit`) и в `ProductOverviewTab` (рефактор без смены поведения страницы продукта) — S
 
-- 🟢 [x] **Opened Delivery Card — срез 3 (notes rail, audit history, closed metadata):** Prisma `products.closed_at` / `closed_by_id`, `extensions.*` + FK на `employees`, миграция `20260508183000_product_extension_closed_metadata` (backfill `closed_at` для уже терминальных); `ProductsService` / `ExtensionsService` — запись при `complete`/`cancel`, `@CurrentUser` на cancel+complete (products) и cancel (extensions); `AuditService.log` `delivery.completed` / `delivery.cancelled` (`PRODUCT` / `EXTENSION`); `findByEntity` / `findByUser` обогащают строки полем `actor`; web: `DeliveryItemDetailHistoryPanel`, `lib/api/audit.ts`, rail «Delivery notes», баннер closedAt/closedBy; **доп.** вкладка Bonus — `GET /api/bonus?orderId=` в `DeliveryItemDetailBonusPanel`; вкладка Calls — навигация проект/сделка (`/crm/deals?openDealId=`), без call-log API; `findById` product/extension — `project.contactId`, `order.deal { id, code }` — M
+- 🟢 [x] **Opened Delivery Card — срез 3 (notes rail, audit history, closed metadata):** Prisma `products.closed_at` / `closed_by_id`, `extensions.*` + FK на `employees`, миграция `20260508183000_product_extension_closed_metadata` (backfill `closed_at` для уже терминальных); `ProductsService` / `ExtensionsService` — запись при `complete`/`cancel`, `@CurrentUser` на cancel+complete (products) и cancel (extensions); `AuditService.log` `delivery.completed` / `delivery.cancelled` (`PRODUCT` / `EXTENSION`); `findByEntity` / `findByUser` обогащают строки полем `actor`; web: `DeliveryItemDetailHistoryPanel`, `lib/api/audit.ts`, rail «Delivery notes», баннер closedAt/closedBy; **доп.** вкладка Bonus — `GET /api/bonus?orderId=` в `DeliveryItemDetailBonusPanel`; вкладка Calls — навигация проект/сделка (`/crm/deals?openDealId=`), без call-log API; `findById` product/extension — `project.contactId`, `order.deal { id, code }` — M. **Миграция на БД:** SQL в репозитории; применение на конкретной среде — штатный **`migrate deploy`**, отдельный тикет в активном бэклоге 2A не ведётся (`IMPLEMENTATION_PROGRESS`).
 
 ---
 

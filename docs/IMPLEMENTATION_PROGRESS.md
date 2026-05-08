@@ -2,7 +2,7 @@
 
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-08
+**Обновлено:** 2026-05-09
 
 ---
 
@@ -41,31 +41,16 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
-### Delivery Board — оставшаяся реализация (после P0)
+Закрытые срезы (Delivery Board P0+, Opened Card 1–3, CTB-1 foundation, фильтры board, readiness, спеки карточки) — в `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Канон: `[07-Delivery-Board.md](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md)`, `[08-Checklist-Template-Builder.md](NBOS/02-Modules/07-My-Company/08-Checklist-Template-Builder.md)`, UI shell — `[07-Professional-Delivery-Card.md](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md)`. Лента звонков / ATS — **блок 2C**.
 
-Закрытый UI/UX и сид см. `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Ниже только дельта до полного канона `[07-Delivery-Board.md](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md)` §6–8 и list API.
-
-- ✅ **Фильтр клиент / компания** — закрыто: `companyId` + `project.company` в list DTO, query `companyId` на list API, фильтр Company на Closed board; см. `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
-- ✅ **Readiness в списках** — закрыто: `currentStageReadiness` в `GET /projects/products` и `GET /projects/extensions`; см. `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
-- ✅ **Professional Delivery Card design** — закрыто: UI-спецификация shell, header, табы, колонки, breakpoints и DoD в `[07-Professional-Delivery-Card.md](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md)`; ссылка добавлена в `[07-Delivery-Board.md](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md)` §8.1.
-- ✅ **Opened Delivery Card — срез 1 (web shell + cockpit)** и **срез 2 (Stage Gate timeline)** — закрыто в `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
-- ✅ **Opened Delivery Card — срез 3 (notes rail + History + closed metadata):** заметки/scope в правом rail (`description` продукта / extension + deep link на Overview / Extensions); вкладка **History** через `GET /api/audit` + `actor` из Employee; **`closedAt` / `closedBy`** в БД, backfill для терминальных, запись при `complete`/`cancel`, аудит `delivery.completed` / `delivery.cancelled`; вкладка **Bonus** — список `GET /api/bonus?orderId=` по заказу линии; **Calls** — без API логов, навигация на проект / сделку (`openDealId`) / pipeline. См. `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`.
-- **Окружение (срез 3):** на каждой БД выполнить миграцию `20260508183000_product_extension_closed_metadata` (`closed_at` / `closed_by_id`), иначе API/UI closed metadata и часть аудита не совпадут со схемой — **S**
-- **Opened Delivery Card — дельта до канона §8:** **Calls** — пер-сущность лента / телефония (когда появится API); **Bonus** — пагинация / релизы в drawer глубже первого экрана; при необходимости **действия стадий** в drawer (RBAC/API); опционально аудит на deprecated `PATCH …/status` → terminal — **M–L**
-
-### Checklist Template Builder (реализация)
-
-**Канон:** `[08-Checklist-Template-Builder.md](NBOS/02-Modules/07-My-Company/08-Checklist-Template-Builder.md)`. Детали модели и UX не дублировать здесь. Перекрёстные ссылки на канон — в `[00-Documentation-Hub.md](NBOS/00-Documentation-Hub.md)` §3 и `[05-SOP-Templates.md](NBOS/02-Modules/07-My-Company/05-SOP-Templates.md)`.
-
-| Фаза                             | Содержание                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Оценка  |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **CTB-1 Foundation**             | ✅ **Срез закрыт:** Prisma `checklist_templates` / `checklist_template_versions` / `checklist_instances` + FK `products.checklist_template_id`; миграция `20260508193000_checklist_templates_foundation`; API `GET/POST/PATCH /api/checklist-templates`, `PUT …/draft-items`, `POST …/publish`, `POST …/:id/instances`, `GET /api/checklist-instances` (RBAC: `COMPANY` VIEW/EDIT); web `/my-company/checklist-templates` (+ hub + SOP ссылка). **Вне среза:** granular permissions из канона §13, аудит событий, duplicate/preview/history UX, drag-only reorder без кнопок | **L**   |
-| **CTB-2 Consumption — Projects** | Привязка шаблона к stage requirement (product type × stage, requirement type `CHECKLIST`); конфиг/таблица правил; создание **instance** при срабатывании правил (момент активации — по канону §6–7 doc 08)                                                                                                                                                                                                                                                                                                                                                                   | **L**   |
-| **CTB-3 Delivery Board**         | Прогресс checklist requirement на карточке и в drawer рядом с существующим readiness / stage gate UI                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | **M–L** |
-
-- **Окружение (CTB-1):** на каждой БД выполнить миграцию `20260508193000_checklist_templates_foundation` (перед FK все непустые `products.checklist_template_id` обнуляются — см. SQL миграции), иначе Nest/Prisma и UI `/my-company/checklist-templates` не совпадут со схемой — **S**
-
-**UI:** выравнивание с существующими экранами My Company (`apps/web/src/app/(app)/my-company/*`), общие компоненты и Tailwind-классы, без inline styles по правилам репозитория; отдельный Figma-артефакт — только при явном ТЗ, иначе консистентность с существующими страницами SOP / KPI / Compensation.
+- Delivery Card §8: вкладка Bonus — пагинация и релизы в drawer глубже первого экрана — M
+- Delivery Card §8: действия стадий в drawer (RBAC/API), если потребует продукт — M
+- Delivery Card §8: опционально аудит при deprecated `PATCH …/status` product/extension → terminal — S
+- CTB-2 Projects: привязка шаблона к stage requirement (`CHECKLIST`), конфиг правил, создание instance по канону §6–7 док. 08 — L
+- CTB-3 Delivery Board: прогресс checklist requirement на карточке и в drawer рядом с readiness / stage gate — M–L
+- CTB-1 дельта: granular permissions по канону §13 (не только COMPANY VIEW/EDIT) — M
+- CTB-1 дельта: аудит событий шаблонов / версий / publish — M
+- CTB-1 дельта: duplicate, preview, version history в builder UI — M
 
 ---
 
@@ -96,6 +81,7 @@
 Не держать эти строки в активной ежедневной очереди. Возвращать в работу, когда есть токены, доступы, тестовые аккаунты или подтверждённая инфраструктура.
 
 - Telegram: internal notification channel по канону + явные env/токены — M
+- **Телефония / ATS (звонки):** интеграция с внешним приложением звонков или ATS (webhook или API провайдера): приём событий о входящих/исходящих звонках, **нормализация номера** (E.164 / правила компании), **сохранение** записей в NBOS, **сопоставление** с Contact / Deal / Project по телефону и правилам приоритета; затем **лента звонков** в UI (Delivery Card канон §8, карточки CRM и связанные сущности). Требует выбора провайдера/модели, кредов, политики PII/записей; детальный подканон — при старте среза (сейчас в `docs/NBOS` нет отдельного закреплённого документа только под ATS) — **L**
 - WhatsApp Gateway + WAHA (VPS): контракт Gateway↔NBOS, health/send/webhook на Gateway, вложения Gateway→NBOS Drive — L
 - Support: связь с external messenger conversation — M
 - Technical: webhooks GitHub / репозиторий links как интеграция — M
@@ -154,12 +140,12 @@
 
 ## Текущий фокус (кратко)
 
-| Поле           | Значение                                                                                                                                        |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей                                                                                       |
-| Исключения     | Банк; Bitrix mapping/import/cutover после core                                                                                                  |
-| Активный 2A    | **Checklist Template Builder** (CTB-1→3) — следующий крупный срез; Delivery Card — дельта §8 (лента Calls, углубление Bonus, опц. stage drawer) |
-| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`                                                                                           |
+| Поле           | Значение                                                  |
+| -------------- | --------------------------------------------------------- |
+| Режим          | Закрытие **2A → 2B**; 2C только после внешних готовностей |
+| Исключения     | Банк; Bitrix mapping/import/cutover после core            |
+| Активный 2A    | Список в **§2A** выше (8 строк задач); звонки — **2C**    |
+| Архив precheck | `docs/Progress Archive/PHASE_7_PRECHECK_MANUAL_QA.md`     |
 
 ---
 
