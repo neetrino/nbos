@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,9 @@ import {
 import { PermissionGate } from '@/lib/permissions';
 import { toast } from 'sonner';
 import { ChecklistDraftItemsEditor } from '../checklist-draft-items-editor';
+import { ChecklistTemplateDuplicateDialog } from '../checklist-template-duplicate-dialog';
+import { ChecklistTemplatePreviewDialog } from '../checklist-template-preview-dialog';
+import { ChecklistTemplateVersionHistory } from '../checklist-template-version-history';
 
 function statusVariant(status: string): 'default' | 'green' | 'gray' | 'blue' | 'amber' | 'red' {
   if (status === 'ACTIVE') {
@@ -28,12 +31,18 @@ function statusVariant(status: string): 'default' | 'green' | 'gray' | 'blue' | 
 
 export default function ChecklistTemplateDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const id = params.id;
   const [detail, setDetail] = useState<ChecklistTemplateDetail | null>(null);
   const [items, setItems] = useState<ChecklistTemplateItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [preview, setPreview] = useState<{ versionId: string; label: string } | null>(null);
+  const [previewItems, setPreviewItems] = useState<ChecklistTemplateItem[]>([]);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [dupOpen, setDupOpen] = useState(false);
+  const [dupBusy, setDupBusy] = useState(false);
 
   const load = useCallback(async () => {
     if (!id) {
@@ -94,13 +103,53 @@ export default function ChecklistTemplateDetailPage() {
     }
   }
 
+  const openPreview = useCallback(
+    async (versionId: string, label: string) => {
+      if (!id) {
+        return;
+      }
+      setPreview({ versionId, label });
+      setPreviewLoading(true);
+      setPreviewItems([]);
+      try {
+        const snap = await checklistTemplatesApi.getVersionSnapshot(id, versionId);
+        setPreviewItems(parseChecklistTemplateItems(snap.items));
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Failed to load version';
+        toast.error(msg);
+        setPreview(null);
+      } finally {
+        setPreviewLoading(false);
+      }
+    },
+    [id],
+  );
+
+  async function runDuplicate() {
+    if (!id) {
+      return;
+    }
+    setDupBusy(true);
+    try {
+      const next = await checklistTemplatesApi.duplicate(id);
+      toast.success('Template duplicated');
+      setDupOpen(false);
+      router.push(`/my-company/checklist-templates/${next.id}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to duplicate';
+      toast.error(msg);
+    } finally {
+      setDupBusy(false);
+    }
+  }
+
   async function archive() {
     if (!id || !detail || detail.status === 'ARCHIVED') {
       return;
     }
     setSaving(true);
     try {
-      const next = await checklistTemplatesApi.updateMetadata(id, { status: 'ARCHIVED' });
+      const next = await checklistTemplatesApi.archive(id);
       setDetail(next);
       toast.success('Template archived');
     } catch (err) {
@@ -140,6 +189,17 @@ export default function ChecklistTemplateDetailPage() {
       <PageHeader title={detail.name} description={detail.description ?? '—'}>
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge label={detail.status} variant={statusVariant(detail.status)} />
+          <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={readOnly}
+              onClick={() => setDupOpen(true)}
+            >
+              Duplicate
+            </Button>
+          </PermissionGate>
           <Link
             href="/my-company/checklist-templates"
             className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
@@ -170,24 +230,20 @@ export default function ChecklistTemplateDetailPage() {
         </p>
       </div>
 
-      <div className="border-border bg-card rounded-2xl border p-4">
-        <p className="text-muted-foreground mb-3 text-sm font-medium">Version history</p>
-        <ul className="text-muted-foreground max-h-40 space-y-1 overflow-auto text-xs">
-          {detail.versions.map((v) => (
-            <li key={v.id}>
-              v{v.versionNumber} · {v.status} · {new Date(v.createdAt).toLocaleString()}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ChecklistTemplateVersionHistory
+        versions={detail.versions}
+        onPreview={(versionId, label) => void openPreview(versionId, label)}
+      />
 
       <div className="border-border bg-card rounded-2xl border p-4">
         <ChecklistDraftItemsEditor items={items} disabled={readOnly} onChange={setItems} />
-        <PermissionGate module="COMPANY" action="EDIT">
-          <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
+          <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
             <Button type="button" disabled={readOnly || saving} onClick={() => void saveDraft()}>
               {saving ? 'Saving…' : 'Save draft'}
             </Button>
+          </PermissionGate>
+          <PermissionGate module="CHECKLIST_TEMPLATES" action="PUBLISH">
             <Button
               type="button"
               variant="secondary"
@@ -196,6 +252,8 @@ export default function ChecklistTemplateDetailPage() {
             >
               {publishing ? 'Publishing…' : 'Publish draft'}
             </Button>
+          </PermissionGate>
+          <PermissionGate module="CHECKLIST_TEMPLATES" action="ARCHIVE">
             <Button
               type="button"
               variant="outline"
@@ -204,12 +262,32 @@ export default function ChecklistTemplateDetailPage() {
             >
               Archive
             </Button>
-          </div>
-        </PermissionGate>
+          </PermissionGate>
+        </div>
         {readOnly ? (
           <p className="text-muted-foreground mt-3 text-sm">This template is archived.</p>
         ) : null}
       </div>
+
+      <ChecklistTemplatePreviewDialog
+        open={preview !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPreview(null);
+          }
+        }}
+        title={preview ? `Preview · ${preview.label}` : 'Preview'}
+        loading={previewLoading}
+        items={previewItems}
+      />
+
+      <ChecklistTemplateDuplicateDialog
+        open={dupOpen}
+        onOpenChange={setDupOpen}
+        templateName={detail.name}
+        busy={dupBusy}
+        onConfirm={() => void runDuplicate()}
+      />
     </div>
   );
 }

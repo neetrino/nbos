@@ -7,6 +7,11 @@ import {
   type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
+import {
+  CHECKLIST_TEMPLATE_AUDIT_ENTITY_TYPE,
+  ChecklistTemplateAuditAction,
+} from './checklist-template-audit.constants';
 import {
   CHECKLIST_TEMPLATE_MAX_ITEMS,
   checklistItemsToJson,
@@ -35,7 +40,10 @@ const templateInclude = {
 
 @Injectable()
 export class ChecklistTemplatesService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly audit: AuditService,
+  ) {}
 
   findAll() {
     return this.prisma.checklistTemplate.findMany({
@@ -95,21 +103,20 @@ export class ChecklistTemplatesService {
         },
       });
     });
+    await this.audit.log({
+      entityType: CHECKLIST_TEMPLATE_AUDIT_ENTITY_TYPE,
+      entityId: createdId,
+      action: ChecklistTemplateAuditAction.CREATED,
+      userId: actorEmployeeId,
+      changes: { name: body.name } as InputJsonValue,
+    });
     return this.findById(createdId);
   }
 
-  async updateMetadata(id: string, body: UpdateChecklistTemplateDto) {
-    if (body.status !== undefined && body.status !== ChecklistTemplateStatusEnum.ARCHIVED) {
-      throw new BadRequestException('Only archiving is supported via PATCH status');
-    }
+  async updateMetadata(id: string, body: UpdateChecklistTemplateDto, actorEmployeeId: string) {
     const existing = await this.prisma.checklistTemplate.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException(`Checklist template ${id} not found`);
-    }
-    if (body.status === ChecklistTemplateStatusEnum.ARCHIVED) {
-      if (existing.status === ChecklistTemplateStatusEnum.ARCHIVED) {
-        return this.findById(id);
-      }
     }
     await this.prisma.checklistTemplate.update({
       where: { id },
@@ -118,13 +125,45 @@ export class ChecklistTemplatesService {
         description: body.description === undefined ? undefined : body.description,
         category: body.category ?? undefined,
         ownerModule: body.ownerModule ?? undefined,
-        status: body.status ?? undefined,
       },
+    });
+    const changedKeys = (Object.keys(body) as Array<keyof UpdateChecklistTemplateDto>).filter(
+      (key) => body[key] !== undefined,
+    );
+    if (changedKeys.length > 0) {
+      await this.audit.log({
+        entityType: CHECKLIST_TEMPLATE_AUDIT_ENTITY_TYPE,
+        entityId: id,
+        action: ChecklistTemplateAuditAction.METADATA_UPDATED,
+        userId: actorEmployeeId,
+        changes: { fields: changedKeys } as InputJsonValue,
+      });
+    }
+    return this.findById(id);
+  }
+
+  async archive(id: string, actorEmployeeId: string) {
+    const existing = await this.prisma.checklistTemplate.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Checklist template ${id} not found`);
+    }
+    if (existing.status === ChecklistTemplateStatusEnum.ARCHIVED) {
+      return this.findById(id);
+    }
+    await this.prisma.checklistTemplate.update({
+      where: { id },
+      data: { status: ChecklistTemplateStatusEnum.ARCHIVED },
+    });
+    await this.audit.log({
+      entityType: CHECKLIST_TEMPLATE_AUDIT_ENTITY_TYPE,
+      entityId: id,
+      action: ChecklistTemplateAuditAction.ARCHIVED,
+      userId: actorEmployeeId,
     });
     return this.findById(id);
   }
 
-  async updateDraftItems(id: string, body: UpdateDraftItemsDto) {
+  async updateDraftItems(id: string, body: UpdateDraftItemsDto, actorEmployeeId: string) {
     const template = await this.prisma.checklistTemplate.findUnique({ where: { id } });
     if (!template) {
       throw new NotFoundException(`Checklist template ${id} not found`);
@@ -146,6 +185,16 @@ export class ChecklistTemplatesService {
     await this.prisma.checklistTemplateVersion.update({
       where: { id: draft.id },
       data: { items: checklistItemsToJson(normalized) },
+    });
+    await this.audit.log({
+      entityType: CHECKLIST_TEMPLATE_AUDIT_ENTITY_TYPE,
+      entityId: id,
+      action: ChecklistTemplateAuditAction.DRAFT_UPDATED,
+      userId: actorEmployeeId,
+      changes: {
+        draftVersionId: draft.id,
+        itemCount: normalized.length,
+      } as InputJsonValue,
     });
     return this.findById(id);
   }
@@ -194,7 +243,84 @@ export class ChecklistTemplatesService {
       });
     });
 
+    await this.audit.log({
+      entityType: CHECKLIST_TEMPLATE_AUDIT_ENTITY_TYPE,
+      entityId: id,
+      action: ChecklistTemplateAuditAction.VERSION_PUBLISHED,
+      userId: actorEmployeeId,
+      changes: {
+        publishedVersionId: draft.id,
+        publishedVersionNumber: draft.versionNumber,
+      } as InputJsonValue,
+    });
     return this.findById(id);
+  }
+
+  async getVersionSnapshot(templateId: string, versionId: string) {
+    const row = await this.prisma.checklistTemplateVersion.findFirst({
+      where: { id: versionId, templateId },
+      select: {
+        id: true,
+        versionNumber: true,
+        status: true,
+        createdAt: true,
+        items: true,
+      },
+    });
+    if (!row) {
+      throw new NotFoundException(`Checklist template version ${versionId} not found`);
+    }
+    return row;
+  }
+
+  async duplicateFrom(sourceId: string, actorEmployeeId: string) {
+    const source = await this.prisma.checklistTemplate.findUnique({
+      where: { id: sourceId },
+      include: {
+        activeVersion: { select: { items: true } },
+      },
+    });
+    if (!source) {
+      throw new NotFoundException(`Checklist template ${sourceId} not found`);
+    }
+    const sourceDraft = await this.prisma.checklistTemplateVersion.findFirst({
+      where: { templateId: sourceId, status: ChecklistTemplateVersionStatusEnum.DRAFT },
+      orderBy: { versionNumber: 'desc' },
+      select: { items: true },
+    });
+    const rawItems =
+      sourceDraft?.items ?? source.activeVersion?.items ?? ([] as unknown as InputJsonValue);
+    const name = `Copy of ${source.name}`;
+    let createdId = '';
+    await this.prisma.$transaction(async (tx) => {
+      const template = await tx.checklistTemplate.create({
+        data: {
+          name,
+          description: source.description,
+          category: source.category,
+          ownerModule: source.ownerModule,
+          status: ChecklistTemplateStatusEnum.DRAFT,
+        },
+      });
+      createdId = template.id;
+      await tx.checklistTemplateVersion.create({
+        data: {
+          templateId: template.id,
+          versionNumber: 1,
+          status: ChecklistTemplateVersionStatusEnum.DRAFT,
+          items: rawItems as InputJsonValue,
+          createdById: actorEmployeeId,
+        },
+      });
+    });
+    await this.audit.log({
+      entityType: CHECKLIST_TEMPLATE_AUDIT_ENTITY_TYPE,
+      entityId: createdId,
+      action: ChecklistTemplateAuditAction.DUPLICATED,
+      userId: actorEmployeeId,
+      changes: { sourceTemplateId: sourceId } as InputJsonValue,
+    });
+    return this.findById(createdId);
   }
 
   async createInstance(templateId: string, body: CreateChecklistInstanceDto) {

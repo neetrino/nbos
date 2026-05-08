@@ -11,7 +11,7 @@ export class ChecklistInstancesController {
   constructor(private readonly checklistTemplatesService: ChecklistTemplatesService) {}
 
   @Get()
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'VIEW')
   @ApiOperation({ summary: 'List checklist instances for an owner entity' })
   list(@Query() query: ListChecklistInstancesQueryDto) {
     return this.checklistTemplatesService.listInstances(query.ownerEntityType, query.ownerEntityId);

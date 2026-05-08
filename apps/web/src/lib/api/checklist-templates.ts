@@ -51,6 +51,14 @@ export interface ChecklistTemplateDetail extends ChecklistTemplateListItem {
   } | null;
 }
 
+export interface ChecklistTemplateVersionSnapshot {
+  id: string;
+  versionNumber: number;
+  status: string;
+  createdAt: string;
+  items: unknown;
+}
+
 export function parseChecklistTemplateItems(raw: unknown): ChecklistTemplateItem[] {
   if (!Array.isArray(raw)) {
     return [];
@@ -134,10 +142,31 @@ export const checklistTemplatesApi = {
       description: string | null;
       category: ChecklistTemplateCategory;
       ownerModule: ChecklistOwnerModule;
-      status: 'ARCHIVED';
     }>,
   ): Promise<ChecklistTemplateDetail> {
     const resp = await api.patch<ChecklistTemplateDetail>(`/api/checklist-templates/${id}`, data);
+    return resp.data;
+  },
+
+  async archive(id: string): Promise<ChecklistTemplateDetail> {
+    const resp = await api.post<ChecklistTemplateDetail>(`/api/checklist-templates/${id}/archive`);
+    return resp.data;
+  },
+
+  async duplicate(id: string): Promise<ChecklistTemplateDetail> {
+    const resp = await api.post<ChecklistTemplateDetail>(
+      `/api/checklist-templates/${id}/duplicate`,
+    );
+    return resp.data;
+  },
+
+  async getVersionSnapshot(
+    templateId: string,
+    versionId: string,
+  ): Promise<ChecklistTemplateVersionSnapshot> {
+    const resp = await api.get<ChecklistTemplateVersionSnapshot>(
+      `/api/checklist-templates/${templateId}/versions/${versionId}`,
+    );
     return resp.data;
   },
 

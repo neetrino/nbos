@@ -58,7 +58,7 @@ export default function ChecklistTemplatesListPage() {
           >
             Stage rules
           </Link>
-          <PermissionGate module="COMPANY" action="EDIT">
+          <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
             <Link
               href="/my-company/checklist-templates/new"
               className={cn(buttonVariants({ size: 'sm' }))}

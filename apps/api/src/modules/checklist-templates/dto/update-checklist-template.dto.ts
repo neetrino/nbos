@@ -1,8 +1,4 @@
-import {
-  ChecklistOwnerModuleEnum,
-  ChecklistTemplateCategoryEnum,
-  ChecklistTemplateStatusEnum,
-} from '@nbos/database';
+import { ChecklistOwnerModuleEnum, ChecklistTemplateCategoryEnum } from '@nbos/database';
 import { IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateChecklistTemplateDto {
@@ -24,8 +20,4 @@ export class UpdateChecklistTemplateDto {
   @IsOptional()
   @IsEnum(ChecklistOwnerModuleEnum)
   ownerModule?: ChecklistOwnerModuleEnum;
-
-  @IsOptional()
-  @IsEnum(ChecklistTemplateStatusEnum)
-  status?: ChecklistTemplateStatusEnum;
 }

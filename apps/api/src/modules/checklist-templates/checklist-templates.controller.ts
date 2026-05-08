@@ -30,28 +30,38 @@ export class ChecklistTemplatesController {
   ) {}
 
   @Get()
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'VIEW')
   @ApiOperation({ summary: 'List checklist templates' })
   findAll() {
     return this.checklistTemplatesService.findAll();
   }
 
   @Get('stage-rules')
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'VIEW')
   @ApiOperation({ summary: 'List delivery stage → checklist template binding rules (CTB-2)' })
   listStageRules() {
     return this.deliveryStageChecklistRulesService.findAll();
   }
 
+  @Get(':id/versions/:versionId')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'VIEW')
+  @ApiOperation({ summary: 'Read-only checklist template version payload (preview)' })
+  getVersionSnapshot(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('versionId', ParseUUIDPipe) versionId: string,
+  ) {
+    return this.checklistTemplatesService.getVersionSnapshot(id, versionId);
+  }
+
   @Post('stage-rules')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'EDIT')
   @ApiOperation({ summary: 'Create a CHECKLIST stage requirement rule' })
   createStageRule(@Body() body: CreateDeliveryStageChecklistRuleDto) {
     return this.deliveryStageChecklistRulesService.create(body);
   }
 
   @Patch('stage-rules/:ruleId')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'EDIT')
   @ApiOperation({ summary: 'Update a delivery checklist stage rule' })
   updateStageRule(
     @Param('ruleId', ParseUUIDPipe) ruleId: string,
@@ -61,49 +71,71 @@ export class ChecklistTemplatesController {
   }
 
   @Delete('stage-rules/:ruleId')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'EDIT')
   @ApiOperation({ summary: 'Delete a delivery checklist stage rule' })
   removeStageRule(@Param('ruleId', ParseUUIDPipe) ruleId: string) {
     return this.deliveryStageChecklistRulesService.remove(ruleId);
   }
 
   @Get(':id')
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'VIEW')
   @ApiOperation({ summary: 'Get checklist template with versions and draft payload' })
   findById(@Param('id', ParseUUIDPipe) id: string) {
     return this.checklistTemplatesService.findById(id);
   }
 
   @Post()
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'ADD')
   @ApiOperation({ summary: 'Create checklist template with initial draft version' })
   create(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateChecklistTemplateDto) {
     return this.checklistTemplatesService.create(body, user.id);
   }
 
   @Patch(':id')
-  @RequirePermission('COMPANY', 'EDIT')
-  @ApiOperation({ summary: 'Update template metadata or archive' })
-  updateMetadata(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateChecklistTemplateDto) {
-    return this.checklistTemplatesService.updateMetadata(id, body);
+  @RequirePermission('CHECKLIST_TEMPLATES', 'EDIT')
+  @ApiOperation({ summary: 'Update template metadata (name, description, category, owner module)' })
+  updateMetadata(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: UpdateChecklistTemplateDto,
+  ) {
+    return this.checklistTemplatesService.updateMetadata(id, body, user.id);
   }
 
   @Put(':id/draft-items')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'EDIT')
   @ApiOperation({ summary: 'Replace items on the current draft version' })
-  updateDraftItems(@Param('id', ParseUUIDPipe) id: string, @Body() body: UpdateDraftItemsDto) {
-    return this.checklistTemplatesService.updateDraftItems(id, body);
+  updateDraftItems(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: UpdateDraftItemsDto,
+  ) {
+    return this.checklistTemplatesService.updateDraftItems(id, body, user.id);
   }
 
   @Post(':id/publish')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'PUBLISH')
   @ApiOperation({ summary: 'Publish draft, set active version, open next draft' })
   publish(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: CurrentUserPayload) {
     return this.checklistTemplatesService.publish(id, user.id);
   }
 
+  @Post(':id/archive')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'ARCHIVE')
+  @ApiOperation({ summary: 'Archive checklist template' })
+  archive(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.checklistTemplatesService.archive(id, user.id);
+  }
+
+  @Post(':id/duplicate')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'ADD')
+  @ApiOperation({ summary: 'Duplicate template into a new draft (copy of draft or active items)' })
+  duplicate(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.checklistTemplatesService.duplicateFrom(id, user.id);
+  }
+
   @Post(':id/instances')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'EDIT')
   @ApiOperation({ summary: 'Create checklist instance from active published version' })
   createInstance(@Param('id', ParseUUIDPipe) id: string, @Body() body: CreateChecklistInstanceDto) {
     return this.checklistTemplatesService.createInstance(id, body);

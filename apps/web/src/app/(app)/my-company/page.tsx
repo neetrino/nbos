@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import type { LucideIcon } from 'lucide-react';
 import {
   BadgeDollarSign,
   Building2,
@@ -23,8 +24,17 @@ import {
   type Employee,
   type RoleItem,
 } from '@/lib/api/employees';
+import { usePermission } from '@/lib/permissions';
 
-const MY_COMPANY_SECTIONS = [
+type HubSection = {
+  title: string;
+  href: string;
+  description: string;
+  icon: LucideIcon;
+  require?: { module: string; action: string };
+};
+
+const MY_COMPANY_SECTIONS: HubSection[] = [
   {
     title: 'Team',
     href: '/my-company/team',
@@ -73,6 +83,7 @@ const MY_COMPANY_SECTIONS = [
     href: '/my-company/checklist-templates',
     description: 'Versioned checklist builders for delivery, QA, maintenance, and SOP.',
     icon: ListChecks,
+    require: { module: 'CHECKLIST_TEMPLATES', action: 'VIEW' },
   },
   {
     title: 'Delivery checklist rules',
@@ -80,8 +91,9 @@ const MY_COMPANY_SECTIONS = [
     description:
       'Bind published templates to Product / Extension stages; instances on stage entry.',
     icon: Waypoints,
+    require: { module: 'CHECKLIST_TEMPLATES', action: 'VIEW' },
   },
-] as const;
+];
 
 const FOUNDATION_GAPS = [
   'Seat assignments are not modelled separately from technical permission roles yet.',
@@ -99,6 +111,7 @@ function countActiveEmployees(employees: Employee[]): number {
 }
 
 export default function MyCompanyPage() {
+  const { can, isLoading: permsLoading } = usePermission();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [roles, setRoles] = useState<RoleItem[]>([]);
@@ -133,6 +146,11 @@ export default function MyCompanyPage() {
   const activeEmployees = countActiveEmployees(employees);
   const assignedEmployees = employees.filter((employee) => employee.departments.length > 0).length;
   const systemRoles = roles.filter((role) => role.isSystem).length;
+
+  const visibleHubSections = MY_COMPANY_SECTIONS.filter(
+    (section) =>
+      permsLoading || !section.require || can(section.require.action, section.require.module),
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -207,7 +225,7 @@ export default function MyCompanyPage() {
             </div>
 
             <div className="grid gap-3">
-              {MY_COMPANY_SECTIONS.map((section) => {
+              {visibleHubSections.map((section) => {
                 const Icon = section.icon;
                 return (
                   <Link

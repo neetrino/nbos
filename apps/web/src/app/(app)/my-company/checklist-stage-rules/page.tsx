@@ -305,7 +305,7 @@ export default function ChecklistStageRulesPage() {
             </div>
           )}
         </div>
-        <PermissionGate module="COMPANY" action="EDIT">
+        <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
           <Button
             className="mt-5"
             size="sm"
@@ -352,7 +352,7 @@ export default function ChecklistStageRulesPage() {
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <PermissionGate module="COMPANY" action="EDIT">
+                <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
                   <Button variant="outline" size="sm" onClick={() => void onToggleActive(row)}>
                     {row.isActive ? 'Disable' : 'Enable'}
                   </Button>

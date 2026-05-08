@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PageHeader } from '@/components/shared';
+import { usePermission } from '@/lib/permissions';
 import {
   checklistTemplatesApi,
   type ChecklistOwnerModule,
@@ -36,6 +37,7 @@ const OWNER_MODULES: ChecklistOwnerModule[] = ['MY_COMPANY', 'PROJECTS', 'TASKS'
 
 export default function NewChecklistTemplatePage() {
   const router = useRouter();
+  const { can, isLoading } = usePermission();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<ChecklistTemplateCategory>('SOP');
@@ -64,6 +66,22 @@ export default function NewChecklistTemplatePage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  if (!isLoading && !can('ADD', 'CHECKLIST_TEMPLATES')) {
+    return (
+      <div className="space-y-4 p-6">
+        <p className="text-muted-foreground text-sm">
+          You don&apos;t have permission to create checklist templates.
+        </p>
+        <Link
+          href="/my-company/checklist-templates"
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+        >
+          Back to list
+        </Link>
+      </div>
+    );
   }
 
   return (
