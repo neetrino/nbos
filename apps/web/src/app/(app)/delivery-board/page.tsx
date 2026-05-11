@@ -13,6 +13,7 @@ import {
   buildClosedFilterOptions,
   type DeliveryBoardClosedFiltersInput,
 } from '@/features/projects/components/delivery-board/delivery-board-closed-filters';
+import { DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS } from '@/features/projects/components/delivery-board/delivery-board-active-filters';
 import { DeliveryBoardClosedFiltersBar } from '@/features/projects/components/delivery-board/DeliveryBoardClosedFiltersBar';
 import { DeliveryBoardClosedTable } from '@/features/projects/components/delivery-board/DeliveryBoardClosedTable';
 import { DeliveryItemDetailSheet } from '@/features/projects/components/delivery-board/DeliveryItemDetailSheet';
@@ -58,6 +59,9 @@ export default function DeliveryBoardPage() {
   const [closedViewMode, setClosedViewMode] = useState<'LIST' | 'BOARD'>('LIST');
   const [closedFilters, setClosedFilters] =
     useState<DeliveryBoardClosedFiltersInput>(DEFAULT_CLOSED_FILTERS);
+  const [activePipelineFilters, setActivePipelineFilters] = useState(() => ({
+    ...DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS,
+  }));
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -228,6 +232,11 @@ export default function DeliveryBoardPage() {
               showBoardHeader={false}
               kindFilter={kindFilter}
               onKindFilterChange={setKindFilter}
+              activePipelineFilters={activePipelineFilters}
+              onActivePipelineFiltersChange={setActivePipelineFilters}
+              onClearActivePipelineFilters={() =>
+                setActivePipelineFilters({ ...DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS })
+              }
             />
           </TabsContent>
           <TabsContent value="closed" className="mt-4 space-y-4">

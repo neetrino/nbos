@@ -1,9 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { DeliveryLifecycleActionDialog } from '../DeliveryLifecycleActionDialog';
 import { DeliveryBoardClosedBoard } from './DeliveryBoardClosedBoard';
+import { DeliveryBoardActiveFiltersToolbar } from './DeliveryBoardActiveFiltersToolbar';
+import {
+  applyDeliveryBoardActiveFilters,
+  buildActiveFilterOptions,
+  type DeliveryBoardActiveFiltersInput,
+} from './delivery-board-active-filters';
 import { DeliveryBoardStageGateDialog } from './DeliveryBoardStageGateDialog';
 import { DeliveryKanbanBoard } from './DeliveryKanbanBoard';
 import type { ProductBoardTab } from './ProjectDeliveryBoardContextLinks';
@@ -41,6 +47,10 @@ export interface DeliveryBoardViewProps {
   /** Controlled kind filter; use with `onKindFilterChange` when `showBoardHeader` is false. */
   kindFilter?: DeliveryBoardKindFilter;
   onKindFilterChange?: (filter: DeliveryBoardKindFilter) => void;
+  /** When set with handlers, shows search + filters above the active kanban (global board). */
+  activePipelineFilters?: DeliveryBoardActiveFiltersInput;
+  onActivePipelineFiltersChange?: (next: DeliveryBoardActiveFiltersInput) => void;
+  onClearActivePipelineFilters?: () => void;
 }
 
 export function DeliveryBoardView({
@@ -54,6 +64,9 @@ export function DeliveryBoardView({
   showBoardHeader = true,
   kindFilter: kindFilterProp,
   onKindFilterChange: onKindFilterChangeProp,
+  activePipelineFilters,
+  onActivePipelineFiltersChange,
+  onClearActivePipelineFilters,
 }: DeliveryBoardViewProps) {
   const [internalKind, setInternalKind] = useState<DeliveryBoardKindFilter>('ALL');
   const isKindControlled = kindFilterProp !== undefined && onKindFilterChangeProp !== undefined;
@@ -76,13 +89,29 @@ export function DeliveryBoardView({
     clearActionDialog,
   } = mutations;
   const effectiveStatus = lockedStatusFilter ?? statusFilter;
+  const isClosedMode = effectiveStatus === 'CLOSED';
   const boardItems = filterBoardItems(items, kindFilter, effectiveStatus);
-  const activeItems = getActiveBoardItems(boardItems);
+  const activeItemsBase = useMemo(() => getActiveBoardItems(boardItems), [boardItems]);
+  const activeFilterOptions = useMemo(
+    () => buildActiveFilterOptions(activeItemsBase),
+    [activeItemsBase],
+  );
+  const enableActivePipelineToolbar =
+    Boolean(activePipelineFilters) &&
+    Boolean(onActivePipelineFiltersChange) &&
+    Boolean(onClearActivePipelineFilters) &&
+    lockedStatusFilter === 'ACTIVE' &&
+    !isClosedMode;
+
+  const activeItemsForKanban = useMemo(() => {
+    if (!enableActivePipelineToolbar || !activePipelineFilters) return activeItemsBase;
+    return applyDeliveryBoardActiveFilters(activeItemsBase, activePipelineFilters);
+  }, [enableActivePipelineToolbar, activePipelineFilters, activeItemsBase]);
+
   const closedItems = getClosedBoardItems(boardItems);
   const aggregateCounts = countDeliveryAggregates(items);
   const headerActive = summaryCounts?.active ?? aggregateCounts.active;
   const headerClosed = summaryCounts?.closed ?? aggregateCounts.closed;
-  const isClosedMode = effectiveStatus === 'CLOSED';
   const renderBoardHeader = showBoardHeader;
 
   return (
@@ -106,34 +135,51 @@ export function DeliveryBoardView({
           />
         </div>
       ) : null}
-      <div
-        className={cn(
-          'flex min-h-0 min-w-0 flex-1 basis-0 flex-col',
-          !isClosedMode && 'overflow-hidden',
-        )}
-      >
-        {isClosedMode ? (
-          <DeliveryBoardClosedBoard
-            items={closedItems}
-            busyItemId={busyItemId}
-            onOpenProduct={onOpenProduct}
-            onOpenProductTab={onOpenProductTab}
-            onBoardAction={handleBoardAction}
-            onCancel={requestCancel}
-            onOpenDetails={onOpenDetails}
-          />
-        ) : (
-          <DeliveryKanbanBoard
-            items={activeItems}
-            busyItemId={busyItemId}
-            onOpenProduct={onOpenProduct}
-            onOpenProductTab={onOpenProductTab}
-            onBoardAction={handleBoardAction}
-            onCancel={requestCancel}
-            onOpenDetails={onOpenDetails}
-            onMoveToStage={(item, target) => void advanceToDeliveryStage(item, target)}
-          />
-        )}
+      <div className="flex min-h-0 min-w-0 flex-1 basis-0 flex-col gap-0">
+        {enableActivePipelineToolbar &&
+        activePipelineFilters &&
+        onActivePipelineFiltersChange &&
+        onClearActivePipelineFilters ? (
+          <div className="shrink-0 pb-3">
+            <DeliveryBoardActiveFiltersToolbar
+              value={activePipelineFilters}
+              onChange={onActivePipelineFiltersChange}
+              options={activeFilterOptions}
+              filteredCount={activeItemsForKanban.length}
+              totalCount={activeItemsBase.length}
+              onClear={onClearActivePipelineFilters}
+            />
+          </div>
+        ) : null}
+        <div
+          className={cn(
+            'flex min-h-0 min-w-0 flex-1 basis-0 flex-col',
+            !isClosedMode && 'overflow-hidden',
+          )}
+        >
+          {isClosedMode ? (
+            <DeliveryBoardClosedBoard
+              items={closedItems}
+              busyItemId={busyItemId}
+              onOpenProduct={onOpenProduct}
+              onOpenProductTab={onOpenProductTab}
+              onBoardAction={handleBoardAction}
+              onCancel={requestCancel}
+              onOpenDetails={onOpenDetails}
+            />
+          ) : (
+            <DeliveryKanbanBoard
+              items={activeItemsForKanban}
+              busyItemId={busyItemId}
+              onOpenProduct={onOpenProduct}
+              onOpenProductTab={onOpenProductTab}
+              onBoardAction={handleBoardAction}
+              onCancel={requestCancel}
+              onOpenDetails={onOpenDetails}
+              onMoveToStage={(item, target) => void advanceToDeliveryStage(item, target)}
+            />
+          )}
+        </div>
       </div>
       <DeliveryBoardStageGateDialog
         resolution={stageGateResolution}
