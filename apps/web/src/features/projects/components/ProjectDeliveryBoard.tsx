@@ -26,7 +26,6 @@ export function ProjectDeliveryBoard({
       mutations={mutations}
       onOpenProduct={onOpenProduct}
       onOpenProductTab={onOpenProductTab}
-      includeClosedBoardSection
     />
   );
 }

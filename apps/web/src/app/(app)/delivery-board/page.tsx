@@ -178,13 +178,12 @@ export default function DeliveryBoardPage() {
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="closed">Closed</TabsTrigger>
           </TabsList>
-          <TabsContent value="active" className="mt-0" forceMount>
+          <TabsContent value="active" className="mt-0">
             <DeliveryBoardView
               items={scopedItems}
               mutations={deliveryMutations}
               onOpenProduct={openProduct}
               onOpenProductTab={openProductTab}
-              includeClosedBoardSection={false}
               lockedStatusFilter="ACTIVE"
               summaryCounts={summaryCounts}
               onOpenDetails={setDetailItem}

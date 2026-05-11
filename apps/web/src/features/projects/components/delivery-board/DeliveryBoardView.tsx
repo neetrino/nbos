@@ -2,15 +2,16 @@
 
 import { useState } from 'react';
 import { DeliveryLifecycleActionDialog } from '../DeliveryLifecycleActionDialog';
-import { DeliveryBoardStageGateBanner } from './DeliveryBoardStageGateBanner';
-import { DeliveryBoardActiveColumns } from './DeliveryBoardActiveColumns';
 import { DeliveryBoardClosedBoard } from './DeliveryBoardClosedBoard';
+import { DeliveryBoardStageGateDialog } from './DeliveryBoardStageGateDialog';
+import { DeliveryKanbanBoard } from './DeliveryKanbanBoard';
 import type { ProductBoardTab } from './ProjectDeliveryBoardContextLinks';
 import { ProjectDeliveryBoardHeader } from './ProjectDeliveryBoardHeader';
 import {
+  countDeliveryAggregates,
   filterBoardItems,
-  getClosedBoardItems,
   getActiveBoardItems,
+  getClosedBoardItems,
   getItemId,
   getItemLabel,
   type DeliveryBoardItem,
@@ -29,8 +30,6 @@ export interface DeliveryBoardViewProps {
   mutations: UseDeliveryBoardMutationsResult;
   onOpenProduct: (productId: string) => void;
   onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
-  /** When false, omit embedded Closed section (separate Closed tab on global board). */
-  includeClosedBoardSection?: boolean;
   onOpenDetails?: (item: DeliveryBoardItem) => void;
   /** Locks pipeline filter (e.g. ACTIVE on global Active tab). */
   lockedStatusFilter?: DeliveryBoardStatusFilter;
@@ -43,7 +42,6 @@ export function DeliveryBoardView({
   mutations,
   onOpenProduct,
   onOpenProductTab,
-  includeClosedBoardSection = true,
   onOpenDetails,
   lockedStatusFilter,
   summaryCounts,
@@ -56,19 +54,23 @@ export function DeliveryBoardView({
     busyItemId,
     cancelItem,
     actionError,
-    stageGateBlocker,
+    stageGateResolution,
     handleBoardAction,
+    advanceToDeliveryStage,
     requestCancel,
     handleCancelConfirm,
     dismissStageGate,
+    retryStageGateMove,
     clearActionDialog,
   } = mutations;
   const effectiveStatus = lockedStatusFilter ?? statusFilter;
   const boardItems = filterBoardItems(items, kindFilter, effectiveStatus);
   const activeItems = getActiveBoardItems(boardItems);
   const closedItems = getClosedBoardItems(boardItems);
-  const headerActive = summaryCounts?.active ?? activeItems.length;
-  const headerClosed = summaryCounts?.closed ?? closedItems.length;
+  const aggregateCounts = countDeliveryAggregates(items);
+  const headerActive = summaryCounts?.active ?? aggregateCounts.active;
+  const headerClosed = summaryCounts?.closed ?? aggregateCounts.closed;
+  const isClosedMode = effectiveStatus === 'CLOSED';
 
   return (
     <section className="space-y-4">
@@ -81,19 +83,7 @@ export function DeliveryBoardView({
         onStatusFilterChange={setStatusFilter}
         hideStatusFilters={Boolean(lockedStatusFilter)}
       />
-      {stageGateBlocker && (
-        <DeliveryBoardStageGateBanner blocker={stageGateBlocker} onDismiss={dismissStageGate} />
-      )}
-      <DeliveryBoardActiveColumns
-        items={activeItems}
-        busyItemId={busyItemId}
-        onOpenProduct={onOpenProduct}
-        onOpenProductTab={onOpenProductTab}
-        onBoardAction={handleBoardAction}
-        onCancel={requestCancel}
-        onOpenDetails={onOpenDetails}
-      />
-      {includeClosedBoardSection ? (
+      {isClosedMode ? (
         <DeliveryBoardClosedBoard
           items={closedItems}
           busyItemId={busyItemId}
@@ -103,7 +93,29 @@ export function DeliveryBoardView({
           onCancel={requestCancel}
           onOpenDetails={onOpenDetails}
         />
-      ) : null}
+      ) : (
+        <DeliveryKanbanBoard
+          items={activeItems}
+          busyItemId={busyItemId}
+          onOpenProduct={onOpenProduct}
+          onOpenProductTab={onOpenProductTab}
+          onBoardAction={handleBoardAction}
+          onCancel={requestCancel}
+          onOpenDetails={onOpenDetails}
+          onMoveToStage={(item, target) => void advanceToDeliveryStage(item, target)}
+        />
+      )}
+      <DeliveryBoardStageGateDialog
+        resolution={stageGateResolution}
+        onOpenChange={(open) => {
+          if (!open) dismissStageGate();
+        }}
+        onRetry={retryStageGateMove}
+        onOpenDetails={(item) => {
+          onOpenDetails?.(item);
+          dismissStageGate();
+        }}
+      />
       <DeliveryLifecycleActionDialog
         action={cancelItem ? 'cancel' : null}
         entityLabel={cancelItem ? getItemLabel(cancelItem) : 'delivery item'}

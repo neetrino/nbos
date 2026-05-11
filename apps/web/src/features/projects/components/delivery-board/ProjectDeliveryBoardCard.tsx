@@ -122,8 +122,8 @@ export function ProjectDeliveryBoardCard({
 
 function CardKindIcon({ isExtension }: { isExtension: boolean }) {
   const iconClassName = isExtension
-    ? 'bg-orange-500/10 text-orange-500'
-    : 'bg-purple-500/10 text-purple-500';
+    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+    : 'bg-purple-500/10 text-purple-600 dark:text-purple-400';
   const Icon = isExtension ? Puzzle : Package;
 
   return (
@@ -237,9 +237,12 @@ function getExtensionMeta(extension: ProjectExtensionSummary) {
 }
 
 function getCardClassName(isExtension: boolean) {
-  const base = 'bg-card border-border w-full rounded-xl border p-3 text-left transition-colors';
-  const accent = isExtension ? ' border-l-4 border-l-orange-400' : '';
-  return `${base}${accent}`;
+  const base =
+    'group w-full rounded-xl border p-4 text-left shadow-sm transition-all duration-200 hover:shadow-md';
+  if (isExtension) {
+    return `${base} border-blue-200/90 bg-blue-50/50 dark:border-blue-900/55 dark:bg-blue-950/30`;
+  }
+  return `${base} bg-card border-border`;
 }
 
 function getCardBodyClassName(canOpen: boolean) {
