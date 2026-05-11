@@ -215,7 +215,6 @@ export type ProductAccessSlotBindingOrderByWithRelationInput = {
 export type ProductAccessSlotBindingWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string;
-    productId_slotKey?: Prisma.ProductAccessSlotBindingProductIdSlotKeyCompoundUniqueInput;
     productId_credentialId?: Prisma.ProductAccessSlotBindingProductIdCredentialIdCompoundUniqueInput;
     AND?: Prisma.ProductAccessSlotBindingWhereInput | Prisma.ProductAccessSlotBindingWhereInput[];
     OR?: Prisma.ProductAccessSlotBindingWhereInput[];
@@ -228,7 +227,7 @@ export type ProductAccessSlotBindingWhereUniqueInput = Prisma.AtLeast<
     product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>;
     credential?: Prisma.XOR<Prisma.CredentialScalarRelationFilter, Prisma.CredentialWhereInput>;
   },
-  'id' | 'productId_slotKey' | 'productId_credentialId'
+  'id' | 'productId_credentialId'
 >;
 
 export type ProductAccessSlotBindingOrderByWithAggregationInput = {
@@ -328,11 +327,6 @@ export type ProductAccessSlotBindingListRelationFilter = {
 
 export type ProductAccessSlotBindingOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder;
-};
-
-export type ProductAccessSlotBindingProductIdSlotKeyCompoundUniqueInput = {
-  productId: string;
-  slotKey: string;
 };
 
 export type ProductAccessSlotBindingProductIdCredentialIdCompoundUniqueInput = {

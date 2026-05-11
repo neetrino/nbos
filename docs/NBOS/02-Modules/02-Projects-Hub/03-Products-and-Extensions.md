@@ -249,10 +249,13 @@ UI-композиция wide drawer, header, табы и breakpoints: [`../../05
 
 ### Access & infrastructure slots (product profile)
 
-Реализация: матрица слотов в коде (`@nbos/shared` / `getAccessSlotsForProduct`) по `productCategory` и при необходимости `productType`; привязка слота к записи vault в таблице `product_access_slot_bindings` (`productId`, `slotKey`, `credentialId`).
+Реализация: матрица слотов в коде (`@nbos/shared` / `getAccessSlotsForProduct`) по `productCategory` и при необходимости `productType`; в конец списка добавляется дополнительный слот **`UNIVERSAL`** («Other / not listed»). Привязки хранятся в `product_access_slot_bindings` (строка на пару привязка: `productId`, `slotKey`, `credentialId`); **несколько** credentials допустимы в одном слоте.
 
-- На opened Delivery / General показываются **все** слоты профиля; **обязательные** помечаются в UI (иконка).
+- На opened Delivery / General показываются **все** слоты профиля + **UNIVERSAL**; **обязательные** типовые слоты помечаются в UI (иконка). Для обязательного слота требуется **минимум одна** привязка; остальные — по желанию.
+- **Маршрутизация из UNIVERSAL:** если пользователь привязывает credential через слот `UNIVERSAL`, сервер кладёт запись в **первый типовой слот профиля** (в порядке матрицы), который допускает `credential.category`; если такого слота нет — привязка остаётся под `UNIVERSAL`. В UI показывается фактический раздел (тост).
+- **Один credential — один слот** на продукт: один и тот же vault-запись нельзя одновременно привязать к двум слотам; отвязка — **по id привязки** (binding), credential в vault не удаляется.
 - Значения входа/секреты не дублируются в карточке: слот указывает на **Credential**; создание и редактирование — через модуль Credentials и RBAC.
+- Если сменили профиль продукта и старый `slotKey` больше не в матрице, существующие привязки всё равно показываются отдельной строкой (orphan), чтобы данные не терялись.
 - **Extension:** слоты и привязки считаются в контексте **родительского Product** (`extension.productId`): отдельного vault на extension в v1 нет.
 
 ### Tabs

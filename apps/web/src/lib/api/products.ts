@@ -181,6 +181,11 @@ export interface ProductAccessSlotBoundCredential {
   url: string | null;
 }
 
+export interface ProductAccessSlotBindingItem {
+  bindingId: string;
+  boundCredential: ProductAccessSlotBoundCredential | null;
+}
+
 export interface ProductAccessSlotRow {
   slotKey: string;
   label: string;
@@ -188,13 +193,23 @@ export interface ProductAccessSlotRow {
   kind: 'credential';
   allowedCategories: string[];
   defaultCredentialType: string | null;
-  boundCredential: ProductAccessSlotBoundCredential | null;
+  bindings: ProductAccessSlotBindingItem[];
 }
 
 export interface ProductAccessSlotsResponse {
   productId: string;
   slots: ProductAccessSlotRow[];
 }
+
+export interface ProductAccessSlotBindMeta {
+  requestedSlotKey: string;
+  effectiveSlotKey: string;
+  effectiveSlotLabel: string;
+}
+
+export type ProductAccessSlotsBindResponse = ProductAccessSlotsResponse & {
+  bindMeta?: ProductAccessSlotBindMeta;
+};
 
 export const productsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData> {
@@ -273,17 +288,20 @@ export const productsApi = {
   async bindAccessSlot(
     productId: string,
     body: { slotKey: string; credentialId: string },
-  ): Promise<ProductAccessSlotsResponse> {
-    const resp = await api.put<ProductAccessSlotsResponse>(
+  ): Promise<ProductAccessSlotsBindResponse> {
+    const resp = await api.put<ProductAccessSlotsBindResponse>(
       `/api/projects/products/${productId}/access-slots`,
       body,
     );
     return resp.data;
   },
 
-  async unbindAccessSlot(productId: string, slotKey: string): Promise<ProductAccessSlotsResponse> {
+  async unbindAccessSlotBinding(
+    productId: string,
+    bindingId: string,
+  ): Promise<ProductAccessSlotsResponse> {
     const resp = await api.delete<ProductAccessSlotsResponse>(
-      `/api/projects/products/${productId}/access-slots/${encodeURIComponent(slotKey)}`,
+      `/api/projects/products/${productId}/access-slots/bindings/${encodeURIComponent(bindingId)}`,
     );
     return resp.data;
   },

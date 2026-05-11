@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,8 +12,41 @@ import {
 } from '@/components/ui/dialog';
 import { CreateCredentialDialog } from '@/features/credentials/components/CreateCredentialDialog';
 import { credentialsApi } from '@/lib/api/credentials';
-import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
+import {
+  productsApi,
+  type ProductAccessSlotBindMeta,
+  type ProductAccessSlotRow,
+} from '@/lib/api/products';
+import { UNIVERSAL_ACCESS_SLOT_KEY } from '@nbos/shared';
 import { toast } from 'sonner';
+
+function toastBindSuccess(slotKey: string, meta: ProductAccessSlotBindMeta | undefined) {
+  if (
+    meta &&
+    meta.requestedSlotKey === UNIVERSAL_ACCESS_SLOT_KEY &&
+    meta.effectiveSlotKey !== UNIVERSAL_ACCESS_SLOT_KEY
+  ) {
+    toast.success(`Saved under: ${meta.effectiveSlotLabel}`);
+    return;
+  }
+  if (slotKey === UNIVERSAL_ACCESS_SLOT_KEY) {
+    toast.success('Linked to Other / not listed');
+    return;
+  }
+  toast.success('Linked to slot');
+}
+
+function toastCreateAndBindSuccess(meta: ProductAccessSlotBindMeta | undefined) {
+  if (
+    meta &&
+    meta.requestedSlotKey === UNIVERSAL_ACCESS_SLOT_KEY &&
+    meta.effectiveSlotKey !== UNIVERSAL_ACCESS_SLOT_KEY
+  ) {
+    toast.success(`Saved to Credentials — filed under ${meta.effectiveSlotLabel}`);
+    return;
+  }
+  toast.success('Saved to Credentials and linked');
+}
 
 interface PickAccessSlotCredentialDialogProps {
   open: boolean;
@@ -21,6 +54,8 @@ interface PickAccessSlotCredentialDialogProps {
   projectId: string;
   productId: string;
   slot: ProductAccessSlotRow;
+  /** Credentials already linked to any access slot on this product (one credential = one slot). */
+  excludedCredentialIds: string[];
   onBound: () => void;
 }
 
@@ -30,12 +65,15 @@ export function PickAccessSlotCredentialDialog({
   projectId,
   productId,
   slot,
+  excludedCredentialIds,
   onBound,
 }: PickAccessSlotCredentialDialogProps) {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<
     Array<{ id: string; name: string; category: string; login: string | null }>
   >([]);
+
+  const excluded = useMemo(() => new Set(excludedCredentialIds), [excludedCredentialIds]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,6 +83,7 @@ export function PickAccessSlotCredentialDialog({
       setItems(
         res.items
           .filter((c) => allowed.has(c.category))
+          .filter((c) => !excluded.has(c.id))
           .map((c) => ({ id: c.id, name: c.name, category: c.category, login: c.login })),
       );
     } catch {
@@ -53,7 +92,7 @@ export function PickAccessSlotCredentialDialog({
     } finally {
       setLoading(false);
     }
-  }, [projectId, slot.allowedCategories]);
+  }, [projectId, slot.allowedCategories, excluded]);
 
   useEffect(() => {
     if (open) void load();
@@ -61,8 +100,11 @@ export function PickAccessSlotCredentialDialog({
 
   async function pick(credentialId: string) {
     try {
-      await productsApi.bindAccessSlot(productId, { slotKey: slot.slotKey, credentialId });
-      toast.success('Linked to slot');
+      const res = await productsApi.bindAccessSlot(productId, {
+        slotKey: slot.slotKey,
+        credentialId,
+      });
+      toastBindSuccess(slot.slotKey, res.bindMeta);
       onOpenChange(false);
       onBound();
     } catch {
@@ -149,11 +191,11 @@ export function CreateAccessSlotCredentialDialog({
       presetKey={slot.slotKey}
       onCreated={async (created) => {
         try {
-          await productsApi.bindAccessSlot(productId, {
+          const res = await productsApi.bindAccessSlot(productId, {
             slotKey: slot.slotKey,
             credentialId: created.id,
           });
-          toast.success('Saved to Credentials and linked');
+          toastCreateAndBindSuccess(res.bindMeta);
           onBound();
         } catch {
           toast.error('Credential was created but could not be linked to this slot.');

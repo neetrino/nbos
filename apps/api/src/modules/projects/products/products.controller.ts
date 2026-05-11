@@ -100,11 +100,11 @@ export class ProductsController {
     );
   }
 
-  @Delete(':id/access-slots/:slotKey')
+  @Delete(':id/access-slots/bindings/:bindingId')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Remove credential binding from an access slot' })
-  async unbindAccessSlot(@Param('id') id: string, @Param('slotKey') slotKey: string) {
-    return this.productAccessSlotBindings.unbindProductAccessSlot(id, decodeURIComponent(slotKey));
+  @ApiOperation({ summary: 'Remove a single access-slot binding (credential stays in vault)' })
+  async unbindAccessSlotBinding(@Param('id') id: string, @Param('bindingId') bindingId: string) {
+    return this.productAccessSlotBindings.unbindProductAccessSlotBinding(id, bindingId);
   }
 
   @Get(':id')

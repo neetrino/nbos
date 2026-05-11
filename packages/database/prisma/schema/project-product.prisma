@@ -183,8 +183,8 @@ model ProductAccessSlotBinding {
   product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   credential Credential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
 
-  @@unique([productId, slotKey])
   @@unique([productId, credentialId])
+  @@index([productId, slotKey])
   @@index([credentialId])
   @@map("product_access_slot_bindings")
 }

@@ -17,6 +17,9 @@ export const CREDENTIAL_CATEGORY_CODES = [
 
 export type CredentialCategoryCode = (typeof CREDENTIAL_CATEGORY_CODES)[number];
 
+/** Catch-all slot; bindings requested here may route to a typed slot by credential category. */
+export const UNIVERSAL_ACCESS_SLOT_KEY = 'UNIVERSAL';
+
 export type AccessSlotDefinition = {
   slotKey: string;
   label: string;
@@ -104,6 +107,15 @@ const DATABASE_SLOT: AccessSlotDefinition = {
   defaultCredentialType: 'DATABASE',
 };
 
+const UNIVERSAL_SLOT: AccessSlotDefinition = {
+  slotKey: UNIVERSAL_ACCESS_SLOT_KEY,
+  label: 'Other / not listed',
+  required: false,
+  kind: 'credential',
+  allowedCategories: [...CREDENTIAL_CATEGORY_CODES],
+  defaultCredentialType: 'LOGIN_PASSWORD',
+};
+
 function slotsForCategory(category: string): AccessSlotDefinition[] {
   switch (category) {
     case 'CODE':
@@ -122,10 +134,9 @@ function slotsForCategory(category: string): AccessSlotDefinition[] {
 }
 
 /**
- * Returns ordered access slot definitions for a product profile.
- * Extends the base category matrix when `productType` implies extra slots (e.g. mobile app).
+ * Typed slots only (no UNIVERSAL). Order matches {@link getAccessSlotsForProduct} before the universal row.
  */
-export function getAccessSlotsForProduct(
+export function getTypedAccessSlotsForProduct(
   productCategory: string,
   productType: string,
 ): AccessSlotDefinition[] {
@@ -142,6 +153,43 @@ export function getAccessSlotsForProduct(
     return [...base, ...extra.filter((s) => !keys.has(s.slotKey))];
   }
   return base;
+}
+
+/**
+ * Returns ordered access slot definitions for a product profile.
+ * Appends {@link UNIVERSAL_ACCESS_SLOT_KEY} after typed slots when the profile has any typed slots.
+ */
+export function getAccessSlotsForProduct(
+  productCategory: string,
+  productType: string,
+): AccessSlotDefinition[] {
+  const typed = getTypedAccessSlotsForProduct(productCategory, productType);
+  if (typed.length === 0) {
+    return [];
+  }
+  return [...typed, UNIVERSAL_SLOT];
+}
+
+/**
+ * When the user binds via UNIVERSAL, pick the first typed slot (profile order) that allows the credential category.
+ * If none match, keep UNIVERSAL.
+ */
+export function resolveEffectiveAccessSlotKey(
+  productCategory: string,
+  productType: string,
+  requestedSlotKey: string,
+  credentialCategory: string,
+): string {
+  if (requestedSlotKey !== UNIVERSAL_ACCESS_SLOT_KEY) {
+    return requestedSlotKey;
+  }
+  const typed = getTypedAccessSlotsForProduct(productCategory, productType);
+  for (const def of typed) {
+    if (isCategoryAllowedForSlot(def, credentialCategory)) {
+      return def.slotKey;
+    }
+  }
+  return UNIVERSAL_ACCESS_SLOT_KEY;
 }
 
 export function findAccessSlotDefinition(
