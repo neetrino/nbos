@@ -39,8 +39,6 @@
 
 Это активная очередь. Здесь нет задач, которые требуют токенов, внешних аккаунтов, production cutover или отдельного бизнес-решения.
 
----
-
 - Ручная приёмка блока «ядро домена» (CRM+Finance+Projects+Partners+Reports) — S
 - Ручная приёмка блока «collaboration + credentials + notifications» — S
 - Ручная приёмка блока «Support глубина» — S
