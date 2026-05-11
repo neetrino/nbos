@@ -16,7 +16,6 @@ import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { ProjectDeliveryBoardCard } from './ProjectDeliveryBoardCard';
 import {
-  DELIVERY_KANBAN_BOARD_MAX_HEIGHT_CLASS,
   DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS,
   DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS,
 } from './delivery-kanban-board.constants';
@@ -127,12 +126,10 @@ export function DeliveryKanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex min-h-0 w-full flex-1 flex-col pb-2">
+      <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col pb-2">
         <div
           className={cn(
-            'grid min-h-[28rem] w-full min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-1',
-            DELIVERY_KANBAN_BOARD_MAX_HEIGHT_CLASS,
-            'auto-rows-[minmax(0,1fr)]',
+            'grid min-h-0 w-full min-w-0 flex-1 auto-rows-[minmax(0,1fr)] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-1',
           )}
         >
           {columns.map((col) => (
@@ -206,7 +203,7 @@ function KanbanStageColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'bg-muted/30 border-border flex min-h-0 min-w-0 flex-col rounded-xl border p-3',
+        'bg-muted/30 border-border flex h-full min-h-0 min-w-0 flex-col rounded-xl border p-3',
         DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS,
         isOver && DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS,
       )}
