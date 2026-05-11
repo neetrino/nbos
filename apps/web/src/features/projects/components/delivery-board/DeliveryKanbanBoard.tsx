@@ -18,6 +18,7 @@ import { ProjectDeliveryBoardCard } from './ProjectDeliveryBoardCard';
 import {
   DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS,
   DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS,
+  DELIVERY_STAGE_HEX_COLORS,
 } from './delivery-kanban-board.constants';
 import {
   deliveryKanbanCardId,
@@ -126,7 +127,7 @@ export function DeliveryKanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      {/* Single flex child for the page column + basis-0 so height flows like CRM Deals (h-full columns). */}
+      {/* Same height contract as shared KanbanBoard (Deal Pipeline): flex-1 + min-h-0 + column overflow-y-auto. */}
       <div className="flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
         <div
           className={cn(
@@ -138,7 +139,7 @@ export function DeliveryKanbanBoard({
             <div
               key={col.stage}
               className={cn(
-                'flex min-h-0 min-w-0 flex-1 flex-col sm:max-w-[calc(50%-0.375rem)] sm:min-w-[calc(50%-0.375rem)] sm:flex-none sm:basis-[calc(50%-0.375rem)]',
+                'mx-2 flex min-h-0 flex-1 flex-col sm:max-w-[calc(50%-0.375rem)] sm:min-w-[calc(50%-0.375rem)] sm:flex-none sm:basis-[calc(50%-0.375rem)]',
                 'lg:max-w-none lg:min-w-0 lg:flex-1 lg:basis-0',
               )}
             >
@@ -204,21 +205,42 @@ function KanbanStageColumn({
   children: ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: deliveryKanbanColId(stage) });
+  const hex = DELIVERY_STAGE_HEX_COLORS[stage];
+
+  const raw = hex.replace('#', '');
+  const r = parseInt(raw.substring(0, 2), 16);
+  const g = parseInt(raw.substring(2, 4), 16);
+  const b = parseInt(raw.substring(4, 6), 16);
+  const textColor = (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#000' : '#fff';
+  const countBg = textColor === '#fff' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.12)';
+
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        'bg-muted/30 border-border flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl border p-3',
+        'flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl',
         DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS,
         isOver && DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS,
       )}
     >
-      <div className="mb-3 flex shrink-0 items-center justify-between">
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <span className="text-muted-foreground text-xs">{count}</span>
+      {/* Colored header pill — same pattern as KanbanColumnHeader */}
+      <div
+        className="mb-3 flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5"
+        style={{ backgroundColor: hex }}
+      >
+        <span className="min-w-0 truncate text-sm font-bold" style={{ color: textColor }}>
+          {title}
+        </span>
+        <span
+          className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-xs font-medium tabular-nums"
+          style={{ backgroundColor: countBg, color: textColor }}
+        >
+          {count}
+        </span>
       </div>
+
       <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1">
-        <div className="space-y-2 pb-3">
+        <div className="space-y-3 pb-3">
           {count === 0 ? (
             <p className="text-muted-foreground py-8 text-center text-xs">No cards</p>
           ) : (
