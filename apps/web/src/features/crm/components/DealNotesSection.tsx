@@ -2,24 +2,26 @@
 
 import { MessageSquare } from 'lucide-react';
 import { InlineField } from '@/components/shared';
-import type { Deal } from '@/lib/api/deals';
-import type { SaveField } from './deal-general-tab.types';
+import type { DealGeneralDraft } from './deal-general-form-state';
 
 interface DealNotesSectionProps {
-  deal: Deal;
-  saveField: SaveField;
+  draft: DealGeneralDraft;
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void;
+  disabled?: boolean;
 }
 
-export function DealNotesSection({ deal, saveField }: DealNotesSectionProps) {
+export function DealNotesSection({ draft, patchDraft, disabled = false }: DealNotesSectionProps) {
   return (
     <section className="rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent">
       <InlineField
+        variant="controlled"
         label="Notes"
-        value={deal.notes}
+        value={draft.notes ?? ''}
         type="textarea"
         placeholder="Add notes about this deal..."
         icon={<MessageSquare size={12} />}
-        onSave={(value) => saveField('notes', value)}
+        disabled={disabled}
+        onValueChange={(v) => patchDraft({ notes: v || null })}
       />
     </section>
   );

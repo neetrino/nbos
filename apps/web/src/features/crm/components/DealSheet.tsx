@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { Trash2, LayoutGrid, History, FileText, Phone, CheckSquare } from 'lucide-react';
+import { DetailSheetFormFooter } from '@/components/shared';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,12 @@ import { DealCallsTab } from './DealCallsTab';
 import { DealTasksTab } from './DealTasksTab';
 import type { Deal } from '@/lib/api/deals';
 import type { DealSheetBlockerIntent } from '@/features/shared/blocker-actions';
+import {
+  buildDealGeneralPatch,
+  createDealGeneralDraft,
+  isDealGeneralDirty,
+  type DealGeneralDraft,
+} from './deal-general-form-state';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -41,6 +48,11 @@ interface DealSheetProps {
   onBlockerNavigationConsumed?: () => void;
 }
 
+function dealGeneralSaveErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message) return err.message;
+  return 'Could not save changes.';
+}
+
 export function DealSheet({
   deal,
   open,
@@ -57,6 +69,10 @@ export function DealSheet({
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [invoiceCreateNonce, setInvoiceCreateNonce] = useState(0);
+  const [generalDraft, setGeneralDraft] = useState<DealGeneralDraft | null>(null);
+  const [generalSnap, setGeneralSnap] = useState<DealGeneralDraft | null>(null);
+  const [generalSaving, setGeneralSaving] = useState(false);
+  const [generalError, setGeneralError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const applyBlockerIntent = useCallback((intent: DealSheetBlockerIntent) => {
@@ -77,6 +93,45 @@ export function DealSheet({
     setInvoiceCreateNonce((previous) => previous + 1);
   }, []);
 
+  useLayoutEffect(() => {
+    if (!deal) {
+      setGeneralDraft(null);
+      setGeneralSnap(null);
+      return;
+    }
+    const next = createDealGeneralDraft(deal);
+    setGeneralDraft(next);
+    setGeneralSnap(next);
+  }, [deal?.id, deal?.updatedAt]);
+
+  const patchGeneralDraft = useCallback((partial: Partial<DealGeneralDraft>) => {
+    setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));
+  }, []);
+
+  const generalDirty =
+    generalDraft != null && generalSnap != null && isDealGeneralDirty(generalDraft, generalSnap);
+
+  const handleGeneralSave = useCallback(async () => {
+    if (!deal || !generalDraft || !generalSnap) return;
+    setGeneralError(null);
+    const patch = buildDealGeneralPatch(generalSnap, generalDraft);
+    if (Object.keys(patch).length === 0) return;
+    setGeneralSaving(true);
+    try {
+      await onUpdate(deal.id, patch);
+      onRefresh?.();
+    } catch (err) {
+      setGeneralError(dealGeneralSaveErrorMessage(err));
+    } finally {
+      setGeneralSaving(false);
+    }
+  }, [deal, generalDraft, generalSnap, onUpdate, onRefresh]);
+
+  const handleGeneralCancel = useCallback(() => {
+    setGeneralError(null);
+    if (generalSnap) setGeneralDraft({ ...generalSnap });
+  }, [generalSnap]);
+
   useEffect(() => {
     if (!open || !blockerNavigation) return;
     const { intent } = blockerNavigation;
@@ -93,30 +148,33 @@ export function DealSheet({
     }
   }, [editingName]);
 
+  useEffect(() => {
+    setEditingName(false);
+  }, [deal?.id]);
+
   if (!deal) return null;
 
-  const dealName = deal.name || deal.code;
+  const headerTitle = generalDraft?.name?.trim() || deal.name?.trim() || deal.code;
 
   const startEditing = () => {
-    setNameValue(deal.name ?? '');
+    setNameValue(generalDraft?.name ?? deal.name ?? '');
     setEditingName(true);
   };
 
-  const saveName = () => {
+  const commitNameToDraft = () => {
     const trimmed = nameValue.trim();
     setEditingName(false);
-    if (trimmed !== (deal.name ?? '')) {
-      onUpdate(deal.id, { name: trimmed || null } as Partial<Deal>);
-    }
+    patchGeneralDraft({ name: trimmed || null });
   };
 
   const handleNameKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      saveName();
+      commitNameToDraft();
     }
     if (e.key === 'Escape') {
       setEditingName(false);
+      setNameValue(generalDraft?.name ?? deal.name ?? '');
     }
   };
 
@@ -134,7 +192,7 @@ export function DealSheet({
               ref={nameInputRef}
               value={nameValue}
               onChange={(e) => setNameValue(e.target.value)}
-              onBlur={saveName}
+              onBlur={commitNameToDraft}
               onKeyDown={handleNameKeyDown}
               placeholder="Deal name..."
               className="text-foreground w-full border-0 border-b-2 border-amber-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
@@ -145,7 +203,7 @@ export function DealSheet({
               className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
               title="Click to edit deal name"
             >
-              {dealName}
+              {headerTitle}
             </h2>
           )}
           <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
@@ -169,6 +227,7 @@ export function DealSheet({
               return (
                 <button
                   key={tab.value}
+                  type="button"
                   onClick={() => setActiveTab(tab.value)}
                   className={
                     'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
@@ -190,15 +249,17 @@ export function DealSheet({
 
         <ScrollArea className="min-h-0 flex-1">
           <div className="px-7 py-5">
-            {activeTab === 'general' && (
+            {activeTab === 'general' && generalDraft ? (
               <DealGeneralTab
                 deal={deal}
-                onUpdate={onUpdate}
+                draft={generalDraft}
+                patchDraft={patchGeneralDraft}
+                formDisabled={generalSaving}
                 onRefresh={onRefresh}
                 onOpenTaskTab={() => setActiveTab('task')}
                 onOpenDeal={onOpenDeal}
               />
-            )}
+            ) : null}
             {activeTab === 'history' && <DealHistoryTab />}
             {activeTab === 'invoice' && (
               <DealInvoiceTab
@@ -212,8 +273,17 @@ export function DealSheet({
           </div>
         </ScrollArea>
 
+        <DetailSheetFormFooter
+          visible={activeTab === 'general' && Boolean(generalDraft)}
+          dirty={generalDirty}
+          saving={generalSaving}
+          errorMessage={generalError}
+          onSave={() => void handleGeneralSave()}
+          onCancel={handleGeneralCancel}
+        />
+
         {/* ── Footer (only Delete) ── */}
-        {onDelete && (
+        {onDelete ? (
           <div className="shrink-0 border-t border-stone-100 bg-stone-50/50 px-7 py-3 dark:border-stone-800 dark:bg-stone-900/20">
             <Button
               variant="ghost"
@@ -225,7 +295,7 @@ export function DealSheet({
               Delete
             </Button>
           </div>
-        )}
+        ) : null}
       </SheetContent>
     </Sheet>
   );

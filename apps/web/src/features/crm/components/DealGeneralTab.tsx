@@ -18,10 +18,13 @@ import { DealMarketingSection } from './DealMarketingSection';
 import { DealNotesSection } from './DealNotesSection';
 import { DealOfferContractSection } from './DealOfferContractSection';
 import { DealSourceLeadSection } from './DealSourceLeadSection';
+import type { DealGeneralDraft } from './deal-general-form-state';
 
 interface DealGeneralTabProps {
   deal: Deal;
-  onUpdate: (id: string, data: Partial<Deal>) => Promise<void>;
+  draft: DealGeneralDraft;
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void;
+  formDisabled?: boolean;
   onRefresh?: () => void;
   onOpenTaskTab?: () => void;
   onOpenDeal?: (id: string) => void;
@@ -29,13 +32,13 @@ interface DealGeneralTabProps {
 
 export function DealGeneralTab({
   deal,
-  onUpdate,
+  draft,
+  patchDraft,
+  formDisabled = false,
   onRefresh,
   onOpenTaskTab,
   onOpenDeal,
 }: DealGeneralTabProps) {
-  const [isNewProject, setIsNewProject] = useState(false);
-  const [linkedProjectName, setLinkedProjectName] = useState<string | null>(null);
   const [productTypeOptions, setProductTypeOptions] = useState<
     Array<{ value: string; label: string }>
   >(PRODUCT_TYPES.map((product) => ({ value: product.value, label: product.label })));
@@ -52,16 +55,6 @@ export function DealGeneralTab({
         /* keep PRODUCT_TYPES fallback */
       });
   }, []);
-
-  const saveField = async (field: string, value: string | number | null) => {
-    const payload: Record<string, unknown> = {};
-    payload[field] = field === 'amount' ? normalizeAmount(value) : value || null;
-    await onUpdate(deal.id, payload as Partial<Deal>);
-  };
-
-  const saveMultipleFields = async (fields: Record<string, string | null>) => {
-    await onUpdate(deal.id, fields as Partial<Deal>);
-  };
 
   const searchProjects = useCallback(async (query: string) => {
     const data = await projectsApi.getAll({ pageSize: 5, search: query || undefined });
@@ -83,8 +76,8 @@ export function DealGeneralTab({
 
   const searchAttributionOptions = useCallback(
     async (query: string) => {
-      if (!deal.sourceDetail) return [];
-      const options = await marketingApi.getAttributionOptions(deal.sourceDetail);
+      if (!draft.sourceDetail) return [];
+      const options = await marketingApi.getAttributionOptions(draft.sourceDetail);
       return options
         .filter((option) => option.label.toLowerCase().includes(query.toLowerCase()))
         .map((option) => ({
@@ -93,7 +86,7 @@ export function DealGeneralTab({
           subtitle: option.subtitle ?? option.type,
         }));
     },
-    [deal.sourceDetail],
+    [draft.sourceDetail],
   );
 
   const searchPartners = useCallback(async (query: string) => {
@@ -135,36 +128,35 @@ export function DealGeneralTab({
     <div className="flex gap-6">
       <div className="min-w-0 flex-1 space-y-6">
         <DealInfoSection
-          deal={deal}
-          linkedProjectName={linkedProjectName}
-          isNewProject={isNewProject}
+          draft={draft}
+          patchDraft={patchDraft}
           productTypeOptions={productTypeOptions}
-          filteredProductTypeOptions={getFilteredProductTypeOptions(deal, productTypeOptions)}
-          setLinkedProjectName={setLinkedProjectName}
-          setIsNewProject={setIsNewProject}
+          filteredProductTypeOptions={getFilteredProductTypeOptions(draft, productTypeOptions)}
           searchProjects={searchProjects}
           searchProducts={searchProducts}
           searchCompanies={searchCompanies}
-          saveField={saveField}
-          saveMultipleFields={saveMultipleFields}
+          disabled={formDisabled}
         />
-        <DealOfferContractSection deal={deal} saveField={saveField} />
+        <DealOfferContractSection draft={draft} patchDraft={patchDraft} disabled={formDisabled} />
         <DealMarketingSection
           deal={deal}
+          draft={draft}
+          patchDraft={patchDraft}
           searchAttributionOptions={searchAttributionOptions}
           searchPartners={searchPartners}
           searchContacts={searchContacts}
-          saveField={saveField}
-          saveMultipleFields={saveMultipleFields}
           onRefresh={onRefresh}
+          disabled={formDisabled}
         />
         <DealContactTeamSection
           deal={deal}
+          draft={draft}
+          patchDraft={patchDraft}
           searchContacts={searchContacts}
           searchEmployees={searchEmployees}
-          saveField={saveField}
+          disabled={formDisabled}
         />
-        <DealNotesSection deal={deal} saveField={saveField} />
+        <DealNotesSection draft={draft} patchDraft={patchDraft} disabled={formDisabled} />
         <DealSourceLeadSection deal={deal} />
       </div>
 
@@ -184,15 +176,11 @@ export function DealGeneralTab({
   );
 }
 
-function normalizeAmount(value: string | number | null) {
-  return typeof value === 'string' ? (value ? Number(value) : null) : value;
-}
-
 function getFilteredProductTypeOptions(
-  deal: Deal,
+  draft: DealGeneralDraft,
   productTypeOptions: Array<{ value: string; label: string }>,
 ) {
-  const category = deal.productCategory;
+  const category = draft.productCategory;
   if (!category) return productTypeOptions;
   const allowed = PRODUCT_TYPES_BY_CATEGORY[category] ?? [];
   if (allowed.length === 0) return productTypeOptions;

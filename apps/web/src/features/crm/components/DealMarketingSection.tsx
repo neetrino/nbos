@@ -6,35 +6,36 @@ import type { Deal } from '@/lib/api/deals';
 import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import { isDealAttributionLocked } from '@nbos/shared/constants';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
-import type { SaveField, SaveMultipleFields, SearchLoader } from './deal-general-tab.types';
+import type { DealGeneralDraft } from './deal-general-form-state';
+import type { SearchLoader } from './deal-general-tab.types';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 import { DealPartnerReferralTermsSection } from './DealPartnerReferralTermsSection';
 
 interface DealMarketingSectionProps {
   deal: Deal;
+  draft: DealGeneralDraft;
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   searchAttributionOptions: SearchLoader;
   searchPartners: SearchLoader;
   searchContacts: SearchLoader;
-  saveField: SaveField;
-  saveMultipleFields: SaveMultipleFields;
   onRefresh?: () => void;
+  disabled?: boolean;
 }
 
 export function DealMarketingSection({
   deal,
+  draft,
+  patchDraft,
   searchAttributionOptions,
   searchPartners,
   searchContacts,
-  saveField,
-  saveMultipleFields,
   onRefresh,
+  disabled = false,
 }: DealMarketingSectionProps) {
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
-    deal.source === 'MARKETING',
+    draft.source === 'MARKETING',
   );
-  const sourceLabel =
-    LEAD_SOURCES.find((source) => source.value === deal.source)?.label ?? deal.source;
-  const whereOptions = getWhereOptions(deal.source, marketingWhereOptions);
+  const whereOptions = getWhereOptions(draft.source, marketingWhereOptions);
   const attributionLocked = isDealAttributionLocked(deal.status);
 
   return (
@@ -48,108 +49,117 @@ export function DealMarketingSection({
       </h4>
       <div className="grid grid-cols-2 gap-x-8 gap-y-4">
         <InlineField
+          variant="controlled"
           label="From"
-          value={deal.source}
-          displayValue={
-            deal.source ? (
-              <span className="text-foreground text-sm font-medium">{sourceLabel}</span>
-            ) : undefined
-          }
+          value={draft.source ?? ''}
           type="select"
           options={LEAD_SOURCES.map((source) => ({ value: source.value, label: source.label }))}
           placeholder="Select source..."
           icon={<Megaphone size={12} />}
-          onSave={(value) =>
-            saveMultipleFields({
-              source: value,
+          disabled={disabled || attributionLocked}
+          clearable={!attributionLocked}
+          onValueChange={(value) =>
+            patchDraft({
+              source: value || null,
               sourceDetail: null,
               sourcePartnerId: null,
               sourceContactId: null,
               marketingAccountId: null,
               marketingActivityId: null,
+              marketingPickLabel: null,
+              partnerPickLabel: null,
+              clientPickLabel: null,
             })
           }
-          clearable={!attributionLocked}
         />
 
-        {(deal.source === 'SALES' || deal.source === 'MARKETING') && (
+        {(draft.source === 'SALES' || draft.source === 'MARKETING') && (
           <InlineField
+            variant="controlled"
             label="Where?"
-            value={deal.sourceDetail}
-            displayValue={
-              deal.sourceDetail ? (
-                <span className="text-foreground text-sm font-medium">
-                  {whereOptions.find((option) => option.value === deal.sourceDetail)?.label ??
-                    deal.sourceDetail}
-                </span>
-              ) : undefined
-            }
+            value={draft.sourceDetail ?? ''}
             type="select"
             options={whereOptions}
             placeholder="Select channel..."
             icon={<ExternalLink size={12} />}
-            onSave={(value) =>
-              saveMultipleFields({
-                sourceDetail: value,
+            disabled={disabled || attributionLocked}
+            clearable={!attributionLocked}
+            onValueChange={(value) =>
+              patchDraft({
+                sourceDetail: value || null,
                 marketingAccountId: null,
                 marketingActivityId: null,
+                marketingPickLabel: null,
               })
             }
-            clearable={!attributionLocked}
           />
         )}
 
-        {deal.source === 'MARKETING' && deal.sourceDetail && (
+        {draft.source === 'MARKETING' && draft.sourceDetail && (
           <SearchField
+            selectionMode="stage"
             label="Which one"
-            value={
-              deal.marketingAccount
-                ? deal.marketingAccount.name
-                : (deal.marketingActivity?.title ?? null)
-            }
+            value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
             displayValue={
-              deal.marketingAccount || deal.marketingActivity ? (
+              draft.marketingPickLabel ? (
                 <span className="text-foreground text-sm font-medium">
-                  {deal.marketingAccount?.name ?? deal.marketingActivity?.title}
+                  {draft.marketingPickLabel}
                 </span>
               ) : undefined
             }
             placeholder="Search accounts or activities..."
             icon={<ExternalLink size={12} />}
+            disabled={disabled || attributionLocked}
             onSearch={searchAttributionOptions}
-            onSave={(value) => saveMarketingAttribution(value, saveMultipleFields)}
+            onStageSelect={(value, label) => {
+              const [type, id] = value.split(':');
+              patchDraft({
+                marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
+                marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
+                marketingPickLabel: label,
+              });
+            }}
             onClear={
-              attributionLocked
+              attributionLocked || disabled
                 ? undefined
                 : () =>
-                    saveMultipleFields({
+                    patchDraft({
                       marketingAccountId: null,
                       marketingActivityId: null,
+                      marketingPickLabel: null,
                     })
             }
           />
         )}
 
-        {deal.source === 'PARTNER' && (
+        {draft.source === 'PARTNER' && (
           <SearchField
+            selectionMode="stage"
             label="Which Partner?"
-            value={deal.sourcePartner?.name ?? null}
+            value={draft.sourcePartnerId}
             displayValue={
-              deal.sourcePartner ? (
+              draft.partnerPickLabel ? (
                 <span className="text-foreground text-sm font-medium">
-                  {deal.sourcePartner.name}
+                  {draft.partnerPickLabel}
                 </span>
               ) : undefined
             }
             placeholder="Search partners..."
             icon={<Building2 size={12} />}
+            disabled={disabled || attributionLocked}
             onSearch={searchPartners}
-            onSave={(value) => saveField('sourcePartnerId', value)}
-            onClear={attributionLocked ? undefined : () => saveField('sourcePartnerId', null)}
+            onStageSelect={(value, label) =>
+              patchDraft({ sourcePartnerId: value, partnerPickLabel: label })
+            }
+            onClear={
+              attributionLocked || disabled
+                ? undefined
+                : () => patchDraft({ sourcePartnerId: null, partnerPickLabel: null })
+            }
           />
         )}
 
-        {deal.source === 'PARTNER' && deal.sourcePartnerId ? (
+        {draft.source === 'PARTNER' && draft.sourcePartnerId ? (
           <DealPartnerReferralTermsSection
             deal={deal}
             attributionLocked={attributionLocked}
@@ -157,26 +167,28 @@ export function DealMarketingSection({
           />
         ) : null}
 
-        {deal.source === 'CLIENT' && (
+        {draft.source === 'CLIENT' && (
           <SearchField
+            selectionMode="stage"
             label="Which Client?"
-            value={
-              deal.sourceContact
-                ? `${deal.sourceContact.firstName} ${deal.sourceContact.lastName}`
-                : null
-            }
+            value={draft.sourceContactId}
             displayValue={
-              deal.sourceContact ? (
-                <span className="text-foreground text-sm font-medium">
-                  {deal.sourceContact.firstName} {deal.sourceContact.lastName}
-                </span>
+              draft.clientPickLabel ? (
+                <span className="text-foreground text-sm font-medium">{draft.clientPickLabel}</span>
               ) : undefined
             }
             placeholder="Search contacts..."
             icon={<User size={12} />}
+            disabled={disabled || attributionLocked}
             onSearch={searchContacts}
-            onSave={(value) => saveField('sourceContactId', value)}
-            onClear={attributionLocked ? undefined : () => saveField('sourceContactId', null)}
+            onStageSelect={(value, label) =>
+              patchDraft({ sourceContactId: value, clientPickLabel: label })
+            }
+            onClear={
+              attributionLocked || disabled
+                ? undefined
+                : () => patchDraft({ sourceContactId: null, clientPickLabel: null })
+            }
           />
         )}
       </div>
@@ -195,12 +207,4 @@ function getWhereOptions(
     return marketingOptions;
   }
   return [];
-}
-
-function saveMarketingAttribution(value: string, saveMultipleFields: SaveMultipleFields) {
-  const [type, id] = value.split(':');
-  return saveMultipleFields({
-    marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
-    marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
-  });
 }

@@ -27,6 +27,7 @@ type SearchFieldPersistProps = {
   newLabel?: string;
   newBadge?: ReactNode;
   className?: string;
+  disabled?: boolean;
 };
 
 type SearchFieldStageProps = {
@@ -43,6 +44,7 @@ type SearchFieldStageProps = {
   newLabel?: string;
   newBadge?: ReactNode;
   className?: string;
+  disabled?: boolean;
 };
 
 export type SearchFieldProps = SearchFieldPersistProps | SearchFieldStageProps;
@@ -64,6 +66,7 @@ export function SearchField(props: SearchFieldProps) {
     newLabel = 'Create new',
     newBadge,
     className,
+    disabled = false,
   } = props;
   const onSave = isStageProps(props) ? undefined : props.onSave;
   const onStageSelect = isStageProps(props) ? props.onStageSelect : undefined;
@@ -95,14 +98,18 @@ export function SearchField(props: SearchFieldProps) {
   );
 
   useEffect(() => {
-    if (open) {
+    if (open && !disabled) {
       doSearch('');
       setTimeout(() => inputRef.current?.focus(), 50);
     }
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [open, doSearch]);
+  }, [open, disabled, doSearch]);
+
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
 
   useEffect(() => {
     if (!open) return;
@@ -116,6 +123,7 @@ export function SearchField(props: SearchFieldProps) {
   }, [open]);
 
   const handleSelect = async (optValue: string, optLabel: string) => {
+    if (disabled) return;
     if (isStageProps(props) && onStageSelect) {
       onStageSelect(optValue, optLabel);
       setOpen(false);
@@ -134,7 +142,7 @@ export function SearchField(props: SearchFieldProps) {
   };
 
   const handleClear = async () => {
-    if (!onClear) return;
+    if (disabled || !onClear) return;
     setOpen(false);
     setQuery('');
     if (isStageProps(props)) {
@@ -150,6 +158,7 @@ export function SearchField(props: SearchFieldProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setHighlightIdx((i) => Math.min(i + 1, results.length - 1));
@@ -167,7 +176,10 @@ export function SearchField(props: SearchFieldProps) {
   const hasValue = value != null && value !== '';
 
   return (
-    <div className={cn('group relative', className)} ref={containerRef}>
+    <div
+      className={cn('group relative', disabled && 'pointer-events-none opacity-60', className)}
+      ref={containerRef}
+    >
       <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-xs font-medium">
         {icon && <span className="text-muted-foreground/70">{icon}</span>}
         {label}
@@ -183,6 +195,7 @@ export function SearchField(props: SearchFieldProps) {
             <Input
               ref={inputRef}
               value={query}
+              disabled={disabled}
               onChange={(e) => {
                 setQuery(e.target.value);
                 doSearch(e.target.value);
@@ -260,10 +273,14 @@ export function SearchField(props: SearchFieldProps) {
       ) : (
         <div className="flex items-center gap-2">
           <div
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              if (!disabled) setOpen(true);
+            }}
             className={cn(
-              'flex-1 cursor-pointer rounded-lg border border-transparent px-3 py-2 text-sm transition-all',
-              'hover:bg-accent/5 hover:border-border',
+              'flex-1 rounded-lg border border-transparent px-3 py-2 text-sm transition-all',
+              disabled
+                ? 'cursor-not-allowed'
+                : 'hover:bg-accent/5 hover:border-border cursor-pointer',
             )}
           >
             <div className="flex items-center justify-between">

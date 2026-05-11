@@ -1,6 +1,5 @@
 'use client';
 
-import type { Dispatch, SetStateAction } from 'react';
 import {
   Building2,
   Calendar,
@@ -13,49 +12,35 @@ import {
   Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { InlineField, SearchField, StatusBadge } from '@/components/shared';
-import {
-  DEAL_TYPES,
-  PAYMENT_TYPES,
-  PRODUCT_CATEGORIES,
-  formatAmount,
-} from '../constants/dealPipeline';
-import type { Deal } from '@/lib/api/deals';
-import type { SaveField, SaveMultipleFields, SearchLoader } from './deal-general-tab.types';
-import { formatDate, TAX_STATUS_OPTIONS, toDateInputValue } from './deal-general-tab.helpers';
+import { InlineField, SearchField } from '@/components/shared';
+import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
+import type { SearchLoader } from './deal-general-tab.types';
+import type { DealGeneralDraft } from './deal-general-form-state';
+import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 
 interface DealInfoSectionProps {
-  deal: Deal;
-  linkedProjectName: string | null;
-  isNewProject: boolean;
+  draft: DealGeneralDraft;
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   productTypeOptions: Array<{ value: string; label: string }>;
   filteredProductTypeOptions: Array<{ value: string; label: string }>;
-  setLinkedProjectName: Dispatch<SetStateAction<string | null>>;
-  setIsNewProject: Dispatch<SetStateAction<boolean>>;
   searchProjects: SearchLoader;
   searchProducts: SearchLoader;
   searchCompanies: SearchLoader;
-  saveField: SaveField;
-  saveMultipleFields: SaveMultipleFields;
+  disabled?: boolean;
 }
 
 export function DealInfoSection({
-  deal,
-  linkedProjectName,
-  isNewProject,
+  draft,
+  patchDraft,
   productTypeOptions,
   filteredProductTypeOptions,
-  setLinkedProjectName,
-  setIsNewProject,
   searchProjects,
   searchProducts,
   searchCompanies,
-  saveField,
-  saveMultipleFields,
+  disabled = false,
 }: DealInfoSectionProps) {
-  const dealTypeLabel = DEAL_TYPES.find((type) => type.value === deal.type)?.label ?? deal.type;
-  const isExtension = deal.type === 'EXTENSION';
+  const isExtension = draft.type === 'EXTENSION';
 
   return (
     <section
@@ -68,92 +53,89 @@ export function DealInfoSection({
       </h4>
       <div className="grid grid-cols-2 gap-x-8 gap-y-4">
         <InlineField
+          variant="controlled"
           label="Cost"
-          value={deal.amount}
-          displayValue={
-            deal.amount != null ? (
-              <span className="text-lg font-extrabold text-amber-600 tabular-nums dark:text-amber-400">
-                {formatAmount(deal.amount)}
-              </span>
-            ) : undefined
-          }
           type="number"
+          value={draft.amount ?? ''}
           placeholder="Enter amount..."
           icon={<DollarSign size={12} />}
-          onSave={(value) => saveField('amount', value)}
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ amount: v === '' ? null : Number(v) })}
         />
 
         <InlineField
+          variant="controlled"
           label="Payment Type"
-          value={deal.paymentType}
-          displayValue={
-            deal.paymentType ? (
-              <span className="text-foreground text-sm font-medium">
-                {PAYMENT_TYPES.find((type) => type.value === deal.paymentType)?.label ??
-                  deal.paymentType}
-              </span>
-            ) : undefined
-          }
           type="select"
+          value={draft.paymentType ?? ''}
           options={PAYMENT_TYPES.map((type) => ({ value: type.value, label: type.label }))}
           placeholder="Select payment type..."
           icon={<CreditCard size={12} />}
-          onSave={(value) => saveField('paymentType', value)}
           clearable
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ paymentType: v || null })}
         />
 
         <InlineField
+          variant="controlled"
           label="Tax Status"
-          value={deal.taxStatus ?? 'TAX'}
-          displayValue={
-            <span className="text-foreground text-sm font-medium">
-              {TAX_STATUS_OPTIONS.find((type) => type.value === (deal.taxStatus ?? 'TAX'))?.label ??
-                deal.taxStatus ??
-                'TAX'}
-            </span>
-          }
           type="select"
+          value={draft.taxStatus}
           options={TAX_STATUS_OPTIONS.map((type) => ({ value: type.value, label: type.label }))}
           placeholder="Tax / Tax Free"
           icon={<Receipt size={12} />}
-          onSave={(value) => saveField('taxStatus', value)}
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ taxStatus: v })}
         />
 
         <SearchField
+          selectionMode="stage"
           label="Project"
-          value={linkedProjectName}
+          value={draft.projectId}
+          disabled={disabled}
           displayValue={
-            isNewProject ? (
+            draft.isNewProject ? (
               <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
                 <Sparkles size={13} />
                 New Project
               </span>
-            ) : linkedProjectName ? (
-              <span className="text-foreground text-sm font-medium">{linkedProjectName}</span>
+            ) : draft.linkedProjectLabel ? (
+              <span className="text-foreground text-sm font-medium">
+                {draft.linkedProjectLabel}
+              </span>
             ) : undefined
           }
           placeholder="Search projects..."
           icon={<FolderKanban size={12} />}
           onSearch={searchProjects}
-          onSave={async (value, label) => {
-            await saveField('projectId', value);
-            setLinkedProjectName(label);
-            setIsNewProject(false);
+          onStageSelect={(id, label) => {
+            patchDraft({
+              projectId: id,
+              linkedProjectLabel: label,
+              isNewProject: false,
+            });
           }}
-          onClear={async () => {
-            await saveField('projectId', null);
-            setLinkedProjectName(null);
-            setIsNewProject(false);
+          onClear={() => {
+            patchDraft({
+              projectId: null,
+              linkedProjectLabel: null,
+              isNewProject: false,
+            });
           }}
           newBadge={
-            !isNewProject ? (
+            !draft.isNewProject ? (
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
+                disabled={disabled}
                 className="shrink-0 gap-1.5 border-emerald-200 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
                 onClick={() => {
-                  setIsNewProject(true);
-                  setLinkedProjectName(null);
+                  patchDraft({
+                    isNewProject: true,
+                    projectId: null,
+                    linkedProjectLabel: null,
+                  });
                 }}
               >
                 <Sparkles size={12} />
@@ -164,126 +146,114 @@ export function DealInfoSection({
         />
 
         <InlineField
+          variant="controlled"
           label="Deal Type"
-          value={deal.type}
-          displayValue={
-            <StatusBadge label={dealTypeLabel} variant={getDealTypeVariant(deal.type)} />
-          }
           type="select"
+          value={draft.type}
           options={DEAL_TYPES.map((type) => ({ value: type.value, label: type.label }))}
           icon={<Layers size={12} />}
-          onSave={(value) => saveField('type', value)}
+          disabled={disabled}
+          onValueChange={(v) => {
+            if (v) patchDraft({ type: v });
+          }}
         />
 
-        {deal.type === 'MAINTENANCE' && (
+        {draft.type === 'MAINTENANCE' && (
           <InlineField
+            variant="controlled"
             label="Planned Maintenance Start"
-            value={toDateInputValue(deal.maintenanceStartAt)}
-            displayValue={
-              deal.maintenanceStartAt ? (
-                <span className="text-foreground text-sm font-medium">
-                  {formatDate(deal.maintenanceStartAt)}
-                </span>
-              ) : undefined
-            }
             type="date"
+            value={draft.maintenanceStartAt ?? ''}
             placeholder="Select start date..."
             icon={<Calendar size={12} />}
-            onSave={(value) => saveField('maintenanceStartAt', value)}
+            disabled={disabled}
+            onValueChange={(v) => patchDraft({ maintenanceStartAt: v || null })}
           />
         )}
 
-        {(deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE') && (
+        {(draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE') && (
           <InlineField
+            variant="controlled"
             label="Product Category"
-            value={deal.productCategory ?? null}
-            displayValue={
-              deal.productCategory ? (
-                <StatusBadge
-                  label={
-                    PRODUCT_CATEGORIES.find((category) => category.value === deal.productCategory)
-                      ?.label ?? deal.productCategory
-                  }
-                  variant="purple"
-                />
-              ) : undefined
-            }
             type="select"
+            value={draft.productCategory ?? ''}
             options={PRODUCT_CATEGORIES.map((category) => ({
               value: category.value,
               label: category.label,
             }))}
             placeholder="Select category..."
             icon={<Layers size={12} />}
-            onSave={(value) => saveMultipleFields({ productCategory: value, productType: null })}
             clearable
+            disabled={disabled}
+            onValueChange={(v) => {
+              if (!v) {
+                patchDraft({ productCategory: null, productType: null });
+                return;
+              }
+              patchDraft({ productCategory: v, productType: null });
+            }}
           />
         )}
 
-        {(deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE') && deal.productCategory && (
+        {(draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE') && draft.productCategory && (
           <InlineField
+            variant="controlled"
             label="Product Type"
-            value={deal.productType ?? null}
-            displayValue={
-              deal.productType ? (
-                <span className="text-foreground text-sm font-medium">
-                  {productTypeOptions.find((type) => type.value === deal.productType)?.label ??
-                    deal.productType}
-                </span>
-              ) : undefined
-            }
             type="select"
+            value={draft.productType ?? ''}
             options={filteredProductTypeOptions}
             placeholder="Select product type..."
             icon={<Tag size={12} />}
-            onSave={(value) => saveField('productType', value)}
             clearable
+            disabled={disabled}
+            onValueChange={(v) => patchDraft({ productType: v || null })}
           />
         )}
 
         {isExtension && (
           <SearchField
+            selectionMode="stage"
             label="Existing Product"
-            value={deal.existingProductId ?? null}
+            value={draft.existingProductId}
+            disabled={disabled}
             displayValue={
-              deal.existingProduct ? (
+              draft.existingProductPickLabel ? (
                 <span className="text-foreground text-sm font-medium">
-                  {deal.existingProduct.name}
+                  {draft.existingProductPickLabel}
                 </span>
               ) : undefined
             }
             placeholder="Search products..."
             icon={<Layers size={12} />}
             onSearch={searchProducts}
-            onSave={(value) => saveField('existingProductId', value)}
-            onClear={() => saveField('existingProductId', null)}
+            onStageSelect={(id, label) =>
+              patchDraft({ existingProductId: id, existingProductPickLabel: label })
+            }
+            onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
           />
         )}
 
-        {(deal.taxStatus ?? 'TAX') === 'TAX' && (
+        {(draft.taxStatus ?? 'TAX') === 'TAX' && (
           <SearchField
+            selectionMode="stage"
             label="Company"
-            value={deal.companyId ?? null}
+            value={draft.companyId}
+            disabled={disabled}
             displayValue={
-              deal.company ? (
-                <span className="text-foreground text-sm font-medium">{deal.company.name}</span>
+              draft.companyPickLabel ? (
+                <span className="text-foreground text-sm font-medium">
+                  {draft.companyPickLabel}
+                </span>
               ) : undefined
             }
             placeholder="Search company..."
             icon={<Building2 size={12} />}
             onSearch={searchCompanies}
-            onSave={(value) => saveField('companyId', value)}
-            onClear={() => saveField('companyId', null)}
+            onStageSelect={(id, label) => patchDraft({ companyId: id, companyPickLabel: label })}
+            onClear={() => patchDraft({ companyId: null, companyPickLabel: null })}
           />
         )}
       </div>
     </section>
   );
-}
-
-function getDealTypeVariant(type: string) {
-  if (type === 'EXTENSION') return 'blue';
-  if (type === 'OUTSOURCE') return 'purple';
-  if (type === 'MAINTENANCE') return 'teal';
-  return 'amber';
 }
