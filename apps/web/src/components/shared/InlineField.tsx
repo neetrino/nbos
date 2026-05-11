@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { ControlledInlineField } from './ControlledInlineField';
 
 type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link' | 'date';
 
@@ -21,7 +22,8 @@ interface SelectOption {
   icon?: ReactNode;
 }
 
-interface InlineFieldProps {
+type InlineFieldInlineProps = {
+  variant?: 'inline' | undefined;
   label: string;
   value: string | number | null | undefined;
   displayValue?: ReactNode;
@@ -34,22 +36,44 @@ interface InlineFieldProps {
   suffix?: string;
   className?: string;
   clearable?: boolean;
-}
+};
 
-export function InlineField({
-  label,
-  value,
-  displayValue,
-  type = 'text',
-  options,
-  placeholder,
-  editable = true,
-  onSave,
-  icon,
-  suffix,
-  className,
-  clearable = false,
-}: InlineFieldProps) {
+type InlineFieldControlledProps = {
+  variant: 'controlled';
+  label: string;
+  value: string | number | null | undefined;
+  onValueChange: (value: string) => void;
+  type?: FieldType;
+  options?: SelectOption[];
+  placeholder?: string;
+  icon?: ReactNode;
+  suffix?: string;
+  className?: string;
+  clearable?: boolean;
+  disabled?: boolean;
+};
+
+export type InlineFieldProps = InlineFieldInlineProps | InlineFieldControlledProps;
+
+export function InlineField(props: InlineFieldProps) {
+  if (props.variant === 'controlled') {
+    return <ControlledInlineField {...props} />;
+  }
+
+  const {
+    label,
+    value,
+    displayValue,
+    type = 'text',
+    options,
+    placeholder,
+    editable = true,
+    onSave,
+    icon,
+    suffix,
+    className,
+    clearable = false,
+  } = props;
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);

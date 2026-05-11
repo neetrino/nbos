@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Building2,
   Calendar,
@@ -12,158 +12,75 @@ import {
   User,
 } from 'lucide-react';
 import { InlineField, SearchField } from '@/components/shared';
-import type { FullProduct } from '@/lib/api/products';
+import { Button } from '@/components/ui/button';
+import type { FullProduct, UpdateProductData } from '@/lib/api/products';
 import { productsApi } from '@/lib/api/products';
 import {
   PRODUCT_CATEGORIES,
   PRODUCT_TYPES,
   PRODUCT_TYPES_BY_CATEGORY,
 } from '@/features/projects/constants/projects';
-import {
-  type EmployeeSearchFn,
-  useEmployeeSearchLoader,
-} from './delivery-item-detail-employee-search';
+import { useEmployeeSearchLoader } from './delivery-item-detail-employee-search';
 
-function ProductPlanNameDeadlinePm({
-  product,
-  patchProduct,
-  searchEmployees,
-}: {
-  product: FullProduct;
-  patchProduct: (data: Parameters<typeof productsApi.update>[1]) => Promise<void>;
-  searchEmployees: EmployeeSearchFn;
-}) {
-  return (
-    <>
-      <InlineField
-        label="Product name"
-        value={product.name}
-        icon={<Package size={12} />}
-        placeholder="Name…"
-        onSave={(v) => void patchProduct({ name: v?.trim() || product.name })}
-      />
-      <InlineField
-        label="Deadline"
-        type="date"
-        value={product.deadline ? product.deadline.slice(0, 10) : ''}
-        displayValue={
-          product.deadline ? (
-            <span>{new Date(product.deadline).toLocaleDateString()}</span>
-          ) : undefined
-        }
-        icon={<Calendar size={12} />}
-        placeholder="Pick date…"
-        clearable
-        onSave={async (v) => {
-          await patchProduct({ deadline: v && v.length > 0 ? v : null });
-        }}
-      />
-      <SearchField
-        label="Project manager"
-        value={product.pmId}
-        displayValue={
-          product.pm ? (
-            <span className="text-foreground font-medium">
-              {product.pm.firstName} {product.pm.lastName}
-            </span>
-          ) : undefined
-        }
-        placeholder="Search people…"
-        icon={<User size={12} />}
-        onSearch={searchEmployees}
-        onSave={async (id) => {
-          await patchProduct({ pmId: id });
-        }}
-        onClear={async () => {
-          await patchProduct({ pmId: null });
-        }}
-      />
-    </>
-  );
+type ProductPlanSnapshot = {
+  name: string;
+  deadline: string;
+  pmId: string | null;
+  pmLabel: string;
+  productCategory: string;
+  productType: string;
+  description: string;
+};
+
+function snapshotFromProduct(p: FullProduct): ProductPlanSnapshot {
+  return {
+    name: p.name,
+    deadline: p.deadline ? p.deadline.slice(0, 10) : '',
+    pmId: p.pmId,
+    pmLabel: p.pm ? `${p.pm.firstName} ${p.pm.lastName}` : '',
+    productCategory: p.productCategory,
+    productType: p.productType,
+    description: p.description ?? '',
+  };
 }
 
-function ProductPlanCategoryType({
-  product,
-  typeOptions,
-  patchProduct,
-}: {
-  product: FullProduct;
-  typeOptions: Array<{ value: string; label: string }>;
-  patchProduct: (data: Parameters<typeof productsApi.update>[1]) => Promise<void>;
-}) {
-  return (
-    <>
-      <InlineField
-        label="Category"
-        type="select"
-        value={product.productCategory}
-        options={PRODUCT_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
-        icon={<Layers size={12} />}
-        onSave={async (v) => {
-          if (!v) return;
-          const nextTypes = PRODUCT_TYPES_BY_CATEGORY[v] ?? [];
-          const nextType = nextTypes.includes(product.productType)
-            ? product.productType
-            : (nextTypes[0] ?? product.productType);
-          await patchProduct({ productCategory: v, productType: nextType });
-        }}
-      />
-      <InlineField
-        label="Product type"
-        type="select"
-        value={product.productType}
-        options={typeOptions}
-        icon={<Tag size={12} />}
-        onSave={async (v) => {
-          if (v) await patchProduct({ productType: v });
-        }}
-      />
-    </>
-  );
-}
+function buildProductPatch(
+  snap: ProductPlanSnapshot,
+  draft: ProductPlanSnapshot,
+): UpdateProductData | null {
+  const patch: UpdateProductData = {};
 
-function ProductPlanNotesCompanyOrder({
-  product,
-  patchProduct,
-}: {
-  product: FullProduct;
-  patchProduct: (data: Parameters<typeof productsApi.update>[1]) => Promise<void>;
-}) {
-  return (
-    <>
-      <div className="md:col-span-2">
-        <InlineField
-          label="Scope & working notes"
-          type="textarea"
-          value={product.description ?? ''}
-          icon={<Sparkles size={12} />}
-          placeholder="Plan, milestones, client context…"
-          onSave={async (v) => {
-            await patchProduct({ description: v });
-          }}
-        />
-      </div>
-      {product.project.company ? (
-        <div className="text-muted-foreground flex items-start gap-2 text-sm md:col-span-2">
-          <Building2 size={14} className="mt-0.5 shrink-0 opacity-70" />
-          <span>
-            <span className="text-foreground font-medium">Company: </span>
-            {product.project.company.name}
-          </span>
-        </div>
-      ) : null}
-      {product.order ? (
-        <div className="text-muted-foreground flex items-start gap-2 text-sm md:col-span-2">
-          <FolderKanban size={14} className="mt-0.5 shrink-0 opacity-70" />
-          <span>
-            <span className="text-foreground font-medium">Order: </span>
-            {product.order.code}
-            {product.order.deal?.code ? ` · Deal ${product.order.deal.code}` : ''}
-          </span>
-        </div>
-      ) : null}
-    </>
-  );
+  const resolvedName = draft.name.trim() || snap.name;
+  if (resolvedName !== snap.name) {
+    patch.name = resolvedName;
+  }
+
+  const draftDeadline = draft.deadline.trim() ? draft.deadline : null;
+  const snapDeadline = snap.deadline.trim() ? snap.deadline : null;
+  if (draftDeadline !== snapDeadline) {
+    patch.deadline = draftDeadline;
+  }
+
+  if (draft.pmId !== snap.pmId) {
+    patch.pmId = draft.pmId;
+  }
+
+  if (draft.productCategory !== snap.productCategory) {
+    patch.productCategory = draft.productCategory;
+    const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
+    patch.productType = allowed.includes(draft.productType)
+      ? draft.productType
+      : (allowed[0] ?? draft.productType);
+  } else if (draft.productType !== snap.productType) {
+    patch.productType = draft.productType;
+  }
+
+  const nextDesc = draft.description;
+  if (nextDesc !== snap.description) {
+    patch.description = nextDesc.trim() ? nextDesc : null;
+  }
+
+  return Object.keys(patch).length > 0 ? patch : null;
 }
 
 export function ProductPlanningSection({
@@ -174,19 +91,42 @@ export function ProductPlanningSection({
   onSaved: () => void;
 }) {
   const searchEmployees = useEmployeeSearchLoader();
+  const [snap, setSnap] = useState<ProductPlanSnapshot>(() => snapshotFromProduct(product));
+  const [draft, setDraft] = useState<ProductPlanSnapshot>(() => snapshotFromProduct(product));
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const next = snapshotFromProduct(product);
+    setSnap(next);
+    setDraft(next);
+  }, [product.id, product.updatedAt]);
+
   const typeOptions = useMemo(() => {
-    const allowed = PRODUCT_TYPES_BY_CATEGORY[product.productCategory] ?? [];
+    const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
     const set = new Set(allowed);
     return PRODUCT_TYPES.filter((t) => set.size === 0 || set.has(t.value)).map((t) => ({
       value: t.value,
       label: t.label,
     }));
-  }, [product.productCategory]);
+  }, [draft.productCategory]);
 
-  async function patchProduct(data: Parameters<typeof productsApi.update>[1]) {
-    await productsApi.update(product.id, data);
-    onSaved();
-  }
+  const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(snap), [draft, snap]);
+
+  const handleCancel = useCallback(() => {
+    setDraft(snap);
+  }, [snap]);
+
+  const handleSave = useCallback(async () => {
+    const patch = buildProductPatch(snap, draft);
+    if (!patch) return;
+    setSaving(true);
+    try {
+      await productsApi.update(product.id, patch);
+      onSaved();
+    } finally {
+      setSaving(false);
+    }
+  }, [snap, draft, product.id, onSaved]);
 
   return (
     <section className="border-border bg-card/40 rounded-xl border p-5">
@@ -194,17 +134,126 @@ export function ProductPlanningSection({
         Delivery plan
       </h3>
       <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-        <ProductPlanNameDeadlinePm
-          product={product}
-          patchProduct={patchProduct}
-          searchEmployees={searchEmployees}
+        <InlineField
+          variant="controlled"
+          label="Product name"
+          value={draft.name}
+          icon={<Package size={12} />}
+          placeholder="Name…"
+          disabled={saving}
+          onValueChange={(v) => setDraft((d) => ({ ...d, name: v }))}
         />
-        <ProductPlanCategoryType
-          product={product}
-          typeOptions={typeOptions}
-          patchProduct={patchProduct}
+        <InlineField
+          variant="controlled"
+          label="Deadline"
+          type="date"
+          value={draft.deadline}
+          icon={<Calendar size={12} />}
+          placeholder="Pick date…"
+          clearable
+          disabled={saving}
+          onValueChange={(v) => setDraft((d) => ({ ...d, deadline: v }))}
         />
-        <ProductPlanNotesCompanyOrder product={product} patchProduct={patchProduct} />
+        <SearchField
+          selectionMode="stage"
+          label="Project manager"
+          value={draft.pmId}
+          displayValue={
+            draft.pmLabel ? (
+              <span className="text-foreground font-medium">{draft.pmLabel}</span>
+            ) : undefined
+          }
+          placeholder="Search people…"
+          icon={<User size={12} />}
+          onSearch={searchEmployees}
+          onStageSelect={(id, label) => {
+            setDraft((d) => ({ ...d, pmId: id, pmLabel: label }));
+          }}
+          onClear={() => {
+            setDraft((d) => ({ ...d, pmId: null, pmLabel: '' }));
+          }}
+        />
+        <InlineField
+          variant="controlled"
+          label="Category"
+          type="select"
+          value={draft.productCategory}
+          options={PRODUCT_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
+          icon={<Layers size={12} />}
+          disabled={saving}
+          onValueChange={(v) => {
+            if (!v) return;
+            setDraft((d) => {
+              const allowed = PRODUCT_TYPES_BY_CATEGORY[v] ?? [];
+              const nextType = allowed.includes(d.productType)
+                ? d.productType
+                : (allowed[0] ?? d.productType);
+              return { ...d, productCategory: v, productType: nextType };
+            });
+          }}
+        />
+        <InlineField
+          variant="controlled"
+          label="Product type"
+          type="select"
+          value={draft.productType}
+          options={typeOptions}
+          icon={<Tag size={12} />}
+          disabled={saving}
+          onValueChange={(v) => {
+            if (v) setDraft((d) => ({ ...d, productType: v }));
+          }}
+        />
+        <div className="md:col-span-2">
+          <InlineField
+            variant="controlled"
+            label="Scope & working notes"
+            type="textarea"
+            value={draft.description}
+            icon={<Sparkles size={12} />}
+            placeholder="Plan, milestones, client context…"
+            disabled={saving}
+            onValueChange={(v) => setDraft((d) => ({ ...d, description: v }))}
+          />
+        </div>
+        {product.project.company ? (
+          <div className="text-muted-foreground flex items-start gap-2 text-sm md:col-span-2">
+            <Building2 size={14} className="mt-0.5 shrink-0 opacity-70" />
+            <span>
+              <span className="text-foreground font-medium">Company: </span>
+              {product.project.company.name}
+            </span>
+          </div>
+        ) : null}
+        {product.order ? (
+          <div className="text-muted-foreground flex items-start gap-2 text-sm md:col-span-2">
+            <FolderKanban size={14} className="mt-0.5 shrink-0 opacity-70" />
+            <span>
+              <span className="text-foreground font-medium">Order: </span>
+              {product.order.code}
+              {product.order.deal?.code ? ` · Deal ${product.order.deal.code}` : ''}
+            </span>
+          </div>
+        ) : null}
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button
+          type="button"
+          size="sm"
+          disabled={!dirty || saving}
+          onClick={() => void handleSave()}
+        >
+          Save
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={!dirty || saving}
+          onClick={handleCancel}
+        >
+          Cancel
+        </Button>
       </div>
     </section>
   );

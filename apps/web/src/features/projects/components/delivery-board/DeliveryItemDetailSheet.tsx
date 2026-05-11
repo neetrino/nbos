@@ -74,7 +74,11 @@ export function DeliveryItemDetailSheet({
     };
   }, [open, item, refreshKey]);
 
-  const handleRefresh = () => {
+  const refreshDetailOnly = () => {
+    setRefreshKey((k) => k + 1);
+  };
+
+  const refreshDetailAndBoard = () => {
     setRefreshKey((k) => k + 1);
     onEntityUpdated();
   };
@@ -144,7 +148,7 @@ export function DeliveryItemDetailSheet({
               workSpaceHref={headerProps?.workSpaceHref ?? '#'}
               sourcePageHref={headerProps?.sourcePageHref ?? '#'}
               loading={loading}
-              onRefresh={handleRefresh}
+              onRefresh={refreshDetailAndBoard}
             />
             {boardMutations && item && !loading ? (
               <DeliveryStageActionBar
@@ -179,7 +183,7 @@ export function DeliveryItemDetailSheet({
                   credentialsTabHref={credentialsTabHref}
                   projectHubHref={projectHubHref}
                   financeTabHref={financeTabHref}
-                  onRefreshDetail={handleRefresh}
+                  onRefreshDetail={refreshDetailOnly}
                 />
               ) : panel !== 'general' && !loading && headerProps && item ? (
                 <DeliveryItemDetailSecondaryPanels

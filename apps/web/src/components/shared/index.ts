@@ -8,6 +8,7 @@ export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } 
 export { EntitySheet } from './EntitySheet';
 export { KanbanBoard, type KanbanColumn } from './KanbanBoard';
 export { Spinner } from './Spinner';
-export { InlineField } from './InlineField';
-export { SearchField } from './SearchField';
+export { InlineField, type InlineFieldProps } from './InlineField';
+export { ControlledInlineField, type ControlledInlineFieldProps } from './ControlledInlineField';
+export { SearchField, type SearchFieldProps } from './SearchField';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';

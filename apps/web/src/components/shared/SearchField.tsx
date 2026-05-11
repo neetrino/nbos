@@ -13,7 +13,8 @@ interface SearchOption {
   subtitle?: string;
 }
 
-interface SearchFieldProps {
+type SearchFieldPersistProps = {
+  selectionMode?: 'persist';
   label: string;
   value: string | null | undefined;
   displayValue?: ReactNode;
@@ -26,22 +27,46 @@ interface SearchFieldProps {
   newLabel?: string;
   newBadge?: ReactNode;
   className?: string;
+};
+
+type SearchFieldStageProps = {
+  selectionMode: 'stage';
+  label: string;
+  value: string | null | undefined;
+  displayValue?: ReactNode;
+  placeholder?: string;
+  icon?: ReactNode;
+  onStageSelect: (value: string, label: string) => void;
+  onSearch: (query: string) => Promise<SearchOption[]>;
+  onClear?: () => void;
+  onNew?: () => void;
+  newLabel?: string;
+  newBadge?: ReactNode;
+  className?: string;
+};
+
+export type SearchFieldProps = SearchFieldPersistProps | SearchFieldStageProps;
+
+function isStageProps(props: SearchFieldProps): props is SearchFieldStageProps {
+  return props.selectionMode === 'stage';
 }
 
-export function SearchField({
-  label,
-  value,
-  displayValue,
-  placeholder,
-  icon,
-  onSave,
-  onSearch,
-  onClear,
-  onNew,
-  newLabel = 'Create new',
-  newBadge,
-  className,
-}: SearchFieldProps) {
+export function SearchField(props: SearchFieldProps) {
+  const {
+    label,
+    value,
+    displayValue,
+    placeholder,
+    icon,
+    onSearch,
+    onClear,
+    onNew,
+    newLabel = 'Create new',
+    newBadge,
+    className,
+  } = props;
+  const onSave = isStageProps(props) ? undefined : props.onSave;
+  const onStageSelect = isStageProps(props) ? props.onStageSelect : undefined;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchOption[]>([]);
@@ -91,6 +116,13 @@ export function SearchField({
   }, [open]);
 
   const handleSelect = async (optValue: string, optLabel: string) => {
+    if (isStageProps(props) && onStageSelect) {
+      onStageSelect(optValue, optLabel);
+      setOpen(false);
+      setQuery('');
+      return;
+    }
+    if (!onSave) return;
     setSaving(true);
     try {
       await onSave(optValue, optLabel);
@@ -103,9 +135,13 @@ export function SearchField({
 
   const handleClear = async () => {
     if (!onClear) return;
-    setSaving(true);
     setOpen(false);
     setQuery('');
+    if (isStageProps(props)) {
+      onClear();
+      return;
+    }
+    setSaving(true);
     try {
       await onClear();
     } finally {
