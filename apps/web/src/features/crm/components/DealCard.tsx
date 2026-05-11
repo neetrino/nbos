@@ -1,6 +1,6 @@
 'use client';
 
-import { DollarSign, User, Briefcase, MoreHorizontal, Link2 } from 'lucide-react';
+import { DollarSign, User, MoreHorizontal, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 import { StatusBadge } from '@/components/shared';
 import { formatAmount } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
+import { getDealTypePresentation } from '@/lib/deal-type-visual';
 
 interface DealCardProps {
   deal: Deal;
@@ -20,22 +21,23 @@ interface DealCardProps {
 }
 
 export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
-  const isExtension = deal.type === 'EXTENSION';
+  const typeVisual = getDealTypePresentation(deal.type);
+  const TypeIcon = typeVisual.Icon;
 
   return (
     <div
-      className={`group cursor-pointer rounded-xl border p-4 transition-all duration-200 hover:shadow-md ${
-        isExtension
-          ? 'border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/30'
-          : 'border-border bg-card'
-      }`}
+      className={`group cursor-pointer rounded-xl border p-4 transition-all duration-200 hover:shadow-md ${typeVisual.cardShellClassName}`}
       onClick={() => onClick(deal)}
     >
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <p className="text-muted-foreground text-[10px] font-medium">{deal.code}</p>
-            {isExtension && <StatusBadge label="Extension" variant="blue" className="text-[9px]" />}
+            <StatusBadge
+              label={typeVisual.label}
+              variant={typeVisual.badgeVariant}
+              className="text-[9px]"
+            />
           </div>
           <h4 className="text-foreground mt-0.5 truncate text-sm font-semibold">
             {deal.name || deal.code}
@@ -87,12 +89,12 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
           </div>
         )}
         <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <Briefcase size={11} />
-          <span>{deal.type.replace(/_/g, ' ')}</span>
+          <TypeIcon size={11} className={`shrink-0 ${typeVisual.metaTypeIconClassName}`} />
+          <span>{typeVisual.label}</span>
         </div>
         {deal.amount && (
           <div className="text-foreground flex items-center gap-1.5 text-sm font-semibold">
-            <DollarSign size={13} className="text-accent" />
+            <DollarSign size={13} className={`shrink-0 ${typeVisual.amountIconClassName}`} />
             <span>{formatAmount(deal.amount)}</span>
           </div>
         )}

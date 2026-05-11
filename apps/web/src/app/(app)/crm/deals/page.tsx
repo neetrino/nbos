@@ -30,6 +30,7 @@ import {
   formatAmount,
 } from '@/features/crm/constants/dealPipeline';
 import { dealsApi, type Deal } from '@/lib/api/deals';
+import { getDealTypePresentation } from '@/lib/deal-type-visual';
 import {
   getApiErrorMessage,
   isBusinessTransitionApiError,
@@ -516,6 +517,7 @@ export default function DealsPipelinePage() {
             <TableBody>
               {deals.map((deal) => {
                 const stage = getDealStage(deal.status);
+                const dealTypeVisual = getDealTypePresentation(deal.type);
                 return (
                   <TableRow
                     key={deal.id}
@@ -534,8 +536,8 @@ export default function DealsPipelinePage() {
                     <TableCell className="font-semibold">{formatAmount(deal.amount)}</TableCell>
                     <TableCell>
                       <StatusBadge
-                        label={deal.type.replace(/_/g, ' ')}
-                        variant={deal.type === 'EXTENSION' ? 'blue' : 'default'}
+                        label={dealTypeVisual.label}
+                        variant={dealTypeVisual.badgeVariant}
                       />
                     </TableCell>
                     <TableCell>

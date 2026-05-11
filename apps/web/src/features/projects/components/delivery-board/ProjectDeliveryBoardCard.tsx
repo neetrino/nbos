@@ -1,6 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import Link from 'next/link';
-import { Package, Puzzle } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -33,6 +32,7 @@ import {
   ClosedCompactCardMeta,
 } from './ProjectDeliveryBoardClosedCompact';
 import { DeliveryCardMeta } from './ProjectDeliveryBoardCardMeta';
+import { getDealTypePresentation, type DealTypePresentation } from '@/lib/deal-type-visual';
 
 interface ProjectDeliveryBoardCardProps {
   item: DeliveryBoardItem;
@@ -85,6 +85,7 @@ export function ProjectDeliveryBoardCard({
   const lifecycle = getItemLifecycle(item);
   const productId = getNavigableProductId(item);
   const isExtension = item.kind === 'EXTENSION';
+  const dealTypeVisual = getDealTypePresentation(isExtension ? 'EXTENSION' : 'PRODUCT');
   const title = isExtension ? item.extension.name : item.product.name;
   const metaLabel = isExtension ? getExtensionMeta(item.extension) : getProductMeta(item.product);
   const isClosedCompact = displayMode === 'closedCompact' && Boolean(lifecycle?.isTerminal);
@@ -97,7 +98,7 @@ export function ProjectDeliveryBoardCard({
   const projectId = getProjectId(item);
 
   return (
-    <div className={getCardClassName(isExtension, kanbanMinimal)}>
+    <div className={getCardClassName(dealTypeVisual.cardShellClassName, kanbanMinimal)}>
       <button
         type="button"
         disabled={!productId && !onOpenDetails}
@@ -112,10 +113,17 @@ export function ProjectDeliveryBoardCard({
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-start gap-2">
-            <CardKindIcon isExtension={isExtension} />
+            <CardKindIcon visual={dealTypeVisual} />
             <div className="min-w-0 text-left">
               <p className="truncate text-sm font-semibold">{title}</p>
               {metaLabel && <p className="text-muted-foreground truncate text-xs">{metaLabel}</p>}
+              {!kanbanMinimal ? (
+                <StatusBadge
+                  label={dealTypeVisual.label}
+                  variant={dealTypeVisual.badgeVariant}
+                  className="mt-1.5 w-fit text-[9px]"
+                />
+              ) : null}
             </div>
           </div>
           <div className="flex shrink-0 items-start gap-2">
@@ -170,14 +178,10 @@ export function ProjectDeliveryBoardCard({
   );
 }
 
-function CardKindIcon({ isExtension }: { isExtension: boolean }) {
-  const iconClassName = isExtension
-    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-    : 'bg-purple-500/10 text-purple-600 dark:text-purple-400';
-  const Icon = isExtension ? Puzzle : Package;
-
+function CardKindIcon({ visual }: { visual: DealTypePresentation }) {
+  const Icon = visual.Icon;
   return (
-    <span className={`rounded-lg p-1.5 ${iconClassName}`}>
+    <span className={`rounded-lg p-1.5 ${visual.iconWrapClassName}`} title={visual.label}>
       <Icon size={14} />
     </span>
   );
@@ -200,13 +204,10 @@ function getExtensionMeta(extension: ProjectExtensionSummary) {
   return getExtensionSize(extension.size)?.label ?? extension.size;
 }
 
-function getCardClassName(isExtension: boolean, kanbanMinimal: boolean) {
+function getCardClassName(cardShellClassName: string, kanbanMinimal: boolean) {
   const groupKanban = kanbanMinimal ? 'group/kanban-card ' : 'group ';
   const base = `${groupKanban}w-full rounded-xl border p-4 text-left shadow-sm transition-all duration-200 hover:shadow-md`;
-  if (isExtension) {
-    return `${base} border-blue-200/90 bg-blue-50/50 dark:border-blue-900/55 dark:bg-blue-950/30`;
-  }
-  return `${base} bg-card border-border`;
+  return `${base} ${cardShellClassName}`;
 }
 
 const QUICK_TASK_DISABLED_TITLE = 'Employee profile required to create tasks';
