@@ -73,38 +73,42 @@ export function DeliveryBoardView({
   const isClosedMode = effectiveStatus === 'CLOSED';
 
   return (
-    <section className="space-y-4">
-      <ProjectDeliveryBoardHeader
-        activeCount={headerActive}
-        closedCount={headerClosed}
-        kindFilter={kindFilter}
-        statusFilter={effectiveStatus}
-        onKindFilterChange={setKindFilter}
-        onStatusFilterChange={setStatusFilter}
-        hideStatusFilters={Boolean(lockedStatusFilter)}
-      />
-      {isClosedMode ? (
-        <DeliveryBoardClosedBoard
-          items={closedItems}
-          busyItemId={busyItemId}
-          onOpenProduct={onOpenProduct}
-          onOpenProductTab={onOpenProductTab}
-          onBoardAction={handleBoardAction}
-          onCancel={requestCancel}
-          onOpenDetails={onOpenDetails}
+    <section className="flex min-h-0 flex-1 flex-col gap-4">
+      <div className="shrink-0">
+        <ProjectDeliveryBoardHeader
+          activeCount={headerActive}
+          closedCount={headerClosed}
+          kindFilter={kindFilter}
+          statusFilter={effectiveStatus}
+          onKindFilterChange={setKindFilter}
+          onStatusFilterChange={setStatusFilter}
+          hideStatusFilters={Boolean(lockedStatusFilter)}
         />
-      ) : (
-        <DeliveryKanbanBoard
-          items={activeItems}
-          busyItemId={busyItemId}
-          onOpenProduct={onOpenProduct}
-          onOpenProductTab={onOpenProductTab}
-          onBoardAction={handleBoardAction}
-          onCancel={requestCancel}
-          onOpenDetails={onOpenDetails}
-          onMoveToStage={(item, target) => void advanceToDeliveryStage(item, target)}
-        />
-      )}
+      </div>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        {isClosedMode ? (
+          <DeliveryBoardClosedBoard
+            items={closedItems}
+            busyItemId={busyItemId}
+            onOpenProduct={onOpenProduct}
+            onOpenProductTab={onOpenProductTab}
+            onBoardAction={handleBoardAction}
+            onCancel={requestCancel}
+            onOpenDetails={onOpenDetails}
+          />
+        ) : (
+          <DeliveryKanbanBoard
+            items={activeItems}
+            busyItemId={busyItemId}
+            onOpenProduct={onOpenProduct}
+            onOpenProductTab={onOpenProductTab}
+            onBoardAction={handleBoardAction}
+            onCancel={requestCancel}
+            onOpenDetails={onOpenDetails}
+            onMoveToStage={(item, target) => void advanceToDeliveryStage(item, target)}
+          />
+        )}
+      </div>
       <DeliveryBoardStageGateDialog
         resolution={stageGateResolution}
         onOpenChange={(open) => {

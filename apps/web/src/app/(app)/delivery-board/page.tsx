@@ -173,12 +173,12 @@ export default function DeliveryBoardPage() {
       {loading ? (
         <p className="text-muted-foreground text-sm">Loading board…</p>
       ) : (
-        <Tabs defaultValue="active" className="w-full">
-          <TabsList className="mb-2">
+        <Tabs defaultValue="active" className="flex min-h-0 w-full flex-1 flex-col">
+          <TabsList className="mb-2 shrink-0">
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="closed">Closed</TabsTrigger>
           </TabsList>
-          <TabsContent value="active" className="mt-0">
+          <TabsContent value="active" className="mt-0 flex min-h-0 min-w-0 flex-1 flex-col">
             <DeliveryBoardView
               items={scopedItems}
               mutations={deliveryMutations}

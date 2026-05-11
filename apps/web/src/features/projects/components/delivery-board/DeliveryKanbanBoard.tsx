@@ -12,11 +12,14 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { GripVertical } from 'lucide-react';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { ProjectDeliveryBoardCard } from './ProjectDeliveryBoardCard';
+import {
+  DELIVERY_KANBAN_BOARD_MAX_HEIGHT_CLASS,
+  DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS,
+  DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS,
+} from './delivery-kanban-board.constants';
 import {
   deliveryKanbanCardId,
   deliveryKanbanColId,
@@ -34,8 +37,8 @@ import {
 } from './project-delivery-board-model';
 import type { ProductBoardTab } from './ProjectDeliveryBoardContextLinks';
 
-const POINTER_ACTIVATION_PX = 8;
-const KANBAN_COLUMN_WIDTH_CLASS = 'w-[280px]';
+/** Matches Deal-style “click vs drag”: small movement starts a stage move; pure click still works. */
+const POINTER_ACTIVATION_PX = 6;
 
 interface DeliveryKanbanBoardProps {
   items: DeliveryBoardItem[];
@@ -124,8 +127,14 @@ export function DeliveryKanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="min-h-0 flex-1 overflow-x-auto pb-2">
-        <div className="flex h-full gap-3">
+      <div className="flex min-h-0 w-full flex-1 flex-col pb-2">
+        <div
+          className={cn(
+            'grid min-h-[28rem] w-full min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-1',
+            DELIVERY_KANBAN_BOARD_MAX_HEIGHT_CLASS,
+            'auto-rows-[minmax(0,1fr)]',
+          )}
+        >
           {columns.map((col) => (
             <KanbanStageColumn
               key={col.stage}
@@ -152,6 +161,7 @@ export function DeliveryKanbanBoard({
                     onResume={() => onBoardAction(item, 'RESUME')}
                     onComplete={() => onBoardAction(item, 'COMPLETE')}
                     onCancel={() => onCancel(item)}
+                    kanbanActionIsolation
                   />
                 </KanbanDraggableCard>
               ))}
@@ -196,21 +206,23 @@ function KanbanStageColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'bg-muted/30 border-border flex h-full min-h-[28rem] shrink-0 flex-col rounded-xl border p-3 transition-colors',
-        KANBAN_COLUMN_WIDTH_CLASS,
-        isOver && 'ring-primary/25 bg-muted/45 ring-2 ring-inset',
+        'bg-muted/30 border-border flex min-h-0 min-w-0 flex-col rounded-xl border p-3',
+        DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS,
+        isOver && DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS,
       )}
     >
       <div className="mb-3 flex shrink-0 items-center justify-between">
         <h3 className="text-sm font-semibold">{title}</h3>
         <span className="text-muted-foreground text-xs">{count}</span>
       </div>
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
-        {count === 0 ? (
-          <p className="text-muted-foreground py-8 text-center text-xs">No cards</p>
-        ) : (
-          children
-        )}
+      <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1">
+        <div className="space-y-2">
+          {count === 0 ? (
+            <p className="text-muted-foreground py-8 text-center text-xs">No cards</p>
+          ) : (
+            children
+          )}
+        </div>
       </div>
     </div>
   );
@@ -231,22 +243,17 @@ function KanbanDraggableCard({
   });
 
   return (
-    <div ref={setNodeRef} className={cn(isDragging && 'opacity-40')}>
-      <div className="flex gap-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          className="text-muted-foreground mt-1 h-8 w-8 shrink-0 touch-none"
-          disabled={disabled}
-          aria-label="Drag to change stage"
-          {...listeners}
-          {...attributes}
-        >
-          <GripVertical className="size-4" />
-        </Button>
-        <div className="min-w-0 flex-1">{children}</div>
-      </div>
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={cn(
+        'touch-manipulation rounded-xl outline-none',
+        disabled ? 'cursor-not-allowed' : 'cursor-grab active:cursor-grabbing',
+        isDragging && 'scale-[0.98] opacity-45',
+      )}
+    >
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }

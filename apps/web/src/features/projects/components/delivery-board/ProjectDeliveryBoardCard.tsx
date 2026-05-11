@@ -1,3 +1,4 @@
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import { Building2, Calendar, Package, Puzzle, User } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import type {
@@ -43,6 +44,11 @@ interface ProjectDeliveryBoardCardProps {
   onResume: () => void;
   onComplete: () => void;
   onCancel: () => void;
+  /**
+   * When the card sits inside a kanban drag source, stop pointer propagation on
+   * action chrome so Move next / links / cancel remain clickable without starting a drag.
+   */
+  kanbanActionIsolation?: boolean;
 }
 
 export function ProjectDeliveryBoardCard({
@@ -56,6 +62,7 @@ export function ProjectDeliveryBoardCard({
   onResume,
   onComplete,
   onCancel,
+  kanbanActionIsolation = false,
 }: ProjectDeliveryBoardCardProps) {
   const lifecycle = getItemLifecycle(item);
   const productId = getNavigableProductId(item);
@@ -63,6 +70,11 @@ export function ProjectDeliveryBoardCard({
   const title = isExtension ? item.extension.name : item.product.name;
   const metaLabel = isExtension ? getExtensionMeta(item.extension) : getProductMeta(item.product);
   const isClosedCompact = displayMode === 'closedCompact' && Boolean(lifecycle?.isTerminal);
+  const stopKanbanPointerBubble = kanbanActionIsolation
+    ? (event: ReactPointerEvent) => {
+        event.stopPropagation();
+      }
+    : undefined;
 
   return (
     <div className={getCardClassName(isExtension)}>
@@ -96,25 +108,31 @@ export function ProjectDeliveryBoardCard({
         {isClosedCompact ? <ClosedCompactCardMeta item={item} /> : <DeliveryCardMeta item={item} />}
       </button>
       {!isClosedCompact ? (
-        <ProjectDeliveryBoardContextLinks item={item} onOpenProductTab={onOpenProductTab} />
+        <div onPointerDown={stopKanbanPointerBubble}>
+          <ProjectDeliveryBoardContextLinks item={item} onOpenProductTab={onOpenProductTab} />
+        </div>
       ) : null}
       {isClosedCompact ? (
-        <ClosedCompactCardActions
-          onOpenDetails={onOpenDetails}
-          onOpenProduct={() => productId && onOpenProduct(productId)}
-        />
+        <div onPointerDown={stopKanbanPointerBubble}>
+          <ClosedCompactCardActions
+            onOpenDetails={onOpenDetails}
+            onOpenProduct={() => productId && onOpenProduct(productId)}
+          />
+        </div>
       ) : (
-        <DeliveryStageActionBar
-          variant="card"
-          item={item}
-          lifecycle={lifecycle}
-          busyItemId={isActionBusy ? getItemId(item) : null}
-          onMoveNext={onMoveNext}
-          onResume={onResume}
-          onComplete={onComplete}
-          onCancel={onCancel}
-          onOpenProduct={() => productId && onOpenProduct(productId)}
-        />
+        <div onPointerDown={stopKanbanPointerBubble}>
+          <DeliveryStageActionBar
+            variant="card"
+            item={item}
+            lifecycle={lifecycle}
+            busyItemId={isActionBusy ? getItemId(item) : null}
+            onMoveNext={onMoveNext}
+            onResume={onResume}
+            onComplete={onComplete}
+            onCancel={onCancel}
+            onOpenProduct={() => productId && onOpenProduct(productId)}
+          />
+        </div>
       )}
     </div>
   );
