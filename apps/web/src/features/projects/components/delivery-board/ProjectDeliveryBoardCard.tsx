@@ -1,6 +1,9 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
+import Link from 'next/link';
 import { Package, Puzzle } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import type {
   DeliveryLifecycleProjection,
   ProjectExtensionSummary,
@@ -17,6 +20,7 @@ import {
   getItemId,
   getItemLifecycle,
   getNavigableProductId,
+  getProjectId,
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
 import {
@@ -53,6 +57,12 @@ interface ProjectDeliveryBoardCardProps {
    * Done / Cancel / deep links live in the detail drawer.
    */
   kanbanMinimal?: boolean;
+  /** Hide Project / Task hover row (e.g. drag overlay preview). */
+  suppressKanbanHoverInteractions?: boolean;
+  /** Opens quick-create task dialog with a PROJECT link (kanban host provides the dialog). */
+  onOpenQuickTaskForProject?: (projectId: string) => void;
+  /** When true, Task button is disabled (e.g. user has no employee / creator id). */
+  quickTaskDisabled?: boolean;
 }
 
 export function ProjectDeliveryBoardCard({
@@ -68,6 +78,9 @@ export function ProjectDeliveryBoardCard({
   onCancel,
   kanbanActionIsolation = false,
   kanbanMinimal = false,
+  suppressKanbanHoverInteractions = false,
+  onOpenQuickTaskForProject,
+  quickTaskDisabled = false,
 }: ProjectDeliveryBoardCardProps) {
   const lifecycle = getItemLifecycle(item);
   const productId = getNavigableProductId(item);
@@ -81,8 +94,10 @@ export function ProjectDeliveryBoardCard({
       }
     : undefined;
 
+  const projectId = getProjectId(item);
+
   return (
-    <div className={getCardClassName(isExtension)}>
+    <div className={getCardClassName(isExtension, kanbanMinimal)}>
       <button
         type="button"
         disabled={!productId && !onOpenDetails}
@@ -116,6 +131,14 @@ export function ProjectDeliveryBoardCard({
           <DeliveryCardMeta item={item} metaDensity={kanbanMinimal ? 'minimal' : 'full'} />
         )}
       </button>
+      {kanbanMinimal && !isClosedCompact && !suppressKanbanHoverInteractions && projectId ? (
+        <DeliveryKanbanCardHoverActions
+          projectId={projectId}
+          onPointerDown={stopKanbanPointerBubble}
+          onOpenQuickTaskForProject={onOpenQuickTaskForProject}
+          quickTaskDisabled={quickTaskDisabled}
+        />
+      ) : null}
       {!isClosedCompact && !kanbanMinimal ? (
         <div onPointerDown={stopKanbanPointerBubble}>
           <ProjectDeliveryBoardContextLinks item={item} onOpenProductTab={onOpenProductTab} />
@@ -177,13 +200,54 @@ function getExtensionMeta(extension: ProjectExtensionSummary) {
   return getExtensionSize(extension.size)?.label ?? extension.size;
 }
 
-function getCardClassName(isExtension: boolean) {
-  const base =
-    'group w-full rounded-xl border p-4 text-left shadow-sm transition-all duration-200 hover:shadow-md';
+function getCardClassName(isExtension: boolean, kanbanMinimal: boolean) {
+  const groupKanban = kanbanMinimal ? 'group/kanban-card ' : 'group ';
+  const base = `${groupKanban}w-full rounded-xl border p-4 text-left shadow-sm transition-all duration-200 hover:shadow-md`;
   if (isExtension) {
     return `${base} border-blue-200/90 bg-blue-50/50 dark:border-blue-900/55 dark:bg-blue-950/30`;
   }
   return `${base} bg-card border-border`;
+}
+
+const QUICK_TASK_DISABLED_TITLE = 'Employee profile required to create tasks';
+
+function DeliveryKanbanCardHoverActions({
+  projectId,
+  onPointerDown,
+  onOpenQuickTaskForProject,
+  quickTaskDisabled,
+}: {
+  projectId: string;
+  onPointerDown?: (event: ReactPointerEvent) => void;
+  onOpenQuickTaskForProject?: (projectId: string) => void;
+  quickTaskDisabled: boolean;
+}) {
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      className="border-border pointer-events-none flex flex-wrap justify-end gap-1.5 border-t pt-2 opacity-0 transition-opacity duration-150 group-focus-within/kanban-card:pointer-events-auto group-focus-within/kanban-card:opacity-100 group-hover/kanban-card:pointer-events-auto group-hover/kanban-card:opacity-100"
+    >
+      <Link
+        href={`/projects/${projectId}`}
+        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-7 text-xs')}
+      >
+        Project
+      </Link>
+      {onOpenQuickTaskForProject ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="h-7 text-xs"
+          disabled={quickTaskDisabled}
+          title={quickTaskDisabled ? QUICK_TASK_DISABLED_TITLE : undefined}
+          onClick={() => onOpenQuickTaskForProject(projectId)}
+        >
+          Task
+        </Button>
+      ) : null}
+    </div>
+  );
 }
 
 function getCardBodyClassName(canOpen: boolean) {

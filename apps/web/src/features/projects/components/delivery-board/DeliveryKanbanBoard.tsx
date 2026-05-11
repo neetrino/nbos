@@ -14,8 +14,11 @@ import {
 } from '@dnd-kit/core';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { ProjectDeliveryBoardCard } from './ProjectDeliveryBoardCard';
 import {
+  DELIVERY_BOARD_TASK_LINK_PROJECT_ENTITY,
   DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS,
   DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS,
   DELIVERY_STAGE_HEX_COLORS,
@@ -62,6 +65,9 @@ export function DeliveryKanbanBoard({
   onMoveToStage,
 }: DeliveryKanbanBoardProps) {
   const [activeItem, setActiveItem] = useState<DeliveryBoardItem | null>(null);
+  const [quickCreateProjectId, setQuickCreateProjectId] = useState<string | null>(null);
+  const { creatorId, creatorReady } = useTaskCreatorId();
+  const quickTaskDisabled = creatorReady && !creatorId;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: POINTER_ACTIVATION_PX } }),
     useSensor(KeyboardSensor),
@@ -139,8 +145,8 @@ export function DeliveryKanbanBoard({
             <div
               key={col.stage}
               className={cn(
-                'mx-2 flex min-h-0 flex-1 flex-col sm:max-w-[calc(50%-0.375rem)] sm:min-w-[calc(50%-0.375rem)] sm:flex-none sm:basis-[calc(50%-0.375rem)]',
-                'lg:max-w-none lg:min-w-0 lg:flex-1 lg:basis-0',
+                'mx-2 flex min-h-0 min-w-[288px] flex-1 flex-col sm:max-w-[calc(50%-0.375rem)] sm:min-w-[calc(50%-0.375rem)] sm:flex-none sm:basis-[calc(50%-0.375rem)]',
+                'lg:max-w-none lg:min-w-[288px] lg:flex-1 lg:basis-0',
               )}
             >
               <KanbanStageColumn stage={col.stage} title={col.label} count={col.items.length}>
@@ -165,6 +171,8 @@ export function DeliveryKanbanBoard({
                       onCancel={() => onCancel(item)}
                       kanbanActionIsolation
                       kanbanMinimal
+                      onOpenQuickTaskForProject={(pid) => setQuickCreateProjectId(pid)}
+                      quickTaskDisabled={quickTaskDisabled}
                     />
                   </KanbanDraggableCard>
                 ))}
@@ -187,10 +195,27 @@ export function DeliveryKanbanBoard({
               onComplete={() => {}}
               onCancel={() => {}}
               kanbanMinimal
+              suppressKanbanHoverInteractions
             />
           </div>
         ) : null}
       </DragOverlay>
+      <QuickCreateTaskDialog
+        open={quickCreateProjectId !== null}
+        onOpenChange={(open) => {
+          if (!open) setQuickCreateProjectId(null);
+        }}
+        creatorId={creatorId ?? ''}
+        creatorReady={creatorReady}
+        defaultLink={
+          quickCreateProjectId
+            ? {
+                entityType: DELIVERY_BOARD_TASK_LINK_PROJECT_ENTITY,
+                entityId: quickCreateProjectId,
+              }
+            : undefined
+        }
+      />
     </DndContext>
   );
 }
