@@ -164,6 +164,7 @@ export function DeliveryKanbanBoard({
                       onComplete={() => onBoardAction(item, 'COMPLETE')}
                       onCancel={() => onCancel(item)}
                       kanbanActionIsolation
+                      kanbanMinimal
                     />
                   </KanbanDraggableCard>
                 ))}
@@ -185,6 +186,7 @@ export function DeliveryKanbanBoard({
               onResume={() => {}}
               onComplete={() => {}}
               onCancel={() => {}}
+              kanbanMinimal
             />
           </div>
         ) : null}

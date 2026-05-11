@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { Building2, Calendar, Package, Puzzle, User } from 'lucide-react';
+import { Package, Puzzle } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import type {
   DeliveryLifecycleProjection,
@@ -8,11 +8,9 @@ import type {
 } from '@/lib/api/projects';
 import {
   formatDeliveryLifecycleLabel,
-  formatDeliveryHoldUntil,
   getExtensionSize,
   getDeliveryLifecycleVariant,
   getProductType,
-  isDeliveryHoldExpired,
 } from '@/features/projects/constants/projects';
 import { DeliveryStageActionBar } from './DeliveryStageActionBar';
 import {
@@ -30,6 +28,7 @@ import {
   ClosedCompactCardActions,
   ClosedCompactCardMeta,
 } from './ProjectDeliveryBoardClosedCompact';
+import { DeliveryCardMeta } from './ProjectDeliveryBoardCardMeta';
 
 interface ProjectDeliveryBoardCardProps {
   item: DeliveryBoardItem;
@@ -49,6 +48,11 @@ interface ProjectDeliveryBoardCardProps {
    * action chrome so Move next / links / cancel remain clickable without starting a drag.
    */
   kanbanActionIsolation?: boolean;
+  /**
+   * Active delivery kanban: slimmer card — column already shows stage; stage moves via drag;
+   * Done / Cancel / deep links live in the detail drawer.
+   */
+  kanbanMinimal?: boolean;
 }
 
 export function ProjectDeliveryBoardCard({
@@ -63,6 +67,7 @@ export function ProjectDeliveryBoardCard({
   onComplete,
   onCancel,
   kanbanActionIsolation = false,
+  kanbanMinimal = false,
 }: ProjectDeliveryBoardCardProps) {
   const lifecycle = getItemLifecycle(item);
   const productId = getNavigableProductId(item);
@@ -102,12 +107,16 @@ export function ProjectDeliveryBoardCard({
             {lifecycle && !lifecycle.isTerminal && lifecycle.stage ? (
               <DeliveryStageReadinessRing lifecycle={lifecycle} />
             ) : null}
-            {lifecycle && <LifecycleBadge lifecycle={lifecycle} />}
+            {lifecycle && !kanbanMinimal ? <LifecycleBadge lifecycle={lifecycle} /> : null}
           </div>
         </div>
-        {isClosedCompact ? <ClosedCompactCardMeta item={item} /> : <DeliveryCardMeta item={item} />}
+        {isClosedCompact ? (
+          <ClosedCompactCardMeta item={item} />
+        ) : (
+          <DeliveryCardMeta item={item} metaDensity={kanbanMinimal ? 'minimal' : 'full'} />
+        )}
       </button>
-      {!isClosedCompact ? (
+      {!isClosedCompact && !kanbanMinimal ? (
         <div onPointerDown={stopKanbanPointerBubble}>
           <ProjectDeliveryBoardContextLinks item={item} onOpenProductTab={onOpenProductTab} />
         </div>
@@ -119,7 +128,7 @@ export function ProjectDeliveryBoardCard({
             onOpenProduct={() => productId && onOpenProduct(productId)}
           />
         </div>
-      ) : (
+      ) : !kanbanMinimal ? (
         <div onPointerDown={stopKanbanPointerBubble}>
           <DeliveryStageActionBar
             variant="card"
@@ -133,7 +142,7 @@ export function ProjectDeliveryBoardCard({
             onOpenProduct={() => productId && onOpenProduct(productId)}
           />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -157,92 +166,6 @@ function LifecycleBadge({ lifecycle }: { lifecycle: DeliveryLifecycleProjection 
       label={formatDeliveryLifecycleLabel(lifecycle)}
       variant={getDeliveryLifecycleVariant(lifecycle)}
     />
-  );
-}
-
-function DeliveryCardMeta({ item }: { item: DeliveryBoardItem }) {
-  if (item.kind === 'PRODUCT') return <ProductCardMeta product={item.product} />;
-  return <ExtensionCardMeta extension={item.extension} />;
-}
-
-function ProductCardMeta({ product }: { product: ProjectProductSummary }) {
-  const holdCopy = getHoldCopy(product.deliveryLifecycle);
-  return (
-    <div className="mt-3 space-y-1.5 text-left">
-      {product.project && (
-        <MetaLine icon={Building2} label={`${product.project.name} (${product.project.code})`} />
-      )}
-      {product.pm && (
-        <MetaLine icon={User} label={`${product.pm.firstName} ${product.pm.lastName}`} />
-      )}
-      {product.deadline && (
-        <MetaLine icon={Calendar} label={new Date(product.deadline).toLocaleDateString()} />
-      )}
-      <p className="text-muted-foreground text-xs">
-        {product._count.tasks} Work Space tasks · {product._count.extensions} ext. ·{' '}
-        {product._count.tickets} tickets
-      </p>
-      {product.checklistStageProgress && product.checklistStageProgress.total > 0 ? (
-        <p className="text-muted-foreground text-xs">
-          Checklist {product.checklistStageProgress.completed}/
-          {product.checklistStageProgress.total}
-        </p>
-      ) : null}
-      {holdCopy && <p className={getHoldCopyClassName(product.deliveryLifecycle)}>{holdCopy}</p>}
-    </div>
-  );
-}
-
-function ExtensionCardMeta({ extension }: { extension: ProjectExtensionSummary }) {
-  const holdCopy = getHoldCopy(extension.deliveryLifecycle);
-  return (
-    <div className="mt-3 space-y-1.5 text-left">
-      {extension.project && (
-        <MetaLine
-          icon={Building2}
-          label={`${extension.project.name} (${extension.project.code})`}
-        />
-      )}
-      {extension.assignee && (
-        <MetaLine
-          icon={User}
-          label={`${extension.assignee.firstName} ${extension.assignee.lastName}`}
-        />
-      )}
-      <p className="text-muted-foreground text-xs">
-        {extension.product?.name ?? 'No linked product'} · {extension._count.tasks} Work Space tasks
-      </p>
-      {extension.checklistStageProgress && extension.checklistStageProgress.total > 0 ? (
-        <p className="text-muted-foreground text-xs">
-          Checklist {extension.checklistStageProgress.completed}/
-          {extension.checklistStageProgress.total}
-        </p>
-      ) : null}
-      {holdCopy && <p className={getHoldCopyClassName(extension.deliveryLifecycle)}>{holdCopy}</p>}
-    </div>
-  );
-}
-
-function getHoldCopy(lifecycle: DeliveryLifecycleProjection | undefined) {
-  if (lifecycle?.workStatus !== 'ON_HOLD') return null;
-  const date = formatDeliveryHoldUntil(lifecycle.onHoldUntil);
-  if (isDeliveryHoldExpired(lifecycle)) return date ? `Hold expired on ${date}` : 'Hold expired';
-  return date ? `On hold until ${date}` : 'On hold';
-}
-
-function getHoldCopyClassName(lifecycle: DeliveryLifecycleProjection | undefined) {
-  const base = 'text-xs font-medium';
-  return lifecycle && isDeliveryHoldExpired(lifecycle)
-    ? `${base} text-amber-600`
-    : `${base} text-muted-foreground`;
-}
-
-function MetaLine({ icon: Icon, label }: { icon: typeof User; label: string }) {
-  return (
-    <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-      <Icon size={12} />
-      <span className="truncate">{label}</span>
-    </p>
   );
 }
 
