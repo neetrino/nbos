@@ -15,6 +15,10 @@ import {
   ExtensionPlanningSection,
   ProductPlanningSection,
 } from './delivery-item-detail-general-planning-sections';
+import type {
+  ExtensionPlanSnapshot,
+  ProductPlanSnapshot,
+} from './delivery-item-detail-planning-state';
 
 interface DeliveryItemDetailGeneralTabProps {
   item: DeliveryBoardItem;
@@ -26,6 +30,11 @@ interface DeliveryItemDetailGeneralTabProps {
   projectHubHref: string;
   financeTabHref: string;
   onRefreshDetail: () => void;
+  productPlan: ProductPlanSnapshot | null;
+  onProductPlanChange: (next: ProductPlanSnapshot) => void;
+  extensionPlan: ExtensionPlanSnapshot | null;
+  onExtensionPlanChange: (next: ExtensionPlanSnapshot) => void;
+  planningDisabled: boolean;
 }
 
 export function DeliveryItemDetailGeneralTab({
@@ -38,6 +47,11 @@ export function DeliveryItemDetailGeneralTab({
   projectHubHref,
   financeTabHref,
   onRefreshDetail,
+  productPlan,
+  onProductPlanChange,
+  extensionPlan,
+  onExtensionPlanChange,
+  planningDisabled,
 }: DeliveryItemDetailGeneralTabProps) {
   const projectId =
     item.kind === 'PRODUCT'
@@ -52,9 +66,21 @@ export function DeliveryItemDetailGeneralTab({
   return (
     <div className="flex flex-col gap-6 px-5 py-5 sm:flex-row sm:px-7">
       <div className="min-w-0 flex-1 space-y-6">
-        {product ? <ProductPlanningSection product={product} onSaved={onRefreshDetail} /> : null}
-        {extension ? (
-          <ExtensionPlanningSection extension={extension} onSaved={onRefreshDetail} />
+        {product && productPlan ? (
+          <ProductPlanningSection
+            product={product}
+            draft={productPlan}
+            onDraftChange={onProductPlanChange}
+            disabled={planningDisabled}
+          />
+        ) : null}
+        {extension && extensionPlan ? (
+          <ExtensionPlanningSection
+            extension={extension}
+            draft={extensionPlan}
+            onDraftChange={onExtensionPlanChange}
+            disabled={planningDisabled}
+          />
         ) : null}
 
         <DeliveryAccessInfrastructureSection

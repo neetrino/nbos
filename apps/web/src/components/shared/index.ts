@@ -12,3 +12,4 @@ export { InlineField, type InlineFieldProps } from './InlineField';
 export { ControlledInlineField, type ControlledInlineFieldProps } from './ControlledInlineField';
 export { SearchField, type SearchFieldProps } from './SearchField';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';
+export { DetailSheetFormFooter, type DetailSheetFormFooterProps } from './DetailSheetFormFooter';

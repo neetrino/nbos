@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DetailSheetFormFooter } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -8,6 +9,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { extensionsApi, type FullExtension } from '@/lib/api/extensions';
 import { productsApi, type FullProduct } from '@/lib/api/products';
 import type { DeliveryActiveStage } from './project-delivery-board-actions';
+import {
+  buildExtensionPlanPatch,
+  buildProductPlanPatch,
+  snapshotExtensionPlan,
+  snapshotProductPlan,
+  type ExtensionPlanSnapshot,
+  type ProductPlanSnapshot,
+} from './delivery-item-detail-planning-state';
 import {
   DeliveryPipelineStages,
   DELIVERY_PIPELINE_CANCEL_KEY,
@@ -17,7 +26,6 @@ import {
 import {
   getItemId,
   getItemLabel,
-  getItemLifecycle,
   ACTIVE_DELIVERY_STAGES,
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
@@ -42,6 +50,11 @@ function isActivePipelineStage(key: DeliveryPipelineClickKey): key is DeliveryAc
   return (ACTIVE_DELIVERY_STAGES as readonly string[]).includes(key);
 }
 
+function planningSaveErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message) return err.message;
+  return 'Could not save changes.';
+}
+
 export function DeliveryItemDetailSheet({
   item,
   open,
@@ -54,6 +67,12 @@ export function DeliveryItemDetailSheet({
   const [loading, setLoading] = useState(false);
   const [panel, setPanel] = useState<DeliveryDetailTabId>('general');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [productPlan, setProductPlan] = useState<ProductPlanSnapshot | null>(null);
+  const [productSnap, setProductSnap] = useState<ProductPlanSnapshot | null>(null);
+  const [extensionPlan, setExtensionPlan] = useState<ExtensionPlanSnapshot | null>(null);
+  const [extensionSnap, setExtensionSnap] = useState<ExtensionPlanSnapshot | null>(null);
+  const [planningSaving, setPlanningSaving] = useState(false);
+  const [planningError, setPlanningError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open && item) setPanel('general');
@@ -86,9 +105,31 @@ export function DeliveryItemDetailSheet({
     };
   }, [open, item, refreshKey]);
 
-  const refreshDetailOnly = () => {
+  useEffect(() => {
+    if (!product) {
+      setProductSnap(null);
+      setProductPlan(null);
+      return;
+    }
+    const snap = snapshotProductPlan(product);
+    setProductSnap(snap);
+    setProductPlan(snap);
+  }, [product?.id, product?.updatedAt, product]);
+
+  useEffect(() => {
+    if (!extension) {
+      setExtensionSnap(null);
+      setExtensionPlan(null);
+      return;
+    }
+    const snap = snapshotExtensionPlan(extension);
+    setExtensionSnap(snap);
+    setExtensionPlan(snap);
+  }, [extension?.id, extension?.updatedAt, extension]);
+
+  const refreshDetailOnly = useCallback(() => {
     setRefreshKey((k) => k + 1);
-  };
+  }, []);
 
   const lifecycle = item ? mergeDeliveryDetailLifecycle(item, product, extension) : undefined;
   const displayTitle = product?.name ?? extension?.name ?? (item ? getItemLabel(item) : '');
@@ -145,7 +186,7 @@ export function DeliveryItemDetailSheet({
       refreshDetailOnly();
       onEntityUpdated();
     },
-    [item, onEntityUpdated],
+    [item, onEntityUpdated, refreshDetailOnly],
   );
 
   const handlePipelineSelect = useCallback(
@@ -167,6 +208,62 @@ export function DeliveryItemDetailSheet({
   );
 
   const busy = Boolean(item && boardMutations?.busyItemId === getItemId(item));
+
+  const planningDirty = useMemo(() => {
+    if (item?.kind === 'PRODUCT' && productSnap && productPlan) {
+      return JSON.stringify(productSnap) !== JSON.stringify(productPlan);
+    }
+    if (item?.kind === 'EXTENSION' && extensionSnap && extensionPlan) {
+      return JSON.stringify(extensionSnap) !== JSON.stringify(extensionPlan);
+    }
+    return false;
+  }, [item?.kind, productSnap, productPlan, extensionSnap, extensionPlan]);
+
+  const handlePlanningSave = useCallback(async () => {
+    setPlanningError(null);
+    if (item?.kind === 'PRODUCT' && product && productSnap && productPlan) {
+      const patch = buildProductPlanPatch(productSnap, productPlan);
+      if (!patch) return;
+      setPlanningSaving(true);
+      try {
+        await productsApi.update(product.id, patch);
+        refreshDetailOnly();
+      } catch (err) {
+        setPlanningError(planningSaveErrorMessage(err));
+      } finally {
+        setPlanningSaving(false);
+      }
+      return;
+    }
+    if (item?.kind === 'EXTENSION' && extension && extensionSnap && extensionPlan) {
+      const patch = buildExtensionPlanPatch(extensionSnap, extensionPlan);
+      if (!patch) return;
+      setPlanningSaving(true);
+      try {
+        await extensionsApi.update(extension.id, patch);
+        refreshDetailOnly();
+      } catch (err) {
+        setPlanningError(planningSaveErrorMessage(err));
+      } finally {
+        setPlanningSaving(false);
+      }
+    }
+  }, [
+    item?.kind,
+    product,
+    productSnap,
+    productPlan,
+    extension,
+    extensionSnap,
+    extensionPlan,
+    refreshDetailOnly,
+  ]);
+
+  const handlePlanningCancel = useCallback(() => {
+    setPlanningError(null);
+    if (productSnap) setProductPlan(productSnap);
+    if (extensionSnap) setExtensionPlan(extensionSnap);
+  }, [productSnap, extensionSnap]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -230,6 +327,11 @@ export function DeliveryItemDetailSheet({
                   projectHubHref={projectHubHref}
                   financeTabHref={financeTabHref}
                   onRefreshDetail={refreshDetailOnly}
+                  productPlan={productPlan}
+                  onProductPlanChange={setProductPlan}
+                  extensionPlan={extensionPlan}
+                  onExtensionPlanChange={setExtensionPlan}
+                  planningDisabled={planningSaving}
                 />
               ) : panel !== 'general' && !loading && headerProps && item ? (
                 <DeliveryItemDetailSecondaryPanels
@@ -258,6 +360,15 @@ export function DeliveryItemDetailSheet({
                 <p className="text-muted-foreground px-7 py-6 text-sm">Could not load details.</p>
               )}
             </ScrollArea>
+
+            <DetailSheetFormFooter
+              visible={panel === 'general' && !loading && Boolean(product || extension)}
+              dirty={planningDirty}
+              saving={planningSaving}
+              errorMessage={planningError}
+              onSave={() => void handlePlanningSave()}
+              onCancel={handlePlanningCancel}
+            />
           </>
         )}
       </SheetContent>

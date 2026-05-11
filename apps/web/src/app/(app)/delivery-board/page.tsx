@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { LayoutList, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DeliveryBoardKindSegmented } from '@/features/projects/components/delivery-board/DeliveryBoardKindSegmented';
 import { DeliveryBoardView } from '@/features/projects/components/delivery-board/DeliveryBoardView';
 import { DeliveryBoardClosedBoard } from '@/features/projects/components/delivery-board/DeliveryBoardClosedBoard';
 import {
@@ -174,10 +175,16 @@ export default function DeliveryBoardPage() {
         <p className="text-muted-foreground text-sm">Loading board…</p>
       ) : (
         <Tabs defaultValue="active" className="flex min-h-0 w-full flex-1 flex-col">
-          <TabsList className="mb-2 shrink-0">
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="closed">Closed</TabsTrigger>
-          </TabsList>
+          <div className="mb-2 flex shrink-0 justify-end">
+            <TabsList variant="segmented">
+              <TabsTrigger value="active" className="px-4 py-2 text-sm">
+                Active
+              </TabsTrigger>
+              <TabsTrigger value="closed" className="px-4 py-2 text-sm">
+                Closed
+              </TabsTrigger>
+            </TabsList>
+          </div>
           <TabsContent value="active" className="mt-0 flex min-h-0 min-w-0 flex-1 flex-col">
             <DeliveryBoardView
               items={scopedItems}
@@ -190,26 +197,11 @@ export default function DeliveryBoardPage() {
             />
           </TabsContent>
           <TabsContent value="closed" className="mt-0 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap gap-2">
-                {(
-                  [
-                    ['ALL', 'All'],
-                    ['PRODUCT', 'Products'],
-                    ['EXTENSION', 'Extensions'],
-                  ] as const
-                ).map(([value, label]) => (
-                  <Button
-                    key={value}
-                    variant={closedKindFilter === value ? 'secondary' : 'ghost'}
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={() => setClosedKindFilter(value)}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <DeliveryBoardKindSegmented
+                value={closedKindFilter}
+                onValueChange={setClosedKindFilter}
+              />
               <div className="flex gap-1">
                 <Button
                   type="button"

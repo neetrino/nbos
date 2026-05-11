@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import {
   Building2,
   Calendar,
@@ -12,94 +12,27 @@ import {
   User,
 } from 'lucide-react';
 import { InlineField, SearchField } from '@/components/shared';
-import { Button } from '@/components/ui/button';
-import type { FullProduct, UpdateProductData } from '@/lib/api/products';
-import { productsApi } from '@/lib/api/products';
+import type { FullProduct } from '@/lib/api/products';
 import {
   PRODUCT_CATEGORIES,
   PRODUCT_TYPES,
   PRODUCT_TYPES_BY_CATEGORY,
 } from '@/features/projects/constants/projects';
 import { useEmployeeSearchLoader } from './delivery-item-detail-employee-search';
-
-type ProductPlanSnapshot = {
-  name: string;
-  deadline: string;
-  pmId: string | null;
-  pmLabel: string;
-  productCategory: string;
-  productType: string;
-  description: string;
-};
-
-function snapshotFromProduct(p: FullProduct): ProductPlanSnapshot {
-  return {
-    name: p.name,
-    deadline: p.deadline ? p.deadline.slice(0, 10) : '',
-    pmId: p.pmId,
-    pmLabel: p.pm ? `${p.pm.firstName} ${p.pm.lastName}` : '',
-    productCategory: p.productCategory,
-    productType: p.productType,
-    description: p.description ?? '',
-  };
-}
-
-function buildProductPatch(
-  snap: ProductPlanSnapshot,
-  draft: ProductPlanSnapshot,
-): UpdateProductData | null {
-  const patch: UpdateProductData = {};
-
-  const resolvedName = draft.name.trim() || snap.name;
-  if (resolvedName !== snap.name) {
-    patch.name = resolvedName;
-  }
-
-  const draftDeadline = draft.deadline.trim() ? draft.deadline : null;
-  const snapDeadline = snap.deadline.trim() ? snap.deadline : null;
-  if (draftDeadline !== snapDeadline) {
-    patch.deadline = draftDeadline;
-  }
-
-  if (draft.pmId !== snap.pmId) {
-    patch.pmId = draft.pmId;
-  }
-
-  if (draft.productCategory !== snap.productCategory) {
-    patch.productCategory = draft.productCategory;
-    const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
-    patch.productType = allowed.includes(draft.productType)
-      ? draft.productType
-      : (allowed[0] ?? draft.productType);
-  } else if (draft.productType !== snap.productType) {
-    patch.productType = draft.productType;
-  }
-
-  const nextDesc = draft.description;
-  if (nextDesc !== snap.description) {
-    patch.description = nextDesc.trim() ? nextDesc : null;
-  }
-
-  return Object.keys(patch).length > 0 ? patch : null;
-}
+import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
 
 export function ProductPlanningSection({
   product,
-  onSaved,
+  draft,
+  onDraftChange,
+  disabled = false,
 }: {
   product: FullProduct;
-  onSaved: () => void;
+  draft: ProductPlanSnapshot;
+  onDraftChange: (next: ProductPlanSnapshot) => void;
+  disabled?: boolean;
 }) {
   const searchEmployees = useEmployeeSearchLoader();
-  const [snap, setSnap] = useState<ProductPlanSnapshot>(() => snapshotFromProduct(product));
-  const [draft, setDraft] = useState<ProductPlanSnapshot>(() => snapshotFromProduct(product));
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    const next = snapshotFromProduct(product);
-    setSnap(next);
-    setDraft(next);
-  }, [product.id, product.updatedAt]);
 
   const typeOptions = useMemo(() => {
     const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
@@ -110,23 +43,9 @@ export function ProductPlanningSection({
     }));
   }, [draft.productCategory]);
 
-  const dirty = useMemo(() => JSON.stringify(draft) !== JSON.stringify(snap), [draft, snap]);
-
-  const handleCancel = useCallback(() => {
-    setDraft(snap);
-  }, [snap]);
-
-  const handleSave = useCallback(async () => {
-    const patch = buildProductPatch(snap, draft);
-    if (!patch) return;
-    setSaving(true);
-    try {
-      await productsApi.update(product.id, patch);
-      onSaved();
-    } finally {
-      setSaving(false);
-    }
-  }, [snap, draft, product.id, onSaved]);
+  const patchDraft = (partial: Partial<ProductPlanSnapshot>) => {
+    onDraftChange({ ...draft, ...partial });
+  };
 
   return (
     <section className="border-border bg-card/40 rounded-xl border p-5">
@@ -140,8 +59,8 @@ export function ProductPlanningSection({
           value={draft.name}
           icon={<Package size={12} />}
           placeholder="Name…"
-          disabled={saving}
-          onValueChange={(v) => setDraft((d) => ({ ...d, name: v }))}
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ name: v })}
         />
         <InlineField
           variant="controlled"
@@ -151,8 +70,8 @@ export function ProductPlanningSection({
           icon={<Calendar size={12} />}
           placeholder="Pick date…"
           clearable
-          disabled={saving}
-          onValueChange={(v) => setDraft((d) => ({ ...d, deadline: v }))}
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ deadline: v })}
         />
         <SearchField
           selectionMode="stage"
@@ -167,10 +86,10 @@ export function ProductPlanningSection({
           icon={<User size={12} />}
           onSearch={searchEmployees}
           onStageSelect={(id, label) => {
-            setDraft((d) => ({ ...d, pmId: id, pmLabel: label }));
+            patchDraft({ pmId: id, pmLabel: label });
           }}
           onClear={() => {
-            setDraft((d) => ({ ...d, pmId: null, pmLabel: '' }));
+            patchDraft({ pmId: null, pmLabel: '' });
           }}
         />
         <InlineField
@@ -180,16 +99,14 @@ export function ProductPlanningSection({
           value={draft.productCategory}
           options={PRODUCT_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
           icon={<Layers size={12} />}
-          disabled={saving}
+          disabled={disabled}
           onValueChange={(v) => {
             if (!v) return;
-            setDraft((d) => {
-              const allowed = PRODUCT_TYPES_BY_CATEGORY[v] ?? [];
-              const nextType = allowed.includes(d.productType)
-                ? d.productType
-                : (allowed[0] ?? d.productType);
-              return { ...d, productCategory: v, productType: nextType };
-            });
+            const allowed = PRODUCT_TYPES_BY_CATEGORY[v] ?? [];
+            const nextType = allowed.includes(draft.productType)
+              ? draft.productType
+              : (allowed[0] ?? draft.productType);
+            onDraftChange({ ...draft, productCategory: v, productType: nextType });
           }}
         />
         <InlineField
@@ -199,9 +116,9 @@ export function ProductPlanningSection({
           value={draft.productType}
           options={typeOptions}
           icon={<Tag size={12} />}
-          disabled={saving}
+          disabled={disabled}
           onValueChange={(v) => {
-            if (v) setDraft((d) => ({ ...d, productType: v }));
+            if (v) patchDraft({ productType: v });
           }}
         />
         <div className="md:col-span-2">
@@ -212,8 +129,8 @@ export function ProductPlanningSection({
             value={draft.description}
             icon={<Sparkles size={12} />}
             placeholder="Plan, milestones, client context…"
-            disabled={saving}
-            onValueChange={(v) => setDraft((d) => ({ ...d, description: v }))}
+            disabled={disabled}
+            onValueChange={(v) => patchDraft({ description: v })}
           />
         </div>
         {product.project.company ? (
@@ -235,25 +152,6 @@ export function ProductPlanningSection({
             </span>
           </div>
         ) : null}
-      </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Button
-          type="button"
-          size="sm"
-          disabled={!dirty || saving}
-          onClick={() => void handleSave()}
-        >
-          Save
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={!dirty || saving}
-          onClick={handleCancel}
-        >
-          Cancel
-        </Button>
       </div>
     </section>
   );
