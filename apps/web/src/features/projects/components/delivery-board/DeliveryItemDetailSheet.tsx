@@ -280,6 +280,7 @@ export function DeliveryItemDetailSheet({
               projectCode={headerProps?.projectCode ?? '—'}
               projectName={headerProps?.projectName ?? '—'}
               projectHref={headerProps?.projectHref ?? '#'}
+              workspaceHref={headerProps?.sourcePageHref ?? '#'}
               deadline={headerProps?.deadline ?? null}
               loading={loading}
               onCommitTitle={handleCommitTitle}

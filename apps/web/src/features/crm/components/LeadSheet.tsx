@@ -20,7 +20,13 @@ import {
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { StatusBadge, InlineField, SearchField } from '@/components/shared';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import {
+  StatusBadge,
+  DetailSheetSettingsMenu,
+  InlineField,
+  SearchField,
+} from '@/components/shared';
 import { LeadPipelineStages } from './LeadPipelineStages';
 import {
   LEAD_SOURCES,
@@ -149,28 +155,48 @@ export function LeadSheet({
       >
         {/* ── Header ── */}
         <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-sky-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-sky-950/10 dark:via-transparent dark:to-transparent">
-          {editingName ? (
-            <input
-              ref={nameInputRef}
-              value={nameValue}
-              onChange={(e) => setNameValue(e.target.value)}
-              onBlur={saveLeadName}
-              onKeyDown={handleNameKeyDown}
-              placeholder="Inquiry title (product / service)…"
-              className="text-foreground w-full border-0 border-b-2 border-sky-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
-            />
-          ) : (
-            <h2
-              onClick={startEditingName}
-              className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-              title="Click to edit inquiry title (product / service)"
-            >
-              {leadTitle}
-            </h2>
-          )}
-          <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
-            {lead.code}
-          </p>
+          <div className="flex flex-wrap items-start gap-2">
+            <div className="min-w-0 flex-1">
+              {editingName ? (
+                <input
+                  ref={nameInputRef}
+                  value={nameValue}
+                  onChange={(e) => setNameValue(e.target.value)}
+                  onBlur={saveLeadName}
+                  onKeyDown={handleNameKeyDown}
+                  placeholder="Inquiry title (product / service)…"
+                  className="text-foreground w-full border-0 border-b-2 border-sky-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
+                />
+              ) : (
+                <h2
+                  onClick={startEditingName}
+                  className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+                  title="Click to edit inquiry title (product / service)"
+                >
+                  {leadTitle}
+                </h2>
+              )}
+              <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
+                {lead.code}
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 pt-0.5">
+              {!isTerminal && lead.status === 'MQL' && onConvertToDeal ? (
+                <Button type="button" size="sm" onClick={() => onConvertToDeal(lead)}>
+                  <ArrowRight size={14} className="mr-1" />
+                  Convert to Deal
+                </Button>
+              ) : null}
+              {onDelete ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(lead.id)}>
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              ) : null}
+            </div>
+          </div>
         </div>
 
         {/* ── Pipeline Stages ── */}
@@ -217,8 +243,6 @@ export function LeadSheet({
                 source={source}
                 saveField={saveField}
                 saveFields={saveFields}
-                onConvertToDeal={onConvertToDeal}
-                isTerminal={isTerminal}
                 sectionIds={{
                   contact: LEAD_SHEET_SECTION.CONTACT,
                   marketing: LEAD_SHEET_SECTION.MARKETING,
@@ -233,33 +257,6 @@ export function LeadSheet({
             )}
           </div>
         </ScrollArea>
-
-        {/* ── Footer ── */}
-        <div className="shrink-0 border-t border-stone-100 bg-stone-50/50 px-7 py-3 dark:border-stone-800 dark:bg-stone-900/20">
-          <div className="flex items-center justify-between">
-            <div>
-              {onDelete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive text-xs"
-                  onClick={() => onDelete(lead.id)}
-                >
-                  <Trash2 size={13} className="mr-1.5" />
-                  Delete
-                </Button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              {!isTerminal && lead.status === 'MQL' && onConvertToDeal && (
-                <Button size="sm" onClick={() => onConvertToDeal(lead)}>
-                  <ArrowRight size={14} className="mr-1" />
-                  Convert to Deal
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
       </SheetContent>
     </Sheet>
   );
@@ -272,8 +269,6 @@ interface LeadGeneralContentProps {
   source: ReturnType<typeof getLeadSource>;
   saveField: (field: string, value: string | null) => Promise<void>;
   saveFields: (fields: Record<string, string | null>) => Promise<void>;
-  onConvertToDeal?: (lead: Lead) => void;
-  isTerminal: boolean;
   sectionIds: {
     contact: LeadSheetSectionId;
     marketing: LeadSheetSectionId;

@@ -13,3 +13,7 @@ export { ControlledInlineField, type ControlledInlineFieldProps } from './Contro
 export { SearchField, type SearchFieldProps } from './SearchField';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';
 export { DetailSheetFormFooter, type DetailSheetFormFooterProps } from './DetailSheetFormFooter';
+export {
+  DetailSheetSettingsMenu,
+  type DetailSheetSettingsMenuProps,
+} from './DetailSheetSettingsMenu';

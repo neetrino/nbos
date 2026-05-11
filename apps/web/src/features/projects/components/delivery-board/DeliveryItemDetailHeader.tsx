@@ -2,9 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { XIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ExternalLink, XIcon } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { SheetClose } from '@/components/ui/sheet';
+import { DetailSheetSettingsMenu } from '@/components/shared';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface DeliveryItemDetailHeaderProps {
@@ -13,6 +16,7 @@ interface DeliveryItemDetailHeaderProps {
   projectCode: string;
   projectName: string;
   projectHref: string;
+  workspaceHref: string;
   deadline: string | null;
   loading: boolean;
   onCommitTitle: (trimmed: string) => Promise<void>;
@@ -24,10 +28,12 @@ export function DeliveryItemDetailHeader({
   projectCode,
   projectName,
   projectHref,
+  workspaceHref,
   deadline,
   loading,
   onCommitTitle,
 }: DeliveryItemDetailHeaderProps) {
+  const router = useRouter();
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -115,15 +121,25 @@ export function DeliveryItemDetailHeader({
             </p>
           ) : null}
         </div>
-        <SheetClose
-          className={cn(
-            buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
-            'text-muted-foreground shrink-0',
-          )}
-        >
-          <XIcon className="size-4" />
-          <span className="sr-only">Close</span>
-        </SheetClose>
+        <div className="flex shrink-0 items-center gap-0.5">
+          {workspaceHref && workspaceHref !== '#' ? (
+            <DetailSheetSettingsMenu>
+              <DropdownMenuItem onClick={() => router.push(workspaceHref)}>
+                <ExternalLink />
+                Open workspace
+              </DropdownMenuItem>
+            </DetailSheetSettingsMenu>
+          ) : null}
+          <SheetClose
+            className={cn(
+              buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+              'text-muted-foreground shrink-0',
+            )}
+          >
+            <XIcon className="size-4" />
+            <span className="sr-only">Close</span>
+          </SheetClose>
+        </div>
       </div>
     </div>
   );

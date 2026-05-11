@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { Trash2, LayoutGrid, History, FileText, Phone, CheckSquare } from 'lucide-react';
-import { DetailSheetFormFooter } from '@/components/shared';
+import { DetailSheetFormFooter, DetailSheetSettingsMenu } from '@/components/shared';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DealPipelineStages } from './DealPipelineStages';
 import { DealGeneralTab } from './DealGeneralTab';
 import { DealHistoryTab } from './DealHistoryTab';
@@ -187,28 +187,42 @@ export function DealSheet({
       >
         {/* ── Header ── */}
         <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
-          {editingName ? (
-            <input
-              ref={nameInputRef}
-              value={nameValue}
-              onChange={(e) => setNameValue(e.target.value)}
-              onBlur={commitNameToDraft}
-              onKeyDown={handleNameKeyDown}
-              placeholder="Deal name..."
-              className="text-foreground w-full border-0 border-b-2 border-amber-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
-            />
-          ) : (
-            <h2
-              onClick={startEditing}
-              className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-              title="Click to edit deal name"
-            >
-              {headerTitle}
-            </h2>
-          )}
-          <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
-            {deal.code}
-          </p>
+          <div className="flex items-start gap-2">
+            <div className="min-w-0 flex-1">
+              {editingName ? (
+                <input
+                  ref={nameInputRef}
+                  value={nameValue}
+                  onChange={(e) => setNameValue(e.target.value)}
+                  onBlur={commitNameToDraft}
+                  onKeyDown={handleNameKeyDown}
+                  placeholder="Deal name..."
+                  className="text-foreground w-full border-0 border-b-2 border-amber-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
+                />
+              ) : (
+                <h2
+                  onClick={startEditing}
+                  className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+                  title="Click to edit deal name"
+                >
+                  {headerTitle}
+                </h2>
+              )}
+              <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
+                {deal.code}
+              </p>
+            </div>
+            {onDelete ? (
+              <div className="pt-0.5">
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(deal.id)}>
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
@@ -281,21 +295,6 @@ export function DealSheet({
           onSave={() => void handleGeneralSave()}
           onCancel={handleGeneralCancel}
         />
-
-        {/* ── Footer (only Delete) ── */}
-        {onDelete ? (
-          <div className="shrink-0 border-t border-stone-100 bg-stone-50/50 px-7 py-3 dark:border-stone-800 dark:bg-stone-900/20">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive text-xs"
-              onClick={() => onDelete(deal.id)}
-            >
-              <Trash2 size={13} className="mr-1.5" />
-              Delete
-            </Button>
-          </div>
-        ) : null}
       </SheetContent>
     </Sheet>
   );
