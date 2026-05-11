@@ -14,7 +14,6 @@ export interface DealTypePresentation {
   cardShellClassName: string;
   iconWrapClassName: string;
   amountIconClassName: string;
-  metaTypeIconClassName: string;
 }
 
 /** Product = green, Extension = orange, Maintenance = purple, Outsource = blue (CRM + delivery). */
@@ -28,7 +27,6 @@ const PRESENTATION: Record<DealTypeKey, DealTypePresentation> = {
       'border-green-200/90 bg-green-50/50 dark:border-green-900/55 dark:bg-green-950/30',
     iconWrapClassName: 'bg-green-500/10 text-green-600 dark:text-green-400',
     amountIconClassName: 'text-green-600 dark:text-green-400',
-    metaTypeIconClassName: 'text-green-600/90 dark:text-green-400/90',
   },
   EXTENSION: {
     key: 'EXTENSION',
@@ -39,7 +37,6 @@ const PRESENTATION: Record<DealTypeKey, DealTypePresentation> = {
       'border-orange-200/90 bg-orange-50/50 dark:border-orange-900/55 dark:bg-orange-950/30',
     iconWrapClassName: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
     amountIconClassName: 'text-orange-600 dark:text-orange-400',
-    metaTypeIconClassName: 'text-orange-600/90 dark:text-orange-400/90',
   },
   MAINTENANCE: {
     key: 'MAINTENANCE',
@@ -50,7 +47,6 @@ const PRESENTATION: Record<DealTypeKey, DealTypePresentation> = {
       'border-purple-200/90 bg-purple-50/50 dark:border-purple-900/55 dark:bg-purple-950/30',
     iconWrapClassName: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
     amountIconClassName: 'text-purple-600 dark:text-purple-400',
-    metaTypeIconClassName: 'text-purple-600/90 dark:text-purple-400/90',
   },
   OUTSOURCE: {
     key: 'OUTSOURCE',
@@ -61,7 +57,6 @@ const PRESENTATION: Record<DealTypeKey, DealTypePresentation> = {
       'border-blue-200/90 bg-blue-50/50 dark:border-blue-900/55 dark:bg-blue-950/30',
     iconWrapClassName: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     amountIconClassName: 'text-blue-600 dark:text-blue-400',
-    metaTypeIconClassName: 'text-blue-600/90 dark:text-blue-400/90',
   },
 };
 
