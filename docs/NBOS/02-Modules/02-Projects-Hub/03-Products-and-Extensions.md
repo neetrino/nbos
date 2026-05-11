@@ -247,6 +247,14 @@ UI-композиция wide drawer, header, табы и breakpoints: [`../../05
 | App iOS / App Android    | mobile app delivery                                      |
 | API keys / ENV           | custom/code/integration-heavy delivery                   |
 
+### Access & infrastructure slots (product profile)
+
+Реализация: матрица слотов в коде (`@nbos/shared` / `getAccessSlotsForProduct`) по `productCategory` и при необходимости `productType`; привязка слота к записи vault в таблице `product_access_slot_bindings` (`productId`, `slotKey`, `credentialId`).
+
+- На opened Delivery / General показываются **все** слоты профиля; **обязательные** помечаются в UI (иконка).
+- Значения входа/секреты не дублируются в карточке: слот указывает на **Credential**; создание и редактирование — через модуль Credentials и RBAC.
+- **Extension:** слоты и привязки считаются в контексте **родительского Product** (`extension.productId`): отдельного vault на extension в v1 нет.
+
 ### Tabs
 
 Tabs нужны только для отдельных рабочих миров.

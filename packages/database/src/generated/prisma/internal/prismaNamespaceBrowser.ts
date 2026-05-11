@@ -125,6 +125,7 @@ export const ModelName = {
   Project: 'Project',
   ProjectKickoffChecklistItem: 'ProjectKickoffChecklistItem',
   Product: 'Product',
+  ProductAccessSlotBinding: 'ProductAccessSlotBinding',
   Extension: 'Extension',
   Department: 'Department',
   EmployeeDepartment: 'EmployeeDepartment',
@@ -1556,6 +1557,18 @@ export const ProductScalarFieldEnum = {
 
 export type ProductScalarFieldEnum =
   (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
+
+export const ProductAccessSlotBindingScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  slotKey: 'slotKey',
+  credentialId: 'credentialId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProductAccessSlotBindingScalarFieldEnum =
+  (typeof ProductAccessSlotBindingScalarFieldEnum)[keyof typeof ProductAccessSlotBindingScalarFieldEnum];
 
 export const ExtensionScalarFieldEnum = {
   id: 'id',

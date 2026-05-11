@@ -388,6 +388,7 @@ export type CredentialWhereInput = {
   owner?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null;
   clientServiceRecords?: Prisma.ClientServiceRecordListRelationFilter;
   mailProviderConnections?: Prisma.MailProviderConnectionListRelationFilter;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingListRelationFilter;
 };
 
 export type CredentialOrderByWithRelationInput = {
@@ -426,6 +427,7 @@ export type CredentialOrderByWithRelationInput = {
   owner?: Prisma.EmployeeOrderByWithRelationInput;
   clientServiceRecords?: Prisma.ClientServiceRecordOrderByRelationAggregateInput;
   mailProviderConnections?: Prisma.MailProviderConnectionOrderByRelationAggregateInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingOrderByRelationAggregateInput;
 };
 
 export type CredentialWhereUniqueInput = Prisma.AtLeast<
@@ -483,6 +485,7 @@ export type CredentialWhereUniqueInput = Prisma.AtLeast<
     > | null;
     clientServiceRecords?: Prisma.ClientServiceRecordListRelationFilter;
     mailProviderConnections?: Prisma.MailProviderConnectionListRelationFilter;
+    productAccessSlotBindings?: Prisma.ProductAccessSlotBindingListRelationFilter;
   },
   'id'
 >;
@@ -604,6 +607,7 @@ export type CredentialCreateInput = {
   owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
   mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialUncheckedCreateInput = {
@@ -639,6 +643,7 @@ export type CredentialUncheckedCreateInput = {
   updatedAt?: Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialUpdateInput = {
@@ -682,6 +687,7 @@ export type CredentialUpdateInput = {
   owner?: Prisma.EmployeeUpdateOneWithoutCredentialsOwnedNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialUncheckedUpdateInput = {
@@ -725,6 +731,7 @@ export type CredentialUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialCreateManyInput = {
@@ -949,6 +956,11 @@ export type CredentialListRelationFilter = {
 
 export type CredentialOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder;
+};
+
+export type CredentialScalarRelationFilter = {
+  is?: Prisma.CredentialWhereInput;
+  isNot?: Prisma.CredentialWhereInput;
 };
 
 export type CredentialCreateNestedOneWithoutClientServiceRecordsInput = {
@@ -1204,6 +1216,32 @@ export type CredentialUncheckedUpdateManyWithoutProjectNestedInput = {
   deleteMany?: Prisma.CredentialScalarWhereInput | Prisma.CredentialScalarWhereInput[];
 };
 
+export type CredentialCreateNestedOneWithoutProductAccessSlotBindingsInput = {
+  create?: Prisma.XOR<
+    Prisma.CredentialCreateWithoutProductAccessSlotBindingsInput,
+    Prisma.CredentialUncheckedCreateWithoutProductAccessSlotBindingsInput
+  >;
+  connectOrCreate?: Prisma.CredentialCreateOrConnectWithoutProductAccessSlotBindingsInput;
+  connect?: Prisma.CredentialWhereUniqueInput;
+};
+
+export type CredentialUpdateOneRequiredWithoutProductAccessSlotBindingsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.CredentialCreateWithoutProductAccessSlotBindingsInput,
+    Prisma.CredentialUncheckedCreateWithoutProductAccessSlotBindingsInput
+  >;
+  connectOrCreate?: Prisma.CredentialCreateOrConnectWithoutProductAccessSlotBindingsInput;
+  upsert?: Prisma.CredentialUpsertWithoutProductAccessSlotBindingsInput;
+  connect?: Prisma.CredentialWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.CredentialUpdateToOneWithWhereWithoutProductAccessSlotBindingsInput,
+      Prisma.CredentialUpdateWithoutProductAccessSlotBindingsInput
+    >,
+    Prisma.CredentialUncheckedUpdateWithoutProductAccessSlotBindingsInput
+  >;
+};
+
 export type CredentialCreateNestedManyWithoutDepartmentInput = {
   create?:
     | Prisma.XOR<
@@ -1322,6 +1360,7 @@ export type CredentialCreateWithoutClientServiceRecordsInput = {
   department?: Prisma.DepartmentCreateNestedOneWithoutCredentialsInput;
   owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialUncheckedCreateWithoutClientServiceRecordsInput = {
@@ -1356,6 +1395,7 @@ export type CredentialUncheckedCreateWithoutClientServiceRecordsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialCreateOrConnectWithoutClientServiceRecordsInput = {
@@ -1426,6 +1466,7 @@ export type CredentialUpdateWithoutClientServiceRecordsInput = {
   department?: Prisma.DepartmentUpdateOneWithoutCredentialsNestedInput;
   owner?: Prisma.EmployeeUpdateOneWithoutCredentialsOwnedNestedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialUncheckedUpdateWithoutClientServiceRecordsInput = {
@@ -1468,6 +1509,7 @@ export type CredentialUncheckedUpdateWithoutClientServiceRecordsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialCreateWithoutOwnerInput = {
@@ -1502,6 +1544,7 @@ export type CredentialCreateWithoutOwnerInput = {
   department?: Prisma.DepartmentCreateNestedOneWithoutCredentialsInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
   mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialUncheckedCreateWithoutOwnerInput = {
@@ -1536,6 +1579,7 @@ export type CredentialUncheckedCreateWithoutOwnerInput = {
   updatedAt?: Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialCreateOrConnectWithoutOwnerInput = {
@@ -1651,6 +1695,7 @@ export type CredentialCreateWithoutMailProviderConnectionsInput = {
   department?: Prisma.DepartmentCreateNestedOneWithoutCredentialsInput;
   owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialUncheckedCreateWithoutMailProviderConnectionsInput = {
@@ -1685,6 +1730,7 @@ export type CredentialUncheckedCreateWithoutMailProviderConnectionsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialCreateOrConnectWithoutMailProviderConnectionsInput = {
@@ -1755,6 +1801,7 @@ export type CredentialUpdateWithoutMailProviderConnectionsInput = {
   department?: Prisma.DepartmentUpdateOneWithoutCredentialsNestedInput;
   owner?: Prisma.EmployeeUpdateOneWithoutCredentialsOwnedNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialUncheckedUpdateWithoutMailProviderConnectionsInput = {
@@ -1797,6 +1844,7 @@ export type CredentialUncheckedUpdateWithoutMailProviderConnectionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialCreateWithoutProjectInput = {
@@ -1831,6 +1879,7 @@ export type CredentialCreateWithoutProjectInput = {
   owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
   mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialUncheckedCreateWithoutProjectInput = {
@@ -1865,6 +1914,7 @@ export type CredentialUncheckedCreateWithoutProjectInput = {
   updatedAt?: Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialCreateOrConnectWithoutProjectInput = {
@@ -1908,6 +1958,190 @@ export type CredentialUpdateManyWithWhereWithoutProjectInput = {
   >;
 };
 
+export type CredentialCreateWithoutProductAccessSlotBindingsInput = {
+  id?: string;
+  productId?: string | null;
+  domainId?: string | null;
+  clientServiceRecordId?: string | null;
+  category: $Enums.CredentialCategoryEnum;
+  credentialType?: $Enums.CredentialTypeEnum;
+  criticality?: $Enums.CredentialCriticalityEnum;
+  environment?: string | null;
+  provider?: string | null;
+  name: string;
+  url?: string | null;
+  login?: string | null;
+  password?: string | null;
+  apiKey?: string | null;
+  envData?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  publicNotes?: string | null;
+  secureNotes?: string | null;
+  lastRotatedAt?: Date | string | null;
+  nextRotationAt?: Date | string | null;
+  rotationOwnerId?: string | null;
+  accessLevel?: $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project?: Prisma.ProjectCreateNestedOneWithoutCredentialsInput;
+  department?: Prisma.DepartmentCreateNestedOneWithoutCredentialsInput;
+  owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
+};
+
+export type CredentialUncheckedCreateWithoutProductAccessSlotBindingsInput = {
+  id?: string;
+  projectId?: string | null;
+  productId?: string | null;
+  domainId?: string | null;
+  clientServiceRecordId?: string | null;
+  departmentId?: string | null;
+  ownerId?: string | null;
+  category: $Enums.CredentialCategoryEnum;
+  credentialType?: $Enums.CredentialTypeEnum;
+  criticality?: $Enums.CredentialCriticalityEnum;
+  environment?: string | null;
+  provider?: string | null;
+  name: string;
+  url?: string | null;
+  login?: string | null;
+  password?: string | null;
+  apiKey?: string | null;
+  envData?: string | null;
+  phone?: string | null;
+  notes?: string | null;
+  publicNotes?: string | null;
+  secureNotes?: string | null;
+  lastRotatedAt?: Date | string | null;
+  nextRotationAt?: Date | string | null;
+  rotationOwnerId?: string | null;
+  accessLevel?: $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialCreateallowedEmployeesInput | string[];
+  archivedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
+};
+
+export type CredentialCreateOrConnectWithoutProductAccessSlotBindingsInput = {
+  where: Prisma.CredentialWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.CredentialCreateWithoutProductAccessSlotBindingsInput,
+    Prisma.CredentialUncheckedCreateWithoutProductAccessSlotBindingsInput
+  >;
+};
+
+export type CredentialUpsertWithoutProductAccessSlotBindingsInput = {
+  update: Prisma.XOR<
+    Prisma.CredentialUpdateWithoutProductAccessSlotBindingsInput,
+    Prisma.CredentialUncheckedUpdateWithoutProductAccessSlotBindingsInput
+  >;
+  create: Prisma.XOR<
+    Prisma.CredentialCreateWithoutProductAccessSlotBindingsInput,
+    Prisma.CredentialUncheckedCreateWithoutProductAccessSlotBindingsInput
+  >;
+  where?: Prisma.CredentialWhereInput;
+};
+
+export type CredentialUpdateToOneWithWhereWithoutProductAccessSlotBindingsInput = {
+  where?: Prisma.CredentialWhereInput;
+  data: Prisma.XOR<
+    Prisma.CredentialUpdateWithoutProductAccessSlotBindingsInput,
+    Prisma.CredentialUncheckedUpdateWithoutProductAccessSlotBindingsInput
+  >;
+};
+
+export type CredentialUpdateWithoutProductAccessSlotBindingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?:
+    | Prisma.EnumCredentialCategoryEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCategoryEnum;
+  credentialType?:
+    | Prisma.EnumCredentialTypeEnumFieldUpdateOperationsInput
+    | $Enums.CredentialTypeEnum;
+  criticality?:
+    | Prisma.EnumCredentialCriticalityEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCriticalityEnum;
+  environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  login?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  envData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publicNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  secureNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  lastRotatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  nextRotationAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  rotationOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  accessLevel?:
+    | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
+    | $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneWithoutCredentialsNestedInput;
+  department?: Prisma.DepartmentUpdateOneWithoutCredentialsNestedInput;
+  owner?: Prisma.EmployeeUpdateOneWithoutCredentialsOwnedNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionUpdateManyWithoutCredentialNestedInput;
+};
+
+export type CredentialUncheckedUpdateWithoutProductAccessSlotBindingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  domainId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientServiceRecordId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  ownerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  category?:
+    | Prisma.EnumCredentialCategoryEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCategoryEnum;
+  credentialType?:
+    | Prisma.EnumCredentialTypeEnumFieldUpdateOperationsInput
+    | $Enums.CredentialTypeEnum;
+  criticality?:
+    | Prisma.EnumCredentialCriticalityEnumFieldUpdateOperationsInput
+    | $Enums.CredentialCriticalityEnum;
+  environment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  login?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  apiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  envData?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  publicNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  secureNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  lastRotatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  nextRotationAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  rotationOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  accessLevel?:
+    | Prisma.EnumCredentialAccessLevelEnumFieldUpdateOperationsInput
+    | $Enums.CredentialAccessLevelEnum;
+  allowedEmployees?: Prisma.CredentialUpdateallowedEmployeesInput | string[];
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
+  mailProviderConnections?: Prisma.MailProviderConnectionUncheckedUpdateManyWithoutCredentialNestedInput;
+};
+
 export type CredentialCreateWithoutDepartmentInput = {
   id?: string;
   productId?: string | null;
@@ -1940,6 +2174,7 @@ export type CredentialCreateWithoutDepartmentInput = {
   owner?: Prisma.EmployeeCreateNestedOneWithoutCredentialsOwnedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProviderAccountInput;
   mailProviderConnections?: Prisma.MailProviderConnectionCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialUncheckedCreateWithoutDepartmentInput = {
@@ -1974,6 +2209,7 @@ export type CredentialUncheckedCreateWithoutDepartmentInput = {
   updatedAt?: Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProviderAccountInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedCreateNestedManyWithoutCredentialInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutCredentialInput;
 };
 
 export type CredentialCreateOrConnectWithoutDepartmentInput = {
@@ -2089,6 +2325,7 @@ export type CredentialUpdateWithoutOwnerInput = {
   department?: Prisma.DepartmentUpdateOneWithoutCredentialsNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialUncheckedUpdateWithoutOwnerInput = {
@@ -2131,6 +2368,7 @@ export type CredentialUncheckedUpdateWithoutOwnerInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialUncheckedUpdateManyWithoutOwnerInput = {
@@ -2245,6 +2483,7 @@ export type CredentialUpdateWithoutProjectInput = {
   owner?: Prisma.EmployeeUpdateOneWithoutCredentialsOwnedNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialUncheckedUpdateWithoutProjectInput = {
@@ -2287,6 +2526,7 @@ export type CredentialUncheckedUpdateWithoutProjectInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialUncheckedUpdateManyWithoutProjectInput = {
@@ -2401,6 +2641,7 @@ export type CredentialUpdateWithoutDepartmentInput = {
   owner?: Prisma.EmployeeUpdateOneWithoutCredentialsOwnedNestedInput;
   clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProviderAccountNestedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialUncheckedUpdateWithoutDepartmentInput = {
@@ -2443,6 +2684,7 @@ export type CredentialUncheckedUpdateWithoutDepartmentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProviderAccountNestedInput;
   mailProviderConnections?: Prisma.MailProviderConnectionUncheckedUpdateManyWithoutCredentialNestedInput;
+  productAccessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutCredentialNestedInput;
 };
 
 export type CredentialUncheckedUpdateManyWithoutDepartmentInput = {
@@ -2492,6 +2734,7 @@ export type CredentialUncheckedUpdateManyWithoutDepartmentInput = {
 export type CredentialCountOutputType = {
   clientServiceRecords: number;
   mailProviderConnections: number;
+  productAccessSlotBindings: number;
 };
 
 export type CredentialCountOutputTypeSelect<
@@ -2499,6 +2742,7 @@ export type CredentialCountOutputTypeSelect<
 > = {
   clientServiceRecords?: boolean | CredentialCountOutputTypeCountClientServiceRecordsArgs;
   mailProviderConnections?: boolean | CredentialCountOutputTypeCountMailProviderConnectionsArgs;
+  productAccessSlotBindings?: boolean | CredentialCountOutputTypeCountProductAccessSlotBindingsArgs;
 };
 
 /**
@@ -2529,6 +2773,15 @@ export type CredentialCountOutputTypeCountMailProviderConnectionsArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   where?: Prisma.MailProviderConnectionWhereInput;
+};
+
+/**
+ * CredentialCountOutputType without action
+ */
+export type CredentialCountOutputTypeCountProductAccessSlotBindingsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ProductAccessSlotBindingWhereInput;
 };
 
 export type CredentialSelect<
@@ -2570,6 +2823,7 @@ export type CredentialSelect<
     owner?: boolean | Prisma.Credential$ownerArgs<ExtArgs>;
     clientServiceRecords?: boolean | Prisma.Credential$clientServiceRecordsArgs<ExtArgs>;
     mailProviderConnections?: boolean | Prisma.Credential$mailProviderConnectionsArgs<ExtArgs>;
+    productAccessSlotBindings?: boolean | Prisma.Credential$productAccessSlotBindingsArgs<ExtArgs>;
     _count?: boolean | Prisma.CredentialCountOutputTypeDefaultArgs<ExtArgs>;
   },
   ExtArgs['result']['credential']
@@ -2733,6 +2987,7 @@ export type CredentialInclude<
   owner?: boolean | Prisma.Credential$ownerArgs<ExtArgs>;
   clientServiceRecords?: boolean | Prisma.Credential$clientServiceRecordsArgs<ExtArgs>;
   mailProviderConnections?: boolean | Prisma.Credential$mailProviderConnectionsArgs<ExtArgs>;
+  productAccessSlotBindings?: boolean | Prisma.Credential$productAccessSlotBindingsArgs<ExtArgs>;
   _count?: boolean | Prisma.CredentialCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type CredentialIncludeCreateManyAndReturn<
@@ -2760,6 +3015,7 @@ export type $CredentialPayload<
     owner: Prisma.$EmployeePayload<ExtArgs> | null;
     clientServiceRecords: Prisma.$ClientServiceRecordPayload<ExtArgs>[];
     mailProviderConnections: Prisma.$MailProviderConnectionPayload<ExtArgs>[];
+    productAccessSlotBindings: Prisma.$ProductAccessSlotBindingPayload<ExtArgs>[];
   };
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -3392,6 +3648,19 @@ export interface Prisma__CredentialClient<
       >
     | Null
   >;
+  productAccessSlotBindings<
+    T extends Prisma.Credential$productAccessSlotBindingsArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<T, Prisma.Credential$productAccessSlotBindingsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ProductAccessSlotBindingPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4002,6 +4271,36 @@ export type Credential$mailProviderConnectionsArgs<
   distinct?:
     | Prisma.MailProviderConnectionScalarFieldEnum
     | Prisma.MailProviderConnectionScalarFieldEnum[];
+};
+
+/**
+ * Credential.productAccessSlotBindings
+ */
+export type Credential$productAccessSlotBindingsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ProductAccessSlotBinding
+   */
+  select?: Prisma.ProductAccessSlotBindingSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the ProductAccessSlotBinding
+   */
+  omit?: Prisma.ProductAccessSlotBindingOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductAccessSlotBindingInclude<ExtArgs> | null;
+  where?: Prisma.ProductAccessSlotBindingWhereInput;
+  orderBy?:
+    | Prisma.ProductAccessSlotBindingOrderByWithRelationInput
+    | Prisma.ProductAccessSlotBindingOrderByWithRelationInput[];
+  cursor?: Prisma.ProductAccessSlotBindingWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?:
+    | Prisma.ProductAccessSlotBindingScalarFieldEnum
+    | Prisma.ProductAccessSlotBindingScalarFieldEnum[];
 };
 
 /**

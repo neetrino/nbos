@@ -140,16 +140,16 @@ model Product {
   createdAt            DateTime                @default(now()) @map("created_at")
   updatedAt            DateTime                @updatedAt @map("updated_at")
 
-  project                   Project                   @relation(fields: [projectId], references: [id])
-  pm                        Employee?                 @relation("ProductPM", fields: [pmId], references: [id])
-  closedBy                  Employee?                 @relation("ProductClosedBy", fields: [closedById], references: [id])
+  project                   Project                    @relation(fields: [projectId], references: [id])
+  pm                        Employee?                  @relation("ProductPM", fields: [pmId], references: [id])
+  closedBy                  Employee?                  @relation("ProductClosedBy", fields: [closedById], references: [id])
   order                     Order?
   extensions                Extension[]
   tasks                     Task[]
   workSpace                 WorkSpace?
   tickets                   SupportTicket[]
   clientServiceRecords      ClientServiceRecord[]
-  dealsLinked               Deal[]                    @relation("DealExistingProduct")
+  dealsLinked               Deal[]                     @relation("DealExistingProduct")
   productBonusPools         ProductBonusPool[]
   bonusReleases             BonusRelease[]
   technicalProfiles         ProductTechnicalProfile[]
@@ -157,7 +157,8 @@ model Product {
   technicalEnvironments     TechnicalEnvironment[]
   operationalJournalEntries OperationalJournalEntry[]
   partnerAccruals           PartnerAccrual[]
-  checklistTemplate         ChecklistTemplate?          @relation(fields: [checklistTemplateId], references: [id], onDelete: SetNull)
+  checklistTemplate         ChecklistTemplate?         @relation(fields: [checklistTemplateId], references: [id], onDelete: SetNull)
+  accessSlotBindings        ProductAccessSlotBinding[]
 
   @@index([deliveryStage])
   @@index([deliveryWorkStatus])
@@ -166,6 +167,26 @@ model Product {
   @@index([clientAcceptedAt])
   @@index([closedAt])
   @@map("products")
+}
+
+/**
+ * Binds a delivery access slot on a product to a Credential vault record.
+ */
+model ProductAccessSlotBinding {
+  id           String   @id @default(uuid())
+  productId    String   @map("product_id")
+  slotKey      String   @map("slot_key")
+  credentialId String   @map("credential_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  credential Credential @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, slotKey])
+  @@unique([productId, credentialId])
+  @@index([credentialId])
+  @@map("product_access_slot_bindings")
 }
 
 enum ExtensionSizeEnum {

@@ -172,6 +172,30 @@ export interface ConfirmAcceptanceData {
   note?: string;
 }
 
+export interface ProductAccessSlotBoundCredential {
+  id: string;
+  name: string;
+  category: string;
+  credentialType: string;
+  login: string | null;
+  url: string | null;
+}
+
+export interface ProductAccessSlotRow {
+  slotKey: string;
+  label: string;
+  required: boolean;
+  kind: 'credential';
+  allowedCategories: string[];
+  defaultCredentialType: string | null;
+  boundCredential: ProductAccessSlotBoundCredential | null;
+}
+
+export interface ProductAccessSlotsResponse {
+  productId: string;
+  slots: ProductAccessSlotRow[];
+}
+
 export const productsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData> {
     const resp = await api.get<ListData>('/api/projects/products', { params });
@@ -236,6 +260,31 @@ export const productsApi = {
     const resp = await api.get<ProductStats>('/api/projects/products/stats', {
       params: projectId ? { projectId } : undefined,
     });
+    return resp.data;
+  },
+
+  async getAccessSlots(productId: string): Promise<ProductAccessSlotsResponse> {
+    const resp = await api.get<ProductAccessSlotsResponse>(
+      `/api/projects/products/${productId}/access-slots`,
+    );
+    return resp.data;
+  },
+
+  async bindAccessSlot(
+    productId: string,
+    body: { slotKey: string; credentialId: string },
+  ): Promise<ProductAccessSlotsResponse> {
+    const resp = await api.put<ProductAccessSlotsResponse>(
+      `/api/projects/products/${productId}/access-slots`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async unbindAccessSlot(productId: string, slotKey: string): Promise<ProductAccessSlotsResponse> {
+    const resp = await api.delete<ProductAccessSlotsResponse>(
+      `/api/projects/products/${productId}/access-slots/${encodeURIComponent(slotKey)}`,
+    );
     return resp.data;
   },
 };

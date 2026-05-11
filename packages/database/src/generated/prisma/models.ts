@@ -84,6 +84,7 @@ export type * from './models/PartnerServiceTerm';
 export type * from './models/Project';
 export type * from './models/ProjectKickoffChecklistItem';
 export type * from './models/Product';
+export type * from './models/ProductAccessSlotBinding';
 export type * from './models/Extension';
 export type * from './models/Department';
 export type * from './models/EmployeeDepartment';

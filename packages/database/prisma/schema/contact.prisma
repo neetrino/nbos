@@ -19,14 +19,14 @@ model Contact {
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
 
-  companies     Company[]
-  projects      Project[]
-  leads         Lead[]
-  deals         Deal[]
-  tickets       SupportTicket[]
-  leadsAsSource Lead[]          @relation("LeadSourceContact")
-  dealsAsSource Deal[]          @relation("DealSourceContact")
-  partners      Partner[]
+  companies           Company[]
+  projects            Project[]
+  leads               Lead[]
+  deals               Deal[]
+  tickets             SupportTicket[]
+  leadsAsSource       Lead[]               @relation("LeadSourceContact")
+  dealsAsSource       Deal[]               @relation("DealSourceContact")
+  partners            Partner[]
   partnerServiceTerms PartnerServiceTerm[]
 
   @@map("contacts")

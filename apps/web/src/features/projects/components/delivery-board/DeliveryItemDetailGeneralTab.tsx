@@ -10,7 +10,7 @@ import {
   getDeliveryLifecycleVariant,
 } from '@/features/projects/constants/projects';
 import type { DeliveryBoardItem } from './project-delivery-board-model';
-import { DeliveryItemDetailCredentialsSection } from './DeliveryItemDetailCredentialsSection';
+import { DeliveryAccessInfrastructureSection } from './DeliveryAccessInfrastructureSection';
 import {
   ExtensionPlanningSection,
   ProductPlanningSection,
@@ -59,11 +59,11 @@ export function DeliveryItemDetailGeneralTab({
           <ExtensionPlanningSection extension={extension} onSaved={onRefreshDetail} />
         ) : null}
 
-        <DeliveryItemDetailCredentialsSection
+        <DeliveryAccessInfrastructureSection
           projectId={projectId}
           productId={productId}
           productCredentialsHref={credentialsTabHref}
-          onCreated={onRefreshDetail}
+          onRefreshDetail={onRefreshDetail}
         />
       </div>
 

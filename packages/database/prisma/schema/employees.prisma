@@ -65,27 +65,27 @@ model Employee {
   marketingAccountsOwned   MarketingAccount[]      @relation("MarketingAccountOwner")
   marketingActivitiesOwned MarketingActivity[]     @relation("MarketingActivityOwner")
 
-  messengerChannelMessagesSent MessengerChannelMessage[]           @relation("MessengerChannelMessageSender")
-  messengerDirectMessagesSent  MessengerDirectMessage[]            @relation("MessengerDirectMessageSender")
-  messengerChannelAttachments  MessengerChannelMessageAttachment[] @relation("MessengerChannelAttachmentActor")
-  messengerDirectAttachments   MessengerDirectMessageAttachment[]  @relation("MessengerDirectAttachmentActor")
-  messengerDmThreadsAsA        MessengerDirectThread[]             @relation("MessengerDmThreadParticipantA")
-  messengerDmThreadsAsB        MessengerDirectThread[]             @relation("MessengerDmThreadParticipantB")
-  messengerChannelReadStates   MessengerChannelReadState[]
-  messengerDmThreadReadStates  MessengerDirectThreadReadState[]
-  mailAccountsOwned            MailAccount[]                       @relation("MailAccountOwner")
-  mailAccountsCreated          MailAccount[]                       @relation("MailAccountCreatedBy")
-  mailDeliveryLogsActed        MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
-  inAppNotificationsReceived   InAppNotification[]
-  dashboardPreference          DashboardPreference?
-  reportExportJobsRequested    ReportExportJob[]
-  reportSchedulesOwned         ReportSchedule[]
-  savedReportViews             SavedReportView[]
-  personalLinks                PersonalLink[]
-  dashboardNotes               DashboardNote[]
-  operationalJournalEntries    OperationalJournalEntry[]
-  checklistTemplateVersionsCreated ChecklistTemplateVersion[] @relation("ChecklistTemplateVersionCreatedBy")
-  checklistInstancesCompleted      ChecklistInstance[]         @relation("ChecklistInstanceCompletedBy")
+  messengerChannelMessagesSent     MessengerChannelMessage[]           @relation("MessengerChannelMessageSender")
+  messengerDirectMessagesSent      MessengerDirectMessage[]            @relation("MessengerDirectMessageSender")
+  messengerChannelAttachments      MessengerChannelMessageAttachment[] @relation("MessengerChannelAttachmentActor")
+  messengerDirectAttachments       MessengerDirectMessageAttachment[]  @relation("MessengerDirectAttachmentActor")
+  messengerDmThreadsAsA            MessengerDirectThread[]             @relation("MessengerDmThreadParticipantA")
+  messengerDmThreadsAsB            MessengerDirectThread[]             @relation("MessengerDmThreadParticipantB")
+  messengerChannelReadStates       MessengerChannelReadState[]
+  messengerDmThreadReadStates      MessengerDirectThreadReadState[]
+  mailAccountsOwned                MailAccount[]                       @relation("MailAccountOwner")
+  mailAccountsCreated              MailAccount[]                       @relation("MailAccountCreatedBy")
+  mailDeliveryLogsActed            MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
+  inAppNotificationsReceived       InAppNotification[]
+  dashboardPreference              DashboardPreference?
+  reportExportJobsRequested        ReportExportJob[]
+  reportSchedulesOwned             ReportSchedule[]
+  savedReportViews                 SavedReportView[]
+  personalLinks                    PersonalLink[]
+  dashboardNotes                   DashboardNote[]
+  operationalJournalEntries        OperationalJournalEntry[]
+  checklistTemplateVersionsCreated ChecklistTemplateVersion[]          @relation("ChecklistTemplateVersionCreatedBy")
+  checklistInstancesCompleted      ChecklistInstance[]                 @relation("ChecklistInstanceCompletedBy")
 
   @@map("employees")
 }

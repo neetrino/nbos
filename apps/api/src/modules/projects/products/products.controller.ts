@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
+import { ProductAccessSlotBindingsService } from './product-access-slot-bindings.service';
 import {
   GENERIC_STATUS_DEPRECATION_DESCRIPTION,
   GENERIC_STATUS_DEPRECATION_HEADER,
@@ -24,7 +25,10 @@ import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators
 @ApiBearerAuth()
 @Controller('projects/products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly productAccessSlotBindings: ProductAccessSlotBindingsService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all products with filters' })
@@ -75,6 +79,32 @@ export class ProductsController {
   @ApiQuery({ name: 'projectId', required: false })
   async getStats(@Query('projectId') projectId?: string) {
     return this.productsService.getStats(projectId);
+  }
+
+  @Get(':id/access-slots')
+  @ApiOperation({ summary: 'Access & infrastructure slots with credential bindings' })
+  async getAccessSlots(@Param('id') id: string) {
+    return this.productAccessSlotBindings.getProductAccessSlots(id);
+  }
+
+  @Put(':id/access-slots')
+  @ApiOperation({ summary: 'Bind a credential to an access slot for this product' })
+  async bindAccessSlot(
+    @Param('id') id: string,
+    @Body() body: { slotKey: string; credentialId: string },
+  ) {
+    return this.productAccessSlotBindings.bindProductAccessSlot(
+      id,
+      body.slotKey,
+      body.credentialId,
+    );
+  }
+
+  @Delete(':id/access-slots/:slotKey')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Remove credential binding from an access slot' })
+  async unbindAccessSlot(@Param('id') id: string, @Param('slotKey') slotKey: string) {
+    return this.productAccessSlotBindings.unbindProductAccessSlot(id, decodeURIComponent(slotKey));
   }
 
   @Get(':id')

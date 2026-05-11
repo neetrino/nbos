@@ -452,6 +452,7 @@ export const ModelName = {
   Project: 'Project',
   ProjectKickoffChecklistItem: 'ProjectKickoffChecklistItem',
   Product: 'Product',
+  ProductAccessSlotBinding: 'ProductAccessSlotBinding',
   Extension: 'Extension',
   Department: 'Department',
   EmployeeDepartment: 'EmployeeDepartment',
@@ -571,6 +572,7 @@ export type TypeMap<
       | 'project'
       | 'projectKickoffChecklistItem'
       | 'product'
+      | 'productAccessSlotBinding'
       | 'extension'
       | 'department'
       | 'employeeDepartment'
@@ -6396,6 +6398,82 @@ export type TypeMap<
         };
       };
     };
+    ProductAccessSlotBinding: {
+      payload: Prisma.$ProductAccessSlotBindingPayload<ExtArgs>;
+      fields: Prisma.ProductAccessSlotBindingFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.ProductAccessSlotBindingFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.ProductAccessSlotBindingFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload>;
+        };
+        findFirst: {
+          args: Prisma.ProductAccessSlotBindingFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.ProductAccessSlotBindingFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload>;
+        };
+        findMany: {
+          args: Prisma.ProductAccessSlotBindingFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload>[];
+        };
+        create: {
+          args: Prisma.ProductAccessSlotBindingCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload>;
+        };
+        createMany: {
+          args: Prisma.ProductAccessSlotBindingCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.ProductAccessSlotBindingCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload>[];
+        };
+        delete: {
+          args: Prisma.ProductAccessSlotBindingDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload>;
+        };
+        update: {
+          args: Prisma.ProductAccessSlotBindingUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload>;
+        };
+        deleteMany: {
+          args: Prisma.ProductAccessSlotBindingDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.ProductAccessSlotBindingUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.ProductAccessSlotBindingUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload>[];
+        };
+        upsert: {
+          args: Prisma.ProductAccessSlotBindingUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProductAccessSlotBindingPayload>;
+        };
+        aggregate: {
+          args: Prisma.ProductAccessSlotBindingAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProductAccessSlotBinding>;
+        };
+        groupBy: {
+          args: Prisma.ProductAccessSlotBindingGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.ProductAccessSlotBindingGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.ProductAccessSlotBindingCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ProductAccessSlotBindingCountAggregateOutputType>
+            | number;
+        };
+      };
+    };
     Extension: {
       payload: Prisma.$ExtensionPayload<ExtArgs>;
       fields: Prisma.ExtensionFieldRefs;
@@ -9483,6 +9561,18 @@ export const ProductScalarFieldEnum = {
 export type ProductScalarFieldEnum =
   (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum];
 
+export const ProductAccessSlotBindingScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  slotKey: 'slotKey',
+  credentialId: 'credentialId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type ProductAccessSlotBindingScalarFieldEnum =
+  (typeof ProductAccessSlotBindingScalarFieldEnum)[keyof typeof ProductAccessSlotBindingScalarFieldEnum];
+
 export const ExtensionScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
@@ -12111,6 +12201,7 @@ export type GlobalOmitConfig = {
   project?: Prisma.ProjectOmit;
   projectKickoffChecklistItem?: Prisma.ProjectKickoffChecklistItemOmit;
   product?: Prisma.ProductOmit;
+  productAccessSlotBinding?: Prisma.ProductAccessSlotBindingOmit;
   extension?: Prisma.ExtensionOmit;
   department?: Prisma.DepartmentOmit;
   employeeDepartment?: Prisma.EmployeeDepartmentOmit;

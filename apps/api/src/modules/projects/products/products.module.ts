@@ -4,6 +4,7 @@ import { ChecklistTemplatesModule } from '../../checklist-templates/checklist-te
 import { PartnerAccrualModule } from '../../finance/partner-accrual/partner-accrual.module';
 import { NotificationModule } from '../../notifications/notification.module';
 import { ProductsService } from './products.service';
+import { ProductAccessSlotBindingsService } from './product-access-slot-bindings.service';
 
 /**
  * Controllers are registered on {@link ProjectsModule} before {@link ProjectsController}
@@ -11,7 +12,7 @@ import { ProductsService } from './products.service';
  */
 @Module({
   imports: [NotificationModule, PartnerAccrualModule, AuditModule, ChecklistTemplatesModule],
-  providers: [ProductsService],
-  exports: [ProductsService],
+  providers: [ProductsService, ProductAccessSlotBindingsService],
+  exports: [ProductsService, ProductAccessSlotBindingsService],
 })
 export class ProductsModule {}

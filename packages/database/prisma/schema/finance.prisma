@@ -117,8 +117,8 @@ model Payment {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  invoice   Invoice   @relation(fields: [invoiceId], references: [id])
-  confirmer Employee? @relation("PaymentConfirmer", fields: [confirmedBy], references: [id])
+  invoice        Invoice         @relation(fields: [invoiceId], references: [id])
+  confirmer      Employee?       @relation("PaymentConfirmer", fields: [confirmedBy], references: [id])
   partnerAccrual PartnerAccrual?
 
   @@map("payments")

@@ -402,6 +402,12 @@ export type ProjectKickoffChecklistItem = Prisma.ProjectKickoffChecklistItemMode
  */
 export type Product = Prisma.ProductModel;
 /**
+ * Model ProductAccessSlotBinding
+ * *
+ *  * Binds a delivery access slot on a product to a Credential vault record.
+ */
+export type ProductAccessSlotBinding = Prisma.ProductAccessSlotBindingModel;
+/**
  * Model Extension
  *
  */
