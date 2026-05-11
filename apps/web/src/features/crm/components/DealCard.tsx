@@ -1,6 +1,6 @@
 'use client';
 
-import { DollarSign, User, MoreHorizontal, Link2 } from 'lucide-react';
+import { User, MoreHorizontal, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/shared';
-import { formatAmount } from '../constants/dealPipeline';
+import { formatAmount, AMD_CURRENCY_SYMBOL } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
 
@@ -86,7 +86,12 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
         )}
         {deal.amount && (
           <div className="text-foreground flex items-center gap-1.5 text-sm font-semibold">
-            <DollarSign size={13} className={`shrink-0 ${typeVisual.amountIconClassName}`} />
+            <span
+              className={`shrink-0 text-[15px] leading-none font-semibold tabular-nums ${typeVisual.amountIconClassName}`}
+              aria-hidden
+            >
+              {AMD_CURRENCY_SYMBOL}
+            </span>
             <span>{formatAmount(deal.amount)}</span>
           </div>
         )}

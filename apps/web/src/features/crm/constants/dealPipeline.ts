@@ -141,11 +141,12 @@ export function getDealStage(key: string): DealStage | undefined {
   return DEAL_STAGES.find((s) => s.key === key);
 }
 
+/** Armenian dram sign (U+058F); CRM deal amounts are AMD. */
+export const AMD_CURRENCY_SYMBOL = '\u058F';
+
 export function formatAmount(amount: number | null): string {
   if (!amount) return '—';
   return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'AMD',
     maximumFractionDigits: 0,
   }).format(amount);
 }
