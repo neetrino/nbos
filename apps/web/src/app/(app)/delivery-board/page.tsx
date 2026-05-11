@@ -53,10 +53,11 @@ export default function DeliveryBoardPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [detailItem, setDetailItem] = useState<DeliveryBoardItem | null>(null);
+  const [pipelineTab, setPipelineTab] = useState<'active' | 'closed'>('active');
+  const [kindFilter, setKindFilter] = useState<DeliveryBoardKindFilter>('ALL');
   const [closedViewMode, setClosedViewMode] = useState<'LIST' | 'BOARD'>('LIST');
   const [closedFilters, setClosedFilters] =
     useState<DeliveryBoardClosedFiltersInput>(DEFAULT_CLOSED_FILTERS);
-  const [closedKindFilter, setClosedKindFilter] = useState<DeliveryBoardKindFilter>('ALL');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -89,13 +90,13 @@ export default function DeliveryBoardPage() {
 
   const closedBaseItems = useMemo(() => {
     let closed = scopedItems.filter((item) => Boolean(getItemLifecycle(item)?.isTerminal));
-    if (closedKindFilter === 'PRODUCT') {
+    if (kindFilter === 'PRODUCT') {
       closed = closed.filter((item) => item.kind === 'PRODUCT');
-    } else if (closedKindFilter === 'EXTENSION') {
+    } else if (kindFilter === 'EXTENSION') {
       closed = closed.filter((item) => item.kind === 'EXTENSION');
     }
     return closed;
-  }, [scopedItems, closedKindFilter]);
+  }, [scopedItems, kindFilter]);
 
   const closedFilterOptions = useMemo(
     () => buildClosedFilterOptions(closedBaseItems),
@@ -149,43 +150,70 @@ export default function DeliveryBoardPage() {
   }, [scopedItems]);
 
   return (
-    <div className="flex h-full flex-col gap-4 p-1">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Delivery Board</h1>
-        <p className="text-muted-foreground text-sm">
-          Company-wide Product and Extension lifecycle.{' '}
-          {projectFilterId ? (
-            <Button
-              variant="link"
-              className="h-auto p-0 text-xs"
-              onClick={() => router.push('/delivery-board')}
-            >
-              Clear project filter
-            </Button>
-          ) : null}
-        </p>
-      </div>
-
+    <div className="flex h-full flex-col gap-5">
       {loadError && (
         <p className="text-destructive text-sm" role="alert">
           {loadError}
         </p>
       )}
       {loading ? (
-        <p className="text-muted-foreground text-sm">Loading board…</p>
+        <>
+          <h1 className="text-foreground text-2xl font-semibold tracking-tight">Delivery Board</h1>
+          <p className="text-muted-foreground text-sm">Loading board…</p>
+        </>
       ) : (
-        <Tabs defaultValue="active" className="flex min-h-0 w-full flex-1 flex-col">
-          <div className="mb-2 flex shrink-0 justify-end">
-            <TabsList variant="segmented">
-              <TabsTrigger value="active" className="px-4 py-2 text-sm">
-                Active
-              </TabsTrigger>
-              <TabsTrigger value="closed" className="px-4 py-2 text-sm">
-                Closed
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          <TabsContent value="active" className="mt-0 flex min-h-0 min-w-0 flex-1 flex-col">
+        <Tabs
+          value={pipelineTab}
+          onValueChange={(value) => setPipelineTab(value as 'active' | 'closed')}
+          className="flex min-h-0 w-full flex-1 flex-col"
+        >
+          <header>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
+                <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
+                  Delivery Board
+                </h1>
+                <TabsList variant="segmented" className="w-full min-w-0 sm:w-auto">
+                  <TabsTrigger value="active" className="px-3 py-2.5 text-sm font-medium">
+                    Active
+                  </TabsTrigger>
+                  <TabsTrigger value="closed" className="px-3 py-2.5 text-sm font-medium">
+                    Closed
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+              <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
+                {projectFilterId ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => router.push('/delivery-board')}
+                  >
+                    Clear project filter
+                  </Button>
+                ) : null}
+                {pipelineTab === 'closed' ? (
+                  <Tabs
+                    value={closedViewMode}
+                    onValueChange={(value) => setClosedViewMode(value as 'LIST' | 'BOARD')}
+                  >
+                    <TabsList variant="segmented" className="shrink-0">
+                      <TabsTrigger value="LIST" aria-label="Table view" className="h-8 px-3 py-0">
+                        <LayoutList size={14} aria-hidden />
+                      </TabsTrigger>
+                      <TabsTrigger value="BOARD" aria-label="Board view" className="h-8 px-3 py-0">
+                        <LayoutGrid size={14} aria-hidden />
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                ) : null}
+                <DeliveryBoardKindSegmented value={kindFilter} onValueChange={setKindFilter} />
+              </div>
+            </div>
+          </header>
+          <TabsContent value="active" className="mt-4 flex min-h-0 min-w-0 flex-1 flex-col">
             <DeliveryBoardView
               items={scopedItems}
               mutations={deliveryMutations}
@@ -194,37 +222,12 @@ export default function DeliveryBoardPage() {
               lockedStatusFilter="ACTIVE"
               summaryCounts={summaryCounts}
               onOpenDetails={setDetailItem}
+              showBoardHeader={false}
+              kindFilter={kindFilter}
+              onKindFilterChange={setKindFilter}
             />
           </TabsContent>
-          <TabsContent value="closed" className="mt-0 space-y-4">
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <DeliveryBoardKindSegmented
-                value={closedKindFilter}
-                onValueChange={setClosedKindFilter}
-              />
-              <div className="flex gap-1">
-                <Button
-                  type="button"
-                  variant={closedViewMode === 'LIST' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="h-8 gap-1 text-xs"
-                  onClick={() => setClosedViewMode('LIST')}
-                >
-                  <LayoutList size={14} />
-                  Table
-                </Button>
-                <Button
-                  type="button"
-                  variant={closedViewMode === 'BOARD' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="h-8 gap-1 text-xs"
-                  onClick={() => setClosedViewMode('BOARD')}
-                >
-                  <LayoutGrid size={14} />
-                  Board
-                </Button>
-              </div>
-            </div>
+          <TabsContent value="closed" className="mt-4 space-y-4">
             <DeliveryBoardClosedFiltersBar
               value={closedFilters}
               onChange={setClosedFilters}

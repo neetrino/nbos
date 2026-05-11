@@ -35,6 +35,11 @@ export interface DeliveryBoardViewProps {
   lockedStatusFilter?: DeliveryBoardStatusFilter;
   /** Header badges when scope hides part of the board (e.g. global Active tab). */
   summaryCounts?: DeliveryBoardSummaryCounts;
+  /** When false, the board toolbar is omitted (parent renders Project Hub–style header). */
+  showBoardHeader?: boolean;
+  /** Controlled kind filter; use with `onKindFilterChange` when `showBoardHeader` is false. */
+  kindFilter?: DeliveryBoardKindFilter;
+  onKindFilterChange?: (filter: DeliveryBoardKindFilter) => void;
 }
 
 export function DeliveryBoardView({
@@ -45,8 +50,14 @@ export function DeliveryBoardView({
   onOpenDetails,
   lockedStatusFilter,
   summaryCounts,
+  showBoardHeader = true,
+  kindFilter: kindFilterProp,
+  onKindFilterChange: onKindFilterChangeProp,
 }: DeliveryBoardViewProps) {
-  const [kindFilter, setKindFilter] = useState<DeliveryBoardKindFilter>('ALL');
+  const [internalKind, setInternalKind] = useState<DeliveryBoardKindFilter>('ALL');
+  const isKindControlled = kindFilterProp !== undefined && onKindFilterChangeProp !== undefined;
+  const kindFilter = isKindControlled ? kindFilterProp : internalKind;
+  const setKindFilter = isKindControlled ? onKindFilterChangeProp : setInternalKind;
   const [statusFilter, setStatusFilter] = useState<DeliveryBoardStatusFilter>(
     lockedStatusFilter ?? 'ACTIVE',
   );
@@ -71,20 +82,29 @@ export function DeliveryBoardView({
   const headerActive = summaryCounts?.active ?? aggregateCounts.active;
   const headerClosed = summaryCounts?.closed ?? aggregateCounts.closed;
   const isClosedMode = effectiveStatus === 'CLOSED';
+  const renderBoardHeader = showBoardHeader;
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="shrink-0">
-        <ProjectDeliveryBoardHeader
-          activeCount={headerActive}
-          closedCount={headerClosed}
-          kindFilter={kindFilter}
-          statusFilter={effectiveStatus}
-          onKindFilterChange={setKindFilter}
-          onStatusFilterChange={setStatusFilter}
-          hideStatusFilters={Boolean(lockedStatusFilter)}
-        />
-      </div>
+    <section
+      className={
+        renderBoardHeader
+          ? 'flex min-h-0 flex-1 flex-col gap-4'
+          : 'flex min-h-0 min-w-0 flex-1 flex-col'
+      }
+    >
+      {renderBoardHeader ? (
+        <div className="shrink-0">
+          <ProjectDeliveryBoardHeader
+            activeCount={headerActive}
+            closedCount={headerClosed}
+            kindFilter={kindFilter}
+            statusFilter={effectiveStatus}
+            onKindFilterChange={setKindFilter}
+            onStatusFilterChange={setStatusFilter}
+            hideStatusFilters={Boolean(lockedStatusFilter)}
+          />
+        </div>
+      ) : null}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {isClosedMode ? (
           <DeliveryBoardClosedBoard

@@ -32,21 +32,29 @@ export function ProjectDeliveryBoardHeader({
   onStatusFilterChange,
   hideStatusFilters = false,
 }: ProjectDeliveryBoardHeaderProps) {
+  const toolbar = (
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <span className="bg-secondary rounded-full px-2 py-1 text-xs">{activeCount} active</span>
+      <span className="bg-secondary rounded-full px-2 py-1 text-xs">{closedCount} closed</span>
+      <DeliveryBoardKindSegmented value={kindFilter} onValueChange={onKindFilterChange} />
+    </div>
+  );
+
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold">Delivery Board</h2>
-          <p className="text-muted-foreground text-xs">
-            Product and Extension cards grouped by canonical delivery stage.
-          </p>
+      {hideStatusFilters ? (
+        toolbar
+      ) : (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold">Delivery Board</h2>
+            <p className="text-muted-foreground text-xs">
+              Product and Extension cards grouped by canonical delivery stage.
+            </p>
+          </div>
+          {toolbar}
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <span className="bg-secondary rounded-full px-2 py-1 text-xs">{activeCount} active</span>
-          <span className="bg-secondary rounded-full px-2 py-1 text-xs">{closedCount} closed</span>
-          <DeliveryBoardKindSegmented value={kindFilter} onValueChange={onKindFilterChange} />
-        </div>
-      </div>
+      )}
       {!hideStatusFilters ? (
         <Tabs
           value={statusFilter}
