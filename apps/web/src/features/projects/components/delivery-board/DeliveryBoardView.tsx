@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { DeliveryLifecycleActionDialog } from '../DeliveryLifecycleActionDialog';
 import { DeliveryBoardClosedBoard } from './DeliveryBoardClosedBoard';
 import { DeliveryBoardStageGateDialog } from './DeliveryBoardStageGateDialog';
@@ -89,7 +90,7 @@ export function DeliveryBoardView({
       className={
         renderBoardHeader
           ? 'flex min-h-0 flex-1 flex-col gap-4'
-          : 'flex min-h-0 min-w-0 flex-1 flex-col'
+          : 'flex min-h-0 min-w-0 flex-1 basis-0 flex-col'
       }
     >
       {renderBoardHeader ? (
@@ -105,7 +106,12 @@ export function DeliveryBoardView({
           />
         </div>
       ) : null}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div
+        className={cn(
+          'flex min-h-0 min-w-0 flex-1 basis-0 flex-col',
+          !isClosedMode && 'overflow-hidden',
+        )}
+      >
         {isClosedMode ? (
           <DeliveryBoardClosedBoard
             items={closedItems}

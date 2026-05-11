@@ -126,43 +126,48 @@ export function DeliveryKanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col pb-2">
+      {/* Single flex child for the page column + basis-0 so height flows like CRM Deals (h-full columns). */}
+      <div className="flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
         <div
           className={cn(
-            'grid min-h-0 w-full min-w-0 flex-1 auto-rows-[minmax(0,1fr)] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-1',
+            'flex h-full min-h-0 w-full flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap lg:flex-nowrap',
+            'sm:items-stretch',
           )}
         >
           {columns.map((col) => (
-            <KanbanStageColumn
+            <div
               key={col.stage}
-              stage={col.stage}
-              title={col.label}
-              count={col.items.length}
+              className={cn(
+                'flex min-h-0 min-w-0 flex-1 flex-col sm:max-w-[calc(50%-0.375rem)] sm:min-w-[calc(50%-0.375rem)] sm:flex-none sm:basis-[calc(50%-0.375rem)]',
+                'lg:max-w-none lg:min-w-0 lg:flex-1 lg:basis-0',
+              )}
             >
-              {col.items.map((item) => (
-                <KanbanDraggableCard
-                  key={getItemKey(item)}
-                  id={deliveryKanbanCardId(getItemKey(item))}
-                  disabled={
-                    busyItemId === getItemId(item) ||
-                    getItemLifecycle(item)?.workStatus === 'ON_HOLD'
-                  }
-                >
-                  <ProjectDeliveryBoardCard
-                    item={item}
-                    isActionBusy={busyItemId === getItemId(item)}
-                    onOpenProduct={onOpenProduct}
-                    onOpenProductTab={onOpenProductTab}
-                    onOpenDetails={onOpenDetails ? () => onOpenDetails(item) : undefined}
-                    onMoveNext={() => onBoardAction(item, 'MOVE_NEXT')}
-                    onResume={() => onBoardAction(item, 'RESUME')}
-                    onComplete={() => onBoardAction(item, 'COMPLETE')}
-                    onCancel={() => onCancel(item)}
-                    kanbanActionIsolation
-                  />
-                </KanbanDraggableCard>
-              ))}
-            </KanbanStageColumn>
+              <KanbanStageColumn stage={col.stage} title={col.label} count={col.items.length}>
+                {col.items.map((item) => (
+                  <KanbanDraggableCard
+                    key={getItemKey(item)}
+                    id={deliveryKanbanCardId(getItemKey(item))}
+                    disabled={
+                      busyItemId === getItemId(item) ||
+                      getItemLifecycle(item)?.workStatus === 'ON_HOLD'
+                    }
+                  >
+                    <ProjectDeliveryBoardCard
+                      item={item}
+                      isActionBusy={busyItemId === getItemId(item)}
+                      onOpenProduct={onOpenProduct}
+                      onOpenProductTab={onOpenProductTab}
+                      onOpenDetails={onOpenDetails ? () => onOpenDetails(item) : undefined}
+                      onMoveNext={() => onBoardAction(item, 'MOVE_NEXT')}
+                      onResume={() => onBoardAction(item, 'RESUME')}
+                      onComplete={() => onBoardAction(item, 'COMPLETE')}
+                      onCancel={() => onCancel(item)}
+                      kanbanActionIsolation
+                    />
+                  </KanbanDraggableCard>
+                ))}
+              </KanbanStageColumn>
+            </div>
           ))}
         </div>
       </div>
@@ -203,7 +208,7 @@ function KanbanStageColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'bg-muted/30 border-border flex h-full min-h-0 min-w-0 flex-col rounded-xl border p-3',
+        'bg-muted/30 border-border flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl border p-3',
         DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS,
         isOver && DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS,
       )}
@@ -213,7 +218,7 @@ function KanbanStageColumn({
         <span className="text-muted-foreground text-xs">{count}</span>
       </div>
       <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1">
-        <div className="space-y-2">
+        <div className="space-y-2 pb-3">
           {count === 0 ? (
             <p className="text-muted-foreground py-8 text-center text-xs">No cards</p>
           ) : (

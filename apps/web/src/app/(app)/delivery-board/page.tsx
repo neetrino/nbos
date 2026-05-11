@@ -150,7 +150,7 @@ export default function DeliveryBoardPage() {
   }, [scopedItems]);
 
   return (
-    <div className="flex h-full flex-col gap-5">
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {loadError && (
         <p className="text-destructive text-sm" role="alert">
           {loadError}
@@ -165,7 +165,7 @@ export default function DeliveryBoardPage() {
         <Tabs
           value={pipelineTab}
           onValueChange={(value) => setPipelineTab(value as 'active' | 'closed')}
-          className="flex min-h-0 w-full flex-1 flex-col"
+          className="flex min-h-0 w-full flex-1 basis-0 flex-col"
         >
           <header>
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -213,7 +213,10 @@ export default function DeliveryBoardPage() {
               </div>
             </div>
           </header>
-          <TabsContent value="active" className="mt-4 flex min-h-0 min-w-0 flex-1 flex-col">
+          <TabsContent
+            value="active"
+            className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden"
+          >
             <DeliveryBoardView
               items={scopedItems}
               mutations={deliveryMutations}
