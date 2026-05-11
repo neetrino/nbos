@@ -1,15 +1,11 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { XIcon } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { SheetClose } from '@/components/ui/sheet';
-import { StatusBadge } from '@/components/shared';
-import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
-import {
-  formatDeliveryLifecycleLabel,
-  getDeliveryLifecycleVariant,
-} from '@/features/projects/constants/projects';
 import { cn } from '@/lib/utils';
-import { DeliveryStageReadinessRing } from './DeliveryStageReadinessRing';
 
 interface DeliveryItemDetailHeaderProps {
   title: string;
@@ -17,12 +13,9 @@ interface DeliveryItemDetailHeaderProps {
   projectCode: string;
   projectName: string;
   projectHref: string;
-  lifecycle: DeliveryLifecycleProjection | undefined;
   deadline: string | null;
-  workSpaceHref: string;
-  sourcePageHref: string;
   loading: boolean;
-  onRefresh: () => void;
+  onCommitTitle: (trimmed: string) => Promise<void>;
 }
 
 export function DeliveryItemDetailHeader({
@@ -31,39 +24,77 @@ export function DeliveryItemDetailHeader({
   projectCode,
   projectName,
   projectHref,
-  lifecycle,
   deadline,
-  workSpaceHref,
-  sourcePageHref,
   loading,
-  onRefresh,
+  onCommitTitle,
 }: DeliveryItemDetailHeaderProps) {
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const deadlineRisk = getDeadlineRisk(deadline);
 
+  useEffect(() => {
+    if (editingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingName]);
+
+  const startEditing = () => {
+    if (loading) return;
+    setNameValue(title);
+    setEditingName(true);
+  };
+
+  const saveName = () => {
+    const trimmed = nameValue.trim();
+    setEditingName(false);
+    if (trimmed && trimmed !== title) {
+      void onCommitTitle(trimmed);
+    }
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveName();
+    }
+    if (e.key === 'Escape') {
+      setEditingName(false);
+    }
+  };
+
   return (
-    <div className="border-border via-background to-background shrink-0 border-b bg-gradient-to-br from-slate-50/90 px-5 pt-4 pb-3 sm:px-7 dark:from-slate-950/25">
+    <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
               {entityKind === 'PRODUCT' ? 'Product' : 'Extension'}
             </span>
-            {lifecycle ? (
-              <StatusBadge
-                label={formatDeliveryLifecycleLabel(lifecycle)}
-                variant={getDeliveryLifecycleVariant(lifecycle)}
-              />
-            ) : null}
-            {lifecycle && !lifecycle.isTerminal ? (
-              <DeliveryStageReadinessRing lifecycle={lifecycle} />
-            ) : null}
           </div>
-          <h2
-            className="text-foreground mt-2 truncate text-xl font-bold tracking-tight"
-            title={title}
-          >
-            {loading ? '…' : title}
-          </h2>
+          {editingName ? (
+            <input
+              ref={nameInputRef}
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+              onBlur={saveName}
+              onKeyDown={handleNameKeyDown}
+              placeholder="Name…"
+              className="text-foreground mt-2 w-full border-0 border-b-2 border-amber-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
+            />
+          ) : (
+            <h2
+              onClick={startEditing}
+              className={cn(
+                'text-foreground -mx-1 mt-2 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors',
+                loading ? 'cursor-default' : 'hover:bg-stone-100 dark:hover:bg-stone-800',
+              )}
+              title={loading ? undefined : 'Click to edit name'}
+            >
+              {loading ? '…' : title}
+            </h2>
+          )}
           <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
             <Link
               href={projectHref}
@@ -74,9 +105,6 @@ export function DeliveryItemDetailHeader({
             <span className="text-muted-foreground/80"> · </span>
             <span>{projectName}</span>
           </p>
-          {lifecycle?.workStatus === 'ON_HOLD' && lifecycle.onHoldReason ? (
-            <p className="text-muted-foreground mt-2 text-xs">On hold: {lifecycle.onHoldReason}</p>
-          ) : null}
           {deadline ? (
             <p
               className={cn('mt-1 text-xs font-medium', deadlineRisk.className)}
@@ -87,41 +115,15 @@ export function DeliveryItemDetailHeader({
             </p>
           ) : null}
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <SheetClose
-            className={cn(
-              buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
-              'text-muted-foreground',
-            )}
-          >
-            <XIcon className="size-4" />
-            <span className="sr-only">Close</span>
-          </SheetClose>
-          <div className="flex flex-wrap justify-end gap-2">
-            <Link
-              href={workSpaceHref}
-              className={cn(buttonVariants({ variant: 'default', size: 'sm' }))}
-            >
-              Work Space
-            </Link>
-            <Link
-              href={sourcePageHref}
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-            >
-              {entityKind === 'PRODUCT' ? 'Open product' : 'Open on product'}
-            </Link>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground"
-              onClick={onRefresh}
-              disabled={loading}
-            >
-              Refresh
-            </Button>
-          </div>
-        </div>
+        <SheetClose
+          className={cn(
+            buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+            'text-muted-foreground shrink-0',
+          )}
+        >
+          <XIcon className="size-4" />
+          <span className="sr-only">Close</span>
+        </SheetClose>
       </div>
     </div>
   );

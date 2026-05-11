@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import type { DeliveryDetailSecondaryId } from './delivery-item-detail.constants';
 import { DeliveryItemDetailBonusPanel } from './DeliveryItemDetailBonusPanel';
 import { DeliveryItemDetailCallsPanel } from './DeliveryItemDetailCallsPanel';
@@ -12,6 +14,7 @@ interface DeliveryItemDetailSecondaryPanelsProps {
   auditEntityId: string;
   financeTabHref: string;
   projectHubHref: string;
+  workSpaceHref: string;
   bonusOrderId: string | null;
   openDealHref: string | null;
   dealCode: string | null;
@@ -25,14 +28,27 @@ export function DeliveryItemDetailSecondaryPanels({
   auditEntityId,
   financeTabHref,
   projectHubHref,
+  workSpaceHref,
   bonusOrderId,
   openDealHref,
   dealCode,
 }: DeliveryItemDetailSecondaryPanelsProps) {
-  const base = `/projects/${projectId}/products/${productId}`;
-
   return (
     <div className="space-y-5 px-5 py-5 sm:px-7">
+      {view === 'workspace' ? (
+        <SecondaryCard title="Work Space">
+          <p className="text-muted-foreground mb-4 text-sm">
+            Tasks, checklists, and day-to-day execution live on the product workspace.
+          </p>
+          <Link
+            href={workSpaceHref}
+            className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'inline-flex')}
+          >
+            Open Work Space
+          </Link>
+        </SecondaryCard>
+      ) : null}
+
       {view === 'calls' ? (
         <SecondaryCard title="Calls">
           <DeliveryItemDetailCallsPanel
@@ -54,12 +70,6 @@ export function DeliveryItemDetailSecondaryPanels({
           <DeliveryItemDetailHistoryPanel entityType={auditEntityType} entityId={auditEntityId} />
         </SecondaryCard>
       ) : null}
-
-      <p className="text-muted-foreground text-center text-xs">
-        <Link href={`${base}?tab=tasks`} className="text-primary font-medium hover:underline">
-          Open full Work Space on the product →
-        </Link>
-      </p>
     </div>
   );
 }

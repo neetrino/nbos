@@ -21,7 +21,6 @@ interface DeliveryItemDetailGeneralTabProps {
   product: FullProduct | null;
   extension: FullExtension | null;
   lifecycle: DeliveryLifecycleProjection | undefined;
-  workSpaceHref: string;
   sourcePageHref: string;
   credentialsTabHref: string;
   projectHubHref: string;
@@ -34,7 +33,6 @@ export function DeliveryItemDetailGeneralTab({
   product,
   extension,
   lifecycle,
-  workSpaceHref,
   sourcePageHref,
   credentialsTabHref,
   projectHubHref,
@@ -86,11 +84,6 @@ export function DeliveryItemDetailGeneralTab({
             <li>
               <Link href={projectHubHref} className="text-primary font-medium hover:underline">
                 Project hub →
-              </Link>
-            </li>
-            <li>
-              <Link href={workSpaceHref} className="text-primary font-medium hover:underline">
-                Work Space →
               </Link>
             </li>
             <li>

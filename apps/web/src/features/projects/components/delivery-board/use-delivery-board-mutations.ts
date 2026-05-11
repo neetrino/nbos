@@ -3,7 +3,12 @@
 import { useCallback, useState } from 'react';
 import { isStageGateApiError } from '@/lib/api-errors';
 import type { DeliveryLifecycleActionPayload } from '@/features/projects/components/DeliveryLifecycleActionDialog';
-import { runBoardAction, type BoardAction } from './project-delivery-board-actions';
+import {
+  advanceDeliveryItemToStage,
+  runBoardAction,
+  type BoardAction,
+  type DeliveryActiveStage,
+} from './project-delivery-board-actions';
 import {
   toBoardStageGateBlocker,
   toDeliveryBoardActionError,
@@ -17,6 +22,7 @@ export interface UseDeliveryBoardMutationsResult {
   actionError: string | null;
   stageGateBlocker: DeliveryBoardStageGateBlocker | null;
   handleBoardAction: (item: DeliveryBoardItem, action: BoardAction) => Promise<void>;
+  advanceToDeliveryStage: (item: DeliveryBoardItem, target: DeliveryActiveStage) => Promise<void>;
   requestCancel: (item: DeliveryBoardItem) => void;
   handleCancelConfirm: (payload: DeliveryLifecycleActionPayload) => Promise<void>;
   dismissStageGate: () => void;
@@ -48,6 +54,31 @@ export function useDeliveryBoardMutations(
           if (pid) setStageGateBlocker(toBoardStageGateBlocker(item, pid, error));
         } else {
           setActionError(toDeliveryBoardActionError(error, 'Delivery board action failed.'));
+        }
+      } finally {
+        setBusyItemId(null);
+      }
+    },
+    [onRefresh],
+  );
+
+  const advanceToDeliveryStage = useCallback(
+    async (item: DeliveryBoardItem, target: DeliveryActiveStage) => {
+      const itemId = getItemId(item);
+      setBusyItemId(itemId);
+      setActionError(null);
+      setStageGateBlocker(null);
+      try {
+        await advanceDeliveryItemToStage(item, target);
+        await onRefresh();
+      } catch (error) {
+        if (isStageGateApiError(error)) {
+          const pid = getProjectId(item);
+          if (pid) setStageGateBlocker(toBoardStageGateBlocker(item, pid, error));
+        } else {
+          setActionError(
+            toDeliveryBoardActionError(error, 'Could not move to the selected delivery stage.'),
+          );
         }
       } finally {
         setBusyItemId(null);
@@ -99,6 +130,7 @@ export function useDeliveryBoardMutations(
     actionError,
     stageGateBlocker,
     handleBoardAction,
+    advanceToDeliveryStage,
     requestCancel: setCancelItem,
     handleCancelConfirm,
     dismissStageGate,
