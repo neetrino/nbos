@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import type { DeliveryDetailSecondaryId } from './delivery-item-detail.constants';
 import { DeliveryItemDetailBonusPanel } from './DeliveryItemDetailBonusPanel';
 import { DeliveryItemDetailCallsPanel } from './DeliveryItemDetailCallsPanel';
@@ -16,7 +15,6 @@ interface DeliveryItemDetailSecondaryPanelsProps {
   bonusOrderId: string | null;
   openDealHref: string | null;
   dealCode: string | null;
-  onBack: () => void;
 }
 
 export function DeliveryItemDetailSecondaryPanels({
@@ -30,36 +28,11 @@ export function DeliveryItemDetailSecondaryPanels({
   bonusOrderId,
   openDealHref,
   dealCode,
-  onBack,
 }: DeliveryItemDetailSecondaryPanelsProps) {
   const base = `/projects/${projectId}/products/${productId}`;
 
   return (
-    <div className="space-y-4 px-5 py-5 sm:px-7">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="-ml-2 h-8 text-xs"
-        onClick={onBack}
-      >
-        ← Back to delivery summary
-      </Button>
-
-      {view === 'workspace' ? (
-        <SecondaryCard title="Work Space">
-          <p className="text-muted-foreground text-sm">
-            Kanban, task creation, and execution controls live on the product Work Space tab.
-          </p>
-          <Link
-            href={`${base}?tab=tasks`}
-            className="text-primary mt-3 inline-block text-sm font-semibold hover:underline"
-          >
-            Open Work Space →
-          </Link>
-        </SecondaryCard>
-      ) : null}
-
+    <div className="space-y-5 px-5 py-5 sm:px-7">
       {view === 'calls' ? (
         <SecondaryCard title="Calls">
           <DeliveryItemDetailCallsPanel
@@ -81,14 +54,20 @@ export function DeliveryItemDetailSecondaryPanels({
           <DeliveryItemDetailHistoryPanel entityType={auditEntityType} entityId={auditEntityId} />
         </SecondaryCard>
       ) : null}
+
+      <p className="text-muted-foreground text-center text-xs">
+        <Link href={`${base}?tab=tasks`} className="text-primary font-medium hover:underline">
+          Open full Work Space on the product →
+        </Link>
+      </p>
     </div>
   );
 }
 
 function SecondaryCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent">
-      <h4 className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-widest uppercase">
+    <section className="border-border bg-card/50 rounded-xl border p-5">
+      <h4 className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase">
         {title}
       </h4>
       {children}

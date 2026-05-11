@@ -38,11 +38,10 @@ export function DeliveryItemDetailHeader({
   loading,
   onRefresh,
 }: DeliveryItemDetailHeaderProps) {
-  const terminal = Boolean(lifecycle?.isTerminal);
   const deadlineRisk = getDeadlineRisk(deadline);
 
   return (
-    <div className="from-muted/40 via-background to-background border-border shrink-0 border-b bg-gradient-to-br from-indigo-50/40 px-5 pt-4 pb-3 sm:px-7 dark:from-indigo-950/20">
+    <div className="border-border via-background to-background shrink-0 border-b bg-gradient-to-br from-slate-50/90 px-5 pt-4 pb-3 sm:px-7 dark:from-slate-950/25">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -122,11 +121,6 @@ export function DeliveryItemDetailHeader({
               Refresh
             </Button>
           </div>
-          {!terminal ? (
-            <p className="text-muted-foreground max-w-[14rem] text-right text-[10px] leading-snug">
-              Stage moves and pause/cancel run on the product page with full validation.
-            </p>
-          ) : null}
         </div>
       </div>
     </div>

@@ -14,16 +14,12 @@ import {
 import { DeliveryStageActionBar } from './DeliveryStageActionBar';
 import type { UseDeliveryBoardMutationsResult } from './use-delivery-board-mutations';
 import { mergeDeliveryDetailLifecycle } from './delivery-item-detail-merge-lifecycle';
-import {
-  DELIVERY_DETAIL_PRODUCT_NEXT,
-  type DeliveryDetailPanel,
-  type DeliveryDetailSecondaryId,
-} from './delivery-item-detail.constants';
+import type { DeliveryDetailTabId } from './delivery-item-detail.constants';
 import { DeliveryItemDetailHeader } from './DeliveryItemDetailHeader';
-import { DeliveryItemDetailRequirementsZone } from './DeliveryItemDetailRequirementsZone';
 import { DeliveryItemDetailTabBar } from './DeliveryItemDetailTabBar';
-import { DeliveryItemDetailCockpit } from './DeliveryItemDetailCockpit';
 import { DeliveryItemDetailSecondaryPanels } from './DeliveryItemDetailSecondaryPanels';
+import { DeliveryItemDetailGeneralTab } from './DeliveryItemDetailGeneralTab';
+import { DeliveryLifecycleStrip } from './DeliveryLifecycleStrip';
 
 interface DeliveryItemDetailSheetProps {
   item: DeliveryBoardItem | null;
@@ -44,11 +40,11 @@ export function DeliveryItemDetailSheet({
   const [product, setProduct] = useState<FullProduct | null>(null);
   const [extension, setExtension] = useState<FullExtension | null>(null);
   const [loading, setLoading] = useState(false);
-  const [panel, setPanel] = useState<DeliveryDetailPanel>('cockpit');
+  const [panel, setPanel] = useState<DeliveryDetailTabId>('general');
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    if (open && item) setPanel('cockpit');
+    if (open && item) setPanel('general');
   }, [open, item]);
 
   useEffect(() => {
@@ -85,7 +81,6 @@ export function DeliveryItemDetailSheet({
 
   const title = item ? getItemLabel(item) : '';
   const lifecycle = item ? mergeDeliveryDetailLifecycle(item, product, extension) : undefined;
-  const terminal = Boolean(lifecycle?.isTerminal);
   const stageLifecycle = lifecycle ?? (item ? getItemLifecycle(item) : undefined);
 
   const headerProps =
@@ -113,9 +108,6 @@ export function DeliveryItemDetailSheet({
           }
         : null;
 
-  const productNext =
-    item?.kind === 'PRODUCT' && product ? (DELIVERY_DETAIL_PRODUCT_NEXT[product.status] ?? []) : [];
-
   const panelProjectId =
     item?.kind === 'PRODUCT'
       ? item.product.projectId
@@ -127,18 +119,17 @@ export function DeliveryItemDetailSheet({
       ? `/projects/${panelProjectId}/products/${headerProps.productId}?tab=finance`
       : '#';
   const projectHubHref = panelProjectId ? `/projects/${panelProjectId}` : '#';
-  const linkedDeal = product?.order?.deal ?? extension?.order?.deal;
-  const openDealHref =
-    linkedDeal?.id != null ? `/crm/deals?openDealId=${encodeURIComponent(linkedDeal.id)}` : null;
-  const dealCode = linkedDeal?.code ?? null;
-  const bonusOrderId = product?.order?.id ?? extension?.order?.id ?? null;
+  const credentialsTabHref =
+    headerProps && panelProjectId
+      ? `/projects/${panelProjectId}/products/${headerProps.productId}?tab=credentials`
+      : '#';
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[92vw] sm:max-w-[1400px]"
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[92vw] sm:max-w-[1200px]"
       >
         {!item ? null : (
           <>
@@ -167,34 +158,30 @@ export function DeliveryItemDetailSheet({
                 onCancel={() => boardMutations.requestCancel(item)}
               />
             ) : null}
-            <DeliveryItemDetailRequirementsZone
-              lifecycle={lifecycle}
-              product={product}
-              extension={extension}
-              productNextStatuses={productNext}
-            />
-            <DeliveryItemDetailTabBar
-              panel={panel}
-              onSelectSecondary={(id: DeliveryDetailSecondaryId) => setPanel(id)}
-            />
+            <div className="border-border shrink-0 border-b px-5 py-2 sm:px-7 dark:border-stone-800">
+              <DeliveryLifecycleStrip lifecycle={lifecycle} />
+            </div>
+            <DeliveryItemDetailTabBar panel={panel} onSelect={setPanel} />
             <ScrollArea className="min-h-0 flex-1">
               {loading ? (
                 <div className="space-y-4 px-7 py-6">
                   <Skeleton className="h-32 w-full" />
                   <Skeleton className="h-48 w-full" />
                 </div>
-              ) : panel === 'cockpit' && (product || extension) ? (
-                <DeliveryItemDetailCockpit
-                  lifecycle={lifecycle}
+              ) : panel === 'general' && item && headerProps ? (
+                <DeliveryItemDetailGeneralTab
+                  item={item}
                   product={product}
                   extension={extension}
-                  terminal={terminal}
-                  resolution={lifecycle?.resolution}
-                  cancellationReason={lifecycle?.cancellationReason ?? null}
-                  clientAcceptedAt={product?.clientAcceptedAt ?? null}
-                  clientAcceptanceNote={product?.clientAcceptanceNote ?? null}
+                  lifecycle={lifecycle}
+                  workSpaceHref={headerProps.workSpaceHref}
+                  sourcePageHref={headerProps.sourcePageHref}
+                  credentialsTabHref={credentialsTabHref}
+                  projectHubHref={projectHubHref}
+                  financeTabHref={financeTabHref}
+                  onRefreshDetail={handleRefresh}
                 />
-              ) : panel !== 'cockpit' && headerProps ? (
+              ) : panel !== 'general' && !loading && headerProps && item ? (
                 <DeliveryItemDetailSecondaryPanels
                   view={panel}
                   projectId={
@@ -206,10 +193,15 @@ export function DeliveryItemDetailSheet({
                   auditEntityId={item.kind === 'PRODUCT' ? item.product.id : item.extension.id}
                   financeTabHref={financeTabHref}
                   projectHubHref={projectHubHref}
-                  bonusOrderId={bonusOrderId}
-                  openDealHref={openDealHref}
-                  dealCode={dealCode}
-                  onBack={() => setPanel('cockpit')}
+                  bonusOrderId={product?.order?.id ?? extension?.order?.id ?? null}
+                  openDealHref={
+                    product?.order?.deal?.id != null
+                      ? `/crm/deals?openDealId=${encodeURIComponent(product.order.deal.id)}`
+                      : extension?.order?.deal?.id != null
+                        ? `/crm/deals?openDealId=${encodeURIComponent(extension.order.deal.id)}`
+                        : null
+                  }
+                  dealCode={product?.order?.deal?.code ?? extension?.order?.deal?.code ?? null}
                 />
               ) : (
                 <p className="text-muted-foreground px-7 py-6 text-sm">Could not load details.</p>
