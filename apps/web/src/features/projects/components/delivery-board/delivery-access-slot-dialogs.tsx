@@ -10,16 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { CREDENTIAL_CATEGORIES } from '@/features/credentials/constants/credentials';
+import { CreateCredentialDialog } from '@/features/credentials/components/CreateCredentialDialog';
 import { credentialsApi } from '@/lib/api/credentials';
 import { productsApi, type ProductAccessSlotRow } from '@/lib/api/products';
 import { toast } from 'sonner';
@@ -143,136 +134,32 @@ export function CreateAccessSlotCredentialDialog({
   slot,
   onBound,
 }: CreateAccessSlotCredentialDialogProps) {
-  const [saving, setSaving] = useState(false);
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState(slot.allowedCategories[0] ?? 'SERVICE');
-  const [url, setUrl] = useState('');
-  const [login, setLogin] = useState('');
-  const [password, setPassword] = useState('');
-
-  useEffect(() => {
-    if (open) {
-      setName(slot.label);
-      setCategory(slot.allowedCategories[0] ?? 'SERVICE');
-      setUrl('');
-      setLogin('');
-      setPassword('');
-    }
-  }, [open, slot]);
-
-  const categoryOptions = CREDENTIAL_CATEGORIES.filter((c) =>
-    slot.allowedCategories.includes(c.value),
-  );
-
-  async function handleCreate() {
-    if (!name.trim()) {
-      toast.error('Name is required');
-      return;
-    }
-    setSaving(true);
-    try {
-      const credentialType = slot.defaultCredentialType ?? 'LOGIN_PASSWORD';
-      const created = await credentialsApi.create({
-        projectId,
-        productId,
-        category,
-        credentialType,
-        criticality: 'MEDIUM',
-        accessLevel: 'PROJECT_TEAM',
-        name: name.trim(),
-        url: url.trim() || undefined,
-        login: login.trim() || undefined,
-        password: password.trim() || undefined,
-      });
-      await productsApi.bindAccessSlot(productId, {
-        slotKey: slot.slotKey,
-        credentialId: created.id,
-      });
-      toast.success('Saved to Credentials and linked');
-      onOpenChange(false);
-      onBound();
-    } catch {
-      toast.error('Could not create credential. Check permissions.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>New credential — {slot.label}</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-3 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="slot-cred-name">Name</Label>
-            <Input
-              id="slot-cred-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-9"
-            />
-          </div>
-          {categoryOptions.length > 1 ? (
-            <div className="space-y-1.5">
-              <Label>Category</Label>
-              <Select value={category} onValueChange={(v) => setCategory(v ?? category)}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categoryOptions.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : null}
-          <div className="space-y-1.5">
-            <Label htmlFor="slot-cred-url">URL (optional)</Label>
-            <Input
-              id="slot-cred-url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="h-9"
-              placeholder="https://…"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="slot-cred-login">Login (optional)</Label>
-            <Input
-              id="slot-cred-login"
-              value={login}
-              onChange={(e) => setLogin(e.target.value)}
-              className="h-9"
-              autoComplete="off"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="slot-cred-password">Password (optional)</Label>
-            <Input
-              id="slot-cred-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-9"
-              autoComplete="new-password"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button type="button" disabled={saving} onClick={() => void handleCreate()}>
-            {saving ? <Loader2 className="size-4 animate-spin" /> : null}
-            Save & link
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <CreateCredentialDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      projectId={projectId}
+      productId={productId}
+      title={`New credential — ${slot.label}`}
+      initialName={slot.label}
+      allowedCategories={slot.allowedCategories}
+      initialCredentialType={slot.defaultCredentialType ?? 'LOGIN_PASSWORD'}
+      submitLabel="Save & link"
+      successToast={false}
+      presetKey={slot.slotKey}
+      onCreated={async (created) => {
+        try {
+          await productsApi.bindAccessSlot(productId, {
+            slotKey: slot.slotKey,
+            credentialId: created.id,
+          });
+          toast.success('Saved to Credentials and linked');
+          onBound();
+        } catch {
+          toast.error('Credential was created but could not be linked to this slot.');
+          onBound();
+        }
+      }}
+    />
   );
 }
