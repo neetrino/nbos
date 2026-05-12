@@ -1,6 +1,4 @@
 'use client';
-
-import { useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +9,6 @@ import { StatusBadge } from '@/components/shared';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import type { Task } from '@/lib/api/tasks';
 import { getTaskPriority, getTaskStatus } from '../constants/tasks';
-import { TaskActionButtons } from './TaskActionButtons';
 import { TaskChatPlaceholder } from './TaskChatPlaceholder';
 import { TaskChecklistSection } from './TaskChecklistSection';
 import { TaskCompletionRulesPanel } from './TaskCompletionRulesPanel';
@@ -27,6 +24,7 @@ interface TaskSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate?: (task: Task) => void;
+  onDelete?: (taskId: string) => void;
 }
 
 const TASK_SHEET_WIDTH_CLASS =
@@ -34,12 +32,18 @@ const TASK_SHEET_WIDTH_CLASS =
 
 const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[76vw] 2xl:right-[82vw]';
 
-export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetProps) {
-  const state = useTaskSheetState({ taskId, open, onUpdate });
-  const handleSaveAndClose = useCallback(async () => {
+export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: TaskSheetProps) {
+  const state = useTaskSheetState({ taskId, open, onUpdate, onDelete });
+  async function handleSaveAndClose() {
     const saved = await state.handleGeneralSave();
     if (saved) onOpenChange(false);
-  }, [onOpenChange, state]);
+  }
+
+  async function handleDelete() {
+    if (!window.confirm('Delete this task? This action cannot be undone.')) return;
+    const deleted = await state.handleDeleteTask();
+    if (deleted) onOpenChange(false);
+  }
 
   if (!state.task && !state.loading && !state.generalError) return null;
 
@@ -69,30 +73,21 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
         className={TASK_SHEET_WIDTH_CLASS}
       >
         <SheetHeader className="border-border border-b px-6 py-4">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-            <div className="min-w-0 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                {status && <StatusBadge label={status.label} variant={status.variant} />}
-                {priority && <StatusBadge label={priority.label} variant={priority.variant} />}
-                {state.task && <Badge variant="outline">{state.task.code}</Badge>}
-                {state.task && (
-                  <StatusBadge
-                    label={readyForCompletion ? 'Ready' : 'Blocked'}
-                    variant={readyForCompletion ? 'green' : 'red'}
-                  />
-                )}
-              </div>
-              <SheetTitle className="text-xl leading-tight">
-                {state.loading ? 'Loading task...' : state.generalDraft?.title || state.task?.title}
-              </SheetTitle>
+          <div className="min-w-0 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {status && <StatusBadge label={status.label} variant={status.variant} />}
+              {priority && <StatusBadge label={priority.label} variant={priority.variant} />}
+              {state.task && <Badge variant="outline">{state.task.code}</Badge>}
+              {state.task && (
+                <StatusBadge
+                  label={readyForCompletion ? 'Ready' : 'Blocked'}
+                  variant={readyForCompletion ? 'green' : 'red'}
+                />
+              )}
             </div>
-            {state.task && (
-              <TaskActionButtons
-                task={state.task}
-                disabled={state.saving}
-                onAction={state.handleAction}
-              />
-            )}
+            <SheetTitle className="text-xl leading-tight">
+              {state.loading ? 'Loading task...' : state.generalDraft?.title || state.task?.title}
+            </SheetTitle>
           </div>
         </SheetHeader>
 
@@ -167,13 +162,15 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
                 </ScrollArea>
 
                 <TaskSheetStickyFooter
-                  visible
                   dirty={state.generalDirty}
                   saving={state.saving}
                   errorMessage={state.generalError}
+                  taskStatus={state.task.status}
                   onSave={() => void state.handleGeneralSave()}
                   onSaveAndClose={() => void handleSaveAndClose()}
                   onCancel={state.handleGeneralCancel}
+                  onTaskAction={state.handleAction}
+                  onDelete={() => void handleDelete()}
                 />
               </div>
 

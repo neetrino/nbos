@@ -116,6 +116,12 @@ export function useTasksListPage() {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   };
 
+  const handleTaskDelete = (taskId: string) => {
+    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+    setSelectedTaskId((current) => (current === taskId ? null : current));
+    setSheetOpen(false);
+  };
+
   const handleTaskCreated = (task: Task) => {
     setTasks((prev) => [task, ...prev]);
   };
@@ -289,6 +295,7 @@ export function useTasksListPage() {
     defaultCreateDueDate,
     setDefaultCreateDueDate,
     handleTaskUpdate,
+    handleTaskDelete,
     handleTaskCreated,
     renderBoard,
   };

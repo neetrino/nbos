@@ -276,6 +276,11 @@ export function WorkSpaceRuntime({
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         onUpdate={handleTaskUpdate}
+        onDelete={(taskId) => {
+          setTasks((prev) => prev.filter((task) => task.id !== taskId));
+          setSelectedTaskId((current) => (current === taskId ? null : current));
+          setSheetOpen(false);
+        }}
       />
 
       <QuickCreateTaskDialog

@@ -40,6 +40,7 @@ export default function TasksPage() {
     creatorReady,
     selectedTaskId,
     handleTaskUpdate,
+    handleTaskDelete,
     handleTaskCreated,
     renderBoard,
   } = useTasksListPage();
@@ -141,6 +142,7 @@ export default function TasksPage() {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         onUpdate={handleTaskUpdate}
+        onDelete={handleTaskDelete}
       />
 
       <QuickCreateTaskDialog

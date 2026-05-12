@@ -21,9 +21,10 @@ interface UseTaskSheetStateParams {
   taskId: string | null;
   open: boolean;
   onUpdate?: (task: Task) => void;
+  onDelete?: (taskId: string) => void;
 }
 
-export function useTaskSheetState({ taskId, open, onUpdate }: UseTaskSheetStateParams) {
+export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskSheetStateParams) {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -256,6 +257,20 @@ export function useTaskSheetState({ taskId, open, onUpdate }: UseTaskSheetStateP
     [setLocalTask, task],
   );
 
+  const handleDeleteTask = useCallback(async () => {
+    if (!task) return false;
+    try {
+      await tasksApi.delete(task.id);
+      onDelete?.(task.id);
+      return true;
+    } catch (caught) {
+      const message = getApiErrorMessage(caught, 'Task could not be deleted.');
+      setGeneralError(message);
+      toast.error(message);
+      return false;
+    }
+  }, [onDelete, task]);
+
   const handleSendMessage = useCallback(
     (body: string) => {
       if (!task) return;
@@ -307,6 +322,7 @@ export function useTaskSheetState({ taskId, open, onUpdate }: UseTaskSheetStateP
     handleToggleItem,
     handleDeleteItem,
     handleRemoveLink,
+    handleDeleteTask,
     handleSendMessage,
     searchEmployees,
   };

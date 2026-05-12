@@ -288,6 +288,10 @@ export function TasksTab({ projectId, orders }: TasksTabProps) {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         onUpdate={(t) => setTasks((prev) => prev.map((x) => (x.id === t.id ? t : x)))}
+        onDelete={(taskId) => {
+          setTasks((prev) => prev.filter((task) => task.id !== taskId));
+          setSheetOpen(false);
+        }}
       />
     </div>
   );
