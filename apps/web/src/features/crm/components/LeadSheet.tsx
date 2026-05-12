@@ -172,13 +172,13 @@ export function LeadSheet({
         side="right"
         showCloseButton={false}
         floatingClose
-        floatingRailAnchorClassName="sm:right-[min(92vw,1400px)]"
+        floatingRailAnchorClassName="sm:right-[75vw]"
         floatingRail={
           <EntitySheetFloatingRail
             sourcePageHref={`/crm/leads?openLeadId=${encodeURIComponent(lead.id)}`}
           />
         }
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:data-[side=right]:w-[min(92vw,1400px)]"
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:data-[side=right]:w-[75vw]"
       >
         {/* ── Header ── */}
         <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">

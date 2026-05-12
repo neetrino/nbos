@@ -185,12 +185,13 @@ export function DealSheet({
         side="right"
         showCloseButton={false}
         floatingClose
+        floatingRailAnchorClassName="sm:right-[75vw]"
         floatingRail={
           <EntitySheetFloatingRail
             sourcePageHref={`/crm/deals?openDealId=${encodeURIComponent(deal.id)}`}
           />
         }
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[90vw]"
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[75vw]"
       >
         {/* ── Header ── */}
         <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">

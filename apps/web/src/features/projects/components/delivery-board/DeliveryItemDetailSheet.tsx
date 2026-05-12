@@ -277,6 +277,7 @@ export function DeliveryItemDetailSheet({
         side="right"
         showCloseButton={false}
         floatingClose
+        floatingRailAnchorClassName="sm:right-[75vw]"
         floatingRail={
           headerProps ? (
             <EntitySheetFloatingRail
@@ -285,7 +286,7 @@ export function DeliveryItemDetailSheet({
             />
           ) : null
         }
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[90vw]"
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[75vw]"
       >
         {!item ? null : (
           <>
