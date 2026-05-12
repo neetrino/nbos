@@ -122,17 +122,6 @@ export default function TasksPage() {
             </Link>
           }
         />
-      ) : tasks.length === 0 && boardView !== 'list' ? (
-        <EmptyState
-          icon={CheckSquare}
-          title="No tasks yet"
-          description="Create your first task to get started"
-          action={
-            <Button onClick={() => setQuickCreateOpen(true)} disabled={newTaskDisabled}>
-              <Plus size={16} /> Create First Task
-            </Button>
-          }
-        />
       ) : (
         renderBoard()
       )}
