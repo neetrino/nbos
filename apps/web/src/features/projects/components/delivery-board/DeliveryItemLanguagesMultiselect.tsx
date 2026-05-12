@@ -36,13 +36,20 @@ export function DeliveryItemLanguagesMultiselect({
     onChange(sortLanguageCodesForDisplay(Array.from(next)));
   }
 
-  function removeChip(code: string, e: React.MouseEvent) {
+  function removeChip(code: string, e: React.MouseEvent | React.KeyboardEvent) {
     e.preventDefault();
     e.stopPropagation();
     if (readOnly || disabled || !onChange) return;
     const next = new Set(selected);
     next.delete(code);
     onChange(sortLanguageCodesForDisplay(Array.from(next)));
+  }
+
+  function chipRemoveKeyDown(code: string, e: React.KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      removeChip(code, e);
+    }
   }
 
   if (readOnly) {
@@ -86,14 +93,16 @@ export function DeliveryItemLanguagesMultiselect({
                   className="bg-primary/12 text-primary border-primary/15 inline-flex max-w-full items-center gap-0.5 rounded-md border px-1.5 py-0.5 text-xs font-medium"
                 >
                   <span className="truncate">{languageLabel(code)}</span>
-                  <button
-                    type="button"
-                    className="text-primary/70 hover:text-primary shrink-0 rounded p-0.5"
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    className="text-primary/70 hover:text-primary focus-visible:ring-ring/50 inline-flex shrink-0 cursor-pointer rounded p-0.5 outline-none focus-visible:ring-2"
                     aria-label={`Remove ${languageLabel(code)}`}
                     onClick={(e) => removeChip(code, e)}
+                    onKeyDown={(e) => chipRemoveKeyDown(code, e)}
                   >
-                    <X className="size-3" />
-                  </button>
+                    <X className="size-3" aria-hidden />
+                  </span>
                 </span>
               ))
             )}
