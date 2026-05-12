@@ -86,7 +86,7 @@ function SheetContent({
       {floatingRailEnabled ? (
         <div
           className={cn(
-            'pointer-events-auto fixed flex flex-col items-end gap-1.5 max-sm:top-20 max-sm:left-3 sm:top-20 sm:translate-x-px',
+            'pointer-events-auto fixed flex flex-col items-end gap-1.5 max-sm:top-14 max-sm:left-3 sm:top-10 sm:translate-x-px',
             floatingRailAnchorClassName ?? 'sm:right-[90vw]',
           )}
           style={{ zIndex: SHEET_FLOATING_RAIL_Z_INDEX }}
