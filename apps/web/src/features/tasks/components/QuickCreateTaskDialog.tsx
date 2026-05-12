@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Maximize2 } from 'lucide-react';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import { TASK_PRIORITIES } from '../constants/tasks';
 
@@ -89,8 +91,8 @@ export function QuickCreateTaskDialog({
       onCreated?.(task);
       reset();
       onOpenChange(false);
-    } catch {
-      /* handled */
+    } catch (caught: unknown) {
+      toast.error(getApiErrorMessage(caught, 'Could not create task. Try again.'));
     } finally {
       setSaving(false);
     }

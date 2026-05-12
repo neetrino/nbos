@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TasksService } from './tasks.service';
+import { TASK_INCLUDE } from './task-response-includes';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
@@ -91,14 +92,17 @@ describe('TasksService', () => {
 
   describe('create', () => {
     it('generates code T-YYYY-NNNN', async () => {
-      prisma.task.findFirst.mockResolvedValue(null);
+      prisma.task.findMany.mockResolvedValue([]);
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
       const result = await service.create({ title: 'Test', creatorId: 'c1' });
       expect(result.code).toMatch(/^T-\d{4}-\d{4}$/);
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({ include: TASK_INCLUDE }),
+      );
     });
 
     it('creates task inside a Work Space planning layer', async () => {
-      prisma.task.findFirst.mockResolvedValue(null);
+      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Backlog task',
         creatorId: 'c1',
@@ -112,12 +116,13 @@ describe('TasksService', () => {
             workspaceId: 'ws-1',
             planningStatus: 'BACKLOG',
           }),
+          include: TASK_INCLUDE,
         }),
       );
     });
 
     it('normalizes completion rules on create', async () => {
-      prisma.task.findFirst.mockResolvedValue(null);
+      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Controlled task',
         creatorId: 'c1',

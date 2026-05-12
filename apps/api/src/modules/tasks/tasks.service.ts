@@ -4,10 +4,12 @@ import {
   type Prisma,
   type InputJsonValue,
   type TaskStatusEnum,
-  type TaskPriorityEnum,
+  TaskPlanningStatusEnum,
+  TaskPriorityEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './task-completion-rules';
+import { formatTaskCode, nextTaskCodeNumericSuffix } from './task-code-generation';
 import { taskFindAllPaginated } from './task-find-all-paginated.op';
 import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 
@@ -100,31 +102,43 @@ export class TasksService {
   }
 
   async create(data: CreateTaskDto) {
+    const title = data.title?.trim();
+    if (!title) throw new BadRequestException('title is required');
+    const creatorId = data.creatorId?.trim();
+    if (!creatorId) throw new BadRequestException('creatorId is required');
+
+    const workspaceId = data.workspaceId?.trim() || undefined;
+    const assigneeId = data.assigneeId?.trim() || undefined;
+    const parentId = data.parentId?.trim() || undefined;
+    const priority = this.normalizeCreatePriority(data.priority);
+    const planningStatus = this.normalizeCreatePlanningStatus(data.planningStatus);
+    const startDate = this.parseOptionalIsoDate('startDate', data.startDate);
+    const dueDate = this.parseOptionalIsoDate('dueDate', data.dueDate);
+    const linkRows = this.dedupeTaskLinks(data.links);
+
     const code = await this.generateCode();
     const task = await this.prisma.task.create({
       data: {
         code,
-        title: data.title,
-        creatorId: data.creatorId,
-        description: data.description,
-        assigneeId: data.assigneeId,
+        title,
+        creatorId,
+        description: data.description?.trim() || undefined,
+        assigneeId,
         coAssignees: data.coAssignees ?? [],
         observers: data.observers ?? [],
-        priority: (data.priority as TaskPriorityEnum) ?? 'NORMAL',
-        workspaceId: data.workspaceId,
-        ...(data.planningStatus && {
-          planningStatus: data.planningStatus as Prisma.TaskCreateInput['planningStatus'],
-        }),
+        priority,
+        workspaceId,
+        ...(planningStatus !== undefined && { planningStatus }),
         ...(data.completionRules !== undefined && {
           completionRules: this.parseCompletionRules(data.completionRules),
         }),
-        startDate: data.startDate ? new Date(data.startDate) : undefined,
-        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-        parentId: data.parentId,
-        ...(data.links?.length && {
+        startDate,
+        dueDate,
+        parentId,
+        ...(linkRows?.length && {
           links: {
             createMany: {
-              data: data.links.map((l) => ({
+              data: linkRows.map((l) => ({
                 entityType: l.entityType,
                 entityId: l.entityId,
               })),
@@ -132,7 +146,7 @@ export class TasksService {
           },
         }),
       },
-      include: TASK_DETAIL_INCLUDE,
+      include: TASK_INCLUDE,
     });
     return task;
   }
@@ -147,7 +161,9 @@ export class TasksService {
         ...(data.assigneeId !== undefined && { assigneeId: data.assigneeId }),
         ...(data.coAssignees && { coAssignees: data.coAssignees }),
         ...(data.observers && { observers: data.observers }),
-        ...(data.priority && { priority: data.priority as TaskPriorityEnum }),
+        ...(data.priority && {
+          priority: data.priority as (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum],
+        }),
         ...(data.startDate !== undefined && {
           startDate: data.startDate ? new Date(data.startDate) : null,
         }),
@@ -289,6 +305,58 @@ export class TasksService {
     return this.prisma.taskChecklist.delete({ where: { id: checklistId } });
   }
 
+  private normalizeCreatePriority(
+    raw: string | undefined,
+  ): (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum] {
+    const v = raw?.trim();
+    const allowed = Object.values(TaskPriorityEnum);
+    if (v && allowed.includes(v as (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum])) {
+      return v as (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum];
+    }
+    return TaskPriorityEnum.NORMAL;
+  }
+
+  private normalizeCreatePlanningStatus(
+    raw: string | undefined,
+  ): Prisma.TaskCreateInput['planningStatus'] | undefined {
+    if (raw === undefined || raw === null || !String(raw).trim()) return undefined;
+    const v = String(raw).trim();
+    const allowed = Object.values(TaskPlanningStatusEnum);
+    if (
+      !allowed.includes(v as (typeof TaskPlanningStatusEnum)[keyof typeof TaskPlanningStatusEnum])
+    ) {
+      throw new BadRequestException(`Invalid planningStatus: ${v}`);
+    }
+    return v as Prisma.TaskCreateInput['planningStatus'];
+  }
+
+  private parseOptionalIsoDate(
+    field: 'startDate' | 'dueDate',
+    value: string | undefined,
+  ): Date | undefined {
+    if (value === undefined || value === null || !String(value).trim()) return undefined;
+    const d = new Date(String(value).trim());
+    if (Number.isNaN(d.getTime())) {
+      throw new BadRequestException(`Invalid ${field}`);
+    }
+    return d;
+  }
+
+  private dedupeTaskLinks(
+    links: CreateTaskDto['links'] | undefined,
+  ): Array<{ entityType: string; entityId: string }> | undefined {
+    if (!links?.length) return undefined;
+    const map = new Map<string, { entityType: string; entityId: string }>();
+    for (const l of links) {
+      const entityType = l.entityType?.trim();
+      const entityId = l.entityId?.trim();
+      if (!entityType || !entityId) continue;
+      map.set(`${entityType}:${entityId}`, { entityType, entityId });
+    }
+    const out = [...map.values()];
+    return out.length ? out : undefined;
+  }
+
   private parseCompletionRules(input: unknown): InputJsonValue | undefined {
     if (input === null) return undefined;
     try {
@@ -311,11 +379,15 @@ export class TasksService {
 
   private async generateCode(): Promise<string> {
     const year = new Date().getFullYear();
-    const last = await this.prisma.task.findFirst({
-      where: { code: { startsWith: `T-${year}-` } },
-      orderBy: { code: 'desc' },
+    const prefix = `T-${year}-`;
+    const rows = await this.prisma.task.findMany({
+      where: { code: { startsWith: prefix } },
+      select: { code: true },
     });
-    const nextNum = last ? parseInt(last.code.split('-')[2] ?? '0', 10) + 1 : 1;
-    return `T-${year}-${String(nextNum).padStart(4, '0')}`;
+    const next = nextTaskCodeNumericSuffix(
+      year,
+      rows.map((r) => r.code),
+    );
+    return formatTaskCode(year, next);
   }
 }
