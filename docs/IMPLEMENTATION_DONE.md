@@ -2,7 +2,7 @@
 
 > **Архив закрытых вех и выполненных срезов.** Активный бэклог — [`IMPLEMENTATION_PROGRESS.md`](./IMPLEMENTATION_PROGRESS.md). Последовательность по продукту — [`NBOS/00-Implementation-Roadmap.md`](./NBOS/00-Implementation-Roadmap.md). Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-09
+**Обновлено:** 2026-05-12
 
 ---
 
@@ -30,6 +30,7 @@
 
 Ключевой канон по зоне **Delivery / чеклисты / professional card** (срезы ниже опираются на эти документы): [`07-Delivery-Board.md`](NBOS/02-Modules/02-Projects-Hub/07-Delivery-Board.md), [`08-Checklist-Template-Builder.md`](NBOS/02-Modules/07-My-Company/08-Checklist-Template-Builder.md), [`07-Professional-Delivery-Card.md`](NBOS/05-UI-Specifications/07-Professional-Delivery-Card.md).
 
+- 🟢 [x] **Checklist builder — metadata UI, DnD, evidence types, audit panel, instance item audit** — M → `@nbos/shared` `CHECKLIST_TEMPLATE_ITEM_EVIDENCE_*`; API: draft item evidence validation + `checklist_instance.item_marked` on `PATCH …/checklist-instances/:id/items`; web: template metadata form (`updateMetadata`), `@dnd-kit` reorder, evidence selectors + Delivery preview via `ChecklistItemEvidenceDisplay`, template audit list (`GET /api/audit?entityType=ChecklistTemplate`); `packages/database` script `seed:rbac`, демо-сотрудник `owner@neetrino.com` с `role-owner`
 - 🟢 [x] **CTB-1 — §13 granular RBAC + audit + builder duplicate/preview** — L → Prisma seed: модуль `CHECKLIST_TEMPLATES` + `PUBLISH`/`ARCHIVE`, выдача из матрицы `COMPANY` (VIEW / write → ADD+EDIT+PUBLISH+ARCHIVE); API: `RequirePermission` на шаблонах/инстансах; `POST …/archive` (отдельно от PATCH); `POST …/duplicate`, `GET …/:id/versions/:versionId`; `AuditService` в `ChecklistTemplatesService` (`checklist_template.*`); web: `PermissionGate` по capability, hub-фильтр секций, preview dialog + version history, duplicate confirm; **нужен re-seed** `seed-rbac` для новых permission rows
 - 🟢 [x] **Delivery Card §8 — аудит deprecated `PATCH …/status` → terminal** — S → `DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION` (`delivery.deprecated_patch_status_terminal`); `ProductsService`/`ExtensionsService.updateStatus(id, status, actorId)`; контроллеры с `@CurrentUser`; запись при `DONE`/`LOST` с `deprecatedApiPath`, mapping `deliveryResolution`; `mock-prisma` — `checklistInstance` для findById-тестов
 - 🟢 [x] **Delivery Card §8 — Stage actions в drawer (global board)** — M → `useDeliveryBoardMutations` + обязательный `mutations` в `DeliveryBoardView`; `DeliveryStageActionBar` (card + drawer); `ProjectDeliveryBoardCard` на общем баре; `DeliveryItemDetailSheet` + `boardMutations`; `/delivery-board` — общий hook, `forceMount` на Active tab, синк `detailItem` после `load`; те же `runBoardAction` / cancel dialog / stage gate, что и на карточке

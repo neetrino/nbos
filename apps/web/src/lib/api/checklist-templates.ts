@@ -1,4 +1,9 @@
 import { api } from '../api';
+import {
+  CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES,
+  CHECKLIST_TEMPLATE_ITEM_EVIDENCE_LINKING_TYPES,
+  type ChecklistTemplateItemEvidenceType,
+} from '@nbos/shared';
 
 export type ChecklistTemplateCategory =
   | 'DELIVERY'
@@ -10,12 +15,31 @@ export type ChecklistTemplateCategory =
 
 export type ChecklistOwnerModule = 'MY_COMPANY' | 'PROJECTS' | 'TASKS' | 'TECHNICAL';
 
+export {
+  CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES,
+  CHECKLIST_TEMPLATE_ITEM_EVIDENCE_LINKING_TYPES,
+  type ChecklistTemplateItemEvidenceType,
+};
+
+function parseItemEvidenceType(raw: unknown): ChecklistTemplateItemEvidenceType {
+  if (
+    typeof raw === 'string' &&
+    (CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES as readonly string[]).includes(raw)
+  ) {
+    return raw as ChecklistTemplateItemEvidenceType;
+  }
+  return 'TEXT_ONLY';
+}
+
 export interface ChecklistTemplateItem {
   id: string;
   title: string;
   instruction: string;
   decisionRequired: boolean;
   sortOrder: number;
+  evidenceType: ChecklistTemplateItemEvidenceType;
+  evidenceValue: string | null;
+  evidenceLabel: string | null;
 }
 
 export type ChecklistInstanceItemMark = 'PENDING' | 'DONE' | 'NOT_DONE';
@@ -98,7 +122,25 @@ export function parseChecklistTemplateItems(raw: unknown): ChecklistTemplateItem
       const id = typeof o.id === 'string' ? o.id : `row-${index}`;
       const decisionRequired = o.decisionRequired === true;
       const sortOrder = typeof o.sortOrder === 'number' ? o.sortOrder : index;
-      return { id, title, instruction, decisionRequired, sortOrder };
+      const evidenceType = parseItemEvidenceType(o.evidenceType);
+      const evidenceValue =
+        typeof o.evidenceValue === 'string' && o.evidenceValue.trim()
+          ? o.evidenceValue.trim()
+          : null;
+      const evidenceLabel =
+        typeof o.evidenceLabel === 'string' && o.evidenceLabel.trim()
+          ? o.evidenceLabel.trim()
+          : null;
+      return {
+        id,
+        title,
+        instruction,
+        decisionRequired,
+        sortOrder,
+        evidenceType,
+        evidenceValue,
+        evidenceLabel,
+      };
     })
     .filter((x): x is ChecklistTemplateItem => x !== null);
 }
@@ -116,7 +158,27 @@ export function parseChecklistInstanceItems(raw: unknown): ChecklistInstanceItem
       const sortOrder = typeof o.sortOrder === 'number' ? o.sortOrder : index;
       const mark = o.mark === 'DONE' || o.mark === 'NOT_DONE' ? o.mark : undefined;
       const comment = typeof o.comment === 'string' ? o.comment : undefined;
-      return { id, title, instruction, decisionRequired, sortOrder, mark, comment };
+      const evidenceType = parseItemEvidenceType(o.evidenceType);
+      const evidenceValue =
+        typeof o.evidenceValue === 'string' && o.evidenceValue.trim()
+          ? o.evidenceValue.trim()
+          : null;
+      const evidenceLabel =
+        typeof o.evidenceLabel === 'string' && o.evidenceLabel.trim()
+          ? o.evidenceLabel.trim()
+          : null;
+      return {
+        id,
+        title,
+        instruction,
+        decisionRequired,
+        sortOrder,
+        mark,
+        comment,
+        evidenceType,
+        evidenceValue,
+        evidenceLabel,
+      };
     })
     .filter((x): x is ChecklistInstanceItem => x !== null)
     .sort((a, b) => a.sortOrder - b.sortOrder);

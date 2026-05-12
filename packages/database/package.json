@@ -17,6 +17,7 @@
     "migrate:deploy": "prisma migrate deploy",
     "push": "prisma db push",
     "seed": "tsx prisma/seed.ts",
+    "seed:rbac": "tsx prisma/seed-rbac.ts",
     "seed:admin": "tsx prisma/seed-admin.ts",
     "studio": "prisma studio",
     "typecheck": "tsc --noEmit"

@@ -239,6 +239,7 @@ export const SLA_DEADLINES = {
 
 export * from './crm-attribution';
 export * from './messenger-ws';
+export * from './checklist-template-item-evidence';
 
 export const BONUS_PERCENTAGES = {
   SALES: {

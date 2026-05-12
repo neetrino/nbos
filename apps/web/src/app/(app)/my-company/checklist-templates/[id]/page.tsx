@@ -18,6 +18,8 @@ import { ChecklistDraftItemsEditor } from '../checklist-draft-items-editor';
 import { ChecklistTemplateDuplicateDialog } from '../checklist-template-duplicate-dialog';
 import { ChecklistTemplatePreviewDialog } from '../checklist-template-preview-dialog';
 import { ChecklistTemplateVersionHistory } from '../checklist-template-version-history';
+import { ChecklistTemplateMetadataSection } from '../checklist-template-metadata-section';
+import { ChecklistTemplateAuditPanel } from '../checklist-template-audit-panel';
 
 function statusVariant(status: string): 'default' | 'green' | 'gray' | 'blue' | 'amber' | 'red' {
   if (status === 'ACTIVE') {
@@ -209,13 +211,14 @@ export default function ChecklistTemplateDetailPage() {
         </div>
       </PageHeader>
 
+      <ChecklistTemplateMetadataSection
+        templateId={id}
+        detail={detail}
+        readOnly={readOnly}
+        onUpdated={setDetail}
+      />
+
       <div className="text-muted-foreground grid gap-2 text-sm md:grid-cols-2">
-        <p>
-          Category: <span className="text-foreground">{detail.category}</span>
-        </p>
-        <p>
-          Owner module: <span className="text-foreground">{detail.ownerModule}</span>
-        </p>
         <p>
           Active version:{' '}
           <span className="text-foreground">
@@ -288,6 +291,8 @@ export default function ChecklistTemplateDetailPage() {
         busy={dupBusy}
         onConfirm={() => void runDuplicate()}
       />
+
+      <ChecklistTemplateAuditPanel templateId={id} />
     </div>
   );
 }

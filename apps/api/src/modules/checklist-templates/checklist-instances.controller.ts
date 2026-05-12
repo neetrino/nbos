@@ -21,8 +21,12 @@ export class ChecklistInstancesController {
   @Patch(':id/items')
   @RequirePermission('CHECKLIST_TEMPLATES', 'EDIT')
   @ApiOperation({ summary: 'Mark one checklist instance item as Pending, Done or Not Done' })
-  updateItem(@Param('id') id: string, @Body() body: UpdateChecklistInstanceItemDto) {
-    return this.checklistTemplatesService.updateInstanceItem(id, body);
+  updateItem(
+    @Param('id') id: string,
+    @Body() body: UpdateChecklistInstanceItemDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.checklistTemplatesService.updateInstanceItem(id, body, user.id);
   }
 
   @Post(':id/complete')

@@ -146,7 +146,19 @@ async function main() {
       status: 'ACTIVE',
     },
   });
-  console.log('  ✓ Employees (6)');
+  await prisma.employee.upsert({
+    where: { email: 'owner@neetrino.com' },
+    update: { roleId: 'role-owner' },
+    create: {
+      firstName: 'Company',
+      lastName: 'Owner',
+      email: 'owner@neetrino.com',
+      roleId: 'role-owner',
+      level: 'HEAD',
+      status: 'ACTIVE',
+    },
+  });
+  console.log('  ✓ Employees (7)');
 
   await seedMessenger(prisma, { ceo, seller, pm, pm2, dev, designer });
   console.log('  ✓ Messenger (channels + sample messages + DM threads)');

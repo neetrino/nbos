@@ -6,6 +6,8 @@ import {
   type DeliveryStageEnum,
   type InputJsonValue,
 } from '@nbos/database';
+import type { ChecklistTemplateItemEvidenceType } from '@nbos/shared';
+import { CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import {
@@ -16,6 +18,7 @@ import {
   CHECKLIST_TEMPLATE_MAX_ITEMS,
   checklistItemsToJson,
   normalizeChecklistTemplateItems,
+  validateChecklistTemplateEvidenceFields,
 } from './checklist-template-items';
 import type { CreateChecklistTemplateDto } from './dto/create-checklist-template.dto';
 import type { CreateChecklistInstanceDto } from './dto/create-checklist-instance.dto';
@@ -183,6 +186,12 @@ export class ChecklistTemplatesService {
       throw new BadRequestException('No draft version available');
     }
     const normalized = normalizeChecklistTemplateItems(body.items);
+    for (let i = 0; i < normalized.length; i++) {
+      const err = validateChecklistTemplateEvidenceFields(normalized[i]!, i);
+      if (err) {
+        throw new BadRequestException(err);
+      }
+    }
     await this.prisma.checklistTemplateVersion.update({
       where: { id: draft.id },
       data: { items: checklistItemsToJson(normalized) },
@@ -421,7 +430,11 @@ export class ChecklistTemplatesService {
     });
   }
 
-  async updateInstanceItem(instanceId: string, body: UpdateChecklistInstanceItemDto) {
+  async updateInstanceItem(
+    instanceId: string,
+    body: UpdateChecklistInstanceItemDto,
+    actorEmployeeId: string,
+  ) {
     const instance = await this.prisma.checklistInstance.findUnique({ where: { id: instanceId } });
     if (!instance) {
       throw new NotFoundException(`Checklist instance ${instanceId} not found`);
@@ -447,7 +460,7 @@ export class ChecklistTemplatesService {
       comment: comment.length > 0 ? comment : undefined,
     };
 
-    return this.prisma.checklistInstance.update({
+    const updated = await this.prisma.checklistInstance.update({
       where: { id: instanceId },
       data: { snapshotItems: items as unknown as InputJsonValue },
       include: {
@@ -456,6 +469,20 @@ export class ChecklistTemplatesService {
         completedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+
+    await this.audit.log({
+      entityType: 'CHECKLIST_INSTANCE',
+      entityId: instanceId,
+      action: ChecklistTemplateAuditAction.INSTANCE_ITEM_MARKED,
+      userId: actorEmployeeId,
+      changes: {
+        itemId: body.itemId,
+        mark: body.mark,
+        hasComment: comment.length > 0,
+      } as InputJsonValue,
+    });
+
+    return updated;
   }
 
   async completeInstance(instanceId: string, actorEmployeeId: string) {
@@ -510,6 +537,16 @@ export class ChecklistTemplatesService {
 
 type ChecklistInstanceMark = 'DONE' | 'NOT_DONE';
 
+function parseSnapshotEvidenceType(raw: unknown): ChecklistTemplateItemEvidenceType {
+  if (
+    typeof raw === 'string' &&
+    (CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES as readonly string[]).includes(raw)
+  ) {
+    return raw as ChecklistTemplateItemEvidenceType;
+  }
+  return 'TEXT_ONLY';
+}
+
 interface ChecklistInstanceSnapshotItem {
   id: string;
   title: string;
@@ -518,6 +555,9 @@ interface ChecklistInstanceSnapshotItem {
   sortOrder?: number;
   mark?: ChecklistInstanceMark;
   comment?: string;
+  evidenceType?: ChecklistTemplateItemEvidenceType;
+  evidenceValue?: string | null;
+  evidenceLabel?: string | null;
 }
 
 function normalizeInstanceSnapshotItems(raw: unknown): ChecklistInstanceSnapshotItem[] {
@@ -531,6 +571,9 @@ function normalizeInstanceSnapshotItems(raw: unknown): ChecklistInstanceSnapshot
       if (!id || !title) return null;
       const mark = item.mark === 'DONE' || item.mark === 'NOT_DONE' ? item.mark : undefined;
       const comment = typeof item.comment === 'string' ? item.comment : undefined;
+      const evidenceType = parseSnapshotEvidenceType(item.evidenceType);
+      const evidenceValue = typeof item.evidenceValue === 'string' ? item.evidenceValue : null;
+      const evidenceLabel = typeof item.evidenceLabel === 'string' ? item.evidenceLabel : null;
       return {
         id,
         title,
@@ -539,6 +582,9 @@ function normalizeInstanceSnapshotItems(raw: unknown): ChecklistInstanceSnapshot
         sortOrder: typeof item.sortOrder === 'number' ? item.sortOrder : index,
         mark,
         comment,
+        evidenceType,
+        evidenceValue,
+        evidenceLabel,
       };
     })
     .filter((item): item is ChecklistInstanceSnapshotItem => item !== null)

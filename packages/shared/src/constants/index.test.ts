@@ -16,9 +16,15 @@ import {
   PRODUCT_TYPES,
   PAYMENT_TYPES,
   SUBSCRIPTION_STATUSES,
+  CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES,
 } from './index';
 
 describe('Constants', () => {
+  it('CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES includes TEXT_ONLY', () => {
+    expect(CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES).toContain('TEXT_ONLY');
+    expect(CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES).toContain('URL');
+  });
+
   it('LEAD_STATUSES has 7 statuses', () => {
     expect(LEAD_STATUSES).toHaveLength(7);
     expect(LEAD_STATUSES[0]).toBe('NEW');

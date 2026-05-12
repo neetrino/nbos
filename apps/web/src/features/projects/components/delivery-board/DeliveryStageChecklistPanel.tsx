@@ -12,6 +12,7 @@ import {
   type ChecklistInstanceItemMark,
 } from '@/lib/api/checklist-templates';
 import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
+import { ChecklistItemEvidenceDisplay } from '@/features/checklist/checklist-item-evidence-display';
 
 interface DeliveryStageChecklistPanelProps {
   ownerEntityType: 'PRODUCT' | 'EXTENSION';
@@ -253,6 +254,7 @@ function ChecklistItemRow({
           {item.decisionRequired ? (
             <p className="text-muted-foreground mt-1 text-[11px]">Required review</p>
           ) : null}
+          <ChecklistItemEvidenceDisplay item={item} />
         </div>
       </div>
       <Textarea

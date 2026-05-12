@@ -2,6 +2,7 @@
 
 import type { ChecklistTemplateItem } from '@/lib/api/checklist-templates';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ChecklistItemEvidenceDisplay } from '@/features/checklist/checklist-item-evidence-display';
 
 interface ChecklistTemplatePreviewDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export function ChecklistTemplatePreviewDialog({
                 {row.instruction ? (
                   <p className="mt-0.5 text-xs leading-snug">{row.instruction}</p>
                 ) : null}
+                <ChecklistItemEvidenceDisplay item={row} />
               </li>
             ))}
           </ol>
