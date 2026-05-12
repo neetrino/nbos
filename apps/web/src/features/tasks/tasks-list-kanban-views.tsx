@@ -8,8 +8,6 @@ import {
   TaskListTableView,
   buildMyPlanColumns,
   buildWorkspaceKanbanColumns,
-  partitionWorkspaceSecondaryTasks,
-  TaskOffPrimaryBoardSection,
 } from '@/features/tasks/task-board';
 import type { Task, TaskBoardStage } from '@/lib/api/tasks';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
@@ -82,7 +80,6 @@ export function TasksListKanbanViews({
   }
 
   if (boardView === 'kanban') {
-    const { deferred, cancelled } = partitionWorkspaceSecondaryTasks(tasks);
     return (
       <div className="flex min-h-0 flex-1 flex-col gap-4">
         <div className="min-h-0 flex-1">
@@ -97,12 +94,6 @@ export function TasksListKanbanViews({
             emptyMessage="No tasks"
           />
         </div>
-        <TaskOffPrimaryBoardSection
-          deferred={deferred}
-          cancelled={cancelled}
-          onAction={onTaskAction}
-          onOpenTask={onTaskClick}
-        />
       </div>
     );
   }

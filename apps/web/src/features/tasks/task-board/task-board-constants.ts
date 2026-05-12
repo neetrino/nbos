@@ -16,6 +16,7 @@ export const KANBAN_STATUS_MAP: Record<string, string> = {
   Open: 'OPEN',
   'In Progress': 'IN_PROGRESS',
   Review: 'REVIEW',
+  'On hold': 'ON_HOLD',
   Done: 'COMPLETED',
   Completed: 'COMPLETED',
 };

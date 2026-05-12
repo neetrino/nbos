@@ -225,8 +225,8 @@ export const tasksApi = {
     const resp = await api.patch<Task>(`/api/tasks/${id}/reopen`);
     return resp.data;
   },
-  async defer(id: string): Promise<Task> {
-    const resp = await api.patch<Task>(`/api/tasks/${id}/defer`);
+  async setOnHold(id: string): Promise<Task> {
+    const resp = await api.patch<Task>(`/api/tasks/${id}/on-hold`);
     return resp.data;
   },
   async delete(id: string): Promise<void> {

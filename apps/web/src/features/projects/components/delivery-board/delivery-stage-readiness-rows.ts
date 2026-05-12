@@ -8,7 +8,7 @@ export interface StageReadinessRow {
   done: boolean;
 }
 
-const CLOSED_TASK = new Set(['DONE', 'DEFERRED', 'CANCELLED', 'COMPLETED']);
+const CLOSED_TASK = new Set(['DONE', 'ON_HOLD', 'COMPLETED']);
 const CLOSED_TICKET = new Set(['RESOLVED', 'CLOSED']);
 const CLOSED_EXTENSION = new Set(['DONE', 'LOST']);
 

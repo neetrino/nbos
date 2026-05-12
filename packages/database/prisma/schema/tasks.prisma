@@ -4,9 +4,8 @@ enum TaskStatusEnum {
   OPEN
   IN_PROGRESS
   REVIEW
+  ON_HOLD
   COMPLETED
-  DEFERRED
-  CANCELLED
   NEW
   DONE
 }

@@ -7,7 +7,7 @@ import {
 import { getMarketingDashboardSummary } from '../marketing/marketing-dashboard-summary';
 import type { ReportDefinition, ReportDataQualityWarning } from './reports.types';
 
-const CLOSED_TASK_STATUSES = [TaskStatusEnum.DONE, TaskStatusEnum.CANCELLED];
+const CLOSED_TASK_STATUSES = [TaskStatusEnum.DONE, TaskStatusEnum.COMPLETED];
 const INACTIVE_PRODUCT_STATUSES = [ProductStatusEnum.DONE, ProductStatusEnum.LOST];
 const INACTIVE_EXTENSION_STATUSES = [ExtensionStatusEnum.DONE, ExtensionStatusEnum.LOST];
 

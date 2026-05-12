@@ -91,7 +91,7 @@ export function TaskMiniCard({
               <CheckCircle2 size={12} className="text-green-500" />
             </button>
           )}
-          {(task.status === 'COMPLETED' || task.status === 'DONE') && (
+          {(task.status === 'COMPLETED' || task.status === 'DONE' || task.status === 'ON_HOLD') && (
             <button
               onClick={(e) => {
                 e.stopPropagation();

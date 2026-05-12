@@ -175,8 +175,8 @@ export class TasksService {
   /** Начать задачу */
   async start(id: string) {
     const task = await this.findById(id);
-    if (task.status === 'COMPLETED' || task.status === 'DONE' || task.status === 'CANCELLED') {
-      throw new NotFoundException('Cannot start a completed/cancelled task');
+    if (task.status === 'COMPLETED' || task.status === 'DONE') {
+      throw new NotFoundException('Cannot start a completed task');
     }
     return this.prisma.task.update({
       where: { id },
@@ -218,12 +218,12 @@ export class TasksService {
     });
   }
 
-  /** Отложить задачу */
-  async defer(id: string) {
+  /** Pause task (On hold) */
+  async setOnHold(id: string) {
     await this.findById(id);
     return this.prisma.task.update({
       where: { id },
-      data: { status: 'DEFERRED' as TaskStatusEnum },
+      data: { status: 'ON_HOLD' as TaskStatusEnum },
       include: TASK_DETAIL_INCLUDE,
     });
   }

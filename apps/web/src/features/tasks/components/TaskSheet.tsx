@@ -64,7 +64,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
     };
   }, [taskId, open]);
 
-  const handleAction = async (action: 'start' | 'complete' | 'reopen' | 'defer') => {
+  const handleAction = async (action: 'start' | 'complete' | 'reopen' | 'hold') => {
     if (!task) return;
     try {
       const updated =
@@ -74,7 +74,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
             ? await tasksApi.complete(task.id)
             : action === 'reopen'
               ? await tasksApi.reopen(task.id)
-              : await tasksApi.defer(task.id);
+              : await tasksApi.setOnHold(task.id);
       setTask(updated);
       setActionError(null);
       setCompletionBlockers([]);

@@ -13,13 +13,7 @@ import { CheckSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard } from '@/components/shared';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  TaskMiniCard,
-  TaskListTableView,
-  TaskOffPrimaryBoardSection,
-  partitionWorkspaceSecondaryTasks,
-  type TaskBoardAction,
-} from '@/features/tasks/task-board';
+import { TaskMiniCard, TaskListTableView, type TaskBoardAction } from '@/features/tasks/task-board';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -210,7 +204,6 @@ export function WorkSpaceRuntime({
     );
   };
 
-  const { deferred, cancelled } = partitionWorkspaceSecondaryTasks(viewTasks);
   const newTaskDisabled = creatorReady && !creatorId;
   const hasActiveTaskViewQuery =
     Boolean(taskSearch.trim()) ||
@@ -293,15 +286,6 @@ export function WorkSpaceRuntime({
       ) : null}
 
       {tasks.length > 0 && viewTasks.length > 0 ? renderBoard() : null}
-
-      {tasks.length > 0 && viewTasks.length > 0 ? (
-        <TaskOffPrimaryBoardSection
-          deferred={deferred}
-          cancelled={cancelled}
-          onAction={handleCardAction}
-          onOpenTask={handleTaskClick}
-        />
-      ) : null}
 
       <TaskSheet
         taskId={selectedTaskId}

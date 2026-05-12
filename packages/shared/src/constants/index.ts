@@ -63,14 +63,7 @@ export const SUBSCRIPTION_TYPES = [
 /** Query param value for listing subscriptions with no linked partner (`partnerId IS NULL`). */
 export const SUBSCRIPTION_PARTNER_FILTER_UNLINKED = '__unlinked__' as const;
 
-export const TASK_STATUSES = [
-  'OPEN',
-  'IN_PROGRESS',
-  'REVIEW',
-  'COMPLETED',
-  'DEFERRED',
-  'CANCELLED',
-] as const;
+export const TASK_STATUSES = ['OPEN', 'IN_PROGRESS', 'REVIEW', 'ON_HOLD', 'COMPLETED'] as const;
 
 export const TASK_PRIORITIES = ['CRITICAL', 'HIGH', 'NORMAL', 'LOW'] as const;
 

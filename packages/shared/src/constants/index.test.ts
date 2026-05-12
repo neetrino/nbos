@@ -69,9 +69,11 @@ describe('Constants', () => {
 
   it('TASK_STATUSES follows canonical workflow values', () => {
     expect(TASK_STATUSES).toContain('OPEN');
+    expect(TASK_STATUSES).toContain('IN_PROGRESS');
     expect(TASK_STATUSES).toContain('REVIEW');
+    expect(TASK_STATUSES).toContain('ON_HOLD');
     expect(TASK_STATUSES).toContain('COMPLETED');
-    expect(TASK_STATUSES).toHaveLength(6);
+    expect(TASK_STATUSES).toHaveLength(5);
   });
 
   it('TICKET_PRIORITIES has P1 P2 P3', () => {

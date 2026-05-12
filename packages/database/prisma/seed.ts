@@ -1381,14 +1381,14 @@ async function main() {
     },
     {
       code: 'T-2026-WS-0005',
-      title: 'Demo WS — Deferred',
-      status: 'DEFERRED' as const,
+      title: 'Demo WS — On hold',
+      status: 'ON_HOLD' as const,
       priority: 'LOW' as const,
     },
     {
       code: 'T-2026-WS-0006',
-      title: 'Demo WS — Cancelled',
-      status: 'CANCELLED' as const,
+      title: 'Demo WS — Closed (no longer active)',
+      status: 'COMPLETED' as const,
       priority: 'LOW' as const,
     },
   ];

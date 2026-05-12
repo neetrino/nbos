@@ -97,7 +97,10 @@ export function useWorkspaceRuntimeBoard(
       setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: targetStatus } : t)));
 
       try {
-        if (targetStatus === 'IN_PROGRESS' && (task.status === 'OPEN' || task.status === 'NEW')) {
+        if (
+          targetStatus === 'IN_PROGRESS' &&
+          (task.status === 'OPEN' || task.status === 'NEW' || task.status === 'ON_HOLD')
+        ) {
           await tasksApi.start(taskId);
         } else if (targetStatus === 'COMPLETED' || targetStatus === 'DONE') {
           await tasksApi.complete(taskId);

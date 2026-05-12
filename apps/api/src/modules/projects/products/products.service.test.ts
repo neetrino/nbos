@@ -388,7 +388,7 @@ describe('ProductsService', () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'DEVELOPMENT',
-        tasks: [{ status: 'DONE' }, { status: 'DEFERRED' }],
+        tasks: [{ status: 'DONE' }, { status: 'ON_HOLD' }],
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'QA' });
       const result = await service.updateStatus('p1', 'QA', 'emp-audit');
@@ -418,7 +418,7 @@ describe('ProductsService', () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'QA',
-        tasks: [{ status: 'DONE' }, { status: 'CANCELLED' }],
+        tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'TRANSFER' });
       const result = await service.updateStatus('p1', 'TRANSFER', 'emp-audit');
@@ -570,7 +570,7 @@ describe('ProductsService', () => {
         status: 'TRANSFER',
         clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         extensions: [{ status: 'DONE' }, { status: 'LOST' }],
-        tasks: [{ status: 'DONE' }, { status: 'DEFERRED' }],
+        tasks: [{ status: 'DONE' }, { status: 'ON_HOLD' }],
         tickets: [{ status: 'RESOLVED' }, { status: 'CLOSED' }],
         order: {
           id: 'ord-1',

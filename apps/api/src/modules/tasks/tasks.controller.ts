@@ -161,10 +161,10 @@ export class TasksController {
     return this.tasksService.reopen(id);
   }
 
-  @Patch(':id/defer')
-  @ApiOperation({ summary: 'Defer task' })
-  async defer(@Param('id') id: string) {
-    return this.tasksService.defer(id);
+  @Patch(':id/on-hold')
+  @ApiOperation({ summary: 'Set task status to On hold' })
+  async setOnHold(@Param('id') id: string) {
+    return this.tasksService.setOnHold(id);
   }
 
   @Delete(':id')

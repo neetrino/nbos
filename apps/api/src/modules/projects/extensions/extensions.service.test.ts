@@ -391,7 +391,7 @@ describe('ExtensionsService', () => {
         id: 'e1',
         projectId: 'proj-1',
         status: 'TRANSFER',
-        tasks: [{ status: 'DONE' }, { status: 'CANCELLED' }],
+        tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
         order: { id: 'ord-1', status: 'FULLY_PAID', invoices: [{ moneyStatus: 'PAID' }] },
       });
       prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });

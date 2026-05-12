@@ -28,7 +28,7 @@ interface TasksTabProps {
   orders: Pick<ProjectOrder, 'id' | 'code'>[];
 }
 
-const KANBAN_COLUMNS = ['NEW', 'IN_PROGRESS', 'DONE', 'DEFERRED'];
+const KANBAN_COLUMNS = ['OPEN', 'IN_PROGRESS', 'REVIEW', 'ON_HOLD', 'COMPLETED'] as const;
 
 export function TasksTab({ projectId, orders }: TasksTabProps) {
   const router = useRouter();
@@ -108,8 +108,8 @@ export function TasksTab({ projectId, orders }: TasksTabProps) {
     setSheetOpen(true);
   };
 
-  const activeTasks = tasks.filter((t) => t.status !== 'CANCELLED');
-  const doneTasks = tasks.filter((t) => t.status === 'DONE').length;
+  const activeTasks = tasks;
+  const doneTasks = tasks.filter((t) => t.status === 'DONE' || t.status === 'COMPLETED').length;
   const totalActive = activeTasks.length;
 
   if (loading) {
@@ -189,7 +189,11 @@ export function TasksTab({ projectId, orders }: TasksTabProps) {
       {view === 'kanban' ? (
         <div className="flex gap-3 overflow-x-auto pb-4">
           {KANBAN_COLUMNS.map((col) => {
-            const colTasks = tasks.filter((t) => t.status === col);
+            const colTasks = tasks.filter((t) => {
+              if (col === 'OPEN') return t.status === 'OPEN' || t.status === 'NEW';
+              if (col === 'COMPLETED') return t.status === 'COMPLETED' || t.status === 'DONE';
+              return t.status === col;
+            });
             const st = getTaskStatus(col);
             return (
               <div key={col} className="bg-muted/30 min-w-[220px] flex-1 rounded-xl p-3">

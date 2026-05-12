@@ -10,18 +10,17 @@ export const TASK_STATUSES = [
   },
   { value: 'REVIEW', label: 'Review', variant: 'indigo' as StatusVariant, color: 'bg-indigo-500' },
   {
+    value: 'ON_HOLD',
+    label: 'On hold',
+    variant: 'amber' as StatusVariant,
+    color: 'bg-amber-500',
+  },
+  {
     value: 'COMPLETED',
     label: 'Completed',
     variant: 'green' as StatusVariant,
     color: 'bg-green-500',
   },
-  {
-    value: 'DEFERRED',
-    label: 'Deferred',
-    variant: 'amber' as StatusVariant,
-    color: 'bg-amber-500',
-  },
-  { value: 'CANCELLED', label: 'Cancelled', variant: 'red' as StatusVariant, color: 'bg-red-400' },
 ] as const;
 
 export const TASK_PRIORITIES = [

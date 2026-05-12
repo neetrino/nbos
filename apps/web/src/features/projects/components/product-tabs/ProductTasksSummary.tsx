@@ -67,9 +67,9 @@ function SummaryCard({
 }
 
 function getTaskStats(tasks: Task[]) {
-  const activeTasks = tasks.filter((task) => task.status !== 'CANCELLED');
-  const done = tasks.filter((task) => task.status === 'DONE').length;
-  const active = activeTasks.length;
+  const done = tasks.filter((task) => task.status === 'DONE' || task.status === 'COMPLETED').length;
+  const activeTasks = tasks.filter((task) => task.status !== 'COMPLETED' && task.status !== 'DONE');
+  const active = tasks.length;
   return {
     active,
     done,
@@ -82,7 +82,7 @@ function getTaskStats(tasks: Task[]) {
 }
 
 function isOverdue(task: Task) {
-  if (!task.dueDate || task.status === 'DONE') return false;
+  if (!task.dueDate || task.status === 'DONE' || task.status === 'COMPLETED') return false;
   return new Date(task.dueDate).getTime() < startOfToday().getTime();
 }
 

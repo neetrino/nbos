@@ -1142,9 +1142,8 @@ export const TaskStatusEnum = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
   REVIEW: 'REVIEW',
+  ON_HOLD: 'ON_HOLD',
   COMPLETED: 'COMPLETED',
-  DEFERRED: 'DEFERRED',
-  CANCELLED: 'CANCELLED',
   NEW: 'NEW',
   DONE: 'DONE',
 } as const;

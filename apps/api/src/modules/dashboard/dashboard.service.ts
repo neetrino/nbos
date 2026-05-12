@@ -196,7 +196,7 @@ export class DashboardService {
     const { start, end } = getTodayRange();
     const [openTasks, dueTodayTasks, openDeals, pendingInvoices, openTickets, criticalTickets] =
       await Promise.all([
-        this.prisma.task.count({ where: { status: { notIn: ['DONE', 'CANCELLED'] } } }),
+        this.prisma.task.count({ where: { status: { notIn: ['DONE', 'COMPLETED'] } } }),
         this.prisma.task.count({
           where: { dueDate: { gte: start, lt: end }, status: { not: 'DONE' } },
         }),
