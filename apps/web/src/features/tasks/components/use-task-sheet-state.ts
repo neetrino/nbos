@@ -92,9 +92,9 @@ export function useTaskSheetState({ taskId, open, onUpdate }: UseTaskSheetStateP
     generalDraft != null && generalSnap != null && isTaskGeneralDirty(generalDraft, generalSnap);
 
   const handleGeneralSave = useCallback(async () => {
-    if (!task || !generalDraft || !generalSnap) return;
+    if (!task || !generalDraft || !generalSnap) return false;
     const patch = buildTaskGeneralPatch(generalSnap, generalDraft);
-    if (Object.keys(patch).length === 0) return;
+    if (Object.keys(patch).length === 0) return true;
 
     setSaving(true);
     setGeneralError(null);
@@ -106,10 +106,12 @@ export function useTaskSheetState({ taskId, open, onUpdate }: UseTaskSheetStateP
       setGeneralSnap(nextDraft);
       setCompletionBlockers([]);
       onUpdate?.(updated);
+      return true;
     } catch (caught) {
       const message = getApiErrorMessage(caught, 'Task could not be updated.');
       setGeneralError(message);
       toast.error(message);
+      return false;
     } finally {
       setSaving(false);
     }

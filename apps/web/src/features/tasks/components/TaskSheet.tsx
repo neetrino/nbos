@@ -1,12 +1,13 @@
 'use client';
 
+import { useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { DetailSheetFormFooter, StatusBadge } from '@/components/shared';
+import { StatusBadge } from '@/components/shared';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import type { Task } from '@/lib/api/tasks';
 import { getTaskPriority, getTaskStatus } from '../constants/tasks';
@@ -17,6 +18,7 @@ import { TaskCompletionRulesPanel } from './TaskCompletionRulesPanel';
 import { TaskDatesSection, TaskLinksSection, TaskPeopleSection } from './TaskDetailsSections';
 import { TaskSubtasksSection } from './TaskSubtasksSection';
 import { TaskSheetGeneralSection } from './TaskSheetGeneralSection';
+import { TaskSheetStickyFooter } from './TaskSheetStickyFooter';
 import { TaskSummaryCard } from './TaskSheetSummaryCard';
 import { useTaskSheetState } from './use-task-sheet-state';
 
@@ -34,6 +36,10 @@ const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[76vw] 2xl:right-[82vw]';
 
 export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetProps) {
   const state = useTaskSheetState({ taskId, open, onUpdate });
+  const handleSaveAndClose = useCallback(async () => {
+    const saved = await state.handleGeneralSave();
+    if (saved) onOpenChange(false);
+  }, [onOpenChange, state]);
 
   if (!state.task && !state.loading && !state.generalError) return null;
 
@@ -97,67 +103,79 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
         ) : state.task && state.generalDraft ? (
           <>
             <div className="flex min-h-0 flex-1 flex-col xl:flex-row">
-              <ScrollArea className="min-h-0 flex-1">
-                <div className="space-y-5 px-6 py-5">
-                  {state.generalError && (
-                    <div className="border-destructive/25 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
-                      {state.generalError}
-                    </div>
-                  )}
+              <div className="flex min-h-0 flex-1 flex-col xl:border-r">
+                <ScrollArea className="min-h-0 flex-1">
+                  <div className="space-y-5 px-6 py-5">
+                    {state.generalError && (
+                      <div className="border-destructive/25 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
+                        {state.generalError}
+                      </div>
+                    )}
 
-                  <TaskSummaryCard task={state.task} />
+                    <TaskSummaryCard task={state.task} />
 
-                  <TaskSheetGeneralSection
-                    draft={state.generalDraft}
-                    saving={state.saving}
-                    onPatchDraft={state.patchGeneralDraft}
-                    onSearchEmployees={state.searchEmployees}
-                  />
-
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <section className="border-border bg-card rounded-lg border p-4">
-                      <TaskPeopleSection task={state.task} />
-                    </section>
-                    <section className="border-border bg-card rounded-lg border p-4">
-                      <TaskDatesSection task={state.task} />
-                    </section>
-                  </div>
-
-                  <section className="border-border bg-card rounded-lg border p-4">
-                    <TaskCompletionRulesPanel
-                      task={state.task}
-                      serverBlockers={state.completionBlockers}
+                    <TaskSheetGeneralSection
+                      draft={state.generalDraft}
+                      saving={state.saving}
+                      onPatchDraft={state.patchGeneralDraft}
+                      onSearchEmployees={state.searchEmployees}
                     />
-                  </section>
 
-                  <section className="border-border bg-card rounded-lg border p-4">
-                    <TaskLinksSection task={state.task} onRemoveLink={state.handleRemoveLink} />
-                  </section>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <section className="border-border bg-card rounded-lg border p-4">
+                        <TaskPeopleSection task={state.task} />
+                      </section>
+                      <section className="border-border bg-card rounded-lg border p-4">
+                        <TaskDatesSection task={state.task} />
+                      </section>
+                    </div>
 
-                  {state.task.subtasks.length > 0 && (
                     <section className="border-border bg-card rounded-lg border p-4">
-                      <TaskSubtasksSection task={state.task} />
+                      <TaskCompletionRulesPanel
+                        task={state.task}
+                        serverBlockers={state.completionBlockers}
+                      />
                     </section>
-                  )}
 
-                  <Separator />
+                    <section className="border-border bg-card rounded-lg border p-4">
+                      <TaskLinksSection task={state.task} onRemoveLink={state.handleRemoveLink} />
+                    </section>
 
-                  <TaskChecklistSection
-                    task={state.task}
-                    newChecklistTitle={state.newChecklistTitle}
-                    newItemTexts={state.newItemTexts}
-                    onNewChecklistTitleChange={state.setNewChecklistTitle}
-                    onNewItemTextChange={(checklistId, value) =>
-                      state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
-                    }
-                    onAddChecklist={state.handleAddChecklist}
-                    onAddItem={state.handleAddItem}
-                    onToggleItem={state.handleToggleItem}
-                    onDeleteChecklist={state.handleDeleteChecklist}
-                    onDeleteItem={state.handleDeleteItem}
-                  />
-                </div>
-              </ScrollArea>
+                    {state.task.subtasks.length > 0 && (
+                      <section className="border-border bg-card rounded-lg border p-4">
+                        <TaskSubtasksSection task={state.task} />
+                      </section>
+                    )}
+
+                    <Separator />
+
+                    <TaskChecklistSection
+                      task={state.task}
+                      newChecklistTitle={state.newChecklistTitle}
+                      newItemTexts={state.newItemTexts}
+                      onNewChecklistTitleChange={state.setNewChecklistTitle}
+                      onNewItemTextChange={(checklistId, value) =>
+                        state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
+                      }
+                      onAddChecklist={state.handleAddChecklist}
+                      onAddItem={state.handleAddItem}
+                      onToggleItem={state.handleToggleItem}
+                      onDeleteChecklist={state.handleDeleteChecklist}
+                      onDeleteItem={state.handleDeleteItem}
+                    />
+                  </div>
+                </ScrollArea>
+
+                <TaskSheetStickyFooter
+                  visible
+                  dirty={state.generalDirty}
+                  saving={state.saving}
+                  errorMessage={state.generalError}
+                  onSave={() => void state.handleGeneralSave()}
+                  onSaveAndClose={() => void handleSaveAndClose()}
+                  onCancel={state.handleGeneralCancel}
+                />
+              </div>
 
               <TaskChatPlaceholder
                 task={state.task}
@@ -165,15 +183,6 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
                 onSend={state.handleSendMessage}
               />
             </div>
-
-            <DetailSheetFormFooter
-              visible
-              dirty={state.generalDirty}
-              saving={state.saving}
-              errorMessage={state.generalError}
-              onSave={() => void state.handleGeneralSave()}
-              onCancel={state.handleGeneralCancel}
-            />
           </>
         ) : (
           <div className="text-muted-foreground p-5 text-sm">{state.generalError}</div>
