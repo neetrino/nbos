@@ -104,6 +104,7 @@ export function ChecklistWorkbenchItemRow({
   disabled,
   busy,
   onMark,
+  completionBlocked = false,
 }: {
   index: number;
   instance: ChecklistInstance;
@@ -111,6 +112,8 @@ export function ChecklistWorkbenchItemRow({
   disabled: boolean;
   busy: boolean;
   onMark: ChecklistWorkbenchMarkHandler;
+  /** Red frame when checklist complete was blocked on these items. */
+  completionBlocked?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const ui = useChecklistItemMarkUi(instance, item, disabled, busy, onMark);
@@ -119,8 +122,10 @@ export function ChecklistWorkbenchItemRow({
     <div
       className={cn(
         'border-border overflow-hidden rounded-lg border bg-white/40 dark:bg-black/10',
-        ui.notDoneActive && 'border-amber-500/40',
-        ui.doneChecked && 'border-emerald-500/35',
+        ui.notDoneActive && !completionBlocked && 'border-amber-500/40',
+        ui.doneChecked && !completionBlocked && 'border-emerald-500/35',
+        completionBlocked &&
+          'bg-red-50/30 ring-1 ring-red-500/35 ring-inset dark:bg-red-950/20 dark:ring-red-500/30',
       )}
     >
       <Collapsible open={expanded} onOpenChange={setExpanded} className="min-w-0">

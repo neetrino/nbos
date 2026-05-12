@@ -28,6 +28,8 @@ export interface ChecklistInstanceWorkbenchSheetProps {
   busyKey: string | null;
   onMark: ChecklistWorkbenchMarkHandler;
   onComplete: (instance: ChecklistInstance) => Promise<void>;
+  /** When complete fails validation, item rows for this instance with these ids show a red frame. */
+  completionBlockHighlight?: { instanceId: string; itemIds: readonly string[] } | null;
 }
 
 function isItemReviewed(item: ChecklistInstanceItem): boolean {
@@ -64,6 +66,7 @@ export function ChecklistInstanceWorkbenchSheet({
   busyKey,
   onMark,
   onComplete,
+  completionBlockHighlight = null,
 }: ChecklistInstanceWorkbenchSheetProps) {
   const totals = useMemo(() => computeTotals(instances), [instances]);
 
@@ -118,6 +121,11 @@ export function ChecklistInstanceWorkbenchSheet({
                     busyKey={busyKey}
                     onMark={onMark}
                     onComplete={onComplete}
+                    completionBlockItemIds={
+                      completionBlockHighlight?.instanceId === instance.id
+                        ? completionBlockHighlight.itemIds
+                        : null
+                    }
                   />
                 </div>
               ))
@@ -134,15 +142,21 @@ function WorkbenchInstanceBlock({
   busyKey,
   onMark,
   onComplete,
+  completionBlockItemIds,
 }: {
   instance: ChecklistInstance;
   busyKey: string | null;
   onMark: ChecklistWorkbenchMarkHandler;
   onComplete: ChecklistInstanceWorkbenchSheetProps['onComplete'];
+  completionBlockItemIds: readonly string[] | null;
 }) {
   const items = parseChecklistInstanceItems(instance.snapshotItems);
   const complete = Boolean(instance.completedAt);
   const reviewedCount = items.filter((item) => isItemReviewed(item)).length;
+  const blockedIds = useMemo(
+    () => (completionBlockItemIds ? new Set(completionBlockItemIds) : null),
+    [completionBlockItemIds],
+  );
 
   return (
     <section className="space-y-2">
@@ -163,6 +177,7 @@ function WorkbenchInstanceBlock({
               disabled={complete}
               busy={busyKey === `${instance.id}:${item.id}`}
               onMark={onMark}
+              completionBlocked={blockedIds?.has(item.id) ?? false}
             />
           </li>
         ))}

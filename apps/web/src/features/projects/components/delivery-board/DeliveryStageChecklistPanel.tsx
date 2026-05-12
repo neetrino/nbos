@@ -1,11 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ApiError, getApiErrorMessage } from '@/lib/api-errors';
 import {
   applyChecklistInstanceItemMarkOptimistic,
   checklistTemplatesApi,
+  formatChecklistCompletionBlockerSummary,
+  formatCompletionBlockerCountMessage,
+  getChecklistInstanceCompletionBlockers,
+  itemIdsFromChecklistCompletionBlockers,
   parseChecklistInstanceItems,
   type ChecklistInstance,
   type ChecklistInstanceItem,
@@ -50,6 +55,12 @@ export function DeliveryStageChecklistPanel({
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [completionBlockHighlight, setCompletionBlockHighlight] = useState<{
+    instanceId: string;
+    itemIds: readonly string[];
+  } | null>(null);
+  const completionHighlightRef = useRef(completionBlockHighlight);
+  completionHighlightRef.current = completionBlockHighlight;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -93,7 +104,6 @@ export function DeliveryStageChecklistPanel({
       const before = structuredClone(instance);
       const optimistic = applyChecklistInstanceItemMarkOptimistic(instance, item.id, mark, comment);
       setInstances((prev) => prev.map((i) => (i.id === optimistic.id ? optimistic : i)));
-      setError(null);
       try {
         const updated = await checklistTemplatesApi.updateInstanceItem(instance.id, {
           itemId: item.id,
@@ -101,6 +111,20 @@ export function DeliveryStageChecklistPanel({
           comment,
         });
         setInstances((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+        const blockersAfter = getChecklistInstanceCompletionBlockers(updated.snapshotItems);
+        const idsAfter = itemIdsFromChecklistCompletionBlockers(blockersAfter);
+        setCompletionBlockHighlight((h) => {
+          if (!h || h.instanceId !== instance.id) return h;
+          if (idsAfter.length === 0) return null;
+          return { instanceId: instance.id, itemIds: idsAfter };
+        });
+        if (completionHighlightRef.current?.instanceId === instance.id) {
+          if (idsAfter.length === 0) {
+            setError(null);
+          } else {
+            setError(formatChecklistCompletionBlockerSummary(blockersAfter));
+          }
+        }
       } catch (caught) {
         setInstances((prev) => prev.map((i) => (i.id === before.id ? before : i)));
         setError(caught instanceof Error ? caught.message : 'Could not update checklist item.');
@@ -114,11 +138,35 @@ export function DeliveryStageChecklistPanel({
       setBusyKey(`${instance.id}:complete`);
       setError(null);
       try {
+        const blockers = getChecklistInstanceCompletionBlockers(instance.snapshotItems);
+        if (blockers.length > 0) {
+          setError(formatChecklistCompletionBlockerSummary(blockers));
+          setCompletionBlockHighlight({
+            instanceId: instance.id,
+            itemIds: itemIdsFromChecklistCompletionBlockers(blockers),
+          });
+          return;
+        }
+
         const updated = await checklistTemplatesApi.completeInstance(instance.id);
         setInstances((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+        setCompletionBlockHighlight(null);
         onChanged();
       } catch (caught) {
-        setError(caught instanceof Error ? caught.message : 'Could not complete checklist.');
+        if (caught instanceof ApiError && caught.errors.length > 0) {
+          const itemIds = itemIdsFromChecklistCompletionBlockers(caught.errors);
+          if (itemIds.length > 0) {
+            setCompletionBlockHighlight({
+              instanceId: instance.id,
+              itemIds,
+            });
+            setError(formatCompletionBlockerCountMessage(itemIds.length));
+          } else {
+            setError(getApiErrorMessage(caught, 'Could not complete checklist.'));
+          }
+        } else {
+          setError(getApiErrorMessage(caught, 'Could not complete checklist.'));
+        }
         try {
           setInstances(await checklistTemplatesApi.listInstances(ownerEntityType, ownerEntityId));
         } catch {
@@ -197,7 +245,12 @@ export function DeliveryStageChecklistPanel({
 
       <ChecklistInstanceWorkbenchSheet
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) {
+            setCompletionBlockHighlight(null);
+          }
+        }}
         title="Stage checklists"
         instances={stageInstances}
         loading={loading}
@@ -205,6 +258,7 @@ export function DeliveryStageChecklistPanel({
         busyKey={busyKey}
         onMark={handleMark}
         onComplete={handleComplete}
+        completionBlockHighlight={completionBlockHighlight}
       />
     </>
   );

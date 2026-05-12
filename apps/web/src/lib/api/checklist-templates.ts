@@ -221,6 +221,69 @@ export function applyChecklistInstanceItemMarkOptimistic(
   };
 }
 
+/** Field-level blockers mirroring API checklist completion validation. */
+export type ChecklistCompletionBlocker = { field: string; message: string };
+
+export function getChecklistInstanceCompletionBlockers(
+  snapshotItems: unknown,
+): ChecklistCompletionBlocker[] {
+  const items = parseChecklistInstanceItems(snapshotItems);
+  const out: ChecklistCompletionBlocker[] = [];
+  for (const item of items) {
+    if (item.decisionRequired && item.mark !== 'DONE' && item.mark !== 'NOT_DONE') {
+      out.push({
+        field: `items.${item.id}`,
+        message: `${item.title} must be reviewed before completing the checklist.`,
+      });
+    }
+    if (item.mark === 'NOT_DONE' && !(item.comment ?? '').trim()) {
+      out.push({
+        field: `items.${item.id}.comment`,
+        message: `${item.title} needs a comment when marked Not Done.`,
+      });
+    }
+  }
+  return out;
+}
+
+/** Extracts distinct item ids from `items.<uuid>` / `items.<uuid>.comment` fields. */
+export function itemIdsFromChecklistCompletionBlockers(
+  blockers: readonly { field: string }[],
+): string[] {
+  const seen = new Set<string>();
+  const ids: string[] = [];
+  for (const b of blockers) {
+    const m = /^items\.([^.\s]+)/.exec(b.field);
+    if (m?.[1] && !seen.has(m[1])) {
+      seen.add(m[1]);
+      ids.push(m[1]);
+    }
+  }
+  return ids;
+}
+
+const COMPLETION_BLOCKER_MSG_ONE = 'Review the highlighted item before completing.';
+
+function completionBlockerMsgMany(distinctItemCount: number): string {
+  return `Review ${distinctItemCount} highlighted items before completing.`;
+}
+
+/** Short copy from API-style blocker list (distinct items). */
+export function formatCompletionBlockerCountMessage(distinctItemCount: number): string {
+  if (distinctItemCount <= 0) return '';
+  if (distinctItemCount === 1) return COMPLETION_BLOCKER_MSG_ONE;
+  return completionBlockerMsgMany(distinctItemCount);
+}
+
+/** Short copy from in-memory blocker rows. */
+export function formatChecklistCompletionBlockerSummary(
+  blockers: ChecklistCompletionBlocker[],
+): string {
+  return formatCompletionBlockerCountMessage(
+    itemIdsFromChecklistCompletionBlockers(blockers).length,
+  );
+}
+
 export type DeliveryChecklistTarget = 'PRODUCT' | 'EXTENSION';
 
 export type DeliveryStageCanon = 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER';
