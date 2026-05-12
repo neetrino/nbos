@@ -1,11 +1,21 @@
 import { useEffect, useRef } from 'react';
-import { Hash, Paperclip, Send } from 'lucide-react';
+import { Hash } from 'lucide-react';
 import type { MessengerChannelRow } from '@/lib/api/messenger';
-import { formatMessengerTime, messengerDateLabel } from './messenger-format';
+import { messengerDateLabel } from './messenger-format';
 import type { MessengerViewMessage } from './messenger-message-mapper';
 import { MESSENGER_DM_READ_RECEIPT_LABEL } from './messenger-dm-read-receipt.util';
 import { MESSENGER_CHANNEL_RECEIPT_OFFVIEW_HINT } from './messenger-channel-receipt-banner.constants';
 import type { MessengerActiveView } from './messenger-active-view';
+import {
+  MESSENGER_THREAD_ATTACHMENT_INPUT_CLASS,
+  MESSENGER_THREAD_HASH_ICON_CLASS,
+} from './messenger-thread-ui.constants';
+import {
+  MessengerThreadAvatar,
+  MessengerThreadComposerRow,
+  MessengerThreadDateDivider,
+  MessengerThreadMessageBubble,
+} from './messenger-thread-primitives';
 
 function readReceiptLabelForMessage(
   active: MessengerActiveView,
@@ -27,61 +37,6 @@ function readReceiptLabelForMessage(
     return MESSENGER_DM_READ_RECEIPT_LABEL;
   }
   return null;
-}
-
-function Avatar({ initials }: { initials: string }) {
-  return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E5A84B]/15 text-sm font-semibold text-[#E5A84B]">
-      {initials}
-    </div>
-  );
-}
-
-function DateDivider({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-3 px-5 py-2">
-      <div className="h-px flex-1 bg-black/[0.06]" />
-      <span className="text-xs font-medium text-black/40">{label}</span>
-      <div className="h-px flex-1 bg-black/[0.06]" />
-    </div>
-  );
-}
-
-function MessageBubble({
-  message,
-  readReceiptLabel,
-}: {
-  message: MessengerViewMessage;
-  readReceiptLabel: string | null;
-}) {
-  return (
-    <div className="group flex gap-3 px-5 py-1.5 hover:bg-black/[0.02]">
-      <Avatar initials={message.initials} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold text-black">{message.senderName}</span>
-          <span className="text-xs text-black/35">{formatMessengerTime(message.timestamp)}</span>
-        </div>
-        <p className="text-sm leading-relaxed text-black/75">{message.content}</p>
-        {message.attachments.length > 0 ? (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {message.attachments.map((attachment) => (
-              <span
-                key={attachment.id}
-                className="inline-flex items-center gap-1 rounded-full bg-[#F5F5F0] px-2 py-1 text-[11px] text-black/55"
-              >
-                <Paperclip size={11} />
-                FileAsset {attachment.fileAssetId.slice(0, 8)}
-              </span>
-            ))}
-          </div>
-        ) : null}
-        {readReceiptLabel ? (
-          <p className="mt-0.5 text-[10px] font-medium text-black/35">{readReceiptLabel}</p>
-        ) : null}
-      </div>
-    </div>
-  );
 }
 
 function channelSubtitle(ch: MessengerChannelRow): string {
@@ -190,7 +145,7 @@ export function MessengerThread({
       <div className="flex items-center gap-3 border-b border-black/[0.06] px-5 py-3">
         {active.type === 'channel' && (
           <>
-            <Hash size={18} className="text-[#E5A84B]" />
+            <Hash size={18} className={MESSENGER_THREAD_HASH_ICON_CLASS} />
             <div>
               <h2 className="text-sm font-semibold text-black">
                 {channelRow
@@ -207,7 +162,7 @@ export function MessengerThread({
         )}
         {active.type === 'dm' && (
           <>
-            <Avatar initials={dmInitials} />
+            <MessengerThreadAvatar initials={dmInitials} />
             <div>
               <h2 className="text-sm font-semibold text-black">{dmTitle}</h2>
               <p className="text-xs text-black/40">Direct message</p>
@@ -241,9 +196,9 @@ export function MessengerThread({
             ) : null}
             {grouped.map((group) => (
               <div key={group.label}>
-                <DateDivider label={group.label} />
+                <MessengerThreadDateDivider label={group.label} />
                 {group.items.map((msg) => (
-                  <MessageBubble
+                  <MessengerThreadMessageBubble
                     key={msg.id}
                     message={msg}
                     readReceiptLabel={readReceiptLabelForMessage(
@@ -268,41 +223,22 @@ export function MessengerThread({
         {remoteTypingHint ? (
           <p className="mb-2 text-xs text-black/45 italic">{remoteTypingHint}</p>
         ) : null}
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => {
-              const v = e.target.value;
-              onNewMessageChange(v);
-              if (v.trim().length > 0) onComposerTypingIntent?.();
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (canSend && !sendDisabled) onSend();
-              }
-            }}
-            placeholder={placeholder}
-            disabled={!canSend}
-            className="flex-1 rounded-lg border border-black/[0.08] bg-[#F5F5F0] px-3 py-2 text-sm text-black placeholder:text-black/35 focus:ring-2 focus:ring-[#E5A84B]/30 focus:outline-none disabled:opacity-50"
-          />
-          <button
-            type="button"
-            onClick={onSend}
-            disabled={!canSend || sendDisabled}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E5A84B] text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-          >
-            <Send size={16} />
-          </button>
-        </div>
+        <MessengerThreadComposerRow
+          value={newMessage}
+          onChange={onNewMessageChange}
+          onSend={onSend}
+          placeholder={placeholder}
+          disabled={!canSend}
+          sendDisabled={sendDisabled}
+          onTypingIntent={onComposerTypingIntent}
+        />
         <input
           type="text"
           value={attachmentDraft}
           onChange={(e) => onAttachmentDraftChange(e.target.value)}
           placeholder="Optional Drive FileAsset IDs, comma separated"
           disabled={!canSend}
-          className="mt-2 w-full rounded-lg border border-black/[0.08] bg-[#F5F5F0] px-3 py-1.5 text-xs text-black placeholder:text-black/30 focus:ring-2 focus:ring-[#E5A84B]/30 focus:outline-none disabled:opacity-50"
+          className={MESSENGER_THREAD_ATTACHMENT_INPUT_CLASS}
         />
         {!canSend && (
           <p className="mt-2 text-xs text-black/40">You do not have permission to send messages.</p>

@@ -5,10 +5,16 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { StatusBadge } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import type { Task } from '@/lib/api/tasks';
 import { getTaskPriority, getTaskStatus } from '../constants/tasks';
-import { TaskChatPlaceholder } from './TaskChatPlaceholder';
+import {
+  TASK_SHEET_CHAT_COLUMN_CLASS,
+  TASK_SHEET_DETAIL_COLUMN_CLASS,
+  TASK_SHEET_SECTION_SURFACE_CLASS,
+} from './task-sheet-classes';
+import { TaskSheetChatPanel } from './TaskSheetChatPanel';
 import { TaskChecklistSection } from './TaskChecklistSection';
 import { TaskCompletionRulesPanel } from './TaskCompletionRulesPanel';
 import { TaskDatesSection, TaskLinksSection, TaskPeopleSection } from './TaskDetailsSections';
@@ -16,10 +22,6 @@ import { TaskSubtasksSection } from './TaskSubtasksSection';
 import { TaskSheetGeneralSection } from './TaskSheetGeneralSection';
 import { TaskSheetStickyFooter } from './TaskSheetStickyFooter';
 import { TaskSummaryCard } from './TaskSheetSummaryCard';
-import {
-  TASK_SHEET_DETAIL_COLUMN_CLASS,
-  TASK_SHEET_SECTION_SURFACE_CLASS,
-} from './task-sheet-visual';
 import { useTaskSheetState } from './use-task-sheet-state';
 
 interface TaskSheetProps {
@@ -172,11 +174,13 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                 />
               </div>
 
-              <TaskChatPlaceholder
-                task={state.task}
-                messages={state.taskMessages}
-                onSend={state.handleSendMessage}
-              />
+              <div className={cn(TASK_SHEET_CHAT_COLUMN_CLASS, 'bg-white')}>
+                <TaskSheetChatPanel
+                  task={state.task}
+                  messages={state.taskMessages}
+                  onSend={state.handleSendMessage}
+                />
+              </div>
             </div>
           </>
         ) : (

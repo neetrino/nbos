@@ -15,7 +15,7 @@ import {
   parseTaskCompletionBlockers,
   type TaskCompletionBlocker,
 } from '../utils/task-completion-readiness';
-import type { TaskLocalMessage } from './TaskChatPlaceholder';
+import type { TaskLocalMessage } from './TaskSheetChatPanel';
 
 interface UseTaskSheetStateParams {
   taskId: string | null;
