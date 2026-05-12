@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Package, ArrowRight, Calendar, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/shared';
 import { productsApi, type Product } from '@/lib/api/products';
 import {
@@ -21,6 +22,8 @@ const PRODUCT_LIFECYCLE_FILTERS = [
   { value: 'DONE', label: 'Done' },
   { value: 'CANCELLED', label: 'Cancelled' },
 ] as const;
+
+const PRODUCT_LIFECYCLE_FILTER_ALL = 'all';
 
 interface ProductsTabProps {
   projectId: string;
@@ -64,37 +67,37 @@ export function ProductsTab({ projectId, onCreateClick }: ProductsTabProps) {
     );
   }
 
+  const tabValue = statusFilter ?? PRODUCT_LIFECYCLE_FILTER_ALL;
+  const lifecycleFiltersWithProducts = PRODUCT_LIFECYCLE_FILTERS.filter(
+    (s) => byLifecycle(s.value) > 0,
+  );
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-sm font-medium">{products.length} products</span>
-          <div className="flex gap-1">
-            <Button
-              variant={statusFilter === null ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setStatusFilter(null)}
-              className="h-7 text-xs"
-            >
-              All
-            </Button>
-            {PRODUCT_LIFECYCLE_FILTERS.filter((s) => byLifecycle(s.value) > 0).map((s) => (
-              <Button
-                key={s.value}
-                variant={statusFilter === s.value ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setStatusFilter(s.value)}
-                className="h-7 text-xs"
-              >
-                {s.label} ({byLifecycle(s.value)})
-              </Button>
-            ))}
-          </div>
+          <Button size="sm" onClick={onCreateClick} className="gap-1.5">
+            <Plus size={14} />
+            New Product
+          </Button>
         </div>
-        <Button size="sm" onClick={onCreateClick} className="gap-1.5">
-          <Plus size={14} />
-          New Product
-        </Button>
+        <Tabs
+          value={tabValue}
+          onValueChange={(value) =>
+            setStatusFilter(value === PRODUCT_LIFECYCLE_FILTER_ALL ? null : value)
+          }
+          className="w-full"
+        >
+          <TabsList variant="line" className="w-full justify-start">
+            <TabsTrigger value={PRODUCT_LIFECYCLE_FILTER_ALL}>All</TabsTrigger>
+            {lifecycleFiltersWithProducts.map((s) => (
+              <TabsTrigger key={s.value} value={s.value}>
+                {s.label} ({byLifecycle(s.value)})
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
 
       {visibleProducts.length === 0 ? (

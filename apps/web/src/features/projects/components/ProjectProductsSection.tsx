@@ -2,6 +2,7 @@
 
 import { ArrowRight, Calendar, Package, Plus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/shared';
 import type { FullProject, ProjectProductSummary } from '@/lib/api/projects';
 import {
@@ -10,6 +11,8 @@ import {
   getProductType,
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
+
+const PRODUCT_STATUS_FILTER_ALL = 'all';
 
 interface ProjectProductsSectionProps {
   project: FullProject;
@@ -33,24 +36,26 @@ export function ProjectProductsSection({
 
   return (
     <div className="flex-1 space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-bold">Products</h2>
-          <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-            {products.length}
-          </span>
-          {products.length > 0 && (
-            <ProductStatusFilters
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              byStatus={byStatus}
-            />
-          )}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold">Products</h2>
+            <span className="bg-secondary text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+              {products.length}
+            </span>
+          </div>
+          <Button size="sm" onClick={onCreateProduct} className="gap-1.5">
+            <Plus size={14} />
+            New Product
+          </Button>
         </div>
-        <Button size="sm" onClick={onCreateProduct} className="gap-1.5">
-          <Plus size={14} />
-          New Product
-        </Button>
+        {products.length > 0 && (
+          <ProductStatusFilters
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            byStatus={byStatus}
+          />
+        )}
       </div>
 
       {products.length === 0 ? (
@@ -79,28 +84,24 @@ function ProductStatusFilters({
   setStatusFilter: (status: string | null) => void;
   byStatus: (status: string) => number;
 }) {
+  const tabValue = statusFilter ?? PRODUCT_STATUS_FILTER_ALL;
+  const statusesWithProducts = PRODUCT_STATUSES.filter((status) => byStatus(status.value) > 0);
+
   return (
-    <div className="flex gap-1">
-      <Button
-        variant={statusFilter === null ? 'secondary' : 'ghost'}
-        size="sm"
-        onClick={() => setStatusFilter(null)}
-        className="h-7 text-xs"
-      >
-        All
-      </Button>
-      {PRODUCT_STATUSES.filter((status) => byStatus(status.value) > 0).map((status) => (
-        <Button
-          key={status.value}
-          variant={statusFilter === status.value ? 'secondary' : 'ghost'}
-          size="sm"
-          onClick={() => setStatusFilter(status.value)}
-          className="h-7 text-xs"
-        >
-          {status.label} ({byStatus(status.value)})
-        </Button>
-      ))}
-    </div>
+    <Tabs
+      value={tabValue}
+      onValueChange={(value) => setStatusFilter(value === PRODUCT_STATUS_FILTER_ALL ? null : value)}
+      className="w-full"
+    >
+      <TabsList variant="line" className="w-full justify-start">
+        <TabsTrigger value={PRODUCT_STATUS_FILTER_ALL}>All</TabsTrigger>
+        {statusesWithProducts.map((status) => (
+          <TabsTrigger key={status.value} value={status.value}>
+            {status.label} ({byStatus(status.value)})
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   );
 }
 
