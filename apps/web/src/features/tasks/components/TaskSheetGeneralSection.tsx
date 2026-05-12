@@ -4,6 +4,7 @@ import { InlineField } from '@/components/shared';
 import { SearchField } from '@/components/shared/SearchField';
 import { TASK_PRIORITIES } from '../constants/tasks';
 import type { TaskGeneralDraft } from '../task-general-form-state';
+import { TASK_SHEET_SECTION_SURFACE_CLASS } from './task-sheet-visual';
 
 interface TaskSheetGeneralSectionProps {
   draft: TaskGeneralDraft;
@@ -21,7 +22,7 @@ export function TaskSheetGeneralSection({
   onSearchEmployees,
 }: TaskSheetGeneralSectionProps) {
   return (
-    <section className="border-border bg-card rounded-lg border p-4">
+    <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
       <div className="grid gap-x-5 gap-y-4 lg:grid-cols-2">
         <InlineField
           variant="controlled"

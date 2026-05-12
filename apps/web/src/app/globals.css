@@ -21,10 +21,10 @@
   --accent-foreground: #ffffff;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: #ffffff;
-  --border: oklch(0.922 0.003 80);
-  --input: oklch(0.922 0.003 80);
+  --border: oklch(0.93 0.002 85);
+  --input: oklch(0.93 0.002 85);
   --ring: #2e3192;
-  --radius: 0.75rem;
+  --radius: 0.875rem;
   --sidebar: oklch(0.978 0.001 80);
   --sidebar-foreground: oklch(0.178 0 0);
   --sidebar-border: oklch(0.922 0.003 80);

@@ -41,7 +41,7 @@ export function TaskSheetStickyFooter({
   const canReopen = ['COMPLETED', 'DONE', 'ON_HOLD'].includes(taskStatus);
 
   return (
-    <div className="border-border bg-background/95 supports-[backdrop-filter]:bg-background/85 sticky bottom-0 z-20 shrink-0 border-t px-6 py-3 backdrop-blur-sm">
+    <div className="border-border/50 bg-background/95 supports-[backdrop-filter]:bg-background/85 sticky bottom-0 z-20 shrink-0 border-t px-6 py-3 backdrop-blur-sm">
       <div className="flex flex-col gap-3">
         {(dirty || saving || errorMessage) && (
           <div className="flex flex-col gap-3">

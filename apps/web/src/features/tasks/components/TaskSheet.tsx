@@ -3,8 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { StatusBadge } from '@/components/shared';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import type { Task } from '@/lib/api/tasks';
@@ -17,6 +16,10 @@ import { TaskSubtasksSection } from './TaskSubtasksSection';
 import { TaskSheetGeneralSection } from './TaskSheetGeneralSection';
 import { TaskSheetStickyFooter } from './TaskSheetStickyFooter';
 import { TaskSummaryCard } from './TaskSheetSummaryCard';
+import {
+  TASK_SHEET_DETAIL_COLUMN_CLASS,
+  TASK_SHEET_SECTION_SURFACE_CLASS,
+} from './task-sheet-visual';
 import { useTaskSheetState } from './use-task-sheet-state';
 
 interface TaskSheetProps {
@@ -28,9 +31,9 @@ interface TaskSheetProps {
 }
 
 const TASK_SHEET_WIDTH_CLASS =
-  'flex w-full flex-col p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[76vw] 2xl:data-[side=right]:w-[82vw]';
+  'flex w-full flex-col gap-0 p-0 shadow-2xl ring-1 ring-black/5 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[min(96vw,112rem)] 2xl:data-[side=right]:w-[min(98vw,128rem)] dark:ring-white/10';
 
-const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[76vw] 2xl:right-[82vw]';
+const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[min(96vw,112rem)] 2xl:right-[min(98vw,128rem)]';
 
 export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: TaskSheetProps) {
   const state = useTaskSheetState({ taskId, open, onUpdate, onDelete });
@@ -72,40 +75,35 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
         }
         className={TASK_SHEET_WIDTH_CLASS}
       >
-        <SheetHeader className="border-border border-b px-6 py-4">
-          <div className="min-w-0 space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              {status && <StatusBadge label={status.label} variant={status.variant} />}
-              {priority && <StatusBadge label={priority.label} variant={priority.variant} />}
-              {state.task && <Badge variant="outline">{state.task.code}</Badge>}
-              {state.task && (
-                <StatusBadge
-                  label={readyForCompletion ? 'Ready' : 'Blocked'}
-                  variant={readyForCompletion ? 'green' : 'red'}
-                />
-              )}
-            </div>
-            <SheetTitle className="text-xl leading-tight">
-              {state.loading ? 'Loading task...' : state.generalDraft?.title || state.task?.title}
-            </SheetTitle>
-          </div>
-        </SheetHeader>
-
         {state.loading && !state.task ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Loader2 className="text-muted-foreground size-5 animate-spin" />
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <span className="sr-only">Loading task</span>
+            <Loader2 className="text-muted-foreground size-5 animate-spin" aria-hidden />
           </div>
         ) : state.task && state.generalDraft ? (
           <>
-            <div className="flex min-h-0 flex-1 flex-col xl:flex-row">
-              <div className="flex min-h-0 flex-1 flex-col xl:border-r">
+            <div className="bg-muted/15 flex min-h-0 flex-1 flex-col xl:flex-row">
+              <div className={TASK_SHEET_DETAIL_COLUMN_CLASS}>
                 <ScrollArea className="min-h-0 flex-1">
-                  <div className="space-y-5 px-6 py-5">
+                  <div className="space-y-5 px-5 py-6 sm:px-6">
                     {state.generalError && (
                       <div className="border-destructive/25 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
                         {state.generalError}
                       </div>
                     )}
+
+                    <h1 className="sr-only">{state.generalDraft?.title || state.task.title}</h1>
+                    <div className="flex flex-wrap items-center gap-2" aria-label="Task status">
+                      {status && <StatusBadge label={status.label} variant={status.variant} />}
+                      {priority && (
+                        <StatusBadge label={priority.label} variant={priority.variant} />
+                      )}
+                      <Badge variant="outline">{state.task.code}</Badge>
+                      <StatusBadge
+                        label={readyForCompletion ? 'Ready' : 'Blocked'}
+                        variant={readyForCompletion ? 'green' : 'red'}
+                      />
+                    </div>
 
                     <TaskSummaryCard task={state.task} />
 
@@ -117,47 +115,47 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                     />
 
                     <div className="grid gap-4 lg:grid-cols-2">
-                      <section className="border-border bg-card rounded-lg border p-4">
+                      <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
                         <TaskPeopleSection task={state.task} />
                       </section>
-                      <section className="border-border bg-card rounded-lg border p-4">
+                      <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
                         <TaskDatesSection task={state.task} />
                       </section>
                     </div>
 
-                    <section className="border-border bg-card rounded-lg border p-4">
+                    <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
                       <TaskCompletionRulesPanel
                         task={state.task}
                         serverBlockers={state.completionBlockers}
                       />
                     </section>
 
-                    <section className="border-border bg-card rounded-lg border p-4">
+                    <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
                       <TaskLinksSection task={state.task} onRemoveLink={state.handleRemoveLink} />
                     </section>
 
                     {state.task.subtasks.length > 0 && (
-                      <section className="border-border bg-card rounded-lg border p-4">
+                      <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
                         <TaskSubtasksSection task={state.task} />
                       </section>
                     )}
 
-                    <Separator />
-
-                    <TaskChecklistSection
-                      task={state.task}
-                      newChecklistTitle={state.newChecklistTitle}
-                      newItemTexts={state.newItemTexts}
-                      onNewChecklistTitleChange={state.setNewChecklistTitle}
-                      onNewItemTextChange={(checklistId, value) =>
-                        state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
-                      }
-                      onAddChecklist={state.handleAddChecklist}
-                      onAddItem={state.handleAddItem}
-                      onToggleItem={state.handleToggleItem}
-                      onDeleteChecklist={state.handleDeleteChecklist}
-                      onDeleteItem={state.handleDeleteItem}
-                    />
+                    <div className={TASK_SHEET_SECTION_SURFACE_CLASS}>
+                      <TaskChecklistSection
+                        task={state.task}
+                        newChecklistTitle={state.newChecklistTitle}
+                        newItemTexts={state.newItemTexts}
+                        onNewChecklistTitleChange={state.setNewChecklistTitle}
+                        onNewItemTextChange={(checklistId, value) =>
+                          state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
+                        }
+                        onAddChecklist={state.handleAddChecklist}
+                        onAddItem={state.handleAddItem}
+                        onToggleItem={state.handleToggleItem}
+                        onDeleteChecklist={state.handleDeleteChecklist}
+                        onDeleteItem={state.handleDeleteItem}
+                      />
+                    </div>
                   </div>
                 </ScrollArea>
 

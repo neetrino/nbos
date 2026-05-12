@@ -33,7 +33,7 @@ export function TaskChecklistSection({
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h4 className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium uppercase">
+        <h4 className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide">
           <ListChecks size={13} /> Checklists
         </h4>
         <span className="text-muted-foreground text-xs">{task.checklists.length} lists</span>

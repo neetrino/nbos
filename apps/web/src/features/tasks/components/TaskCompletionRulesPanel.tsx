@@ -24,7 +24,9 @@ export function TaskCompletionRulesPanel({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h4 className="text-muted-foreground text-xs font-medium uppercase">Completion Rules</h4>
+        <h4 className="text-muted-foreground text-xs font-medium tracking-wide">
+          Completion Rules
+        </h4>
         {rules.length > 0 && blockers.length === 0 && <StatusBadge label="Ready" variant="green" />}
         {blockers.length > 0 && <StatusBadge label="Blocked" variant="red" />}
       </div>
@@ -36,7 +38,10 @@ export function TaskCompletionRulesPanel({
           {rules.map((rule) => {
             const ruleBlockers = blockers.filter((blocker) => blocker.ruleType === rule.type);
             return (
-              <div key={rule.type} className="border-border rounded-lg border p-3">
+              <div
+                key={rule.type}
+                className="bg-muted/20 ring-foreground/[0.06] rounded-xl p-3 ring-1 dark:ring-white/[0.06]"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-medium">{getCompletionRuleLabel(rule)}</p>
                   {ruleBlockers.length === 0 ? (

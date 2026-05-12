@@ -49,7 +49,7 @@ export function TaskLinksSection({
 }: TaskDetailsSectionsProps & { onRemoveLink?: (linkId: string) => void }) {
   return (
     <div>
-      <h4 className="text-muted-foreground mb-2 flex items-center gap-1 text-xs font-medium uppercase">
+      <h4 className="text-muted-foreground mb-2 flex items-center gap-1 text-xs font-medium tracking-wide">
         <LinkIcon size={12} /> Linked Entities
       </h4>
       {task.links.length === 0 ? (
@@ -94,7 +94,7 @@ interface PersonValueProps {
 function PersonValue({ icon, label, muted = false, children }: PersonValueProps) {
   return (
     <div>
-      <h4 className="text-muted-foreground mb-1 flex items-center gap-1 text-xs font-medium uppercase">
+      <h4 className="text-muted-foreground mb-1 flex items-center gap-1 text-xs font-medium tracking-wide">
         {icon} {label}
       </h4>
       <p className={muted ? 'text-muted-foreground text-sm' : 'text-sm'}>{children}</p>

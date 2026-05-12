@@ -3,6 +3,7 @@ import { CheckSquare, FolderKanban, Hash } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import type { Task } from '@/lib/api/tasks';
 import { resolveTaskOrderContext } from '../utils/task-order-context';
+import { TASK_SHEET_SECTION_SURFACE_CLASS } from './task-sheet-visual';
 
 export function TaskSummaryCard({ task }: { task: Task }) {
   const checklistTotal = task.checklists.reduce(
@@ -17,7 +18,7 @@ export function TaskSummaryCard({ task }: { task: Task }) {
   const orderContext = resolveTaskOrderContext(task);
 
   return (
-    <section className="border-border bg-card rounded-lg border p-4">
+    <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
       <div className="grid gap-4 sm:grid-cols-3">
         <Metric
           icon={<CheckSquare size={15} />}
