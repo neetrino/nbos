@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 import { Plus, CheckSquare, FolderKanban } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { PageHeader, FilterBar, EmptyState, ErrorState, LoadingState } from '@/components/shared';
@@ -12,6 +14,7 @@ import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTa
 import { TasksPageSettingsDialog } from '@/features/tasks/components/TasksPageSettingsDialog';
 
 export default function TasksPage() {
+  const searchParams = useSearchParams();
   const {
     tasks,
     stats,
@@ -28,6 +31,7 @@ export default function TasksPage() {
     handleExportScopeStatsCsv,
     sheetOpen,
     setSheetOpen,
+    setSelectedTaskId,
     quickCreateOpen,
     setQuickCreateOpen,
     defaultCreateDueDate,
@@ -39,6 +43,13 @@ export default function TasksPage() {
     handleTaskCreated,
     renderBoard,
   } = useTasksListPage();
+
+  useEffect(() => {
+    const openTaskId = searchParams.get('openTaskId');
+    if (!openTaskId) return;
+    setSelectedTaskId(openTaskId);
+    setSheetOpen(true);
+  }, [searchParams, setSelectedTaskId, setSheetOpen]);
 
   const newTaskDisabled = creatorReady && !creatorId;
 

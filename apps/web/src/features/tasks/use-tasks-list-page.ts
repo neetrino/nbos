@@ -281,6 +281,7 @@ export function useTasksListPage() {
     filterConfigs: FILTER_CONFIGS,
     handleExportScopeStatsCsv,
     selectedTaskId,
+    setSelectedTaskId,
     sheetOpen,
     setSheetOpen,
     quickCreateOpen,

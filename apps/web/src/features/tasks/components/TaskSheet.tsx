@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -26,6 +27,11 @@ interface TaskSheetProps {
   onUpdate?: (task: Task) => void;
 }
 
+const TASK_SHEET_WIDTH_CLASS =
+  'flex w-full flex-col p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[76vw] 2xl:data-[side=right]:w-[82vw]';
+
+const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[76vw] 2xl:right-[82vw]';
+
 export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetProps) {
   const state = useTaskSheetState({ taskId, open, onUpdate });
 
@@ -40,7 +46,21 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate }: TaskSheetPro
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="flex w-[96vw] max-w-[96vw] flex-col p-0 sm:max-w-[96vw] xl:w-[92vw] xl:max-w-[92vw]"
+        showCloseButton={false}
+        floatingClose
+        floatingRailVisible={open}
+        floatingRailAnchorClassName={TASK_SHEET_RAIL_ANCHOR_CLASS}
+        floatingRail={
+          state.task ? (
+            <EntitySheetFloatingRail
+              sourcePageHref={`/tasks?openTaskId=${encodeURIComponent(state.task.id)}`}
+              workspaceHref={
+                state.task.workspaceId ? `/work-spaces/${state.task.workspaceId}` : null
+              }
+            />
+          ) : undefined
+        }
+        className={TASK_SHEET_WIDTH_CLASS}
       >
         <SheetHeader className="border-border border-b px-6 py-4">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
