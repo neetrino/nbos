@@ -64,6 +64,14 @@ export default function ChecklistStageRulesPage() {
     [templates],
   );
 
+  const templateNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const t of templates) {
+      map.set(t.id, t.name);
+    }
+    return map;
+  }, [templates]);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -210,13 +218,17 @@ export default function ChecklistStageRulesPage() {
           <div className="space-y-2">
             <Label>Checklist template</Label>
             <Select
-              value={templateId}
+              value={templateId || undefined}
               onValueChange={(v) => {
                 if (v) setTemplateId(v);
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select template" />
+                <SelectValue placeholder="Select template">
+                  {(value: string | null) =>
+                    value ? (templateNameById.get(value) ?? value) : null
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {publishedTemplates.map((t) => (
