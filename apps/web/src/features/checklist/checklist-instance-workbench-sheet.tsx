@@ -74,6 +74,7 @@ export function ChecklistInstanceWorkbenchSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
+        forceNestedBackdrop
         className="flex w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl xl:max-w-5xl"
       >
         <SheetHeader className="border-border shrink-0 space-y-3 border-b px-5 py-4">
