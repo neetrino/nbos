@@ -7,6 +7,7 @@ import type { ChecklistTemplateItem } from '@/lib/api/checklist-templates';
 import { ChecklistDraftItemsEditor } from './checklist-draft-items-editor';
 
 type Props = {
+  templateId: string;
   readOnly: boolean;
   items: ChecklistTemplateItem[];
   onItemsChange: (next: ChecklistTemplateItem[]) => void;
@@ -18,6 +19,7 @@ type Props = {
 };
 
 export function ChecklistTemplateDraftCard({
+  templateId,
   readOnly,
   items,
   onItemsChange,
@@ -30,7 +32,12 @@ export function ChecklistTemplateDraftCard({
   return (
     <Card className="border-border/80 shadow-sm shadow-black/[0.04]">
       <CardContent className="space-y-5 p-4 sm:p-5">
-        <ChecklistDraftItemsEditor items={items} disabled={readOnly} onChange={onItemsChange} />
+        <ChecklistDraftItemsEditor
+          templateId={templateId}
+          items={items}
+          disabled={readOnly}
+          onChange={onItemsChange}
+        />
         <div className="border-border/60 flex flex-wrap gap-2 border-t pt-4">
           <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
             <Button type="button" disabled={readOnly || saving} onClick={onSaveDraft}>

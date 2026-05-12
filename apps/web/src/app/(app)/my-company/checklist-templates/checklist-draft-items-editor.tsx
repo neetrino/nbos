@@ -24,6 +24,7 @@ const CHECKLIST_TEMPLATE_MAX_ITEMS = 200;
 const POINTER_ACTIVATION_PX = 8;
 
 type Props = {
+  templateId: string;
   items: ChecklistTemplateItem[];
   disabled: boolean;
   onChange: (next: ChecklistTemplateItem[]) => void;
@@ -45,7 +46,7 @@ function newItemForEvidence(
   };
 }
 
-export function ChecklistDraftItemsEditor({ items, disabled, onChange }: Props) {
+export function ChecklistDraftItemsEditor({ templateId, items, disabled, onChange }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: POINTER_ACTIVATION_PX } }),
   );
@@ -124,6 +125,7 @@ export function ChecklistDraftItemsEditor({ items, disabled, onChange }: Props) 
               <ChecklistDraftSortableItem
                 key={row.id}
                 item={row}
+                templateId={templateId}
                 disabled={disabled}
                 onPatch={(patch) => patchItem(index, patch)}
                 onRemove={() => removeItem(index)}

@@ -4,12 +4,27 @@ import {
   CHECKLIST_TEMPLATE_ITEM_EVIDENCE_LINKING_TYPES,
   CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES,
   type ChecklistTemplateItemEvidenceType,
+  isChecklistTemplateFileImageDocumentEvidenceValueOk,
 } from '@nbos/shared';
 
 export const CHECKLIST_TEMPLATE_MAX_ITEMS = 200;
 
 const EVIDENCE_VALUE_MAX = 2000;
 const EVIDENCE_LABEL_MAX = 200;
+
+function isFileImageDocumentEvidenceValueOk(
+  evidenceType: ChecklistTemplateItemEvidenceType,
+  value: string,
+): boolean {
+  if (
+    evidenceType !== 'FILE_LINK' &&
+    evidenceType !== 'IMAGE_LINK' &&
+    evidenceType !== 'DOCUMENT_LINK'
+  ) {
+    return true;
+  }
+  return isChecklistTemplateFileImageDocumentEvidenceValueOk(value);
+}
 
 export interface ChecklistTemplateItemNormalized {
   id: string;
@@ -50,7 +65,7 @@ export function validateChecklistTemplateEvidenceFields(
   if (CHECKLIST_TEMPLATE_ITEM_EVIDENCE_LINKING_TYPES.has(item.evidenceType)) {
     const v = item.evidenceValue?.trim() ?? '';
     if (!v) {
-      return `Item ${n}: add a link or reference for evidence type ${item.evidenceType}.`;
+      return `Item ${n}: add evidence for type ${item.evidenceType}.`;
     }
     if (item.evidenceType === 'URL') {
       try {
@@ -61,6 +76,9 @@ export function validateChecklistTemplateEvidenceFields(
       } catch {
         return `Item ${n}: invalid URL.`;
       }
+    }
+    if (!isFileImageDocumentEvidenceValueOk(item.evidenceType, v)) {
+      return `Item ${n}: use an uploaded file (Drive id) or a valid https URL for ${item.evidenceType}.`;
     }
   }
   if (item.evidenceType !== 'FREE_TEXT' && item.evidenceLabel) {

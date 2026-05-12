@@ -7,10 +7,10 @@ export const CHECKLIST_DRAFT_DEFAULT_TITLE_BY_EVIDENCE: Record<
 > = {
   TEXT_ONLY: 'New text step',
   URL: 'New link step',
-  FILE_LINK: 'New file link step',
-  IMAGE_LINK: 'New image step',
+  FILE_LINK: 'New file step',
+  IMAGE_LINK: 'New file step',
   VIDEO_LINK: 'New video step',
-  DOCUMENT_LINK: 'New document step',
+  DOCUMENT_LINK: 'New file step',
   CREDENTIAL_LINK: 'New credential step',
   TASK_LINK: 'New task link step',
   FREE_TEXT: 'New free-text answer',

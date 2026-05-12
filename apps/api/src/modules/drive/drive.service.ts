@@ -44,6 +44,7 @@ import {
   R2_DRIVE_PREFIX,
 } from './drive-storage';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
+import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
 import { assertFilePreviewableForDocument } from '../documents/documents-assertions';
 import type { DocumentsReadAccess } from '../documents/documents-access-read';
@@ -146,12 +147,14 @@ export class DriveService {
 
   async listFileAssets(params: FileAssetQueryParams, access?: DriveEntityAccess) {
     const where = await this.buildFileAssetWhere(params, access);
-    return this.prisma.fileAsset.findMany({
-      where,
-      include: FILE_ASSET_INCLUDE,
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    });
+    return jsonSafeForHttp(
+      await this.prisma.fileAsset.findMany({
+        where,
+        include: FILE_ASSET_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      }),
+    );
   }
 
   async getFileAsset(id: string, access?: DriveEntityAccess) {
@@ -161,7 +164,7 @@ export class DriveService {
       include: FILE_ASSET_INCLUDE,
     });
     if (!file) throw new NotFoundException(`File asset ${id} not found`);
-    return file;
+    return jsonSafeForHttp(file);
   }
 
   /**
@@ -247,7 +250,7 @@ export class DriveService {
       include: FILE_ASSET_INCLUDE,
     });
 
-    return file;
+    return jsonSafeForHttp(file);
   }
 
   async createGeneratedFileAsset(data: CreateGeneratedFileAssetDto) {
@@ -333,37 +336,39 @@ export class DriveService {
       throw new BadRequestException('Uploaded version object was not found in storage.');
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      const latest = await tx.fileVersion.findFirst({
-        where: { fileAssetId: id },
-        orderBy: { versionNumber: 'desc' },
-      });
-      const versionNumber = (latest?.versionNumber ?? 0) + 1;
-      await tx.fileVersion.updateMany({ where: { fileAssetId: id }, data: { isCurrent: false } });
-      const version = await tx.fileVersion.create({
-        data: {
-          fileAssetId: id,
-          versionNumber,
-          storageKey,
-          uploadedById: actorId,
-          sizeBytes: data.sizeBytes,
-          checksum: data.checksum,
-          changeNote: data.changeNote?.trim() || null,
-          isCurrent: true,
-        },
-      });
-      return tx.fileAsset.update({
-        where: { id },
-        data: {
-          storageKey,
-          sizeBytes: data.sizeBytes,
-          checksum: data.checksum,
-          currentVersionId: version.id,
-          auditEvents: { create: { action: 'version_uploaded', actorId } },
-        },
-        include: FILE_ASSET_INCLUDE,
-      });
-    });
+    return jsonSafeForHttp(
+      await this.prisma.$transaction(async (tx) => {
+        const latest = await tx.fileVersion.findFirst({
+          where: { fileAssetId: id },
+          orderBy: { versionNumber: 'desc' },
+        });
+        const versionNumber = (latest?.versionNumber ?? 0) + 1;
+        await tx.fileVersion.updateMany({ where: { fileAssetId: id }, data: { isCurrent: false } });
+        const version = await tx.fileVersion.create({
+          data: {
+            fileAssetId: id,
+            versionNumber,
+            storageKey,
+            uploadedById: actorId,
+            sizeBytes: data.sizeBytes,
+            checksum: data.checksum,
+            changeNote: data.changeNote?.trim() || null,
+            isCurrent: true,
+          },
+        });
+        return tx.fileAsset.update({
+          where: { id },
+          data: {
+            storageKey,
+            sizeBytes: data.sizeBytes,
+            checksum: data.checksum,
+            currentVersionId: version.id,
+            auditEvents: { create: { action: 'version_uploaded', actorId } },
+          },
+          include: FILE_ASSET_INCLUDE,
+        });
+      }),
+    );
   }
 
   async unlinkFileAsset(id: string, linkId: string, access?: DriveEntityAccess) {
@@ -377,28 +382,32 @@ export class DriveService {
 
   async archiveFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
     await this.getFileAsset(id, access);
-    return this.prisma.fileAsset.update({
-      where: { id },
-      data: {
-        status: 'ARCHIVED',
-        archivedAt: new Date(),
-        auditEvents: { create: { action: 'archived', actorId } },
-      },
-      include: FILE_ASSET_INCLUDE,
-    });
+    return jsonSafeForHttp(
+      await this.prisma.fileAsset.update({
+        where: { id },
+        data: {
+          status: 'ARCHIVED',
+          archivedAt: new Date(),
+          auditEvents: { create: { action: 'archived', actorId } },
+        },
+        include: FILE_ASSET_INCLUDE,
+      }),
+    );
   }
 
   async restoreFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
     await this.getFileAsset(id, access);
-    return this.prisma.fileAsset.update({
-      where: { id },
-      data: {
-        status: 'ACTIVE',
-        archivedAt: null,
-        auditEvents: { create: { action: 'restored', actorId } },
-      },
-      include: FILE_ASSET_INCLUDE,
-    });
+    return jsonSafeForHttp(
+      await this.prisma.fileAsset.update({
+        where: { id },
+        data: {
+          status: 'ACTIVE',
+          archivedAt: null,
+          auditEvents: { create: { action: 'restored', actorId } },
+        },
+        include: FILE_ASSET_INCLUDE,
+      }),
+    );
   }
 
   async archiveFileAssets(ids: string[], actorId?: string, access?: DriveEntityAccess) {
@@ -426,7 +435,7 @@ export class DriveService {
         orderBy: { createdAt: 'desc' },
       });
     });
-    return { updated };
+    return { updated: jsonSafeForHttp(updated) };
   }
 
   async restoreFileAssets(ids: string[], actorId?: string, access?: DriveEntityAccess) {
@@ -453,7 +462,7 @@ export class DriveService {
         orderBy: { createdAt: 'desc' },
       });
     });
-    return { updated };
+    return { updated: jsonSafeForHttp(updated) };
   }
 
   async getProjectStructure(projectId: string): Promise<FolderNode> {

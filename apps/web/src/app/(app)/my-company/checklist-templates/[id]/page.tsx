@@ -267,6 +267,7 @@ export default function ChecklistTemplateDetailPage() {
       />
 
       <ChecklistTemplateDraftCard
+        templateId={id}
         readOnly={readOnly}
         items={items}
         onItemsChange={setItems}

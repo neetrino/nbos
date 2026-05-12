@@ -27,6 +27,7 @@ import {
 import { buildSessionUploadStorageKey } from './drive-upload-path';
 import { buildFileAssetCreateInputForCompletedSession } from './drive-upload-complete';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
+import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
 
 @Injectable()
@@ -138,7 +139,7 @@ export class DriveUploadSessionService {
         where: { id: sessionId },
         data: { status: 'COMPLETED', fileAssetId: file.id },
       });
-      return file;
+      return jsonSafeForHttp(file);
     });
   }
 
@@ -165,11 +166,13 @@ export class DriveUploadSessionService {
       deletedAt: null,
       links: { some: { entityType, entityId, unlinkedAt: null } },
     };
-    return this.prisma.fileAsset.findMany({
-      where,
-      include: FILE_ASSET_INCLUDE,
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    });
+    return jsonSafeForHttp(
+      await this.prisma.fileAsset.findMany({
+        where,
+        include: FILE_ASSET_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      }),
+    );
   }
 }
