@@ -9,7 +9,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { CheckSquare, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard } from '@/components/shared';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -209,6 +209,8 @@ export function WorkSpaceRuntime({
     Boolean(taskSearch.trim()) ||
     Object.entries(taskFilters).some(([, v]) => Boolean(v) && v !== 'all');
 
+  const showWorkspaceBoard = tasks.length === 0 || viewTasks.length > 0;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4" data-workspace-runtime={mode}>
       <WorkspaceRuntimeFilterBar
@@ -256,24 +258,6 @@ export function WorkSpaceRuntime({
         </div>
       )}
 
-      {tasks.length === 0 && (
-        <div className="border-border bg-muted/30 flex items-start gap-3 rounded-lg border px-4 py-3">
-          <CheckSquare className="text-muted-foreground mt-0.5 size-5 shrink-0" />
-          <div>
-            <p className="text-sm font-medium">No tasks in this Work Space yet</p>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Columns stay visible on Board, Deadline, and My Plan. Use New Task or Quick in a
-              column to add work.
-            </p>
-            {!newTaskDisabled && (
-              <Button className="mt-3" size="sm" onClick={openQuickCreate}>
-                <Plus size={14} /> Create first task
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
       {tasks.length > 0 && viewTasks.length === 0 ? (
         <div className="border-border bg-muted/20 text-muted-foreground rounded-xl border border-dashed px-4 py-10 text-center text-sm">
           <p>No tasks match your search or filters.</p>
@@ -285,7 +269,7 @@ export function WorkSpaceRuntime({
         </div>
       ) : null}
 
-      {tasks.length > 0 && viewTasks.length > 0 ? renderBoard() : null}
+      {showWorkspaceBoard ? renderBoard() : null}
 
       <TaskSheet
         taskId={selectedTaskId}
