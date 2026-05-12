@@ -18,6 +18,7 @@ import {
 import type { TaskBoardAction } from '@/features/tasks/task-board';
 import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
 
+import { taskInvolvesEmployee } from '@/features/tasks/utils/task-involves-employee';
 import { filterTasksForWorkspaceView } from './workspace-task-view-filter';
 
 export type WorkspaceBoardView = 'deadline' | 'my-plan' | 'kanban' | 'list';
@@ -73,6 +74,12 @@ export function useWorkspaceRuntimeBoard(
     () => filterTasksForWorkspaceView(tasks, viewFilters.search, viewFilters.filterValues),
     [tasks, viewFilters.search, viewFilters.filterValues],
   );
+
+  const myPlanBoardTasks = useMemo(() => {
+    if (boardView !== 'my-plan') return viewTasks;
+    if (!myPlanOwnerId) return [];
+    return viewTasks.filter((t) => taskInvolvesEmployee(t, myPlanOwnerId));
+  }, [boardView, viewTasks, myPlanOwnerId]);
 
   const handleAction = useCallback(
     async (taskId: string, action: TaskBoardAction) => {
@@ -261,7 +268,7 @@ export function useWorkspaceRuntimeBoard(
     handleRenameMyPlanStage,
     handleDeleteMyPlanStage,
     buildWorkspaceKanbanColumns: () => buildWorkspaceKanbanColumns(viewTasks),
-    buildMyPlanColumns: () => buildMyPlanColumns(viewTasks, myPlanStagesForView),
+    buildMyPlanColumns: () => buildMyPlanColumns(myPlanBoardTasks, myPlanStagesForView),
     buildDeadlineColumns,
     viewTasks,
   };

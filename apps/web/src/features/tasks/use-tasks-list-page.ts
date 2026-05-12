@@ -44,17 +44,29 @@ export function useTasksListPage() {
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
+      if (!creatorReady) {
+        setError(null);
+        return;
+      }
+      if (!creatorId) {
+        setTasks([]);
+        setStats(null);
+        setError(null);
+        return;
+      }
+
       const resp = await tasksApi.getAll({
         pageSize: 200,
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
         hasParent: false,
+        involvesEmployeeId: creatorId,
       });
       setTasks(resp.items);
       setError(null);
       try {
-        setStats(await tasksApi.getStats());
+        setStats(await tasksApi.getStats({ involvesEmployeeId: creatorId }));
       } catch {
         setStats(null);
       }
@@ -64,7 +76,7 @@ export function useTasksListPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, creatorId, creatorReady]);
 
   const fetchMyPlanStages = useCallback(async () => {
     if (!creatorId) {

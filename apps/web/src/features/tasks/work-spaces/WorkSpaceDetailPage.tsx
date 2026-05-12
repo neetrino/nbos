@@ -7,7 +7,7 @@ import { ArrowUpRight, Plus, Settings } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
+import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
 import { EditWorkSpaceDialog } from './EditWorkSpaceDialog';
@@ -105,7 +105,7 @@ export function WorkSpaceDetailPage() {
           onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
         >
           <TabsList variant="segmented">
-            {TASKS_BOARD_VIEW_SEGMENTS.map((segment) => (
+            {TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS.map((segment) => (
               <TabsTrigger
                 key={segment.value}
                 value={segment.value}

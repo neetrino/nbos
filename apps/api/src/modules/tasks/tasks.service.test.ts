@@ -37,6 +37,22 @@ describe('TasksService', () => {
       );
     });
 
+    it('applies involvesEmployeeId filter', async () => {
+      await service.findAll({ involvesEmployeeId: 'emp-1' });
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            OR: [
+              { assigneeId: 'emp-1' },
+              { creatorId: 'emp-1' },
+              { coAssignees: { has: 'emp-1' } },
+              { observers: { has: 'emp-1' } },
+            ],
+          },
+        }),
+      );
+    });
+
     it('rejects orderId without projectId', async () => {
       await expect(service.findAll({ orderId: 'ord-1' })).rejects.toThrow(BadRequestException);
     });
@@ -244,6 +260,25 @@ describe('TasksService', () => {
       const stats = await service.getStats();
       expect(stats).toHaveProperty('byStatus');
       expect(stats).toHaveProperty('byPriority');
+    });
+
+    it('scopes stats when involvesEmployeeId is set', async () => {
+      await service.getStats('emp-1');
+      const expectedWhere = {
+        OR: [
+          { assigneeId: 'emp-1' },
+          { creatorId: 'emp-1' },
+          { coAssignees: { has: 'emp-1' } },
+          { observers: { has: 'emp-1' } },
+        ],
+      };
+      expect(prisma.task.groupBy).toHaveBeenCalledTimes(2);
+      expect(prisma.task.groupBy.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({ where: expectedWhere }),
+      );
+      expect(prisma.task.groupBy.mock.calls[1]?.[0]).toEqual(
+        expect.objectContaining({ where: expectedWhere }),
+      );
     });
   });
 });

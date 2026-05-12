@@ -93,6 +93,8 @@ model Task {
 
   @@index([workspaceId])
   @@index([planningStatus])
+  @@index([assigneeId])
+  @@index([creatorId])
   @@map("tasks")
 }
 

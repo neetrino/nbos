@@ -169,6 +169,8 @@ interface TaskQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  /** Only tasks where this employee is assignee, creator, co-assignee, or observer. */
+  involvesEmployeeId?: string;
 }
 
 /** Workspace aggregates from `GET /api/tasks/stats` (Prisma `groupBy`). */
@@ -232,8 +234,8 @@ export const tasksApi = {
   async delete(id: string): Promise<void> {
     await api.delete(`/api/tasks/${id}`);
   },
-  async getStats(): Promise<TaskStats> {
-    const resp = await api.get<TaskStats>('/api/tasks/stats');
+  async getStats(params?: { involvesEmployeeId?: string }): Promise<TaskStats> {
+    const resp = await api.get<TaskStats>('/api/tasks/stats', { params });
     return resp.data;
   },
 

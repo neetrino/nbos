@@ -99,6 +99,17 @@ export default function TasksPage() {
         <LoadingState />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchTasks} />
+      ) : creatorReady && !creatorId ? (
+        <EmptyState
+          icon={CheckSquare}
+          title="Employee profile required"
+          description="Complete your employee profile to load tasks you participate in and use My Plan."
+          action={
+            <Link href="/my-account" className={buttonVariants({ variant: 'default' })}>
+              Open My Account
+            </Link>
+          }
+        />
       ) : tasks.length === 0 && boardView !== 'list' ? (
         <EmptyState
           icon={CheckSquare}

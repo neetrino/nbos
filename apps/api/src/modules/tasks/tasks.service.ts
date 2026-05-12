@@ -11,6 +11,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './task-completion-rules';
 import { formatTaskCode, nextTaskCodeNumericSuffix } from './task-code-generation';
 import { taskFindAllPaginated } from './task-find-all-paginated.op';
+import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
 import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 
 interface CreateTaskDto {
@@ -68,6 +69,7 @@ interface TaskQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  involvesEmployeeId?: string;
 }
 
 @Injectable()
@@ -369,10 +371,17 @@ export class TasksService {
 
   // ─── STATS ───────────────────────────────────────────────
 
-  async getStats() {
+  async getStats(involvesEmployeeId?: string) {
+    const participantWhere = involvesEmployeeId
+      ? taskWhereInvolvesEmployee(involvesEmployeeId)
+      : undefined;
+    const groupArgs = {
+      _count: true as const,
+      ...(participantWhere ? { where: participantWhere } : {}),
+    };
     const [byStatus, byPriority] = await Promise.all([
-      this.prisma.task.groupBy({ by: ['status'], _count: true }),
-      this.prisma.task.groupBy({ by: ['priority'], _count: true }),
+      this.prisma.task.groupBy({ by: ['status'], ...groupArgs }),
+      this.prisma.task.groupBy({ by: ['priority'], ...groupArgs }),
     ]);
     return { byStatus, byPriority };
   }

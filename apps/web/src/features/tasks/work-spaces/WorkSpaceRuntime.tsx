@@ -18,7 +18,7 @@ import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
-import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
+import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
 import { WorkspaceRuntimeFilterBar } from './workspace-runtime-filter-bar';
@@ -228,7 +228,7 @@ export function WorkSpaceRuntime({
             onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
           >
             <TabsList variant="segmented">
-              {TASKS_BOARD_VIEW_SEGMENTS.map((segment) => (
+              {TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS.map((segment) => (
                 <TabsTrigger
                   key={segment.value}
                   value={segment.value}

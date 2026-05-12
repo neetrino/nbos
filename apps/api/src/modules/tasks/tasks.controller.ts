@@ -35,6 +35,7 @@ export class TasksController {
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'orderId', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'involvesEmployeeId', required: false })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -53,6 +54,7 @@ export class TasksController {
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('involvesEmployeeId') involvesEmployeeId?: string,
   ) {
     return this.tasksService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -72,13 +74,15 @@ export class TasksController {
       search,
       sortBy,
       sortOrder,
+      involvesEmployeeId,
     });
   }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get task statistics' })
-  async getStats() {
-    return this.tasksService.getStats();
+  @ApiQuery({ name: 'involvesEmployeeId', required: false })
+  async getStats(@Query('involvesEmployeeId') involvesEmployeeId?: string) {
+    return this.tasksService.getStats(involvesEmployeeId);
   }
 
   @Get('by-entity/:entityType/:entityId')

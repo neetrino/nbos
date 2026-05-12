@@ -10,6 +10,7 @@ import {
   buildOrderTaskScopeWhere,
   buildProjectTaskScopeWhere,
 } from './task-project-list-filter.ops';
+import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
 
 export interface TaskFindAllPaginatedParams {
   page?: number;
@@ -29,6 +30,8 @@ export interface TaskFindAllPaginatedParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  /** When set, only tasks where this employee is assignee, creator, co-assignee, or observer. */
+  involvesEmployeeId?: string;
 }
 
 export async function taskFindAllPaginated(
@@ -70,6 +73,9 @@ export async function taskFindAllPaginated(
   if (hasParent === false) parts.push({ parentId: null });
   if (entityType && entityId) {
     parts.push({ links: { some: { entityType, entityId } } });
+  }
+  if (params.involvesEmployeeId) {
+    parts.push(taskWhereInvolvesEmployee(params.involvesEmployeeId));
   }
   if (search) {
     parts.push({

@@ -15,7 +15,25 @@ export type TasksBoardViewSegment<T extends string> = {
 
 export const TASKS_BOARD_VIEW_SEGMENTS: TasksBoardViewSegment<TasksListBoardView>[] = [
   { value: 'deadline', label: 'Deadline', icon: <Clock size={14} /> },
-  { value: 'my-plan', label: 'My Plan', icon: <User size={14} /> },
+  {
+    value: 'my-plan',
+    label: 'My Plan',
+    icon: <User size={14} />,
+    ariaLabel: 'My Plan',
+  },
+  { value: 'kanban', label: 'Board', icon: <LayoutGrid size={14} /> },
+  { value: 'list', label: 'List', icon: <List size={14} /> },
+];
+
+/** Same views as global Tasks, but personal plan tab is scoped to the current work space in UI copy. */
+export const TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS: TasksBoardViewSegment<TasksListBoardView>[] = [
+  { value: 'deadline', label: 'Deadline', icon: <Clock size={14} /> },
+  {
+    value: 'my-plan',
+    label: 'Workspace Plan',
+    icon: <User size={14} />,
+    ariaLabel: 'Workspace Plan',
+  },
   { value: 'kanban', label: 'Board', icon: <LayoutGrid size={14} /> },
   { value: 'list', label: 'List', icon: <List size={14} /> },
 ];
