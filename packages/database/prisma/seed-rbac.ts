@@ -448,28 +448,41 @@ async function main() {
 
   for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
     const company = moduleMap.COMPANY;
+    const checklistScopes = moduleMap.CHECKLIST_TEMPLATES;
     const [viewScope, editScope, , addScope] = company;
-    if (viewScope !== 'NONE') {
+    const checklistViewFromMatrix = checklistScopes?.[0] ?? 'NONE';
+
+    if (viewScope !== 'NONE' && checklistViewFromMatrix === 'NONE') {
       rolePermissionData.push({
         roleId,
         permissionId: 'perm-checklist-templates-view',
         scope: viewScope,
       });
     }
+
     const writeScope = editScope !== 'NONE' ? editScope : addScope;
-    if (writeScope !== 'NONE') {
-      for (const action of ['add', 'edit', 'publish', 'archive'] as const) {
-        rolePermissionData.push({
-          roleId,
-          permissionId: `perm-checklist-templates-${action}`,
-          scope: writeScope,
-        });
-      }
+    if (writeScope === 'NONE') continue;
+
+    const hasChecklistCrudFromMatrix =
+      Boolean(checklistScopes) && (checklistScopes[1] !== 'NONE' || checklistScopes[2] !== 'NONE');
+
+    const checklistCompanyActions: ('add' | 'edit' | 'publish' | 'archive')[] =
+      hasChecklistCrudFromMatrix ? ['publish', 'archive'] : ['add', 'edit', 'publish', 'archive'];
+
+    for (const action of checklistCompanyActions) {
+      rolePermissionData.push({
+        roleId,
+        permissionId: `perm-checklist-templates-${action}`,
+        scope: writeScope,
+      });
     }
   }
 
   await prisma.rolePermission.deleteMany({});
-  await prisma.rolePermission.createMany({ data: rolePermissionData });
+  await prisma.rolePermission.createMany({
+    data: rolePermissionData,
+    skipDuplicates: true,
+  });
   console.log(`  ✓ RolePermissions (${rolePermissionData.length})`);
 
   console.log('\n✅ RBAC seed completed!');
