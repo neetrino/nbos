@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  applyChecklistInstanceItemMarkOptimistic,
   checklistTemplatesApi,
   parseChecklistInstanceItems,
   type ChecklistInstance,
@@ -82,42 +83,53 @@ export function DeliveryStageChecklistPanel({
     [stageInstances, loading],
   );
 
-  const handleMark = async (
-    instance: ChecklistInstance,
-    item: ChecklistInstanceItem,
-    mark: ChecklistInstanceItemMark,
-    comment?: string,
-  ) => {
-    setBusyKey(`${instance.id}:${item.id}`);
-    setError(null);
-    try {
-      await checklistTemplatesApi.updateInstanceItem(instance.id, {
-        itemId: item.id,
-        mark,
-        comment,
-      });
-      await load();
-      onChanged();
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not update checklist item.');
-    } finally {
-      setBusyKey(null);
-    }
-  };
+  const handleMark = useCallback(
+    async (
+      instance: ChecklistInstance,
+      item: ChecklistInstanceItem,
+      mark: ChecklistInstanceItemMark,
+      comment?: string,
+    ) => {
+      const before = structuredClone(instance);
+      const optimistic = applyChecklistInstanceItemMarkOptimistic(instance, item.id, mark, comment);
+      setInstances((prev) => prev.map((i) => (i.id === optimistic.id ? optimistic : i)));
+      setError(null);
+      try {
+        const updated = await checklistTemplatesApi.updateInstanceItem(instance.id, {
+          itemId: item.id,
+          mark,
+          comment,
+        });
+        setInstances((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+      } catch (caught) {
+        setInstances((prev) => prev.map((i) => (i.id === before.id ? before : i)));
+        setError(caught instanceof Error ? caught.message : 'Could not update checklist item.');
+      }
+    },
+    [],
+  );
 
-  const handleComplete = async (instance: ChecklistInstance) => {
-    setBusyKey(`${instance.id}:complete`);
-    setError(null);
-    try {
-      await checklistTemplatesApi.completeInstance(instance.id);
-      await load();
-      onChanged();
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Could not complete checklist.');
-    } finally {
-      setBusyKey(null);
-    }
-  };
+  const handleComplete = useCallback(
+    async (instance: ChecklistInstance) => {
+      setBusyKey(`${instance.id}:complete`);
+      setError(null);
+      try {
+        const updated = await checklistTemplatesApi.completeInstance(instance.id);
+        setInstances((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+        onChanged();
+      } catch (caught) {
+        setError(caught instanceof Error ? caught.message : 'Could not complete checklist.');
+        try {
+          setInstances(await checklistTemplatesApi.listInstances(ownerEntityType, ownerEntityId));
+        } catch {
+          /* ignore secondary failure */
+        }
+      } finally {
+        setBusyKey(null);
+      }
+    },
+    [onChanged, ownerEntityType, ownerEntityId],
+  );
 
   if (!lifecycle?.stage || lifecycle.isTerminal) return null;
 
@@ -187,7 +199,6 @@ export function DeliveryStageChecklistPanel({
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         title="Stage checklists"
-        description="Complete each checklist to pass this stage gate. Items are listed in order with full context."
         instances={stageInstances}
         loading={loading}
         error={error}

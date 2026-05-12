@@ -184,6 +184,43 @@ export function parseChecklistInstanceItems(raw: unknown): ChecklistInstanceItem
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
+/** Client-side snapshot patch aligned with instance item PATCH (for optimistic UI). */
+export function applyChecklistInstanceItemMarkOptimistic(
+  instance: ChecklistInstance,
+  itemId: string,
+  mark: ChecklistInstanceItemMark,
+  comment?: string,
+): ChecklistInstance {
+  const raw = instance.snapshotItems;
+  if (!Array.isArray(raw)) {
+    return { ...instance, updatedAt: new Date().toISOString() };
+  }
+  const trimmed = comment?.trim() ?? '';
+  const nextMark = mark === 'PENDING' ? undefined : mark;
+  const nextItems = raw.map((row) => {
+    if (!row || typeof row !== 'object') return row;
+    const o = row as Record<string, unknown>;
+    if (o.id !== itemId) return row;
+    const nextRow: Record<string, unknown> = { ...o };
+    if (nextMark === undefined) {
+      delete nextRow.mark;
+    } else {
+      nextRow.mark = nextMark;
+    }
+    if (trimmed.length > 0) {
+      nextRow.comment = trimmed;
+    } else {
+      delete nextRow.comment;
+    }
+    return nextRow;
+  });
+  return {
+    ...instance,
+    snapshotItems: nextItems,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 export type DeliveryChecklistTarget = 'PRODUCT' | 'EXTENSION';
 
 export type DeliveryStageCanon = 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER';
