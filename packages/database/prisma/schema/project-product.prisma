@@ -135,6 +135,8 @@ model Product {
   deadline             DateTime?
   description          String?
   checklistTemplateId  String?                 @map("checklist_template_id")
+  /// ISO-like language codes for delivery UI (e.g. hy, en, ru); display order enforced in app.
+  languages            String[]                @default([]) @map("languages")
   closedAt             DateTime?               @map("closed_at")
   closedById           String?                 @map("closed_by_id")
   createdAt            DateTime                @default(now()) @map("created_at")

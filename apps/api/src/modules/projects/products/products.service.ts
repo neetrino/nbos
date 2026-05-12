@@ -52,6 +52,7 @@ interface CreateProductDto {
   deadline?: string;
   description?: string;
   checklistTemplateId?: string;
+  languages?: string[];
 }
 
 interface UpdateProductDto {
@@ -62,6 +63,7 @@ interface UpdateProductDto {
   deadline?: string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: string[];
 }
 
 interface PauseDeliveryDto {
@@ -96,6 +98,22 @@ interface ProductQueryParams {
   productType?: string;
   pmId?: string;
   search?: string;
+}
+
+/** Allowed ISO-like language codes for `Product.languages` (lowercase). */
+function normalizeProductLanguages(input: unknown): string[] {
+  if (input === undefined) return [];
+  if (!Array.isArray(input)) {
+    throw new BadRequestException('languages must be an array of strings');
+  }
+  const out = new Set<string>();
+  for (const v of input) {
+    if (typeof v !== 'string') continue;
+    const s = v.trim().toLowerCase();
+    if (s.length < 2 || s.length > 12) continue;
+    if (/^[a-z]{2}(-[a-z]{2})?$/.test(s)) out.add(s);
+  }
+  return Array.from(out);
 }
 
 @Injectable()
@@ -231,6 +249,9 @@ export class ProductsService {
             code: true,
             name: true,
             contactId: true,
+            companyId: true,
+            company: { select: { id: true, name: true } },
+            contact: { select: { id: true, firstName: true, lastName: true } },
             credentials: {
               where: { archivedAt: null },
               select: { category: true },
@@ -246,6 +267,15 @@ export class ProductsService {
         },
         pm: { select: { id: true, firstName: true, lastName: true, email: true } },
         closedBy: { select: { id: true, firstName: true, lastName: true } },
+        technicalProfiles: {
+          select: {
+            productionUrl: true,
+            stagingUrl: true,
+            repositoryUrl: true,
+            hostingProvider: true,
+            technicalOwnerId: true,
+          },
+        },
         order: {
           include: {
             deal: {
@@ -254,6 +284,7 @@ export class ProductsService {
                 code: true,
                 offerFileUrl: true,
                 contractFileUrl: true,
+                seller: { select: { id: true, firstName: true, lastName: true } },
               },
             },
             invoices: {
@@ -306,6 +337,7 @@ export class ProductsService {
         deadline: data.deadline ? new Date(data.deadline) : undefined,
         description: data.description,
         checklistTemplateId: data.checklistTemplateId,
+        languages: normalizeProductLanguages(data.languages ?? []),
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
@@ -335,6 +367,9 @@ export class ProductsService {
         ...(data.description !== undefined && { description: data.description }),
         ...(data.checklistTemplateId !== undefined && {
           checklistTemplateId: data.checklistTemplateId,
+        }),
+        ...(data.languages !== undefined && {
+          languages: normalizeProductLanguages(data.languages),
         }),
       },
       include: {

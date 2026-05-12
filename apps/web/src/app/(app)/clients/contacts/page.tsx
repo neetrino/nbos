@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Users, Phone, Mail, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,8 +24,14 @@ import { ContactSheet } from '@/features/clients/components/ContactSheet';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
 import { CONTACT_ROLES, getContactRole } from '@/features/clients/constants/clients';
 import { contactsApi, type Contact } from '@/lib/api/clients';
+import { toast } from 'sonner';
+
+const OPEN_CONTACT_QUERY = 'openId';
 
 export default function ContactsPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +62,51 @@ export default function ContactsPage() {
   useEffect(() => {
     fetchContacts();
   }, [fetchContacts]);
+
+  const openContactId = searchParams.get(OPEN_CONTACT_QUERY);
+  const deepLinkContactAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    deepLinkContactAttemptedRef.current = null;
+  }, [openContactId]);
+
+  const stripOpenContactFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has(OPEN_CONTACT_QUERY)) return;
+    params.delete(OPEN_CONTACT_QUERY);
+    const q = params.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  useEffect(() => {
+    if (!openContactId || loading) return;
+    const match = contacts.find((c) => c.id === openContactId);
+    if (match) {
+      setSelectedContact(match);
+      setSheetOpen(true);
+      return;
+    }
+    if (deepLinkContactAttemptedRef.current === openContactId) return;
+    deepLinkContactAttemptedRef.current = openContactId;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const contact = await contactsApi.getById(openContactId);
+        if (cancelled) return;
+        setContacts((prev) => (prev.some((c) => c.id === contact.id) ? prev : [contact, ...prev]));
+        setSelectedContact(contact);
+        setSheetOpen(true);
+      } catch {
+        if (!cancelled) {
+          toast.error('Contact not found or you cannot open it.');
+          stripOpenContactFromUrl();
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openContactId, loading, contacts, stripOpenContactFromUrl]);
 
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
     await contactsApi.update(id, data);
@@ -211,7 +263,13 @@ export default function ContactsPage() {
       <ContactSheet
         contact={selectedContact}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) {
+            setSelectedContact(null);
+            stripOpenContactFromUrl();
+          }
+        }}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
       />

@@ -126,6 +126,7 @@ export class ProductsController {
       deadline?: string;
       description?: string;
       checklistTemplateId?: string;
+      languages?: string[];
     },
   ) {
     return this.productsService.create(body);
@@ -144,6 +145,7 @@ export class ProductsController {
       deadline?: string | null;
       description?: string | null;
       checklistTemplateId?: string | null;
+      languages?: string[];
     },
   ) {
     return this.productsService.update(id, body);

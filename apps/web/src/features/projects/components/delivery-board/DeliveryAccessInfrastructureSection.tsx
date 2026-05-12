@@ -20,6 +20,8 @@ interface DeliveryAccessInfrastructureSectionProps {
   productId: string;
   productCredentialsHref: string;
   onRefreshDetail: () => void;
+  /** Optional right column (languages, payment summary, etc.) inside the same card. */
+  setupPanel?: React.ReactNode;
 }
 
 function linkedCredentialIdsFromSlots(slots: ProductAccessSlotRow[]): string[] {
@@ -37,6 +39,7 @@ export function DeliveryAccessInfrastructureSection({
   productId,
   productCredentialsHref,
   onRefreshDetail,
+  setupPanel,
 }: DeliveryAccessInfrastructureSectionProps) {
   const [slots, setSlots] = useState<ProductAccessSlotRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -82,6 +85,139 @@ export function DeliveryAccessInfrastructureSection({
     }
   }
 
+  function renderSlotBody() {
+    if (loading) {
+      return (
+        <div className="text-muted-foreground flex items-center gap-2 py-6 text-sm">
+          <Loader2 className="size-4 animate-spin" aria-hidden />
+          Loading…
+        </div>
+      );
+    }
+    if (slots.length === 0) {
+      return (
+        <p className="text-muted-foreground text-sm">
+          No access slots are configured for this product profile.
+        </p>
+      );
+    }
+    return (
+      <ul className="space-y-2">
+        {slots.map((slot) => {
+          const filledCount = slot.bindings.filter((b) => b.boundCredential !== null).length;
+          const requiredMissing = slot.required && filledCount === 0;
+          return (
+            <li
+              key={slot.slotKey}
+              className="border-border bg-background/60 rounded-lg border px-3 py-2.5"
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex min-w-0 items-center gap-2">
+                  {slot.required ? (
+                    <span
+                      title="At least one credential required for this slot"
+                      className="shrink-0 text-amber-600"
+                    >
+                      <Asterisk size={14} strokeWidth={2.5} aria-hidden />
+                    </span>
+                  ) : (
+                    <span className="w-3.5 shrink-0" aria-hidden />
+                  )}
+                  <div className="min-w-0">
+                    <span className="text-sm font-medium">{slot.label}</span>
+                    {requiredMissing ? (
+                      <p className="text-muted-foreground text-xs">Add at least one credential.</p>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col items-stretch gap-2 sm:items-end">
+                  {slot.bindings.length > 0 ? (
+                    <ul className="flex w-full max-w-full flex-col gap-1.5 sm:max-w-md sm:items-end">
+                      {slot.bindings.map((b) => (
+                        <li
+                          key={b.bindingId}
+                          className="border-border/80 bg-background/40 flex w-full flex-wrap items-center justify-end gap-1 rounded-md border border-dashed px-2 py-1.5"
+                        >
+                          {b.boundCredential ? (
+                            <>
+                              <Badge variant="outline" className="shrink-0 font-normal">
+                                {b.boundCredential.category}
+                              </Badge>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 max-w-[12rem] min-w-0 flex-1 gap-1 px-2 sm:max-w-[14rem] sm:flex-initial"
+                                onClick={() => setDetailId(b.boundCredential!.id)}
+                              >
+                                <span className="truncate text-sm font-medium">
+                                  {b.boundCredential.name}
+                                </span>
+                                <ChevronRight size={14} className="shrink-0 opacity-60" />
+                              </Button>
+                              <PermissionGate module="CREDENTIALS" action="EDIT">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-xs"
+                                  onClick={() => setEditId(b.boundCredential!.id)}
+                                >
+                                  Edit
+                                </Button>
+                              </PermissionGate>
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">
+                              Archived credential — remove link to replace.
+                            </span>
+                          )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-muted-foreground h-8 px-2"
+                            title="Unlink"
+                            onClick={() => void handleUnbind(b.bindingId)}
+                          >
+                            <Unlink size={14} />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <div className="flex flex-wrap justify-end gap-1">
+                    <PermissionGate module="CREDENTIALS" action="ADD">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1 text-xs"
+                        onClick={() => setCreateSlot(slot)}
+                      >
+                        <Plus size={14} />
+                        New
+                      </Button>
+                    </PermissionGate>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => setPickSlot(slot)}
+                    >
+                      Pick
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
   if (!productId.trim()) {
     return null;
   }
@@ -106,131 +242,15 @@ export function DeliveryAccessInfrastructureSection({
         </div>
       </div>
 
-      {loading ? (
-        <div className="text-muted-foreground flex items-center gap-2 py-6 text-sm">
-          <Loader2 className="size-4 animate-spin" aria-hidden />
-          Loading…
+      {setupPanel ? (
+        <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+          <div className="min-w-0">{renderSlotBody()}</div>
+          <div className="border-border min-w-0 space-y-4 border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
+            {setupPanel}
+          </div>
         </div>
-      ) : slots.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          No access slots are configured for this product profile.
-        </p>
       ) : (
-        <ul className="space-y-2">
-          {slots.map((slot) => {
-            const filledCount = slot.bindings.filter((b) => b.boundCredential !== null).length;
-            const requiredMissing = slot.required && filledCount === 0;
-            return (
-              <li
-                key={slot.slotKey}
-                className="border-border bg-background/60 rounded-lg border px-3 py-2.5"
-              >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex min-w-0 items-center gap-2">
-                    {slot.required ? (
-                      <span
-                        title="At least one credential required for this slot"
-                        className="shrink-0 text-amber-600"
-                      >
-                        <Asterisk size={14} strokeWidth={2.5} aria-hidden />
-                      </span>
-                    ) : (
-                      <span className="w-3.5 shrink-0" aria-hidden />
-                    )}
-                    <div className="min-w-0">
-                      <span className="text-sm font-medium">{slot.label}</span>
-                      {requiredMissing ? (
-                        <p className="text-muted-foreground text-xs">
-                          Add at least one credential.
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="flex min-w-0 flex-1 flex-col items-stretch gap-2 sm:items-end">
-                    {slot.bindings.length > 0 ? (
-                      <ul className="flex w-full max-w-full flex-col gap-1.5 sm:max-w-md sm:items-end">
-                        {slot.bindings.map((b) => (
-                          <li
-                            key={b.bindingId}
-                            className="border-border/80 bg-background/40 flex w-full flex-wrap items-center justify-end gap-1 rounded-md border border-dashed px-2 py-1.5"
-                          >
-                            {b.boundCredential ? (
-                              <>
-                                <Badge variant="outline" className="shrink-0 font-normal">
-                                  {b.boundCredential.category}
-                                </Badge>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 max-w-[12rem] min-w-0 flex-1 gap-1 px-2 sm:max-w-[14rem] sm:flex-initial"
-                                  onClick={() => setDetailId(b.boundCredential!.id)}
-                                >
-                                  <span className="truncate text-sm font-medium">
-                                    {b.boundCredential.name}
-                                  </span>
-                                  <ChevronRight size={14} className="shrink-0 opacity-60" />
-                                </Button>
-                                <PermissionGate module="CREDENTIALS" action="EDIT">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-8 text-xs"
-                                    onClick={() => setEditId(b.boundCredential!.id)}
-                                  >
-                                    Edit
-                                  </Button>
-                                </PermissionGate>
-                              </>
-                            ) : (
-                              <span className="text-muted-foreground text-xs">
-                                Archived credential — remove link to replace.
-                              </span>
-                            )}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="text-muted-foreground h-8 px-2"
-                              title="Unlink"
-                              onClick={() => void handleUnbind(b.bindingId)}
-                            >
-                              <Unlink size={14} />
-                            </Button>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    <div className="flex flex-wrap justify-end gap-1">
-                      <PermissionGate module="CREDENTIALS" action="ADD">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-8 gap-1 text-xs"
-                          onClick={() => setCreateSlot(slot)}
-                        >
-                          <Plus size={14} />
-                          New
-                        </Button>
-                      </PermissionGate>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 text-xs"
-                        onClick={() => setPickSlot(slot)}
-                      >
-                        Pick
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        renderSlotBody()
       )}
 
       <CredentialDetailDialog

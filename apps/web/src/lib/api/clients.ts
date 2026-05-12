@@ -37,6 +37,10 @@ export const contactsApi = {
     const resp = await api.get<ListData<Contact>>('/api/clients/contacts', { params });
     return resp.data;
   },
+  async getById(id: string): Promise<Contact> {
+    const resp = await api.get<Contact>(`/api/clients/contacts/${id}`);
+    return resp.data;
+  },
   async create(data: Record<string, unknown>): Promise<Contact> {
     const resp = await api.post<Contact>('/api/clients/contacts', data);
     return resp.data;
@@ -53,6 +57,10 @@ export const contactsApi = {
 export const companiesApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Company>> {
     const resp = await api.get<ListData<Company>>('/api/clients/companies', { params });
+    return resp.data;
+  },
+  async getById(id: string): Promise<Company> {
+    const resp = await api.get<Company>(`/api/clients/companies/${id}`);
     return resp.data;
   },
   async create(data: Record<string, unknown>): Promise<Company> {

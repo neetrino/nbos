@@ -1549,6 +1549,7 @@ export const ProductScalarFieldEnum = {
   deadline: 'deadline',
   description: 'description',
   checklistTemplateId: 'checklistTemplateId',
+  languages: 'languages',
   closedAt: 'closedAt',
   closedById: 'closedById',
   createdAt: 'createdAt',

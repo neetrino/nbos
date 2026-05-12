@@ -35,8 +35,21 @@ export interface Extension {
     companyId?: string | null;
     company?: { id: string; name: string } | null;
     contactId?: string | null;
+    contact?: { id: string; firstName: string; lastName: string } | null;
   };
-  product: { id: string; name: string; productType?: string };
+  product: {
+    id: string;
+    name: string;
+    productType?: string;
+    languages?: string[];
+    technicalProfiles?: Array<{
+      productionUrl: string | null;
+      stagingUrl: string | null;
+      repositoryUrl: string | null;
+      hostingProvider: string | null;
+      technicalOwnerId: string | null;
+    }>;
+  };
   assignee: ExtensionEmployee | null;
   order?: { id: string; code: string; status: string } | null;
   readiness?: ExtensionReadinessSummary;
@@ -73,10 +86,18 @@ export interface ExtensionOrderRef {
   id: string;
   code: string;
   type: string;
+  paymentType: string;
   totalAmount: string;
   currency: string;
   status: string;
-  deal?: { id: string; code: string } | null;
+  deal?: {
+    id: string;
+    code: string;
+    offerFileUrl?: string | null;
+    contractFileUrl?: string | null;
+    seller?: ExtensionEmployee | null;
+  } | null;
+  invoices?: Array<{ moneyStatus: string }>;
 }
 
 export interface ExtensionStats {

@@ -95,6 +95,7 @@ export type ProductCountAggregateOutputType = {
   deadline: number;
   description: number;
   checklistTemplateId: number;
+  languages: number;
   closedAt: number;
   closedById: number;
   createdAt: number;
@@ -174,6 +175,7 @@ export type ProductCountAggregateInputType = {
   deadline?: true;
   description?: true;
   checklistTemplateId?: true;
+  languages?: true;
   closedAt?: true;
   closedById?: true;
   createdAt?: true;
@@ -274,6 +276,7 @@ export type ProductGroupByOutputType = {
   deadline: Date | null;
   description: string | null;
   checklistTemplateId: string | null;
+  languages: string[];
   closedAt: Date | null;
   closedById: string | null;
   createdAt: Date;
@@ -326,6 +329,7 @@ export type ProductWhereInput = {
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
   checklistTemplateId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  languages?: Prisma.StringNullableListFilter<'Product'>;
   closedAt?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   closedById?: Prisma.StringNullableFilter<'Product'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
@@ -380,6 +384,7 @@ export type ProductOrderByWithRelationInput = {
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  languages?: Prisma.SortOrder;
   closedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   closedById?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -437,6 +442,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
     description?: Prisma.StringNullableFilter<'Product'> | string | null;
     checklistTemplateId?: Prisma.StringNullableFilter<'Product'> | string | null;
+    languages?: Prisma.StringNullableListFilter<'Product'>;
     closedAt?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
     closedById?: Prisma.StringNullableFilter<'Product'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
@@ -493,6 +499,7 @@ export type ProductOrderByWithAggregationInput = {
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  languages?: Prisma.SortOrder;
   closedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
   closedById?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -539,6 +546,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   checklistTemplateId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
+  languages?: Prisma.StringNullableListFilter<'Product'>;
   closedAt?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
   closedById?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Product'> | Date | string;
@@ -562,6 +570,7 @@ export type ProductCreateInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -606,6 +615,7 @@ export type ProductUncheckedCreateInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -654,6 +664,7 @@ export type ProductUpdateInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -708,6 +719,7 @@ export type ProductUncheckedUpdateInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -749,6 +761,7 @@ export type ProductCreateManyInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -782,6 +795,7 @@ export type ProductUpdateManyMutationInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -817,6 +831,7 @@ export type ProductUncheckedUpdateManyInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -858,6 +873,7 @@ export type ProductCountOrderByAggregateInput = {
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrder;
+  languages?: Prisma.SortOrder;
   closedAt?: Prisma.SortOrder;
   closedById?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -1449,6 +1465,10 @@ export type ProductUncheckedUpdateManyWithoutProjectNestedInput = {
   deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
 };
 
+export type ProductCreatelanguagesInput = {
+  set: string[];
+};
+
 export type EnumProductCategoryEnumFieldUpdateOperationsInput = {
   set?: $Enums.ProductCategoryEnum;
 };
@@ -1467,6 +1487,11 @@ export type EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput = {
 
 export type NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput = {
   set?: $Enums.DeliveryResolutionEnum | null;
+};
+
+export type ProductUpdatelanguagesInput = {
+  set?: string[];
+  push?: string | string[];
 };
 
 export type ProductCreateNestedOneWithoutAccessSlotBindingsInput = {
@@ -1700,6 +1725,7 @@ export type ProductCreateWithoutChecklistTemplateInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1742,6 +1768,7 @@ export type ProductUncheckedCreateWithoutChecklistTemplateInput = {
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -1837,6 +1864,7 @@ export type ProductScalarWhereInput = {
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
   checklistTemplateId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  languages?: Prisma.StringNullableListFilter<'Product'>;
   closedAt?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   closedById?: Prisma.StringNullableFilter<'Product'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
@@ -1860,6 +1888,7 @@ export type ProductCreateWithoutClientServiceRecordsInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1903,6 +1932,7 @@ export type ProductUncheckedCreateWithoutClientServiceRecordsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -1978,6 +2008,7 @@ export type ProductUpdateWithoutClientServiceRecordsInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2031,6 +2062,7 @@ export type ProductUncheckedUpdateWithoutClientServiceRecordsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2068,6 +2100,7 @@ export type ProductCreateWithoutDealsLinkedInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -2111,6 +2144,7 @@ export type ProductUncheckedCreateWithoutDealsLinkedInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -2186,6 +2220,7 @@ export type ProductUpdateWithoutDealsLinkedInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2239,6 +2274,7 @@ export type ProductUncheckedUpdateWithoutDealsLinkedInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2276,6 +2312,7 @@ export type ProductCreateWithoutPmInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -2318,6 +2355,7 @@ export type ProductUncheckedCreateWithoutPmInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -2369,6 +2407,7 @@ export type ProductCreateWithoutClosedByInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -2412,6 +2451,7 @@ export type ProductUncheckedCreateWithoutClosedByInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -2515,6 +2555,7 @@ export type ProductCreateWithoutOrderInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -2558,6 +2599,7 @@ export type ProductUncheckedCreateWithoutOrderInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -2633,6 +2675,7 @@ export type ProductUpdateWithoutOrderInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2686,6 +2729,7 @@ export type ProductUncheckedUpdateWithoutOrderInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2723,6 +2767,7 @@ export type ProductCreateWithoutOperationalJournalEntriesInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -2766,6 +2811,7 @@ export type ProductUncheckedCreateWithoutOperationalJournalEntriesInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -2841,6 +2887,7 @@ export type ProductUpdateWithoutOperationalJournalEntriesInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2894,6 +2941,7 @@ export type ProductUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -2931,6 +2979,7 @@ export type ProductCreateWithoutBonusReleasesInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -2974,6 +3023,7 @@ export type ProductUncheckedCreateWithoutBonusReleasesInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -3049,6 +3099,7 @@ export type ProductUpdateWithoutBonusReleasesInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3102,6 +3153,7 @@ export type ProductUncheckedUpdateWithoutBonusReleasesInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3139,6 +3191,7 @@ export type ProductCreateWithoutProductBonusPoolsInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -3182,6 +3235,7 @@ export type ProductUncheckedCreateWithoutProductBonusPoolsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -3257,6 +3311,7 @@ export type ProductUpdateWithoutProductBonusPoolsInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3310,6 +3365,7 @@ export type ProductUncheckedUpdateWithoutProductBonusPoolsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3347,6 +3403,7 @@ export type ProductCreateWithoutPartnerAccrualsInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -3390,6 +3447,7 @@ export type ProductUncheckedCreateWithoutPartnerAccrualsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -3465,6 +3523,7 @@ export type ProductUpdateWithoutPartnerAccrualsInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3518,6 +3577,7 @@ export type ProductUncheckedUpdateWithoutPartnerAccrualsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3555,6 +3615,7 @@ export type ProductCreateWithoutProjectInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -3597,6 +3658,7 @@ export type ProductUncheckedCreateWithoutProjectInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -3676,6 +3738,7 @@ export type ProductCreateWithoutAccessSlotBindingsInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -3719,6 +3782,7 @@ export type ProductUncheckedCreateWithoutAccessSlotBindingsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -3794,6 +3858,7 @@ export type ProductUpdateWithoutAccessSlotBindingsInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3847,6 +3912,7 @@ export type ProductUncheckedUpdateWithoutAccessSlotBindingsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -3884,6 +3950,7 @@ export type ProductCreateWithoutExtensionsInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -3927,6 +3994,7 @@ export type ProductUncheckedCreateWithoutExtensionsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -4002,6 +4070,7 @@ export type ProductUpdateWithoutExtensionsInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4055,6 +4124,7 @@ export type ProductUncheckedUpdateWithoutExtensionsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4092,6 +4162,7 @@ export type ProductCreateWithoutTicketsInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -4135,6 +4206,7 @@ export type ProductUncheckedCreateWithoutTicketsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -4210,6 +4282,7 @@ export type ProductUpdateWithoutTicketsInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4263,6 +4336,7 @@ export type ProductUncheckedUpdateWithoutTicketsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4300,6 +4374,7 @@ export type ProductCreateWithoutWorkSpaceInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -4343,6 +4418,7 @@ export type ProductUncheckedCreateWithoutWorkSpaceInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -4418,6 +4494,7 @@ export type ProductUpdateWithoutWorkSpaceInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4471,6 +4548,7 @@ export type ProductUncheckedUpdateWithoutWorkSpaceInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4508,6 +4586,7 @@ export type ProductCreateWithoutTasksInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -4551,6 +4630,7 @@ export type ProductUncheckedCreateWithoutTasksInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -4626,6 +4706,7 @@ export type ProductUpdateWithoutTasksInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4679,6 +4760,7 @@ export type ProductUncheckedUpdateWithoutTasksInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4716,6 +4798,7 @@ export type ProductCreateWithoutTechnicalProfilesInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -4759,6 +4842,7 @@ export type ProductUncheckedCreateWithoutTechnicalProfilesInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -4834,6 +4918,7 @@ export type ProductUpdateWithoutTechnicalProfilesInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4887,6 +4972,7 @@ export type ProductUncheckedUpdateWithoutTechnicalProfilesInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -4924,6 +5010,7 @@ export type ProductCreateWithoutTechnicalAssetsInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -4967,6 +5054,7 @@ export type ProductUncheckedCreateWithoutTechnicalAssetsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -5042,6 +5130,7 @@ export type ProductUpdateWithoutTechnicalAssetsInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5095,6 +5184,7 @@ export type ProductUncheckedUpdateWithoutTechnicalAssetsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5132,6 +5222,7 @@ export type ProductCreateWithoutTechnicalEnvironmentsInput = {
   clientAcceptanceNote?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -5175,6 +5266,7 @@ export type ProductUncheckedCreateWithoutTechnicalEnvironmentsInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -5250,6 +5342,7 @@ export type ProductUpdateWithoutTechnicalEnvironmentsInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5303,6 +5396,7 @@ export type ProductUncheckedUpdateWithoutTechnicalEnvironmentsInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5342,6 +5436,7 @@ export type ProductCreateManyChecklistTemplateInput = {
   pmId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -5375,6 +5470,7 @@ export type ProductUpdateWithoutChecklistTemplateInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5427,6 +5523,7 @@ export type ProductUncheckedUpdateWithoutChecklistTemplateInput = {
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5477,6 +5574,7 @@ export type ProductUncheckedUpdateManyWithoutChecklistTemplateInput = {
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5502,6 +5600,7 @@ export type ProductCreateManyPmInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -5528,6 +5627,7 @@ export type ProductCreateManyClosedByInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -5560,6 +5660,7 @@ export type ProductUpdateWithoutPmInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5612,6 +5713,7 @@ export type ProductUncheckedUpdateWithoutPmInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5662,6 +5764,7 @@ export type ProductUncheckedUpdateManyWithoutPmInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5695,6 +5798,7 @@ export type ProductUpdateWithoutClosedByInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5748,6 +5852,7 @@ export type ProductUncheckedUpdateWithoutClosedByInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5798,6 +5903,7 @@ export type ProductUncheckedUpdateManyWithoutClosedByInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5822,6 +5928,7 @@ export type ProductCreateManyProjectInput = {
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
   closedAt?: Date | string | null;
   closedById?: string | null;
   createdAt?: Date | string;
@@ -5855,6 +5962,7 @@ export type ProductUpdateWithoutProjectInput = {
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5907,6 +6015,7 @@ export type ProductUncheckedUpdateWithoutProjectInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -5957,6 +6066,7 @@ export type ProductUncheckedUpdateManyWithoutProjectInput = {
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
   closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -6153,6 +6263,7 @@ export type ProductSelect<
     deadline?: boolean;
     description?: boolean;
     checklistTemplateId?: boolean;
+    languages?: boolean;
     closedAt?: boolean;
     closedById?: boolean;
     createdAt?: boolean;
@@ -6204,6 +6315,7 @@ export type ProductSelectCreateManyAndReturn<
     deadline?: boolean;
     description?: boolean;
     checklistTemplateId?: boolean;
+    languages?: boolean;
     closedAt?: boolean;
     closedById?: boolean;
     createdAt?: boolean;
@@ -6239,6 +6351,7 @@ export type ProductSelectUpdateManyAndReturn<
     deadline?: boolean;
     description?: boolean;
     checklistTemplateId?: boolean;
+    languages?: boolean;
     closedAt?: boolean;
     closedById?: boolean;
     createdAt?: boolean;
@@ -6271,6 +6384,7 @@ export type ProductSelectScalar = {
   deadline?: boolean;
   description?: boolean;
   checklistTemplateId?: boolean;
+  languages?: boolean;
   closedAt?: boolean;
   closedById?: boolean;
   createdAt?: boolean;
@@ -6299,6 +6413,7 @@ export type ProductOmit<
   | 'deadline'
   | 'description'
   | 'checklistTemplateId'
+  | 'languages'
   | 'closedAt'
   | 'closedById'
   | 'createdAt'
@@ -6392,6 +6507,10 @@ export type $ProductPayload<
       deadline: Date | null;
       description: string | null;
       checklistTemplateId: string | null;
+      /**
+       * ISO-like language codes for delivery UI (e.g. hy, en, ru); display order enforced in app.
+       */
+      languages: string[];
       closedAt: Date | null;
       closedById: string | null;
       createdAt: Date;
@@ -7173,6 +7292,7 @@ export interface ProductFieldRefs {
   readonly deadline: Prisma.FieldRef<'Product', 'DateTime'>;
   readonly description: Prisma.FieldRef<'Product', 'String'>;
   readonly checklistTemplateId: Prisma.FieldRef<'Product', 'String'>;
+  readonly languages: Prisma.FieldRef<'Product', 'String[]'>;
   readonly closedAt: Prisma.FieldRef<'Product', 'DateTime'>;
   readonly closedById: Prisma.FieldRef<'Product', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Product', 'DateTime'>;

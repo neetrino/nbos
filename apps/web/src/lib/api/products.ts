@@ -26,6 +26,8 @@ export interface Product {
   deadline: string | null;
   description: string | null;
   checklistTemplateId: string | null;
+  /** ISO-like language codes (e.g. hy, en, ru). */
+  languages?: string[];
   clientAcceptedAt: string | null;
   clientAcceptedBy: string | null;
   clientAcceptanceNote: string | null;
@@ -40,10 +42,19 @@ export interface Product {
     companyId?: string | null;
     company?: { id: string; name: string } | null;
     contactId?: string | null;
+    contact?: { id: string; firstName: string; lastName: string } | null;
   };
   pm: ProductEmployee | null;
   _count: { extensions: number; tasks: number; tickets: number };
   checklistStageProgress?: ChecklistStageProgress | null;
+}
+
+export interface ProductTechnicalProfileRef {
+  productionUrl: string | null;
+  stagingUrl: string | null;
+  repositoryUrl: string | null;
+  hostingProvider: string | null;
+  technicalOwnerId: string | null;
 }
 
 export interface FullProduct extends Product {
@@ -52,6 +63,7 @@ export interface FullProduct extends Product {
   tickets: ProductTicketRef[];
   order: ProductOrderRef | null;
   doneReadiness?: ProductDoneReadiness;
+  technicalProfiles?: ProductTechnicalProfileRef[];
 }
 
 export interface ProductDoneReadiness {
@@ -116,10 +128,18 @@ export interface ProductOrderRef {
   id: string;
   code: string;
   type: string;
+  paymentType: string;
   totalAmount: string;
   currency: string;
   status: string;
-  deal?: { id: string; code: string } | null;
+  deal?: {
+    id: string;
+    code: string;
+    offerFileUrl?: string | null;
+    contractFileUrl?: string | null;
+    seller?: ProductEmployee | null;
+  } | null;
+  invoices?: Array<{ moneyStatus: string }>;
 }
 
 export interface ProductStats {
@@ -142,6 +162,7 @@ export interface CreateProductData {
   deadline?: string;
   description?: string;
   checklistTemplateId?: string;
+  languages?: string[];
 }
 
 export interface UpdateProductData {
@@ -152,6 +173,7 @@ export interface UpdateProductData {
   deadline?: string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: string[];
 }
 
 export interface PauseDeliveryData {

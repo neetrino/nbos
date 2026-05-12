@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Building2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,8 +29,14 @@ import {
   getTaxStatus,
 } from '@/features/clients/constants/clients';
 import { companiesApi, type Company } from '@/lib/api/clients';
+import { toast } from 'sonner';
+
+const OPEN_COMPANY_QUERY = 'openId';
 
 export default function CompaniesPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +67,51 @@ export default function CompaniesPage() {
   useEffect(() => {
     fetchCompanies();
   }, [fetchCompanies]);
+
+  const openCompanyId = searchParams.get(OPEN_COMPANY_QUERY);
+  const deepLinkCompanyAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    deepLinkCompanyAttemptedRef.current = null;
+  }, [openCompanyId]);
+
+  const stripOpenCompanyFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has(OPEN_COMPANY_QUERY)) return;
+    params.delete(OPEN_COMPANY_QUERY);
+    const q = params.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  useEffect(() => {
+    if (!openCompanyId || loading) return;
+    const match = companies.find((c) => c.id === openCompanyId);
+    if (match) {
+      setSelectedCompany(match);
+      setSheetOpen(true);
+      return;
+    }
+    if (deepLinkCompanyAttemptedRef.current === openCompanyId) return;
+    deepLinkCompanyAttemptedRef.current = openCompanyId;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const company = await companiesApi.getById(openCompanyId);
+        if (cancelled) return;
+        setCompanies((prev) => (prev.some((c) => c.id === company.id) ? prev : [company, ...prev]));
+        setSelectedCompany(company);
+        setSheetOpen(true);
+      } catch {
+        if (!cancelled) {
+          toast.error('Company not found or you cannot open it.');
+          stripOpenCompanyFromUrl();
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openCompanyId, loading, companies, stripOpenCompanyFromUrl]);
 
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
     await companiesApi.update(id, data);
@@ -204,7 +256,13 @@ export default function CompaniesPage() {
       <CompanySheet
         company={selectedCompany}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) {
+            setSelectedCompany(null);
+            stripOpenCompanyFromUrl();
+          }
+        }}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
       />

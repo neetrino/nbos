@@ -1,16 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import {
-  Building2,
-  Calendar,
-  FolderKanban,
-  Layers,
-  Package,
-  Sparkles,
-  Tag,
-  User,
-} from 'lucide-react';
+import { Calendar, Layers, Package, Sparkles, Tag, User } from 'lucide-react';
 import { InlineField, SearchField } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
 import {
@@ -133,25 +124,6 @@ export function ProductPlanningSection({
             onValueChange={(v) => patchDraft({ description: v })}
           />
         </div>
-        {product.project.company ? (
-          <div className="text-muted-foreground flex items-start gap-2 text-sm md:col-span-2">
-            <Building2 size={14} className="mt-0.5 shrink-0 opacity-70" />
-            <span>
-              <span className="text-foreground font-medium">Company: </span>
-              {product.project.company.name}
-            </span>
-          </div>
-        ) : null}
-        {product.order ? (
-          <div className="text-muted-foreground flex items-start gap-2 text-sm md:col-span-2">
-            <FolderKanban size={14} className="mt-0.5 shrink-0 opacity-70" />
-            <span>
-              <span className="text-foreground font-medium">Order: </span>
-              {product.order.code}
-              {product.order.deal?.code ? ` · Deal ${product.order.deal.code}` : ''}
-            </span>
-          </div>
-        ) : null}
       </div>
     </section>
   );

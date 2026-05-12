@@ -280,7 +280,7 @@ export function DeliveryItemDetailSheet({
               projectCode={headerProps?.projectCode ?? '—'}
               projectName={headerProps?.projectName ?? '—'}
               projectHref={headerProps?.projectHref ?? '#'}
-              workspaceHref={headerProps?.sourcePageHref ?? '#'}
+              workspaceHref={headerProps?.workSpaceHref ?? '#'}
               deadline={headerProps?.deadline ?? null}
               loading={loading}
               onCommitTitle={handleCommitTitle}
@@ -323,6 +323,7 @@ export function DeliveryItemDetailSheet({
                   product={product}
                   extension={extension}
                   lifecycle={lifecycle}
+                  workSpaceHref={headerProps.workSpaceHref}
                   sourcePageHref={headerProps.sourcePageHref}
                   credentialsTabHref={credentialsTabHref}
                   projectHubHref={projectHubHref}

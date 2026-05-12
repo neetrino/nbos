@@ -10,6 +10,7 @@ export type ProductPlanSnapshot = {
   productCategory: string;
   productType: string;
   description: string;
+  languages: string[];
 };
 
 export type ExtensionPlanSnapshot = {
@@ -29,6 +30,7 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
     productCategory: p.productCategory,
     productType: p.productType,
     description: p.description ?? '',
+    languages: [...(p.languages ?? [])],
   };
 }
 
@@ -76,6 +78,12 @@ export function buildProductPlanPatch(
   const nextDesc = draft.description;
   if (nextDesc !== snap.description) {
     patch.description = nextDesc.trim() ? nextDesc : null;
+  }
+
+  const snapLang = [...snap.languages].sort().join('\0');
+  const draftLang = [...draft.languages].sort().join('\0');
+  if (snapLang !== draftLang) {
+    patch.languages = draft.languages;
   }
 
   return Object.keys(patch).length > 0 ? patch : null;
