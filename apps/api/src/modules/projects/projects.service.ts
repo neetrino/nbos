@@ -1,10 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import {
-  ProjectKickoffChecklistService,
-  type UpdateKickoffChecklistItemDto,
-} from './project-kickoff-checklist.service';
 import { projectDetailInclude } from './project.includes';
 import { buildProjectIntake } from './project-intake';
 import {
@@ -38,10 +34,7 @@ interface ProjectQueryParams {
 
 @Injectable()
 export class ProjectsService {
-  constructor(
-    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    private readonly kickoffChecklist: ProjectKickoffChecklistService,
-  ) {}
+  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: ProjectQueryParams) {
     const {
@@ -89,13 +82,8 @@ export class ProjectsService {
       include: projectDetailInclude,
     });
     if (!project) throw new NotFoundException(`Project ${id} not found`);
-    const kickoffChecklist = await this.kickoffChecklist.ensureForProject(id);
     const deliveryProject = attachProjectDeliveryLifecycles(project);
-    return { ...deliveryProject, intake: buildProjectIntake(deliveryProject), kickoffChecklist };
-  }
-
-  updateKickoffChecklistItem(id: string, itemId: string, data: UpdateKickoffChecklistItemDto) {
-    return this.kickoffChecklist.updateItem(id, itemId, data);
+    return { ...deliveryProject, intake: buildProjectIntake(deliveryProject) };
   }
 
   async create(data: CreateProjectDto) {

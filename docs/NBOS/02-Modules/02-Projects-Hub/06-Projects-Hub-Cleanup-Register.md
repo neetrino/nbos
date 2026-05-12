@@ -280,7 +280,7 @@ Project detail runtime now exposes `deliveryLifecycle` on embedded Product and E
 
 - Project Delivery Board reads canonical stage, work status and terminal outcome from `deliveryLifecycle`;
 - Product tab filters and badges use canonical lifecycle buckets before legacy `status`;
-- PM Intake primary Product label uses canonical lifecycle when available;
+- legacy PM Intake panel is no longer delivery canon; Starting readiness belongs to Product/Extension delivery card;
 - Extension readiness checks the canonical `STARTING` stage before falling back to legacy `NEW`.
 
 Legacy `status` is still returned as a compatibility mirror for older API clients and remaining runtime code.
@@ -442,15 +442,15 @@ Old Phase 4 docs defined `Delivery Board` inside Project detail as the operation
 
 New canon: `Delivery Board` is a separate left-menu page and main delivery lifecycle screen. See `07-Delivery-Board.md`.
 
-Runtime cleanup now needed:
+Runtime cleanup status:
 
-- add `/delivery-board` route;
-- add sidebar item;
-- rename Dashboard pinned action `Product Board` -> `Delivery Board`;
-- remove or demote embedded Project Delivery Board from Project page;
-- move PM Intake panel logic into Kickoff/Delivery Readiness in Delivery Board opened card and Product stage-gate context;
-- remove or demote the large Project-level Tasks block from Project page; delivery execution tasks belong in Product Work Space;
-- keep Project page limited to compact readiness/status indicators.
+- Project-level PM Intake / kickoff readiness panel is removed from canon;
+- old project-level kickoff checklist service/API/UI must not be used for delivery gates;
+- Delivery Board card keeps only compact current-stage readiness;
+- opened Delivery Card owns Starting requirements and checklist instance work;
+- Product / Extension stage gate checks checklist instance completion as one requirement;
+- checklist instance owns item-level rules, comments and `Complete checklist`;
+- keep Project page limited to compact product cards/readiness/status indicators.
 
 ### B4. Старое описание extension как необязательной связи с product больше не подходит
 
@@ -561,7 +561,7 @@ Current deprecation rule:
 
 - Project Delivery Board uses canonical lifecycle for grouping, filtering, quick actions and badges, but is now transitional under the 2026-05-08 Delivery Board canon;
 - Product tab filters and badges prefer canonical lifecycle buckets;
-- PM Intake primary Product label prefers canonical lifecycle, but the large Project page PM Intake panel is now transitional;
+- legacy Project page PM Intake panel is removed from canon; Starting readiness belongs to Delivery Board opened card;
 - Product and Extension lifecycle controls call canonical endpoints for stage movement and terminal actions.
 - expired `ON_HOLD` states are highlighted from `deliveryLifecycle.onHoldUntil`.
 

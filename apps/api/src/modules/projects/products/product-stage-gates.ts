@@ -34,13 +34,6 @@ interface ProductForStageGate {
   tickets?: Array<{ status: string }>;
 }
 
-interface KickoffChecklistItemForGate {
-  key: string;
-  title: string;
-  isRequired: boolean;
-  isChecked: boolean;
-}
-
 export function validateProductTransition(current: ProductStatusEnum, target: ProductStatusEnum) {
   const allowed = PRODUCT_ALLOWED_TRANSITIONS[current];
 
@@ -192,19 +185,4 @@ function buildOpenItemError(
       message: `${openCount} ${field} still require completion before ${targetLabel}.`,
     },
   ];
-}
-
-export function validateKickoffChecklistGate(items: KickoffChecklistItemForGate[]) {
-  const missing = items.filter((item) => item.isRequired && !item.isChecked);
-
-  if (missing.length === 0) return;
-
-  throw new BadRequestException({
-    code: 'STAGE_GATE_VALIDATION',
-    message: 'PM kickoff checklist must be accepted before Development.',
-    errors: missing.map((item) => ({
-      field: `kickoffChecklist.${item.key}`,
-      message: item.title,
-    })),
-  });
 }

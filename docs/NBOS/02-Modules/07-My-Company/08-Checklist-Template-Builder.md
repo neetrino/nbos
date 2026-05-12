@@ -74,6 +74,15 @@ Starting requirements
 
 `Kickoff Checklist completed` - один requirement. Внутри него есть свои checklist items.
 
+Граница ответственности:
+
+```text
+Delivery stage gate checks only ChecklistInstance.completedAt.
+Checklist instance decides whether it can be completed.
+```
+
+То есть stage gate не должен проверять отдельные `item.key`, `Done`, `Not Done` или комментарии. Эти правила принадлежат checklist instance. Это позволяет менять пункты по stage/product type/template version без переписывания delivery stage gates.
+
 ---
 
 ## 4. Template vs Instance
@@ -266,6 +275,14 @@ Specialist reviewed required points and made an explicit decision for each.
 
 Это защищает команду от забытых пунктов, но не заставляет искусственно отмечать "done" то, что не подходит или не было сделано.
 
+После completion checklist становится верхнеуровневым фактом для consumer module:
+
+```text
+ChecklistInstance.completedAt != null
+```
+
+Delivery Board использует этот факт как один requirement текущего stage.
+
 ---
 
 ## 10. Item evidence types
@@ -415,3 +432,4 @@ This prevents one generic "templates" concept from swallowing delivery gates, ta
 | Not Done always requires reason/comment                                | Accepted |
 | Checklist completion requires decisions for all decisionRequired items | Accepted |
 | Checklist templates must be versioned and instances snapshot versions  | Accepted |
+| Stage gates check checklist instance completion, not checklist items   | Accepted |

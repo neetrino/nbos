@@ -79,7 +79,7 @@ const PRODUCT_ACTION_RULES = [
     key: 'pm-intake',
     label: 'Open product overview',
     target: 'project',
-    fields: ['kickoffChecklist', 'description', 'deadline', 'order'],
+    fields: ['checklist', 'description', 'deadline'],
   },
   {
     key: 'product-workspace-tasks',
@@ -112,7 +112,7 @@ const EXTENSION_ACTION_RULES = [
     key: 'extension-intake',
     label: 'Open extension on product',
     target: 'project',
-    fields: ['description', 'assignedTo', 'order'],
+    fields: ['checklist', 'description', 'assignedTo'],
   },
 ] as const;
 
@@ -134,7 +134,7 @@ export function resolveBlockerDirectActions({
 }
 
 function normalizeField(field: string): string {
-  if (field.startsWith('kickoffChecklist.')) return 'kickoffChecklist';
+  if (field.startsWith('checklist.')) return 'checklist';
   return field;
 }
 

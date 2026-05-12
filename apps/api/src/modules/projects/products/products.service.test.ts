@@ -476,14 +476,6 @@ describe('ProductsService', () => {
         status: 'ON_HOLD',
         deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
-      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
-        {
-          key: 'scope_confirmed',
-          title: 'Scope confirmed',
-          isRequired: true,
-          isChecked: true,
-        },
-      ]);
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
       const result = await service.updateStatus('p1', 'DEVELOPMENT', 'emp-audit');
       expect(result.status).toBe('DEVELOPMENT');
@@ -654,14 +646,6 @@ describe('ProductsService', () => {
         status: 'CREATING',
         deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
-      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
-        {
-          key: 'scope_confirmed',
-          title: 'Scope confirmed',
-          isRequired: true,
-          isChecked: true,
-        },
-      ]);
       prisma.product.update.mockResolvedValue({
         id: 'p1',
         status: 'DEVELOPMENT',

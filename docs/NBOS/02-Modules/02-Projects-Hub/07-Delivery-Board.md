@@ -24,6 +24,7 @@
 - `Product`;
 - `Extension`;
 - stage gate requirements;
+- checklist instances;
 - tasks;
 - credentials;
 - files;
@@ -249,6 +250,8 @@ Closed view не удаляет и не урезает данные. Он мен
 - deadline + risk marker;
 - pause/blocker badge если есть;
 - compact readiness indicator текущего stage.
+
+Внешняя карточка не показывает checklist items. Она может показывать только compact readiness ring / short checklist progress, потому что checklist details живут внутри opened Delivery Card.
 
 ### 7.1. Stage Readiness Indicator
 
@@ -502,8 +505,8 @@ Future stages видны, но компактные и серые. Они нуж
 Для каждого stage показывать:
 
 - completed / total required count;
-- required checklist items;
-- optional checklist items отдельно;
+- required stage requirements;
+- checklist requirement status as one row, not every checklist item;
 - owner role/person;
 - status;
 - due/overdue если есть;
@@ -537,7 +540,7 @@ Transfer      0/6 Future
 Принцип:
 
 ```text
-Card cannot move to the next stage until all required items for current stage are done.
+Card cannot move to the next stage until all required stage requirements are satisfied.
 ```
 
 Если пользователь пытается прыгнуть через stage или сразу закрыть `Done`, система выполняет cumulative validation по всем пропущенным stages.
@@ -580,6 +583,13 @@ Starting requirements
 ```
 
 `Kickoff Checklist completed` считается одним requirement на уровне stage. Внутри него есть собственные checklist items.
+
+Stage gate не проверяет checklist items напрямую. Он проверяет только completed status checklist instance. Это обязательная граница ответственности:
+
+```text
+Stage gate owns movement rules.
+Checklist instance owns checklist item rules.
+```
 
 Requirement shape:
 
@@ -673,37 +683,43 @@ Website / Transfer / Default
 
 ---
 
-## 10. PM Intake / Kickoff Readiness
+## 10. Starting readiness
 
-Old `PM Intake` panel на Project page считается переходным UI.
+Old `PM Intake` / project-level kickoff panel на Project page удалён из канона.
 
 Канон:
 
 ```text
-PM Intake as a large Project page panel is deprecated.
-Kickoff readiness remains canonical as Starting stage gate.
+Project page must not own delivery kickoff readiness.
+Starting readiness belongs to Product / Extension inside Delivery Board.
 ```
 
-То есть логику не удаляем:
+Starting stage gate проверяет только реальные delivery prerequisites верхнего уровня.
 
-- handoff summary;
-- kickoff checklist;
-- paid invoice condition;
-- PM assigned;
-- deadline;
-- credentials/access readiness.
+Для Product Starting -> Development:
 
-Но место меняется:
+- `deadline` заполнен в delivery card;
+- Starting checklist instance completed, если template/rule назначен для этого Product.
 
-- на Delivery Board card - только compact readiness indicator;
-- в opened Delivery Card - Starting stage requirements;
-- на Product page - Product Overview / Stage Gate section;
-- на Project page - максимум маленький readiness badge на Product card.
+Не проверять здесь:
+
+- deal/order existence, если Product уже создан из Won deal;
+- PM assignment, если Won deal/product creation уже блокирует отсутствие PM;
+- first payment, если это уже обеспечено deal/order/finance flow;
+- credentials/accesses, если они могут быть получены позже и не должны блокировать Development;
+- checklist items напрямую.
+
+Для Extension Starting -> Development:
+
+- required extension planning fields;
+- Starting checklist instance completed, если template/rule назначен для этого Extension.
+
+Delivery Board card показывает только compact readiness indicator. В opened Delivery Card показываются Starting requirements и stage checklist panel.
 
 Правильное имя для новой логики:
 
 ```text
-Kickoff Readiness
+Starting Readiness
 ```
 
 или шире:
@@ -711,8 +727,6 @@ Kickoff Readiness
 ```text
 Delivery Readiness
 ```
-
-`PM Intake` можно оставить как legacy/internal name в коде до refactor, но в новом UX лучше не использовать как главный label.
 
 ---
 
@@ -972,13 +986,14 @@ Dashboard widgets могут вести в filtered board:
 
 ## 17. Decisions
 
-| Decision                                              | Status   |
-| ----------------------------------------------------- | -------- |
-| Delivery Board is a separate left-menu page           | Accepted |
-| Delivery Board is not a separate database entity      | Accepted |
-| Project page should be cleaned from heavy delivery UI | Accepted |
-| Embedded Project Delivery Board v1 is transitional    | Accepted |
-| Outside card shows one current-stage readiness ring   | Accepted |
-| Opened card shows full Stage Gate Timeline            | Accepted |
-| PM Intake panel moves into Kickoff/Delivery Readiness | Accepted |
-| Future Project page delivery block must reuse core    | Accepted |
+| Decision                                                             | Status   |
+| -------------------------------------------------------------------- | -------- |
+| Delivery Board is a separate left-menu page                          | Accepted |
+| Delivery Board is not a separate database entity                     | Accepted |
+| Project page should be cleaned from heavy delivery UI                | Accepted |
+| Embedded Project Delivery Board v1 is transitional                   | Accepted |
+| Outside card shows one current-stage readiness ring                  | Accepted |
+| Opened card shows full Stage Gate Timeline                           | Accepted |
+| Project-level PM Intake / kickoff panel is removed from canon        | Accepted |
+| Stage gate checks checklist instance completion, not checklist items | Accepted |
+| Future Project page delivery block must reuse core                   | Accepted |
