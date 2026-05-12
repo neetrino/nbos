@@ -33,8 +33,12 @@ type Props = {
   onChange: (next: string | null) => void;
 };
 
-const ATTACHMENT_THUMB_CLASS =
-  'border-border size-14 shrink-0 rounded-md border bg-muted object-cover';
+/** Responsive grid: up to five attachment cards per row on medium+ viewports. */
+const CHECKLIST_ATTACHMENT_GRID_CLASS =
+  'grid list-none grid-cols-2 gap-2 p-0 sm:grid-cols-3 md:grid-cols-5';
+
+const ATTACHMENT_THUMB_FRAME_CLASS =
+  'border-border relative flex aspect-square w-full max-h-20 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted';
 
 function pickDocIcon(mime: string | null, formatLabel: string): LucideIcon {
   const m = mime?.toLowerCase() ?? '';
@@ -97,45 +101,39 @@ function AttachedEvidenceFileRow({
   const showImageThumb = phase === 'ready' && previewUrl && isImageMime(mimeType);
   const DocIcon = pickDocIcon(mimeType, formatLabel);
 
+  const caption =
+    phase === 'loading' ? 'Loading…' : phase === 'err' ? fileAssetId.slice(0, 12) + '…' : title;
+
   return (
-    <div className="border-border/70 bg-muted/30 flex items-center gap-2.5 rounded-md border px-2.5 py-2">
-      {phase === 'loading' ? (
-        <div className={`${ATTACHMENT_THUMB_CLASS} flex items-center justify-center`} aria-hidden>
-          <Loader2 className="text-muted-foreground size-5 animate-spin" />
-        </div>
-      ) : null}
-      {phase === 'err' ? (
-        <div className={`${ATTACHMENT_THUMB_CLASS} flex items-center justify-center`} aria-hidden>
-          <File className="text-muted-foreground size-6" />
-        </div>
-      ) : null}
-      {showImageThumb ? (
-        <img src={previewUrl} alt="" className={ATTACHMENT_THUMB_CLASS} width={56} height={56} />
-      ) : null}
-      {phase === 'ready' && !showImageThumb ? (
-        <div
-          className={`${ATTACHMENT_THUMB_CLASS} flex flex-col items-center justify-center gap-0.5 px-1`}
-          aria-hidden
-        >
-          <DocIcon className="text-muted-foreground size-6" />
-          <span className="text-muted-foreground max-w-full truncate text-[0.625rem] font-semibold tracking-tight uppercase">
-            {formatLabel}
-          </span>
-        </div>
-      ) : null}
-      <div className="min-w-0 flex-1">
-        <p className="text-foreground truncate text-xs leading-tight font-medium">
-          {phase === 'loading' ? 'Loading…' : phase === 'err' ? fileAssetId : title}
-        </p>
+    <div className="border-border/70 bg-muted/30 flex min-w-0 flex-col items-center gap-1.5 rounded-md border p-2">
+      <div className={ATTACHMENT_THUMB_FRAME_CLASS} aria-hidden>
+        {phase === 'loading' ? (
+          <Loader2 className="text-muted-foreground size-6 animate-spin" />
+        ) : null}
+        {phase === 'err' ? <File className="text-muted-foreground size-8" /> : null}
+        {showImageThumb ? (
+          <img src={previewUrl} alt="" className="size-full object-cover" width={80} height={80} />
+        ) : null}
         {phase === 'ready' && !showImageThumb ? (
-          <p className="text-muted-foreground mt-0.5 text-[0.6875rem]">{formatLabel}</p>
+          <div className="flex size-full flex-col items-center justify-center gap-0.5 px-1">
+            <DocIcon className="text-muted-foreground size-7 shrink-0" />
+            <span className="text-muted-foreground max-w-full truncate text-[0.5625rem] font-semibold tracking-tight uppercase">
+              {formatLabel}
+            </span>
+          </div>
         ) : null}
       </div>
+      <p
+        className="text-muted-foreground line-clamp-2 w-full text-center text-[0.625rem] leading-snug break-words"
+        title={phase === 'err' ? fileAssetId : title}
+      >
+        {caption}
+      </p>
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="sm"
-        className="text-muted-foreground h-7 shrink-0 px-2 text-xs"
+        className="text-muted-foreground h-7 w-full px-1 text-[0.625rem]"
         disabled={disabled || busy}
         onClick={onRemove}
       >
@@ -230,9 +228,9 @@ export function ChecklistDraftEvidenceFileField({
         ) : null}
       </div>
       {fileIds.length > 0 ? (
-        <ul className="space-y-1.5">
+        <ul className={CHECKLIST_ATTACHMENT_GRID_CLASS}>
           {fileIds.map((id) => (
-            <li key={id}>
+            <li key={id} className="min-w-0">
               <AttachedEvidenceFileRow
                 fileAssetId={id}
                 disabled={disabled}
