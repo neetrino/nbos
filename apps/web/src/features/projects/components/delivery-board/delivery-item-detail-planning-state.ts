@@ -2,11 +2,24 @@ import type { FullExtension, UpdateExtensionData } from '@/lib/api/extensions';
 import type { FullProduct, UpdateProductData } from '@/lib/api/products';
 import { PRODUCT_TYPES_BY_CATEGORY } from '@/features/projects/constants/projects';
 
+function employeeLabel(e: { firstName: string; lastName: string } | null | undefined): string {
+  if (!e) return '';
+  return `${e.firstName} ${e.lastName}`.trim();
+}
+
 export type ProductPlanSnapshot = {
   name: string;
   deadline: string;
   pmId: string | null;
   pmLabel: string;
+  developerId: string | null;
+  developerLabel: string;
+  designerId: string | null;
+  designerLabel: string;
+  technicalSpecialistId: string | null;
+  technicalSpecialistLabel: string;
+  qaLeadId: string | null;
+  qaLeadLabel: string;
   productCategory: string;
   productType: string;
   description: string;
@@ -26,7 +39,15 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
     name: p.name,
     deadline: p.deadline ? p.deadline.slice(0, 10) : '',
     pmId: p.pmId,
-    pmLabel: p.pm ? `${p.pm.firstName} ${p.pm.lastName}` : '',
+    pmLabel: employeeLabel(p.pm),
+    developerId: p.developer?.id ?? null,
+    developerLabel: employeeLabel(p.developer),
+    designerId: p.designer?.id ?? null,
+    designerLabel: employeeLabel(p.designer),
+    technicalSpecialistId: p.technicalSpecialist?.id ?? null,
+    technicalSpecialistLabel: employeeLabel(p.technicalSpecialist),
+    qaLeadId: p.qaLead?.id ?? null,
+    qaLeadLabel: employeeLabel(p.qaLead),
     productCategory: p.productCategory,
     productType: p.productType,
     description: p.description ?? '',
@@ -63,6 +84,19 @@ export function buildProductPlanPatch(
 
   if (draft.pmId !== snap.pmId) {
     patch.pmId = draft.pmId;
+  }
+
+  if (draft.developerId !== snap.developerId) {
+    patch.developerId = draft.developerId;
+  }
+  if (draft.designerId !== snap.designerId) {
+    patch.designerId = draft.designerId;
+  }
+  if (draft.technicalSpecialistId !== snap.technicalSpecialistId) {
+    patch.technicalSpecialistId = draft.technicalSpecialistId;
+  }
+  if (draft.qaLeadId !== snap.qaLeadId) {
+    patch.qaLeadId = draft.qaLeadId;
   }
 
   if (draft.productCategory !== snap.productCategory) {

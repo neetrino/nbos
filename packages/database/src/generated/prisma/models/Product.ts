@@ -40,6 +40,10 @@ export type ProductMinAggregateOutputType = {
   clientAcceptedBy: string | null;
   clientAcceptanceNote: string | null;
   pmId: string | null;
+  developerId: string | null;
+  designerId: string | null;
+  technicalSpecialistId: string | null;
+  qaLeadId: string | null;
   deadline: Date | null;
   description: string | null;
   checklistTemplateId: string | null;
@@ -66,6 +70,10 @@ export type ProductMaxAggregateOutputType = {
   clientAcceptedBy: string | null;
   clientAcceptanceNote: string | null;
   pmId: string | null;
+  developerId: string | null;
+  designerId: string | null;
+  technicalSpecialistId: string | null;
+  qaLeadId: string | null;
   deadline: Date | null;
   description: string | null;
   checklistTemplateId: string | null;
@@ -92,6 +100,10 @@ export type ProductCountAggregateOutputType = {
   clientAcceptedBy: number;
   clientAcceptanceNote: number;
   pmId: number;
+  developerId: number;
+  designerId: number;
+  technicalSpecialistId: number;
+  qaLeadId: number;
   deadline: number;
   description: number;
   checklistTemplateId: number;
@@ -120,6 +132,10 @@ export type ProductMinAggregateInputType = {
   clientAcceptedBy?: true;
   clientAcceptanceNote?: true;
   pmId?: true;
+  developerId?: true;
+  designerId?: true;
+  technicalSpecialistId?: true;
+  qaLeadId?: true;
   deadline?: true;
   description?: true;
   checklistTemplateId?: true;
@@ -146,6 +162,10 @@ export type ProductMaxAggregateInputType = {
   clientAcceptedBy?: true;
   clientAcceptanceNote?: true;
   pmId?: true;
+  developerId?: true;
+  designerId?: true;
+  technicalSpecialistId?: true;
+  qaLeadId?: true;
   deadline?: true;
   description?: true;
   checklistTemplateId?: true;
@@ -172,6 +192,10 @@ export type ProductCountAggregateInputType = {
   clientAcceptedBy?: true;
   clientAcceptanceNote?: true;
   pmId?: true;
+  developerId?: true;
+  designerId?: true;
+  technicalSpecialistId?: true;
+  qaLeadId?: true;
   deadline?: true;
   description?: true;
   checklistTemplateId?: true;
@@ -273,6 +297,10 @@ export type ProductGroupByOutputType = {
   clientAcceptedBy: string | null;
   clientAcceptanceNote: string | null;
   pmId: string | null;
+  developerId: string | null;
+  designerId: string | null;
+  technicalSpecialistId: string | null;
+  qaLeadId: string | null;
   deadline: Date | null;
   description: string | null;
   checklistTemplateId: string | null;
@@ -326,6 +354,10 @@ export type ProductWhereInput = {
   clientAcceptedBy?: Prisma.StringNullableFilter<'Product'> | string | null;
   clientAcceptanceNote?: Prisma.StringNullableFilter<'Product'> | string | null;
   pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  developerId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  designerId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  technicalSpecialistId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  qaLeadId?: Prisma.StringNullableFilter<'Product'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
   checklistTemplateId?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -336,6 +368,22 @@ export type ProductWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
   pm?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null;
+  developer?: Prisma.XOR<
+    Prisma.EmployeeNullableScalarRelationFilter,
+    Prisma.EmployeeWhereInput
+  > | null;
+  designer?: Prisma.XOR<
+    Prisma.EmployeeNullableScalarRelationFilter,
+    Prisma.EmployeeWhereInput
+  > | null;
+  technicalSpecialist?: Prisma.XOR<
+    Prisma.EmployeeNullableScalarRelationFilter,
+    Prisma.EmployeeWhereInput
+  > | null;
+  qaLead?: Prisma.XOR<
+    Prisma.EmployeeNullableScalarRelationFilter,
+    Prisma.EmployeeWhereInput
+  > | null;
   closedBy?: Prisma.XOR<
     Prisma.EmployeeNullableScalarRelationFilter,
     Prisma.EmployeeWhereInput
@@ -381,6 +429,10 @@ export type ProductOrderByWithRelationInput = {
   clientAcceptedBy?: Prisma.SortOrderInput | Prisma.SortOrder;
   clientAcceptanceNote?: Prisma.SortOrderInput | Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  developerId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  designerId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  technicalSpecialistId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  qaLeadId?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -391,6 +443,10 @@ export type ProductOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder;
   project?: Prisma.ProjectOrderByWithRelationInput;
   pm?: Prisma.EmployeeOrderByWithRelationInput;
+  developer?: Prisma.EmployeeOrderByWithRelationInput;
+  designer?: Prisma.EmployeeOrderByWithRelationInput;
+  technicalSpecialist?: Prisma.EmployeeOrderByWithRelationInput;
+  qaLead?: Prisma.EmployeeOrderByWithRelationInput;
   closedBy?: Prisma.EmployeeOrderByWithRelationInput;
   order?: Prisma.OrderOrderByWithRelationInput;
   extensions?: Prisma.ExtensionOrderByRelationAggregateInput;
@@ -439,6 +495,10 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     clientAcceptedBy?: Prisma.StringNullableFilter<'Product'> | string | null;
     clientAcceptanceNote?: Prisma.StringNullableFilter<'Product'> | string | null;
     pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
+    developerId?: Prisma.StringNullableFilter<'Product'> | string | null;
+    designerId?: Prisma.StringNullableFilter<'Product'> | string | null;
+    technicalSpecialistId?: Prisma.StringNullableFilter<'Product'> | string | null;
+    qaLeadId?: Prisma.StringNullableFilter<'Product'> | string | null;
     deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
     description?: Prisma.StringNullableFilter<'Product'> | string | null;
     checklistTemplateId?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -449,6 +509,22 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<
     updatedAt?: Prisma.DateTimeFilter<'Product'> | Date | string;
     project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
     pm?: Prisma.XOR<Prisma.EmployeeNullableScalarRelationFilter, Prisma.EmployeeWhereInput> | null;
+    developer?: Prisma.XOR<
+      Prisma.EmployeeNullableScalarRelationFilter,
+      Prisma.EmployeeWhereInput
+    > | null;
+    designer?: Prisma.XOR<
+      Prisma.EmployeeNullableScalarRelationFilter,
+      Prisma.EmployeeWhereInput
+    > | null;
+    technicalSpecialist?: Prisma.XOR<
+      Prisma.EmployeeNullableScalarRelationFilter,
+      Prisma.EmployeeWhereInput
+    > | null;
+    qaLead?: Prisma.XOR<
+      Prisma.EmployeeNullableScalarRelationFilter,
+      Prisma.EmployeeWhereInput
+    > | null;
     closedBy?: Prisma.XOR<
       Prisma.EmployeeNullableScalarRelationFilter,
       Prisma.EmployeeWhereInput
@@ -496,6 +572,10 @@ export type ProductOrderByWithAggregationInput = {
   clientAcceptedBy?: Prisma.SortOrderInput | Prisma.SortOrder;
   clientAcceptanceNote?: Prisma.SortOrderInput | Prisma.SortOrder;
   pmId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  developerId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  designerId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  technicalSpecialistId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  qaLeadId?: Prisma.SortOrderInput | Prisma.SortOrder;
   deadline?: Prisma.SortOrderInput | Prisma.SortOrder;
   description?: Prisma.SortOrderInput | Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -543,6 +623,10 @@ export type ProductScalarWhereWithAggregatesInput = {
   clientAcceptedBy?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   clientAcceptanceNote?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   pmId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
+  developerId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
+  designerId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
+  technicalSpecialistId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
+  qaLeadId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   deadline?: Prisma.DateTimeNullableWithAggregatesFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
   checklistTemplateId?: Prisma.StringNullableWithAggregatesFilter<'Product'> | string | null;
@@ -576,6 +660,10 @@ export type ProductCreateInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -612,6 +700,10 @@ export type ProductUncheckedCreateInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -670,6 +762,10 @@ export type ProductUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -716,6 +812,10 @@ export type ProductUncheckedUpdateInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -758,6 +858,10 @@ export type ProductCreateManyInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -828,6 +932,10 @@ export type ProductUncheckedUpdateManyInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -870,6 +978,10 @@ export type ProductCountOrderByAggregateInput = {
   clientAcceptedBy?: Prisma.SortOrder;
   clientAcceptanceNote?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
+  developerId?: Prisma.SortOrder;
+  designerId?: Prisma.SortOrder;
+  technicalSpecialistId?: Prisma.SortOrder;
+  qaLeadId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrder;
@@ -897,6 +1009,10 @@ export type ProductMaxOrderByAggregateInput = {
   clientAcceptedBy?: Prisma.SortOrder;
   clientAcceptanceNote?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
+  developerId?: Prisma.SortOrder;
+  designerId?: Prisma.SortOrder;
+  technicalSpecialistId?: Prisma.SortOrder;
+  qaLeadId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrder;
@@ -923,6 +1039,10 @@ export type ProductMinOrderByAggregateInput = {
   clientAcceptedBy?: Prisma.SortOrder;
   clientAcceptanceNote?: Prisma.SortOrder;
   pmId?: Prisma.SortOrder;
+  developerId?: Prisma.SortOrder;
+  designerId?: Prisma.SortOrder;
+  technicalSpecialistId?: Prisma.SortOrder;
+  qaLeadId?: Prisma.SortOrder;
   deadline?: Prisma.SortOrder;
   description?: Prisma.SortOrder;
   checklistTemplateId?: Prisma.SortOrder;
@@ -1091,6 +1211,66 @@ export type ProductCreateNestedManyWithoutPmInput = {
   connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
 };
 
+export type ProductCreateNestedManyWithoutDeveloperInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutDeveloperInput,
+        Prisma.ProductUncheckedCreateWithoutDeveloperInput
+      >
+    | Prisma.ProductCreateWithoutDeveloperInput[]
+    | Prisma.ProductUncheckedCreateWithoutDeveloperInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutDeveloperInput
+    | Prisma.ProductCreateOrConnectWithoutDeveloperInput[];
+  createMany?: Prisma.ProductCreateManyDeveloperInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
+export type ProductCreateNestedManyWithoutDesignerInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutDesignerInput,
+        Prisma.ProductUncheckedCreateWithoutDesignerInput
+      >
+    | Prisma.ProductCreateWithoutDesignerInput[]
+    | Prisma.ProductUncheckedCreateWithoutDesignerInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutDesignerInput
+    | Prisma.ProductCreateOrConnectWithoutDesignerInput[];
+  createMany?: Prisma.ProductCreateManyDesignerInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
+export type ProductCreateNestedManyWithoutTechnicalSpecialistInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutTechnicalSpecialistInput,
+        Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput
+      >
+    | Prisma.ProductCreateWithoutTechnicalSpecialistInput[]
+    | Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutTechnicalSpecialistInput
+    | Prisma.ProductCreateOrConnectWithoutTechnicalSpecialistInput[];
+  createMany?: Prisma.ProductCreateManyTechnicalSpecialistInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
+export type ProductCreateNestedManyWithoutQaLeadInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutQaLeadInput,
+        Prisma.ProductUncheckedCreateWithoutQaLeadInput
+      >
+    | Prisma.ProductCreateWithoutQaLeadInput[]
+    | Prisma.ProductUncheckedCreateWithoutQaLeadInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutQaLeadInput
+    | Prisma.ProductCreateOrConnectWithoutQaLeadInput[];
+  createMany?: Prisma.ProductCreateManyQaLeadInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
 export type ProductCreateNestedManyWithoutClosedByInput = {
   create?:
     | Prisma.XOR<
@@ -1115,6 +1295,66 @@ export type ProductUncheckedCreateNestedManyWithoutPmInput = {
     | Prisma.ProductCreateOrConnectWithoutPmInput
     | Prisma.ProductCreateOrConnectWithoutPmInput[];
   createMany?: Prisma.ProductCreateManyPmInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
+export type ProductUncheckedCreateNestedManyWithoutDeveloperInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutDeveloperInput,
+        Prisma.ProductUncheckedCreateWithoutDeveloperInput
+      >
+    | Prisma.ProductCreateWithoutDeveloperInput[]
+    | Prisma.ProductUncheckedCreateWithoutDeveloperInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutDeveloperInput
+    | Prisma.ProductCreateOrConnectWithoutDeveloperInput[];
+  createMany?: Prisma.ProductCreateManyDeveloperInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
+export type ProductUncheckedCreateNestedManyWithoutDesignerInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutDesignerInput,
+        Prisma.ProductUncheckedCreateWithoutDesignerInput
+      >
+    | Prisma.ProductCreateWithoutDesignerInput[]
+    | Prisma.ProductUncheckedCreateWithoutDesignerInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutDesignerInput
+    | Prisma.ProductCreateOrConnectWithoutDesignerInput[];
+  createMany?: Prisma.ProductCreateManyDesignerInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
+export type ProductUncheckedCreateNestedManyWithoutTechnicalSpecialistInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutTechnicalSpecialistInput,
+        Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput
+      >
+    | Prisma.ProductCreateWithoutTechnicalSpecialistInput[]
+    | Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutTechnicalSpecialistInput
+    | Prisma.ProductCreateOrConnectWithoutTechnicalSpecialistInput[];
+  createMany?: Prisma.ProductCreateManyTechnicalSpecialistInputEnvelope;
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+};
+
+export type ProductUncheckedCreateNestedManyWithoutQaLeadInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutQaLeadInput,
+        Prisma.ProductUncheckedCreateWithoutQaLeadInput
+      >
+    | Prisma.ProductCreateWithoutQaLeadInput[]
+    | Prisma.ProductUncheckedCreateWithoutQaLeadInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutQaLeadInput
+    | Prisma.ProductCreateOrConnectWithoutQaLeadInput[];
+  createMany?: Prisma.ProductCreateManyQaLeadInputEnvelope;
   connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
 };
 
@@ -1155,6 +1395,118 @@ export type ProductUpdateManyWithoutPmNestedInput = {
   updateMany?:
     | Prisma.ProductUpdateManyWithWhereWithoutPmInput
     | Prisma.ProductUpdateManyWithWhereWithoutPmInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type ProductUpdateManyWithoutDeveloperNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutDeveloperInput,
+        Prisma.ProductUncheckedCreateWithoutDeveloperInput
+      >
+    | Prisma.ProductCreateWithoutDeveloperInput[]
+    | Prisma.ProductUncheckedCreateWithoutDeveloperInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutDeveloperInput
+    | Prisma.ProductCreateOrConnectWithoutDeveloperInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutDeveloperInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutDeveloperInput[];
+  createMany?: Prisma.ProductCreateManyDeveloperInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutDeveloperInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutDeveloperInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutDeveloperInput
+    | Prisma.ProductUpdateManyWithWhereWithoutDeveloperInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type ProductUpdateManyWithoutDesignerNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutDesignerInput,
+        Prisma.ProductUncheckedCreateWithoutDesignerInput
+      >
+    | Prisma.ProductCreateWithoutDesignerInput[]
+    | Prisma.ProductUncheckedCreateWithoutDesignerInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutDesignerInput
+    | Prisma.ProductCreateOrConnectWithoutDesignerInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutDesignerInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutDesignerInput[];
+  createMany?: Prisma.ProductCreateManyDesignerInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutDesignerInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutDesignerInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutDesignerInput
+    | Prisma.ProductUpdateManyWithWhereWithoutDesignerInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type ProductUpdateManyWithoutTechnicalSpecialistNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutTechnicalSpecialistInput,
+        Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput
+      >
+    | Prisma.ProductCreateWithoutTechnicalSpecialistInput[]
+    | Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutTechnicalSpecialistInput
+    | Prisma.ProductCreateOrConnectWithoutTechnicalSpecialistInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutTechnicalSpecialistInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutTechnicalSpecialistInput[];
+  createMany?: Prisma.ProductCreateManyTechnicalSpecialistInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutTechnicalSpecialistInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutTechnicalSpecialistInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutTechnicalSpecialistInput
+    | Prisma.ProductUpdateManyWithWhereWithoutTechnicalSpecialistInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type ProductUpdateManyWithoutQaLeadNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutQaLeadInput,
+        Prisma.ProductUncheckedCreateWithoutQaLeadInput
+      >
+    | Prisma.ProductCreateWithoutQaLeadInput[]
+    | Prisma.ProductUncheckedCreateWithoutQaLeadInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutQaLeadInput
+    | Prisma.ProductCreateOrConnectWithoutQaLeadInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutQaLeadInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutQaLeadInput[];
+  createMany?: Prisma.ProductCreateManyQaLeadInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutQaLeadInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutQaLeadInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutQaLeadInput
+    | Prisma.ProductUpdateManyWithWhereWithoutQaLeadInput[];
   deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
 };
 
@@ -1208,6 +1560,118 @@ export type ProductUncheckedUpdateManyWithoutPmNestedInput = {
   updateMany?:
     | Prisma.ProductUpdateManyWithWhereWithoutPmInput
     | Prisma.ProductUpdateManyWithWhereWithoutPmInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type ProductUncheckedUpdateManyWithoutDeveloperNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutDeveloperInput,
+        Prisma.ProductUncheckedCreateWithoutDeveloperInput
+      >
+    | Prisma.ProductCreateWithoutDeveloperInput[]
+    | Prisma.ProductUncheckedCreateWithoutDeveloperInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutDeveloperInput
+    | Prisma.ProductCreateOrConnectWithoutDeveloperInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutDeveloperInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutDeveloperInput[];
+  createMany?: Prisma.ProductCreateManyDeveloperInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutDeveloperInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutDeveloperInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutDeveloperInput
+    | Prisma.ProductUpdateManyWithWhereWithoutDeveloperInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type ProductUncheckedUpdateManyWithoutDesignerNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutDesignerInput,
+        Prisma.ProductUncheckedCreateWithoutDesignerInput
+      >
+    | Prisma.ProductCreateWithoutDesignerInput[]
+    | Prisma.ProductUncheckedCreateWithoutDesignerInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutDesignerInput
+    | Prisma.ProductCreateOrConnectWithoutDesignerInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutDesignerInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutDesignerInput[];
+  createMany?: Prisma.ProductCreateManyDesignerInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutDesignerInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutDesignerInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutDesignerInput
+    | Prisma.ProductUpdateManyWithWhereWithoutDesignerInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type ProductUncheckedUpdateManyWithoutTechnicalSpecialistNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutTechnicalSpecialistInput,
+        Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput
+      >
+    | Prisma.ProductCreateWithoutTechnicalSpecialistInput[]
+    | Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutTechnicalSpecialistInput
+    | Prisma.ProductCreateOrConnectWithoutTechnicalSpecialistInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutTechnicalSpecialistInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutTechnicalSpecialistInput[];
+  createMany?: Prisma.ProductCreateManyTechnicalSpecialistInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutTechnicalSpecialistInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutTechnicalSpecialistInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutTechnicalSpecialistInput
+    | Prisma.ProductUpdateManyWithWhereWithoutTechnicalSpecialistInput[];
+  deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
+};
+
+export type ProductUncheckedUpdateManyWithoutQaLeadNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.ProductCreateWithoutQaLeadInput,
+        Prisma.ProductUncheckedCreateWithoutQaLeadInput
+      >
+    | Prisma.ProductCreateWithoutQaLeadInput[]
+    | Prisma.ProductUncheckedCreateWithoutQaLeadInput[];
+  connectOrCreate?:
+    | Prisma.ProductCreateOrConnectWithoutQaLeadInput
+    | Prisma.ProductCreateOrConnectWithoutQaLeadInput[];
+  upsert?:
+    | Prisma.ProductUpsertWithWhereUniqueWithoutQaLeadInput
+    | Prisma.ProductUpsertWithWhereUniqueWithoutQaLeadInput[];
+  createMany?: Prisma.ProductCreateManyQaLeadInputEnvelope;
+  set?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  disconnect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  delete?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  connect?: Prisma.ProductWhereUniqueInput | Prisma.ProductWhereUniqueInput[];
+  update?:
+    | Prisma.ProductUpdateWithWhereUniqueWithoutQaLeadInput
+    | Prisma.ProductUpdateWithWhereUniqueWithoutQaLeadInput[];
+  updateMany?:
+    | Prisma.ProductUpdateManyWithWhereWithoutQaLeadInput
+    | Prisma.ProductUpdateManyWithWhereWithoutQaLeadInput[];
   deleteMany?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[];
 };
 
@@ -1731,6 +2195,10 @@ export type ProductCreateWithoutChecklistTemplateInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -1766,6 +2234,10 @@ export type ProductUncheckedCreateWithoutChecklistTemplateInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   languages?: Prisma.ProductCreatelanguagesInput | string[];
@@ -1861,6 +2333,10 @@ export type ProductScalarWhereInput = {
   clientAcceptedBy?: Prisma.StringNullableFilter<'Product'> | string | null;
   clientAcceptanceNote?: Prisma.StringNullableFilter<'Product'> | string | null;
   pmId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  developerId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  designerId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  technicalSpecialistId?: Prisma.StringNullableFilter<'Product'> | string | null;
+  qaLeadId?: Prisma.StringNullableFilter<'Product'> | string | null;
   deadline?: Prisma.DateTimeNullableFilter<'Product'> | Date | string | null;
   description?: Prisma.StringNullableFilter<'Product'> | string | null;
   checklistTemplateId?: Prisma.StringNullableFilter<'Product'> | string | null;
@@ -1894,6 +2370,10 @@ export type ProductCreateWithoutClientServiceRecordsInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -1929,6 +2409,10 @@ export type ProductUncheckedCreateWithoutClientServiceRecordsInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2014,6 +2498,10 @@ export type ProductUpdateWithoutClientServiceRecordsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -2059,6 +2547,10 @@ export type ProductUncheckedUpdateWithoutClientServiceRecordsInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2106,6 +2598,10 @@ export type ProductCreateWithoutDealsLinkedInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -2141,6 +2637,10 @@ export type ProductUncheckedCreateWithoutDealsLinkedInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2226,6 +2726,10 @@ export type ProductUpdateWithoutDealsLinkedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -2271,6 +2775,10 @@ export type ProductUncheckedUpdateWithoutDealsLinkedInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2317,6 +2825,10 @@ export type ProductCreateWithoutPmInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -2352,6 +2864,10 @@ export type ProductUncheckedCreateWithoutPmInput = {
   clientAcceptedAt?: Date | string | null;
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2390,6 +2906,420 @@ export type ProductCreateManyPmInputEnvelope = {
   skipDuplicates?: boolean;
 };
 
+export type ProductCreateWithoutDeveloperInput = {
+  id?: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
+  pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
+  order?: Prisma.OrderCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
+  checklistTemplate?: Prisma.ChecklistTemplateCreateNestedOneWithoutProductsInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutProductInput;
+};
+
+export type ProductUncheckedCreateWithoutDeveloperInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutProductInput;
+};
+
+export type ProductCreateOrConnectWithoutDeveloperInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutDeveloperInput,
+    Prisma.ProductUncheckedCreateWithoutDeveloperInput
+  >;
+};
+
+export type ProductCreateManyDeveloperInputEnvelope = {
+  data: Prisma.ProductCreateManyDeveloperInput | Prisma.ProductCreateManyDeveloperInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ProductCreateWithoutDesignerInput = {
+  id?: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
+  pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
+  order?: Prisma.OrderCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
+  checklistTemplate?: Prisma.ChecklistTemplateCreateNestedOneWithoutProductsInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutProductInput;
+};
+
+export type ProductUncheckedCreateWithoutDesignerInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  developerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutProductInput;
+};
+
+export type ProductCreateOrConnectWithoutDesignerInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutDesignerInput,
+    Prisma.ProductUncheckedCreateWithoutDesignerInput
+  >;
+};
+
+export type ProductCreateManyDesignerInputEnvelope = {
+  data: Prisma.ProductCreateManyDesignerInput | Prisma.ProductCreateManyDesignerInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ProductCreateWithoutTechnicalSpecialistInput = {
+  id?: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
+  pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
+  order?: Prisma.OrderCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
+  checklistTemplate?: Prisma.ChecklistTemplateCreateNestedOneWithoutProductsInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutProductInput;
+};
+
+export type ProductUncheckedCreateWithoutTechnicalSpecialistInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  qaLeadId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutProductInput;
+};
+
+export type ProductCreateOrConnectWithoutTechnicalSpecialistInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutTechnicalSpecialistInput,
+    Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput
+  >;
+};
+
+export type ProductCreateManyTechnicalSpecialistInputEnvelope = {
+  data:
+    | Prisma.ProductCreateManyTechnicalSpecialistInput
+    | Prisma.ProductCreateManyTechnicalSpecialistInput[];
+  skipDuplicates?: boolean;
+};
+
+export type ProductCreateWithoutQaLeadInput = {
+  id?: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
+  pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
+  order?: Prisma.OrderCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutProductInput;
+  checklistTemplate?: Prisma.ChecklistTemplateCreateNestedOneWithoutProductsInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingCreateNestedManyWithoutProductInput;
+};
+
+export type ProductUncheckedCreateWithoutQaLeadInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  order?: Prisma.OrderUncheckedCreateNestedOneWithoutProductInput;
+  extensions?: Prisma.ExtensionUncheckedCreateNestedManyWithoutProductInput;
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProductInput;
+  workSpace?: Prisma.WorkSpaceUncheckedCreateNestedOneWithoutProductInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutProductInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedCreateNestedManyWithoutProductInput;
+  dealsLinked?: Prisma.DealUncheckedCreateNestedManyWithoutExistingProductInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedCreateNestedManyWithoutProductInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedCreateNestedManyWithoutProductInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedCreateNestedManyWithoutProductInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedCreateNestedManyWithoutProductInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedCreateNestedManyWithoutProductInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutProductInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutProductInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedCreateNestedManyWithoutProductInput;
+};
+
+export type ProductCreateOrConnectWithoutQaLeadInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutQaLeadInput,
+    Prisma.ProductUncheckedCreateWithoutQaLeadInput
+  >;
+};
+
+export type ProductCreateManyQaLeadInputEnvelope = {
+  data: Prisma.ProductCreateManyQaLeadInput | Prisma.ProductCreateManyQaLeadInput[];
+  skipDuplicates?: boolean;
+};
+
 export type ProductCreateWithoutClosedByInput = {
   id?: string;
   name: string;
@@ -2413,6 +3343,10 @@ export type ProductCreateWithoutClosedByInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -2448,6 +3382,10 @@ export type ProductUncheckedCreateWithoutClosedByInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2510,6 +3448,118 @@ export type ProductUpdateManyWithWhereWithoutPmInput = {
   >;
 };
 
+export type ProductUpsertWithWhereUniqueWithoutDeveloperInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ProductUpdateWithoutDeveloperInput,
+    Prisma.ProductUncheckedUpdateWithoutDeveloperInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutDeveloperInput,
+    Prisma.ProductUncheckedCreateWithoutDeveloperInput
+  >;
+};
+
+export type ProductUpdateWithWhereUniqueWithoutDeveloperInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateWithoutDeveloperInput,
+    Prisma.ProductUncheckedUpdateWithoutDeveloperInput
+  >;
+};
+
+export type ProductUpdateManyWithWhereWithoutDeveloperInput = {
+  where: Prisma.ProductScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateManyMutationInput,
+    Prisma.ProductUncheckedUpdateManyWithoutDeveloperInput
+  >;
+};
+
+export type ProductUpsertWithWhereUniqueWithoutDesignerInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ProductUpdateWithoutDesignerInput,
+    Prisma.ProductUncheckedUpdateWithoutDesignerInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutDesignerInput,
+    Prisma.ProductUncheckedCreateWithoutDesignerInput
+  >;
+};
+
+export type ProductUpdateWithWhereUniqueWithoutDesignerInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateWithoutDesignerInput,
+    Prisma.ProductUncheckedUpdateWithoutDesignerInput
+  >;
+};
+
+export type ProductUpdateManyWithWhereWithoutDesignerInput = {
+  where: Prisma.ProductScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateManyMutationInput,
+    Prisma.ProductUncheckedUpdateManyWithoutDesignerInput
+  >;
+};
+
+export type ProductUpsertWithWhereUniqueWithoutTechnicalSpecialistInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ProductUpdateWithoutTechnicalSpecialistInput,
+    Prisma.ProductUncheckedUpdateWithoutTechnicalSpecialistInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutTechnicalSpecialistInput,
+    Prisma.ProductUncheckedCreateWithoutTechnicalSpecialistInput
+  >;
+};
+
+export type ProductUpdateWithWhereUniqueWithoutTechnicalSpecialistInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateWithoutTechnicalSpecialistInput,
+    Prisma.ProductUncheckedUpdateWithoutTechnicalSpecialistInput
+  >;
+};
+
+export type ProductUpdateManyWithWhereWithoutTechnicalSpecialistInput = {
+  where: Prisma.ProductScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateManyMutationInput,
+    Prisma.ProductUncheckedUpdateManyWithoutTechnicalSpecialistInput
+  >;
+};
+
+export type ProductUpsertWithWhereUniqueWithoutQaLeadInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.ProductUpdateWithoutQaLeadInput,
+    Prisma.ProductUncheckedUpdateWithoutQaLeadInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ProductCreateWithoutQaLeadInput,
+    Prisma.ProductUncheckedCreateWithoutQaLeadInput
+  >;
+};
+
+export type ProductUpdateWithWhereUniqueWithoutQaLeadInput = {
+  where: Prisma.ProductWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateWithoutQaLeadInput,
+    Prisma.ProductUncheckedUpdateWithoutQaLeadInput
+  >;
+};
+
+export type ProductUpdateManyWithWhereWithoutQaLeadInput = {
+  where: Prisma.ProductScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.ProductUpdateManyMutationInput,
+    Prisma.ProductUncheckedUpdateManyWithoutQaLeadInput
+  >;
+};
+
 export type ProductUpsertWithWhereUniqueWithoutClosedByInput = {
   where: Prisma.ProductWhereUniqueInput;
   update: Prisma.XOR<
@@ -2561,6 +3611,10 @@ export type ProductCreateWithoutOrderInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -2596,6 +3650,10 @@ export type ProductUncheckedCreateWithoutOrderInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2681,6 +3739,10 @@ export type ProductUpdateWithoutOrderInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -2726,6 +3788,10 @@ export type ProductUncheckedUpdateWithoutOrderInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2773,6 +3839,10 @@ export type ProductCreateWithoutOperationalJournalEntriesInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -2808,6 +3878,10 @@ export type ProductUncheckedCreateWithoutOperationalJournalEntriesInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -2893,6 +3967,10 @@ export type ProductUpdateWithoutOperationalJournalEntriesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -2938,6 +4016,10 @@ export type ProductUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -2985,6 +4067,10 @@ export type ProductCreateWithoutBonusReleasesInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -3020,6 +4106,10 @@ export type ProductUncheckedCreateWithoutBonusReleasesInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -3105,6 +4195,10 @@ export type ProductUpdateWithoutBonusReleasesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -3150,6 +4244,10 @@ export type ProductUncheckedUpdateWithoutBonusReleasesInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3197,6 +4295,10 @@ export type ProductCreateWithoutProductBonusPoolsInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -3232,6 +4334,10 @@ export type ProductUncheckedCreateWithoutProductBonusPoolsInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -3317,6 +4423,10 @@ export type ProductUpdateWithoutProductBonusPoolsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -3362,6 +4472,10 @@ export type ProductUncheckedUpdateWithoutProductBonusPoolsInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3409,6 +4523,10 @@ export type ProductCreateWithoutPartnerAccrualsInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -3444,6 +4562,10 @@ export type ProductUncheckedCreateWithoutPartnerAccrualsInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -3529,6 +4651,10 @@ export type ProductUpdateWithoutPartnerAccrualsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -3574,6 +4700,10 @@ export type ProductUncheckedUpdateWithoutPartnerAccrualsInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3620,6 +4750,10 @@ export type ProductCreateWithoutProjectInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -3655,6 +4789,10 @@ export type ProductUncheckedCreateWithoutProjectInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -3744,6 +4882,10 @@ export type ProductCreateWithoutAccessSlotBindingsInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -3779,6 +4921,10 @@ export type ProductUncheckedCreateWithoutAccessSlotBindingsInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -3864,6 +5010,10 @@ export type ProductUpdateWithoutAccessSlotBindingsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -3909,6 +5059,10 @@ export type ProductUncheckedUpdateWithoutAccessSlotBindingsInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -3956,6 +5110,10 @@ export type ProductCreateWithoutExtensionsInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   tasks?: Prisma.TaskCreateNestedManyWithoutProductInput;
@@ -3991,6 +5149,10 @@ export type ProductUncheckedCreateWithoutExtensionsInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -4076,6 +5238,10 @@ export type ProductUpdateWithoutExtensionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -4121,6 +5287,10 @@ export type ProductUncheckedUpdateWithoutExtensionsInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4168,6 +5338,10 @@ export type ProductCreateWithoutTicketsInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -4203,6 +5377,10 @@ export type ProductUncheckedCreateWithoutTicketsInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -4288,6 +5466,10 @@ export type ProductUpdateWithoutTicketsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -4333,6 +5515,10 @@ export type ProductUncheckedUpdateWithoutTicketsInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4380,6 +5566,10 @@ export type ProductCreateWithoutWorkSpaceInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -4415,6 +5605,10 @@ export type ProductUncheckedCreateWithoutWorkSpaceInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -4500,6 +5694,10 @@ export type ProductUpdateWithoutWorkSpaceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -4545,6 +5743,10 @@ export type ProductUncheckedUpdateWithoutWorkSpaceInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4592,6 +5794,10 @@ export type ProductCreateWithoutTasksInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -4627,6 +5833,10 @@ export type ProductUncheckedCreateWithoutTasksInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -4712,6 +5922,10 @@ export type ProductUpdateWithoutTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -4757,6 +5971,10 @@ export type ProductUncheckedUpdateWithoutTasksInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -4804,6 +6022,10 @@ export type ProductCreateWithoutTechnicalProfilesInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -4839,6 +6061,10 @@ export type ProductUncheckedCreateWithoutTechnicalProfilesInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -4924,6 +6150,10 @@ export type ProductUpdateWithoutTechnicalProfilesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -4969,6 +6199,10 @@ export type ProductUncheckedUpdateWithoutTechnicalProfilesInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5016,6 +6250,10 @@ export type ProductCreateWithoutTechnicalAssetsInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -5051,6 +6289,10 @@ export type ProductUncheckedCreateWithoutTechnicalAssetsInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -5136,6 +6378,10 @@ export type ProductUpdateWithoutTechnicalAssetsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -5181,6 +6427,10 @@ export type ProductUncheckedUpdateWithoutTechnicalAssetsInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5228,6 +6478,10 @@ export type ProductCreateWithoutTechnicalEnvironmentsInput = {
   updatedAt?: Date | string;
   project: Prisma.ProjectCreateNestedOneWithoutProductsInput;
   pm?: Prisma.EmployeeCreateNestedOneWithoutProductsManagingInput;
+  developer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDeveloperInput;
+  designer?: Prisma.EmployeeCreateNestedOneWithoutProductsAsDesignerInput;
+  technicalSpecialist?: Prisma.EmployeeCreateNestedOneWithoutProductsAsTechnicalSpecialistInput;
+  qaLead?: Prisma.EmployeeCreateNestedOneWithoutProductsAsQaLeadInput;
   closedBy?: Prisma.EmployeeCreateNestedOneWithoutProductsClosedInput;
   order?: Prisma.OrderCreateNestedOneWithoutProductInput;
   extensions?: Prisma.ExtensionCreateNestedManyWithoutProductInput;
@@ -5263,6 +6517,10 @@ export type ProductUncheckedCreateWithoutTechnicalEnvironmentsInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -5348,6 +6606,10 @@ export type ProductUpdateWithoutTechnicalEnvironmentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -5393,6 +6655,10 @@ export type ProductUncheckedUpdateWithoutTechnicalEnvironmentsInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5434,6 +6700,10 @@ export type ProductCreateManyChecklistTemplateInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   languages?: Prisma.ProductCreatelanguagesInput | string[];
@@ -5476,6 +6746,10 @@ export type ProductUpdateWithoutChecklistTemplateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -5521,6 +6795,10 @@ export type ProductUncheckedUpdateWithoutChecklistTemplateInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   languages?: Prisma.ProductUpdatelanguagesInput | string[];
@@ -5572,6 +6850,10 @@ export type ProductUncheckedUpdateManyWithoutChecklistTemplateInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   languages?: Prisma.ProductUpdatelanguagesInput | string[];
@@ -5597,6 +6879,130 @@ export type ProductCreateManyPmInput = {
   clientAcceptedAt?: Date | string | null;
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type ProductCreateManyDeveloperInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type ProductCreateManyDesignerInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  developerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type ProductCreateManyTechnicalSpecialistInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  qaLeadId?: string | null;
+  deadline?: Date | string | null;
+  description?: string | null;
+  checklistTemplateId?: string | null;
+  languages?: Prisma.ProductCreatelanguagesInput | string[];
+  closedAt?: Date | string | null;
+  closedById?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type ProductCreateManyQaLeadInput = {
+  id?: string;
+  projectId: string;
+  name: string;
+  productCategory: $Enums.ProductCategoryEnum;
+  productType: $Enums.ProductTypeEnum;
+  status?: $Enums.ProductStatusEnum;
+  deliveryStage?: $Enums.DeliveryStageEnum | null;
+  deliveryWorkStatus?: $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?: $Enums.DeliveryResolutionEnum | null;
+  onHoldReason?: string | null;
+  onHoldUntil?: Date | string | null;
+  cancellationReason?: string | null;
+  clientAcceptedAt?: Date | string | null;
+  clientAcceptedBy?: string | null;
+  clientAcceptanceNote?: string | null;
+  pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -5624,6 +7030,10 @@ export type ProductCreateManyClosedByInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -5665,6 +7075,10 @@ export type ProductUpdateWithoutPmInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -5710,6 +7124,10 @@ export type ProductUncheckedUpdateWithoutPmInput = {
   clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5761,6 +7179,610 @@ export type ProductUncheckedUpdateManyWithoutPmInput = {
   clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ProductUpdateWithoutDeveloperInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
+  pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
+  checklistTemplate?: Prisma.ChecklistTemplateUpdateOneWithoutProductsNestedInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateWithoutDeveloperInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateManyWithoutDeveloperInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ProductUpdateWithoutDesignerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
+  pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
+  checklistTemplate?: Prisma.ChecklistTemplateUpdateOneWithoutProductsNestedInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateWithoutDesignerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateManyWithoutDesignerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ProductUpdateWithoutTechnicalSpecialistInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
+  pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
+  checklistTemplate?: Prisma.ChecklistTemplateUpdateOneWithoutProductsNestedInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateWithoutTechnicalSpecialistInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateManyWithoutTechnicalSpecialistInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type ProductUpdateWithoutQaLeadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
+  pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
+  order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutProductNestedInput;
+  checklistTemplate?: Prisma.ChecklistTemplateUpdateOneWithoutProductsNestedInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateWithoutQaLeadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  languages?: Prisma.ProductUpdatelanguagesInput | string[];
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  closedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  order?: Prisma.OrderUncheckedUpdateOneWithoutProductNestedInput;
+  extensions?: Prisma.ExtensionUncheckedUpdateManyWithoutProductNestedInput;
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutProductNestedInput;
+  workSpace?: Prisma.WorkSpaceUncheckedUpdateOneWithoutProductNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutProductNestedInput;
+  clientServiceRecords?: Prisma.ClientServiceRecordUncheckedUpdateManyWithoutProductNestedInput;
+  dealsLinked?: Prisma.DealUncheckedUpdateManyWithoutExistingProductNestedInput;
+  productBonusPools?: Prisma.ProductBonusPoolUncheckedUpdateManyWithoutProductNestedInput;
+  bonusReleases?: Prisma.BonusReleaseUncheckedUpdateManyWithoutProductNestedInput;
+  technicalProfiles?: Prisma.ProductTechnicalProfileUncheckedUpdateManyWithoutProductNestedInput;
+  technicalAssets?: Prisma.TechnicalAssetUncheckedUpdateManyWithoutProductNestedInput;
+  technicalEnvironments?: Prisma.TechnicalEnvironmentUncheckedUpdateManyWithoutProductNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutProductNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutProductNestedInput;
+  accessSlotBindings?: Prisma.ProductAccessSlotBindingUncheckedUpdateManyWithoutProductNestedInput;
+};
+
+export type ProductUncheckedUpdateManyWithoutQaLeadInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  productCategory?:
+    | Prisma.EnumProductCategoryEnumFieldUpdateOperationsInput
+    | $Enums.ProductCategoryEnum;
+  productType?: Prisma.EnumProductTypeEnumFieldUpdateOperationsInput | $Enums.ProductTypeEnum;
+  status?: Prisma.EnumProductStatusEnumFieldUpdateOperationsInput | $Enums.ProductStatusEnum;
+  deliveryStage?:
+    | Prisma.NullableEnumDeliveryStageEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryStageEnum
+    | null;
+  deliveryWorkStatus?:
+    | Prisma.EnumDeliveryWorkStatusEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryWorkStatusEnum;
+  deliveryResolution?:
+    | Prisma.NullableEnumDeliveryResolutionEnumFieldUpdateOperationsInput
+    | $Enums.DeliveryResolutionEnum
+    | null;
+  onHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  onHoldUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5804,6 +7826,10 @@ export type ProductUpdateWithoutClosedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   project?: Prisma.ProjectUpdateOneRequiredWithoutProductsNestedInput;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
   tasks?: Prisma.TaskUpdateManyWithoutProductNestedInput;
@@ -5849,6 +7875,10 @@ export type ProductUncheckedUpdateWithoutClosedByInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5900,6 +7930,10 @@ export type ProductUncheckedUpdateManyWithoutClosedByInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -5925,6 +7959,10 @@ export type ProductCreateManyProjectInput = {
   clientAcceptedBy?: string | null;
   clientAcceptanceNote?: string | null;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: Date | string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -5967,6 +8005,10 @@ export type ProductUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   pm?: Prisma.EmployeeUpdateOneWithoutProductsManagingNestedInput;
+  developer?: Prisma.EmployeeUpdateOneWithoutProductsAsDeveloperNestedInput;
+  designer?: Prisma.EmployeeUpdateOneWithoutProductsAsDesignerNestedInput;
+  technicalSpecialist?: Prisma.EmployeeUpdateOneWithoutProductsAsTechnicalSpecialistNestedInput;
+  qaLead?: Prisma.EmployeeUpdateOneWithoutProductsAsQaLeadNestedInput;
   closedBy?: Prisma.EmployeeUpdateOneWithoutProductsClosedNestedInput;
   order?: Prisma.OrderUpdateOneWithoutProductNestedInput;
   extensions?: Prisma.ExtensionUpdateManyWithoutProductNestedInput;
@@ -6012,6 +8054,10 @@ export type ProductUncheckedUpdateWithoutProjectInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -6063,6 +8109,10 @@ export type ProductUncheckedUpdateManyWithoutProjectInput = {
   clientAcceptedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   clientAcceptanceNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   pmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  developerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  designerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  technicalSpecialistId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  qaLeadId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   deadline?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   checklistTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -6260,6 +8310,10 @@ export type ProductSelect<
     clientAcceptedBy?: boolean;
     clientAcceptanceNote?: boolean;
     pmId?: boolean;
+    developerId?: boolean;
+    designerId?: boolean;
+    technicalSpecialistId?: boolean;
+    qaLeadId?: boolean;
     deadline?: boolean;
     description?: boolean;
     checklistTemplateId?: boolean;
@@ -6270,6 +8324,10 @@ export type ProductSelect<
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
     pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+    developer?: boolean | Prisma.Product$developerArgs<ExtArgs>;
+    designer?: boolean | Prisma.Product$designerArgs<ExtArgs>;
+    technicalSpecialist?: boolean | Prisma.Product$technicalSpecialistArgs<ExtArgs>;
+    qaLead?: boolean | Prisma.Product$qaLeadArgs<ExtArgs>;
     closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
     order?: boolean | Prisma.Product$orderArgs<ExtArgs>;
     extensions?: boolean | Prisma.Product$extensionsArgs<ExtArgs>;
@@ -6312,6 +8370,10 @@ export type ProductSelectCreateManyAndReturn<
     clientAcceptedBy?: boolean;
     clientAcceptanceNote?: boolean;
     pmId?: boolean;
+    developerId?: boolean;
+    designerId?: boolean;
+    technicalSpecialistId?: boolean;
+    qaLeadId?: boolean;
     deadline?: boolean;
     description?: boolean;
     checklistTemplateId?: boolean;
@@ -6322,6 +8384,10 @@ export type ProductSelectCreateManyAndReturn<
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
     pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+    developer?: boolean | Prisma.Product$developerArgs<ExtArgs>;
+    designer?: boolean | Prisma.Product$designerArgs<ExtArgs>;
+    technicalSpecialist?: boolean | Prisma.Product$technicalSpecialistArgs<ExtArgs>;
+    qaLead?: boolean | Prisma.Product$qaLeadArgs<ExtArgs>;
     closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
     checklistTemplate?: boolean | Prisma.Product$checklistTemplateArgs<ExtArgs>;
   },
@@ -6348,6 +8414,10 @@ export type ProductSelectUpdateManyAndReturn<
     clientAcceptedBy?: boolean;
     clientAcceptanceNote?: boolean;
     pmId?: boolean;
+    developerId?: boolean;
+    designerId?: boolean;
+    technicalSpecialistId?: boolean;
+    qaLeadId?: boolean;
     deadline?: boolean;
     description?: boolean;
     checklistTemplateId?: boolean;
@@ -6358,6 +8428,10 @@ export type ProductSelectUpdateManyAndReturn<
     updatedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
     pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+    developer?: boolean | Prisma.Product$developerArgs<ExtArgs>;
+    designer?: boolean | Prisma.Product$designerArgs<ExtArgs>;
+    technicalSpecialist?: boolean | Prisma.Product$technicalSpecialistArgs<ExtArgs>;
+    qaLead?: boolean | Prisma.Product$qaLeadArgs<ExtArgs>;
     closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
     checklistTemplate?: boolean | Prisma.Product$checklistTemplateArgs<ExtArgs>;
   },
@@ -6381,6 +8455,10 @@ export type ProductSelectScalar = {
   clientAcceptedBy?: boolean;
   clientAcceptanceNote?: boolean;
   pmId?: boolean;
+  developerId?: boolean;
+  designerId?: boolean;
+  technicalSpecialistId?: boolean;
+  qaLeadId?: boolean;
   deadline?: boolean;
   description?: boolean;
   checklistTemplateId?: boolean;
@@ -6410,6 +8488,10 @@ export type ProductOmit<
   | 'clientAcceptedBy'
   | 'clientAcceptanceNote'
   | 'pmId'
+  | 'developerId'
+  | 'designerId'
+  | 'technicalSpecialistId'
+  | 'qaLeadId'
   | 'deadline'
   | 'description'
   | 'checklistTemplateId'
@@ -6425,6 +8507,10 @@ export type ProductInclude<
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
   pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+  developer?: boolean | Prisma.Product$developerArgs<ExtArgs>;
+  designer?: boolean | Prisma.Product$designerArgs<ExtArgs>;
+  technicalSpecialist?: boolean | Prisma.Product$technicalSpecialistArgs<ExtArgs>;
+  qaLead?: boolean | Prisma.Product$qaLeadArgs<ExtArgs>;
   closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
   order?: boolean | Prisma.Product$orderArgs<ExtArgs>;
   extensions?: boolean | Prisma.Product$extensionsArgs<ExtArgs>;
@@ -6449,6 +8535,10 @@ export type ProductIncludeCreateManyAndReturn<
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
   pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+  developer?: boolean | Prisma.Product$developerArgs<ExtArgs>;
+  designer?: boolean | Prisma.Product$designerArgs<ExtArgs>;
+  technicalSpecialist?: boolean | Prisma.Product$technicalSpecialistArgs<ExtArgs>;
+  qaLead?: boolean | Prisma.Product$qaLeadArgs<ExtArgs>;
   closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
   checklistTemplate?: boolean | Prisma.Product$checklistTemplateArgs<ExtArgs>;
 };
@@ -6457,6 +8547,10 @@ export type ProductIncludeUpdateManyAndReturn<
 > = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
   pm?: boolean | Prisma.Product$pmArgs<ExtArgs>;
+  developer?: boolean | Prisma.Product$developerArgs<ExtArgs>;
+  designer?: boolean | Prisma.Product$designerArgs<ExtArgs>;
+  technicalSpecialist?: boolean | Prisma.Product$technicalSpecialistArgs<ExtArgs>;
+  qaLead?: boolean | Prisma.Product$qaLeadArgs<ExtArgs>;
   closedBy?: boolean | Prisma.Product$closedByArgs<ExtArgs>;
   checklistTemplate?: boolean | Prisma.Product$checklistTemplateArgs<ExtArgs>;
 };
@@ -6468,6 +8562,10 @@ export type $ProductPayload<
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>;
     pm: Prisma.$EmployeePayload<ExtArgs> | null;
+    developer: Prisma.$EmployeePayload<ExtArgs> | null;
+    designer: Prisma.$EmployeePayload<ExtArgs> | null;
+    technicalSpecialist: Prisma.$EmployeePayload<ExtArgs> | null;
+    qaLead: Prisma.$EmployeePayload<ExtArgs> | null;
     closedBy: Prisma.$EmployeePayload<ExtArgs> | null;
     order: Prisma.$OrderPayload<ExtArgs> | null;
     extensions: Prisma.$ExtensionPayload<ExtArgs>[];
@@ -6504,6 +8602,10 @@ export type $ProductPayload<
       clientAcceptedBy: string | null;
       clientAcceptanceNote: string | null;
       pmId: string | null;
+      developerId: string | null;
+      designerId: string | null;
+      technicalSpecialistId: string | null;
+      qaLeadId: string | null;
       deadline: Date | null;
       description: string | null;
       checklistTemplateId: string | null;
@@ -7057,6 +9159,58 @@ export interface Prisma__ProductClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  developer<T extends Prisma.Product$developerArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Product$developerArgs<ExtArgs>>,
+  ): Prisma.Prisma__EmployeeClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$EmployeePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  designer<T extends Prisma.Product$designerArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Product$designerArgs<ExtArgs>>,
+  ): Prisma.Prisma__EmployeeClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$EmployeePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  technicalSpecialist<T extends Prisma.Product$technicalSpecialistArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Product$technicalSpecialistArgs<ExtArgs>>,
+  ): Prisma.Prisma__EmployeeClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$EmployeePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  qaLead<T extends Prisma.Product$qaLeadArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Product$qaLeadArgs<ExtArgs>>,
+  ): Prisma.Prisma__EmployeeClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$EmployeePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   closedBy<T extends Prisma.Product$closedByArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Product$closedByArgs<ExtArgs>>,
   ): Prisma.Prisma__EmployeeClient<
@@ -7289,6 +9443,10 @@ export interface ProductFieldRefs {
   readonly clientAcceptedBy: Prisma.FieldRef<'Product', 'String'>;
   readonly clientAcceptanceNote: Prisma.FieldRef<'Product', 'String'>;
   readonly pmId: Prisma.FieldRef<'Product', 'String'>;
+  readonly developerId: Prisma.FieldRef<'Product', 'String'>;
+  readonly designerId: Prisma.FieldRef<'Product', 'String'>;
+  readonly technicalSpecialistId: Prisma.FieldRef<'Product', 'String'>;
+  readonly qaLeadId: Prisma.FieldRef<'Product', 'String'>;
   readonly deadline: Prisma.FieldRef<'Product', 'DateTime'>;
   readonly description: Prisma.FieldRef<'Product', 'String'>;
   readonly checklistTemplateId: Prisma.FieldRef<'Product', 'String'>;
@@ -7723,6 +9881,90 @@ export type ProductDeleteManyArgs<
  * Product.pm
  */
 export type Product$pmArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Employee
+   */
+  select?: Prisma.EmployeeSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Employee
+   */
+  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeInclude<ExtArgs> | null;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+/**
+ * Product.developer
+ */
+export type Product$developerArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Employee
+   */
+  select?: Prisma.EmployeeSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Employee
+   */
+  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeInclude<ExtArgs> | null;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+/**
+ * Product.designer
+ */
+export type Product$designerArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Employee
+   */
+  select?: Prisma.EmployeeSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Employee
+   */
+  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeInclude<ExtArgs> | null;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+/**
+ * Product.technicalSpecialist
+ */
+export type Product$technicalSpecialistArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Employee
+   */
+  select?: Prisma.EmployeeSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Employee
+   */
+  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeInclude<ExtArgs> | null;
+  where?: Prisma.EmployeeWhereInput;
+};
+
+/**
+ * Product.qaLead
+ */
+export type Product$qaLeadArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   /**

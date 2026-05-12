@@ -1,10 +1,9 @@
 'use client';
 
-import { Layers, Package, Sparkles, Tag, User } from 'lucide-react';
-import { InlineField, SearchField } from '@/components/shared';
+import { Layers, Package, Sparkles, Tag } from 'lucide-react';
+import { InlineField } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import { EXTENSION_SIZES, getProductType } from '@/features/projects/constants/projects';
-import { useEmployeeSearchLoader } from './delivery-item-detail-employee-search';
 import type { ExtensionPlanSnapshot } from './delivery-item-detail-planning-state';
 
 function ExtensionPlanProductLine({ extension }: { extension: FullExtension }) {
@@ -31,18 +30,16 @@ export function ExtensionPlanningSection({
   onDraftChange: (next: ExtensionPlanSnapshot) => void;
   disabled?: boolean;
 }) {
-  const searchEmployees = useEmployeeSearchLoader();
-
   const patchDraft = (partial: Partial<ExtensionPlanSnapshot>) => {
     onDraftChange({ ...draft, ...partial });
   };
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-5">
-      <h3 className="text-muted-foreground mb-4 text-[11px] font-semibold tracking-wider uppercase">
+    <section className="border-border bg-card/40 rounded-xl border p-4">
+      <h3 className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-wider uppercase">
         Extension plan
       </h3>
-      <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
         <InlineField
           variant="controlled"
           label="Extension name"
@@ -62,25 +59,6 @@ export function ExtensionPlanningSection({
           disabled={disabled}
           onValueChange={(v) => {
             if (v) patchDraft({ size: v });
-          }}
-        />
-        <SearchField
-          selectionMode="stage"
-          label="Owner"
-          value={draft.assignedTo}
-          displayValue={
-            draft.assigneeLabel ? (
-              <span className="text-foreground font-medium">{draft.assigneeLabel}</span>
-            ) : undefined
-          }
-          placeholder="Assign…"
-          icon={<User size={12} />}
-          onSearch={searchEmployees}
-          onStageSelect={(id, label) => {
-            patchDraft({ assignedTo: id, assigneeLabel: label });
-          }}
-          onClear={() => {
-            patchDraft({ assignedTo: null, assigneeLabel: '' });
           }}
         />
         <div className="md:col-span-2">

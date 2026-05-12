@@ -142,6 +142,10 @@ export class ProductsController {
       productCategory?: string;
       productType?: string;
       pmId?: string | null;
+      developerId?: string | null;
+      designerId?: string | null;
+      technicalSpecialistId?: string | null;
+      qaLeadId?: string | null;
       deadline?: string | null;
       description?: string | null;
       checklistTemplateId?: string | null;

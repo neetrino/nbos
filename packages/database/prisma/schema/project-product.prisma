@@ -131,7 +131,11 @@ model Product {
   clientAcceptedAt     DateTime?               @map("client_accepted_at")
   clientAcceptedBy     String?                 @map("client_accepted_by")
   clientAcceptanceNote String?                 @map("client_acceptance_note")
-  pmId                 String?                 @map("pm_id")
+  pmId                    String?                 @map("pm_id")
+  developerId             String?                 @map("developer_id")
+  designerId              String?                 @map("designer_id")
+  technicalSpecialistId   String?                 @map("technical_specialist_id")
+  qaLeadId                String?                 @map("qa_lead_id")
   deadline             DateTime?
   description          String?
   checklistTemplateId  String?                 @map("checklist_template_id")
@@ -144,6 +148,10 @@ model Product {
 
   project                   Project                    @relation(fields: [projectId], references: [id])
   pm                        Employee?                  @relation("ProductPM", fields: [pmId], references: [id])
+  developer                 Employee?                  @relation("ProductDeveloper", fields: [developerId], references: [id])
+  designer                  Employee?                  @relation("ProductDesigner", fields: [designerId], references: [id])
+  technicalSpecialist       Employee?                  @relation("ProductTechnicalSpecialist", fields: [technicalSpecialistId], references: [id])
+  qaLead                    Employee?                  @relation("ProductQaLead", fields: [qaLeadId], references: [id])
   closedBy                  Employee?                  @relation("ProductClosedBy", fields: [closedById], references: [id])
   order                     Order?
   extensions                Extension[]
@@ -168,6 +176,10 @@ model Product {
   @@index([onHoldUntil])
   @@index([clientAcceptedAt])
   @@index([closedAt])
+  @@index([developerId])
+  @@index([designerId])
+  @@index([technicalSpecialistId])
+  @@index([qaLeadId])
   @@map("products")
 }
 

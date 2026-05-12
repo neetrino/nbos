@@ -37,11 +37,11 @@ export function DeliveryItemCommercialSection({
   const dealHref = deal?.id ? `/crm/deals?openDealId=${encodeURIComponent(deal.id)}` : null;
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-5">
-      <h3 className="text-muted-foreground mb-4 text-[11px] font-semibold tracking-wider uppercase">
+    <section className="border-border bg-card/40 rounded-xl border p-4">
+      <h3 className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-wider uppercase">
         Client & order
       </h3>
-      <div className="space-y-3 text-sm">
+      <div className="space-y-2.5 text-sm">
         {contact ? (
           <div className="flex items-start justify-between gap-2">
             <div className="text-muted-foreground flex items-center gap-2">

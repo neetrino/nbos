@@ -52,11 +52,11 @@ export function DeliveryItemKeyWorkLinksSection({
       : extension?.product?.technicalProfiles?.[0];
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-5">
-      <h3 className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-wider uppercase">
+    <section className="border-border bg-card/40 rounded-xl border p-4">
+      <h3 className="text-muted-foreground mb-2.5 text-[10px] font-semibold tracking-wider uppercase">
         Key work links
       </h3>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         {workSpaceHref && workSpaceHref !== '#' ? (
           <Link
             href={workSpaceHref}

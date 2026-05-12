@@ -223,9 +223,9 @@ export function DeliveryAccessInfrastructureSection({
   }
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-muted-foreground flex items-center gap-2 text-[11px] font-semibold tracking-wider uppercase">
+    <section className="border-border bg-card/40 rounded-xl border p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-wider uppercase">
           <KeyRound size={14} className="opacity-70" aria-hidden />
           Access & infrastructure
         </h3>

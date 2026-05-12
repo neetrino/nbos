@@ -23,6 +23,10 @@ export interface Product {
   status: string;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   pmId: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline: string | null;
   description: string | null;
   checklistTemplateId: string | null;
@@ -64,6 +68,10 @@ export interface FullProduct extends Product {
   order: ProductOrderRef | null;
   doneReadiness?: ProductDoneReadiness;
   technicalProfiles?: ProductTechnicalProfileRef[];
+  developer?: ProductEmployee | null;
+  designer?: ProductEmployee | null;
+  technicalSpecialist?: ProductEmployee | null;
+  qaLead?: ProductEmployee | null;
 }
 
 export interface ProductDoneReadiness {
@@ -170,6 +178,10 @@ export interface UpdateProductData {
   productCategory?: string;
   productType?: string;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: string | null;
   description?: string | null;
   checklistTemplateId?: string | null;

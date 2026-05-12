@@ -1,15 +1,14 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Calendar, Layers, Package, Sparkles, Tag, User } from 'lucide-react';
-import { InlineField, SearchField } from '@/components/shared';
+import { Calendar, Layers, Package, Sparkles, Tag } from 'lucide-react';
+import { InlineField } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
 import {
   PRODUCT_CATEGORIES,
   PRODUCT_TYPES,
   PRODUCT_TYPES_BY_CATEGORY,
 } from '@/features/projects/constants/projects';
-import { useEmployeeSearchLoader } from './delivery-item-detail-employee-search';
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
 
 export function ProductPlanningSection({
@@ -23,8 +22,6 @@ export function ProductPlanningSection({
   onDraftChange: (next: ProductPlanSnapshot) => void;
   disabled?: boolean;
 }) {
-  const searchEmployees = useEmployeeSearchLoader();
-
   const typeOptions = useMemo(() => {
     const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
     const set = new Set(allowed);
@@ -39,11 +36,11 @@ export function ProductPlanningSection({
   };
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-5">
-      <h3 className="text-muted-foreground mb-4 text-[11px] font-semibold tracking-wider uppercase">
+    <section className="border-border bg-card/40 rounded-xl border p-4">
+      <h3 className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-wider uppercase">
         Delivery plan
       </h3>
-      <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
         <InlineField
           variant="controlled"
           label="Product name"
@@ -63,25 +60,6 @@ export function ProductPlanningSection({
           clearable
           disabled={disabled}
           onValueChange={(v) => patchDraft({ deadline: v })}
-        />
-        <SearchField
-          selectionMode="stage"
-          label="Project manager"
-          value={draft.pmId}
-          displayValue={
-            draft.pmLabel ? (
-              <span className="text-foreground font-medium">{draft.pmLabel}</span>
-            ) : undefined
-          }
-          placeholder="Search people…"
-          icon={<User size={12} />}
-          onSearch={searchEmployees}
-          onStageSelect={(id, label) => {
-            patchDraft({ pmId: id, pmLabel: label });
-          }}
-          onClear={() => {
-            patchDraft({ pmId: null, pmLabel: '' });
-          }}
         />
         <InlineField
           variant="controlled"

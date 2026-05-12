@@ -40,8 +40,8 @@ export function DeliveryItemStageReadinessSection({
 
   if (!lifecycle || rows.length === 0) {
     return (
-      <section className="border-border bg-card/40 rounded-xl border p-5">
-        <h3 className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-wider uppercase">
+      <section className="border-border bg-card/40 rounded-xl border p-4">
+        <h3 className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wider uppercase">
           Stage readiness
         </h3>
         <p className="text-muted-foreground text-sm">No stage requirement rows for this state.</p>
@@ -52,9 +52,9 @@ export function DeliveryItemStageReadinessSection({
   const doneCount = rows.filter((r) => r.done).length;
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-5">
+    <section className="border-border bg-card/40 rounded-xl border p-4">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+        <h3 className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
           Stage readiness
         </h3>
         <p className="text-muted-foreground text-xs">
@@ -64,7 +64,7 @@ export function DeliveryItemStageReadinessSection({
             : ` · ${doneCount}/${rows.length}`}
         </p>
       </div>
-      <ul className="space-y-2">
+      <ul className="space-y-1.5">
         {rows.map((row) => (
           <li key={row.key} className="flex items-start gap-2 text-sm">
             {row.done ? (

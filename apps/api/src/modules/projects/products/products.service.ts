@@ -60,6 +60,10 @@ interface UpdateProductDto {
   productCategory?: string;
   productType?: string;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
@@ -266,6 +270,12 @@ export class ProductsService {
           },
         },
         pm: { select: { id: true, firstName: true, lastName: true, email: true } },
+        developer: { select: { id: true, firstName: true, lastName: true, email: true } },
+        designer: { select: { id: true, firstName: true, lastName: true, email: true } },
+        technicalSpecialist: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+        qaLead: { select: { id: true, firstName: true, lastName: true, email: true } },
         closedBy: { select: { id: true, firstName: true, lastName: true } },
         technicalProfiles: {
           select: {
@@ -361,6 +371,12 @@ export class ProductsService {
           productType: data.productType as ProductTypeEnum,
         }),
         ...(data.pmId !== undefined && { pmId: data.pmId }),
+        ...(data.developerId !== undefined && { developerId: data.developerId }),
+        ...(data.designerId !== undefined && { designerId: data.designerId }),
+        ...(data.technicalSpecialistId !== undefined && {
+          technicalSpecialistId: data.technicalSpecialistId,
+        }),
+        ...(data.qaLeadId !== undefined && { qaLeadId: data.qaLeadId }),
         ...(data.deadline !== undefined && {
           deadline: data.deadline ? new Date(data.deadline) : null,
         }),
@@ -375,6 +391,12 @@ export class ProductsService {
       include: {
         project: { select: { id: true, code: true, name: true } },
         pm: { select: { id: true, firstName: true, lastName: true } },
+        developer: { select: { id: true, firstName: true, lastName: true } },
+        designer: { select: { id: true, firstName: true, lastName: true } },
+        technicalSpecialist: {
+          select: { id: true, firstName: true, lastName: true },
+        },
+        qaLead: { select: { id: true, firstName: true, lastName: true } },
       },
     });
     return attachProductDeliveryLifecycle(product);

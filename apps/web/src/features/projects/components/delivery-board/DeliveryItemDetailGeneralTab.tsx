@@ -18,10 +18,8 @@ import { DeliveryItemTeamSection } from './DeliveryItemTeamSection';
 import { DeliveryItemCommercialSection } from './DeliveryItemCommercialSection';
 import { DeliveryItemKeyWorkLinksSection } from './DeliveryItemKeyWorkLinksSection';
 import { DeliveryItemFilesSection } from './DeliveryItemFilesSection';
-import {
-  DeliveryItemLanguagesPanel,
-  DeliveryItemPaymentSummary,
-} from './DeliveryItemLanguagesPanel';
+import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultiselect';
+import { DeliveryItemPaymentSummary } from './DeliveryItemLanguagesPanel';
 
 interface DeliveryItemDetailGeneralTabProps {
   item: DeliveryBoardItem;
@@ -70,35 +68,14 @@ export function DeliveryItemDetailGeneralTab({
       ? (product?.checklistStageProgress ?? item.product.checklistStageProgress)
       : (extension?.checklistStageProgress ?? item.extension.checklistStageProgress);
 
-  const setupPanel =
-    kind === 'PRODUCT' && productPlan && product ? (
-      <div className="space-y-4">
-        <DeliveryItemLanguagesPanel
-          value={productPlan.languages}
-          onChange={(languages) => onProductPlanChange({ ...productPlan, languages })}
-          disabled={planningDisabled}
-        />
-        <DeliveryItemPaymentSummary paymentType={product.order?.paymentType} />
-      </div>
-    ) : kind === 'EXTENSION' && extension ? (
-      <div className="space-y-4">
-        <DeliveryItemLanguagesPanel
-          value={extension.product.languages ?? []}
-          readOnly
-          disabled={planningDisabled}
-        />
-        <DeliveryItemPaymentSummary paymentType={extension.order?.paymentType} />
-      </div>
-    ) : null;
-
   if (!product && !extension) {
     return <p className="text-muted-foreground px-5 py-8 text-sm sm:px-7">Nothing to edit yet.</p>;
   }
 
   return (
-    <div className="space-y-6 px-5 py-5 sm:px-7">
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="space-y-6">
+    <div className="space-y-4 px-5 py-4 sm:px-7">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:gap-5">
+        <div className="flex flex-col gap-4">
           <DeliveryItemStageReadinessSection
             kind={kind}
             product={product}
@@ -106,10 +83,39 @@ export function DeliveryItemDetailGeneralTab({
             lifecycle={lifecycle}
             checklistProgress={checklistProgress}
           />
-          <DeliveryItemTeamSection kind={kind} product={product} extension={extension} />
+          <DeliveryItemTeamSection
+            kind={kind}
+            product={product}
+            extension={extension}
+            productPlan={productPlan}
+            extensionPlan={extensionPlan}
+            onProductPlanChange={onProductPlanChange}
+            onExtensionPlanChange={onExtensionPlanChange}
+            disabled={planningDisabled}
+          />
+          {kind === 'PRODUCT' && productPlan && product ? (
+            <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
+              <DeliveryItemLanguagesMultiselect
+                value={productPlan.languages}
+                onChange={(languages) => onProductPlanChange({ ...productPlan, languages })}
+                disabled={planningDisabled}
+              />
+              <DeliveryItemPaymentSummary paymentType={product.order?.paymentType} />
+            </section>
+          ) : null}
+          {kind === 'EXTENSION' && extension ? (
+            <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
+              <DeliveryItemLanguagesMultiselect
+                value={extension.product.languages ?? []}
+                readOnly
+                disabled={planningDisabled}
+              />
+              <DeliveryItemPaymentSummary paymentType={extension.order?.paymentType} />
+            </section>
+          ) : null}
         </div>
 
-        <div className="space-y-6">
+        <div className="flex flex-col gap-4">
           {product && productPlan ? (
             <ProductPlanningSection
               product={product}
@@ -143,13 +149,12 @@ export function DeliveryItemDetailGeneralTab({
           />
         </div>
 
-        <div className="space-y-6">
+        <div className="flex flex-col gap-4">
           <DeliveryAccessInfrastructureSection
             projectId={projectId}
             productId={productId}
             productCredentialsHref={credentialsTabHref}
             onRefreshDetail={onRefreshDetail}
-            setupPanel={setupPanel}
           />
           <DeliveryItemFilesSection kind={kind} product={product} extension={extension} />
         </div>
