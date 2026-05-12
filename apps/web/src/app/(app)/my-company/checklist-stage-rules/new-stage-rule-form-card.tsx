@@ -181,7 +181,7 @@ export function NewStageRuleFormCard({ templates, onCreated }: Props) {
             <div className="space-y-2 sm:col-span-2 lg:col-span-2">
               <Label>Checklist template</Label>
               <Select
-                value={templateId || undefined}
+                value={templateId}
                 onValueChange={(v) => {
                   if (v) setTemplateId(v);
                 }}
