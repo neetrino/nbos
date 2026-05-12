@@ -31,6 +31,10 @@ export type CompanyMinAggregateOutputType = {
   legalAddress: string | null;
   taxStatus: $Enums.TaxStatus | null;
   contactId: string | null;
+  billingContactId: string | null;
+  phone: string | null;
+  email: string | null;
+  country: string | null;
   notes: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -44,6 +48,10 @@ export type CompanyMaxAggregateOutputType = {
   legalAddress: string | null;
   taxStatus: $Enums.TaxStatus | null;
   contactId: string | null;
+  billingContactId: string | null;
+  phone: string | null;
+  email: string | null;
+  country: string | null;
   notes: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -58,6 +66,10 @@ export type CompanyCountAggregateOutputType = {
   bankDetails: number;
   taxStatus: number;
   contactId: number;
+  billingContactId: number;
+  phone: number;
+  email: number;
+  country: number;
   notes: number;
   createdAt: number;
   updatedAt: number;
@@ -72,6 +84,10 @@ export type CompanyMinAggregateInputType = {
   legalAddress?: true;
   taxStatus?: true;
   contactId?: true;
+  billingContactId?: true;
+  phone?: true;
+  email?: true;
+  country?: true;
   notes?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -85,6 +101,10 @@ export type CompanyMaxAggregateInputType = {
   legalAddress?: true;
   taxStatus?: true;
   contactId?: true;
+  billingContactId?: true;
+  phone?: true;
+  email?: true;
+  country?: true;
   notes?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -99,6 +119,10 @@ export type CompanyCountAggregateInputType = {
   bankDetails?: true;
   taxStatus?: true;
   contactId?: true;
+  billingContactId?: true;
+  phone?: true;
+  email?: true;
+  country?: true;
   notes?: true;
   createdAt?: true;
   updatedAt?: true;
@@ -187,6 +211,10 @@ export type CompanyGroupByOutputType = {
   bankDetails: runtime.JsonValue | null;
   taxStatus: $Enums.TaxStatus;
   contactId: string;
+  billingContactId: string | null;
+  phone: string | null;
+  email: string | null;
+  country: string | null;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -219,10 +247,18 @@ export type CompanyWhereInput = {
   bankDetails?: Prisma.JsonNullableFilter<'Company'>;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Company'> | $Enums.TaxStatus;
   contactId?: Prisma.StringFilter<'Company'> | string;
+  billingContactId?: Prisma.StringNullableFilter<'Company'> | string | null;
+  phone?: Prisma.StringNullableFilter<'Company'> | string | null;
+  email?: Prisma.StringNullableFilter<'Company'> | string | null;
+  country?: Prisma.StringNullableFilter<'Company'> | string | null;
   notes?: Prisma.StringNullableFilter<'Company'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Company'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Company'> | Date | string;
   contact?: Prisma.XOR<Prisma.ContactScalarRelationFilter, Prisma.ContactWhereInput>;
+  billingContact?: Prisma.XOR<
+    Prisma.ContactNullableScalarRelationFilter,
+    Prisma.ContactWhereInput
+  > | null;
   projects?: Prisma.ProjectListRelationFilter;
   invoices?: Prisma.InvoiceListRelationFilter;
   deals?: Prisma.DealListRelationFilter;
@@ -239,10 +275,15 @@ export type CompanyOrderByWithRelationInput = {
   bankDetails?: Prisma.SortOrderInput | Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
+  billingContactId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder;
+  email?: Prisma.SortOrderInput | Prisma.SortOrder;
+  country?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   contact?: Prisma.ContactOrderByWithRelationInput;
+  billingContact?: Prisma.ContactOrderByWithRelationInput;
   projects?: Prisma.ProjectOrderByRelationAggregateInput;
   invoices?: Prisma.InvoiceOrderByRelationAggregateInput;
   deals?: Prisma.DealOrderByRelationAggregateInput;
@@ -263,10 +304,18 @@ export type CompanyWhereUniqueInput = Prisma.AtLeast<
     bankDetails?: Prisma.JsonNullableFilter<'Company'>;
     taxStatus?: Prisma.EnumTaxStatusFilter<'Company'> | $Enums.TaxStatus;
     contactId?: Prisma.StringFilter<'Company'> | string;
+    billingContactId?: Prisma.StringNullableFilter<'Company'> | string | null;
+    phone?: Prisma.StringNullableFilter<'Company'> | string | null;
+    email?: Prisma.StringNullableFilter<'Company'> | string | null;
+    country?: Prisma.StringNullableFilter<'Company'> | string | null;
     notes?: Prisma.StringNullableFilter<'Company'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Company'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Company'> | Date | string;
     contact?: Prisma.XOR<Prisma.ContactScalarRelationFilter, Prisma.ContactWhereInput>;
+    billingContact?: Prisma.XOR<
+      Prisma.ContactNullableScalarRelationFilter,
+      Prisma.ContactWhereInput
+    > | null;
     projects?: Prisma.ProjectListRelationFilter;
     invoices?: Prisma.InvoiceListRelationFilter;
     deals?: Prisma.DealListRelationFilter;
@@ -285,6 +334,10 @@ export type CompanyOrderByWithAggregationInput = {
   bankDetails?: Prisma.SortOrderInput | Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
+  billingContactId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder;
+  email?: Prisma.SortOrderInput | Prisma.SortOrder;
+  country?: Prisma.SortOrderInput | Prisma.SortOrder;
   notes?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -309,6 +362,10 @@ export type CompanyScalarWhereWithAggregatesInput = {
   bankDetails?: Prisma.JsonNullableWithAggregatesFilter<'Company'>;
   taxStatus?: Prisma.EnumTaxStatusWithAggregatesFilter<'Company'> | $Enums.TaxStatus;
   contactId?: Prisma.StringWithAggregatesFilter<'Company'> | string;
+  billingContactId?: Prisma.StringNullableWithAggregatesFilter<'Company'> | string | null;
+  phone?: Prisma.StringNullableWithAggregatesFilter<'Company'> | string | null;
+  email?: Prisma.StringNullableWithAggregatesFilter<'Company'> | string | null;
+  country?: Prisma.StringNullableWithAggregatesFilter<'Company'> | string | null;
   notes?: Prisma.StringNullableWithAggregatesFilter<'Company'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Company'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Company'> | Date | string;
@@ -322,10 +379,14 @@ export type CompanyCreateInput = {
   legalAddress?: string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutCompaniesInput;
+  billingContact?: Prisma.ContactCreateNestedOneWithoutBillingForCompaniesInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
@@ -342,6 +403,10 @@ export type CompanyUncheckedCreateInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
   contactId: string;
+  billingContactId?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -360,10 +425,14 @@ export type CompanyUpdateInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutCompaniesNestedInput;
+  billingContact?: Prisma.ContactUpdateOneWithoutBillingForCompaniesNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
@@ -380,6 +449,10 @@ export type CompanyUncheckedUpdateInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  billingContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -399,6 +472,10 @@ export type CompanyCreateManyInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
   contactId: string;
+  billingContactId?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -412,6 +489,9 @@ export type CompanyUpdateManyMutationInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -426,6 +506,10 @@ export type CompanyUncheckedUpdateManyInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  billingContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -450,6 +534,10 @@ export type CompanyCountOrderByAggregateInput = {
   bankDetails?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
+  billingContactId?: Prisma.SortOrder;
+  phone?: Prisma.SortOrder;
+  email?: Prisma.SortOrder;
+  country?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -463,6 +551,10 @@ export type CompanyMaxOrderByAggregateInput = {
   legalAddress?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
+  billingContactId?: Prisma.SortOrder;
+  phone?: Prisma.SortOrder;
+  email?: Prisma.SortOrder;
+  country?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -476,6 +568,10 @@ export type CompanyMinOrderByAggregateInput = {
   legalAddress?: Prisma.SortOrder;
   taxStatus?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
+  billingContactId?: Prisma.SortOrder;
+  phone?: Prisma.SortOrder;
+  email?: Prisma.SortOrder;
+  country?: Prisma.SortOrder;
   notes?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -501,6 +597,21 @@ export type CompanyCreateNestedManyWithoutContactInput = {
   connect?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
 };
 
+export type CompanyCreateNestedManyWithoutBillingContactInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CompanyCreateWithoutBillingContactInput,
+        Prisma.CompanyUncheckedCreateWithoutBillingContactInput
+      >
+    | Prisma.CompanyCreateWithoutBillingContactInput[]
+    | Prisma.CompanyUncheckedCreateWithoutBillingContactInput[];
+  connectOrCreate?:
+    | Prisma.CompanyCreateOrConnectWithoutBillingContactInput
+    | Prisma.CompanyCreateOrConnectWithoutBillingContactInput[];
+  createMany?: Prisma.CompanyCreateManyBillingContactInputEnvelope;
+  connect?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+};
+
 export type CompanyUncheckedCreateNestedManyWithoutContactInput = {
   create?:
     | Prisma.XOR<
@@ -513,6 +624,21 @@ export type CompanyUncheckedCreateNestedManyWithoutContactInput = {
     | Prisma.CompanyCreateOrConnectWithoutContactInput
     | Prisma.CompanyCreateOrConnectWithoutContactInput[];
   createMany?: Prisma.CompanyCreateManyContactInputEnvelope;
+  connect?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+};
+
+export type CompanyUncheckedCreateNestedManyWithoutBillingContactInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CompanyCreateWithoutBillingContactInput,
+        Prisma.CompanyUncheckedCreateWithoutBillingContactInput
+      >
+    | Prisma.CompanyCreateWithoutBillingContactInput[]
+    | Prisma.CompanyUncheckedCreateWithoutBillingContactInput[];
+  connectOrCreate?:
+    | Prisma.CompanyCreateOrConnectWithoutBillingContactInput
+    | Prisma.CompanyCreateOrConnectWithoutBillingContactInput[];
+  createMany?: Prisma.CompanyCreateManyBillingContactInputEnvelope;
   connect?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
 };
 
@@ -544,6 +670,34 @@ export type CompanyUpdateManyWithoutContactNestedInput = {
   deleteMany?: Prisma.CompanyScalarWhereInput | Prisma.CompanyScalarWhereInput[];
 };
 
+export type CompanyUpdateManyWithoutBillingContactNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CompanyCreateWithoutBillingContactInput,
+        Prisma.CompanyUncheckedCreateWithoutBillingContactInput
+      >
+    | Prisma.CompanyCreateWithoutBillingContactInput[]
+    | Prisma.CompanyUncheckedCreateWithoutBillingContactInput[];
+  connectOrCreate?:
+    | Prisma.CompanyCreateOrConnectWithoutBillingContactInput
+    | Prisma.CompanyCreateOrConnectWithoutBillingContactInput[];
+  upsert?:
+    | Prisma.CompanyUpsertWithWhereUniqueWithoutBillingContactInput
+    | Prisma.CompanyUpsertWithWhereUniqueWithoutBillingContactInput[];
+  createMany?: Prisma.CompanyCreateManyBillingContactInputEnvelope;
+  set?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+  disconnect?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+  delete?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+  connect?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+  update?:
+    | Prisma.CompanyUpdateWithWhereUniqueWithoutBillingContactInput
+    | Prisma.CompanyUpdateWithWhereUniqueWithoutBillingContactInput[];
+  updateMany?:
+    | Prisma.CompanyUpdateManyWithWhereWithoutBillingContactInput
+    | Prisma.CompanyUpdateManyWithWhereWithoutBillingContactInput[];
+  deleteMany?: Prisma.CompanyScalarWhereInput | Prisma.CompanyScalarWhereInput[];
+};
+
 export type CompanyUncheckedUpdateManyWithoutContactNestedInput = {
   create?:
     | Prisma.XOR<
@@ -569,6 +723,34 @@ export type CompanyUncheckedUpdateManyWithoutContactNestedInput = {
   updateMany?:
     | Prisma.CompanyUpdateManyWithWhereWithoutContactInput
     | Prisma.CompanyUpdateManyWithWhereWithoutContactInput[];
+  deleteMany?: Prisma.CompanyScalarWhereInput | Prisma.CompanyScalarWhereInput[];
+};
+
+export type CompanyUncheckedUpdateManyWithoutBillingContactNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CompanyCreateWithoutBillingContactInput,
+        Prisma.CompanyUncheckedCreateWithoutBillingContactInput
+      >
+    | Prisma.CompanyCreateWithoutBillingContactInput[]
+    | Prisma.CompanyUncheckedCreateWithoutBillingContactInput[];
+  connectOrCreate?:
+    | Prisma.CompanyCreateOrConnectWithoutBillingContactInput
+    | Prisma.CompanyCreateOrConnectWithoutBillingContactInput[];
+  upsert?:
+    | Prisma.CompanyUpsertWithWhereUniqueWithoutBillingContactInput
+    | Prisma.CompanyUpsertWithWhereUniqueWithoutBillingContactInput[];
+  createMany?: Prisma.CompanyCreateManyBillingContactInputEnvelope;
+  set?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+  disconnect?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+  delete?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+  connect?: Prisma.CompanyWhereUniqueInput | Prisma.CompanyWhereUniqueInput[];
+  update?:
+    | Prisma.CompanyUpdateWithWhereUniqueWithoutBillingContactInput
+    | Prisma.CompanyUpdateWithWhereUniqueWithoutBillingContactInput[];
+  updateMany?:
+    | Prisma.CompanyUpdateManyWithWhereWithoutBillingContactInput
+    | Prisma.CompanyUpdateManyWithWhereWithoutBillingContactInput[];
   deleteMany?: Prisma.CompanyScalarWhereInput | Prisma.CompanyScalarWhereInput[];
 };
 
@@ -724,9 +906,13 @@ export type CompanyCreateWithoutContactInput = {
   legalAddress?: string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  billingContact?: Prisma.ContactCreateNestedOneWithoutBillingForCompaniesInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
@@ -742,6 +928,10 @@ export type CompanyUncheckedCreateWithoutContactInput = {
   legalAddress?: string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
+  billingContactId?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -762,6 +952,63 @@ export type CompanyCreateOrConnectWithoutContactInput = {
 
 export type CompanyCreateManyContactInputEnvelope = {
   data: Prisma.CompanyCreateManyContactInput | Prisma.CompanyCreateManyContactInput[];
+  skipDuplicates?: boolean;
+};
+
+export type CompanyCreateWithoutBillingContactInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.CompanyType;
+  taxId?: string | null;
+  legalAddress?: string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: $Enums.TaxStatus;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact: Prisma.ContactCreateNestedOneWithoutCompaniesInput;
+  projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
+  deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientCompanyInput;
+};
+
+export type CompanyUncheckedCreateWithoutBillingContactInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.CompanyType;
+  taxId?: string | null;
+  legalAddress?: string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: $Enums.TaxStatus;
+  contactId: string;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutCompanyInput;
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCompanyInput;
+  deals?: Prisma.DealUncheckedCreateNestedManyWithoutCompanyInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutCompanyInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientCompanyInput;
+};
+
+export type CompanyCreateOrConnectWithoutBillingContactInput = {
+  where: Prisma.CompanyWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.CompanyCreateWithoutBillingContactInput,
+    Prisma.CompanyUncheckedCreateWithoutBillingContactInput
+  >;
+};
+
+export type CompanyCreateManyBillingContactInputEnvelope = {
+  data: Prisma.CompanyCreateManyBillingContactInput | Prisma.CompanyCreateManyBillingContactInput[];
   skipDuplicates?: boolean;
 };
 
@@ -805,9 +1052,41 @@ export type CompanyScalarWhereInput = {
   bankDetails?: Prisma.JsonNullableFilter<'Company'>;
   taxStatus?: Prisma.EnumTaxStatusFilter<'Company'> | $Enums.TaxStatus;
   contactId?: Prisma.StringFilter<'Company'> | string;
+  billingContactId?: Prisma.StringNullableFilter<'Company'> | string | null;
+  phone?: Prisma.StringNullableFilter<'Company'> | string | null;
+  email?: Prisma.StringNullableFilter<'Company'> | string | null;
+  country?: Prisma.StringNullableFilter<'Company'> | string | null;
   notes?: Prisma.StringNullableFilter<'Company'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Company'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Company'> | Date | string;
+};
+
+export type CompanyUpsertWithWhereUniqueWithoutBillingContactInput = {
+  where: Prisma.CompanyWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.CompanyUpdateWithoutBillingContactInput,
+    Prisma.CompanyUncheckedUpdateWithoutBillingContactInput
+  >;
+  create: Prisma.XOR<
+    Prisma.CompanyCreateWithoutBillingContactInput,
+    Prisma.CompanyUncheckedCreateWithoutBillingContactInput
+  >;
+};
+
+export type CompanyUpdateWithWhereUniqueWithoutBillingContactInput = {
+  where: Prisma.CompanyWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.CompanyUpdateWithoutBillingContactInput,
+    Prisma.CompanyUncheckedUpdateWithoutBillingContactInput
+  >;
+};
+
+export type CompanyUpdateManyWithWhereWithoutBillingContactInput = {
+  where: Prisma.CompanyScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.CompanyUpdateManyMutationInput,
+    Prisma.CompanyUncheckedUpdateManyWithoutBillingContactInput
+  >;
 };
 
 export type CompanyCreateWithoutDealsInput = {
@@ -818,10 +1097,14 @@ export type CompanyCreateWithoutDealsInput = {
   legalAddress?: string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutCompaniesInput;
+  billingContact?: Prisma.ContactCreateNestedOneWithoutBillingForCompaniesInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
@@ -837,6 +1120,10 @@ export type CompanyUncheckedCreateWithoutDealsInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
   contactId: string;
+  billingContactId?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -882,10 +1169,14 @@ export type CompanyUpdateWithoutDealsInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutCompaniesNestedInput;
+  billingContact?: Prisma.ContactUpdateOneWithoutBillingForCompaniesNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
@@ -901,6 +1192,10 @@ export type CompanyUncheckedUpdateWithoutDealsInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  billingContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -918,10 +1213,14 @@ export type CompanyCreateWithoutInvoicesInput = {
   legalAddress?: string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutCompaniesInput;
+  billingContact?: Prisma.ContactCreateNestedOneWithoutBillingForCompaniesInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
@@ -937,6 +1236,10 @@ export type CompanyUncheckedCreateWithoutInvoicesInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
   contactId: string;
+  billingContactId?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -982,10 +1285,14 @@ export type CompanyUpdateWithoutInvoicesInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutCompaniesNestedInput;
+  billingContact?: Prisma.ContactUpdateOneWithoutBillingForCompaniesNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
@@ -1001,6 +1308,10 @@ export type CompanyUncheckedUpdateWithoutInvoicesInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  billingContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1018,10 +1329,14 @@ export type CompanyCreateWithoutOperationalJournalEntriesInput = {
   legalAddress?: string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutCompaniesInput;
+  billingContact?: Prisma.ContactCreateNestedOneWithoutBillingForCompaniesInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
@@ -1037,6 +1352,10 @@ export type CompanyUncheckedCreateWithoutOperationalJournalEntriesInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
   contactId: string;
+  billingContactId?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1082,10 +1401,14 @@ export type CompanyUpdateWithoutOperationalJournalEntriesInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutCompaniesNestedInput;
+  billingContact?: Prisma.ContactUpdateOneWithoutBillingForCompaniesNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
@@ -1101,6 +1424,10 @@ export type CompanyUncheckedUpdateWithoutOperationalJournalEntriesInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  billingContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1118,10 +1445,14 @@ export type CompanyCreateWithoutPartnerServiceTermsInput = {
   legalAddress?: string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutCompaniesInput;
+  billingContact?: Prisma.ContactCreateNestedOneWithoutBillingForCompaniesInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutCompanyInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
@@ -1137,6 +1468,10 @@ export type CompanyUncheckedCreateWithoutPartnerServiceTermsInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
   contactId: string;
+  billingContactId?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1182,10 +1517,14 @@ export type CompanyUpdateWithoutPartnerServiceTermsInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutCompaniesNestedInput;
+  billingContact?: Prisma.ContactUpdateOneWithoutBillingForCompaniesNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
@@ -1201,6 +1540,10 @@ export type CompanyUncheckedUpdateWithoutPartnerServiceTermsInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  billingContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1218,10 +1561,14 @@ export type CompanyCreateWithoutProjectsInput = {
   legalAddress?: string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact: Prisma.ContactCreateNestedOneWithoutCompaniesInput;
+  billingContact?: Prisma.ContactCreateNestedOneWithoutBillingForCompaniesInput;
   invoices?: Prisma.InvoiceCreateNestedManyWithoutCompanyInput;
   deals?: Prisma.DealCreateNestedManyWithoutCompanyInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutCompanyInput;
@@ -1237,6 +1584,10 @@ export type CompanyUncheckedCreateWithoutProjectsInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
   contactId: string;
+  billingContactId?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1282,10 +1633,14 @@ export type CompanyUpdateWithoutProjectsInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneRequiredWithoutCompaniesNestedInput;
+  billingContact?: Prisma.ContactUpdateOneWithoutBillingForCompaniesNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
   operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
@@ -1301,6 +1656,10 @@ export type CompanyUncheckedUpdateWithoutProjectsInput = {
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
   contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  billingContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1318,6 +1677,27 @@ export type CompanyCreateManyContactInput = {
   legalAddress?: string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: $Enums.TaxStatus;
+  billingContactId?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type CompanyCreateManyBillingContactInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.CompanyType;
+  taxId?: string | null;
+  legalAddress?: string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: $Enums.TaxStatus;
+  contactId: string;
+  phone?: string | null;
+  email?: string | null;
+  country?: string | null;
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
@@ -1331,9 +1711,13 @@ export type CompanyUpdateWithoutContactInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  billingContact?: Prisma.ContactUpdateOneWithoutBillingForCompaniesNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
   invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
   deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
@@ -1349,6 +1733,10 @@ export type CompanyUncheckedUpdateWithoutContactInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  billingContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1367,6 +1755,71 @@ export type CompanyUncheckedUpdateManyWithoutContactInput = {
   legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
   taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  billingContactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type CompanyUpdateWithoutBillingContactInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumCompanyTypeFieldUpdateOperationsInput | $Enums.CompanyType;
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneRequiredWithoutCompaniesNestedInput;
+  projects?: Prisma.ProjectUpdateManyWithoutCompanyNestedInput;
+  invoices?: Prisma.InvoiceUpdateManyWithoutCompanyNestedInput;
+  deals?: Prisma.DealUpdateManyWithoutCompanyNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientCompanyNestedInput;
+};
+
+export type CompanyUncheckedUpdateWithoutBillingContactInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumCompanyTypeFieldUpdateOperationsInput | $Enums.CompanyType;
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutCompanyNestedInput;
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCompanyNestedInput;
+  deals?: Prisma.DealUncheckedUpdateManyWithoutCompanyNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutCompanyNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientCompanyNestedInput;
+};
+
+export type CompanyUncheckedUpdateManyWithoutBillingContactInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumCompanyTypeFieldUpdateOperationsInput | $Enums.CompanyType;
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  legalAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  bankDetails?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  taxStatus?: Prisma.EnumTaxStatusFieldUpdateOperationsInput | $Enums.TaxStatus;
+  contactId?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  country?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1463,10 +1916,15 @@ export type CompanySelect<
     bankDetails?: boolean;
     taxStatus?: boolean;
     contactId?: boolean;
+    billingContactId?: boolean;
+    phone?: boolean;
+    email?: boolean;
+    country?: boolean;
     notes?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+    billingContact?: boolean | Prisma.Company$billingContactArgs<ExtArgs>;
     projects?: boolean | Prisma.Company$projectsArgs<ExtArgs>;
     invoices?: boolean | Prisma.Company$invoicesArgs<ExtArgs>;
     deals?: boolean | Prisma.Company$dealsArgs<ExtArgs>;
@@ -1489,10 +1947,15 @@ export type CompanySelectCreateManyAndReturn<
     bankDetails?: boolean;
     taxStatus?: boolean;
     contactId?: boolean;
+    billingContactId?: boolean;
+    phone?: boolean;
+    email?: boolean;
+    country?: boolean;
     notes?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+    billingContact?: boolean | Prisma.Company$billingContactArgs<ExtArgs>;
   },
   ExtArgs['result']['company']
 >;
@@ -1509,10 +1972,15 @@ export type CompanySelectUpdateManyAndReturn<
     bankDetails?: boolean;
     taxStatus?: boolean;
     contactId?: boolean;
+    billingContactId?: boolean;
+    phone?: boolean;
+    email?: boolean;
+    country?: boolean;
     notes?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+    billingContact?: boolean | Prisma.Company$billingContactArgs<ExtArgs>;
   },
   ExtArgs['result']['company']
 >;
@@ -1526,6 +1994,10 @@ export type CompanySelectScalar = {
   bankDetails?: boolean;
   taxStatus?: boolean;
   contactId?: boolean;
+  billingContactId?: boolean;
+  phone?: boolean;
+  email?: boolean;
+  country?: boolean;
   notes?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
@@ -1542,6 +2014,10 @@ export type CompanyOmit<
   | 'bankDetails'
   | 'taxStatus'
   | 'contactId'
+  | 'billingContactId'
+  | 'phone'
+  | 'email'
+  | 'country'
   | 'notes'
   | 'createdAt'
   | 'updatedAt',
@@ -1551,6 +2027,7 @@ export type CompanyInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+  billingContact?: boolean | Prisma.Company$billingContactArgs<ExtArgs>;
   projects?: boolean | Prisma.Company$projectsArgs<ExtArgs>;
   invoices?: boolean | Prisma.Company$invoicesArgs<ExtArgs>;
   deals?: boolean | Prisma.Company$dealsArgs<ExtArgs>;
@@ -1562,11 +2039,13 @@ export type CompanyIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+  billingContact?: boolean | Prisma.Company$billingContactArgs<ExtArgs>;
 };
 export type CompanyIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   contact?: boolean | Prisma.ContactDefaultArgs<ExtArgs>;
+  billingContact?: boolean | Prisma.Company$billingContactArgs<ExtArgs>;
 };
 
 export type $CompanyPayload<
@@ -1575,6 +2054,7 @@ export type $CompanyPayload<
   name: 'Company';
   objects: {
     contact: Prisma.$ContactPayload<ExtArgs>;
+    billingContact: Prisma.$ContactPayload<ExtArgs> | null;
     projects: Prisma.$ProjectPayload<ExtArgs>[];
     invoices: Prisma.$InvoicePayload<ExtArgs>[];
     deals: Prisma.$DealPayload<ExtArgs>[];
@@ -1591,6 +2071,10 @@ export type $CompanyPayload<
       bankDetails: runtime.JsonValue | null;
       taxStatus: $Enums.TaxStatus;
       contactId: string;
+      billingContactId: string | null;
+      phone: string | null;
+      email: string | null;
+      country: string | null;
       notes: string | null;
       createdAt: Date;
       updatedAt: Date;
@@ -2123,6 +2607,19 @@ export interface Prisma__CompanyClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  billingContact<T extends Prisma.Company$billingContactArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Company$billingContactArgs<ExtArgs>>,
+  ): Prisma.Prisma__ContactClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$ContactPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   projects<T extends Prisma.Company$projectsArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Company$projectsArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
@@ -2212,6 +2709,10 @@ export interface CompanyFieldRefs {
   readonly bankDetails: Prisma.FieldRef<'Company', 'Json'>;
   readonly taxStatus: Prisma.FieldRef<'Company', 'TaxStatus'>;
   readonly contactId: Prisma.FieldRef<'Company', 'String'>;
+  readonly billingContactId: Prisma.FieldRef<'Company', 'String'>;
+  readonly phone: Prisma.FieldRef<'Company', 'String'>;
+  readonly email: Prisma.FieldRef<'Company', 'String'>;
+  readonly country: Prisma.FieldRef<'Company', 'String'>;
   readonly notes: Prisma.FieldRef<'Company', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Company', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Company', 'DateTime'>;
@@ -2635,6 +3136,27 @@ export type CompanyDeleteManyArgs<
    * Limit how many Companies to delete.
    */
   limit?: number;
+};
+
+/**
+ * Company.billingContact
+ */
+export type Company$billingContactArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Contact
+   */
+  select?: Prisma.ContactSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Contact
+   */
+  omit?: Prisma.ContactOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContactInclude<ExtArgs> | null;
+  where?: Prisma.ContactWhereInput;
 };
 
 /**

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { User } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,8 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { SearchField } from '@/components/shared/SearchField';
 import { COMPANY_TYPES, TAX_STATUSES } from '../constants/clients';
-import { companiesApi } from '@/lib/api/clients';
+import { companiesApi, type Contact } from '@/lib/api/clients';
+import { CreateContactDialog } from './CreateContactDialog';
+import { useContactSearchOptions } from '../hooks/use-contact-search-options';
 
 interface CreateCompanyDialogProps {
   open: boolean;
@@ -30,20 +34,29 @@ interface CreateCompanyDialogProps {
 
 export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCompanyDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [nestedContactOpen, setNestedContactOpen] = useState(false);
+  const searchContacts = useContactSearchOptions();
   const [form, setForm] = useState({
     name: '',
     type: 'LEGAL',
     taxStatus: 'TAX',
     taxId: '',
     legalAddress: '',
-    contactId: '',
+    primaryContactId: '',
+    primaryContactLabel: '',
+    billingContactId: '',
+    billingContactLabel: '',
     phone: '',
     email: '',
     country: '',
     notes: '',
   });
 
-  const canSubmit = form.name && form.type && form.taxStatus && form.contactId;
+  const canSubmit =
+    Boolean(form.name) &&
+    Boolean(form.type) &&
+    Boolean(form.taxStatus) &&
+    Boolean(form.primaryContactId);
 
   const reset = () => {
     setForm({
@@ -52,7 +65,10 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
       taxStatus: 'TAX',
       taxId: '',
       legalAddress: '',
-      contactId: '',
+      primaryContactId: '',
+      primaryContactLabel: '',
+      billingContactId: '',
+      billingContactLabel: '',
       phone: '',
       email: '',
       country: '',
@@ -71,9 +87,14 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
         taxStatus: form.taxStatus,
         taxId: form.taxId || undefined,
         legalAddress: form.legalAddress || undefined,
-        contactId: form.contactId,
+        contactId: form.primaryContactId,
+        billingContactId:
+          form.billingContactId && form.billingContactId !== form.primaryContactId
+            ? form.billingContactId
+            : undefined,
         phone: form.phone || undefined,
         email: form.email || undefined,
+        country: form.country || undefined,
         notes: form.notes || undefined,
       });
       onCreated();
@@ -84,139 +105,209 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
     }
   };
 
+  const applyPrimaryFromContact = (c: Contact) => {
+    setForm((prev) => ({
+      ...prev,
+      primaryContactId: c.id,
+      primaryContactLabel: `${c.firstName} ${c.lastName}`.trim(),
+    }));
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
-        <DialogHeader>
-          <DialogTitle>New Company</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle>New Company</DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label>Company Name *</Label>
-            <Input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Company LLC or Individual Name"
-              autoFocus
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label>Type *</Label>
-              <Select
-                value={form.type}
-                onValueChange={(v) => setForm({ ...form, type: v as string })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {COMPANY_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Tax Status *</Label>
-              <Select
-                value={form.taxStatus}
-                onValueChange={(v) => setForm({ ...form, taxStatus: v as string })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TAX_STATUSES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Tax ID</Label>
+              <Label>Company Name *</Label>
               <Input
-                value={form.taxId}
-                onChange={(e) => setForm({ ...form, taxId: e.target.value })}
-                placeholder="Tax ID / VOEN"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Company LLC or Individual Name"
+                autoFocus
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Type *</Label>
+                <Select
+                  value={form.type}
+                  onValueChange={(v) => setForm({ ...form, type: v as string })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COMPANY_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Tax Status *</Label>
+                <Select
+                  value={form.taxStatus}
+                  onValueChange={(v) => setForm({ ...form, taxStatus: v as string })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TAX_STATUSES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Tax ID</Label>
+                <Input
+                  value={form.taxId}
+                  onChange={(e) => setForm({ ...form, taxId: e.target.value })}
+                  placeholder="Tax ID / VOEN"
+                />
+              </div>
+              <div>
+                <Label>Country</Label>
+                <Input
+                  value={form.country}
+                  onChange={(e) => setForm({ ...form, country: e.target.value })}
+                  placeholder="Armenia"
+                />
+              </div>
+            </div>
+
             <div>
-              <Label>Country</Label>
+              <Label>Legal Address</Label>
               <Input
-                value={form.country}
-                onChange={(e) => setForm({ ...form, country: e.target.value })}
-                placeholder="Armenia"
+                value={form.legalAddress}
+                onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
+                placeholder="Legal address..."
               />
             </div>
-          </div>
 
-          <div>
-            <Label>Legal Address</Label>
-            <Input
-              value={form.legalAddress}
-              onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
-              placeholder="Legal address..."
+            <SearchField
+              selectionMode="stage"
+              label="Primary Contact *"
+              value={form.primaryContactId}
+              displayValue={
+                form.primaryContactLabel ? (
+                  <span className="text-foreground font-medium">{form.primaryContactLabel}</span>
+                ) : undefined
+              }
+              placeholder="Search by name, phone, email..."
+              icon={<User size={12} />}
+              maxResults={25}
+              onSearch={searchContacts}
+              onStageSelect={(id, label) =>
+                setForm((prev) => ({
+                  ...prev,
+                  primaryContactId: id,
+                  primaryContactLabel: label,
+                }))
+              }
+              onClear={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  primaryContactId: '',
+                  primaryContactLabel: '',
+                }))
+              }
+              onNew={() => setNestedContactOpen(true)}
+              newLabel="Create contact"
             />
-          </div>
 
-          <div>
-            <Label>Primary Contact ID *</Label>
-            <Input
-              value={form.contactId}
-              onChange={(e) => setForm({ ...form, contactId: e.target.value })}
-              placeholder="Contact ID"
+            <SearchField
+              selectionMode="stage"
+              label="Billing Contact"
+              value={form.billingContactId}
+              displayValue={
+                form.billingContactLabel ? (
+                  <span className="text-foreground font-medium">{form.billingContactLabel}</span>
+                ) : undefined
+              }
+              placeholder="Optional — defaults to primary when empty"
+              icon={<User size={12} />}
+              maxResults={25}
+              onSearch={searchContacts}
+              onStageSelect={(id, label) =>
+                setForm((prev) => ({
+                  ...prev,
+                  billingContactId: id,
+                  billingContactLabel: label,
+                }))
+              }
+              onClear={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  billingContactId: '',
+                  billingContactLabel: '',
+                }))
+              }
             />
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Company Phone</Label>
+                <Input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Company Email</Label>
+                <Input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
+              </div>
+            </div>
+
             <div>
-              <Label>Company Phone</Label>
-              <Input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              <Label>Notes</Label>
+              <Textarea
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                rows={2}
+                placeholder="Special conditions, bank details..."
               />
             </div>
-            <div>
-              <Label>Company Email</Label>
-              <Input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-            </div>
-          </div>
 
-          <div>
-            <Label>Notes</Label>
-            <Textarea
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              rows={2}
-              placeholder="Special conditions, bank details..."
-            />
-          </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading || !canSubmit}>
+                {loading ? 'Creating...' : 'Create Company'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading || !canSubmit}>
-              {loading ? 'Creating...' : 'Create Company'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <CreateContactDialog
+        open={nestedContactOpen}
+        onOpenChange={setNestedContactOpen}
+        onCreated={(contact) => {
+          setNestedContactOpen(false);
+          if (contact) applyPrimaryFromContact(contact);
+        }}
+      />
+    </>
   );
 }

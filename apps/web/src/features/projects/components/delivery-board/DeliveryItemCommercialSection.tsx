@@ -6,6 +6,10 @@ import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
+import {
+  clientPortfolioCompanyPath,
+  clientPortfolioContactPath,
+} from '@/features/clients/constants/client-routes';
 
 const OPEN_ID = 'openId';
 
@@ -48,15 +52,25 @@ export function DeliveryItemCommercialSection({
               <UserCircle size={14} className="shrink-0 opacity-70" aria-hidden />
               <span>Client</span>
             </div>
-            <Link
-              href={`/clients/contacts?${OPEN_ID}=${encodeURIComponent(contact.id)}`}
-              className="text-primary inline-flex items-center gap-1 font-medium hover:underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {contact.firstName} {contact.lastName}
-              <ExternalLink className="size-3.5 opacity-60" aria-hidden />
-            </Link>
+            <div className="flex flex-col items-end gap-1 text-right">
+              <Link
+                href={`/clients/contacts?${OPEN_ID}=${encodeURIComponent(contact.id)}`}
+                className="text-primary inline-flex items-center gap-1 font-medium hover:underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {contact.firstName} {contact.lastName}
+                <ExternalLink className="size-3.5 opacity-60" aria-hidden />
+              </Link>
+              <Link
+                href={clientPortfolioContactPath(contact.id)}
+                className="text-muted-foreground hover:text-foreground text-xs font-medium hover:underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Portfolio
+              </Link>
+            </div>
           </div>
         ) : (
           <p className="text-muted-foreground text-xs">No client linked on project.</p>
@@ -67,15 +81,25 @@ export function DeliveryItemCommercialSection({
               <Building2 size={14} className="shrink-0 opacity-70" aria-hidden />
               <span>Company</span>
             </div>
-            <Link
-              href={`/clients/companies?${OPEN_ID}=${encodeURIComponent(company.id)}`}
-              className="text-primary inline-flex items-center gap-1 font-medium hover:underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {company.name}
-              <ExternalLink className="size-3.5 opacity-60" aria-hidden />
-            </Link>
+            <div className="flex flex-col items-end gap-1 text-right">
+              <Link
+                href={`/clients/companies?${OPEN_ID}=${encodeURIComponent(company.id)}`}
+                className="text-primary inline-flex items-center gap-1 font-medium hover:underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {company.name}
+                <ExternalLink className="size-3.5 opacity-60" aria-hidden />
+              </Link>
+              <Link
+                href={clientPortfolioCompanyPath(company.id)}
+                className="text-muted-foreground hover:text-foreground text-xs font-medium hover:underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Portfolio
+              </Link>
+            </div>
           </div>
         ) : null}
         {order ? (

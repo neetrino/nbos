@@ -109,7 +109,8 @@ export default function ContactsPage() {
   }, [openContactId, loading, contacts, stripOpenContactFromUrl]);
 
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
-    await contactsApi.update(id, data);
+    const updated = await contactsApi.update(id, data);
+    setSelectedContact(updated);
     await fetchContacts();
   };
 

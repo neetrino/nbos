@@ -20,12 +20,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CONTACT_ROLES, PREFERRED_CHANNELS, LANGUAGES } from '../constants/clients';
-import { contactsApi } from '@/lib/api/clients';
+import { contactsApi, type Contact } from '@/lib/api/clients';
 
 interface CreateContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated?: (contact?: Contact) => void;
 }
 
 export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateContactDialogProps) {
@@ -65,7 +65,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
     if (!canSubmit) return;
     setLoading(true);
     try {
-      await contactsApi.create({
+      const created = await contactsApi.create({
         firstName: form.firstName,
         lastName: form.lastName,
         phone: form.phone,
@@ -79,7 +79,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
           ...(form.language && { language: form.language }),
         },
       });
-      onCreated();
+      onCreated?.(created);
       onOpenChange(false);
       reset();
     } finally {

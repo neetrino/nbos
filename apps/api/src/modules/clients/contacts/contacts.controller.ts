@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import type { InputJsonValue } from '@nbos/database';
 import { ContactsService } from './contacts.service';
 
 @ApiTags('Clients / Contacts')
@@ -59,6 +60,7 @@ export class ContactsController {
       email?: string;
       role?: string;
       notes?: string;
+      messengerLinks?: InputJsonValue;
     },
   ) {
     return this.contactsService.create(body);
@@ -76,6 +78,7 @@ export class ContactsController {
       email?: string;
       role?: string;
       notes?: string;
+      messengerLinks?: InputJsonValue;
     },
   ) {
     return this.contactsService.update(id, body);

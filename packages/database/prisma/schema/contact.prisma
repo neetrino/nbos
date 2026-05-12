@@ -19,7 +19,8 @@ model Contact {
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
 
-  companies           Company[]
+  companies           Company[] @relation("CompanyPrimaryContact")
+  billingForCompanies Company[] @relation("CompanyBillingContact")
   projects            Project[]
   leads               Lead[]
   deals               Deal[]
@@ -52,11 +53,16 @@ model Company {
   bankDetails  Json?       @map("bank_details")
   taxStatus    TaxStatus   @default(TAX)
   contactId    String      @map("contact_id")
+  billingContactId String? @map("billing_contact_id")
+  phone        String?
+  email        String?
+  country      String?
   notes        String?
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
 
-  contact                   Contact                   @relation(fields: [contactId], references: [id])
+  contact                   Contact                   @relation("CompanyPrimaryContact", fields: [contactId], references: [id])
+  billingContact            Contact?                  @relation("CompanyBillingContact", fields: [billingContactId], references: [id])
   projects                  Project[]
   invoices                  Invoice[]
   deals                     Deal[]

@@ -114,7 +114,8 @@ export default function CompaniesPage() {
   }, [openCompanyId, loading, companies, stripOpenCompanyFromUrl]);
 
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
-    await companiesApi.update(id, data);
+    const updated = await companiesApi.update(id, data);
+    setSelectedCompany(updated);
     await fetchCompanies();
   };
 

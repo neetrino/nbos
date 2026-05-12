@@ -1,5 +1,5 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { PrismaClient, type Prisma, type ContactRole } from '@nbos/database';
+import { PrismaClient, type Prisma, type ContactRole, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 
 interface CreateContactDto {
@@ -9,6 +9,7 @@ interface CreateContactDto {
   email?: string;
   role?: string;
   notes?: string;
+  messengerLinks?: InputJsonValue;
 }
 
 interface ContactQueryParams {
@@ -91,6 +92,9 @@ export class ContactsService {
         email: data.email,
         role: (data.role as ContactRole) ?? 'CLIENT',
         notes: data.notes,
+        messengerLinks: data.messengerLinks
+          ? JSON.parse(JSON.stringify(data.messengerLinks))
+          : undefined,
       },
     });
   }
@@ -106,6 +110,13 @@ export class ContactsService {
         ...(data.email !== undefined && { email: data.email }),
         ...(data.role && { role: data.role as ContactRole }),
         ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.messengerLinks !== undefined && {
+          messengerLinks: JSON.parse(JSON.stringify(data.messengerLinks)),
+        }),
+      },
+      include: {
+        companies: { select: { id: true, name: true } },
+        _count: { select: { projects: true, leads: true, deals: true } },
       },
     });
   }

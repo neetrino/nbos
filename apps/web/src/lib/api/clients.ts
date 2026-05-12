@@ -22,8 +22,13 @@ export interface Company {
   taxStatus: string;
   legalAddress: string | null;
   notes: string | null;
+  phone: string | null;
+  email: string | null;
+  country: string | null;
+  billingContactId: string | null;
   createdAt: string;
   contact: { id: string; firstName: string; lastName: string };
+  billingContact: { id: string; firstName: string; lastName: string } | null;
   _count: { projects: number; invoices: number };
 }
 

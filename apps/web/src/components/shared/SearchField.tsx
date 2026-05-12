@@ -5,7 +5,7 @@ import { Search, X, Plus, Pencil, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-const MAX_RESULTS = 5;
+const DEFAULT_MAX_RESULTS = 5;
 
 interface SearchOption {
   value: string;
@@ -13,38 +13,32 @@ interface SearchOption {
   subtitle?: string;
 }
 
-type SearchFieldPersistProps = {
-  selectionMode?: 'persist';
+interface SearchFieldBaseProps {
   label: string;
   value: string | null | undefined;
   displayValue?: ReactNode;
   placeholder?: string;
   icon?: ReactNode;
-  onSave: (value: string, label: string) => Promise<void> | void;
   onSearch: (query: string) => Promise<SearchOption[]>;
-  onClear?: () => Promise<void> | void;
+  onClear?: () => Promise<void> | void | (() => void);
   onNew?: () => void;
   newLabel?: string;
   newBadge?: ReactNode;
   className?: string;
   disabled?: boolean;
+  /** Max rows shown in the dropdown (default 5). */
+  maxResults?: number;
+}
+
+type SearchFieldPersistProps = SearchFieldBaseProps & {
+  selectionMode?: 'persist';
+  onSave: (value: string, label: string) => Promise<void> | void;
 };
 
-type SearchFieldStageProps = {
+type SearchFieldStageProps = SearchFieldBaseProps & {
   selectionMode: 'stage';
-  label: string;
-  value: string | null | undefined;
-  displayValue?: ReactNode;
-  placeholder?: string;
-  icon?: ReactNode;
   onStageSelect: (value: string, label: string) => void;
-  onSearch: (query: string) => Promise<SearchOption[]>;
   onClear?: () => void;
-  onNew?: () => void;
-  newLabel?: string;
-  newBadge?: ReactNode;
-  className?: string;
-  disabled?: boolean;
 };
 
 export type SearchFieldProps = SearchFieldPersistProps | SearchFieldStageProps;
@@ -67,6 +61,7 @@ export function SearchField(props: SearchFieldProps) {
     newBadge,
     className,
     disabled = false,
+    maxResults = DEFAULT_MAX_RESULTS,
   } = props;
   const onSave = isStageProps(props) ? undefined : props.onSave;
   const onStageSelect = isStageProps(props) ? props.onStageSelect : undefined;
@@ -87,14 +82,14 @@ export function SearchField(props: SearchFieldProps) {
         setLoading(true);
         try {
           const items = await onSearch(q);
-          setResults(items.slice(0, MAX_RESULTS));
+          setResults(items.slice(0, maxResults));
           setHighlightIdx(-1);
         } finally {
           setLoading(false);
         }
       }, 150);
     },
-    [onSearch],
+    [onSearch, maxResults],
   );
 
   useEffect(() => {

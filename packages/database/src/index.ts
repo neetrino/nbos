@@ -6,4 +6,4 @@ export type {
   InputJsonValue,
   TransactionClient,
 } from './generated/prisma/internal/prismaNamespace';
-export { join, sql } from './generated/prisma/internal/prismaNamespace';
+export { join, sql, JsonNull } from './generated/prisma/internal/prismaNamespace';

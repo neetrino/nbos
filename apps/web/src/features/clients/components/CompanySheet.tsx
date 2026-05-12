@@ -1,8 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Calendar, FileText, FolderKanban, Trash2, MessageCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import {
+  User,
+  Calendar,
+  FileText,
+  FolderKanban,
+  Trash2,
+  MessageCircle,
+  LayoutDashboard,
+} from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,9 +23,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { EntitySheet, StatusBadge } from '@/components/shared';
+import { EntitySheet, SearchField, StatusBadge } from '@/components/shared';
 import { COMPANY_TYPES, getCompanyType, getTaxStatus } from '../constants/clients';
+import { clientPortfolioCompanyPath } from '../constants/client-routes';
+import { cn } from '@/lib/utils';
 import type { Company } from '@/lib/api/clients';
+import { useContactSearchOptions } from '../hooks/use-contact-search-options';
 
 interface CompanySheetProps {
   company: Company | null;
@@ -35,12 +47,20 @@ export function CompanySheet({
 }: CompanySheetProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const searchContacts = useContactSearchOptions();
   const [form, setForm] = useState({
     name: '',
     type: 'LEGAL',
     taxId: '',
     legalAddress: '',
     notes: '',
+    phone: '',
+    email: '',
+    country: '',
+    primaryContactId: '',
+    primaryContactLabel: '',
+    billingContactId: '',
+    billingContactLabel: '',
   });
 
   if (!company) return null;
@@ -55,6 +75,15 @@ export function CompanySheet({
       taxId: company.taxId ?? '',
       legalAddress: company.legalAddress ?? '',
       notes: company.notes ?? '',
+      phone: company.phone ?? '',
+      email: company.email ?? '',
+      country: company.country ?? '',
+      primaryContactId: company.contact.id,
+      primaryContactLabel: `${company.contact.firstName} ${company.contact.lastName}`.trim(),
+      billingContactId: company.billingContact?.id ?? '',
+      billingContactLabel: company.billingContact
+        ? `${company.billingContact.firstName} ${company.billingContact.lastName}`.trim()
+        : '',
     });
     setEditing(true);
   };
@@ -68,6 +97,14 @@ export function CompanySheet({
         taxId: form.taxId || null,
         legalAddress: form.legalAddress || null,
         notes: form.notes || null,
+        phone: form.phone || null,
+        email: form.email || null,
+        country: form.country || null,
+        contactId: form.primaryContactId,
+        billingContactId:
+          form.billingContactId && form.billingContactId !== form.primaryContactId
+            ? form.billingContactId
+            : null,
       });
       setEditing(false);
     } finally {
@@ -87,7 +124,7 @@ export function CompanySheet({
         </div>
       }
       footer={
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             {onDelete && (
               <Button variant="destructive" size="sm" onClick={() => onDelete(company.id)}>
@@ -96,11 +133,23 @@ export function CompanySheet({
               </Button>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             {!editing && (
-              <Button variant="outline" size="sm" onClick={startEdit}>
-                Edit
-              </Button>
+              <>
+                <Link
+                  href={clientPortfolioCompanyPath(company.id)}
+                  className={cn(
+                    buttonVariants({ variant: 'default', size: 'sm' }),
+                    'inline-flex items-center gap-1.5',
+                  )}
+                >
+                  <LayoutDashboard size={14} />
+                  Open Portfolio
+                </Link>
+                <Button variant="outline" size="sm" onClick={startEdit}>
+                  Edit
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -148,6 +197,81 @@ export function CompanySheet({
               placeholder="Legal address..."
             />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Company Phone</Label>
+              <Input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Company Email</Label>
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </div>
+          </div>
+          <div>
+            <Label>Country</Label>
+            <Input
+              value={form.country}
+              onChange={(e) => setForm({ ...form, country: e.target.value })}
+              placeholder="Country"
+            />
+          </div>
+          <SearchField
+            selectionMode="stage"
+            label="Primary Contact *"
+            value={form.primaryContactId}
+            displayValue={
+              form.primaryContactLabel ? (
+                <span className="text-foreground font-medium">{form.primaryContactLabel}</span>
+              ) : undefined
+            }
+            placeholder="Search contacts..."
+            icon={<User size={12} />}
+            maxResults={25}
+            onSearch={searchContacts}
+            onStageSelect={(id, label) =>
+              setForm((prev) => ({
+                ...prev,
+                primaryContactId: id,
+                primaryContactLabel: label,
+              }))
+            }
+          />
+          <SearchField
+            selectionMode="stage"
+            label="Billing Contact"
+            value={form.billingContactId}
+            displayValue={
+              form.billingContactLabel ? (
+                <span className="text-foreground font-medium">{form.billingContactLabel}</span>
+              ) : undefined
+            }
+            placeholder="Optional — clear to use primary only"
+            icon={<User size={12} />}
+            maxResults={25}
+            onSearch={searchContacts}
+            onStageSelect={(id, label) =>
+              setForm((prev) => ({
+                ...prev,
+                billingContactId: id,
+                billingContactLabel: label,
+              }))
+            }
+            onClear={() =>
+              setForm((prev) => ({
+                ...prev,
+                billingContactId: '',
+                billingContactLabel: '',
+              }))
+            }
+          />
           <div>
             <Label>Notes</Label>
             <Textarea
@@ -160,7 +284,11 @@ export function CompanySheet({
             <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
               Cancel
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={saving || !form.name}>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={saving || !form.name || !form.primaryContactId}
+            >
               {saving ? 'Saving...' : 'Save'}
             </Button>
           </div>
@@ -192,6 +320,24 @@ export function CompanySheet({
                   <div className="font-medium">{company.legalAddress}</div>
                 </>
               )}
+              {company.phone && (
+                <>
+                  <div className="text-muted-foreground">Phone</div>
+                  <div className="font-medium">{company.phone}</div>
+                </>
+              )}
+              {company.email && (
+                <>
+                  <div className="text-muted-foreground">Email</div>
+                  <div className="font-medium">{company.email}</div>
+                </>
+              )}
+              {company.country && (
+                <>
+                  <div className="text-muted-foreground">Country</div>
+                  <div className="font-medium">{company.country}</div>
+                </>
+              )}
               <div className="text-muted-foreground">Created</div>
               <div className="flex items-center gap-1.5 font-medium">
                 <Calendar size={13} />
@@ -208,13 +354,33 @@ export function CompanySheet({
 
           <section className="space-y-3">
             <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Primary Contact
+              Contacts
             </h4>
-            <div className="border-border flex items-center gap-3 rounded-lg border p-3 text-sm">
-              <User size={14} className="text-muted-foreground" />
-              <span className="font-medium">
-                {company.contact.firstName} {company.contact.lastName}
-              </span>
+            <div className="border-border space-y-2 rounded-lg border p-3 text-sm">
+              <div className="flex items-center gap-2">
+                <User size={14} className="text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-muted-foreground text-[10px] font-semibold uppercase">
+                    Primary
+                  </p>
+                  <p className="font-medium">
+                    {company.contact.firstName} {company.contact.lastName}
+                  </p>
+                </div>
+              </div>
+              <div className="border-border flex items-center gap-2 border-t pt-2">
+                <User size={14} className="text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-muted-foreground text-[10px] font-semibold uppercase">
+                    Billing
+                  </p>
+                  <p className="font-medium">
+                    {company.billingContact
+                      ? `${company.billingContact.firstName} ${company.billingContact.lastName}`
+                      : 'Same as primary'}
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 

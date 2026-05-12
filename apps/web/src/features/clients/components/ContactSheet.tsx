@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Phone,
   Mail,
@@ -11,8 +12,9 @@ import {
   FolderKanban,
   Handshake,
   Trash2,
+  LayoutDashboard,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,7 +27,9 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { EntitySheet, StatusBadge } from '@/components/shared';
-import { CONTACT_ROLES, PREFERRED_CHANNELS, getContactRole } from '../constants/clients';
+import { CONTACT_ROLES, PREFERRED_CHANNELS, LANGUAGES, getContactRole } from '../constants/clients';
+import { clientPortfolioContactPath } from '../constants/client-routes';
+import { cn } from '@/lib/utils';
 import type { Contact } from '@/lib/api/clients';
 
 interface ContactSheetProps {
@@ -53,22 +57,29 @@ export function ContactSheet({
     role: 'CLIENT',
     preferredChannel: '',
     language: '',
+    whatsapp: '',
+    telegram: '',
     notes: '',
   });
 
   if (!contact) return null;
 
+  const messengerLinks = (contact.messengerLinks as Record<string, string> | null) ?? {};
+
   const role = getContactRole(contact.role);
 
   const startEdit = () => {
+    const links = (contact.messengerLinks as Record<string, string> | null) ?? {};
     setForm({
       firstName: contact.firstName,
       lastName: contact.lastName,
       phone: contact.phone ?? '',
       email: contact.email ?? '',
       role: contact.role,
-      preferredChannel: (contact.messengerLinks as Record<string, string>)?.preferredChannel ?? '',
-      language: (contact.messengerLinks as Record<string, string>)?.language ?? '',
+      preferredChannel: links.preferredChannel ?? '',
+      language: links.language ?? '',
+      whatsapp: links.whatsapp ?? '',
+      telegram: links.telegram ?? '',
       notes: contact.notes ?? '',
     });
     setEditing(true);
@@ -84,6 +95,16 @@ export function ContactSheet({
         email: form.email || null,
         role: form.role,
         notes: form.notes || null,
+        messengerLinks: (() => {
+          const out: Record<string, string> = {};
+          const wa = form.whatsapp.trim();
+          const tg = form.telegram.trim();
+          if (wa) out.whatsapp = wa;
+          if (tg) out.telegram = tg;
+          if (form.preferredChannel) out.preferredChannel = form.preferredChannel;
+          if (form.language) out.language = form.language;
+          return out;
+        })(),
       });
       setEditing(false);
     } finally {
@@ -98,7 +119,7 @@ export function ContactSheet({
       title={editing ? 'Edit Contact' : `${contact.firstName} ${contact.lastName}`}
       badge={role ? <StatusBadge label={role.label} variant={role.variant} /> : null}
       footer={
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             {onDelete && (
               <Button variant="destructive" size="sm" onClick={() => onDelete(contact.id)}>
@@ -107,11 +128,23 @@ export function ContactSheet({
               </Button>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             {!editing && (
-              <Button variant="outline" size="sm" onClick={startEdit}>
-                Edit
-              </Button>
+              <>
+                <Link
+                  href={clientPortfolioContactPath(contact.id)}
+                  className={cn(
+                    buttonVariants({ variant: 'default', size: 'sm' }),
+                    'inline-flex items-center gap-1.5',
+                  )}
+                >
+                  <LayoutDashboard size={14} />
+                  Open Portfolio
+                </Link>
+                <Button variant="outline" size="sm" onClick={startEdit}>
+                  Edit
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -192,6 +225,44 @@ export function ContactSheet({
               </Select>
             </div>
           </div>
+          <div className="grid max-w-md grid-cols-1 gap-3">
+            <div>
+              <Label>Language</Label>
+              <Select
+                value={form.language || undefined}
+                onValueChange={(v) => setForm({ ...form, language: v as string })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGES.map((l) => (
+                    <SelectItem key={l.value} value={l.value}>
+                      {l.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>WhatsApp</Label>
+              <Input
+                value={form.whatsapp}
+                onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+                placeholder="+374..."
+              />
+            </div>
+            <div>
+              <Label>Telegram</Label>
+              <Input
+                value={form.telegram}
+                onChange={(e) => setForm({ ...form, telegram: e.target.value })}
+                placeholder="@username"
+              />
+            </div>
+          </div>
           <div>
             <Label>Notes</Label>
             <Textarea
@@ -237,6 +308,16 @@ export function ContactSheet({
                   </a>
                 </div>
               )}
+              {messengerLinks.whatsapp && (
+                <div className="text-muted-foreground text-xs">
+                  WhatsApp: {messengerLinks.whatsapp}
+                </div>
+              )}
+              {messengerLinks.telegram && (
+                <div className="text-muted-foreground text-xs">
+                  Telegram: {messengerLinks.telegram}
+                </div>
+              )}
             </div>
           </section>
 
@@ -249,6 +330,18 @@ export function ContactSheet({
             <div className="grid grid-cols-2 gap-y-3 text-sm">
               <div className="text-muted-foreground">Contact Type</div>
               <div>{role && <StatusBadge label={role.label} variant={role.variant} />}</div>
+              {messengerLinks.preferredChannel && (
+                <>
+                  <div className="text-muted-foreground">Preferred</div>
+                  <div className="font-medium">{messengerLinks.preferredChannel}</div>
+                </>
+              )}
+              {messengerLinks.language && (
+                <>
+                  <div className="text-muted-foreground">Language</div>
+                  <div className="font-medium">{messengerLinks.language}</div>
+                </>
+              )}
               <div className="text-muted-foreground">Created</div>
               <div className="flex items-center gap-1.5 font-medium">
                 <Calendar size={13} />

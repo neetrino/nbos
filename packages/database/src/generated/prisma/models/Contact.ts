@@ -215,6 +215,7 @@ export type ContactWhereInput = {
   createdAt?: Prisma.DateTimeFilter<'Contact'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Contact'> | Date | string;
   companies?: Prisma.CompanyListRelationFilter;
+  billingForCompanies?: Prisma.CompanyListRelationFilter;
   projects?: Prisma.ProjectListRelationFilter;
   leads?: Prisma.LeadListRelationFilter;
   deals?: Prisma.DealListRelationFilter;
@@ -237,6 +238,7 @@ export type ContactOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   companies?: Prisma.CompanyOrderByRelationAggregateInput;
+  billingForCompanies?: Prisma.CompanyOrderByRelationAggregateInput;
   projects?: Prisma.ProjectOrderByRelationAggregateInput;
   leads?: Prisma.LeadOrderByRelationAggregateInput;
   deals?: Prisma.DealOrderByRelationAggregateInput;
@@ -263,6 +265,7 @@ export type ContactWhereUniqueInput = Prisma.AtLeast<
     createdAt?: Prisma.DateTimeFilter<'Contact'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Contact'> | Date | string;
     companies?: Prisma.CompanyListRelationFilter;
+    billingForCompanies?: Prisma.CompanyListRelationFilter;
     projects?: Prisma.ProjectListRelationFilter;
     leads?: Prisma.LeadListRelationFilter;
     deals?: Prisma.DealListRelationFilter;
@@ -323,6 +326,7 @@ export type ContactCreateInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
@@ -345,6 +349,7 @@ export type ContactUncheckedCreateInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
@@ -367,6 +372,7 @@ export type ContactUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
@@ -389,6 +395,7 @@ export type ContactUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
@@ -498,6 +505,15 @@ export type ContactCreateNestedOneWithoutCompaniesInput = {
   connect?: Prisma.ContactWhereUniqueInput;
 };
 
+export type ContactCreateNestedOneWithoutBillingForCompaniesInput = {
+  create?: Prisma.XOR<
+    Prisma.ContactCreateWithoutBillingForCompaniesInput,
+    Prisma.ContactUncheckedCreateWithoutBillingForCompaniesInput
+  >;
+  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutBillingForCompaniesInput;
+  connect?: Prisma.ContactWhereUniqueInput;
+};
+
 export type ContactUpdateOneRequiredWithoutCompaniesNestedInput = {
   create?: Prisma.XOR<
     Prisma.ContactCreateWithoutCompaniesInput,
@@ -512,6 +528,25 @@ export type ContactUpdateOneRequiredWithoutCompaniesNestedInput = {
       Prisma.ContactUpdateWithoutCompaniesInput
     >,
     Prisma.ContactUncheckedUpdateWithoutCompaniesInput
+  >;
+};
+
+export type ContactUpdateOneWithoutBillingForCompaniesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.ContactCreateWithoutBillingForCompaniesInput,
+    Prisma.ContactUncheckedCreateWithoutBillingForCompaniesInput
+  >;
+  connectOrCreate?: Prisma.ContactCreateOrConnectWithoutBillingForCompaniesInput;
+  upsert?: Prisma.ContactUpsertWithoutBillingForCompaniesInput;
+  disconnect?: Prisma.ContactWhereInput | boolean;
+  delete?: Prisma.ContactWhereInput | boolean;
+  connect?: Prisma.ContactWhereUniqueInput;
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.ContactUpdateToOneWithWhereWithoutBillingForCompaniesInput,
+      Prisma.ContactUpdateWithoutBillingForCompaniesInput
+    >,
+    Prisma.ContactUncheckedUpdateWithoutBillingForCompaniesInput
   >;
 };
 
@@ -746,6 +781,7 @@ export type ContactCreateWithoutCompaniesInput = {
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
@@ -767,6 +803,7 @@ export type ContactUncheckedCreateWithoutCompaniesInput = {
   notes?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
@@ -782,6 +819,58 @@ export type ContactCreateOrConnectWithoutCompaniesInput = {
   create: Prisma.XOR<
     Prisma.ContactCreateWithoutCompaniesInput,
     Prisma.ContactUncheckedCreateWithoutCompaniesInput
+  >;
+};
+
+export type ContactCreateWithoutBillingForCompaniesInput = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  email?: string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: $Enums.ContactRole;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
+  leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
+  deals?: Prisma.DealCreateNestedManyWithoutContactInput;
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
+  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourceContactInput;
+  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerCreateNestedManyWithoutContactInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutClientContactInput;
+};
+
+export type ContactUncheckedCreateWithoutBillingForCompaniesInput = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  email?: string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: $Enums.ContactRole;
+  notes?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
+  leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
+  deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
+  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceContactInput;
+  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourceContactInput;
+  partners?: Prisma.PartnerUncheckedCreateNestedManyWithoutContactInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutClientContactInput;
+};
+
+export type ContactCreateOrConnectWithoutBillingForCompaniesInput = {
+  where: Prisma.ContactWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.ContactCreateWithoutBillingForCompaniesInput,
+    Prisma.ContactUncheckedCreateWithoutBillingForCompaniesInput
   >;
 };
 
@@ -816,6 +905,7 @@ export type ContactUpdateWithoutCompaniesInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
@@ -837,6 +927,71 @@ export type ContactUncheckedUpdateWithoutCompaniesInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
+  leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
+  deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
+  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourceContactNestedInput;
+  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUncheckedUpdateManyWithoutContactNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutClientContactNestedInput;
+};
+
+export type ContactUpsertWithoutBillingForCompaniesInput = {
+  update: Prisma.XOR<
+    Prisma.ContactUpdateWithoutBillingForCompaniesInput,
+    Prisma.ContactUncheckedUpdateWithoutBillingForCompaniesInput
+  >;
+  create: Prisma.XOR<
+    Prisma.ContactCreateWithoutBillingForCompaniesInput,
+    Prisma.ContactUncheckedCreateWithoutBillingForCompaniesInput
+  >;
+  where?: Prisma.ContactWhereInput;
+};
+
+export type ContactUpdateToOneWithWhereWithoutBillingForCompaniesInput = {
+  where?: Prisma.ContactWhereInput;
+  data: Prisma.XOR<
+    Prisma.ContactUpdateWithoutBillingForCompaniesInput,
+    Prisma.ContactUncheckedUpdateWithoutBillingForCompaniesInput
+  >;
+};
+
+export type ContactUpdateWithoutBillingForCompaniesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
+  leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
+  deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
+  tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
+  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourceContactNestedInput;
+  dealsAsSource?: Prisma.DealUpdateManyWithoutSourceContactNestedInput;
+  partners?: Prisma.PartnerUpdateManyWithoutContactNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutClientContactNestedInput;
+};
+
+export type ContactUncheckedUpdateWithoutBillingForCompaniesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string;
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string;
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  messengerLinks?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+  role?: Prisma.EnumContactRoleFieldUpdateOperationsInput | $Enums.ContactRole;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
@@ -859,6 +1014,7 @@ export type ContactCreateWithoutLeadsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
@@ -880,6 +1036,7 @@ export type ContactUncheckedCreateWithoutLeadsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
@@ -909,6 +1066,7 @@ export type ContactCreateWithoutLeadsAsSourceInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
@@ -930,6 +1088,7 @@ export type ContactUncheckedCreateWithoutLeadsAsSourceInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
@@ -979,6 +1138,7 @@ export type ContactUpdateWithoutLeadsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
@@ -1000,6 +1160,7 @@ export type ContactUncheckedUpdateWithoutLeadsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
@@ -1041,6 +1202,7 @@ export type ContactUpdateWithoutLeadsAsSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
@@ -1062,6 +1224,7 @@ export type ContactUncheckedUpdateWithoutLeadsAsSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
@@ -1083,6 +1246,7 @@ export type ContactCreateWithoutDealsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
@@ -1104,6 +1268,7 @@ export type ContactUncheckedCreateWithoutDealsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
@@ -1133,6 +1298,7 @@ export type ContactCreateWithoutDealsAsSourceInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
@@ -1154,6 +1320,7 @@ export type ContactUncheckedCreateWithoutDealsAsSourceInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
@@ -1203,6 +1370,7 @@ export type ContactUpdateWithoutDealsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
@@ -1224,6 +1392,7 @@ export type ContactUncheckedUpdateWithoutDealsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
@@ -1265,6 +1434,7 @@ export type ContactUpdateWithoutDealsAsSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
@@ -1286,6 +1456,7 @@ export type ContactUncheckedUpdateWithoutDealsAsSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
@@ -1307,6 +1478,7 @@ export type ContactCreateWithoutPartnersInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
@@ -1328,6 +1500,7 @@ export type ContactUncheckedCreateWithoutPartnersInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
@@ -1377,6 +1550,7 @@ export type ContactUpdateWithoutPartnersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
@@ -1398,6 +1572,7 @@ export type ContactUncheckedUpdateWithoutPartnersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
@@ -1419,6 +1594,7 @@ export type ContactCreateWithoutPartnerServiceTermsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
@@ -1440,6 +1616,7 @@ export type ContactUncheckedCreateWithoutPartnerServiceTermsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
@@ -1489,6 +1666,7 @@ export type ContactUpdateWithoutPartnerServiceTermsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
@@ -1510,6 +1688,7 @@ export type ContactUncheckedUpdateWithoutPartnerServiceTermsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
@@ -1531,6 +1710,7 @@ export type ContactCreateWithoutProjectsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutContactInput;
@@ -1552,6 +1732,7 @@ export type ContactUncheckedCreateWithoutProjectsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutContactInput;
@@ -1601,6 +1782,7 @@ export type ContactUpdateWithoutProjectsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUpdateManyWithoutContactNestedInput;
@@ -1622,6 +1804,7 @@ export type ContactUncheckedUpdateWithoutProjectsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutContactNestedInput;
@@ -1643,6 +1826,7 @@ export type ContactCreateWithoutTicketsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealCreateNestedManyWithoutContactInput;
@@ -1664,6 +1848,7 @@ export type ContactUncheckedCreateWithoutTicketsInput = {
   createdAt?: Date | string;
   updatedAt?: Date | string;
   companies?: Prisma.CompanyUncheckedCreateNestedManyWithoutContactInput;
+  billingForCompanies?: Prisma.CompanyUncheckedCreateNestedManyWithoutBillingContactInput;
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutContactInput;
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutContactInput;
   deals?: Prisma.DealUncheckedCreateNestedManyWithoutContactInput;
@@ -1713,6 +1898,7 @@ export type ContactUpdateWithoutTicketsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUpdateManyWithoutContactNestedInput;
@@ -1734,6 +1920,7 @@ export type ContactUncheckedUpdateWithoutTicketsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   companies?: Prisma.CompanyUncheckedUpdateManyWithoutContactNestedInput;
+  billingForCompanies?: Prisma.CompanyUncheckedUpdateManyWithoutBillingContactNestedInput;
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutContactNestedInput;
   leads?: Prisma.LeadUncheckedUpdateManyWithoutContactNestedInput;
   deals?: Prisma.DealUncheckedUpdateManyWithoutContactNestedInput;
@@ -1749,6 +1936,7 @@ export type ContactUncheckedUpdateWithoutTicketsInput = {
 
 export type ContactCountOutputType = {
   companies: number;
+  billingForCompanies: number;
   projects: number;
   leads: number;
   deals: number;
@@ -1763,6 +1951,7 @@ export type ContactCountOutputTypeSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   companies?: boolean | ContactCountOutputTypeCountCompaniesArgs;
+  billingForCompanies?: boolean | ContactCountOutputTypeCountBillingForCompaniesArgs;
   projects?: boolean | ContactCountOutputTypeCountProjectsArgs;
   leads?: boolean | ContactCountOutputTypeCountLeadsArgs;
   deals?: boolean | ContactCountOutputTypeCountDealsArgs;
@@ -1789,6 +1978,15 @@ export type ContactCountOutputTypeDefaultArgs<
  * ContactCountOutputType without action
  */
 export type ContactCountOutputTypeCountCompaniesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.CompanyWhereInput;
+};
+
+/**
+ * ContactCountOutputType without action
+ */
+export type ContactCountOutputTypeCountBillingForCompaniesArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   where?: Prisma.CompanyWhereInput;
@@ -1881,6 +2079,7 @@ export type ContactSelect<
     createdAt?: boolean;
     updatedAt?: boolean;
     companies?: boolean | Prisma.Contact$companiesArgs<ExtArgs>;
+    billingForCompanies?: boolean | Prisma.Contact$billingForCompaniesArgs<ExtArgs>;
     projects?: boolean | Prisma.Contact$projectsArgs<ExtArgs>;
     leads?: boolean | Prisma.Contact$leadsArgs<ExtArgs>;
     deals?: boolean | Prisma.Contact$dealsArgs<ExtArgs>;
@@ -1962,6 +2161,7 @@ export type ContactInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   companies?: boolean | Prisma.Contact$companiesArgs<ExtArgs>;
+  billingForCompanies?: boolean | Prisma.Contact$billingForCompaniesArgs<ExtArgs>;
   projects?: boolean | Prisma.Contact$projectsArgs<ExtArgs>;
   leads?: boolean | Prisma.Contact$leadsArgs<ExtArgs>;
   deals?: boolean | Prisma.Contact$dealsArgs<ExtArgs>;
@@ -1985,6 +2185,7 @@ export type $ContactPayload<
   name: 'Contact';
   objects: {
     companies: Prisma.$CompanyPayload<ExtArgs>[];
+    billingForCompanies: Prisma.$CompanyPayload<ExtArgs>[];
     projects: Prisma.$ProjectPayload<ExtArgs>[];
     leads: Prisma.$LeadPayload<ExtArgs>[];
     deals: Prisma.$DealPayload<ExtArgs>[];
@@ -2532,6 +2733,17 @@ export interface Prisma__ContactClient<
       >
     | Null
   >;
+  billingForCompanies<T extends Prisma.Contact$billingForCompaniesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Contact$billingForCompaniesArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$CompanyPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >;
   projects<T extends Prisma.Contact$projectsArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Contact$projectsArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
@@ -3059,6 +3271,32 @@ export type ContactDeleteManyArgs<
  * Contact.companies
  */
 export type Contact$companiesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Company
+   */
+  select?: Prisma.CompanySelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Company
+   */
+  omit?: Prisma.CompanyOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CompanyInclude<ExtArgs> | null;
+  where?: Prisma.CompanyWhereInput;
+  orderBy?: Prisma.CompanyOrderByWithRelationInput | Prisma.CompanyOrderByWithRelationInput[];
+  cursor?: Prisma.CompanyWhereUniqueInput;
+  take?: number;
+  skip?: number;
+  distinct?: Prisma.CompanyScalarFieldEnum | Prisma.CompanyScalarFieldEnum[];
+};
+
+/**
+ * Contact.billingForCompanies
+ */
+export type Contact$billingForCompaniesArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   /**
