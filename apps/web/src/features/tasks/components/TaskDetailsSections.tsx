@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { Calendar, Eye, Link as LinkIcon, User, Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Calendar, Eye, Link as LinkIcon, Trash2, User, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/api/tasks';
 
 interface TaskDetailsSectionsProps {
@@ -43,7 +43,10 @@ export function TaskDatesSection({ task }: TaskDetailsSectionsProps) {
   );
 }
 
-export function TaskLinksSection({ task }: TaskDetailsSectionsProps) {
+export function TaskLinksSection({
+  task,
+  onRemoveLink,
+}: TaskDetailsSectionsProps & { onRemoveLink?: (linkId: string) => void }) {
   return (
     <div>
       <h4 className="text-muted-foreground mb-2 flex items-center gap-1 text-xs font-medium uppercase">
@@ -54,9 +57,26 @@ export function TaskLinksSection({ task }: TaskDetailsSectionsProps) {
       ) : (
         <div className="flex flex-wrap gap-2">
           {task.links.map((link) => (
-            <Badge key={link.id} variant="secondary">
-              {link.entityType}: {link.entityId.slice(0, 8)}...
-            </Badge>
+            <span
+              key={link.id}
+              className="bg-secondary text-secondary-foreground inline-flex min-w-0 items-center gap-1 rounded-md px-2 py-1 text-xs"
+            >
+              <span className="min-w-0 truncate">
+                {link.entityType}: {link.entityId.slice(0, 8)}...
+              </span>
+              {onRemoveLink && (
+                <Button
+                  type="button"
+                  size="icon-xs"
+                  variant="ghost"
+                  className="-my-1 -mr-1"
+                  title="Remove link"
+                  onClick={() => onRemoveLink(link.id)}
+                >
+                  <Trash2 size={11} />
+                </Button>
+              )}
+            </span>
           ))}
         </div>
       )}
