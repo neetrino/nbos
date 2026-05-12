@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Users, Building2, LayoutDashboard } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
