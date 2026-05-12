@@ -294,10 +294,7 @@ export function DeliveryItemDetailSheet({
               title={displayTitle}
               entityKind={headerProps?.entityKind ?? 'PRODUCT'}
               projectCode={headerProps?.projectCode ?? '—'}
-              projectName={headerProps?.projectName ?? '—'}
-              projectHref={headerProps?.projectHref ?? '#'}
               workspaceHref={headerProps?.workSpaceHref ?? '#'}
-              deadline={headerProps?.deadline ?? null}
               loading={loading}
               onCommitTitle={handleCommitTitle}
             />
