@@ -29,6 +29,11 @@ interface DeliveryStageChecklistPanelProps {
   ownerEntityId: string;
   lifecycle: DeliveryLifecycleProjection | undefined;
   onChanged: () => void;
+  /** Floating rail (copy link, open record, workspace) — same UX as delivery product sheet. */
+  floatingNav?: {
+    sourcePageHref: string;
+    workspaceHref?: string | null;
+  };
 }
 
 function aggregateReviewed(instances: ChecklistInstance[]): { reviewed: number; total: number } {
@@ -49,6 +54,7 @@ export function DeliveryStageChecklistPanel({
   ownerEntityId,
   lifecycle,
   onChanged,
+  floatingNav,
 }: DeliveryStageChecklistPanelProps) {
   const [instances, setInstances] = useState<ChecklistInstance[]>([]);
   const [loading, setLoading] = useState(false);
@@ -259,6 +265,7 @@ export function DeliveryStageChecklistPanel({
         onMark={handleMark}
         onComplete={handleComplete}
         completionBlockHighlight={completionBlockHighlight}
+        floatingNav={floatingNav}
       />
     </>
   );

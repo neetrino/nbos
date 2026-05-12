@@ -13,6 +13,9 @@ const SHEET_FLOATING_RAIL_Z_INDEX = 60;
 /** Nested child sheet stacks above parent floating rail ({@link SHEET_FLOATING_RAIL_Z_INDEX}). */
 const SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS = 'z-[70]';
 
+/** Nested sheet popup uses z-70; rail sits above the panel seam so tabs stay clickable. */
+const SHEET_NESTED_FLOATING_RAIL_Z_INDEX = 71;
+
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
@@ -108,7 +111,11 @@ function SheetContent({
             'pointer-events-auto fixed flex flex-col items-end gap-1.5 max-sm:top-14 max-sm:left-3 sm:top-10 sm:translate-x-px',
             floatingRailAnchorClassName ?? 'sm:right-[90vw]',
           )}
-          style={{ zIndex: SHEET_FLOATING_RAIL_Z_INDEX }}
+          style={{
+            zIndex: forceNestedBackdrop
+              ? SHEET_NESTED_FLOATING_RAIL_Z_INDEX
+              : SHEET_FLOATING_RAIL_Z_INDEX,
+          }}
         >
           <SheetPrimitive.Close
             data-slot="sheet-close-floating"

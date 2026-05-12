@@ -89,6 +89,10 @@ export function DeliveryItemDetailGeneralTab({
             ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
             lifecycle={lifecycle}
             onChanged={onRefreshDetail}
+            floatingNav={{
+              sourcePageHref,
+              workspaceHref: workSpaceHref,
+            }}
           />
           <DeliveryItemTeamSection
             kind={kind}

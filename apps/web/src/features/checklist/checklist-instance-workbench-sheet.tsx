@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { AlertCircle, CheckCircle2, ClipboardCheck, Loader2 } from 'lucide-react';
+import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,6 +19,10 @@ import {
   type ChecklistWorkbenchMarkHandler,
 } from '@/features/checklist/checklist-instance-workbench-item-row';
 
+/** Align floating rail with panel left edge (width: min(75vw, max-w-2xl|4xl|5xl) on right sheet). */
+const CHECKLIST_WORKBENCH_FLOATING_RAIL_ANCHOR =
+  'right-[min(75vw,42rem)] sm:right-[min(75vw,56rem)] xl:right-[min(75vw,64rem)]';
+
 export interface ChecklistInstanceWorkbenchSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -30,6 +35,11 @@ export interface ChecklistInstanceWorkbenchSheetProps {
   onComplete: (instance: ChecklistInstance) => Promise<void>;
   /** When complete fails validation, item rows for this instance with these ids show a red frame. */
   completionBlockHighlight?: { instanceId: string; itemIds: readonly string[] } | null;
+  /** When set, floating close + rail (same pattern as delivery product card sheet). */
+  floatingNav?: {
+    sourcePageHref: string;
+    workspaceHref?: string | null;
+  };
 }
 
 function isItemReviewed(item: ChecklistInstanceItem): boolean {
@@ -67,18 +77,33 @@ export function ChecklistInstanceWorkbenchSheet({
   onMark,
   onComplete,
   completionBlockHighlight = null,
+  floatingNav,
 }: ChecklistInstanceWorkbenchSheetProps) {
   const totals = useMemo(() => computeTotals(instances), [instances]);
+  const useFloatingNav = Boolean(floatingNav?.sourcePageHref);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
         forceNestedBackdrop
+        showCloseButton={!useFloatingNav}
+        floatingClose={useFloatingNav}
+        floatingRail={
+          useFloatingNav && floatingNav ? (
+            <EntitySheetFloatingRail
+              sourcePageHref={floatingNav.sourcePageHref}
+              workspaceHref={floatingNav.workspaceHref}
+            />
+          ) : undefined
+        }
+        floatingRailAnchorClassName={
+          useFloatingNav ? CHECKLIST_WORKBENCH_FLOATING_RAIL_ANCHOR : undefined
+        }
         className="flex w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl xl:max-w-5xl"
       >
         <SheetHeader className="border-border shrink-0 space-y-3 border-b px-5 py-4">
-          <div className="pr-8">
+          <div className={useFloatingNav ? 'pr-2' : 'pr-8'}>
             <SheetTitle className="text-base font-semibold">{title}</SheetTitle>
           </div>
 
