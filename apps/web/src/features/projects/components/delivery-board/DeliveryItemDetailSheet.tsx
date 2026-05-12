@@ -32,6 +32,10 @@ import {
 import type { UseDeliveryBoardMutationsResult } from './use-delivery-board-mutations';
 import { mergeDeliveryDetailLifecycle } from './delivery-item-detail-merge-lifecycle';
 import type { DeliveryDetailTabId } from './delivery-item-detail.constants';
+import {
+  extensionToDeliveryBoardItem,
+  productToDeliveryBoardItem,
+} from './delivery-board-item-adapters';
 import { DeliveryItemDetailHeader } from './DeliveryItemDetailHeader';
 import { DeliveryItemDetailTabBar } from './DeliveryItemDetailTabBar';
 import { DeliveryItemDetailSecondaryPanels } from './DeliveryItemDetailSecondaryPanels';
@@ -43,6 +47,7 @@ interface DeliveryItemDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEntityUpdated: () => void;
+  onTitleSaved: (item: DeliveryBoardItem) => void;
   /** When set (global Delivery Board), stage actions match board + server RBAC. */
   boardMutations?: UseDeliveryBoardMutationsResult;
 }
@@ -61,6 +66,7 @@ export function DeliveryItemDetailSheet({
   open,
   onOpenChange,
   onEntityUpdated,
+  onTitleSaved,
   boardMutations,
 }: DeliveryItemDetailSheetProps) {
   const [product, setProduct] = useState<FullProduct | null>(null);
@@ -185,14 +191,20 @@ export function DeliveryItemDetailSheet({
     async (trimmed: string) => {
       if (!item) return;
       if (item.kind === 'PRODUCT') {
-        await productsApi.update(item.product.id, { name: trimmed });
+        const updated = await productsApi.update(item.product.id, { name: trimmed });
+        setProduct((current) =>
+          current ? { ...current, name: updated.name, updatedAt: updated.updatedAt } : current,
+        );
+        onTitleSaved(productToDeliveryBoardItem(updated));
       } else {
-        await extensionsApi.update(item.extension.id, { name: trimmed });
+        const updated = await extensionsApi.update(item.extension.id, { name: trimmed });
+        setExtension((current) =>
+          current ? { ...current, name: updated.name, updatedAt: updated.updatedAt } : current,
+        );
+        onTitleSaved(extensionToDeliveryBoardItem(updated));
       }
-      refreshDetailOnly();
-      onEntityUpdated();
     },
-    [item, onEntityUpdated, refreshDetailOnly],
+    [item, onTitleSaved],
   );
 
   const handlePipelineSelect = useCallback(

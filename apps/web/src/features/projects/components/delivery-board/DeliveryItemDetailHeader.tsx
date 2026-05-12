@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, ExternalLink, Puzzle } from 'lucide-react';
+import { Box, Check, ExternalLink, LoaderCircle, Puzzle } from 'lucide-react';
 import { DetailSheetSettingsMenu } from '@/components/shared';
+import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +28,7 @@ export function DeliveryItemDetailHeader({
   const router = useRouter();
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
+  const [savingName, setSavingName] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const entityLabel = entityKind === 'PRODUCT' ? 'Product' : 'Extension';
   const EntityIcon = entityKind === 'PRODUCT' ? Box : Puzzle;
@@ -52,21 +54,41 @@ export function DeliveryItemDetailHeader({
     setEditingName(true);
   };
 
-  const saveName = () => {
+  const saveName = useCallback(async () => {
+    if (savingName) return;
     const trimmed = nameValue.trim();
-    setEditingName(false);
-    if (trimmed && trimmed !== title) {
-      void onCommitTitle(trimmed);
+    if (!trimmed) {
+      setNameValue(title);
+      setEditingName(false);
+      return;
     }
-  };
+    if (trimmed === title) {
+      setEditingName(false);
+      return;
+    }
+    setSavingName(true);
+    try {
+      await onCommitTitle(trimmed);
+      setEditingName(false);
+    } finally {
+      setSavingName(false);
+    }
+  }, [nameValue, onCommitTitle, savingName, title]);
+
+  const cancelEditing = useCallback(() => {
+    if (savingName) return;
+    setNameValue(title);
+    setEditingName(false);
+  }, [savingName, title]);
 
   const handleNameKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      saveName();
+      void saveName();
     }
     if (e.key === 'Escape') {
-      setEditingName(false);
+      e.preventDefault();
+      cancelEditing();
     }
   };
 
@@ -74,23 +96,44 @@ export function DeliveryItemDetailHeader({
     <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="mt-1 flex min-w-0 items-center gap-2">
+          <div className="mt-1 inline-flex max-w-full min-w-0 items-center gap-2">
             <EntityIcon className={cn('size-5 shrink-0', entityColorClass)} aria-hidden />
             {editingName ? (
-              <input
-                ref={nameInputRef}
-                value={nameValue}
-                onChange={(e) => setNameValue(e.target.value)}
-                onBlur={saveName}
-                onKeyDown={handleNameKeyDown}
-                placeholder="Name…"
-                className="border-primary text-foreground placeholder:text-muted-foreground/70 min-w-0 flex-1 border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
-              />
+              <div className="inline-flex max-w-full min-w-0 items-center gap-1">
+                <input
+                  ref={nameInputRef}
+                  size={Math.max(nameValue.length, 8)}
+                  value={nameValue}
+                  onChange={(e) => setNameValue(e.target.value)}
+                  onBlur={() => void saveName()}
+                  onKeyDown={handleNameKeyDown}
+                  placeholder="Name…"
+                  disabled={savingName}
+                  className="border-primary text-foreground placeholder:text-muted-foreground/70 max-w-[28rem] min-w-0 flex-none border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none disabled:cursor-wait disabled:opacity-70"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="mt-0.5 shrink-0"
+                  disabled={savingName}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => void saveName()}
+                  aria-label="Save name"
+                  title="Save name"
+                >
+                  {savingName ? (
+                    <LoaderCircle className="size-4 animate-spin" />
+                  ) : (
+                    <Check className="size-4" />
+                  )}
+                </Button>
+              </div>
             ) : (
               <h2
                 onClick={startEditing}
                 className={cn(
-                  'text-foreground -mx-1 min-w-0 flex-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors',
+                  'text-foreground -mx-1 max-w-[28rem] min-w-0 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors',
                   loading ? 'cursor-default' : 'hover:bg-stone-100 dark:hover:bg-stone-800',
                 )}
                 title={loading ? undefined : 'Click to edit name'}

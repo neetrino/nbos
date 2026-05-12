@@ -81,6 +81,15 @@ export default function DeliveryBoardPage() {
 
   const deliveryMutations = useDeliveryBoardMutations(load);
 
+  const handleDetailItemRenamed = useCallback((updatedItem: DeliveryBoardItem) => {
+    setItems((current) =>
+      current.map((item) => (getItemId(item) === getItemId(updatedItem) ? updatedItem : item)),
+    );
+    setDetailItem((current) =>
+      current && getItemId(current) === getItemId(updatedItem) ? updatedItem : current,
+    );
+  }, []);
+
   useEffect(() => {
     void load();
   }, [load]);
@@ -272,6 +281,7 @@ export default function DeliveryBoardPage() {
           if (!open) setDetailItem(null);
         }}
         onEntityUpdated={load}
+        onTitleSaved={handleDetailItemRenamed}
         boardMutations={deliveryMutations}
       />
     </div>
