@@ -172,6 +172,7 @@ export function LeadSheet({
         side="right"
         showCloseButton={false}
         floatingClose
+        floatingRailVisible={open}
         floatingRailAnchorClassName="sm:right-[75vw]"
         floatingRail={
           <EntitySheetFloatingRail

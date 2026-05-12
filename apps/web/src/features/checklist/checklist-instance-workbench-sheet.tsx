@@ -89,6 +89,7 @@ export function ChecklistInstanceWorkbenchSheet({
         forceNestedBackdrop
         showCloseButton={!useFloatingNav}
         floatingClose={useFloatingNav}
+        floatingRailVisible={open}
         floatingRail={
           useFloatingNav && floatingNav ? (
             <EntitySheetFloatingRail

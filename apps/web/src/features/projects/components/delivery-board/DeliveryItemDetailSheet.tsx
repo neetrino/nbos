@@ -277,6 +277,7 @@ export function DeliveryItemDetailSheet({
         side="right"
         showCloseButton={false}
         floatingClose
+        floatingRailVisible={open}
         floatingRailAnchorClassName="sm:right-[75vw]"
         floatingRail={
           headerProps ? (

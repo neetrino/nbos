@@ -57,6 +57,7 @@ function SheetContent({
   showCloseButton = true,
   floatingClose = false,
   floatingRail,
+  floatingRailVisible = true,
   floatingRailAnchorClassName,
   forceNestedBackdrop = false,
   ...props
@@ -67,6 +68,8 @@ function SheetContent({
   floatingClose?: boolean;
   /** Extra controls below the floating close (e.g. copy link). */
   floatingRail?: React.ReactNode;
+  /** Visibility state for floating rail animations; pass sheet `open` for sync. */
+  floatingRailVisible?: boolean;
   /** Tailwind horizontal anchor for the rail (must match panel width on `sm+`). */
   floatingRailAnchorClassName?: string;
   /**
@@ -108,7 +111,10 @@ function SheetContent({
       {floatingRailEnabled ? (
         <div
           className={cn(
-            'pointer-events-auto fixed flex flex-col items-end gap-1.5 max-sm:top-14 max-sm:left-3 sm:top-10 sm:translate-x-px',
+            'fixed flex flex-col items-end gap-1.5 transition-all duration-200 ease-in-out max-sm:top-14 max-sm:left-3 sm:top-10 sm:translate-x-px',
+            floatingRailVisible
+              ? 'pointer-events-auto translate-x-0 opacity-100'
+              : 'pointer-events-none translate-x-[2.5rem] opacity-0',
             floatingRailAnchorClassName ?? 'sm:right-[90vw]',
           )}
           style={{
