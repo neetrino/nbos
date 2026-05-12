@@ -20,12 +20,12 @@ describe('buildProductCurrentStageReadiness', () => {
     expect(buildProductCurrentStageReadiness(baseProduct, lc, zeroOpen())).toBeUndefined();
   });
 
-  it('STARTING counts description, deadline, order', () => {
+  it('STARTING counts deadline', () => {
     const p = { ...baseProduct, status: 'NEW', deliveryStage: 'STARTING' as const };
     const lc = buildProductDeliveryLifecycle(p);
     expect(buildProductCurrentStageReadiness(p, lc, zeroOpen())).toEqual({
-      completed: 3,
-      total: 3,
+      completed: 1,
+      total: 1,
     });
   });
 

@@ -18,6 +18,30 @@ export interface ChecklistTemplateItem {
   sortOrder: number;
 }
 
+export type ChecklistInstanceItemMark = 'PENDING' | 'DONE' | 'NOT_DONE';
+
+export interface ChecklistInstanceItem extends ChecklistTemplateItem {
+  mark?: Exclude<ChecklistInstanceItemMark, 'PENDING'>;
+  comment?: string;
+}
+
+export interface ChecklistInstance {
+  id: string;
+  templateId: string;
+  templateVersionId: string;
+  ownerEntityType: string;
+  ownerEntityId: string;
+  deliveryStage: DeliveryStageCanon | null;
+  snapshotItems: unknown;
+  completedAt: string | null;
+  completedById: string | null;
+  createdAt: string;
+  updatedAt: string;
+  template: { id: string; name: string };
+  templateVersion: { id: string; versionNumber: number };
+  completedBy?: { id: string; firstName: string; lastName: string } | null;
+}
+
 export interface ChecklistTemplateListItem {
   id: string;
   name: string;
@@ -77,6 +101,25 @@ export function parseChecklistTemplateItems(raw: unknown): ChecklistTemplateItem
       return { id, title, instruction, decisionRequired, sortOrder };
     })
     .filter((x): x is ChecklistTemplateItem => x !== null);
+}
+
+export function parseChecklistInstanceItems(raw: unknown): ChecklistInstanceItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((row, index): ChecklistInstanceItem | null => {
+      if (!row || typeof row !== 'object') return null;
+      const o = row as Record<string, unknown>;
+      const title = typeof o.title === 'string' ? o.title : '';
+      const instruction = typeof o.instruction === 'string' ? o.instruction : '';
+      const id = typeof o.id === 'string' ? o.id : `row-${index}`;
+      const decisionRequired = o.decisionRequired === true;
+      const sortOrder = typeof o.sortOrder === 'number' ? o.sortOrder : index;
+      const mark = o.mark === 'DONE' || o.mark === 'NOT_DONE' ? o.mark : undefined;
+      const comment = typeof o.comment === 'string' ? o.comment : undefined;
+      return { id, title, instruction, decisionRequired, sortOrder, mark, comment };
+    })
+    .filter((x): x is ChecklistInstanceItem => x !== null)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export type DeliveryChecklistTarget = 'PRODUCT' | 'EXTENSION';
@@ -223,5 +266,33 @@ export const checklistTemplatesApi = {
 
   async deleteStageRule(ruleId: string): Promise<void> {
     await api.delete(`/api/checklist-templates/stage-rules/${ruleId}`);
+  },
+
+  async listInstances(
+    ownerEntityType: string,
+    ownerEntityId: string,
+  ): Promise<ChecklistInstance[]> {
+    const resp = await api.get<ChecklistInstance[]>('/api/checklist-instances', {
+      params: { ownerEntityType, ownerEntityId },
+    });
+    return resp.data;
+  },
+
+  async updateInstanceItem(
+    instanceId: string,
+    body: { itemId: string; mark: ChecklistInstanceItemMark; comment?: string },
+  ): Promise<ChecklistInstance> {
+    const resp = await api.patch<ChecklistInstance>(
+      `/api/checklist-instances/${instanceId}/items`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async completeInstance(instanceId: string): Promise<ChecklistInstance> {
+    const resp = await api.post<ChecklistInstance>(
+      `/api/checklist-instances/${instanceId}/complete`,
+    );
+    return resp.data;
   },
 };

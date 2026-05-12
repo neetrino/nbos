@@ -1,8 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RequirePermission } from '../../common/decorators';
+import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
 import { ChecklistTemplatesService } from './checklist-templates.service';
 import { ListChecklistInstancesQueryDto } from './dto/list-checklist-instances.query.dto';
+import { UpdateChecklistInstanceItemDto } from './dto/update-checklist-instance-item.dto';
 
 @ApiTags('Checklist instances')
 @ApiBearerAuth()
@@ -15,5 +16,19 @@ export class ChecklistInstancesController {
   @ApiOperation({ summary: 'List checklist instances for an owner entity' })
   list(@Query() query: ListChecklistInstancesQueryDto) {
     return this.checklistTemplatesService.listInstances(query.ownerEntityType, query.ownerEntityId);
+  }
+
+  @Patch(':id/items')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'EDIT')
+  @ApiOperation({ summary: 'Mark one checklist instance item as Pending, Done or Not Done' })
+  updateItem(@Param('id') id: string, @Body() body: UpdateChecklistInstanceItemDto) {
+    return this.checklistTemplatesService.updateInstanceItem(id, body);
+  }
+
+  @Post(':id/complete')
+  @RequirePermission('CHECKLIST_TEMPLATES', 'EDIT')
+  @ApiOperation({ summary: 'Complete checklist instance after required decisions are reviewed' })
+  complete(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.checklistTemplatesService.completeInstance(id, user.id);
   }
 }

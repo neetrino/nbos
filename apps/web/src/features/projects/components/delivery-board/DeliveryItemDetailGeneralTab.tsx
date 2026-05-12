@@ -14,6 +14,7 @@ import type {
   ProductPlanSnapshot,
 } from './delivery-item-detail-planning-state';
 import { DeliveryItemStageReadinessSection } from './DeliveryItemStageReadinessSection';
+import { DeliveryStageChecklistPanel } from './DeliveryStageChecklistPanel';
 import { DeliveryItemTeamSection } from './DeliveryItemTeamSection';
 import { DeliveryItemCommercialSection } from './DeliveryItemCommercialSection';
 import { DeliveryItemKeyWorkLinksSection } from './DeliveryItemKeyWorkLinksSection';
@@ -82,6 +83,12 @@ export function DeliveryItemDetailGeneralTab({
             extension={extension}
             lifecycle={lifecycle}
             checklistProgress={checklistProgress}
+          />
+          <DeliveryStageChecklistPanel
+            ownerEntityType={kind}
+            ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
+            lifecycle={lifecycle}
+            onChanged={onRefreshDetail}
           />
           <DeliveryItemTeamSection
             kind={kind}

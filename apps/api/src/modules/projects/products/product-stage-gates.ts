@@ -13,7 +13,7 @@ export const PRODUCT_STATUS_ORDER: ProductStatusEnum[] = [
 ];
 
 export const PRODUCT_ALLOWED_TRANSITIONS: Record<ProductStatusEnum, ProductStatusEnum[]> = {
-  NEW: ['CREATING', 'LOST'],
+  NEW: ['CREATING', 'DEVELOPMENT', 'LOST'],
   CREATING: ['DEVELOPMENT', 'ON_HOLD', 'LOST'],
   DEVELOPMENT: ['QA', 'ON_HOLD', 'LOST'],
   QA: ['TRANSFER', 'DEVELOPMENT', 'ON_HOLD', 'LOST'],

@@ -26,6 +26,9 @@ describe('ExtensionsService', () => {
   const deliveryStageChecklistSync = {
     syncExtensionAfterLifecycleWrite: vi.fn().mockResolvedValue(undefined),
   };
+  const checklistTemplates = {
+    assertStageInstancesCompleted: vi.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(() => {
     prisma = createMockPrisma();
@@ -34,6 +37,7 @@ describe('ExtensionsService', () => {
     supportService.closeLinkedTicketsAfterExtensionDelivered.mockClear();
     vi.mocked(auditService.log).mockClear();
     deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite.mockClear();
+    checklistTemplates.assertStageInstancesCompleted.mockClear();
     service = new ExtensionsService(
       prisma as never,
       notifications,
@@ -41,6 +45,7 @@ describe('ExtensionsService', () => {
       supportService as never,
       auditService as never,
       deliveryStageChecklistSync as never,
+      checklistTemplates as never,
     );
   });
 
@@ -70,7 +75,6 @@ describe('ExtensionsService', () => {
           missing: [
             { field: 'description', message: expect.any(String) },
             { field: 'assignedTo', message: expect.any(String) },
-            { field: 'order', message: expect.any(String) },
           ],
         },
       });
@@ -296,7 +300,6 @@ describe('ExtensionsService', () => {
         errors: [
           { field: 'description', message: expect.any(String) },
           { field: 'assignedTo', message: expect.any(String) },
-          { field: 'order', message: expect.any(String) },
         ],
       });
       expect(prisma.extension.update).not.toHaveBeenCalled();

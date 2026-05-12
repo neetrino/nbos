@@ -25,11 +25,7 @@ export function buildExtensionCurrentStageReadiness(
   const stage = lifecycle.stage;
 
   if (stage === 'STARTING') {
-    const checks = [
-      Boolean(extension.description?.trim()),
-      Boolean(extension.assignedTo),
-      Boolean(extension.order?.id),
-    ];
+    const checks = [Boolean(extension.description?.trim()), Boolean(extension.assignedTo)];
     const completed = checks.filter(Boolean).length;
     return { completed, total: checks.length };
   }

@@ -37,7 +37,12 @@ export interface Project {
 }
 
 /** Aggregated checklist instance progress for the entity current delivery stage. */
-export type ChecklistStageProgress = { completed: number; total: number };
+export type ChecklistStageProgress = {
+  completed: number;
+  total: number;
+  completedChecklists?: number;
+  totalChecklists?: number;
+};
 
 export interface ProjectProductSummary {
   id: string;

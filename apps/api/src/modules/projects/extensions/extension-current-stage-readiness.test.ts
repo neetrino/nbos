@@ -19,12 +19,12 @@ describe('buildExtensionCurrentStageReadiness', () => {
     expect(buildExtensionCurrentStageReadiness(base, lc, { openTasks: 0 })).toBeUndefined();
   });
 
-  it('STARTING counts three fields', () => {
+  it('STARTING counts scope and owner', () => {
     const ext = { ...base, status: 'NEW' };
     const lc = buildExtensionDeliveryLifecycle(ext);
     expect(buildExtensionCurrentStageReadiness(ext, lc, { openTasks: 0 })).toEqual({
-      completed: 3,
-      total: 3,
+      completed: 2,
+      total: 2,
     });
   });
 

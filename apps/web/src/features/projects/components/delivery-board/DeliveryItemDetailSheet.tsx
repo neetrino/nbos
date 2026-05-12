@@ -131,6 +131,11 @@ export function DeliveryItemDetailSheet({
     setRefreshKey((k) => k + 1);
   }, []);
 
+  const refreshDetailAndBoard = useCallback(() => {
+    refreshDetailOnly();
+    onEntityUpdated();
+  }, [onEntityUpdated, refreshDetailOnly]);
+
   const lifecycle = item ? mergeDeliveryDetailLifecycle(item, product, extension) : undefined;
   const displayTitle = product?.name ?? extension?.name ?? (item ? getItemLabel(item) : '');
 
@@ -328,7 +333,7 @@ export function DeliveryItemDetailSheet({
                   credentialsTabHref={credentialsTabHref}
                   projectHubHref={projectHubHref}
                   financeTabHref={financeTabHref}
-                  onRefreshDetail={refreshDetailOnly}
+                  onRefreshDetail={refreshDetailAndBoard}
                   productPlan={productPlan}
                   onProductPlanChange={setProductPlan}
                   extensionPlan={extensionPlan}

@@ -21,6 +21,7 @@ import type { CreateChecklistTemplateDto } from './dto/create-checklist-template
 import type { CreateChecklistInstanceDto } from './dto/create-checklist-instance.dto';
 import type { UpdateChecklistTemplateDto } from './dto/update-checklist-template.dto';
 import type { UpdateDraftItemsDto } from './dto/update-draft-items.dto';
+import type { UpdateChecklistInstanceItemDto } from './dto/update-checklist-instance-item.dto';
 
 const templateInclude = {
   activeVersion: {
@@ -380,11 +381,188 @@ export class ChecklistTemplatesService {
   listInstances(ownerEntityType: string, ownerEntityId: string) {
     return this.prisma.checklistInstance.findMany({
       where: { ownerEntityType, ownerEntityId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ deliveryStage: 'asc' }, { createdAt: 'desc' }],
       include: {
         template: { select: { id: true, name: true } },
         templateVersion: { select: { id: true, versionNumber: true } },
+        completedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
   }
+
+  async assertStageInstancesCompleted(input: {
+    ownerEntityType: 'PRODUCT' | 'EXTENSION';
+    ownerEntityId: string;
+    deliveryStage: DeliveryStageEnum;
+  }) {
+    const instances = await this.prisma.checklistInstance.findMany({
+      where: {
+        ownerEntityType: input.ownerEntityType,
+        ownerEntityId: input.ownerEntityId,
+        deliveryStage: input.deliveryStage,
+      },
+      select: {
+        id: true,
+        completedAt: true,
+        template: { select: { name: true } },
+      },
+    });
+    const incomplete = instances.filter((instance) => !instance.completedAt);
+    if (incomplete.length === 0) return;
+
+    throw new BadRequestException({
+      statusCode: 400,
+      code: 'STAGE_GATE_VALIDATION',
+      message: 'Stage checklist must be completed before moving to the next stage.',
+      errors: incomplete.map((instance) => ({
+        field: `checklist.${instance.id}`,
+        message: `${instance.template.name} must be completed.`,
+      })),
+    });
+  }
+
+  async updateInstanceItem(instanceId: string, body: UpdateChecklistInstanceItemDto) {
+    const instance = await this.prisma.checklistInstance.findUnique({ where: { id: instanceId } });
+    if (!instance) {
+      throw new NotFoundException(`Checklist instance ${instanceId} not found`);
+    }
+    if (instance.completedAt) {
+      throw new BadRequestException('Completed checklist instances cannot be edited');
+    }
+
+    const items = normalizeInstanceSnapshotItems(instance.snapshotItems);
+    const index = items.findIndex((item) => item.id === body.itemId);
+    if (index < 0) {
+      throw new NotFoundException(`Checklist item ${body.itemId} not found`);
+    }
+
+    const comment = body.comment?.trim() ?? '';
+    if (body.mark === 'NOT_DONE' && comment.length === 0) {
+      throw new BadRequestException('Not Done checklist items require a comment');
+    }
+
+    items[index] = {
+      ...items[index],
+      mark: body.mark === 'PENDING' ? undefined : body.mark,
+      comment: comment.length > 0 ? comment : undefined,
+    };
+
+    return this.prisma.checklistInstance.update({
+      where: { id: instanceId },
+      data: { snapshotItems: items as unknown as InputJsonValue },
+      include: {
+        template: { select: { id: true, name: true } },
+        templateVersion: { select: { id: true, versionNumber: true } },
+        completedBy: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+  }
+
+  async completeInstance(instanceId: string, actorEmployeeId: string) {
+    const instance = await this.prisma.checklistInstance.findUnique({ where: { id: instanceId } });
+    if (!instance) {
+      throw new NotFoundException(`Checklist instance ${instanceId} not found`);
+    }
+    if (instance.completedAt) {
+      return this.prisma.checklistInstance.findUnique({
+        where: { id: instanceId },
+        include: {
+          template: { select: { id: true, name: true } },
+          templateVersion: { select: { id: true, versionNumber: true } },
+          completedBy: { select: { id: true, firstName: true, lastName: true } },
+        },
+      });
+    }
+
+    const errors = validateChecklistInstanceCompletion(instance.snapshotItems);
+    if (errors.length > 0) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'CHECKLIST_INSTANCE_VALIDATION',
+        message: 'Checklist cannot be completed until required decisions are reviewed.',
+        errors,
+      });
+    }
+
+    const updated = await this.prisma.checklistInstance.update({
+      where: { id: instanceId },
+      data: { completedAt: new Date(), completedById: actorEmployeeId },
+      include: {
+        template: { select: { id: true, name: true } },
+        templateVersion: { select: { id: true, versionNumber: true } },
+        completedBy: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+    await this.audit.log({
+      entityType: 'CHECKLIST_INSTANCE',
+      entityId: instanceId,
+      action: ChecklistTemplateAuditAction.INSTANCE_COMPLETED,
+      userId: actorEmployeeId,
+      changes: {
+        ownerEntityType: instance.ownerEntityType,
+        ownerEntityId: instance.ownerEntityId,
+        deliveryStage: instance.deliveryStage,
+      } as InputJsonValue,
+    });
+    return updated;
+  }
+}
+
+type ChecklistInstanceMark = 'DONE' | 'NOT_DONE';
+
+interface ChecklistInstanceSnapshotItem {
+  id: string;
+  title: string;
+  instruction?: string;
+  decisionRequired?: boolean;
+  sortOrder?: number;
+  mark?: ChecklistInstanceMark;
+  comment?: string;
+}
+
+function normalizeInstanceSnapshotItems(raw: unknown): ChecklistInstanceSnapshotItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((row, index): ChecklistInstanceSnapshotItem | null => {
+      if (!row || typeof row !== 'object') return null;
+      const item = row as Record<string, unknown>;
+      const id = typeof item.id === 'string' ? item.id : '';
+      const title = typeof item.title === 'string' ? item.title : '';
+      if (!id || !title) return null;
+      const mark = item.mark === 'DONE' || item.mark === 'NOT_DONE' ? item.mark : undefined;
+      const comment = typeof item.comment === 'string' ? item.comment : undefined;
+      return {
+        id,
+        title,
+        instruction: typeof item.instruction === 'string' ? item.instruction : '',
+        decisionRequired: item.decisionRequired === true,
+        sortOrder: typeof item.sortOrder === 'number' ? item.sortOrder : index,
+        mark,
+        comment,
+      };
+    })
+    .filter((item): item is ChecklistInstanceSnapshotItem => item !== null)
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+}
+
+function validateChecklistInstanceCompletion(snapshotItems: unknown) {
+  const items = normalizeInstanceSnapshotItems(snapshotItems);
+  const errors: Array<{ field: string; message: string }> = [];
+
+  for (const item of items) {
+    if (item.decisionRequired && item.mark !== 'DONE' && item.mark !== 'NOT_DONE') {
+      errors.push({
+        field: `items.${item.id}`,
+        message: `${item.title} must be reviewed before completing the checklist.`,
+      });
+    }
+    if (item.mark === 'NOT_DONE' && !item.comment?.trim()) {
+      errors.push({
+        field: `items.${item.id}.comment`,
+        message: `${item.title} needs a comment when marked Not Done.`,
+      });
+    }
+  }
+
+  return errors;
 }

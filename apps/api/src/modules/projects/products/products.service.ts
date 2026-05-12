@@ -14,11 +14,9 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { NotificationService } from '../../notifications/notification.service';
 import {
   PRODUCT_STATUS_ORDER,
-  validateKickoffChecklistGate,
   validateProductStageGate,
   validateProductTransition,
 } from './product-stage-gates';
-import { PROJECT_KICKOFF_CHECKLIST_ITEMS } from '../project-kickoff-checklist.constants';
 import {
   attachProductDeliveryLifecycle,
   buildDeliveryLifecycleWrite,
@@ -42,6 +40,7 @@ import {
   pickProgressForEntity,
 } from '../../checklist-templates/checklist-instance-stage-progress';
 import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
+import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
 
 interface CreateProductDto {
   projectId: string;
@@ -129,6 +128,7 @@ export class ProductsService {
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
     private readonly audit: AuditService,
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
+    private readonly checklistTemplates: ChecklistTemplatesService,
   ) {}
 
   async findAll(params: ProductQueryParams) {
@@ -203,18 +203,22 @@ export class ProductsService {
       items.map((p) => p.id),
     );
 
+    const lifecycleByProduct = new Map(
+      items.map((product) => [product.id, attachProductDeliveryLifecycle(product)]),
+    );
     const checklistProgressMap = await loadStageChecklistProgressByOwner(
       this.prisma,
       items.map((product) => ({
         ownerEntityType: 'PRODUCT' as const,
         ownerEntityId: product.id,
-        stage: product.deliveryStage,
+        stage: lifecycleByProduct.get(product.id)?.deliveryLifecycle.stage ?? null,
       })),
     );
 
     return {
       items: items.map((product) => {
-        const withLc = attachProductDeliveryLifecycle(product);
+        const withLc =
+          lifecycleByProduct.get(product.id) ?? attachProductDeliveryLifecycle(product);
         const open = openByProduct.get(product.id) ?? {
           openTasks: 0,
           openTickets: 0,
@@ -225,18 +229,23 @@ export class ProductsService {
           withLc.deliveryLifecycle,
           open,
         );
+        const checklistStageProgress = pickProgressForEntity(
+          checklistProgressMap,
+          'PRODUCT',
+          product.id,
+          withLc.deliveryLifecycle.stage,
+        );
+        const currentStageReadiness = mergeChecklistIntoReadiness(
+          readiness,
+          checklistStageProgress,
+        );
         return {
           ...withLc,
           deliveryLifecycle: {
             ...withLc.deliveryLifecycle,
-            ...(readiness ? { currentStageReadiness: readiness } : {}),
+            ...(currentStageReadiness ? { currentStageReadiness } : {}),
           },
-          checklistStageProgress: pickProgressForEntity(
-            checklistProgressMap,
-            'PRODUCT',
-            product.id,
-            product.deliveryStage,
-          ),
+          checklistStageProgress,
         };
       }),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
@@ -322,17 +331,23 @@ export class ProductsService {
     });
     if (!product) throw new NotFoundException(`Product ${id} not found`);
     const checklistProgressMap = await loadStageChecklistProgressByOwner(this.prisma, [
-      { ownerEntityType: 'PRODUCT', ownerEntityId: product.id, stage: product.deliveryStage },
+      {
+        ownerEntityType: 'PRODUCT',
+        ownerEntityId: product.id,
+        stage: attachProductDeliveryLifecycle(product).deliveryLifecycle.stage,
+      },
     ]);
+    const withLc = attachProductDeliveryLifecycle(product);
+    const checklistStageProgress = pickProgressForEntity(
+      checklistProgressMap,
+      'PRODUCT',
+      product.id,
+      withLc.deliveryLifecycle.stage,
+    );
     return {
-      ...attachProductDeliveryLifecycle(product),
+      ...withLc,
       doneReadiness: buildProductDoneReadiness(product),
-      checklistStageProgress: pickProgressForEntity(
-        checklistProgressMap,
-        'PRODUCT',
-        product.id,
-        product.deliveryStage,
-      ),
+      checklistStageProgress,
     };
   }
 
@@ -348,6 +363,9 @@ export class ProductsService {
         description: data.description,
         checklistTemplateId: data.checklistTemplateId,
         languages: normalizeProductLanguages(data.languages ?? []),
+        deliveryStage: 'STARTING',
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: null,
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
@@ -413,7 +431,7 @@ export class ProductsService {
 
     validateProductTransition(current, target);
     validateProductStageGate(product, target);
-    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product.projectId);
+    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product);
 
     const updatedProduct = await this.prisma.product.update({
       where: { id },
@@ -449,7 +467,7 @@ export class ProductsService {
 
     validateProductTransition(product.status as ProductStatusEnum, target);
     validateProductStageGate(product, target);
-    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product.projectId);
+    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product);
 
     const updatedProduct = await this.prisma.product.update({
       where: { id },
@@ -598,13 +616,21 @@ export class ProductsService {
     return { total, byStatus, byType };
   }
 
-  private async validateDevelopmentGate(projectId: string) {
-    const checklist = await this.prisma.projectKickoffChecklistItem.findMany({
-      where: { projectId, isRequired: true },
-      select: { key: true, title: true, isRequired: true, isChecked: true },
-      orderBy: { sortOrder: 'asc' },
+  private async validateDevelopmentGate(product: { id: string; deadline?: Date | string | null }) {
+    if (!product.deadline) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'STAGE_GATE_VALIDATION',
+        message: 'Product deadline must be set before Development.',
+        errors: [{ field: 'deadline', message: 'Deadline must be set before Development.' }],
+      });
+    }
+    await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
+    await this.checklistTemplates.assertStageInstancesCompleted({
+      ownerEntityType: 'PRODUCT',
+      ownerEntityId: product.id,
+      deliveryStage: 'STARTING',
     });
-    validateKickoffChecklistGate(checklist.length > 0 ? checklist : getMissingKickoffChecklist());
   }
 
   private ensureNotTerminal(resolution: string | null) {
@@ -629,15 +655,6 @@ export class ProductsService {
   }
 }
 
-function getMissingKickoffChecklist() {
-  return PROJECT_KICKOFF_CHECKLIST_ITEMS.filter((item) => item.isRequired).map((item) => ({
-    key: item.key,
-    title: item.title,
-    isRequired: item.isRequired,
-    isChecked: false,
-  }));
-}
-
 function requireText(value: string | undefined, field: string) {
   const text = value?.trim();
   if (!text) throw new BadRequestException(`${field} is required`);
@@ -649,4 +666,18 @@ function parseFutureDate(value: string | undefined, field: string) {
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) throw new BadRequestException(`${field} is invalid`);
   return date;
+}
+
+function mergeChecklistIntoReadiness(
+  readiness: { completed: number; total: number } | undefined,
+  checklist: { completedChecklists?: number; totalChecklists?: number } | null,
+) {
+  if (!checklist?.totalChecklists) return readiness;
+  const base = readiness ?? { completed: 0, total: 0 };
+  const completedChecklists = checklist.completedChecklists ?? 0;
+  const totalChecklists = checklist.totalChecklists;
+  return {
+    completed: base.completed + (completedChecklists >= totalChecklists ? totalChecklists : 0),
+    total: base.total + totalChecklists,
+  };
 }

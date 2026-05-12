@@ -7,4 +7,5 @@ export const ChecklistTemplateAuditAction = {
   VERSION_PUBLISHED: 'checklist_template.version_published',
   ARCHIVED: 'checklist_template.archived',
   DUPLICATED: 'checklist_template.duplicated',
+  INSTANCE_COMPLETED: 'checklist_instance.completed',
 } as const;

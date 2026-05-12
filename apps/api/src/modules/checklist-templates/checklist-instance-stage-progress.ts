@@ -1,12 +1,17 @@
 import type { DeliveryStageEnum, PrismaClient } from '@nbos/database';
 
-export type ChecklistStageProgressSummary = { completed: number; total: number };
+export type ChecklistStageProgressSummary = {
+  completed: number;
+  total: number;
+  completedChecklists: number;
+  totalChecklists: number;
+};
 
 export function summarizeChecklistSnapshotProgress(
   snapshotItems: unknown,
 ): ChecklistStageProgressSummary {
   if (!Array.isArray(snapshotItems) || snapshotItems.length === 0) {
-    return { completed: 0, total: 0 };
+    return { completed: 0, total: 0, completedChecklists: 0, totalChecklists: 0 };
   }
   const total = snapshotItems.length;
   let completed = 0;
@@ -17,7 +22,7 @@ export function summarizeChecklistSnapshotProgress(
       completed += 1;
     }
   }
-  return { completed, total };
+  return { completed, total, completedChecklists: 0, totalChecklists: 0 };
 }
 
 type OwnerStage = {
@@ -43,6 +48,8 @@ function mergeProgress(
   target.set(key, {
     total: prev.total + next.total,
     completed: prev.completed + next.completed,
+    completedChecklists: prev.completedChecklists + next.completedChecklists,
+    totalChecklists: prev.totalChecklists + next.totalChecklists,
   });
 }
 
@@ -77,7 +84,12 @@ export async function loadStageChecklistProgressByOwner(
             ownerEntityId: { in: productIds },
             deliveryStage: { not: null },
           },
-          select: { ownerEntityId: true, deliveryStage: true, snapshotItems: true },
+          select: {
+            ownerEntityId: true,
+            deliveryStage: true,
+            snapshotItems: true,
+            completedAt: true,
+          },
         })
       : Promise.resolve([]),
     extensionIds.length
@@ -87,7 +99,12 @@ export async function loadStageChecklistProgressByOwner(
             ownerEntityId: { in: extensionIds },
             deliveryStage: { not: null },
           },
-          select: { ownerEntityId: true, deliveryStage: true, snapshotItems: true },
+          select: {
+            ownerEntityId: true,
+            deliveryStage: true,
+            snapshotItems: true,
+            completedAt: true,
+          },
         })
       : Promise.resolve([]),
   ]);
@@ -95,15 +112,40 @@ export async function loadStageChecklistProgressByOwner(
   for (const row of productInst) {
     if (!row.deliveryStage) continue;
     const k = progressKey('PRODUCT', row.ownerEntityId, row.deliveryStage);
-    mergeProgress(map, k, summarizeChecklistSnapshotProgress(row.snapshotItems));
+    mergeProgress(
+      map,
+      k,
+      withChecklistCompletion(
+        summarizeChecklistSnapshotProgress(row.snapshotItems),
+        row.completedAt,
+      ),
+    );
   }
   for (const row of extInst) {
     if (!row.deliveryStage) continue;
     const k = progressKey('EXTENSION', row.ownerEntityId, row.deliveryStage);
-    mergeProgress(map, k, summarizeChecklistSnapshotProgress(row.snapshotItems));
+    mergeProgress(
+      map,
+      k,
+      withChecklistCompletion(
+        summarizeChecklistSnapshotProgress(row.snapshotItems),
+        row.completedAt,
+      ),
+    );
   }
 
   return map;
+}
+
+function withChecklistCompletion(
+  summary: ChecklistStageProgressSummary,
+  completedAt: Date | string | null,
+): ChecklistStageProgressSummary {
+  return {
+    ...summary,
+    totalChecklists: 1,
+    completedChecklists: completedAt ? 1 : 0,
+  };
 }
 
 export function pickProgressForEntity(

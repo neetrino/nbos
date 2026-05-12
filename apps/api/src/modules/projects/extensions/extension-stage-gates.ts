@@ -132,9 +132,6 @@ export function buildExtensionReadiness(
   if (!extension.assignedTo) {
     missing.push({ field: 'assignedTo', message: 'Assignee is required before Development' });
   }
-  if (!extension.order?.id) {
-    missing.push({ field: 'order', message: 'Linked order is required before Development' });
-  }
 
   return { isReadyForDevelopment: missing.length === 0, missing };
 }

@@ -38,6 +38,7 @@ import {
   pickProgressForEntity,
 } from '../../checklist-templates/checklist-instance-stage-progress';
 import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
+import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -95,6 +96,7 @@ export class ExtensionsService {
     private readonly supportService: SupportService,
     private readonly audit: AuditService,
     private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
+    private readonly checklistTemplates: ChecklistTemplatesService,
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
@@ -170,34 +172,42 @@ export class ExtensionsService {
       items.map((e) => e.id),
     );
 
+    const lifecycleByExtension = new Map(
+      items.map((extension) => [extension.id, attachExtensionReadiness(extension)]),
+    );
     const checklistProgressMap = await loadStageChecklistProgressByOwner(
       this.prisma,
       items.map((extension) => ({
         ownerEntityType: 'EXTENSION' as const,
         ownerEntityId: extension.id,
-        stage: extension.deliveryStage,
+        stage: lifecycleByExtension.get(extension.id)?.deliveryLifecycle.stage ?? null,
       })),
     );
 
     return {
       items: items.map((extension) => {
-        const base = attachExtensionReadiness(extension);
+        const base = lifecycleByExtension.get(extension.id) ?? attachExtensionReadiness(extension);
         const openTasks = openTasksByExt.get(extension.id) ?? 0;
         const readiness = buildExtensionCurrentStageReadiness(extension, base.deliveryLifecycle, {
           openTasks,
         });
+        const checklistStageProgress = pickProgressForEntity(
+          checklistProgressMap,
+          'EXTENSION',
+          extension.id,
+          base.deliveryLifecycle.stage,
+        );
+        const currentStageReadiness = mergeChecklistIntoReadiness(
+          readiness,
+          checklistStageProgress,
+        );
         return {
           ...base,
           deliveryLifecycle: {
             ...base.deliveryLifecycle,
-            ...(readiness ? { currentStageReadiness: readiness } : {}),
+            ...(currentStageReadiness ? { currentStageReadiness } : {}),
           },
-          checklistStageProgress: pickProgressForEntity(
-            checklistProgressMap,
-            'EXTENSION',
-            extension.id,
-            extension.deliveryStage,
-          ),
+          checklistStageProgress,
         };
       }),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
@@ -265,7 +275,11 @@ export class ExtensionsService {
     if (!extension) throw new NotFoundException(`Extension ${id} not found`);
     const base = attachExtensionReadiness(extension);
     const checklistProgressMap = await loadStageChecklistProgressByOwner(this.prisma, [
-      { ownerEntityType: 'EXTENSION', ownerEntityId: extension.id, stage: extension.deliveryStage },
+      {
+        ownerEntityType: 'EXTENSION',
+        ownerEntityId: extension.id,
+        stage: attachExtensionReadiness(extension).deliveryLifecycle.stage,
+      },
     ]);
     return {
       ...base,
@@ -273,7 +287,7 @@ export class ExtensionsService {
         checklistProgressMap,
         'EXTENSION',
         extension.id,
-        extension.deliveryStage,
+        base.deliveryLifecycle.stage,
       ),
     };
   }
@@ -289,6 +303,9 @@ export class ExtensionsService {
         size: (data.size as ExtensionSizeEnum) ?? 'SMALL',
         assignedTo: data.assignedTo,
         description: data.description,
+        deliveryStage: 'STARTING',
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: null,
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
@@ -369,6 +386,7 @@ export class ExtensionsService {
 
     validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
     validateExtensionStageGate(extension, target);
+    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(extension.id);
 
     const updated = await this.prisma.extension.update({
       where: { id },
@@ -459,6 +477,7 @@ export class ExtensionsService {
 
     validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
     validateExtensionStageGate(extension, target);
+    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(extension.id);
 
     const closedAt = new Date();
     const updated = await this.prisma.extension.update({
@@ -535,6 +554,15 @@ export class ExtensionsService {
     }
   }
 
+  private async validateDevelopmentGate(extensionId: string) {
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(extensionId);
+    await this.checklistTemplates.assertStageInstancesCompleted({
+      ownerEntityType: 'EXTENSION',
+      ownerEntityId: extensionId,
+      deliveryStage: 'STARTING',
+    });
+  }
+
   private async ensureProductBelongsToProject(productId: string, projectId: string) {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
@@ -559,4 +587,18 @@ function parseDate(value: string | undefined, field: string) {
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) throw new BadRequestException(`${field} is invalid`);
   return date;
+}
+
+function mergeChecklistIntoReadiness(
+  readiness: { completed: number; total: number } | undefined,
+  checklist: { completedChecklists?: number; totalChecklists?: number } | null,
+) {
+  if (!checklist?.totalChecklists) return readiness;
+  const base = readiness ?? { completed: 0, total: 0 };
+  const completedChecklists = checklist.completedChecklists ?? 0;
+  const totalChecklists = checklist.totalChecklists;
+  return {
+    completed: base.completed + (completedChecklists >= totalChecklists ? totalChecklists : 0),
+    total: base.total + totalChecklists,
+  };
 }

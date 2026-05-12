@@ -30,11 +30,7 @@ export function buildProductStageReadinessRows(
   const rows: StageReadinessRow[] = [];
 
   if (stage === 'STARTING') {
-    rows.push(
-      { key: 'desc', label: 'Scope & notes filled', done: Boolean(product.description?.trim()) },
-      { key: 'deadline', label: 'Deadline set', done: Boolean(product.deadline) },
-      { key: 'order', label: 'Order linked', done: Boolean(product.order?.id) },
-    );
+    rows.push({ key: 'deadline', label: 'Deadline set', done: Boolean(product.deadline) });
   } else if (stage === 'DEVELOPMENT' || stage === 'QA') {
     const open = countOpenTasks(product.tasks ?? []);
     rows.push({ key: 'tasks', label: 'No open Work Space tasks', done: open === 0 });
@@ -65,10 +61,18 @@ export function buildProductStageReadinessRows(
   }
 
   if (checklist && checklist.total > 0) {
+    const completedChecklists = checklist.completedChecklists ?? 0;
+    const totalChecklists = checklist.totalChecklists ?? 0;
     rows.push({
       key: 'checklist',
-      label: `Stage checklist (${checklist.completed}/${checklist.total})`,
-      done: checklist.completed >= checklist.total,
+      label:
+        totalChecklists > 0
+          ? `Stage checklist (${completedChecklists}/${totalChecklists} complete, ${checklist.completed}/${checklist.total} reviewed)`
+          : `Stage checklist (${checklist.completed}/${checklist.total})`,
+      done:
+        totalChecklists > 0
+          ? completedChecklists >= totalChecklists
+          : checklist.completed >= checklist.total,
     });
   }
 
@@ -92,7 +96,6 @@ export function buildExtensionStageReadinessRows(
         done: Boolean(extension.description?.trim()),
       },
       { key: 'owner', label: 'Owner assigned', done: Boolean(extension.assignedTo) },
-      { key: 'order', label: 'Order linked', done: Boolean(extension.order?.id) },
     );
   } else if (stage === 'DEVELOPMENT' || stage === 'QA') {
     const open = countOpenTasks(extension.tasks ?? []);
@@ -110,10 +113,18 @@ export function buildExtensionStageReadinessRows(
   }
 
   if (checklist && checklist.total > 0) {
+    const completedChecklists = checklist.completedChecklists ?? 0;
+    const totalChecklists = checklist.totalChecklists ?? 0;
     rows.push({
       key: 'checklist',
-      label: `Stage checklist (${checklist.completed}/${checklist.total})`,
-      done: checklist.completed >= checklist.total,
+      label:
+        totalChecklists > 0
+          ? `Stage checklist (${completedChecklists}/${totalChecklists} complete, ${checklist.completed}/${checklist.total} reviewed)`
+          : `Stage checklist (${checklist.completed}/${checklist.total})`,
+      done:
+        totalChecklists > 0
+          ? completedChecklists >= totalChecklists
+          : checklist.completed >= checklist.total,
     });
   }
 

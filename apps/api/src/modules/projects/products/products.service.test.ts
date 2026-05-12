@@ -22,6 +22,9 @@ describe('ProductsService', () => {
   const deliveryStageChecklistSync = {
     syncProductAfterLifecycleWrite: vi.fn().mockResolvedValue(undefined),
   };
+  const checklistTemplates = {
+    assertStageInstancesCompleted: vi.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(() => {
     prisma = createMockPrisma();
@@ -29,12 +32,14 @@ describe('ProductsService', () => {
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
     vi.mocked(auditService.log).mockClear();
     deliveryStageChecklistSync.syncProductAfterLifecycleWrite.mockClear();
+    checklistTemplates.assertStageInstancesCompleted.mockClear();
     service = new ProductsService(
       prisma as never,
       notifications,
       partnerAccrualClassic as never,
       auditService as never,
       deliveryStageChecklistSync as never,
+      checklistTemplates as never,
     );
   });
 
@@ -469,6 +474,7 @@ describe('ProductsService', () => {
         id: 'p1',
         projectId: 'proj-1',
         status: 'ON_HOLD',
+        deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
       prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
         {
@@ -598,20 +604,19 @@ describe('ProductsService', () => {
       );
     });
 
-    it('blocks CREATING → DEVELOPMENT when kickoff checklist has missing required items', async () => {
+    it('blocks CREATING → DEVELOPMENT when stage checklist is not complete', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         projectId: 'proj-1',
         status: 'CREATING',
+        deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
-      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
-        {
-          key: 'scope_confirmed',
-          title: 'Scope confirmed',
-          isRequired: true,
-          isChecked: false,
-        },
-      ]);
+      checklistTemplates.assertStageInstancesCompleted.mockRejectedValueOnce(
+        new BadRequestException({
+          code: 'STAGE_GATE_VALIDATION',
+          errors: [{ field: 'checklist.stage', message: 'Checklist must be completed.' }],
+        }),
+      );
 
       await expect(service.updateStatus('p1', 'DEVELOPMENT', 'emp-audit')).rejects.toThrow(
         BadRequestException,
@@ -619,20 +624,13 @@ describe('ProductsService', () => {
       expect(prisma.product.update).not.toHaveBeenCalled();
     });
 
-    it('allows CREATING → DEVELOPMENT when required kickoff checklist is accepted', async () => {
+    it('allows CREATING → DEVELOPMENT when required stage checklist is complete', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         projectId: 'proj-1',
         status: 'CREATING',
+        deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
-      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
-        {
-          key: 'scope_confirmed',
-          title: 'Scope confirmed',
-          isRequired: true,
-          isChecked: true,
-        },
-      ]);
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
 
       const result = await service.updateStatus('p1', 'DEVELOPMENT', 'emp-audit');
@@ -654,6 +652,7 @@ describe('ProductsService', () => {
         id: 'p1',
         projectId: 'proj-1',
         status: 'CREATING',
+        deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
       prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
         {

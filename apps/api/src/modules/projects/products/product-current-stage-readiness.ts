@@ -28,11 +28,7 @@ export function buildProductCurrentStageReadiness(
   const stage = lifecycle.stage;
 
   if (stage === 'STARTING') {
-    const checks = [
-      Boolean(product.description?.trim()),
-      Boolean(product.deadline),
-      Boolean(product.order?.id),
-    ];
+    const checks = [Boolean(product.deadline)];
     const completed = checks.filter(Boolean).length;
     return { completed, total: checks.length };
   }
