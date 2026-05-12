@@ -1,9 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Circle, ClipboardCheck, Loader2, XCircle } from 'lucide-react';
+import { ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import {
   checklistTemplatesApi,
   parseChecklistInstanceItems,
@@ -12,13 +11,31 @@ import {
   type ChecklistInstanceItemMark,
 } from '@/lib/api/checklist-templates';
 import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
-import { ChecklistItemEvidenceDisplay } from '@/features/checklist/checklist-item-evidence-display';
+import {
+  ChecklistInstanceWorkbenchSheet,
+  ChecklistWorkbenchStatusIcon,
+  computeChecklistWorkbenchTriggerVariant,
+} from '@/features/checklist/checklist-instance-workbench-sheet';
+import { cn } from '@/lib/utils';
 
 interface DeliveryStageChecklistPanelProps {
   ownerEntityType: 'PRODUCT' | 'EXTENSION';
   ownerEntityId: string;
   lifecycle: DeliveryLifecycleProjection | undefined;
   onChanged: () => void;
+}
+
+function aggregateReviewed(instances: ChecklistInstance[]): { reviewed: number; total: number } {
+  let reviewed = 0;
+  let total = 0;
+  for (const instance of instances) {
+    const items = parseChecklistInstanceItems(instance.snapshotItems);
+    for (const item of items) {
+      total += 1;
+      if (item.mark === 'DONE' || item.mark === 'NOT_DONE') reviewed += 1;
+    }
+  }
+  return { reviewed, total };
 }
 
 export function DeliveryStageChecklistPanel({
@@ -31,6 +48,7 @@ export function DeliveryStageChecklistPanel({
   const [loading, setLoading] = useState(false);
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -56,6 +74,13 @@ export function DeliveryStageChecklistPanel({
     if (!lifecycle?.stage) return [];
     return instances.filter((instance) => instance.deliveryStage === lifecycle.stage);
   }, [instances, lifecycle?.stage]);
+
+  const { reviewed, total } = useMemo(() => aggregateReviewed(stageInstances), [stageInstances]);
+
+  const statusVariant = useMemo(
+    () => computeChecklistWorkbenchTriggerVariant(stageInstances, loading),
+    [stageInstances, loading],
+  );
 
   const handleMark = async (
     instance: ChecklistInstance,
@@ -97,202 +122,79 @@ export function DeliveryStageChecklistPanel({
   if (!lifecycle?.stage || lifecycle.isTerminal) return null;
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-4">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-wider uppercase">
-            <ClipboardCheck className="size-3.5" aria-hidden />
+    <>
+      <section className="border-border bg-card/40 rounded-xl border p-4">
+        <div className="mb-3">
+          <h3 className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
             Stage checklists
           </h3>
           <p className="text-muted-foreground mt-1 text-xs">
-            Complete each checklist to pass this stage gate.
+            Open the drawer to review all items — up to many steps stay scrollable there.
           </p>
         </div>
-        {loading ? <Loader2 className="text-muted-foreground size-4 animate-spin" /> : null}
-      </div>
 
-      {error ? <p className="text-destructive mb-3 text-xs">{error}</p> : null}
-
-      {!loading && stageInstances.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          No checklist template is bound to this stage.
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {stageInstances.map((instance) => (
-            <ChecklistInstanceBlock
-              key={instance.id}
-              instance={instance}
-              busyKey={busyKey}
-              onMark={handleMark}
-              onComplete={handleComplete}
-            />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function ChecklistInstanceBlock({
-  instance,
-  busyKey,
-  onMark,
-  onComplete,
-}: {
-  instance: ChecklistInstance;
-  busyKey: string | null;
-  onMark: (
-    instance: ChecklistInstance,
-    item: ChecklistInstanceItem,
-    mark: ChecklistInstanceItemMark,
-    comment?: string,
-  ) => Promise<void>;
-  onComplete: (instance: ChecklistInstance) => Promise<void>;
-}) {
-  const items = parseChecklistInstanceItems(instance.snapshotItems);
-  const complete = Boolean(instance.completedAt);
-  const reviewedCount = items.filter(
-    (item) => item.mark === 'DONE' || item.mark === 'NOT_DONE',
-  ).length;
-
-  return (
-    <div className="border-border bg-background/50 rounded-lg border p-3">
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold">{instance.template.name}</p>
-          <p className="text-muted-foreground text-xs">
-            v{instance.templateVersion.versionNumber} · {reviewedCount}/{items.length} reviewed
+        {!loading && stageInstances.length === 0 ? (
+          <p className="text-muted-foreground text-sm">
+            No checklist template is bound to this stage.
           </p>
-        </div>
-        <span
-          className={
-            complete
-              ? 'rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700'
-              : 'bg-muted text-muted-foreground rounded-full px-2 py-1 text-[10px] font-semibold'
-          }
-        >
-          {complete ? 'Complete' : 'Open'}
-        </span>
-      </div>
-      <div className="space-y-2">
-        {items.map((item) => (
-          <ChecklistItemRow
-            key={item.id}
-            instance={instance}
-            item={item}
-            disabled={complete}
-            busy={busyKey === `${instance.id}:${item.id}`}
-            onMark={onMark}
-          />
-        ))}
-      </div>
-      <Button
-        type="button"
-        size="sm"
-        className="mt-3"
-        disabled={complete || busyKey === `${instance.id}:complete`}
-        onClick={() => void onComplete(instance)}
-      >
-        {busyKey === `${instance.id}:complete` ? (
-          <>
-            <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
-            Completing…
-          </>
         ) : (
-          'Complete checklist'
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(
+              'h-auto w-full justify-between gap-3 rounded-lg border px-3 py-3 text-left',
+              statusVariant === 'complete' &&
+                'border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-900/50 dark:bg-emerald-950/20',
+              statusVariant === 'attention' &&
+                'border-amber-200/80 bg-amber-50/35 dark:border-amber-900/50 dark:bg-amber-950/20',
+            )}
+            onClick={() => setSheetOpen(true)}
+            disabled={loading || stageInstances.length === 0}
+          >
+            <span className="flex min-w-0 flex-1 items-center gap-3">
+              {loading ? (
+                <Loader2
+                  className="text-muted-foreground size-5 shrink-0 animate-spin"
+                  aria-hidden
+                />
+              ) : (
+                <ChecklistWorkbenchStatusIcon variant={statusVariant} className="shrink-0" />
+              )}
+              <span className="min-w-0 flex-1">
+                <span className="text-foreground block text-sm font-semibold">
+                  {stageInstances.length === 1
+                    ? (stageInstances[0]?.template.name ?? 'Checklist')
+                    : `${stageInstances.length} checklists`}
+                </span>
+                <span className="text-muted-foreground mt-0.5 block text-xs">
+                  {loading
+                    ? 'Loading…'
+                    : total > 0
+                      ? `${reviewed}/${total} reviewed`
+                      : 'View checklist'}
+                </span>
+              </span>
+            </span>
+            <ChevronRight
+              className="text-muted-foreground size-4 shrink-0 opacity-70"
+              aria-hidden
+            />
+          </Button>
         )}
-      </Button>
-    </div>
-  );
-}
+      </section>
 
-function ChecklistItemRow({
-  instance,
-  item,
-  disabled,
-  busy,
-  onMark,
-}: {
-  instance: ChecklistInstance;
-  item: ChecklistInstanceItem;
-  disabled: boolean;
-  busy: boolean;
-  onMark: (
-    instance: ChecklistInstance,
-    item: ChecklistInstanceItem,
-    mark: ChecklistInstanceItemMark,
-    comment?: string,
-  ) => Promise<void>;
-}) {
-  const [comment, setComment] = useState(item.comment ?? '');
-
-  useEffect(() => {
-    setComment(item.comment ?? '');
-  }, [item.comment]);
-
-  const Icon = item.mark === 'DONE' ? CheckCircle2 : item.mark === 'NOT_DONE' ? XCircle : Circle;
-
-  return (
-    <div className="border-border rounded-md border p-3">
-      <div className="flex items-start gap-2">
-        <Icon
-          className={
-            item.mark === 'DONE'
-              ? 'mt-0.5 size-4 shrink-0 text-emerald-600'
-              : item.mark === 'NOT_DONE'
-                ? 'mt-0.5 size-4 shrink-0 text-red-600'
-                : 'text-muted-foreground mt-0.5 size-4 shrink-0'
-          }
-          aria-hidden
-        />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium">{item.title}</p>
-          {item.instruction ? (
-            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{item.instruction}</p>
-          ) : null}
-          {item.decisionRequired ? (
-            <p className="text-muted-foreground mt-1 text-[11px]">Required review</p>
-          ) : null}
-          <ChecklistItemEvidenceDisplay item={item} />
-        </div>
-      </div>
-      <Textarea
-        className="mt-2 min-h-16 text-xs"
-        placeholder="Comment or Not Done reason"
-        value={comment}
-        disabled={disabled}
-        onChange={(event) => setComment(event.target.value)}
+      <ChecklistInstanceWorkbenchSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title="Stage checklists"
+        description="Complete each checklist to pass this stage gate. Items are listed in order with full context."
+        instances={stageInstances}
+        loading={loading}
+        error={error}
+        busyKey={busyKey}
+        onMark={handleMark}
+        onComplete={handleComplete}
       />
-      <div className="mt-2 flex flex-wrap gap-2">
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          disabled={disabled || busy}
-          onClick={() => void onMark(instance, item, 'DONE', comment)}
-        >
-          Done
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={disabled || busy}
-          onClick={() => void onMark(instance, item, 'NOT_DONE', comment)}
-        >
-          Not Done
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          disabled={disabled || busy}
-          onClick={() => void onMark(instance, item, 'PENDING')}
-        >
-          Pending
-        </Button>
-      </div>
-    </div>
+    </>
   );
 }
