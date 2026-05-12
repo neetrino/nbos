@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { auditApi, type AuditLogEntry } from '@/lib/api/audit';
+import { cn } from '@/lib/utils';
 
 const CHECKLIST_TEMPLATE_ENTITY_TYPE = 'ChecklistTemplate';
 
@@ -28,9 +29,11 @@ function formatActor(entry: AuditLogEntry): string {
 
 type Props = {
   templateId: string;
+  /** When true, omit outer card and use denser typography (parent provides layout). */
+  embedded?: boolean;
 };
 
-export function ChecklistTemplateAuditPanel({ templateId }: Props) {
+export function ChecklistTemplateAuditPanel({ templateId, embedded = false }: Props) {
   const [rows, setRows] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +43,7 @@ export function ChecklistTemplateAuditPanel({ templateId }: Props) {
     setError(null);
     try {
       const res = await auditApi.findByEntity(CHECKLIST_TEMPLATE_ENTITY_TYPE, templateId, {
-        pageSize: 30,
+        pageSize: 24,
       });
       setRows(res.items);
     } catch (caught) {
@@ -55,9 +58,11 @@ export function ChecklistTemplateAuditPanel({ templateId }: Props) {
     void load();
   }, [load]);
 
-  return (
-    <div className="border-border bg-card rounded-2xl border p-4">
-      <p className="text-muted-foreground mb-3 text-sm font-medium">Audit trail</p>
+  const inner = (
+    <>
+      {!embedded ? (
+        <p className="text-muted-foreground mb-3 text-sm font-medium">Audit trail</p>
+      ) : null}
       {loading ? (
         <div className="text-muted-foreground flex items-center gap-2 text-sm">
           <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -69,17 +74,28 @@ export function ChecklistTemplateAuditPanel({ templateId }: Props) {
         <p className="text-muted-foreground text-sm">No audit entries yet.</p>
       ) : null}
       {!loading && rows.length > 0 ? (
-        <ul className="divide-border max-h-72 divide-y overflow-y-auto text-sm">
+        <ul
+          className={cn(
+            'divide-border divide-y overflow-y-auto',
+            embedded ? 'max-h-44 text-xs' : 'max-h-72 text-sm',
+          )}
+        >
           {rows.map((row) => (
-            <li key={row.id} className="py-2 pr-1">
-              <p className="font-medium">{formatAction(row.action)}</p>
-              <p className="text-muted-foreground text-xs">
+            <li key={row.id} className={cn('py-2 pr-1', embedded && 'py-1.5')}>
+              <p className={cn('font-medium', embedded && 'text-xs')}>{formatAction(row.action)}</p>
+              <p className="text-muted-foreground text-[0.6875rem] leading-snug">
                 {new Date(row.createdAt).toLocaleString()} · {formatActor(row)}
               </p>
             </li>
           ))}
         </ul>
       ) : null}
-    </div>
+    </>
   );
+
+  if (embedded) {
+    return <div className="min-w-0">{inner}</div>;
+  }
+
+  return <div className="border-border bg-card rounded-2xl border p-4">{inner}</div>;
 }

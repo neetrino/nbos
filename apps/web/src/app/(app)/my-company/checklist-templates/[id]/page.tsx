@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { PageHeader, StatusBadge } from '@/components/shared';
 import {
@@ -14,12 +16,12 @@ import {
 } from '@/lib/api/checklist-templates';
 import { PermissionGate } from '@/lib/permissions';
 import { toast } from 'sonner';
-import { ChecklistDraftItemsEditor } from '../checklist-draft-items-editor';
 import { ChecklistTemplateDuplicateDialog } from '../checklist-template-duplicate-dialog';
 import { ChecklistTemplatePreviewDialog } from '../checklist-template-preview-dialog';
 import { ChecklistTemplateVersionHistory } from '../checklist-template-version-history';
 import { ChecklistTemplateMetadataSection } from '../checklist-template-metadata-section';
 import { ChecklistTemplateAuditPanel } from '../checklist-template-audit-panel';
+import { ChecklistTemplateDraftCard } from '../checklist-template-draft-card';
 
 function statusVariant(status: string): 'default' | 'green' | 'gray' | 'blue' | 'amber' | 'red' {
   if (status === 'ACTIVE') {
@@ -167,7 +169,12 @@ export default function ChecklistTemplateDetailPage() {
   }
 
   if (loading && !detail) {
-    return <div className="text-muted-foreground p-6 text-sm">Loading template…</div>;
+    return (
+      <div className="text-muted-foreground flex items-center gap-2 p-8 text-sm">
+        <Loader2 className="size-4 animate-spin" aria-hidden />
+        Loading template…
+      </div>
+    );
   }
 
   if (!detail) {
@@ -187,8 +194,17 @@ export default function ChecklistTemplateDetailPage() {
   const readOnly = detail.status === 'ARCHIVED';
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={detail.name} description={detail.description ?? '—'}>
+    <div className="mx-auto max-w-5xl space-y-6 pb-10">
+      <PageHeader
+        title={detail.name}
+        description={
+          detail.description ? (
+            <span className="line-clamp-2">{detail.description}</span>
+          ) : (
+            'No description'
+          )
+        }
+      >
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge label={detail.status} variant={statusVariant(detail.status)} />
           <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
@@ -211,67 +227,55 @@ export default function ChecklistTemplateDetailPage() {
         </div>
       </PageHeader>
 
-      <ChecklistTemplateMetadataSection
-        templateId={id}
-        detail={detail}
-        readOnly={readOnly}
-        onUpdated={setDetail}
-      />
+      <Card className="border-border/80 shadow-sm shadow-black/[0.04]">
+        <CardContent className="grid gap-6 p-4 sm:p-5 lg:grid-cols-2 lg:gap-8">
+          <div className="min-w-0 space-y-2">
+            <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              Template details
+            </h2>
+            <ChecklistTemplateMetadataSection
+              templateId={id}
+              detail={detail}
+              readOnly={readOnly}
+              onUpdated={setDetail}
+              embedded
+            />
+          </div>
+          <div className="border-border/60 min-w-0 space-y-2 lg:border-l lg:pl-8">
+            <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              Audit trail
+            </h2>
+            <ChecklistTemplateAuditPanel templateId={id} embedded />
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="text-muted-foreground grid gap-2 text-sm md:grid-cols-2">
-        <p>
-          Active version:{' '}
-          <span className="text-foreground">
-            {detail.activeVersion ? `v${detail.activeVersion.versionNumber}` : 'none'}
-          </span>
-        </p>
-        <p>
-          Draft version:{' '}
-          <span className="text-foreground">
-            {detail.draftVersion ? `v${detail.draftVersion.versionNumber}` : 'none'}
-          </span>
-        </p>
-      </div>
+      <p className="text-muted-foreground text-xs">
+        Active{' '}
+        <span className="text-foreground font-medium">
+          {detail.activeVersion ? `v${detail.activeVersion.versionNumber}` : '—'}
+        </span>
+        {' · '}Draft{' '}
+        <span className="text-foreground font-medium">
+          {detail.draftVersion ? `v${detail.draftVersion.versionNumber}` : '—'}
+        </span>
+      </p>
 
       <ChecklistTemplateVersionHistory
         versions={detail.versions}
         onPreview={(versionId, label) => void openPreview(versionId, label)}
       />
 
-      <div className="border-border bg-card rounded-2xl border p-4">
-        <ChecklistDraftItemsEditor items={items} disabled={readOnly} onChange={setItems} />
-        <div className="mt-4 flex flex-wrap gap-2">
-          <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
-            <Button type="button" disabled={readOnly || saving} onClick={() => void saveDraft()}>
-              {saving ? 'Saving…' : 'Save draft'}
-            </Button>
-          </PermissionGate>
-          <PermissionGate module="CHECKLIST_TEMPLATES" action="PUBLISH">
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={readOnly || publishing}
-              onClick={() => void publish()}
-            >
-              {publishing ? 'Publishing…' : 'Publish draft'}
-            </Button>
-          </PermissionGate>
-          <PermissionGate module="CHECKLIST_TEMPLATES" action="ARCHIVE">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={readOnly || saving}
-              onClick={() => void archive()}
-            >
-              Archive
-            </Button>
-          </PermissionGate>
-        </div>
-        {readOnly ? (
-          <p className="text-muted-foreground mt-3 text-sm">This template is archived.</p>
-        ) : null}
-      </div>
-
+      <ChecklistTemplateDraftCard
+        readOnly={readOnly}
+        items={items}
+        onItemsChange={setItems}
+        saving={saving}
+        publishing={publishing}
+        onSaveDraft={() => void saveDraft()}
+        onPublish={() => void publish()}
+        onArchive={() => void archive()}
+      />
       <ChecklistTemplatePreviewDialog
         open={preview !== null}
         onOpenChange={(open) => {
@@ -291,8 +295,6 @@ export default function ChecklistTemplateDetailPage() {
         busy={dupBusy}
         onConfirm={() => void runDuplicate()}
       />
-
-      <ChecklistTemplateAuditPanel templateId={id} />
     </div>
   );
 }

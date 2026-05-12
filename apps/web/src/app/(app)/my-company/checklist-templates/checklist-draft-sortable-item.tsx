@@ -57,6 +57,7 @@ export function ChecklistDraftSortableItem({ item, disabled, onPatch, onRemove }
   return (
     <div
       ref={setNodeRef}
+      id={`checklist-draft-item-${item.id}`}
       style={style}
       className={
         isDragging
@@ -128,8 +129,14 @@ export function ChecklistDraftSortableItem({ item, disabled, onPatch, onRemove }
               onPatch(patch);
             }}
           >
-            <SelectTrigger>
-              <SelectValue />
+            <SelectTrigger className="w-full min-w-0">
+              <SelectValue>
+                {(value: string | null) =>
+                  value
+                    ? (EVIDENCE_TYPE_LABELS[value as ChecklistTemplateItemEvidenceType] ?? value)
+                    : null
+                }
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES.map((t) => (

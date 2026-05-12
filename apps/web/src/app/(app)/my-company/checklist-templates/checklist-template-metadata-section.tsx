@@ -19,6 +19,10 @@ import {
   type ChecklistTemplateCategory,
   type ChecklistTemplateDetail,
 } from '@/lib/api/checklist-templates';
+import {
+  CHECKLIST_OWNER_MODULE_LABELS,
+  CHECKLIST_TEMPLATE_CATEGORY_LABELS,
+} from '@/features/checklist/checklist-template-form-labels';
 import { toast } from 'sonner';
 
 const CATEGORIES: ChecklistTemplateCategory[] = [
@@ -32,11 +36,15 @@ const CATEGORIES: ChecklistTemplateCategory[] = [
 
 const OWNER_MODULES: ChecklistOwnerModule[] = ['MY_COMPANY', 'PROJECTS', 'TASKS', 'TECHNICAL'];
 
+const SELECT_TRIGGER = 'w-full min-w-0';
+
 type Props = {
   templateId: string;
   detail: ChecklistTemplateDetail;
   readOnly: boolean;
   onUpdated: (next: ChecklistTemplateDetail) => void;
+  /** When true, omit outer card chrome (parent provides layout). */
+  embedded?: boolean;
 };
 
 export function ChecklistTemplateMetadataSection({
@@ -44,6 +52,7 @@ export function ChecklistTemplateMetadataSection({
   detail,
   readOnly,
   onUpdated,
+  embedded = false,
 }: Props) {
   const [name, setName] = useState(detail.name);
   const [description, setDescription] = useState(detail.description ?? '');
@@ -82,62 +91,83 @@ export function ChecklistTemplateMetadataSection({
     }
   }
 
-  return (
-    <div className="border-border bg-card rounded-2xl border p-4">
-      <p className="text-muted-foreground mb-3 text-sm font-medium">Template details</p>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="ctm-name">Name</Label>
+  const inner = (
+    <>
+      {!embedded ? (
+        <p className="text-muted-foreground mb-3 text-sm font-medium">Template details</p>
+      ) : null}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="ctm-name" className={embedded ? 'text-xs' : undefined}>
+            Name
+          </Label>
           <Input
             id="ctm-name"
             value={name}
             disabled={readOnly}
             onChange={(e) => setName(e.target.value)}
+            className={embedded ? 'h-9 text-sm' : undefined}
           />
         </div>
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="ctm-desc">Description</Label>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="ctm-desc" className={embedded ? 'text-xs' : undefined}>
+            Description
+          </Label>
           <Textarea
             id="ctm-desc"
             value={description}
             disabled={readOnly}
-            rows={3}
+            rows={embedded ? 2 : 3}
             onChange={(e) => setDescription(e.target.value)}
+            className={embedded ? 'min-h-[3.25rem] resize-y text-sm' : undefined}
           />
         </div>
-        <div className="space-y-2">
-          <Label>Category</Label>
+        <div className="space-y-1.5">
+          <Label className={embedded ? 'text-xs' : undefined}>Category</Label>
           <Select
             value={category}
             disabled={readOnly}
             onValueChange={(v) => setCategory(v as ChecklistTemplateCategory)}
           >
-            <SelectTrigger>
-              <SelectValue />
+            <SelectTrigger className={SELECT_TRIGGER}>
+              <SelectValue>
+                {(value: string | null) =>
+                  value
+                    ? (CHECKLIST_TEMPLATE_CATEGORY_LABELS[value as ChecklistTemplateCategory] ??
+                      value)
+                    : null
+                }
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {CATEGORIES.map((c) => (
                 <SelectItem key={c} value={c}>
-                  {c}
+                  {CHECKLIST_TEMPLATE_CATEGORY_LABELS[c]}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
-          <Label>Owner module</Label>
+        <div className="space-y-1.5">
+          <Label className={embedded ? 'text-xs' : undefined}>Owner context</Label>
           <Select
             value={ownerModule}
             disabled={readOnly}
             onValueChange={(v) => setOwnerModule(v as ChecklistOwnerModule)}
           >
-            <SelectTrigger>
-              <SelectValue />
+            <SelectTrigger className={SELECT_TRIGGER}>
+              <SelectValue>
+                {(value: string | null) =>
+                  value
+                    ? (CHECKLIST_OWNER_MODULE_LABELS[value as ChecklistOwnerModule] ?? value)
+                    : null
+                }
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {OWNER_MODULES.map((c) => (
                 <SelectItem key={c} value={c}>
-                  {c}
+                  {CHECKLIST_OWNER_MODULE_LABELS[c]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -147,13 +177,20 @@ export function ChecklistTemplateMetadataSection({
       <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
         <Button
           type="button"
-          className="mt-4"
+          className={embedded ? 'mt-3 h-8 text-xs' : 'mt-4'}
+          size={embedded ? 'sm' : 'default'}
           disabled={readOnly || saving}
           onClick={() => void saveMetadata()}
         >
           {saving ? 'Saving…' : 'Save details'}
         </Button>
       </PermissionGate>
-    </div>
+    </>
   );
+
+  if (embedded) {
+    return <div className="min-w-0">{inner}</div>;
+  }
+
+  return <div className="border-border bg-card rounded-2xl border p-4">{inner}</div>;
 }
