@@ -6,17 +6,23 @@ import type { Task } from '@/lib/api/tasks';
  * (global Tasks list Board view and Work Space Kanban).
  */
 export const WORKSPACE_KANBAN_COLUMN_DEFS = [
-  { key: 'Open', label: 'Open', color: '#3B82F6', hexColor: '#3B82F6', sortOrder: 0 },
-  { key: 'In Progress', label: 'In Progress', color: '#A855F7', hexColor: '#A855F7', sortOrder: 1 },
-  { key: 'Review', label: 'Review', color: '#6366F1', hexColor: '#6366F1', sortOrder: 2 },
+  { key: 'Open', label: 'Open', color: '#2563EB', hexColor: '#2563EB', sortOrder: 0 },
+  {
+    key: 'In Progress',
+    label: 'In Progress',
+    color: '#F97316',
+    hexColor: '#F97316',
+    sortOrder: 1,
+  },
+  { key: 'Review', label: 'Review', color: '#7C3AED', hexColor: '#7C3AED', sortOrder: 2 },
   {
     key: 'On hold',
     label: 'On hold',
-    color: '#F59E0B',
-    hexColor: '#F59E0B',
+    color: '#18181B',
+    hexColor: '#18181B',
     sortOrder: 3,
   },
-  { key: 'Completed', label: 'Completed', color: '#22C55E', hexColor: '#22C55E', sortOrder: 4 },
+  { key: 'Completed', label: 'Completed', color: '#16A34A', hexColor: '#16A34A', sortOrder: 4 },
 ] as const;
 
 export function buildWorkspaceKanbanColumns(tasks: Task[]): KanbanColumn<Task>[] {

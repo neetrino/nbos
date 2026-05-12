@@ -5,15 +5,15 @@ export const TASK_STATUSES = [
   {
     value: 'IN_PROGRESS',
     label: 'In Progress',
-    variant: 'purple' as StatusVariant,
-    color: 'bg-purple-500',
+    variant: 'orange' as StatusVariant,
+    color: 'bg-orange-500',
   },
-  { value: 'REVIEW', label: 'Review', variant: 'indigo' as StatusVariant, color: 'bg-indigo-500' },
+  { value: 'REVIEW', label: 'Review', variant: 'violet' as StatusVariant, color: 'bg-violet-600' },
   {
     value: 'ON_HOLD',
     label: 'On hold',
-    variant: 'amber' as StatusVariant,
-    color: 'bg-amber-500',
+    variant: 'zinc' as StatusVariant,
+    color: 'bg-zinc-900',
   },
   {
     value: 'COMPLETED',
