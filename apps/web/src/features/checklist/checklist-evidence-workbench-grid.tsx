@@ -22,10 +22,15 @@ import {
   isHttpUrlString,
   parseChecklistEvidenceFileAssetIds,
 } from '@/features/checklist/checklist-evidence-value';
+import { formatWorkbenchLinkDisplayLabel } from '@/features/checklist/checklist-evidence-link-label';
 
 /** Responsive columns: more columns = smaller square tiles (fits wide checklist drawer). */
 const WORKBENCH_EVIDENCE_GRID_CLASS =
   'grid w-full gap-1 grid-cols-6 sm:grid-cols-8 xl:grid-cols-10';
+
+/** Single HTTP evidence rows are not in the tile grid; keep height intrinsic (no full-width square). */
+const WORKBENCH_COMPACT_LINK_BTN_CLASS =
+  'border-border bg-muted/25 text-foreground/90 hover:bg-muted/45 hover:text-foreground inline-flex h-7 w-max min-w-0 max-w-[min(100%,18rem)] shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-[11px] font-medium leading-none tracking-tight shadow-sm transition-colors';
 
 type EvidenceFields = {
   evidenceType: ChecklistTemplateItemEvidenceType;
@@ -180,19 +185,45 @@ function FileEvidenceCell({ fileAssetId }: { fileAssetId: string }) {
   );
 }
 
-function UrlEvidenceCell({ href }: { href: string }) {
+function HttpLinkEvidenceButton({
+  href,
+  evidenceType,
+}: {
+  href: string;
+  evidenceType: ChecklistTemplateItemEvidenceType;
+}) {
+  const label = formatWorkbenchLinkDisplayLabel(href);
+  let icon = <Link2 className="text-muted-foreground size-3.5 shrink-0" aria-hidden />;
+
+  switch (evidenceType) {
+    case 'IMAGE_LINK':
+      icon = <ImageIcon className="text-muted-foreground size-3.5 shrink-0" aria-hidden />;
+      break;
+    case 'FILE_LINK':
+    case 'DOCUMENT_LINK':
+      icon = <FileText className="text-muted-foreground size-3.5 shrink-0" aria-hidden />;
+      break;
+    case 'CREDENTIAL_LINK':
+      icon = <KeyRound className="text-muted-foreground size-3.5 shrink-0" aria-hidden />;
+      break;
+    case 'TASK_LINK':
+      icon = <ListTodo className="text-muted-foreground size-3.5 shrink-0" aria-hidden />;
+      break;
+    case 'URL':
+    default:
+      break;
+  }
+
   return (
     <Link
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="border-border bg-muted/20 hover:bg-muted/40 relative flex aspect-square w-full min-w-0 flex-col items-center justify-center gap-0.5 rounded-md border p-1 transition-colors"
+      className={WORKBENCH_COMPACT_LINK_BTN_CLASS}
       title={href}
     >
-      <Link2 className="text-muted-foreground size-[1.35rem] shrink-0" aria-hidden />
-      <span className="text-muted-foreground line-clamp-2 max-w-full px-0.5 text-center text-[8px] leading-tight">
-        URL
-      </span>
+      {icon}
+      <span className="min-w-0 flex-1 truncate">{label}</span>
     </Link>
   );
 }
@@ -228,14 +259,15 @@ export function ChecklistEvidenceWorkbenchGrid({ item }: { item: EvidenceFields 
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="border-border bg-muted/20 hover:bg-muted/40 inline-flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs transition-colors"
+          className={WORKBENCH_COMPACT_LINK_BTN_CLASS}
+          title={href}
         >
-          <Film className="size-4 shrink-0" aria-hidden />
-          <span className="truncate">Video</span>
+          <Film className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
+          <span className="min-w-0 flex-1 truncate">{formatWorkbenchLinkDisplayLabel(href)}</span>
         </Link>
       );
     }
-    return <UrlEvidenceCell href={href} />;
+    return <HttpLinkEvidenceButton href={href} evidenceType={item.evidenceType} />;
   }
 
   if (item.evidenceType === 'FREE_TEXT') {

@@ -191,7 +191,7 @@ export function ChecklistWorkbenchItemRow({
             <XCircle className="size-4" strokeWidth={2} aria-hidden />
           </button>
         </div>
-        <CollapsibleContent className="border-border border-t px-3 pb-2.5">
+        <CollapsibleContent className="border-border border-t px-3 pt-1.5 pb-2.5">
           {item.instruction ? (
             <p className="text-muted-foreground py-2 text-xs leading-relaxed">{item.instruction}</p>
           ) : null}
