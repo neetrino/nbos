@@ -3,9 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ExternalLink, XIcon } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
-import { SheetClose } from '@/components/ui/sheet';
+import { ExternalLink } from 'lucide-react';
 import { DetailSheetSettingsMenu } from '@/components/shared';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
@@ -71,11 +69,11 @@ export function DeliveryItemDetailHeader({
   };
 
   return (
-    <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
+    <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+            <span className="bg-muted/80 text-muted-foreground border-border/60 rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
               {entityKind === 'PRODUCT' ? 'Product' : 'Extension'}
             </span>
           </div>
@@ -87,7 +85,7 @@ export function DeliveryItemDetailHeader({
               onBlur={saveName}
               onKeyDown={handleNameKeyDown}
               placeholder="Name…"
-              className="text-foreground mt-2 w-full border-0 border-b-2 border-amber-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
+              className="border-primary text-foreground placeholder:text-muted-foreground/70 mt-2 w-full border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
             />
           ) : (
             <h2
@@ -130,15 +128,6 @@ export function DeliveryItemDetailHeader({
               </DropdownMenuItem>
             </DetailSheetSettingsMenu>
           ) : null}
-          <SheetClose
-            className={cn(
-              buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
-              'text-muted-foreground shrink-0',
-            )}
-          >
-            <XIcon className="size-4" />
-            <span className="sr-only">Close</span>
-          </SheetClose>
         </div>
       </div>
     </div>

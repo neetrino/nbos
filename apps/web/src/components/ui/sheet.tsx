@@ -7,6 +7,9 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { XIcon } from 'lucide-react';
 
+/** Above sheet overlay/popup (z-50) so the rail stays clickable. */
+const SHEET_FLOATING_RAIL_Z_INDEX = 60;
+
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
@@ -41,11 +44,22 @@ function SheetContent({
   children,
   side = 'right',
   showCloseButton = true,
+  floatingClose = false,
+  floatingRail,
+  floatingRailAnchorClassName,
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: 'top' | 'right' | 'bottom' | 'left';
   showCloseButton?: boolean;
+  /** Right sheet: close control sits outside the panel (CRM-style). */
+  floatingClose?: boolean;
+  /** Extra controls below the floating close (e.g. copy link). */
+  floatingRail?: React.ReactNode;
+  /** Tailwind horizontal anchor for the rail (must match panel width on `sm+`). */
+  floatingRailAnchorClassName?: string;
 }) {
+  const floatingRailEnabled = floatingClose && side === 'right';
+
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -69,6 +83,32 @@ function SheetContent({
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Popup>
+      {floatingRailEnabled ? (
+        <div
+          className={cn(
+            'pointer-events-auto fixed flex flex-col items-end gap-1.5 max-sm:top-20 max-sm:left-3 sm:top-20 sm:translate-x-px',
+            floatingRailAnchorClassName ?? 'sm:right-[90vw]',
+          )}
+          style={{ zIndex: SHEET_FLOATING_RAIL_Z_INDEX }}
+        >
+          <SheetPrimitive.Close
+            data-slot="sheet-close-floating"
+            render={
+              <Button
+                type="button"
+                variant="default"
+                size="icon"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 size-11 shrink-0 rounded-full border-0 shadow-md sm:rounded-l-full sm:rounded-r-none"
+                aria-label="Close panel"
+              />
+            }
+          >
+            <XIcon className="size-5" />
+            <span className="sr-only">Close</span>
+          </SheetPrimitive.Close>
+          {floatingRail}
+        </div>
+      ) : null}
     </SheetPortal>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { Trash2, LayoutGrid, History, FileText, Phone, CheckSquare } from 'lucide-react';
 import { DetailSheetFormFooter, DetailSheetSettingsMenu } from '@/components/shared';
+import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -183,10 +184,16 @@ export function DealSheet({
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[90vw] sm:max-w-none"
+        floatingClose
+        floatingRail={
+          <EntitySheetFloatingRail
+            sourcePageHref={`/crm/deals?openDealId=${encodeURIComponent(deal.id)}`}
+          />
+        }
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[90vw]"
       >
         {/* ── Header ── */}
-        <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
+        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
               {editingName ? (
@@ -197,7 +204,7 @@ export function DealSheet({
                   onBlur={commitNameToDraft}
                   onKeyDown={handleNameKeyDown}
                   placeholder="Deal name..."
-                  className="text-foreground w-full border-0 border-b-2 border-amber-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
+                  className="border-primary text-foreground placeholder:text-muted-foreground/70 w-full border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
                 />
               ) : (
                 <h2

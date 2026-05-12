@@ -36,6 +36,7 @@ import { DeliveryItemDetailHeader } from './DeliveryItemDetailHeader';
 import { DeliveryItemDetailTabBar } from './DeliveryItemDetailTabBar';
 import { DeliveryItemDetailSecondaryPanels } from './DeliveryItemDetailSecondaryPanels';
 import { DeliveryItemDetailGeneralTab } from './DeliveryItemDetailGeneralTab';
+import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 
 interface DeliveryItemDetailSheetProps {
   item: DeliveryBoardItem | null;
@@ -275,7 +276,16 @@ export function DeliveryItemDetailSheet({
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[90vw] sm:max-w-none"
+        floatingClose
+        floatingRail={
+          headerProps ? (
+            <EntitySheetFloatingRail
+              sourcePageHref={headerProps.sourcePageHref}
+              workspaceHref={headerProps.workSpaceHref}
+            />
+          ) : null
+        }
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[90vw]"
       >
         {!item ? null : (
           <>

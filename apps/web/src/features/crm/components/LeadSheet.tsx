@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DetailSheetFormFooter, DetailSheetSettingsMenu } from '@/components/shared';
+import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { LeadPipelineStages } from './LeadPipelineStages';
 import { LEAD_STAGES } from '../constants/leadPipeline';
 import type { Lead } from '@/lib/api/leads';
@@ -170,10 +171,17 @@ export function LeadSheet({
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[92vw] sm:max-w-[1400px]"
+        floatingClose
+        floatingRailAnchorClassName="sm:right-[min(92vw,1400px)]"
+        floatingRail={
+          <EntitySheetFloatingRail
+            sourcePageHref={`/crm/leads?openLeadId=${encodeURIComponent(lead.id)}`}
+          />
+        }
+        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:data-[side=right]:w-[min(92vw,1400px)]"
       >
         {/* ── Header ── */}
-        <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-sky-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-sky-950/10 dark:via-transparent dark:to-transparent">
+        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
           <div className="flex flex-wrap items-start gap-2">
             <div className="min-w-0 flex-1">
               {editingName ? (
@@ -184,7 +192,7 @@ export function LeadSheet({
                   onBlur={commitNameToDraft}
                   onKeyDown={handleNameKeyDown}
                   placeholder="Inquiry title (product / service)…"
-                  className="text-foreground w-full border-0 border-b-2 border-sky-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
+                  className="border-primary text-foreground placeholder:text-muted-foreground/70 w-full border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
                 />
               ) : (
                 <h2
