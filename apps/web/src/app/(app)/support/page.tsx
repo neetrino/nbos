@@ -10,8 +10,12 @@ import {
   FolderKanban,
   RotateCcw,
   PanelRight,
+  Ticket,
+  CircleAlert,
+  Hash,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,6 +45,7 @@ import {
   StatusBadge,
   KanbanBoard,
 } from '@/components/shared';
+import { FILTER_BAR_TOOLBAR_SURFACE } from '@/components/shared/filter-bar-constants';
 import {
   TICKET_CATEGORIES,
   TICKET_COVERAGE_DECISIONS,
@@ -467,6 +472,13 @@ export default function SupportPage() {
     return Boolean(target.closest('button,select,a,input,textarea,[role="combobox"]'));
   };
 
+  const criticalOpenCount = useMemo(
+    () =>
+      tickets.filter((t) => t.priority === 'P1' && !['RESOLVED', 'CLOSED'].includes(t.status))
+        .length,
+    [tickets],
+  );
+
   return (
     <div className="flex h-full flex-col gap-5">
       <div className="shrink-0">
@@ -494,24 +506,52 @@ export default function SupportPage() {
         </PageHeader>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Open Tickets</p>
-          <p className="mt-1 text-xl font-bold">{openTickets.length}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Critical (P1)</p>
-          <p className="mt-1 text-xl font-bold text-red-500">
-            {
-              tickets.filter(
-                (t) => t.priority === 'P1' && !['RESOLVED', 'CLOSED'].includes(t.status),
-              ).length
-            }
-          </p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Tickets</p>
-          <p className="mt-1 text-xl font-bold">{tickets.length}</p>
+      <div
+        className={cn(FILTER_BAR_TOOLBAR_SURFACE, 'shrink-0')}
+        aria-label="Support ticket summary"
+      >
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 sm:gap-x-10 md:gap-x-14">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-primary/12 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg sm:size-9">
+              <Ticket className="size-4 sm:size-[18px]" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                Open
+              </p>
+              <p className="text-foreground text-lg leading-tight font-semibold tabular-nums sm:text-xl">
+                {openTickets.length}
+              </p>
+            </div>
+          </div>
+          <div className="bg-border/70 hidden h-8 w-px shrink-0 sm:block" aria-hidden />
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-red-500/12 text-red-600 sm:size-9 dark:text-red-400">
+              <CircleAlert className="size-4 sm:size-[18px]" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                Critical P1
+              </p>
+              <p className="text-lg leading-tight font-semibold text-red-600 tabular-nums sm:text-xl dark:text-red-400">
+                {criticalOpenCount}
+              </p>
+            </div>
+          </div>
+          <div className="bg-border/70 hidden h-8 w-px shrink-0 sm:block" aria-hidden />
+          <div className="flex items-center gap-2.5">
+            <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg sm:size-9">
+              <Hash className="size-4 sm:size-[18px]" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                Total
+              </p>
+              <p className="text-foreground text-lg leading-tight font-semibold tabular-nums sm:text-xl">
+                {tickets.length}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
