@@ -110,19 +110,14 @@ function FilterBarFilterSelect({
   );
 
   return (
-    <Select
-      value={value}
-      onValueChange={(v) => onFilterChange?.(filter.key, v as string)}
-      items={items}
-    >
+    <Select value={value} onValueChange={(v) => onFilterChange?.(filter.key, v as string)}>
       <SelectTrigger className={cn('w-[min(100%,160px)] sm:w-[160px]', FILTER_BAR_CONTROL_PILL)}>
         <SelectValue placeholder={filter.label} />
       </SelectTrigger>
       <SelectContent>
-        {showAll ? <SelectItem value="all">All {filter.label}</SelectItem> : null}
-        {filter.options.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
-            {opt.label}
+        {items.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>

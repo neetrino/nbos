@@ -46,7 +46,7 @@ import {
   TICKET_COVERAGE_DECISIONS,
   TICKET_PRIORITIES,
   TICKET_STATUSES,
-  TICKET_WAITING_STATES,
+  TICKET_WAITING_OVERLAY_OPTIONS,
   getTicketCategory,
   getTicketPriority,
   getTicketSlaState,
@@ -107,7 +107,6 @@ export default function SupportPage() {
   const [draftTechnicalAssetId, setDraftTechnicalAssetId] = useState('');
   const [draftTechnicalEnvId, setDraftTechnicalEnvId] = useState('');
   const [projectsForFilters, setProjectsForFilters] = useState<Project[]>([]);
-  const [productFilterOptions, setProductFilterOptions] = useState<ProjectProductSummary[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [createTitle, setCreateTitle] = useState('');
   const [createProjectId, setCreateProjectId] = useState('');
@@ -145,10 +144,6 @@ export default function SupportPage() {
         const { items } = await supportApi.getAll({
           pageSize: 100,
           search: search || undefined,
-          projectId:
-            filters.projectId && filters.projectId !== 'all' ? filters.projectId : undefined,
-          productId:
-            filters.productId && filters.productId !== 'all' ? filters.productId : undefined,
           category: filters.category && filters.category !== 'all' ? filters.category : undefined,
           priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
           status: filters.status && filters.status !== 'all' ? filters.status : undefined,
@@ -228,21 +223,6 @@ export default function SupportPage() {
   }, []);
 
   useEffect(() => {
-    const pid = filters.projectId;
-    if (!pid || pid === 'all') {
-      setProductFilterOptions([]);
-      return;
-    }
-    let cancelled = false;
-    void projectsApi.getById(pid).then((p) => {
-      if (!cancelled) setProductFilterOptions(p.products ?? []);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [filters.projectId]);
-
-  useEffect(() => {
     if (!createProjectId) {
       setCreateProductOptions([]);
       return;
@@ -284,11 +264,7 @@ export default function SupportPage() {
   }, [portfolioCreateTicketFromUrl, portfolioProjectIdFromUrl, loading, projectsForFilters]);
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters((prev) => {
-      const next = { ...prev, [key]: value };
-      if (key === 'projectId') next.productId = 'all';
-      return next;
-    });
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const filterConfigs = useMemo(
@@ -311,23 +287,10 @@ export default function SupportPage() {
       {
         key: 'waitingState',
         label: 'Waiting',
-        options: TICKET_WAITING_STATES.map((w) => ({ value: w.value, label: w.label })),
-      },
-      {
-        key: 'projectId',
-        label: 'Project',
-        options: projectsForFilters.map((p) => ({
-          value: p.id,
-          label: `${p.code} · ${p.name}`,
-        })),
-      },
-      {
-        key: 'productId',
-        label: 'Product',
-        options: productFilterOptions.map((p) => ({ value: p.id, label: p.name })),
+        options: TICKET_WAITING_OVERLAY_OPTIONS.map((w) => ({ value: w.value, label: w.label })),
       },
     ],
-    [projectsForFilters, productFilterOptions],
+    [],
   );
 
   const patchTicketStatus = async (
@@ -556,7 +519,7 @@ export default function SupportPage() {
         <FilterBar
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search tickets..."
+          searchPlaceholder="Search tickets, project code, project name, product…"
           filters={filterConfigs}
           filterValues={filters}
           onFilterChange={handleFilterChange}

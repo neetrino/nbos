@@ -766,10 +766,16 @@ export class SupportService {
       where.waitingState = filters.waitingState as TicketWaitingStateEnum;
     }
     if (filters.search) {
-      where.OR = [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { code: { contains: filters.search, mode: 'insensitive' } },
-      ];
+      const q = filters.search.trim();
+      if (q.length > 0) {
+        where.OR = [
+          { title: { contains: q, mode: 'insensitive' } },
+          { code: { contains: q, mode: 'insensitive' } },
+          { project: { name: { contains: q, mode: 'insensitive' } } },
+          { project: { code: { contains: q, mode: 'insensitive' } } },
+          { product: { name: { contains: q, mode: 'insensitive' } } },
+        ];
+      }
     }
     return where;
   }
