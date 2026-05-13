@@ -109,10 +109,16 @@ function FilterBarFilterSelect({
     [filter.label, filter.options, showAll],
   );
 
+  const resolveTriggerLabel = (selected: string | null) => {
+    const resolved = selected ?? value;
+    const row = items.find((i) => i.value === resolved);
+    return row?.label ?? filter.label;
+  };
+
   return (
     <Select value={value} onValueChange={(v) => onFilterChange?.(filter.key, v as string)}>
       <SelectTrigger className={cn('w-[min(100%,160px)] sm:w-[160px]', FILTER_BAR_CONTROL_PILL)}>
-        <SelectValue placeholder={filter.label} />
+        <SelectValue placeholder={filter.label}>{resolveTriggerLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {items.map((item) => (
