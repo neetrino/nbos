@@ -1,15 +1,12 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma, Decimal } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-
-/** MVP: full visibility until Clients RBAC is wired to requests. */
-const DEFAULT_ACCESS_MASK = {
-  finance: true,
-  subscriptions: true,
-  support: true,
-  communication: true,
-  files: true,
-} as const;
+import type { CurrentUserPayload } from '../../../common/decorators';
+import { buildPortfolioAccessMask } from './portfolio-access-mask';
+import {
+  applyMaskToCompanyPortfolio,
+  applyMaskToContactPortfolio,
+} from './portfolio-payload-policy';
 
 function decimalToString(value: Decimal | null | undefined): string | null {
   if (value === null || value === undefined) return null;
@@ -20,7 +17,7 @@ function decimalToString(value: Decimal | null | undefined): string | null {
 export class PortfolioService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async getContactPortfolio(contactId: string) {
+  async getContactPortfolio(contactId: string, user: CurrentUserPayload) {
     const contact = await this.prisma.contact.findUnique({
       where: { id: contactId },
       include: {
@@ -148,17 +145,11 @@ export class PortfolioService {
       ['NEW', 'AWAITING_PAYMENT', 'OVERDUE', 'ON_HOLD'].includes(i.moneyStatus),
     );
 
-    const health =
-      overdueInvoices > 0
-        ? 'risk'
-        : tickets.some((t) => t.status !== 'CLOSED' && t.status !== 'RESOLVED')
-          ? 'warning'
-          : 'good';
-
-    return {
+    const accessMask = buildPortfolioAccessMask(user.permissions ?? {});
+    const base = {
       scope: 'contact' as const,
-      accessMask: DEFAULT_ACCESS_MASK,
-      clientHealth: health,
+      accessMask,
+      clientHealth: 'good' as const,
       contact,
       subscriptions: subscriptions.map((s) => ({
         ...s,
@@ -180,9 +171,10 @@ export class PortfolioService {
         subscriptionActiveCount: subscriptions.filter((s) => s.status === 'ACTIVE').length,
       },
     };
+    return applyMaskToContactPortfolio(base, { overdueInvoices });
   }
 
-  async getCompanyPortfolio(companyId: string) {
+  async getCompanyPortfolio(companyId: string, user: CurrentUserPayload) {
     const company = await this.prisma.company.findUnique({
       where: { id: companyId },
       include: {
@@ -277,17 +269,11 @@ export class PortfolioService {
       ['NEW', 'AWAITING_PAYMENT', 'OVERDUE', 'ON_HOLD'].includes(i.moneyStatus),
     );
 
-    const health =
-      overdueInvoices > 0
-        ? 'risk'
-        : tickets.some((t) => t.status !== 'CLOSED' && t.status !== 'RESOLVED')
-          ? 'warning'
-          : 'good';
-
-    return {
+    const accessMask = buildPortfolioAccessMask(user.permissions ?? {});
+    const base = {
       scope: 'company' as const,
-      accessMask: DEFAULT_ACCESS_MASK,
-      clientHealth: health,
+      accessMask,
+      clientHealth: 'good' as const,
       company,
       subscriptions: subscriptions.map((s) => ({
         ...s,
@@ -308,5 +294,6 @@ export class PortfolioService {
         outstandingInvoiceCount: outstandingInvoices.length,
       },
     };
+    return applyMaskToCompanyPortfolio(base, { overdueInvoices });
   }
 }

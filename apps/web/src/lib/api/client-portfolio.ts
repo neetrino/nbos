@@ -8,6 +8,8 @@ export interface PortfolioAccessMask {
   support: boolean;
   communication: boolean;
   files: boolean;
+  /** When false, monetary fields are omitted server-side (PM-style read access). */
+  financeAmounts: boolean;
 }
 
 export interface ContactPortfolioResponse {

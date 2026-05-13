@@ -24,6 +24,14 @@ export interface ClientPortfolioTabPanelsProps {
   onRetry: () => void;
 }
 
+function AccessNote({ message }: { message: string }) {
+  return (
+    <p className="text-muted-foreground mb-3 border-l-2 border-amber-500/80 pl-3 text-xs">
+      {message}
+    </p>
+  );
+}
+
 export function ClientPortfolioTabPanels({
   tab,
   data,
@@ -32,18 +40,26 @@ export function ClientPortfolioTabPanels({
 }: ClientPortfolioTabPanelsProps) {
   if (tab === 'overview') {
     const s = data.summary;
+    const m = data.accessMask;
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <MetricCard label="Projects" value={String(s.projectCount)} />
         {'companyCount' in s && <MetricCard label="Companies" value={String(s.companyCount)} />}
-        <MetricCard label="Open tickets" value={String(s.openTicketCount)} />
-        <MetricCard label="Outstanding invoices" value={String(s.outstandingInvoiceCount)} />
-        <MetricCard label="Overdue / awaiting" value={String(s.overdueInvoiceCount)} />
-        <MetricCard label="Active subscriptions" value={String(s.subscriptionActiveCount)} />
+        {m.support && <MetricCard label="Open tickets" value={String(s.openTicketCount)} />}
+        {m.finance && (
+          <>
+            <MetricCard label="Outstanding invoices" value={String(s.outstandingInvoiceCount)} />
+            <MetricCard label="Overdue / awaiting" value={String(s.overdueInvoiceCount)} />
+            <MetricCard label="Paid invoices" value={String(s.paidInvoiceCount)} />
+          </>
+        )}
+        {m.subscriptions && (
+          <MetricCard label="Active subscriptions" value={String(s.subscriptionActiveCount)} />
+        )}
         <div className="border-border bg-muted/30 text-muted-foreground rounded-xl border p-4 text-xs sm:col-span-2 lg:col-span-3">
           <p className="text-foreground font-medium">Next actions</p>
           <p className="mt-1">
-            {s.overdueInvoiceCount > 0
+            {m.finance && s.overdueInvoiceCount > 0
               ? 'Follow up on overdue or awaiting invoices with the billing contact.'
               : 'No urgent invoice issues detected in this portfolio slice.'}
           </p>
@@ -114,8 +130,12 @@ export function ClientPortfolioTabPanels({
       amount: string | null;
       projectId: string;
     }>;
+    const m = data.accessMask;
     return (
       <div className="space-y-2">
+        {m.finance && !m.financeAmounts && (
+          <AccessNote message="Monetary amounts are hidden for your role; invoice status and codes are still visible." />
+        )}
         {invoices.length === 0 ? (
           <p className="text-muted-foreground text-sm">No invoices in this view.</p>
         ) : (
@@ -154,8 +174,12 @@ export function ClientPortfolioTabPanels({
       amount: string | null;
       projectId: string;
     }>;
+    const m = data.accessMask;
     return (
       <div className="space-y-2">
+        {m.subscriptions && !m.financeAmounts && (
+          <AccessNote message="Subscription amounts are hidden for your role; status and codes remain visible." />
+        )}
         {subs.length === 0 ? (
           <p className="text-muted-foreground text-sm">No subscriptions.</p>
         ) : (
@@ -219,6 +243,16 @@ export function ClientPortfolioTabPanels({
   }
 
   if (tab === 'communication' || tab === 'files') {
+    const m = data.accessMask;
+    const allowed = tab === 'communication' ? m.communication : m.files;
+    if (!allowed) {
+      return (
+        <p className="text-muted-foreground text-sm">
+          You do not have permission to view this section. Ask an administrator if you need access
+          to {tab === 'communication' ? 'Messenger / mail' : 'Drive'}.
+        </p>
+      );
+    }
     return (
       <p className="text-muted-foreground text-sm">
         {tab === 'communication'

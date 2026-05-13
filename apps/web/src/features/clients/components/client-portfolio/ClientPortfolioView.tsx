@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, LayoutDashboard } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
   type ClientHealth,
   type CompanyPortfolioResponse,
   type ContactPortfolioResponse,
+  type PortfolioAccessMask,
 } from '@/lib/api/client-portfolio';
 import {
   clientPortfolioCompanyPath,
@@ -21,7 +22,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ClientPortfolioTabPanels, type ClientPortfolioTabId } from './ClientPortfolioTabPanels';
 
-const TABS: ReadonlyArray<{ id: ClientPortfolioTabId; label: string }> = [
+const ALL_PORTFOLIO_TABS: ReadonlyArray<{ id: ClientPortfolioTabId; label: string }> = [
   { id: 'overview', label: 'Overview' },
   { id: 'projects', label: 'Projects' },
   { id: 'finance', label: 'Finance' },
@@ -30,6 +31,18 @@ const TABS: ReadonlyArray<{ id: ClientPortfolioTabId; label: string }> = [
   { id: 'communication', label: 'Communication' },
   { id: 'files', label: 'Files' },
 ];
+
+function portfolioTabsForMask(mask: PortfolioAccessMask) {
+  return ALL_PORTFOLIO_TABS.filter((t) => {
+    if (t.id === 'overview' || t.id === 'projects') return true;
+    if (t.id === 'finance') return mask.finance;
+    if (t.id === 'subscriptions') return mask.subscriptions;
+    if (t.id === 'support') return mask.support;
+    if (t.id === 'communication') return mask.communication;
+    if (t.id === 'files') return mask.files;
+    return true;
+  });
+}
 
 function healthVariant(h: ClientHealth): 'green' | 'amber' | 'red' {
   if (h === 'good') return 'green';
@@ -85,6 +98,17 @@ export function ClientPortfolioView({
     void load();
   }, [load]);
 
+  const visibleTabs = useMemo(
+    () => (data ? portfolioTabsForMask(data.accessMask) : ALL_PORTFOLIO_TABS),
+    [data],
+  );
+
+  useEffect(() => {
+    if (!data) return;
+    const allowed = new Set(visibleTabs.map((t) => t.id));
+    if (!allowed.has(tab)) setTab('overview');
+  }, [data, tab, visibleTabs]);
+
   const title =
     variant === 'contact' && data && data.scope === 'contact'
       ? `${(data.contact as { firstName?: string }).firstName ?? ''} ${(data.contact as { lastName?: string }).lastName ?? ''}`.trim()
@@ -121,8 +145,8 @@ export function ClientPortfolioView({
             <StatusBadge label={variant === 'contact' ? 'Contact' : 'Company'} variant="blue" />
           </div>
           <p className="text-muted-foreground max-w-2xl text-xs">
-            Computed client portfolio (NBOS). RBAC will narrow sections via accessMask; MVP shows
-            all tabs.
+            Computed client portfolio (NBOS). Tabs and financial detail follow your role and module
+            permissions.
           </p>
         </div>
         <Link
@@ -142,7 +166,7 @@ export function ClientPortfolioView({
       </div>
 
       <div className="border-border flex shrink-0 gap-1 overflow-x-auto border-b px-4 py-2">
-        {TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <Button
             key={t.id}
             type="button"
