@@ -85,6 +85,7 @@ export class CompaniesService {
         billingContact: true,
         projects: { select: { id: true, code: true, name: true } },
         invoices: { select: { id: true, code: true, moneyStatus: true, amount: true } },
+        _count: { select: { projects: true, invoices: true } },
       },
     });
     if (!company) throw new NotFoundException(`Company ${id} not found`);
@@ -125,6 +126,7 @@ export class CompaniesService {
       include: {
         contact: { select: { id: true, firstName: true, lastName: true } },
         billingContact: { select: { id: true, firstName: true, lastName: true } },
+        _count: { select: { projects: true, invoices: true } },
       },
     });
   }
@@ -169,6 +171,7 @@ export class CompaniesService {
       include: {
         contact: { select: { id: true, firstName: true, lastName: true } },
         billingContact: { select: { id: true, firstName: true, lastName: true } },
+        _count: { select: { projects: true, invoices: true } },
       },
     });
   }
