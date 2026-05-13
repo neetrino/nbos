@@ -10,12 +10,6 @@ export const DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS =
 /** Anchor floating rail to the left edge of a 75vw right sheet. */
 export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS = 'sm:right-[75vw]';
 
-/** Client portfolio nested sheet width (must match rail anchor). */
-export const CLIENT_PORTFOLIO_SHEET_CONTENT_WIDTH_80VW_CLASS =
-  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[80vw]';
-
-export const CLIENT_PORTFOLIO_SHEET_FLOATING_RAIL_ANCHOR_80VW_CLASS = 'sm:right-[80vw]';
-
 /** Block surface aligned with Deal General sections. */
 export const DETAIL_SHEET_SECTION_SURFACE_CLASS =
   'rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent';

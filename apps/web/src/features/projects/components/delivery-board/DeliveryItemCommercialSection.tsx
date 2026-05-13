@@ -6,10 +6,6 @@ import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
-import {
-  clientPortfolioCompanyPath,
-  clientPortfolioContactPath,
-} from '@/features/clients/constants/client-routes';
 
 const OPEN_ID = 'openId';
 
@@ -62,14 +58,6 @@ export function DeliveryItemCommercialSection({
                 {contact.firstName} {contact.lastName}
                 <ExternalLink className="size-3.5 opacity-60" aria-hidden />
               </Link>
-              <Link
-                href={clientPortfolioContactPath(contact.id)}
-                className="text-muted-foreground hover:text-foreground text-xs font-medium hover:underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Portfolio
-              </Link>
             </div>
           </div>
         ) : (
@@ -90,14 +78,6 @@ export function DeliveryItemCommercialSection({
               >
                 {company.name}
                 <ExternalLink className="size-3.5 opacity-60" aria-hidden />
-              </Link>
-              <Link
-                href={clientPortfolioCompanyPath(company.id)}
-                className="text-muted-foreground hover:text-foreground text-xs font-medium hover:underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Portfolio
               </Link>
             </div>
           </div>

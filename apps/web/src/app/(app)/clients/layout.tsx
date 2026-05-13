@@ -2,14 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Users, Building2, LayoutDashboard } from 'lucide-react';
+import { Users, Building2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 const TABS = [
   { href: '/clients/contacts', label: 'Contacts', icon: Users },
   { href: '/clients/companies', label: 'Companies', icon: Building2 },
-  { href: '/clients/portfolio', label: 'Portfolio', icon: LayoutDashboard },
 ] as const;
 
 export default function ClientsLayout({ children }: { children: ReactNode }) {

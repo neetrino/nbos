@@ -1,7 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { FileText, Handshake, Headphones, MessageCircle, Receipt } from 'lucide-react';
+import {
+  FileText,
+  Handshake,
+  Headphones,
+  MessageCircle,
+  Receipt,
+  type LucideIcon,
+} from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
@@ -40,12 +47,14 @@ export interface ClientPortfolioQuickActionsProps {
   variant: 'contact' | 'company';
   entityId: string;
   data: ContactPortfolioResponse | CompanyPortfolioResponse;
+  layout?: 'inline' | 'rail';
 }
 
 export function ClientPortfolioQuickActions({
   variant,
   entityId,
   data,
+  layout = 'inline',
 }: ClientPortfolioQuickActionsProps) {
   const { can, isLoading } = usePermission();
   const mask = data.accessMask;
@@ -61,10 +70,20 @@ export function ClientPortfolioQuickActions({
   const dealHref = dealContactId ? buildPortfolioNewDealHref(dealContactId) : null;
   const invoiceHref = projectId ? buildPortfolioNewInvoiceHref(projectId) : null;
   const ticketHref = projectId ? buildPortfolioNewTicketHref(projectId) : null;
+  const actions = buildQuickActions({
+    canDeal,
+    canInvoice,
+    canTicket,
+    canMessenger,
+    canDrive,
+    dealHref,
+    invoiceHref,
+    ticketHref,
+  });
 
   if (isLoading) {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className={layout === 'rail' ? 'grid gap-2' : 'flex flex-wrap gap-2'}>
         <div className="bg-muted h-8 w-24 animate-pulse rounded-md" />
         <div className="bg-muted h-8 w-28 animate-pulse rounded-md" />
       </div>
@@ -72,92 +91,107 @@ export function ClientPortfolioQuickActions({
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {canDeal && dealHref ? (
-        <Link
-          href={dealHref}
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex gap-1.5')}
-        >
-          <Handshake size={14} aria-hidden />
-          New deal
-        </Link>
-      ) : canDeal ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled
-          className="gap-1.5"
-          title="Set a primary contact on the company to start a deal from here."
-        >
-          <Handshake size={14} aria-hidden />
-          New deal
-        </Button>
-      ) : null}
-
-      {canInvoice && invoiceHref ? (
-        <Link
-          href={invoiceHref}
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex gap-1.5')}
-        >
-          <Receipt size={14} aria-hidden />
-          Create invoice
-        </Link>
-      ) : canInvoice ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled
-          className="gap-1.5"
-          title="No project in this portfolio slice; open a project first or create a deal."
-        >
-          <Receipt size={14} aria-hidden />
-          Create invoice
-        </Button>
-      ) : null}
-
-      {canTicket && ticketHref ? (
-        <Link
-          href={ticketHref}
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex gap-1.5')}
-        >
-          <Headphones size={14} aria-hidden />
-          New ticket
-        </Link>
-      ) : canTicket ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled
-          className="gap-1.5"
-          title="No project in this portfolio slice."
-        >
-          <Headphones size={14} aria-hidden />
-          New ticket
-        </Button>
-      ) : null}
-
-      {canMessenger ? (
-        <Link
-          href={PORTFOLIO_MESSENGER_HREF}
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex gap-1.5')}
-        >
-          <MessageCircle size={14} aria-hidden />
-          Open messenger
-        </Link>
-      ) : null}
-
-      {canDrive ? (
-        <Link
-          href={PORTFOLIO_DRIVE_HREF}
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex gap-1.5')}
-        >
-          <FileText size={14} aria-hidden />
-          Open drive
-        </Link>
-      ) : null}
+    <div className={layout === 'rail' ? 'grid gap-2' : 'flex flex-wrap gap-2'}>
+      {actions.map((action) => (
+        <QuickAction key={action.id} action={action} layout={layout} />
+      ))}
     </div>
+  );
+}
+
+interface BuildQuickActionsOptions {
+  canDeal: boolean;
+  canInvoice: boolean;
+  canTicket: boolean;
+  canMessenger: boolean;
+  canDrive: boolean;
+  dealHref: string | null;
+  invoiceHref: string | null;
+  ticketHref: string | null;
+}
+
+interface QuickActionItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  href: string | null;
+  disabledTitle?: string;
+}
+
+function buildQuickActions(options: BuildQuickActionsOptions): QuickActionItem[] {
+  const items: QuickActionItem[] = [];
+  if (options.canDeal) {
+    items.push({
+      id: 'new-deal',
+      label: 'New deal',
+      icon: Handshake,
+      href: options.dealHref,
+      disabledTitle: 'Set a primary contact on the company to start a deal from here.',
+    });
+  }
+  if (options.canInvoice) {
+    items.push({
+      id: 'create-invoice',
+      label: 'Create invoice',
+      icon: Receipt,
+      href: options.invoiceHref,
+      disabledTitle: 'No project in this portfolio slice; open a project first or create a deal.',
+    });
+  }
+  if (options.canTicket) {
+    items.push({
+      id: 'new-ticket',
+      label: 'New ticket',
+      icon: Headphones,
+      href: options.ticketHref,
+      disabledTitle: 'No project in this portfolio slice.',
+    });
+  }
+  if (options.canMessenger) {
+    items.push({
+      id: 'open-messenger',
+      label: 'Open messenger',
+      icon: MessageCircle,
+      href: PORTFOLIO_MESSENGER_HREF,
+    });
+  }
+  if (options.canDrive) {
+    items.push({
+      id: 'open-drive',
+      label: 'Open drive',
+      icon: FileText,
+      href: PORTFOLIO_DRIVE_HREF,
+    });
+  }
+  return items;
+}
+
+function QuickAction({ action, layout }: { action: QuickActionItem; layout: 'inline' | 'rail' }) {
+  const Icon = action.icon;
+  const className = cn(
+    buttonVariants({ variant: 'outline', size: 'sm' }),
+    'inline-flex gap-1.5',
+    layout === 'rail' ? 'w-full justify-start' : null,
+  );
+  if (action.href) {
+    return (
+      <Link href={action.href} className={className}>
+        <Icon size={14} aria-hidden />
+        {action.label}
+      </Link>
+    );
+  }
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      disabled
+      className={cn('gap-1.5', layout === 'rail' ? 'w-full justify-start' : null)}
+      title={action.disabledTitle}
+    >
+      <Icon size={14} aria-hidden />
+      {action.label}
+    </Button>
   );
 }

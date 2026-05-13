@@ -11,15 +11,9 @@ import {
   PORTFOLIO_DRIVE_HREF,
   PORTFOLIO_MESSENGER_HREF,
 } from '../../constants/client-portfolio-deep-links';
+import type { ClientPortfolioTabId } from './client-portfolio-tabs';
 
-export type ClientPortfolioTabId =
-  | 'overview'
-  | 'projects'
-  | 'finance'
-  | 'subscriptions'
-  | 'support'
-  | 'communication'
-  | 'files';
+export type { ClientPortfolioTabId } from './client-portfolio-tabs';
 
 export interface ClientPortfolioTabPanelsProps {
   tab: ClientPortfolioTabId;

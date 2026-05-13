@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { LayoutDashboard, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -16,7 +15,6 @@ import {
 } from '@/components/shared';
 import { getContactRole } from '../constants/clients';
 import type { Contact } from '@/lib/api/clients';
-import { ClientPortfolioView } from './client-portfolio/ClientPortfolioView';
 import {
   buildContactGeneralPatch,
   createContactGeneralDraft,
@@ -24,6 +22,15 @@ import {
   type ContactGeneralDraft,
 } from './contact-general-form-state';
 import { ContactSheetScrollBody } from './ContactSheetScrollBody';
+import {
+  ClientDetailTabBar,
+  ClientPortfolioPanel,
+  useClientPortfolioData,
+} from './client-portfolio/ClientPortfolioEmbedded';
+import type {
+  ClientDetailTabId,
+  ClientEmbeddedPortfolioTabId,
+} from './client-portfolio/client-portfolio-tabs';
 
 interface ContactSheetProps {
   contact: Contact | null;
@@ -49,7 +56,11 @@ export function ContactSheet({
   const [snap, setSnap] = useState<ContactGeneralDraft | null>(null);
   const [saving, setSaving] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
-  const [portfolioOpen, setPortfolioOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<ClientDetailTabId>('general');
+  const portfolio = useClientPortfolioData({
+    variant: 'contact',
+    entityId: contact?.id ?? null,
+  });
 
   useLayoutEffect(() => {
     if (!contact) {
@@ -64,10 +75,18 @@ export function ContactSheet({
 
   useEffect(() => {
     if (!open) {
-      setPortfolioOpen(false);
       setGeneralError(null);
     }
   }, [open]);
+
+  useEffect(() => {
+    setActiveTab('general');
+  }, [contact?.id]);
+
+  useEffect(() => {
+    const allowedTabs = new Set(portfolio.tabs.map((tab) => tab.id));
+    if (!allowedTabs.has(activeTab)) setActiveTab('general');
+  }, [activeTab, portfolio.tabs]);
 
   const patchDraft = useCallback((partial: Partial<ContactGeneralDraft>) => {
     setDraft((prev) => (prev ? { ...prev, ...partial } : null));
@@ -111,98 +130,76 @@ export function ContactSheet({
 
   const sourcePageHref = `/clients/contacts?openId=${encodeURIComponent(contact.id)}`;
 
-  const portfolioRailButton = (
-    <Button
-      type="button"
-      variant="default"
-      size="icon"
-      className="bg-primary text-primary-foreground hover:bg-primary/90 size-10 shrink-0 rounded-l-full rounded-r-none border-0 shadow-md max-sm:rounded-full"
-      aria-label="Open client portfolio"
-      onClick={() => setPortfolioOpen(true)}
-    >
-      <LayoutDashboard className="size-4" aria-hidden />
-    </Button>
-  );
-
   return (
-    <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent
-          side="right"
-          showCloseButton={false}
-          floatingClose
-          floatingRailVisible={open}
-          floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS}
-          floatingRail={
-            <EntitySheetFloatingRail
-              sourcePageHref={sourcePageHref}
-              trailing={portfolioRailButton}
-            />
-          }
-          className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
-        >
-          <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
-            <div className="flex flex-wrap items-start gap-2">
-              <div className="min-w-0 flex-1">
-                <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                  {displayTitle}
-                </h2>
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  {role ? <StatusBadge label={role.label} variant={role.variant} /> : null}
-                </div>
-              </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setPortfolioOpen(true)}
-                >
-                  <LayoutDashboard size={14} className="mr-1" />
-                  Portfolio
-                </Button>
-                {onDelete ? (
-                  <DetailSheetSettingsMenu>
-                    <DropdownMenuItem variant="destructive" onClick={() => onDelete(contact.id)}>
-                      <Trash2 />
-                      Delete
-                    </DropdownMenuItem>
-                  </DetailSheetSettingsMenu>
-                ) : null}
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        floatingClose
+        floatingRailVisible={open}
+        floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS}
+        floatingRail={<EntitySheetFloatingRail sourcePageHref={sourcePageHref} />}
+        className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
+      >
+        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+          <div className="flex flex-wrap items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                {displayTitle}
+              </h2>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {role ? <StatusBadge label={role.label} variant={role.variant} /> : null}
               </div>
             </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
+              {onDelete ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(contact.id)}>
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              ) : null}
+            </div>
           </div>
+        </div>
 
-          <ScrollArea className="min-h-0 flex-1">
+        <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
+
+        <ScrollArea className="min-h-0 flex-1">
+          {activeTab === 'general' ? (
             <ContactSheetScrollBody
               contact={contact}
               draft={draft}
               patchDraft={patchDraft}
               saving={saving}
               generalError={generalError}
+              portfolioData={portfolio.data}
+              portfolioLoading={portfolio.loading}
+              portfolioError={portfolio.error}
+              onPortfolioRetry={portfolio.reload}
             />
-          </ScrollArea>
+          ) : (
+            <ClientPortfolioPanel
+              tab={activeTab as ClientEmbeddedPortfolioTabId}
+              data={portfolio.data}
+              loading={portfolio.loading}
+              error={portfolio.error}
+              variant="contact"
+              onRetry={portfolio.reload}
+            />
+          )}
+        </ScrollArea>
 
-          <DetailSheetFormFooter
-            visible={Boolean(draft)}
-            dirty={generalDirty}
-            saving={saving}
-            errorMessage={generalError}
-            onSave={() => void handleGeneralSave()}
-            onCancel={handleGeneralCancel}
-          />
-        </SheetContent>
-      </Sheet>
-
-      <ClientPortfolioView
-        variant="contact"
-        entityId={contact.id}
-        asSheet
-        sheetOpen={portfolioOpen}
-        onSheetOpenChange={setPortfolioOpen}
-        forceNestedBackdrop
-        sheetCloseOnlyBack
-      />
-    </>
+        <DetailSheetFormFooter
+          visible={activeTab === 'general' && Boolean(draft)}
+          dirty={generalDirty}
+          saving={saving}
+          errorMessage={generalError}
+          onSave={() => void handleGeneralSave()}
+          onCancel={handleGeneralCancel}
+        />
+      </SheetContent>
+    </Sheet>
   );
 }

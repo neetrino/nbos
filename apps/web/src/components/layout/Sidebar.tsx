@@ -204,7 +204,6 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { label: 'Companies', href: '/clients/companies' },
       { label: 'Contacts', href: '/clients/contacts' },
-      { label: 'Portfolio', href: '/clients/portfolio' },
     ],
   },
   {
