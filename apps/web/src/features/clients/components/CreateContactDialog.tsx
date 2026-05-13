@@ -180,7 +180,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
             <div>
               <Label>Preferred Channel</Label>
               <Select
-                value={form.preferredChannel || undefined}
+                value={form.preferredChannel}
                 onValueChange={(v) => setForm({ ...form, preferredChannel: v as string })}
               >
                 <SelectTrigger>
@@ -198,7 +198,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
             <div>
               <Label>Language</Label>
               <Select
-                value={form.language || undefined}
+                value={form.language}
                 onValueChange={(v) => setForm({ ...form, language: v as string })}
               >
                 <SelectTrigger>
