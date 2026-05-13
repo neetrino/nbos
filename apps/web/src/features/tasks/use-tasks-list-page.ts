@@ -1,7 +1,9 @@
 'use client';
 
 import { createElement, useCallback, useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { TASK_STATUSES, TASK_PRIORITIES } from '@/features/tasks/constants/tasks';
+import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
 import { KANBAN_STATUS_MAP, getDueDateForDeadlineColumn } from '@/features/tasks/task-board';
 import { TasksListKanbanViews } from '@/features/tasks/tasks-list-kanban-views';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
@@ -25,6 +27,11 @@ const FILTER_CONFIGS = [
 ];
 
 export function useTasksListPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const openTaskId = searchParams.get(TASK_OPEN_QUERY)?.trim() || null;
+
   const { creatorId, creatorReady } = useTaskCreatorId();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<TaskStats | null>(null);
@@ -34,10 +41,23 @@ export function useTasksListPage() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [boardView, setBoardView] = useState<TasksListBoardView>('kanban');
   const [myPlanStages, setMyPlanStages] = useState<TaskBoardStage[]>([]);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [defaultCreateDueDate, setDefaultCreateDueDate] = useState<string | null>(null);
+
+  const stripTaskOpenFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (!p.has(TASK_OPEN_QUERY)) return;
+    p.delete(TASK_OPEN_QUERY);
+    const qs = p.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }, [router, pathname, searchParams]);
+
+  const handleTaskSheetOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) stripTaskOpenFromUrl();
+    },
+    [stripTaskOpenFromUrl],
+  );
 
   const { handleExportScopeStatsCsv } = useTasksScopeStatsCsvExport(stats);
 
@@ -107,20 +127,27 @@ export function useTasksListPage() {
     }
   };
 
-  const handleTaskClick = (task: Task) => {
-    setSelectedTaskId(task.id);
-    setSheetOpen(true);
-  };
+  const handleTaskClick = useCallback(
+    (task: Task) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(TASK_OPEN_QUERY, task.id);
+      const qs = p.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [router, pathname, searchParams],
+  );
 
   const handleTaskUpdate = (updated: Task) => {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   };
 
-  const handleTaskDelete = (taskId: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId));
-    setSelectedTaskId((current) => (current === taskId ? null : current));
-    setSheetOpen(false);
-  };
+  const handleTaskDelete = useCallback(
+    (taskId: string) => {
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
+      if (openTaskId === taskId) stripTaskOpenFromUrl();
+    },
+    [openTaskId, stripTaskOpenFromUrl],
+  );
 
   const handleTaskCreated = (task: Task) => {
     setTasks((prev) => [task, ...prev]);
@@ -286,10 +313,9 @@ export function useTasksListPage() {
     fetchTasks,
     filterConfigs: FILTER_CONFIGS,
     handleExportScopeStatsCsv,
-    selectedTaskId,
-    setSelectedTaskId,
-    sheetOpen,
-    setSheetOpen,
+    selectedTaskId: openTaskId,
+    sheetOpen: Boolean(openTaskId),
+    handleTaskSheetOpenChange,
     quickCreateOpen,
     setQuickCreateOpen,
     defaultCreateDueDate,

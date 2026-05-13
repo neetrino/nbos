@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,6 +50,7 @@ import {
   isLeadAttributionLocked,
   requiresMarketingWhichOneSelection,
 } from '@nbos/shared/constants';
+import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
@@ -64,6 +65,8 @@ interface PendingLeadTransition {
 }
 
 export default function LeadsPipelinePage() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +87,23 @@ export default function LeadsPipelinePage() {
   const leadNavTokenRef = useRef(0);
 
   const clearLeadBlockerNav = useCallback(() => setLeadBlockerNav(null), []);
+
+  const stripOpenLeadFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (!p.has(CRM_OPEN_LEAD_QUERY)) return;
+    p.delete(CRM_OPEN_LEAD_QUERY);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const pushOpenLeadToUrl = useCallback(
+    (id: string) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(CRM_OPEN_LEAD_QUERY, id);
+      router.push(`${pathname}?${p.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -107,7 +127,7 @@ export default function LeadsPipelinePage() {
     fetchLeads();
   }, [fetchLeads]);
 
-  const openLeadId = searchParams.get('openLeadId');
+  const openLeadId = searchParams.get(CRM_OPEN_LEAD_QUERY)?.trim() || null;
   const deepLinkLeadAttemptedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -137,22 +157,21 @@ export default function LeadsPipelinePage() {
       } catch {
         if (!cancelled) {
           toast.error('Lead not found or you cannot open it.');
+          stripOpenLeadFromUrl();
         }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [openLeadId, loading, leads]);
+  }, [openLeadId, loading, leads, stripOpenLeadFromUrl]);
 
   const handleLeadCreated = async (lead: Lead, options?: { openFull?: boolean }) => {
     setLeads((prev) => [lead, ...prev.filter((item) => item.id !== lead.id)]);
     setError(null);
 
     if (options?.openFull) {
-      setSelectedLead(lead);
-      setLeadBlockerNav(null);
-      setSheetOpen(true);
+      pushOpenLeadToUrl(lead.id);
     }
 
     await fetchLeads();
@@ -264,6 +283,7 @@ export default function LeadsPipelinePage() {
       const currentLead =
         leads.find((lead) => lead.id === transitionBlocker.item.id) ?? transitionBlocker.item;
       setSelectedLead(currentLead);
+      pushOpenLeadToUrl(currentLead.id);
       leadNavTokenRef.current += 1;
       setLeadBlockerNav({
         token: leadNavTokenRef.current,
@@ -274,7 +294,7 @@ export default function LeadsPipelinePage() {
         setTransitionBlocker(null);
       }
     },
-    [leads, transitionBlocker],
+    [leads, transitionBlocker, pushOpenLeadToUrl],
   );
 
   const handleOpenBlockedLead = () => {
@@ -381,6 +401,7 @@ export default function LeadsPipelinePage() {
 
     setSheetOpen(false);
     setSelectedLead(null);
+    stripOpenLeadFromUrl();
     setLeads((prev) => prev.filter((l) => l.id !== id));
 
     try {
@@ -391,9 +412,8 @@ export default function LeadsPipelinePage() {
   };
 
   const handleCardClick = (lead: Lead) => {
-    setSelectedLead(lead);
     setLeadBlockerNav(null);
-    setSheetOpen(true);
+    pushOpenLeadToUrl(lead.id);
   };
 
   const handleMove = (itemId: string, _from: string, toColumn: string) => {
@@ -565,7 +585,13 @@ export default function LeadsPipelinePage() {
       <LeadSheet
         lead={selectedLead}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) {
+            setSelectedLead(null);
+            stripOpenLeadFromUrl();
+          }
+        }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
         onDelete={handleDelete}

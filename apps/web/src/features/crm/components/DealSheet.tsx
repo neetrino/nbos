@@ -14,6 +14,7 @@ import { DealInvoiceTab } from './DealInvoiceTab';
 import { DealCallsTab } from './DealCallsTab';
 import { DealTasksTab } from './DealTasksTab';
 import type { Deal } from '@/lib/api/deals';
+import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import type { DealSheetBlockerIntent } from '@/features/shared/blocker-actions';
 import {
   buildDealGeneralPatch,
@@ -189,7 +190,7 @@ export function DealSheet({
         floatingRailAnchorClassName="sm:right-[75vw]"
         floatingRail={
           <EntitySheetFloatingRail
-            sourcePageHref={`/crm/deals?openDealId=${encodeURIComponent(deal.id)}`}
+            sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`}
           />
         }
         className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[75vw]"

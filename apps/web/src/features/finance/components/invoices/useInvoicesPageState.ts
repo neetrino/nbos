@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { buildInvoiceListApiParams } from '@/features/finance/utils/build-invoice-list-api-params';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
@@ -28,6 +30,9 @@ interface UseInvoicesPageStateOptions {
 }
 
 export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const subscriptionIdFromUrl = options?.subscriptionIdFromUrl?.trim() || null;
   const openInvoiceIdFromUrl = options?.openInvoiceIdFromUrl?.trim() || null;
   const portfolioProjectIdFromUrl = options?.portfolioProjectIdFromUrl?.trim() || null;
@@ -59,6 +64,14 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const clearMutationError = useCallback(() => {
     setMutationError(null);
   }, []);
+
+  const stripOpenInvoiceFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (!p.has(OPEN_INVOICE_QUERY)) return;
+    p.delete(OPEN_INVOICE_QUERY);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   const fetchInvoices = useFetchInvoices({
     search,
@@ -94,17 +107,40 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
         }
       } catch (caught) {
         toast.error(getApiErrorMessage(caught, 'Could not open invoice from link.'));
+        stripOpenInvoiceFromUrl();
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [openInvoiceIdFromUrl]);
+  }, [openInvoiceIdFromUrl, stripOpenInvoiceFromUrl]);
 
   useEffect(() => {
     if (!portfolioCreateInvoiceFromUrl || !portfolioProjectIdFromUrl) return;
     setCreateOpen(true);
   }, [portfolioCreateInvoiceFromUrl, portfolioProjectIdFromUrl]);
+
+  const handleInvoiceSheetOpenChange = useCallback(
+    (open: boolean) => {
+      setSheetOpen(open);
+      if (!open) {
+        setSelectedInvoice(null);
+        stripOpenInvoiceFromUrl();
+      }
+    },
+    [stripOpenInvoiceFromUrl],
+  );
+
+  const handleInvoiceClick = useCallback(
+    (invoice: Invoice) => {
+      setSelectedInvoice(invoice);
+      setSheetOpen(true);
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(OPEN_INVOICE_QUERY, invoice.id);
+      router.push(`${pathname}?${p.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
 
   return {
     invoices,
@@ -122,15 +158,13 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     selectedInvoice,
     sheetOpen,
     setSheetOpen,
+    handleInvoiceSheetOpenChange,
     createOpen,
     setCreateOpen,
     period,
     setPeriod,
     fetchInvoices,
-    handleInvoiceClick: (invoice: Invoice) => {
-      setSelectedInvoice(invoice);
-      setSheetOpen(true);
-    },
+    handleInvoiceClick,
     handleMoneyStatusChange,
     handlePaymentRecorded,
     handleInvoiceCreated: fetchInvoices,

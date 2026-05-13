@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, LayoutGrid, List, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,6 +51,7 @@ import {
 } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
+import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
@@ -65,6 +66,8 @@ interface PendingDealTransition {
 }
 
 export default function DealsPipelinePage() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +94,23 @@ export default function DealsPipelinePage() {
 
   const clearDealBlockerNav = useCallback(() => setDealBlockerNav(null), []);
 
+  const stripOpenDealFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (!p.has(CRM_OPEN_DEAL_QUERY)) return;
+    p.delete(CRM_OPEN_DEAL_QUERY);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const pushOpenDealToUrl = useCallback(
+    (id: string) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(CRM_OPEN_DEAL_QUERY, id);
+      router.push(`${pathname}?${p.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
   const fetchDeals = useCallback(async () => {
     setLoading(true);
     try {
@@ -113,7 +133,7 @@ export default function DealsPipelinePage() {
     fetchDeals();
   }, [fetchDeals]);
 
-  const openDealId = searchParams.get('openDealId');
+  const openDealId = searchParams.get(CRM_OPEN_DEAL_QUERY)?.trim() || null;
   const portfolioContactId = searchParams.get(PORTFOLIO_DEEP_LINK.contactId)?.trim() ?? null;
   const createDealFromPortfolio = searchParams.get(PORTFOLIO_DEEP_LINK.createDeal) === '1';
   const dealPrefill = useMemo(() => {
@@ -156,13 +176,14 @@ export default function DealsPipelinePage() {
       } catch {
         if (!cancelled) {
           toast.error('Deal not found or you cannot open it.');
+          stripOpenDealFromUrl();
         }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [openDealId, loading, deals]);
+  }, [openDealId, loading, deals, stripOpenDealFromUrl]);
 
   const handleStatusChange = async (id: string, status: string) => {
     const previousDeals = deals;
@@ -247,6 +268,7 @@ export default function DealsPipelinePage() {
       const currentDeal =
         deals.find((deal) => deal.id === transitionBlocker.item.id) ?? transitionBlocker.item;
       setSelectedDeal(currentDeal);
+      pushOpenDealToUrl(currentDeal.id);
       if (intent) {
         pushDealBlockerNav(intent);
       } else {
@@ -257,7 +279,7 @@ export default function DealsPipelinePage() {
         setTransitionBlocker(null);
       }
     },
-    [deals, transitionBlocker, pushDealBlockerNav],
+    [deals, transitionBlocker, pushDealBlockerNav, pushOpenDealToUrl],
   );
 
   const handleOpenBlockedDeal = () => {
@@ -381,6 +403,7 @@ export default function DealsPipelinePage() {
 
     setSheetOpen(false);
     setSelectedDeal(null);
+    stripOpenDealFromUrl();
     setDeals((prev) => prev.filter((d) => d.id !== id));
 
     try {
@@ -391,12 +414,12 @@ export default function DealsPipelinePage() {
   };
 
   const handleCardClick = (deal: Deal) => {
-    setSelectedDeal(deal);
     clearDealBlockerNav();
-    setSheetOpen(true);
+    pushOpenDealToUrl(deal.id);
   };
 
   const handleOpenDealById = async (id: string) => {
+    pushOpenDealToUrl(id);
     const existingDeal = deals.find((deal) => deal.id === id);
     setSelectedDeal(existingDeal ?? null);
     clearDealBlockerNav();
@@ -588,7 +611,13 @@ export default function DealsPipelinePage() {
       <DealSheet
         deal={selectedDeal}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) {
+            setSelectedDeal(null);
+            stripOpenDealFromUrl();
+          }
+        }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
         onDelete={handleDelete}

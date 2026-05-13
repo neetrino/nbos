@@ -25,11 +25,13 @@ import {
 import {
   countDeliveryAggregates,
   getItemId,
+  getItemKey,
   getItemLifecycle,
   getProjectId,
   type DeliveryBoardItem,
   type DeliveryBoardKindFilter,
 } from '@/features/projects/components/delivery-board/project-delivery-board-model';
+import { DELIVERY_BOARD_OPEN_ITEM_QUERY } from '@/features/projects/constants/delivery-board-open-query';
 import type { ProductBoardTab } from '@/features/projects/components/delivery-board/ProjectDeliveryBoardContextLinks';
 import { useDeliveryBoardMutations } from '@/features/projects/components/delivery-board/use-delivery-board-mutations';
 
@@ -53,7 +55,6 @@ export default function DeliveryBoardPage() {
   const [items, setItems] = useState<DeliveryBoardItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [detailItem, setDetailItem] = useState<DeliveryBoardItem | null>(null);
   const [pipelineTab, setPipelineTab] = useState<'active' | 'closed'>('active');
   const [kindFilter, setKindFilter] = useState<DeliveryBoardKindFilter>('ALL');
   const [closedViewMode, setClosedViewMode] = useState<'LIST' | 'BOARD'>('LIST');
@@ -85,9 +86,6 @@ export default function DeliveryBoardPage() {
     setItems((current) =>
       current.map((item) => (getItemId(item) === getItemId(updatedItem) ? updatedItem : item)),
     );
-    setDetailItem((current) =>
-      current && getItemId(current) === getItemId(updatedItem) ? updatedItem : current,
-    );
   }, []);
 
   useEffect(() => {
@@ -98,6 +96,35 @@ export default function DeliveryBoardPage() {
     if (!projectFilterId) return items;
     return items.filter((item) => getProjectId(item) === projectFilterId);
   }, [items, projectFilterId]);
+
+  const openDeliveryItemKey = searchParams.get(DELIVERY_BOARD_OPEN_ITEM_QUERY)?.trim() || null;
+
+  const detailItem = useMemo(() => {
+    if (!openDeliveryItemKey) return null;
+    return scopedItems.find((item) => getItemKey(item) === openDeliveryItemKey) ?? null;
+  }, [openDeliveryItemKey, scopedItems]);
+
+  const closeDeliveryItemSheet = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    p.delete(DELIVERY_BOARD_OPEN_ITEM_QUERY);
+    const qs = p.toString();
+    router.push(qs ? `/delivery-board?${qs}` : '/delivery-board');
+  }, [router, searchParams]);
+
+  const openDeliveryItemSheet = useCallback(
+    (item: DeliveryBoardItem) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(DELIVERY_BOARD_OPEN_ITEM_QUERY, getItemKey(item));
+      router.push(`/delivery-board?${p.toString()}`);
+    },
+    [router, searchParams],
+  );
+
+  useEffect(() => {
+    if (loading || !openDeliveryItemKey) return;
+    const exists = scopedItems.some((item) => getItemKey(item) === openDeliveryItemKey);
+    if (!exists) closeDeliveryItemSheet();
+  }, [loading, openDeliveryItemKey, scopedItems, closeDeliveryItemSheet]);
 
   const summaryCounts = useMemo(() => countDeliveryAggregates(scopedItems), [scopedItems]);
 
@@ -152,15 +179,6 @@ export default function DeliveryBoardPage() {
     },
     [router, scopedItems, projectFilterId],
   );
-
-  useEffect(() => {
-    setDetailItem((cur) => {
-      if (!cur) return null;
-      const id = getItemId(cur);
-      const next = scopedItems.find((i) => getItemId(i) === id);
-      return next ?? cur;
-    });
-  }, [scopedItems]);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
@@ -237,7 +255,7 @@ export default function DeliveryBoardPage() {
               onOpenProductTab={openProductTab}
               lockedStatusFilter="ACTIVE"
               summaryCounts={summaryCounts}
-              onOpenDetails={setDetailItem}
+              onOpenDetails={openDeliveryItemSheet}
               showBoardHeader={false}
               kindFilter={kindFilter}
               onKindFilterChange={setKindFilter}
@@ -257,7 +275,10 @@ export default function DeliveryBoardPage() {
               hasActiveFilters={hasActiveClosedFilters}
             />
             {closedViewMode === 'LIST' ? (
-              <DeliveryBoardClosedTable items={closedFilteredItems} onOpenDetails={setDetailItem} />
+              <DeliveryBoardClosedTable
+                items={closedFilteredItems}
+                onOpenDetails={openDeliveryItemSheet}
+              />
             ) : (
               <DeliveryBoardClosedBoard
                 items={closedFilteredItems}
@@ -267,7 +288,7 @@ export default function DeliveryBoardPage() {
                 onOpenProductTab={openProductTab}
                 onBoardAction={async () => {}}
                 onCancel={() => {}}
-                onOpenDetails={setDetailItem}
+                onOpenDetails={openDeliveryItemSheet}
               />
             )}
           </TabsContent>
@@ -278,7 +299,7 @@ export default function DeliveryBoardPage() {
         item={detailItem}
         open={detailItem !== null}
         onOpenChange={(open) => {
-          if (!open) setDetailItem(null);
+          if (!open) closeDeliveryItemSheet();
         }}
         onEntityUpdated={load}
         onTitleSaved={handleDetailItemRenamed}

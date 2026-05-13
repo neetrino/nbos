@@ -77,6 +77,15 @@ export default function CompaniesPage() {
     router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
   }, [pathname, router, searchParams]);
 
+  const pushOpenCompanyToUrl = useCallback(
+    (id: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_COMPANY_QUERY, id);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
   useEffect(() => {
     if (!openCompanyId || loading) return;
     const match = companies.find((c) => c.id === openCompanyId);
@@ -117,12 +126,12 @@ export default function CompaniesPage() {
     await companiesApi.delete(id);
     setSheetOpen(false);
     setSelectedCompany(null);
+    stripOpenCompanyFromUrl();
     await fetchCompanies();
   };
 
   const handleRowClick = (company: Company) => {
-    setSelectedCompany(company);
-    setSheetOpen(true);
+    pushOpenCompanyToUrl(company.id);
   };
 
   const filterConfigs = [

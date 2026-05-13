@@ -5,7 +5,10 @@ import { CheckCircle2, Download, Hash, Loader2, TableProperties, TrendingUp } fr
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ErrorState, LoadingState } from '@/components/shared';
-import { BONUS_BOARD_PROJECT_FILTER_QUERY } from '@/features/finance/constants/bonus-board-url';
+import {
+  BONUS_BOARD_OPEN_ENTRY_QUERY,
+  BONUS_BOARD_PROJECT_FILTER_QUERY,
+} from '@/features/finance/constants/bonus-board-url';
 import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
 import {
   BonusBoardColumns,
@@ -48,13 +51,6 @@ export function BonusBoardPageContent() {
   const [typeFilter, setTypeFilter] = useState<BonusType | 'ALL'>('ALL');
   const [employeeFilter, setEmployeeFilter] = useState<string>('ALL');
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
-  const [ledgerEntry, setLedgerEntry] = useState<BonusEntryListRow | null>(null);
-  const [ledgerOpen, setLedgerOpen] = useState(false);
-
-  const openReleaseLedger = useCallback((row: BonusEntryListRow) => {
-    setLedgerEntry(row);
-    setLedgerOpen(true);
-  }, []);
 
   useEffect(() => {
     const raw = searchParams.get(BONUS_BOARD_PROJECT_FILTER_QUERY)?.trim();
@@ -70,6 +66,33 @@ export function BonusBoardPageContent() {
     },
     [pathname, router, searchParams],
   );
+
+  const openBonusEntryId = searchParams.get(BONUS_BOARD_OPEN_ENTRY_QUERY)?.trim() || null;
+
+  const ledgerEntry = useMemo(() => {
+    if (!openBonusEntryId) return null;
+    return rows.find((r) => r.id === openBonusEntryId) ?? null;
+  }, [openBonusEntryId, rows]);
+
+  const ledgerOpen = Boolean(openBonusEntryId && ledgerEntry);
+
+  const openReleaseLedger = useCallback(
+    (row: BonusEntryListRow) => {
+      replaceBonusUrl((params) => {
+        params.set(BONUS_BOARD_OPEN_ENTRY_QUERY, row.id);
+      });
+    },
+    [replaceBonusUrl],
+  );
+
+  useEffect(() => {
+    if (loading || !openBonusEntryId) return;
+    if (!rows.some((r) => r.id === openBonusEntryId)) {
+      replaceBonusUrl((params) => {
+        params.delete(BONUS_BOARD_OPEN_ENTRY_QUERY);
+      });
+    }
+  }, [loading, openBonusEntryId, rows, replaceBonusUrl]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -279,8 +302,11 @@ export function BonusBoardPageContent() {
         entry={ledgerEntry}
         open={ledgerOpen}
         onOpenChange={(next) => {
-          setLedgerOpen(next);
-          if (!next) setLedgerEntry(null);
+          if (!next) {
+            replaceBonusUrl((params) => {
+              params.delete(BONUS_BOARD_OPEN_ENTRY_QUERY);
+            });
+          }
         }}
         onAfterPatch={() => void load()}
       />

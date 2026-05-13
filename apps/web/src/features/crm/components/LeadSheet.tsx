@@ -11,6 +11,7 @@ import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floati
 import { LeadPipelineStages } from './LeadPipelineStages';
 import { LEAD_STAGES } from '../constants/leadPipeline';
 import type { Lead } from '@/lib/api/leads';
+import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import {
   LEAD_SHEET_SECTION,
   type LeadSheetSectionId,
@@ -176,7 +177,7 @@ export function LeadSheet({
         floatingRailAnchorClassName="sm:right-[75vw]"
         floatingRail={
           <EntitySheetFloatingRail
-            sourcePageHref={`/crm/leads?openLeadId=${encodeURIComponent(lead.id)}`}
+            sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(lead.id)}`}
           />
         }
         className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:data-[side=right]:w-[75vw]"

@@ -72,6 +72,15 @@ export default function ContactsPage() {
     router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
   }, [pathname, router, searchParams]);
 
+  const pushOpenContactToUrl = useCallback(
+    (id: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_CONTACT_QUERY, id);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
   useEffect(() => {
     if (!openContactId || loading) return;
     const match = contacts.find((c) => c.id === openContactId);
@@ -112,12 +121,12 @@ export default function ContactsPage() {
     await contactsApi.delete(id);
     setSheetOpen(false);
     setSelectedContact(null);
+    stripOpenContactFromUrl();
     await fetchContacts();
   };
 
   const handleRowClick = (contact: Contact) => {
-    setSelectedContact(contact);
-    setSheetOpen(true);
+    pushOpenContactToUrl(contact.id);
   };
 
   const filterConfigs = [

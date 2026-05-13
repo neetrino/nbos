@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Users2, LayoutGrid, List, Mail, Phone, Calendar, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,11 +29,16 @@ import {
 import { PermissionGate } from '@/lib/permissions';
 import { InviteEmployeeDialog } from '@/features/hr/components/InviteEmployeeDialog';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
+import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
 import { employeesApi, rolesApi, type Employee, type RoleItem } from '@/lib/api/employees';
+import { toast } from 'sonner';
 
 type ViewMode = 'list' | 'grid';
 
 export default function TeamPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +73,60 @@ export default function TeamPage() {
   useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
+
+  const openEmployeeId = searchParams.get(TEAM_OPEN_EMPLOYEE_QUERY)?.trim() || null;
+  const deepLinkEmployeeAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    deepLinkEmployeeAttemptedRef.current = null;
+  }, [openEmployeeId]);
+
+  const stripOpenEmployeeFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has(TEAM_OPEN_EMPLOYEE_QUERY)) return;
+    params.delete(TEAM_OPEN_EMPLOYEE_QUERY);
+    const q = params.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const pushOpenEmployeeToUrl = useCallback(
+    (id: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(TEAM_OPEN_EMPLOYEE_QUERY, id);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  useEffect(() => {
+    if (!openEmployeeId || loading) return;
+    const match = employees.find((e) => e.id === openEmployeeId);
+    if (match) {
+      setSelectedEmployee(match);
+      setSheetOpen(true);
+      return;
+    }
+    if (deepLinkEmployeeAttemptedRef.current === openEmployeeId) return;
+    deepLinkEmployeeAttemptedRef.current = openEmployeeId;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const emp = await employeesApi.getById(openEmployeeId);
+        if (cancelled) return;
+        setEmployees((prev) => (prev.some((e) => e.id === emp.id) ? prev : [emp, ...prev]));
+        setSelectedEmployee(emp);
+        setSheetOpen(true);
+      } catch {
+        if (!cancelled) {
+          toast.error('Employee not found or you cannot open this profile.');
+          stripOpenEmployeeFromUrl();
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openEmployeeId, loading, employees, stripOpenEmployeeFromUrl]);
 
   useEffect(() => {
     rolesApi
@@ -120,8 +180,7 @@ export default function TeamPage() {
   }
 
   function openSheet(emp: Employee) {
-    setSelectedEmployee(emp);
-    setSheetOpen(true);
+    pushOpenEmployeeToUrl(emp.id);
   }
 
   return (
@@ -291,7 +350,17 @@ export default function TeamPage() {
         onSuccess={fetchEmployees}
       />
 
-      <EmployeeSheet employee={selectedEmployee} open={sheetOpen} onOpenChange={setSheetOpen} />
+      <EmployeeSheet
+        employee={selectedEmployee}
+        open={sheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) {
+            setSelectedEmployee(null);
+            stripOpenEmployeeFromUrl();
+          }
+        }}
+      />
     </div>
   );
 }

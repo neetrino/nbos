@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import type { Task } from '@/lib/api/tasks';
 import { getTaskPriority, getTaskStatus } from '../constants/tasks';
+import { TASK_OPEN_QUERY } from '../constants/task-open-query';
 import {
   TASK_SHEET_CHAT_COLUMN_CLASS,
   TASK_SHEET_DETAIL_COLUMN_CLASS,
@@ -68,7 +69,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
         floatingRail={
           state.task ? (
             <EntitySheetFloatingRail
-              sourcePageHref={`/tasks?openTaskId=${encodeURIComponent(state.task.id)}`}
+              sourcePageHref={`/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(state.task.id)}`}
               workspaceHref={
                 state.task.workspaceId ? `/work-spaces/${state.task.workspaceId}` : null
               }
