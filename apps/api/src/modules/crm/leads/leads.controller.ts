@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { LeadsService } from './leads.service';
 import { LeadConversionService } from './lead-conversion.service';
 
@@ -71,6 +72,7 @@ export class LeadsController {
   @Post()
   @ApiOperation({ summary: 'Create a new lead' })
   async create(
+    @CurrentUser() user: CurrentUserPayload | undefined,
     @Body()
     body: {
       name: string;
@@ -87,13 +89,14 @@ export class LeadsController {
       notes?: string;
     },
   ) {
-    return this.leadsService.create(body);
+    return this.leadsService.create(body, { actorRoleLevel: user?.roleLevel });
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Update lead' })
   async update(
     @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload | undefined,
     @Body()
     body: {
       name?: string;
@@ -111,14 +114,18 @@ export class LeadsController {
       notes?: string;
     },
   ) {
-    return this.leadsService.update(id, body);
+    return this.leadsService.update(id, body, { actorRoleLevel: user?.roleLevel });
   }
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update lead status' })
-  async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
+  async updateStatus(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload | undefined,
+    @Body() body: { status: string },
+  ) {
     if (body.status === 'SQL') {
-      await this.leadConversionService.qualifyLeadAsSql(id);
+      await this.leadConversionService.qualifyLeadAsSql(id, { actorRoleLevel: user?.roleLevel });
       return this.leadsService.findById(id);
     }
 
@@ -129,6 +136,7 @@ export class LeadsController {
   @ApiOperation({ summary: 'Convert lead to deal (CRM-03 automation)' })
   async convertToDeal(
     @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload | undefined,
     @Body()
     body: {
       dealType: string;
@@ -137,7 +145,7 @@ export class LeadsController {
       sellerId: string;
     },
   ) {
-    return this.leadConversionService.convertToDeal(id, body);
+    return this.leadConversionService.convertToDeal(id, body, { actorRoleLevel: user?.roleLevel });
   }
 
   @Delete(':id')

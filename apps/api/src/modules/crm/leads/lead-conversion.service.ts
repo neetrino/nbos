@@ -3,6 +3,7 @@ import { PrismaClient, DealTypeEnum, PaymentTypeEnum, LeadSourceEnum } from '@nb
 import { PRISMA_TOKEN } from '../../../database.module';
 import { LeadsService } from './leads.service';
 import { validateAttributionGate } from '../attribution-gate';
+import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 
 interface ConvertLeadDto {
   dealType?: string;
@@ -44,7 +45,7 @@ export class LeadConversionService {
     private readonly leadsService: LeadsService,
   ) {}
 
-  async convertToDeal(leadId: string, data: ConvertLeadDto) {
+  async convertToDeal(leadId: string, data: ConvertLeadDto, opts?: { actorRoleLevel?: number }) {
     const lead = await this.leadsService.findById(leadId);
 
     if (lead.status !== 'SQL') {
@@ -58,10 +59,10 @@ export class LeadConversionService {
       throw new BadRequestException('Lead already has an associated deal');
     }
 
-    return this.createDealFromLead(lead, data, false);
+    return this.createDealFromLead(lead, data, false, opts?.actorRoleLevel);
   }
 
-  async qualifyLeadAsSql(leadId: string) {
+  async qualifyLeadAsSql(leadId: string, opts?: { actorRoleLevel?: number }) {
     const lead = await this.leadsService.findById(leadId);
 
     validateAttributionGate(lead, 'Lead', 'SQL');
@@ -84,6 +85,7 @@ export class LeadConversionService {
         sellerId: lead.assignedTo ?? undefined,
       },
       true,
+      opts?.actorRoleLevel,
     );
   }
 
@@ -91,6 +93,7 @@ export class LeadConversionService {
     lead: LeadForConversion,
     data: ConvertLeadDto,
     markLeadAsSql: boolean,
+    actorRoleLevel?: number,
   ) {
     const sellerId = data.sellerId ?? lead.assignedTo ?? undefined;
     const errors = getLeadConversionErrors(lead, sellerId);
@@ -127,6 +130,13 @@ export class LeadConversionService {
     }
 
     const inquiryTitle = lead.name?.trim() ?? '';
+
+    await assertPartnerAssignableForInboundCrm(
+      this.prisma,
+      lead.source ?? null,
+      lead.sourcePartnerId,
+      actorRoleLevel,
+    );
 
     const deal = await this.prisma.deal.create({
       data: {

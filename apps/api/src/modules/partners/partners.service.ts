@@ -5,10 +5,12 @@ import {
   parsePartnerDirectionForWrite,
   parsePartnerLevelForWrite,
   parsePartnerStatusForWrite,
+  parsePartnerAgreementStatusForWrite,
   resolvePartnerDirectionFilter,
   resolvePartnerLevelFilter,
   resolvePartnerStatusFilter,
   serializePartner,
+  PARTNER_WIRE_INCLUDE,
   type PartnerWireDto,
 } from './partners-wire';
 import {
@@ -41,6 +43,8 @@ import {
   type PartnerServiceTermWireDto,
   type UpdatePartnerServiceTermInput,
 } from './partner-service-terms.ops';
+import { parseNullableIsoDate, parseOptionalIsoDate } from './partner-write-fields';
+import { loadPartnerAnalytics, type PartnerAnalyticsDto } from './partner-analytics.ops';
 
 interface PartnerQueryParams {
   page?: number;
@@ -63,6 +67,14 @@ interface CreatePartnerDto {
   defaultPercent?: number;
   status?: string;
   contactId?: string;
+  notes?: string;
+  startDate?: string;
+  agreementStatus?: string;
+  agreementStartDate?: string;
+  agreementEndDate?: string;
+  agreementSpecialTerms?: string;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
 }
 
 interface UpdatePartnerDto {
@@ -73,13 +85,16 @@ interface UpdatePartnerDto {
   direction?: string;
   defaultPercent?: number;
   status?: string;
-  contactId?: string;
+  contactId?: string | null;
+  notes?: string | null;
+  startDate?: string | null;
+  agreementStatus?: string;
+  agreementStartDate?: string | null;
+  agreementEndDate?: string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
 }
-
-const PARTNER_INCLUDE = {
-  _count: { select: { subscriptions: true, orders: true } },
-  contact: { select: { id: true, firstName: true, lastName: true } },
-} satisfies Prisma.PartnerInclude;
 
 @Injectable()
 export class PartnersService {
@@ -93,6 +108,34 @@ export class PartnersService {
       throw new BadRequestException('defaultPercent must be a number from 0 to 100');
     }
     return value;
+  }
+
+  private async assertPartnerAgreementRefs(input: {
+    agreementFileAssetId?: string | null;
+    agreementOwnerId?: string | null;
+  }): Promise<void> {
+    const fileId = input.agreementFileAssetId?.trim();
+    if (fileId) {
+      const asset = await this.prisma.fileAsset.findUnique({
+        where: { id: fileId },
+        select: { id: true },
+      });
+      if (!asset) {
+        throw new BadRequestException(
+          'agreementFileAssetId must reference an existing Drive file asset',
+        );
+      }
+    }
+    const ownerId = input.agreementOwnerId?.trim();
+    if (ownerId) {
+      const emp = await this.prisma.employee.findUnique({
+        where: { id: ownerId },
+        select: { id: true },
+      });
+      if (!emp) {
+        throw new BadRequestException('agreementOwnerId must reference an existing employee');
+      }
+    }
   }
 
   async findAll(params: PartnerQueryParams) {
@@ -112,7 +155,7 @@ export class PartnersService {
     const [rows, total] = await Promise.all([
       this.prisma.partner.findMany({
         where,
-        include: PARTNER_INCLUDE,
+        include: PARTNER_WIRE_INCLUDE,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -129,7 +172,7 @@ export class PartnersService {
   async findById(id: string): Promise<PartnerWireDto> {
     const partner = await this.prisma.partner.findUnique({
       where: { id },
-      include: PARTNER_INCLUDE,
+      include: PARTNER_WIRE_INCLUDE,
     });
     if (!partner) throw new NotFoundException(`Partner ${id} not found`);
     return serializePartner(partner);
@@ -144,6 +187,16 @@ export class PartnersService {
     const tier = parsePartnerLevelForWrite(data.level, data.type) ?? 'REGULAR';
     const dir = parsePartnerDirectionForWrite(data.direction) ?? 'INBOUND';
     const st = parsePartnerStatusForWrite(data.status) ?? 'ACTIVE';
+    const agreementStatus =
+      parsePartnerAgreementStatusForWrite(data.agreementStatus) ?? 'NO_AGREEMENT';
+    const startDate = parseOptionalIsoDate(data.startDate, 'startDate');
+    const agreementStartDate = parseOptionalIsoDate(data.agreementStartDate, 'agreementStartDate');
+    const agreementEndDate = parseOptionalIsoDate(data.agreementEndDate, 'agreementEndDate');
+
+    await this.assertPartnerAgreementRefs({
+      agreementFileAssetId: data.agreementFileAssetId,
+      agreementOwnerId: data.agreementOwnerId,
+    });
 
     const row = await this.prisma.partner.create({
       data: {
@@ -153,8 +206,16 @@ export class PartnersService {
         defaultPercent,
         status: st,
         contactId: data.contactId,
+        notes: data.notes?.trim() || undefined,
+        startDate,
+        agreementStatus,
+        agreementStartDate,
+        agreementEndDate,
+        agreementSpecialTerms: data.agreementSpecialTerms?.trim() || undefined,
+        agreementFileAssetId: data.agreementFileAssetId?.trim() || undefined,
+        agreementOwnerId: data.agreementOwnerId?.trim() || undefined,
       },
-      include: PARTNER_INCLUDE,
+      include: PARTNER_WIRE_INCLUDE,
     });
     return serializePartner(row);
   }
@@ -175,6 +236,18 @@ export class PartnersService {
       data.direction !== undefined ? parsePartnerDirectionForWrite(data.direction) : undefined;
     const nextStatus =
       data.status !== undefined ? parsePartnerStatusForWrite(data.status) : undefined;
+    const nextAgreementStatus =
+      data.agreementStatus !== undefined
+        ? parsePartnerAgreementStatusForWrite(data.agreementStatus)
+        : undefined;
+    const startDate = parseNullableIsoDate(data.startDate, 'startDate');
+    const agreementStartDate = parseNullableIsoDate(data.agreementStartDate, 'agreementStartDate');
+    const agreementEndDate = parseNullableIsoDate(data.agreementEndDate, 'agreementEndDate');
+
+    await this.assertPartnerAgreementRefs({
+      agreementFileAssetId: data.agreementFileAssetId,
+      agreementOwnerId: data.agreementOwnerId,
+    });
 
     const row = await this.prisma.partner.update({
       where: { id },
@@ -185,8 +258,22 @@ export class PartnersService {
         ...(defaultPercent !== undefined && { defaultPercent }),
         ...(nextStatus !== undefined && { status: nextStatus }),
         ...(data.contactId !== undefined && { contactId: data.contactId || null }),
+        ...(data.notes !== undefined && { notes: data.notes }),
+        ...(startDate !== undefined && { startDate }),
+        ...(nextAgreementStatus !== undefined && { agreementStatus: nextAgreementStatus }),
+        ...(agreementStartDate !== undefined && { agreementStartDate }),
+        ...(agreementEndDate !== undefined && { agreementEndDate }),
+        ...(data.agreementSpecialTerms !== undefined && {
+          agreementSpecialTerms: data.agreementSpecialTerms,
+        }),
+        ...(data.agreementFileAssetId !== undefined && {
+          agreementFileAssetId: data.agreementFileAssetId?.trim() || null,
+        }),
+        ...(data.agreementOwnerId !== undefined && {
+          agreementOwnerId: data.agreementOwnerId?.trim() || null,
+        }),
       },
-      include: PARTNER_INCLUDE,
+      include: PARTNER_WIRE_INCLUDE,
     });
     return serializePartner(row);
   }
@@ -340,5 +427,11 @@ export class PartnersService {
       totalSubscriptions,
       avgPayoutPercent,
     };
+  }
+
+  /** NBOS § Partner Analytics — funnel + cash rollups (no inferred payments). */
+  async getPartnerAnalytics(partnerId: string): Promise<PartnerAnalyticsDto> {
+    await this.findById(partnerId);
+    return loadPartnerAnalytics(this.prisma, partnerId);
   }
 }

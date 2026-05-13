@@ -9406,6 +9406,14 @@ export const PartnerScalarFieldEnum = {
   defaultPercent: 'defaultPercent',
   status: 'status',
   contactId: 'contactId',
+  notes: 'notes',
+  startDate: 'startDate',
+  agreementStatus: 'agreementStatus',
+  agreementStartDate: 'agreementStartDate',
+  agreementEndDate: 'agreementEndDate',
+  agreementSpecialTerms: 'agreementSpecialTerms',
+  agreementFileAssetId: 'agreementFileAssetId',
+  agreementOwnerId: 'agreementOwnerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const;
@@ -11538,6 +11546,22 @@ export type EnumPartnerStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType
 export type ListEnumPartnerStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
   $PrismaModel,
   'PartnerStatusEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'PartnerAgreementStatusEnum'
+ */
+export type EnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerAgreementStatusEnum'
+>;
+
+/**
+ * Reference to a field of type 'PartnerAgreementStatusEnum[]'
+ */
+export type ListEnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'PartnerAgreementStatusEnum[]'
 >;
 
 /**

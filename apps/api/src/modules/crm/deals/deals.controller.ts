@@ -98,7 +98,7 @@ export class DealsController {
       maintenanceStartAt?: string | null;
     },
   ) {
-    return this.dealsService.create(body, { actorId: user?.id });
+    return this.dealsService.create(body, { actorId: user?.id, actorRoleLevel: user?.roleLevel });
   }
 
   @Patch(':id/partner-referral-terms')
@@ -116,6 +116,7 @@ export class DealsController {
   @ApiOperation({ summary: 'Update deal' })
   async update(
     @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload | undefined,
     @Body()
     body: {
       name?: string;
@@ -146,7 +147,7 @@ export class DealsController {
       maintenanceStartAt?: string | null;
     },
   ) {
-    return this.dealsService.update(id, body);
+    return this.dealsService.update(id, body, { actorRoleLevel: user?.roleLevel });
   }
 
   @Patch(':id/status')

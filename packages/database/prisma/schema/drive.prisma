@@ -113,6 +113,7 @@ model FileAsset {
   messengerDirectAttachments  MessengerDirectMessageAttachment[]
   emailAttachments            EmailAttachment[]
   reportExportJobs            ReportExportJob[]
+  partnerAgreementDocuments   Partner[]                  @relation("PartnerAgreementDocument")
 
   @@index([status])
   @@index([purpose])

@@ -3158,6 +3158,21 @@ export type EnumPartnerStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumPartnerStatusEnumFilter<$PrismaModel> | $Enums.PartnerStatusEnum;
 };
 
+export type EnumPartnerAgreementStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerAgreementStatusEnum
+    | Prisma.EnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerAgreementStatusEnum[]
+    | Prisma.ListEnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerAgreementStatusEnum[]
+    | Prisma.ListEnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerAgreementStatusEnumFilter<$PrismaModel>
+    | $Enums.PartnerAgreementStatusEnum;
+};
+
 export type EnumPartnerTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.PartnerTypeEnum | Prisma.EnumPartnerTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.PartnerTypeEnum[] | Prisma.ListEnumPartnerTypeEnumFieldRefInput<$PrismaModel>;
@@ -3194,6 +3209,24 @@ export type EnumPartnerStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumPartnerStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumPartnerStatusEnumFilter<$PrismaModel>;
+};
+
+export type EnumPartnerAgreementStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerAgreementStatusEnum
+    | Prisma.EnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerAgreementStatusEnum[]
+    | Prisma.ListEnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerAgreementStatusEnum[]
+    | Prisma.ListEnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerAgreementStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerAgreementStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerAgreementStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerAgreementStatusEnumFilter<$PrismaModel>;
 };
 
 export type EnumPartnerReferralSourcePolicyEnumFilter<$PrismaModel = never> = {
@@ -7264,6 +7297,21 @@ export type NestedEnumPartnerStatusEnumFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumPartnerStatusEnumFilter<$PrismaModel> | $Enums.PartnerStatusEnum;
 };
 
+export type NestedEnumPartnerAgreementStatusEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerAgreementStatusEnum
+    | Prisma.EnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerAgreementStatusEnum[]
+    | Prisma.ListEnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerAgreementStatusEnum[]
+    | Prisma.ListEnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerAgreementStatusEnumFilter<$PrismaModel>
+    | $Enums.PartnerAgreementStatusEnum;
+};
+
 export type NestedEnumPartnerTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.PartnerTypeEnum | Prisma.EnumPartnerTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.PartnerTypeEnum[] | Prisma.ListEnumPartnerTypeEnumFieldRefInput<$PrismaModel>;
@@ -7300,6 +7348,24 @@ export type NestedEnumPartnerStatusEnumWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>;
   _min?: Prisma.NestedEnumPartnerStatusEnumFilter<$PrismaModel>;
   _max?: Prisma.NestedEnumPartnerStatusEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumPartnerAgreementStatusEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.PartnerAgreementStatusEnum
+    | Prisma.EnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.PartnerAgreementStatusEnum[]
+    | Prisma.ListEnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.PartnerAgreementStatusEnum[]
+    | Prisma.ListEnumPartnerAgreementStatusEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumPartnerAgreementStatusEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.PartnerAgreementStatusEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumPartnerAgreementStatusEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumPartnerAgreementStatusEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumPartnerReferralSourcePolicyEnumFilter<$PrismaModel = never> = {

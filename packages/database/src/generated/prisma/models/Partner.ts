@@ -41,6 +41,14 @@ export type PartnerMinAggregateOutputType = {
   defaultPercent: runtime.Decimal | null;
   status: $Enums.PartnerStatusEnum | null;
   contactId: string | null;
+  notes: string | null;
+  startDate: Date | null;
+  agreementStatus: $Enums.PartnerAgreementStatusEnum | null;
+  agreementStartDate: Date | null;
+  agreementEndDate: Date | null;
+  agreementSpecialTerms: string | null;
+  agreementFileAssetId: string | null;
+  agreementOwnerId: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -53,6 +61,14 @@ export type PartnerMaxAggregateOutputType = {
   defaultPercent: runtime.Decimal | null;
   status: $Enums.PartnerStatusEnum | null;
   contactId: string | null;
+  notes: string | null;
+  startDate: Date | null;
+  agreementStatus: $Enums.PartnerAgreementStatusEnum | null;
+  agreementStartDate: Date | null;
+  agreementEndDate: Date | null;
+  agreementSpecialTerms: string | null;
+  agreementFileAssetId: string | null;
+  agreementOwnerId: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
 };
@@ -65,6 +81,14 @@ export type PartnerCountAggregateOutputType = {
   defaultPercent: number;
   status: number;
   contactId: number;
+  notes: number;
+  startDate: number;
+  agreementStatus: number;
+  agreementStartDate: number;
+  agreementEndDate: number;
+  agreementSpecialTerms: number;
+  agreementFileAssetId: number;
+  agreementOwnerId: number;
   createdAt: number;
   updatedAt: number;
   _all: number;
@@ -86,6 +110,14 @@ export type PartnerMinAggregateInputType = {
   defaultPercent?: true;
   status?: true;
   contactId?: true;
+  notes?: true;
+  startDate?: true;
+  agreementStatus?: true;
+  agreementStartDate?: true;
+  agreementEndDate?: true;
+  agreementSpecialTerms?: true;
+  agreementFileAssetId?: true;
+  agreementOwnerId?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -98,6 +130,14 @@ export type PartnerMaxAggregateInputType = {
   defaultPercent?: true;
   status?: true;
   contactId?: true;
+  notes?: true;
+  startDate?: true;
+  agreementStatus?: true;
+  agreementStartDate?: true;
+  agreementEndDate?: true;
+  agreementSpecialTerms?: true;
+  agreementFileAssetId?: true;
+  agreementOwnerId?: true;
   createdAt?: true;
   updatedAt?: true;
 };
@@ -110,6 +150,14 @@ export type PartnerCountAggregateInputType = {
   defaultPercent?: true;
   status?: true;
   contactId?: true;
+  notes?: true;
+  startDate?: true;
+  agreementStatus?: true;
+  agreementStartDate?: true;
+  agreementEndDate?: true;
+  agreementSpecialTerms?: true;
+  agreementFileAssetId?: true;
+  agreementOwnerId?: true;
   createdAt?: true;
   updatedAt?: true;
   _all?: true;
@@ -210,6 +258,14 @@ export type PartnerGroupByOutputType = {
   defaultPercent: runtime.Decimal;
   status: $Enums.PartnerStatusEnum;
   contactId: string | null;
+  notes: string | null;
+  startDate: Date | null;
+  agreementStatus: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate: Date | null;
+  agreementEndDate: Date | null;
+  agreementSpecialTerms: string | null;
+  agreementFileAssetId: string | null;
+  agreementOwnerId: string | null;
   createdAt: Date;
   updatedAt: Date;
   _count: PartnerCountAggregateOutputType | null;
@@ -247,9 +303,27 @@ export type PartnerWhereInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFilter<'Partner'> | $Enums.PartnerStatusEnum;
   contactId?: Prisma.StringNullableFilter<'Partner'> | string | null;
+  notes?: Prisma.StringNullableFilter<'Partner'> | string | null;
+  startDate?: Prisma.DateTimeNullableFilter<'Partner'> | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFilter<'Partner'>
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.DateTimeNullableFilter<'Partner'> | Date | string | null;
+  agreementEndDate?: Prisma.DateTimeNullableFilter<'Partner'> | Date | string | null;
+  agreementSpecialTerms?: Prisma.StringNullableFilter<'Partner'> | string | null;
+  agreementFileAssetId?: Prisma.StringNullableFilter<'Partner'> | string | null;
+  agreementOwnerId?: Prisma.StringNullableFilter<'Partner'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
   contact?: Prisma.XOR<Prisma.ContactNullableScalarRelationFilter, Prisma.ContactWhereInput> | null;
+  agreementFileAsset?: Prisma.XOR<
+    Prisma.FileAssetNullableScalarRelationFilter,
+    Prisma.FileAssetWhereInput
+  > | null;
+  agreementOwner?: Prisma.XOR<
+    Prisma.EmployeeNullableScalarRelationFilter,
+    Prisma.EmployeeWhereInput
+  > | null;
   orders?: Prisma.OrderListRelationFilter;
   subscriptions?: Prisma.SubscriptionListRelationFilter;
   leadsAsSource?: Prisma.LeadListRelationFilter;
@@ -270,9 +344,19 @@ export type PartnerOrderByWithRelationInput = {
   defaultPercent?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   contactId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder;
+  startDate?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementStatus?: Prisma.SortOrder;
+  agreementStartDate?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementEndDate?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementSpecialTerms?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementFileAssetId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementOwnerId?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   contact?: Prisma.ContactOrderByWithRelationInput;
+  agreementFileAsset?: Prisma.FileAssetOrderByWithRelationInput;
+  agreementOwner?: Prisma.EmployeeOrderByWithRelationInput;
   orders?: Prisma.OrderOrderByRelationAggregateInput;
   subscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput;
   leadsAsSource?: Prisma.LeadOrderByRelationAggregateInput;
@@ -302,11 +386,29 @@ export type PartnerWhereUniqueInput = Prisma.AtLeast<
       | string;
     status?: Prisma.EnumPartnerStatusEnumFilter<'Partner'> | $Enums.PartnerStatusEnum;
     contactId?: Prisma.StringNullableFilter<'Partner'> | string | null;
+    notes?: Prisma.StringNullableFilter<'Partner'> | string | null;
+    startDate?: Prisma.DateTimeNullableFilter<'Partner'> | Date | string | null;
+    agreementStatus?:
+      | Prisma.EnumPartnerAgreementStatusEnumFilter<'Partner'>
+      | $Enums.PartnerAgreementStatusEnum;
+    agreementStartDate?: Prisma.DateTimeNullableFilter<'Partner'> | Date | string | null;
+    agreementEndDate?: Prisma.DateTimeNullableFilter<'Partner'> | Date | string | null;
+    agreementSpecialTerms?: Prisma.StringNullableFilter<'Partner'> | string | null;
+    agreementFileAssetId?: Prisma.StringNullableFilter<'Partner'> | string | null;
+    agreementOwnerId?: Prisma.StringNullableFilter<'Partner'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
     contact?: Prisma.XOR<
       Prisma.ContactNullableScalarRelationFilter,
       Prisma.ContactWhereInput
+    > | null;
+    agreementFileAsset?: Prisma.XOR<
+      Prisma.FileAssetNullableScalarRelationFilter,
+      Prisma.FileAssetWhereInput
+    > | null;
+    agreementOwner?: Prisma.XOR<
+      Prisma.EmployeeNullableScalarRelationFilter,
+      Prisma.EmployeeWhereInput
     > | null;
     orders?: Prisma.OrderListRelationFilter;
     subscriptions?: Prisma.SubscriptionListRelationFilter;
@@ -330,6 +432,14 @@ export type PartnerOrderByWithAggregationInput = {
   defaultPercent?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   contactId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder;
+  startDate?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementStatus?: Prisma.SortOrder;
+  agreementStartDate?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementEndDate?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementSpecialTerms?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementFileAssetId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  agreementOwnerId?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
   _count?: Prisma.PartnerCountOrderByAggregateInput;
@@ -361,6 +471,20 @@ export type PartnerScalarWhereWithAggregatesInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumWithAggregatesFilter<'Partner'> | $Enums.PartnerStatusEnum;
   contactId?: Prisma.StringNullableWithAggregatesFilter<'Partner'> | string | null;
+  notes?: Prisma.StringNullableWithAggregatesFilter<'Partner'> | string | null;
+  startDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Partner'> | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumWithAggregatesFilter<'Partner'>
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?:
+    | Prisma.DateTimeNullableWithAggregatesFilter<'Partner'>
+    | Date
+    | string
+    | null;
+  agreementEndDate?: Prisma.DateTimeNullableWithAggregatesFilter<'Partner'> | Date | string | null;
+  agreementSpecialTerms?: Prisma.StringNullableWithAggregatesFilter<'Partner'> | string | null;
+  agreementFileAssetId?: Prisma.StringNullableWithAggregatesFilter<'Partner'> | string | null;
+  agreementOwnerId?: Prisma.StringNullableWithAggregatesFilter<'Partner'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'Partner'> | Date | string;
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'Partner'> | Date | string;
 };
@@ -372,9 +496,17 @@ export type PartnerCreateInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -395,6 +527,14 @@ export type PartnerUncheckedCreateInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -423,9 +563,19 @@ export type PartnerUpdateInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -453,6 +603,16 @@ export type PartnerUncheckedUpdateInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -475,6 +635,14 @@ export type PartnerCreateManyInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -493,6 +661,14 @@ export type PartnerUpdateManyMutationInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -512,6 +688,16 @@ export type PartnerUncheckedUpdateManyInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -539,6 +725,14 @@ export type PartnerCountOrderByAggregateInput = {
   defaultPercent?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
+  notes?: Prisma.SortOrder;
+  startDate?: Prisma.SortOrder;
+  agreementStatus?: Prisma.SortOrder;
+  agreementStartDate?: Prisma.SortOrder;
+  agreementEndDate?: Prisma.SortOrder;
+  agreementSpecialTerms?: Prisma.SortOrder;
+  agreementFileAssetId?: Prisma.SortOrder;
+  agreementOwnerId?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -555,6 +749,14 @@ export type PartnerMaxOrderByAggregateInput = {
   defaultPercent?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
+  notes?: Prisma.SortOrder;
+  startDate?: Prisma.SortOrder;
+  agreementStatus?: Prisma.SortOrder;
+  agreementStartDate?: Prisma.SortOrder;
+  agreementEndDate?: Prisma.SortOrder;
+  agreementSpecialTerms?: Prisma.SortOrder;
+  agreementFileAssetId?: Prisma.SortOrder;
+  agreementOwnerId?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -567,6 +769,14 @@ export type PartnerMinOrderByAggregateInput = {
   defaultPercent?: Prisma.SortOrder;
   status?: Prisma.SortOrder;
   contactId?: Prisma.SortOrder;
+  notes?: Prisma.SortOrder;
+  startDate?: Prisma.SortOrder;
+  agreementStatus?: Prisma.SortOrder;
+  agreementStartDate?: Prisma.SortOrder;
+  agreementEndDate?: Prisma.SortOrder;
+  agreementSpecialTerms?: Prisma.SortOrder;
+  agreementFileAssetId?: Prisma.SortOrder;
+  agreementOwnerId?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
 };
@@ -722,6 +932,178 @@ export type PartnerUpdateOneWithoutDealsAsSourceNestedInput = {
   >;
 };
 
+export type PartnerCreateNestedManyWithoutAgreementFileAssetInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutAgreementFileAssetInput,
+        Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput
+      >
+    | Prisma.PartnerCreateWithoutAgreementFileAssetInput[]
+    | Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutAgreementFileAssetInput
+    | Prisma.PartnerCreateOrConnectWithoutAgreementFileAssetInput[];
+  createMany?: Prisma.PartnerCreateManyAgreementFileAssetInputEnvelope;
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+};
+
+export type PartnerUncheckedCreateNestedManyWithoutAgreementFileAssetInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutAgreementFileAssetInput,
+        Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput
+      >
+    | Prisma.PartnerCreateWithoutAgreementFileAssetInput[]
+    | Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutAgreementFileAssetInput
+    | Prisma.PartnerCreateOrConnectWithoutAgreementFileAssetInput[];
+  createMany?: Prisma.PartnerCreateManyAgreementFileAssetInputEnvelope;
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+};
+
+export type PartnerUpdateManyWithoutAgreementFileAssetNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutAgreementFileAssetInput,
+        Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput
+      >
+    | Prisma.PartnerCreateWithoutAgreementFileAssetInput[]
+    | Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutAgreementFileAssetInput
+    | Prisma.PartnerCreateOrConnectWithoutAgreementFileAssetInput[];
+  upsert?:
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutAgreementFileAssetInput
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutAgreementFileAssetInput[];
+  createMany?: Prisma.PartnerCreateManyAgreementFileAssetInputEnvelope;
+  set?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  disconnect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  delete?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutAgreementFileAssetInput
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutAgreementFileAssetInput[];
+  updateMany?:
+    | Prisma.PartnerUpdateManyWithWhereWithoutAgreementFileAssetInput
+    | Prisma.PartnerUpdateManyWithWhereWithoutAgreementFileAssetInput[];
+  deleteMany?: Prisma.PartnerScalarWhereInput | Prisma.PartnerScalarWhereInput[];
+};
+
+export type PartnerUncheckedUpdateManyWithoutAgreementFileAssetNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutAgreementFileAssetInput,
+        Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput
+      >
+    | Prisma.PartnerCreateWithoutAgreementFileAssetInput[]
+    | Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutAgreementFileAssetInput
+    | Prisma.PartnerCreateOrConnectWithoutAgreementFileAssetInput[];
+  upsert?:
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutAgreementFileAssetInput
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutAgreementFileAssetInput[];
+  createMany?: Prisma.PartnerCreateManyAgreementFileAssetInputEnvelope;
+  set?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  disconnect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  delete?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutAgreementFileAssetInput
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutAgreementFileAssetInput[];
+  updateMany?:
+    | Prisma.PartnerUpdateManyWithWhereWithoutAgreementFileAssetInput
+    | Prisma.PartnerUpdateManyWithWhereWithoutAgreementFileAssetInput[];
+  deleteMany?: Prisma.PartnerScalarWhereInput | Prisma.PartnerScalarWhereInput[];
+};
+
+export type PartnerCreateNestedManyWithoutAgreementOwnerInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutAgreementOwnerInput,
+        Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput
+      >
+    | Prisma.PartnerCreateWithoutAgreementOwnerInput[]
+    | Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutAgreementOwnerInput
+    | Prisma.PartnerCreateOrConnectWithoutAgreementOwnerInput[];
+  createMany?: Prisma.PartnerCreateManyAgreementOwnerInputEnvelope;
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+};
+
+export type PartnerUncheckedCreateNestedManyWithoutAgreementOwnerInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutAgreementOwnerInput,
+        Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput
+      >
+    | Prisma.PartnerCreateWithoutAgreementOwnerInput[]
+    | Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutAgreementOwnerInput
+    | Prisma.PartnerCreateOrConnectWithoutAgreementOwnerInput[];
+  createMany?: Prisma.PartnerCreateManyAgreementOwnerInputEnvelope;
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+};
+
+export type PartnerUpdateManyWithoutAgreementOwnerNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutAgreementOwnerInput,
+        Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput
+      >
+    | Prisma.PartnerCreateWithoutAgreementOwnerInput[]
+    | Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutAgreementOwnerInput
+    | Prisma.PartnerCreateOrConnectWithoutAgreementOwnerInput[];
+  upsert?:
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutAgreementOwnerInput
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutAgreementOwnerInput[];
+  createMany?: Prisma.PartnerCreateManyAgreementOwnerInputEnvelope;
+  set?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  disconnect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  delete?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutAgreementOwnerInput
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutAgreementOwnerInput[];
+  updateMany?:
+    | Prisma.PartnerUpdateManyWithWhereWithoutAgreementOwnerInput
+    | Prisma.PartnerUpdateManyWithWhereWithoutAgreementOwnerInput[];
+  deleteMany?: Prisma.PartnerScalarWhereInput | Prisma.PartnerScalarWhereInput[];
+};
+
+export type PartnerUncheckedUpdateManyWithoutAgreementOwnerNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PartnerCreateWithoutAgreementOwnerInput,
+        Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput
+      >
+    | Prisma.PartnerCreateWithoutAgreementOwnerInput[]
+    | Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput[];
+  connectOrCreate?:
+    | Prisma.PartnerCreateOrConnectWithoutAgreementOwnerInput
+    | Prisma.PartnerCreateOrConnectWithoutAgreementOwnerInput[];
+  upsert?:
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutAgreementOwnerInput
+    | Prisma.PartnerUpsertWithWhereUniqueWithoutAgreementOwnerInput[];
+  createMany?: Prisma.PartnerCreateManyAgreementOwnerInputEnvelope;
+  set?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  disconnect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  delete?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  connect?: Prisma.PartnerWhereUniqueInput | Prisma.PartnerWhereUniqueInput[];
+  update?:
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutAgreementOwnerInput
+    | Prisma.PartnerUpdateWithWhereUniqueWithoutAgreementOwnerInput[];
+  updateMany?:
+    | Prisma.PartnerUpdateManyWithWhereWithoutAgreementOwnerInput
+    | Prisma.PartnerUpdateManyWithWhereWithoutAgreementOwnerInput[];
+  deleteMany?: Prisma.PartnerScalarWhereInput | Prisma.PartnerScalarWhereInput[];
+};
+
 export type PartnerCreateNestedOneWithoutOrdersInput = {
   create?: Prisma.XOR<
     Prisma.PartnerCreateWithoutOrdersInput,
@@ -816,6 +1198,10 @@ export type EnumPartnerDirectionEnumFieldUpdateOperationsInput = {
 
 export type EnumPartnerStatusEnumFieldUpdateOperationsInput = {
   set?: $Enums.PartnerStatusEnum;
+};
+
+export type EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput = {
+  set?: $Enums.PartnerAgreementStatusEnum;
 };
 
 export type PartnerCreateNestedOneWithoutPartnerReferralTermsInput = {
@@ -955,8 +1341,16 @@ export type PartnerCreateWithoutContactInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -976,6 +1370,14 @@ export type PartnerUncheckedCreateWithoutContactInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -1047,6 +1449,16 @@ export type PartnerScalarWhereInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFilter<'Partner'> | $Enums.PartnerStatusEnum;
   contactId?: Prisma.StringNullableFilter<'Partner'> | string | null;
+  notes?: Prisma.StringNullableFilter<'Partner'> | string | null;
+  startDate?: Prisma.DateTimeNullableFilter<'Partner'> | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFilter<'Partner'>
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.DateTimeNullableFilter<'Partner'> | Date | string | null;
+  agreementEndDate?: Prisma.DateTimeNullableFilter<'Partner'> | Date | string | null;
+  agreementSpecialTerms?: Prisma.StringNullableFilter<'Partner'> | string | null;
+  agreementFileAssetId?: Prisma.StringNullableFilter<'Partner'> | string | null;
+  agreementOwnerId?: Prisma.StringNullableFilter<'Partner'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
   updatedAt?: Prisma.DateTimeFilter<'Partner'> | Date | string;
 };
@@ -1058,9 +1470,17 @@ export type PartnerCreateWithoutLeadsAsSourceInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
@@ -1080,6 +1500,14 @@ export type PartnerUncheckedCreateWithoutLeadsAsSourceInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -1135,9 +1563,19 @@ export type PartnerUpdateWithoutLeadsAsSourceInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
@@ -1164,6 +1602,16 @@ export type PartnerUncheckedUpdateWithoutLeadsAsSourceInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -1184,9 +1632,17 @@ export type PartnerCreateWithoutDealsAsSourceInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -1206,6 +1662,14 @@ export type PartnerUncheckedCreateWithoutDealsAsSourceInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -1261,9 +1725,19 @@ export type PartnerUpdateWithoutDealsAsSourceInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -1290,6 +1764,16 @@ export type PartnerUncheckedUpdateWithoutDealsAsSourceInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -1303,6 +1787,206 @@ export type PartnerUncheckedUpdateWithoutDealsAsSourceInput = {
   partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutPartnerNestedInput;
 };
 
+export type PartnerCreateWithoutAgreementFileAssetInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
+  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
+  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutPartnerInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutPartnerInput;
+};
+
+export type PartnerUncheckedCreateWithoutAgreementFileAssetInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementOwnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPartnerInput;
+  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourcePartnerInput;
+  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourcePartnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutPartnerInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutPartnerInput;
+};
+
+export type PartnerCreateOrConnectWithoutAgreementFileAssetInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PartnerCreateWithoutAgreementFileAssetInput,
+    Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput
+  >;
+};
+
+export type PartnerCreateManyAgreementFileAssetInputEnvelope = {
+  data:
+    | Prisma.PartnerCreateManyAgreementFileAssetInput
+    | Prisma.PartnerCreateManyAgreementFileAssetInput[];
+  skipDuplicates?: boolean;
+};
+
+export type PartnerUpsertWithWhereUniqueWithoutAgreementFileAssetInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PartnerUpdateWithoutAgreementFileAssetInput,
+    Prisma.PartnerUncheckedUpdateWithoutAgreementFileAssetInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PartnerCreateWithoutAgreementFileAssetInput,
+    Prisma.PartnerUncheckedCreateWithoutAgreementFileAssetInput
+  >;
+};
+
+export type PartnerUpdateWithWhereUniqueWithoutAgreementFileAssetInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PartnerUpdateWithoutAgreementFileAssetInput,
+    Prisma.PartnerUncheckedUpdateWithoutAgreementFileAssetInput
+  >;
+};
+
+export type PartnerUpdateManyWithWhereWithoutAgreementFileAssetInput = {
+  where: Prisma.PartnerScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PartnerUpdateManyMutationInput,
+    Prisma.PartnerUncheckedUpdateManyWithoutAgreementFileAssetInput
+  >;
+};
+
+export type PartnerCreateWithoutAgreementOwnerInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
+  leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
+  dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryCreateNestedManyWithoutPartnerInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowCreateNestedManyWithoutPartnerInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsCreateNestedManyWithoutPartnerInput;
+  partnerAccruals?: Prisma.PartnerAccrualCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchCreateNestedManyWithoutPartnerInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermCreateNestedManyWithoutPartnerInput;
+};
+
+export type PartnerUncheckedCreateWithoutAgreementOwnerInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPartnerInput;
+  leadsAsSource?: Prisma.LeadUncheckedCreateNestedManyWithoutSourcePartnerInput;
+  dealsAsSource?: Prisma.DealUncheckedCreateNestedManyWithoutSourcePartnerInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedCreateNestedManyWithoutPartnerInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedCreateNestedManyWithoutPartnerInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedCreateNestedManyWithoutPartnerInput;
+};
+
+export type PartnerCreateOrConnectWithoutAgreementOwnerInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  create: Prisma.XOR<
+    Prisma.PartnerCreateWithoutAgreementOwnerInput,
+    Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput
+  >;
+};
+
+export type PartnerCreateManyAgreementOwnerInputEnvelope = {
+  data: Prisma.PartnerCreateManyAgreementOwnerInput | Prisma.PartnerCreateManyAgreementOwnerInput[];
+  skipDuplicates?: boolean;
+};
+
+export type PartnerUpsertWithWhereUniqueWithoutAgreementOwnerInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  update: Prisma.XOR<
+    Prisma.PartnerUpdateWithoutAgreementOwnerInput,
+    Prisma.PartnerUncheckedUpdateWithoutAgreementOwnerInput
+  >;
+  create: Prisma.XOR<
+    Prisma.PartnerCreateWithoutAgreementOwnerInput,
+    Prisma.PartnerUncheckedCreateWithoutAgreementOwnerInput
+  >;
+};
+
+export type PartnerUpdateWithWhereUniqueWithoutAgreementOwnerInput = {
+  where: Prisma.PartnerWhereUniqueInput;
+  data: Prisma.XOR<
+    Prisma.PartnerUpdateWithoutAgreementOwnerInput,
+    Prisma.PartnerUncheckedUpdateWithoutAgreementOwnerInput
+  >;
+};
+
+export type PartnerUpdateManyWithWhereWithoutAgreementOwnerInput = {
+  where: Prisma.PartnerScalarWhereInput;
+  data: Prisma.XOR<
+    Prisma.PartnerUpdateManyMutationInput,
+    Prisma.PartnerUncheckedUpdateManyWithoutAgreementOwnerInput
+  >;
+};
+
 export type PartnerCreateWithoutOrdersInput = {
   id?: string;
   name: string;
@@ -1310,9 +1994,17 @@ export type PartnerCreateWithoutOrdersInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
@@ -1332,6 +2024,14 @@ export type PartnerUncheckedCreateWithoutOrdersInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPartnerInput;
@@ -1387,9 +2087,19 @@ export type PartnerUpdateWithoutOrdersInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
@@ -1416,6 +2126,16 @@ export type PartnerUncheckedUpdateWithoutOrdersInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -1436,9 +2156,17 @@ export type PartnerCreateWithoutOperationalJournalEntriesInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -1458,6 +2186,14 @@ export type PartnerUncheckedCreateWithoutOperationalJournalEntriesInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -1513,9 +2249,19 @@ export type PartnerUpdateWithoutOperationalJournalEntriesInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -1542,6 +2288,16 @@ export type PartnerUncheckedUpdateWithoutOperationalJournalEntriesInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -1562,9 +2318,17 @@ export type PartnerCreateWithoutSubscriptionsInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
   dealsAsSource?: Prisma.DealCreateNestedManyWithoutSourcePartnerInput;
@@ -1584,6 +2348,14 @@ export type PartnerUncheckedCreateWithoutSubscriptionsInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -1639,9 +2411,19 @@ export type PartnerUpdateWithoutSubscriptionsInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
   dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
@@ -1668,6 +2450,16 @@ export type PartnerUncheckedUpdateWithoutSubscriptionsInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -1688,9 +2480,17 @@ export type PartnerCreateWithoutPartnerReferralTermsInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -1710,6 +2510,14 @@ export type PartnerUncheckedCreateWithoutPartnerReferralTermsInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -1765,9 +2573,19 @@ export type PartnerUpdateWithoutPartnerReferralTermsInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -1794,6 +2612,16 @@ export type PartnerUncheckedUpdateWithoutPartnerReferralTermsInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -1814,9 +2642,17 @@ export type PartnerCreateWithoutCommissionPolicyRowsInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -1836,6 +2672,14 @@ export type PartnerUncheckedCreateWithoutCommissionPolicyRowsInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -1891,9 +2735,19 @@ export type PartnerUpdateWithoutCommissionPolicyRowsInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -1920,6 +2774,16 @@ export type PartnerUncheckedUpdateWithoutCommissionPolicyRowsInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -1940,9 +2804,17 @@ export type PartnerCreateWithoutPartnerAccrualsInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -1962,6 +2834,14 @@ export type PartnerUncheckedCreateWithoutPartnerAccrualsInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -2017,9 +2897,19 @@ export type PartnerUpdateWithoutPartnerAccrualsInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -2046,6 +2936,16 @@ export type PartnerUncheckedUpdateWithoutPartnerAccrualsInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -2066,9 +2966,17 @@ export type PartnerCreateWithoutPartnerPayoutBatchesInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -2088,6 +2996,14 @@ export type PartnerUncheckedCreateWithoutPartnerPayoutBatchesInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -2143,9 +3059,19 @@ export type PartnerUpdateWithoutPartnerPayoutBatchesInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -2172,6 +3098,16 @@ export type PartnerUncheckedUpdateWithoutPartnerPayoutBatchesInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -2192,9 +3128,17 @@ export type PartnerCreateWithoutPartnerServiceTermsInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   contact?: Prisma.ContactCreateNestedOneWithoutPartnersInput;
+  agreementFileAsset?: Prisma.FileAssetCreateNestedOneWithoutPartnerAgreementDocumentsInput;
+  agreementOwner?: Prisma.EmployeeCreateNestedOneWithoutPartnerAgreementsOwnedInput;
   orders?: Prisma.OrderCreateNestedManyWithoutPartnerInput;
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPartnerInput;
   leadsAsSource?: Prisma.LeadCreateNestedManyWithoutSourcePartnerInput;
@@ -2214,6 +3158,14 @@ export type PartnerUncheckedCreateWithoutPartnerServiceTermsInput = {
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPartnerInput;
@@ -2269,9 +3221,19 @@ export type PartnerUpdateWithoutPartnerServiceTermsInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -2298,6 +3260,16 @@ export type PartnerUncheckedUpdateWithoutPartnerServiceTermsInput = {
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
   contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -2318,6 +3290,14 @@ export type PartnerCreateManyContactInput = {
   direction?: $Enums.PartnerDirectionEnum;
   defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
   status?: $Enums.PartnerStatusEnum;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 };
@@ -2336,8 +3316,18 @@ export type PartnerUpdateWithoutContactInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
   orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
   leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
@@ -2364,6 +3354,16 @@ export type PartnerUncheckedUpdateWithoutContactInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
@@ -2392,6 +3392,262 @@ export type PartnerUncheckedUpdateManyWithoutContactInput = {
     | number
     | string;
   status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerCreateManyAgreementFileAssetInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementOwnerId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerUpdateWithoutAgreementFileAssetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementOwner?: Prisma.EmployeeUpdateOneWithoutPartnerAgreementsOwnedNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
+  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
+  dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutPartnerNestedInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutPartnerNestedInput;
+};
+
+export type PartnerUncheckedUpdateWithoutAgreementFileAssetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPartnerNestedInput;
+  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourcePartnerNestedInput;
+  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourcePartnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutPartnerNestedInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutPartnerNestedInput;
+};
+
+export type PartnerUncheckedUpdateManyWithoutAgreementFileAssetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementOwnerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+
+export type PartnerCreateManyAgreementOwnerInput = {
+  id?: string;
+  name: string;
+  type?: $Enums.PartnerTypeEnum;
+  direction?: $Enums.PartnerDirectionEnum;
+  defaultPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+  status?: $Enums.PartnerStatusEnum;
+  contactId?: string | null;
+  notes?: string | null;
+  startDate?: Date | string | null;
+  agreementStatus?: $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Date | string | null;
+  agreementEndDate?: Date | string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+export type PartnerUpdateWithoutAgreementOwnerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  contact?: Prisma.ContactUpdateOneWithoutPartnersNestedInput;
+  agreementFileAsset?: Prisma.FileAssetUpdateOneWithoutPartnerAgreementDocumentsNestedInput;
+  orders?: Prisma.OrderUpdateManyWithoutPartnerNestedInput;
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutPartnerNestedInput;
+  leadsAsSource?: Prisma.LeadUpdateManyWithoutSourcePartnerNestedInput;
+  dealsAsSource?: Prisma.DealUpdateManyWithoutSourcePartnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUpdateManyWithoutPartnerNestedInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUpdateManyWithoutPartnerNestedInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsUpdateManyWithoutPartnerNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUpdateManyWithoutPartnerNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUpdateManyWithoutPartnerNestedInput;
+};
+
+export type PartnerUncheckedUpdateWithoutAgreementOwnerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPartnerNestedInput;
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPartnerNestedInput;
+  leadsAsSource?: Prisma.LeadUncheckedUpdateManyWithoutSourcePartnerNestedInput;
+  dealsAsSource?: Prisma.DealUncheckedUpdateManyWithoutSourcePartnerNestedInput;
+  operationalJournalEntries?: Prisma.OperationalJournalEntryUncheckedUpdateManyWithoutPartnerNestedInput;
+  commissionPolicyRows?: Prisma.PartnerCommissionPolicyRowUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerReferralTerms?: Prisma.PartnerReferralTermsUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerAccruals?: Prisma.PartnerAccrualUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerPayoutBatches?: Prisma.PartnerPayoutBatchUncheckedUpdateManyWithoutPartnerNestedInput;
+  partnerServiceTerms?: Prisma.PartnerServiceTermUncheckedUpdateManyWithoutPartnerNestedInput;
+};
+
+export type PartnerUncheckedUpdateManyWithoutAgreementOwnerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string;
+  name?: Prisma.StringFieldUpdateOperationsInput | string;
+  type?: Prisma.EnumPartnerTypeEnumFieldUpdateOperationsInput | $Enums.PartnerTypeEnum;
+  direction?:
+    | Prisma.EnumPartnerDirectionEnumFieldUpdateOperationsInput
+    | $Enums.PartnerDirectionEnum;
+  defaultPercent?:
+    | Prisma.DecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string;
+  status?: Prisma.EnumPartnerStatusEnumFieldUpdateOperationsInput | $Enums.PartnerStatusEnum;
+  contactId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementStatus?:
+    | Prisma.EnumPartnerAgreementStatusEnumFieldUpdateOperationsInput
+    | $Enums.PartnerAgreementStatusEnum;
+  agreementStartDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementEndDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+  agreementSpecialTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  agreementFileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -2541,9 +3797,19 @@ export type PartnerSelect<
     defaultPercent?: boolean;
     status?: boolean;
     contactId?: boolean;
+    notes?: boolean;
+    startDate?: boolean;
+    agreementStatus?: boolean;
+    agreementStartDate?: boolean;
+    agreementEndDate?: boolean;
+    agreementSpecialTerms?: boolean;
+    agreementFileAssetId?: boolean;
+    agreementOwnerId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
+    agreementFileAsset?: boolean | Prisma.Partner$agreementFileAssetArgs<ExtArgs>;
+    agreementOwner?: boolean | Prisma.Partner$agreementOwnerArgs<ExtArgs>;
     orders?: boolean | Prisma.Partner$ordersArgs<ExtArgs>;
     subscriptions?: boolean | Prisma.Partner$subscriptionsArgs<ExtArgs>;
     leadsAsSource?: boolean | Prisma.Partner$leadsAsSourceArgs<ExtArgs>;
@@ -2570,9 +3836,19 @@ export type PartnerSelectCreateManyAndReturn<
     defaultPercent?: boolean;
     status?: boolean;
     contactId?: boolean;
+    notes?: boolean;
+    startDate?: boolean;
+    agreementStatus?: boolean;
+    agreementStartDate?: boolean;
+    agreementEndDate?: boolean;
+    agreementSpecialTerms?: boolean;
+    agreementFileAssetId?: boolean;
+    agreementOwnerId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
+    agreementFileAsset?: boolean | Prisma.Partner$agreementFileAssetArgs<ExtArgs>;
+    agreementOwner?: boolean | Prisma.Partner$agreementOwnerArgs<ExtArgs>;
   },
   ExtArgs['result']['partner']
 >;
@@ -2588,9 +3864,19 @@ export type PartnerSelectUpdateManyAndReturn<
     defaultPercent?: boolean;
     status?: boolean;
     contactId?: boolean;
+    notes?: boolean;
+    startDate?: boolean;
+    agreementStatus?: boolean;
+    agreementStartDate?: boolean;
+    agreementEndDate?: boolean;
+    agreementSpecialTerms?: boolean;
+    agreementFileAssetId?: boolean;
+    agreementOwnerId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
+    agreementFileAsset?: boolean | Prisma.Partner$agreementFileAssetArgs<ExtArgs>;
+    agreementOwner?: boolean | Prisma.Partner$agreementOwnerArgs<ExtArgs>;
   },
   ExtArgs['result']['partner']
 >;
@@ -2603,6 +3889,14 @@ export type PartnerSelectScalar = {
   defaultPercent?: boolean;
   status?: boolean;
   contactId?: boolean;
+  notes?: boolean;
+  startDate?: boolean;
+  agreementStatus?: boolean;
+  agreementStartDate?: boolean;
+  agreementEndDate?: boolean;
+  agreementSpecialTerms?: boolean;
+  agreementFileAssetId?: boolean;
+  agreementOwnerId?: boolean;
   createdAt?: boolean;
   updatedAt?: boolean;
 };
@@ -2617,6 +3911,14 @@ export type PartnerOmit<
   | 'defaultPercent'
   | 'status'
   | 'contactId'
+  | 'notes'
+  | 'startDate'
+  | 'agreementStatus'
+  | 'agreementStartDate'
+  | 'agreementEndDate'
+  | 'agreementSpecialTerms'
+  | 'agreementFileAssetId'
+  | 'agreementOwnerId'
   | 'createdAt'
   | 'updatedAt',
   ExtArgs['result']['partner']
@@ -2625,6 +3927,8 @@ export type PartnerInclude<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
+  agreementFileAsset?: boolean | Prisma.Partner$agreementFileAssetArgs<ExtArgs>;
+  agreementOwner?: boolean | Prisma.Partner$agreementOwnerArgs<ExtArgs>;
   orders?: boolean | Prisma.Partner$ordersArgs<ExtArgs>;
   subscriptions?: boolean | Prisma.Partner$subscriptionsArgs<ExtArgs>;
   leadsAsSource?: boolean | Prisma.Partner$leadsAsSourceArgs<ExtArgs>;
@@ -2641,11 +3945,15 @@ export type PartnerIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
+  agreementFileAsset?: boolean | Prisma.Partner$agreementFileAssetArgs<ExtArgs>;
+  agreementOwner?: boolean | Prisma.Partner$agreementOwnerArgs<ExtArgs>;
 };
 export type PartnerIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
 > = {
   contact?: boolean | Prisma.Partner$contactArgs<ExtArgs>;
+  agreementFileAsset?: boolean | Prisma.Partner$agreementFileAssetArgs<ExtArgs>;
+  agreementOwner?: boolean | Prisma.Partner$agreementOwnerArgs<ExtArgs>;
 };
 
 export type $PartnerPayload<
@@ -2654,6 +3962,8 @@ export type $PartnerPayload<
   name: 'Partner';
   objects: {
     contact: Prisma.$ContactPayload<ExtArgs> | null;
+    agreementFileAsset: Prisma.$FileAssetPayload<ExtArgs> | null;
+    agreementOwner: Prisma.$EmployeePayload<ExtArgs> | null;
     orders: Prisma.$OrderPayload<ExtArgs>[];
     subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[];
     leadsAsSource: Prisma.$LeadPayload<ExtArgs>[];
@@ -2674,6 +3984,14 @@ export type $PartnerPayload<
       defaultPercent: runtime.Decimal;
       status: $Enums.PartnerStatusEnum;
       contactId: string | null;
+      notes: string | null;
+      startDate: Date | null;
+      agreementStatus: $Enums.PartnerAgreementStatusEnum;
+      agreementStartDate: Date | null;
+      agreementEndDate: Date | null;
+      agreementSpecialTerms: string | null;
+      agreementFileAssetId: string | null;
+      agreementOwnerId: string | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -3204,6 +4522,32 @@ export interface Prisma__PartnerClient<
     ExtArgs,
     GlobalOmitOptions
   >;
+  agreementFileAsset<T extends Prisma.Partner$agreementFileAssetArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Partner$agreementFileAssetArgs<ExtArgs>>,
+  ): Prisma.Prisma__FileAssetClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$FileAssetPayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
+  agreementOwner<T extends Prisma.Partner$agreementOwnerArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Partner$agreementOwnerArgs<ExtArgs>>,
+  ): Prisma.Prisma__EmployeeClient<
+    runtime.Types.Result.GetResult<
+      Prisma.$EmployeePayload<ExtArgs>,
+      T,
+      'findUniqueOrThrow',
+      GlobalOmitOptions
+    > | null,
+    null,
+    ExtArgs,
+    GlobalOmitOptions
+  >;
   orders<T extends Prisma.Partner$ordersArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Partner$ordersArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
@@ -3342,6 +4686,14 @@ export interface PartnerFieldRefs {
   readonly defaultPercent: Prisma.FieldRef<'Partner', 'Decimal'>;
   readonly status: Prisma.FieldRef<'Partner', 'PartnerStatusEnum'>;
   readonly contactId: Prisma.FieldRef<'Partner', 'String'>;
+  readonly notes: Prisma.FieldRef<'Partner', 'String'>;
+  readonly startDate: Prisma.FieldRef<'Partner', 'DateTime'>;
+  readonly agreementStatus: Prisma.FieldRef<'Partner', 'PartnerAgreementStatusEnum'>;
+  readonly agreementStartDate: Prisma.FieldRef<'Partner', 'DateTime'>;
+  readonly agreementEndDate: Prisma.FieldRef<'Partner', 'DateTime'>;
+  readonly agreementSpecialTerms: Prisma.FieldRef<'Partner', 'String'>;
+  readonly agreementFileAssetId: Prisma.FieldRef<'Partner', 'String'>;
+  readonly agreementOwnerId: Prisma.FieldRef<'Partner', 'String'>;
   readonly createdAt: Prisma.FieldRef<'Partner', 'DateTime'>;
   readonly updatedAt: Prisma.FieldRef<'Partner', 'DateTime'>;
 }
@@ -3785,6 +5137,48 @@ export type Partner$contactArgs<
    */
   include?: Prisma.ContactInclude<ExtArgs> | null;
   where?: Prisma.ContactWhereInput;
+};
+
+/**
+ * Partner.agreementFileAsset
+ */
+export type Partner$agreementFileAssetArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the FileAsset
+   */
+  select?: Prisma.FileAssetSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the FileAsset
+   */
+  omit?: Prisma.FileAssetOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FileAssetInclude<ExtArgs> | null;
+  where?: Prisma.FileAssetWhereInput;
+};
+
+/**
+ * Partner.agreementOwner
+ */
+export type Partner$agreementOwnerArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Employee
+   */
+  select?: Prisma.EmployeeSelect<ExtArgs> | null;
+  /**
+   * Omit specific fields from the Employee
+   */
+  omit?: Prisma.EmployeeOmit<ExtArgs> | null;
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmployeeInclude<ExtArgs> | null;
+  where?: Prisma.EmployeeWhereInput;
 };
 
 /**

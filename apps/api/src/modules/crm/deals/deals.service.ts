@@ -23,6 +23,7 @@ import {
   type PartnerReferralTermsDealSnapshot,
   type PatchPartnerReferralTermsBody,
 } from './partner-referral-terms.ops';
+import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 
 @Injectable()
 export class DealsService {
@@ -101,8 +102,16 @@ export class DealsService {
     return this.attachHandoffReferences(deal);
   }
 
-  async create(data: CreateDealDto, meta: { actorId?: string } = {}) {
+  async create(data: CreateDealDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {
     await validateDealCreate(this.prisma, data);
+    if (data.source === 'PARTNER' || data.sourcePartnerId) {
+      await assertPartnerAssignableForInboundCrm(
+        this.prisma,
+        data.source ?? null,
+        data.sourcePartnerId,
+        meta.actorRoleLevel,
+      );
+    }
     const code = await this.generateCode();
     const deal = await this.prisma.deal.create({
       data: {
@@ -165,8 +174,19 @@ export class DealsService {
     return this.attachHandoffReferences(withTerms);
   }
 
-  async update(id: string, data: UpdateDealDto) {
+  async update(id: string, data: UpdateDealDto, meta: { actorRoleLevel?: number } = {}) {
     const existing = await this.findById(id);
+    const nextSource = data.source !== undefined ? data.source : existing.source;
+    const nextPartnerId =
+      data.sourcePartnerId !== undefined ? data.sourcePartnerId : existing.sourcePartnerId;
+    if (data.source !== undefined || data.sourcePartnerId !== undefined) {
+      await assertPartnerAssignableForInboundCrm(
+        this.prisma,
+        nextSource,
+        nextPartnerId,
+        meta.actorRoleLevel,
+      );
+    }
     const nextStatus = data.status ?? existing.status;
     const attributionLocked = isDealAttributionLocked(nextStatus);
     const attributionPatch = buildDealAttributionPatch(data);
@@ -283,12 +303,16 @@ export class DealsService {
       validateDealWonGate(current, override);
     }
 
-    const deal = await this.update(id, {
-      status,
-      ...(status === 'WON' && override.reason?.trim()
-        ? { notes: this.appendOverrideNote(current.notes, override.reason.trim()) }
-        : {}),
-    });
+    const deal = await this.update(
+      id,
+      {
+        status,
+        ...(status === 'WON' && override.reason?.trim()
+          ? { notes: this.appendOverrideNote(current.notes, override.reason.trim()) }
+          : {}),
+      },
+      { actorRoleLevel: override.actorRoleLevel },
+    );
 
     if (status === 'WON') {
       if (override.reason?.trim() && override.actorId) {

@@ -884,10 +884,21 @@ export type PartnerDirectionEnum = (typeof PartnerDirectionEnum)[keyof typeof Pa
 
 export const PartnerStatusEnum = {
   ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
+  PAUSED: 'PAUSED',
+  TERMINATED: 'TERMINATED',
 } as const;
 
 export type PartnerStatusEnum = (typeof PartnerStatusEnum)[keyof typeof PartnerStatusEnum];
+
+export const PartnerAgreementStatusEnum = {
+  NO_AGREEMENT: 'NO_AGREEMENT',
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED',
+} as const;
+
+export type PartnerAgreementStatusEnum =
+  (typeof PartnerAgreementStatusEnum)[keyof typeof PartnerAgreementStatusEnum];
 
 export const PartnerReferralSourcePolicyEnum = {
   POLICY: 'POLICY',

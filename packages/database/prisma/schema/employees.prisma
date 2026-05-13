@@ -90,6 +90,7 @@ model Employee {
   operationalJournalEntries        OperationalJournalEntry[]
   checklistTemplateVersionsCreated ChecklistTemplateVersion[]          @relation("ChecklistTemplateVersionCreatedBy")
   checklistInstancesCompleted      ChecklistInstance[]                 @relation("ChecklistInstanceCompletedBy")
+  partnerAgreementsOwned             Partner[]                           @relation("PartnerAgreementOwner")
 
   @@map("employees")
 }

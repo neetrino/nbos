@@ -11,12 +11,22 @@ function minimalPartner(overrides: Partial<Partner>): Partner {
     defaultPercent: '10',
     status: 'ACTIVE',
     contactId: null,
+    notes: null,
+    startDate: null,
+    agreementStatus: 'NO_AGREEMENT',
+    agreementStartDate: null,
+    agreementEndDate: null,
+    agreementSpecialTerms: null,
+    agreementFileAssetId: null,
+    agreementFileAsset: null,
+    agreementOwnerId: null,
+    agreementOwner: null,
     createdAt: '2026-04-28T12:00:00.000Z',
     updatedAt: '2026-04-28T12:00:00.000Z',
     contact: null,
     _count: { orders: 1, subscriptions: 2 },
     ...overrides,
-  };
+  } as Partner;
 }
 
 describe('buildPartnersCsvContent', () => {

@@ -9,17 +9,28 @@ vi.mock('@/lib/api/partners', () => ({
   },
 }));
 
-const mockPartner = (id: string): Partner => ({
-  id,
-  name: `N-${id}`,
-  level: 'REGULAR',
-  direction: 'OUTBOUND',
-  defaultPercent: '5',
-  status: 'ACTIVE',
-  contactId: null,
-  createdAt: '2026-04-01T00:00:00.000Z',
-  updatedAt: '2026-04-01T00:00:00.000Z',
-});
+const mockPartner = (id: string): Partner =>
+  ({
+    id,
+    name: `N-${id}`,
+    level: 'REGULAR',
+    direction: 'OUTBOUND',
+    defaultPercent: '5',
+    status: 'ACTIVE',
+    contactId: null,
+    notes: null,
+    startDate: null,
+    agreementStatus: 'NO_AGREEMENT',
+    agreementStartDate: null,
+    agreementEndDate: null,
+    agreementSpecialTerms: null,
+    agreementFileAssetId: null,
+    agreementFileAsset: null,
+    agreementOwnerId: null,
+    agreementOwner: null,
+    createdAt: '2026-04-01T00:00:00.000Z',
+    updatedAt: '2026-04-01T00:00:00.000Z',
+  }) as Partner;
 
 describe('fetchAllPartnersForExport', () => {
   const getAll = vi.mocked(partnersApi.getAll);

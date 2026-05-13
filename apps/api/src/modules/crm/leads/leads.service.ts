@@ -6,6 +6,7 @@ import {
   type AttributionForValidation,
   validateAttributionGate,
 } from '../attribution-gate';
+import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 
 const ACTIVE_LEAD_STATUSES = new Set([
   'NEW',
@@ -142,7 +143,15 @@ export class LeadsService {
     return lead;
   }
 
-  async create(data: CreateLeadDto) {
+  async create(data: CreateLeadDto, meta: { actorRoleLevel?: number } = {}) {
+    if (data.source === 'PARTNER' || data.sourcePartnerId) {
+      await assertPartnerAssignableForInboundCrm(
+        this.prisma,
+        data.source ?? null,
+        data.sourcePartnerId,
+        meta.actorRoleLevel,
+      );
+    }
     const code = await this.generateCode();
     const createData: Prisma.LeadUncheckedCreateInput = {
       code,
@@ -173,8 +182,19 @@ export class LeadsService {
     });
   }
 
-  async update(id: string, data: UpdateLeadDto) {
+  async update(id: string, data: UpdateLeadDto, meta: { actorRoleLevel?: number } = {}) {
     const existing = await this.findById(id);
+    const nextSource = data.source !== undefined ? data.source : existing.source;
+    const nextPartnerId =
+      data.sourcePartnerId !== undefined ? data.sourcePartnerId : existing.sourcePartnerId;
+    if (data.source !== undefined || data.sourcePartnerId !== undefined) {
+      await assertPartnerAssignableForInboundCrm(
+        this.prisma,
+        nextSource,
+        nextPartnerId,
+        meta.actorRoleLevel,
+      );
+    }
     const nextStatus = data.status ?? existing.status;
     const attributionLocked = this.requiresAttribution(nextStatus);
     const attributionPatch = buildLeadAttributionPatch(data);

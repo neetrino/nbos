@@ -3,47 +3,29 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { partnersApi, type PartnerServiceTerm } from '@/lib/api/partners';
-
-const SERVICE_TYPE_OPTIONS = ['SEO', 'SMM', 'ADS', 'OTHER'] as const;
-const PAYMENT_MODEL_OPTIONS = ['ONE_TIME', 'MONTHLY', 'CUSTOM'] as const;
-
-function formatDateTime(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
-
-function statusLabel(status: string): string {
-  return status.replace(/_/g, ' ').toLowerCase();
-}
+import { projectsApi, type Project } from '@/lib/api/projects';
+import { PARTNER_OUTBOUND_PROJECT_PICKER_PAGE_SIZE } from '@/features/partners/constants/partner-outbound-projects';
+import {
+  PartnerOutboundServiceTermCreateForm,
+  PAYMENT_MODEL_OPTIONS,
+  SERVICE_TYPE_OPTIONS,
+} from '@/features/partners/components/PartnerOutboundServiceTermCreateForm';
+import { PartnerOutboundServiceTermsTable } from '@/features/partners/components/PartnerOutboundServiceTermsTable';
 
 export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKey?: number }) {
   const { partnerId, reloadKey = 0 } = props;
   const [rows, setRows] = useState<PartnerServiceTerm[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [creatingFinanceId, setCreatingFinanceId] = useState<string | null>(null);
   const [form, setForm] = useState({
-    projectId: '',
+    projectId: 'none',
     serviceType: 'SEO',
     paymentModel: 'ONE_TIME',
     amount: '',
@@ -55,6 +37,8 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
     const amount = Number(form.amount);
     return Number.isFinite(amount) && amount > 0;
   }, [form.amount]);
+
+  const projectById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,6 +55,25 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
   }, [partnerId]);
 
   useEffect(() => {
+    let cancelled = false;
+    setProjectsLoading(true);
+    projectsApi
+      .getAll({ page: 1, pageSize: PARTNER_OUTBOUND_PROJECT_PICKER_PAGE_SIZE })
+      .then((res) => {
+        if (!cancelled) setProjects(res.items);
+      })
+      .catch(() => {
+        if (!cancelled) setProjects([]);
+      })
+      .finally(() => {
+        if (!cancelled) setProjectsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     void load();
   }, [load, reloadKey]);
 
@@ -81,7 +84,7 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
     setActionError(null);
     try {
       await partnersApi.createServiceTerm(partnerId, {
-        projectId: form.projectId.trim() || null,
+        projectId: form.projectId !== 'none' ? form.projectId : null,
         serviceType: form.serviceType as (typeof SERVICE_TYPE_OPTIONS)[number],
         paymentModel: form.paymentModel as (typeof PAYMENT_MODEL_OPTIONS)[number],
         amount: Number(form.amount),
@@ -89,7 +92,7 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
         notes: form.notes.trim() || undefined,
       });
       setForm({
-        projectId: '',
+        projectId: 'none',
         serviceType: 'SEO',
         paymentModel: 'ONE_TIME',
         amount: '',
@@ -162,171 +165,25 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
         </p>
       ) : null}
 
-      <form className="border-border mt-4 grid gap-3 rounded-lg border p-3" onSubmit={submit}>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="pst-project-id">Project ID (required for Finance create)</Label>
-            <Input
-              id="pst-project-id"
-              value={form.projectId}
-              onChange={(e) => setForm((prev) => ({ ...prev, projectId: e.target.value }))}
-              placeholder="project uuid"
-            />
-          </div>
-          <div>
-            <Label htmlFor="pst-amount">Amount *</Label>
-            <Input
-              id="pst-amount"
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.amount}
-              onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
-              placeholder="0.00"
-            />
-          </div>
-        </div>
-
-        <div className="grid gap-2 sm:grid-cols-3">
-          <div>
-            <Label>Service type</Label>
-            <Select
-              value={form.serviceType}
-              onValueChange={(value) =>
-                setForm((prev) => ({ ...prev, serviceType: value ?? prev.serviceType }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SERVICE_TYPE_OPTIONS.map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {value}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Payment model</Label>
-            <Select
-              value={form.paymentModel}
-              onValueChange={(value) =>
-                setForm((prev) => ({ ...prev, paymentModel: value ?? prev.paymentModel }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYMENT_MODEL_OPTIONS.map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {value}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="pst-billing-start">Billing start date</Label>
-            <Input
-              id="pst-billing-start"
-              type="datetime-local"
-              value={form.billingStartDate}
-              onChange={(e) => setForm((prev) => ({ ...prev, billingStartDate: e.target.value }))}
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="pst-notes">Notes</Label>
-          <Textarea
-            id="pst-notes"
-            value={form.notes}
-            onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
-            placeholder="Optional terms and agreement notes"
-            rows={2}
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <Button type="submit" size="sm" disabled={!canSubmit || saving}>
-            {saving ? 'Creating…' : 'Create service term'}
-          </Button>
-        </div>
-      </form>
+      <PartnerOutboundServiceTermCreateForm
+        form={form}
+        onFormChange={setForm}
+        projects={projects}
+        projectsLoading={projectsLoading}
+        canSubmit={canSubmit}
+        saving={saving}
+        onSubmit={submit}
+      />
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground mt-4 text-sm">No outbound service terms yet.</p>
       ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[940px] border-collapse text-left text-sm">
-            <thead>
-              <tr className="text-muted-foreground border-b text-xs tracking-wide uppercase">
-                <th className="pr-3 pb-2 font-medium">Created</th>
-                <th className="pr-3 pb-2 font-medium">Type</th>
-                <th className="pr-3 pb-2 font-medium">Model</th>
-                <th className="pr-3 pb-2 text-right font-medium">Amount</th>
-                <th className="pr-3 pb-2 font-medium">Project</th>
-                <th className="pr-3 pb-2 font-medium">Invoice</th>
-                <th className="pr-3 pb-2 font-medium">Subscription</th>
-                <th className="pr-3 pb-2 font-medium">Status</th>
-                <th className="pb-2 text-right font-medium">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const canMaterialize =
-                  !row.invoiceId &&
-                  !row.subscriptionId &&
-                  row.status !== 'CANCELLED' &&
-                  row.status !== 'COMPLETED';
-                return (
-                  <tr key={row.id} className="border-border border-b last:border-0">
-                    <td className="text-muted-foreground py-2 pr-3 align-top text-xs tabular-nums">
-                      {formatDateTime(row.createdAt)}
-                    </td>
-                    <td className="py-2 pr-3 align-top">{row.serviceType}</td>
-                    <td className="py-2 pr-3 align-top">{row.paymentModel}</td>
-                    <td className="py-2 pr-3 text-right align-top font-medium tabular-nums">
-                      {row.amount}
-                    </td>
-                    <td className="py-2 pr-3 align-top font-mono text-xs">
-                      {row.projectId ? `${row.projectId.slice(0, 8)}…` : '—'}
-                    </td>
-                    <td className="py-2 pr-3 align-top font-mono text-xs">
-                      {row.invoiceId ? `${row.invoiceId.slice(0, 8)}…` : '—'}
-                    </td>
-                    <td className="py-2 pr-3 align-top font-mono text-xs">
-                      {row.subscriptionId ? `${row.subscriptionId.slice(0, 8)}…` : '—'}
-                    </td>
-                    <td className="py-2 pr-3 align-top text-xs capitalize">
-                      {statusLabel(row.status)}
-                    </td>
-                    <td className="py-2 text-right align-top">
-                      {canMaterialize ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          disabled={creatingFinanceId !== null}
-                          onClick={() => void createFinance(row.id)}
-                        >
-                          {creatingFinanceId === row.id ? 'Creating…' : 'Create finance'}
-                        </Button>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <PartnerOutboundServiceTermsTable
+          rows={rows}
+          projectById={projectById}
+          creatingFinanceId={creatingFinanceId}
+          onCreateFinance={createFinance}
+        />
       )}
     </div>
   );
