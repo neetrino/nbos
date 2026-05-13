@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useCallback, useState } from 'react';
 import {
   AlertTriangle,
   CheckSquare,
@@ -10,12 +11,15 @@ import {
   RotateCcw,
   Server,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DetailSheetFormFooter, DetailSheetSection } from '@/components/shared';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
+import { TICKET_WAITING_OVERLAY_OPTIONS } from '@/features/support/constants/support';
 import { supportApi } from '@/lib/api/support';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Contact } from '@/lib/api/clients';
 import type { Employee } from '@/lib/api/employees';
 import type { ProjectProductSummary } from '@/lib/api/projects';
@@ -69,6 +73,39 @@ export function SupportTicketDetailGeneralTab({
 }: SupportTicketDetailGeneralTabProps) {
   const terminal = ['RESOLVED', 'CLOSED'].includes(ticket.status);
   const executionTasks = ticket.executionTasks ?? [];
+  const [waitingBusy, setWaitingBusy] = useState(false);
+  const [extensionDealBusy, setExtensionDealBusy] = useState(false);
+
+  const updateWaitingState = useCallback(
+    async (value: string) => {
+      if (value === (ticket.waitingState ?? 'NONE')) return;
+      setWaitingBusy(true);
+      try {
+        await supportApi.updateWaiting(ticket.id, { waitingState: value });
+        await onReloadTicket();
+        onListInvalidate();
+      } catch (err) {
+        toast.error(getApiErrorMessage(err, 'Waiting state could not be updated.'));
+      } finally {
+        setWaitingBusy(false);
+      }
+    },
+    [onListInvalidate, onReloadTicket, ticket.id, ticket.waitingState],
+  );
+
+  const createExtensionDeal = useCallback(async () => {
+    if (!meId) return;
+    setExtensionDealBusy(true);
+    try {
+      await supportApi.createExtensionDeal(ticket.id, { sellerId: meId });
+      await onReloadTicket();
+      onListInvalidate();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Extension deal could not be created.'));
+    } finally {
+      setExtensionDealBusy(false);
+    }
+  }, [meId, onListInvalidate, onReloadTicket, ticket.id]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -153,6 +190,33 @@ export function SupportTicketDetailGeneralTab({
                 </div>
               </DetailSheetSection>
 
+              <DetailSheetSection title="Waiting overlay">
+                <div className="space-y-2">
+                  <Label htmlFor={`st-wait-${ticket.id}`} className="sr-only">
+                    Waiting overlay
+                  </Label>
+                  <select
+                    id={`st-wait-${ticket.id}`}
+                    className="border-border bg-background text-foreground w-full rounded-md border px-2 py-2 text-sm"
+                    value={ticket.waitingState ?? 'NONE'}
+                    onChange={(e) => void updateWaitingState(e.target.value)}
+                    disabled={terminal || waitingBusy}
+                    aria-label="Waiting overlay"
+                  >
+                    {TICKET_WAITING_OVERLAY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  {ticket.waitingReason ? (
+                    <p className="text-muted-foreground line-clamp-3 text-xs">
+                      {ticket.waitingReason}
+                    </p>
+                  ) : null}
+                </div>
+              </DetailSheetSection>
+
               <DetailSheetSection title="Change control" icon={<FilePlus2 size={12} />}>
                 {ticket.extensionDeal ? (
                   <Link
@@ -162,12 +226,31 @@ export function SupportTicketDetailGeneralTab({
                     Deal {ticket.extensionDeal.code}
                     <ExternalLink size={12} />
                   </Link>
+                ) : ticket.category === 'CHANGE_REQUEST' ? (
+                  <div className="space-y-3">
+                    {!ticket.productId ? (
+                      <p className="text-muted-foreground text-sm">
+                        Set a product on this ticket to create an extension deal.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-muted-foreground text-sm">
+                          Billable scope change — creates a deal for client sign-off.
+                        </p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={terminal || extensionDealBusy || !meId || !ticket.productId}
+                          onClick={() => void createExtensionDeal()}
+                        >
+                          <FilePlus2 size={14} aria-hidden />
+                          Extension deal
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">
-                    {ticket.category === 'CHANGE_REQUEST'
-                      ? 'Create an Extension Deal from the list or change-control page when product context is set.'
-                      : 'Not a change request.'}
-                  </p>
+                  <p className="text-muted-foreground text-sm">Not a change request.</p>
                 )}
               </DetailSheetSection>
 

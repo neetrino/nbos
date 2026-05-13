@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Plus,
@@ -8,11 +8,7 @@ import {
   LayoutGrid,
   List,
   FolderKanban,
-  CheckSquare,
-  FilePlus2,
   RotateCcw,
-  AlertTriangle,
-  Server,
   PanelRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -51,14 +47,9 @@ import {
   TICKET_PRIORITIES,
   TICKET_STATUSES,
   TICKET_WAITING_STATES,
-  TICKET_WAITING_OVERLAY_OPTIONS,
   getTicketCategory,
-  getTicketCloseReasonLabel,
-  getTicketCoverage,
   getTicketPriority,
   getTicketSlaState,
-  getTicketStatus,
-  getTicketWaitingState,
   MIN_SUPPORT_RESOLUTION_SUMMARY_LENGTH,
   SUPPORT_TICKET_CLOSE_REASON_OPTIONS,
 } from '@/features/support/constants/support';
@@ -71,6 +62,10 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { SupportPageSettingsDialog } from '@/features/support/components/SupportPageSettingsDialog';
 import { SupportTicketDetailSheet } from '@/features/support/components/SupportTicketDetailSheet';
+import {
+  readSupportPageViewFromStorage,
+  writeSupportPageViewToStorage,
+} from '@/features/support/constants/support-page-view-storage';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 
 type ViewMode = 'kanban' | 'list';
@@ -86,7 +81,17 @@ export default function SupportPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [view, setView] = useState<ViewMode>('list');
+  const [view, setView] = useState<ViewMode>('kanban');
+
+  useLayoutEffect(() => {
+    setView(readSupportPageViewFromStorage());
+  }, []);
+
+  const handleViewModeChange = useCallback((value: string) => {
+    const next: ViewMode = value === 'list' ? 'list' : 'kanban';
+    setView(next);
+    writeSupportPageViewToStorage(next);
+  }, []);
   const [actionId, setActionId] = useState<string | null>(null);
   const [escalateTicket, setEscalateTicket] = useState<SupportTicket | null>(null);
   const [escalateReason, setEscalateReason] = useState('');
@@ -412,12 +417,6 @@ export default function SupportPage() {
     handleStatusSelect(ticket, toColumn);
   };
 
-  const openTechnicalDialog = (ticket: SupportTicket) => {
-    setTechnicalTicket(ticket);
-    setDraftTechnicalAssetId(ticket.technicalAsset?.id ?? '');
-    setDraftTechnicalEnvId(ticket.technicalEnvironment?.id ?? '');
-  };
-
   const saveTechnicalContext = async () => {
     if (!technicalTicket?.productId) return;
     setActionId(`tech:${technicalTicket.id}`);
@@ -444,47 +443,6 @@ export default function SupportPage() {
     color: status.color,
     items: tickets.filter((t) => t.status === status.value),
   }));
-
-  const handleCreateExecutionTask = async (ticket: SupportTicket) => {
-    if (!me?.id) return;
-    setActionId(ticket.id);
-    try {
-      await supportApi.createExecutionTask(ticket.id, { creatorId: me.id });
-      await refreshSupportViews();
-      setError(null);
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Execution task could not be created.'));
-    } finally {
-      setActionId(null);
-    }
-  };
-
-  const handleCreateExtensionDeal = async (ticket: SupportTicket) => {
-    if (!me?.id) return;
-    setActionId(`deal:${ticket.id}`);
-    try {
-      await supportApi.createExtensionDeal(ticket.id, { sellerId: me.id });
-      await refreshSupportViews();
-      setError(null);
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Extension Deal could not be created.'));
-    } finally {
-      setActionId(null);
-    }
-  };
-
-  const handleWaitingChange = async (ticket: SupportTicket, value: string) => {
-    setActionId(`wait:${ticket.id}`);
-    try {
-      await supportApi.updateWaiting(ticket.id, { waitingState: value });
-      await refreshSupportViews();
-      setError(null);
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Waiting state could not be updated.'));
-    } finally {
-      setActionId(null);
-    }
-  };
 
   const handleSubmitEscalation = async () => {
     if (!escalateTicket) return;
@@ -538,7 +496,7 @@ export default function SupportPage() {
             exportDisabled={loading || !stats}
             onExportScopeStatsCsv={handleExportScopeStatsCsv}
           />
-          <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
+          <Tabs value={view} onValueChange={handleViewModeChange}>
             <TabsList variant="segmented">
               <TabsTrigger value="kanban" className="gap-1.5 px-3 py-2" aria-label="Board view">
                 <LayoutGrid size={14} aria-hidden />
@@ -614,136 +572,49 @@ export default function SupportPage() {
             renderCard={(ticket: SupportTicket) => {
               const cat = getTicketCategory(ticket.category);
               const pri = getTicketPriority(ticket.priority);
-              const coverage = getTicketCoverage(ticket.coverageDecision);
               const sla = getTicketSlaState(ticket.slaState.state);
+              const terminal = ['RESOLVED', 'CLOSED'].includes(ticket.status);
               return (
                 <div
-                  className="border-border bg-card space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
+                  className="border-border bg-card flex flex-col gap-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
                   onClick={(e) => {
                     if (isInteractiveTableTarget(e.target)) return;
                     openSupportDetail(ticket.id);
                   }}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground text-[10px] font-medium">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-muted-foreground shrink-0 text-[10px] font-medium">
                       {ticket.code}
                     </span>
-                    {pri && <StatusBadge label={pri.label} variant={pri.variant} />}
+                    {pri ? <StatusBadge label={pri.label} variant={pri.variant} /> : null}
                   </div>
-                  <p className="text-sm font-medium">{ticket.title}</p>
-                  <div className="flex items-center gap-2">
-                    {cat && <StatusBadge label={cat.label} variant={cat.variant} />}
-                    {ticket.billable && <StatusBadge label="Billable" variant="amber" />}
-                    {ticket.product && <StatusBadge label="Product" variant="blue" />}
+                  <p className="line-clamp-2 text-sm leading-snug font-medium">{ticket.title}</p>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {cat ? <StatusBadge label={cat.label} variant={cat.variant} /> : null}
+                    {sla ? <StatusBadge label={sla.label} variant={sla.variant} /> : null}
                   </div>
-                  <div className="flex items-center gap-2">
-                    {coverage && <StatusBadge label={coverage.label} variant={coverage.variant} />}
-                    {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
-                  </div>
-                  <label className="text-muted-foreground text-[10px] font-medium uppercase">
-                    Waiting overlay
-                  </label>
-                  <select
-                    className="border-border bg-background text-foreground w-full rounded-md border px-2 py-1.5 text-xs"
-                    value={ticket.waitingState ?? 'NONE'}
-                    onChange={(e) => void handleWaitingChange(ticket, e.target.value)}
-                    disabled={
-                      actionId === `wait:${ticket.id}` ||
-                      ['RESOLVED', 'CLOSED'].includes(ticket.status)
-                    }
-                    aria-label="Waiting overlay"
-                  >
-                    {TICKET_WAITING_OVERLAY_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                  {ticket.waitingReason ? (
-                    <p className="text-muted-foreground line-clamp-2 text-[11px]">
-                      {ticket.waitingReason}
-                    </p>
-                  ) : null}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 gap-1 px-2 text-xs"
-                    disabled={
-                      ['RESOLVED', 'CLOSED'].includes(ticket.status) ||
-                      actionId?.startsWith('escalate:')
-                    }
-                    onClick={() => {
-                      setEscalateTicket(ticket);
-                      setEscalateReason(ticket.waitingReason ?? '');
-                    }}
-                  >
-                    <AlertTriangle size={12} />
-                    Escalate
-                  </Button>
-                  {ticket.project && (
-                    <div className="text-muted-foreground flex items-center gap-1 text-xs">
-                      <FolderKanban size={10} />
-                      {ticket.project.name}
+                  {ticket.project ? (
+                    <div className="text-muted-foreground border-border flex min-w-0 items-center gap-1 border-t pt-2 text-[11px]">
+                      <FolderKanban size={10} className="shrink-0" aria-hidden />
+                      <span className="truncate">{ticket.project.name}</span>
                     </div>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={
-                      !me?.id ||
-                      actionId === ticket.id ||
-                      ['RESOLVED', 'CLOSED'].includes(ticket.status)
-                    }
-                    onClick={() => void handleCreateExecutionTask(ticket)}
-                    className="h-7 gap-1 px-2 text-xs"
-                  >
-                    <CheckSquare size={12} />
-                    Create task
-                  </Button>
-                  {['RESOLVED', 'CLOSED'].includes(ticket.status) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={actionId === `reopen:${ticket.id}`}
-                      onClick={() => void handleReopenTicket(ticket)}
-                      className="h-7 gap-1 px-2 text-xs"
-                    >
-                      <RotateCcw size={12} />
-                      Reopen
-                    </Button>
-                  )}
-                  <SupportChangeControlAction
-                    ticket={ticket}
-                    busy={actionId === `deal:${ticket.id}`}
-                    disabled={!me?.id}
-                    onCreateDeal={handleCreateExtensionDeal}
-                  />
-                  <div className="text-muted-foreground flex flex-col gap-1 text-[10px]">
-                    {(ticket.technicalAsset || ticket.technicalEnvironment) && (
-                      <span>
-                        {ticket.technicalAsset ? `Asset: ${ticket.technicalAsset.name}` : null}
-                        {ticket.technicalAsset && ticket.technicalEnvironment ? ' · ' : null}
-                        {ticket.technicalEnvironment
-                          ? `Env: ${ticket.technicalEnvironment.name}`
-                          : null}
-                      </span>
-                    )}
+                  ) : null}
+                  {terminal ? (
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-7 gap-1 px-2 text-xs"
-                      disabled={
-                        ['RESOLVED', 'CLOSED'].includes(ticket.status) ||
-                        actionId === `tech:${ticket.id}`
-                      }
-                      onClick={() => openTechnicalDialog(ticket)}
+                      className="mt-1 h-7 w-full gap-1 text-xs"
+                      disabled={actionId === `reopen:${ticket.id}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void handleReopenTicket(ticket);
+                      }}
                     >
-                      <Server size={12} />
-                      Technical
+                      <RotateCcw size={12} aria-hidden />
+                      Reopen
                     </Button>
-                  </div>
+                  ) : null}
                 </div>
               );
             }}
@@ -754,33 +625,20 @@ export default function SupportPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Ticket</TableHead>
+                <TableHead className="min-w-[200px]">Ticket</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Resolution</TableHead>
                 <TableHead>SLA</TableHead>
-                <TableHead>Waiting</TableHead>
-                <TableHead>Escalate</TableHead>
-                <TableHead>Coverage</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Technical</TableHead>
                 <TableHead>Assignee</TableHead>
-                <TableHead>Billable</TableHead>
-                <TableHead>Execution</TableHead>
-                <TableHead>Change Control</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead className="hidden lg:table-cell">Project</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {tickets.map((ticket) => {
                 const cat = getTicketCategory(ticket.category);
                 const pri = getTicketPriority(ticket.priority);
-                const st = getTicketStatus(ticket.status);
-                const coverage = getTicketCoverage(ticket.coverageDecision);
                 const sla = getTicketSlaState(ticket.slaState.state);
-                const waiting = getTicketWaitingState(ticket.waitingState ?? 'NONE');
                 return (
                   <TableRow
                     key={ticket.id}
@@ -813,10 +671,10 @@ export default function SupportPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {cat && <StatusBadge label={cat.label} variant={cat.variant} />}
+                      {cat ? <StatusBadge label={cat.label} variant={cat.variant} /> : null}
                     </TableCell>
                     <TableCell>
-                      {pri && <StatusBadge label={pri.label} variant={pri.variant} />}
+                      {pri ? <StatusBadge label={pri.label} variant={pri.variant} /> : null}
                     </TableCell>
                     <TableCell>
                       <select
@@ -832,10 +690,7 @@ export default function SupportPage() {
                           </option>
                         ))}
                       </select>
-                      {st ? (
-                        <p className="text-muted-foreground mt-1 text-[10px]">{st.label}</p>
-                      ) : null}
-                      {['RESOLVED', 'CLOSED'].includes(ticket.status) && (
+                      {['RESOLVED', 'CLOSED'].includes(ticket.status) ? (
                         <div className="mt-1">
                           <Button
                             variant="ghost"
@@ -844,163 +699,22 @@ export default function SupportPage() {
                             disabled={actionId === `reopen:${ticket.id}`}
                             onClick={() => void handleReopenTicket(ticket)}
                           >
-                            <RotateCcw size={10} />
+                            <RotateCcw size={10} aria-hidden />
                             Reopen
                           </Button>
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="max-w-[220px] text-xs">
-                      {ticket.resolutionSummary ? (
-                        <p className="line-clamp-3">{ticket.resolutionSummary}</p>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                      {ticket.status === 'CLOSED' && ticket.closeReason ? (
-                        <p className="text-muted-foreground mt-1 text-[10px]">
-                          {getTicketCloseReasonLabel(ticket.closeReason)}
-                        </p>
                       ) : null}
                     </TableCell>
                     <TableCell>
-                      {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <select
-                          className="border-border bg-background text-foreground max-w-[200px] rounded-md border px-2 py-1 text-xs"
-                          value={ticket.waitingState ?? 'NONE'}
-                          onChange={(e) => void handleWaitingChange(ticket, e.target.value)}
-                          disabled={
-                            actionId === `wait:${ticket.id}` ||
-                            ['RESOLVED', 'CLOSED'].includes(ticket.status)
-                          }
-                          aria-label="Waiting overlay"
-                        >
-                          {TICKET_WAITING_OVERLAY_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                        {waiting && waiting.value !== 'NONE' ? (
-                          <span className="text-muted-foreground text-[10px]">{waiting.label}</span>
-                        ) : null}
-                        {ticket.waitingReason ? (
-                          <span className="text-muted-foreground line-clamp-2 text-[10px]">
-                            {ticket.waitingReason}
-                          </span>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-7 gap-1 px-2 text-xs"
-                        disabled={
-                          ['RESOLVED', 'CLOSED'].includes(ticket.status) ||
-                          actionId === `escalate:${ticket.id}`
-                        }
-                        onClick={() => {
-                          setEscalateTicket(ticket);
-                          setEscalateReason(ticket.waitingReason ?? '');
-                        }}
-                      >
-                        <AlertTriangle size={12} />
-                        Escalate
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      {coverage ? (
-                        <StatusBadge label={coverage.label} variant={coverage.variant} />
-                      ) : (
-                        <StatusBadge label="Not decided" variant="gray" />
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {ticket.project?.name ?? '—'}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {ticket.product?.name ?? '—'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex max-w-[220px] flex-col gap-1">
-                        {ticket.technicalAsset ? (
-                          <p className="text-xs">
-                            <span className="text-muted-foreground">Asset: </span>
-                            {ticket.technicalAsset.name}
-                          </p>
-                        ) : null}
-                        {ticket.technicalEnvironment ? (
-                          <p className="text-xs">
-                            <span className="text-muted-foreground">Env: </span>
-                            {ticket.technicalEnvironment.name}
-                          </p>
-                        ) : null}
-                        {!ticket.technicalAsset && !ticket.technicalEnvironment ? (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        ) : null}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-7 gap-1 px-2 text-xs"
-                          disabled={
-                            ['RESOLVED', 'CLOSED'].includes(ticket.status) ||
-                            actionId === `tech:${ticket.id}`
-                          }
-                          onClick={() => openTechnicalDialog(ticket)}
-                          title={
-                            ticket.productId
-                              ? 'Link technical asset / environment'
-                              : 'Product context required'
-                          }
-                        >
-                          <Server size={12} />
-                          Context
-                        </Button>
-                      </div>
+                      {sla ? <StatusBadge label={sla.label} variant={sla.variant} /> : null}
                     </TableCell>
                     <TableCell className="text-sm">
                       {ticket.assignee
                         ? `${ticket.assignee.firstName} ${ticket.assignee.lastName}`
                         : '—'}
                     </TableCell>
-                    <TableCell>
-                      {ticket.billable ? (
-                        <StatusBadge label="Paid" variant="amber" />
-                      ) : (
-                        <StatusBadge label="Free" variant="gray" />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={
-                          !me?.id ||
-                          actionId === ticket.id ||
-                          ['RESOLVED', 'CLOSED'].includes(ticket.status)
-                        }
-                        onClick={() => void handleCreateExecutionTask(ticket)}
-                        className="h-7 gap-1 px-2 text-xs"
-                      >
-                        <CheckSquare size={12} />
-                        Task
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <SupportChangeControlAction
-                        ticket={ticket}
-                        busy={actionId === `deal:${ticket.id}`}
-                        disabled={!me?.id}
-                        onCreateDeal={handleCreateExtensionDeal}
-                      />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {new Date(ticket.createdAt).toLocaleDateString()}
+                    <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
+                      {ticket.project?.name ?? '—'}
                     </TableCell>
                   </TableRow>
                 );
@@ -1388,47 +1102,10 @@ export default function SupportPage() {
         }}
         onRequestTechnical={(t) => {
           setTechnicalTicket(t);
+          setDraftTechnicalAssetId(t.technicalAsset?.id ?? '');
+          setDraftTechnicalEnvId(t.technicalEnvironment?.id ?? '');
         }}
       />
     </div>
-  );
-}
-
-function SupportChangeControlAction({
-  ticket,
-  busy,
-  disabled,
-  onCreateDeal,
-}: {
-  ticket: SupportTicket;
-  busy: boolean;
-  disabled: boolean;
-  onCreateDeal: (ticket: SupportTicket) => Promise<void>;
-}) {
-  if (ticket.category !== 'CHANGE_REQUEST') return null;
-
-  if (ticket.extensionDeal) {
-    return (
-      <StatusBadge
-        label={`Deal ${ticket.extensionDeal.code}`}
-        variant={ticket.extensionDeal.status === 'WON' ? 'green' : 'purple'}
-      />
-    );
-  }
-
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      disabled={
-        disabled || busy || !ticket.productId || ['RESOLVED', 'CLOSED'].includes(ticket.status)
-      }
-      onClick={() => void onCreateDeal(ticket)}
-      className="h-7 gap-1 px-2 text-xs"
-      title={ticket.productId ? 'Create Extension Deal' : 'Product context is required'}
-    >
-      <FilePlus2 size={12} />
-      Extension deal
-    </Button>
   );
 }
