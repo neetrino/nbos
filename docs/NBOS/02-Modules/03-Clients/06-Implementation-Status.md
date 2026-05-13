@@ -15,7 +15,13 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 ## Intentional placeholders / next slices
 
 - Portfolio **Communication** and **Files** tabs: outbound links to Messenger and Drive plus placeholder copy; no in-tab aggregation yet (visibility still gated by `accessMask`).
-- **Dedupe / merge contacts**, **archive vs delete**, **bank details** UI, **Client Service** detail in portfolio — not in this slice.
+- **Dedupe / merge contacts**, **bank details** UI, **Client Service** detail in portfolio — not in this slice.
+- **Archive-first lifecycle** for Contact / Company (soft-delete, global trash, purge rules) — canon in `00-Clients-Overview.md` §7; runtime enforcement/UI may land incrementally (see **MVP assumptions** below).
+
+## MVP assumptions (launch scope)
+
+- **Audience:** internal employees only; no external client/partner login roles required for Clients MVP.
+- **Delete vs archive:** operational policy is **archive-first** (see `00-Clients-Overview.md` §7). Hard `DELETE` may still exist in APIs until a unified archive is implemented; team should avoid deleting entities that already participate in CRM / finance / delivery history.
 
 ## API routes (Nest)
 
