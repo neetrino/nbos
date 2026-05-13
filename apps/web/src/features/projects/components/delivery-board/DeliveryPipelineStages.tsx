@@ -129,13 +129,20 @@ export function DeliveryPipelineStages({
             <button
               key={stage.key}
               type="button"
-              disabled={!isClickable}
+              aria-disabled={!isClickable}
               onClick={() => {
                 if (isClickable) onSelect(stage.key);
               }}
               onMouseEnter={() => setHoverIdx(i)}
               title={stage.shortLabel}
-              className="relative flex-1 cursor-pointer active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+              className={
+                'relative flex-1 active:scale-[0.98] ' +
+                (isClickable
+                  ? 'cursor-pointer'
+                  : isFuture
+                    ? 'cursor-not-allowed'
+                    : 'cursor-default')
+              }
               style={{
                 height: H,
                 marginLeft: isFirst ? 0 : -ARROW_W,
