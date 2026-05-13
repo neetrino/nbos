@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 
 import {
   FILTER_BAR_CONTROL_PILL,
@@ -101,8 +101,20 @@ function FilterBarFilterSelect({
     ? filterValues[filter.key] || 'all'
     : (filterValues[filter.key] ?? fallback);
 
+  const items = useMemo(
+    () => [
+      ...(showAll ? [{ value: 'all' as const, label: `All ${filter.label}` }] : []),
+      ...filter.options.map((opt) => ({ value: opt.value, label: opt.label })),
+    ],
+    [filter.label, filter.options, showAll],
+  );
+
   return (
-    <Select value={value} onValueChange={(v) => onFilterChange?.(filter.key, v as string)}>
+    <Select
+      value={value}
+      onValueChange={(v) => onFilterChange?.(filter.key, v as string)}
+      items={items}
+    >
       <SelectTrigger className={cn('w-[min(100%,160px)] sm:w-[160px]', FILTER_BAR_CONTROL_PILL)}>
         <SelectValue placeholder={filter.label} />
       </SelectTrigger>

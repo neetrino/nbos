@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -35,6 +36,38 @@ export function DeliveryBoardClosedFiltersBar({
     onChange({ ...value, ...partial });
   };
 
+  const selectItems = useMemo(
+    () => ({
+      result: [
+        { value: 'ALL', label: 'All results' },
+        { value: 'DONE', label: 'Done' },
+        { value: 'CANCELLED', label: 'Cancelled' },
+      ],
+      projects: [
+        { value: 'ALL', label: 'All projects' },
+        ...options.projects.map((p) => ({ value: p.id, label: p.label })),
+      ],
+      companies: [
+        { value: 'ALL', label: 'All companies' },
+        ...options.companies.map((c) => ({ value: c.id, label: c.label })),
+      ],
+      owners: [
+        { value: 'ALL', label: 'All owners' },
+        ...options.owners.map((o) => ({ value: o.id, label: o.label })),
+      ],
+      productLines: [
+        { value: 'ALL', label: 'All lines' },
+        ...options.productLines.map((line) => ({ value: line.value, label: line.label })),
+      ],
+      deadlineResult: [
+        { value: 'ALL', label: 'All (incl. extensions)' },
+        { value: 'ON_TIME', label: 'On time (products)' },
+        { value: 'LATE', label: 'Late (products)' },
+      ],
+    }),
+    [options],
+  );
+
   return (
     <div className="space-y-3 rounded-xl border p-3">
       <p className="text-muted-foreground text-xs">
@@ -58,6 +91,7 @@ export function DeliveryBoardClosedFiltersBar({
           <Select
             value={value.result}
             onValueChange={(v) => patch({ result: v as DeliveryBoardClosedFiltersInput['result'] })}
+            items={selectItems.result}
           >
             <SelectTrigger className={CONTROL} size="sm" aria-label="Filter by result">
               <SelectValue />
@@ -74,6 +108,7 @@ export function DeliveryBoardClosedFiltersBar({
           <Select
             value={value.projectId || 'ALL'}
             onValueChange={(v) => patch({ projectId: !v || v === 'ALL' ? '' : v })}
+            items={selectItems.projects}
           >
             <SelectTrigger className={CONTROL} size="sm" aria-label="Filter by project">
               <SelectValue placeholder="All projects" />
@@ -93,6 +128,7 @@ export function DeliveryBoardClosedFiltersBar({
           <Select
             value={value.companyId || 'ALL'}
             onValueChange={(v) => patch({ companyId: !v || v === 'ALL' ? '' : v })}
+            items={selectItems.companies}
           >
             <SelectTrigger className={CONTROL} size="sm" aria-label="Filter by billing company">
               <SelectValue placeholder="All companies" />
@@ -112,6 +148,7 @@ export function DeliveryBoardClosedFiltersBar({
           <Select
             value={value.ownerId || 'ALL'}
             onValueChange={(v) => patch({ ownerId: !v || v === 'ALL' ? '' : v })}
+            items={selectItems.owners}
           >
             <SelectTrigger className={CONTROL} size="sm" aria-label="Filter by PM or owner">
               <SelectValue placeholder="All owners" />
@@ -133,6 +170,7 @@ export function DeliveryBoardClosedFiltersBar({
           <Select
             value={value.productLineKey || 'ALL'}
             onValueChange={(v) => patch({ productLineKey: !v || v === 'ALL' ? '' : v })}
+            items={selectItems.productLines}
           >
             <SelectTrigger
               className={CONTROL}
@@ -176,6 +214,7 @@ export function DeliveryBoardClosedFiltersBar({
           <Select
             value={value.deadlineResult}
             onValueChange={(v) => patch({ deadlineResult: v as ClosedDeadlineResultFilter })}
+            items={selectItems.deadlineResult}
           >
             <SelectTrigger
               className={CONTROL}

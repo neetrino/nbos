@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -42,6 +43,22 @@ export function ExpensePlansListToolbar(props: {
     hasActiveFilters,
   } = props;
 
+  const categorySelectItems = useMemo(
+    () => [
+      { value: 'ALL', label: 'All categories' },
+      ...PLAN_CATEGORY_OPTIONS.map((c) => ({ value: c.value, label: c.label })),
+    ],
+    [],
+  );
+
+  const projectSelectItems = useMemo(
+    () => [
+      { value: 'ALL', label: 'All projects' },
+      ...projects.map((p) => ({ value: p.id, label: `${p.code} — ${p.name}` })),
+    ],
+    [projects],
+  );
+
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
       <div className="flex max-w-md min-w-[12rem] flex-1 flex-col gap-1">
@@ -61,6 +78,7 @@ export function ExpensePlansListToolbar(props: {
         <Select
           value={category ?? 'ALL'}
           onValueChange={(v) => onCategoryChange(!v || v === 'ALL' ? '' : v)}
+          items={categorySelectItems}
         >
           <SelectTrigger className={TOOLBAR_CONTROL_CLASS} aria-label="Filter by category">
             <SelectValue placeholder="All categories" />
@@ -81,6 +99,7 @@ export function ExpensePlansListToolbar(props: {
           value={projectId ?? 'ALL'}
           onValueChange={(v) => onProjectIdChange(!v || v === 'ALL' ? '' : v)}
           disabled={projectsLoading}
+          items={projectSelectItems}
         >
           <SelectTrigger className={TOOLBAR_CONTROL_CLASS} aria-label="Filter by project">
             <SelectValue placeholder={projectsLoading ? 'Loading…' : 'All projects'} />
