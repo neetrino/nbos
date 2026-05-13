@@ -10,6 +10,7 @@ export interface Contact {
   notes: string | null;
   messengerLinks: Record<string, string> | null;
   createdAt: string;
+  updatedAt: string;
   companies: Array<{ id: string; name: string }>;
   _count: { projects: number; leads: number; deals: number };
 }
@@ -30,6 +31,7 @@ export interface Company {
   contact: { id: string; firstName: string; lastName: string };
   billingContact: { id: string; firstName: string; lastName: string } | null;
   _count: { projects: number; invoices: number };
+  updatedAt: string;
 }
 
 interface ListData<T> {

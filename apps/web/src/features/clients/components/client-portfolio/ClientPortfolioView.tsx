@@ -20,6 +20,11 @@ import {
   clientPortfolioContactPath,
 } from '../../constants/client-routes';
 import { cn } from '@/lib/utils';
+import {
+  CLIENT_PORTFOLIO_SHEET_CONTENT_WIDTH_80VW_CLASS,
+  CLIENT_PORTFOLIO_SHEET_FLOATING_RAIL_ANCHOR_80VW_CLASS,
+} from '@/components/shared/detail-sheet-classes';
+import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { ClientPortfolioTabPanels, type ClientPortfolioTabId } from './ClientPortfolioTabPanels';
 import { ClientPortfolioQuickActions } from './ClientPortfolioQuickActions';
 
@@ -63,6 +68,12 @@ interface ClientPortfolioViewProps {
   asSheet?: boolean;
   sheetOpen?: boolean;
   onSheetOpenChange?: (open: boolean) => void;
+  /** Stack above parent sheet rail; dimmed backdrop receives clicks to dismiss. */
+  forceNestedBackdrop?: boolean;
+  /**
+   * When true with `asSheet`, header "Clients" control closes this sheet instead of navigating.
+   */
+  sheetCloseOnlyBack?: boolean;
 }
 
 export function ClientPortfolioView({
@@ -71,6 +82,8 @@ export function ClientPortfolioView({
   asSheet = false,
   sheetOpen = true,
   onSheetOpenChange,
+  forceNestedBackdrop = false,
+  sheetCloseOnlyBack = false,
 }: ClientPortfolioViewProps) {
   const [tab, setTab] = useState<ClientPortfolioTabId>('overview');
   const [loading, setLoading] = useState(true);
@@ -119,21 +132,39 @@ export function ClientPortfolioView({
 
   const backHref = variant === 'contact' ? '/clients/contacts' : '/clients/companies';
 
+  const portfolioPermalink =
+    variant === 'contact'
+      ? clientPortfolioContactPath(entityId)
+      : clientPortfolioCompanyPath(entityId);
+
   const inner = (
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-border flex shrink-0 flex-wrap items-start justify-between gap-3 border-b px-6 py-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={backHref}
-              className={cn(
-                buttonVariants({ variant: 'ghost', size: 'sm' }),
-                '-ml-2 inline-flex items-center gap-1.5',
-              )}
-            >
-              <ArrowLeft size={14} />
-              Clients
-            </Link>
+            {asSheet && sheetCloseOnlyBack && onSheetOpenChange ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="-ml-2 inline-flex items-center gap-1.5"
+                onClick={() => onSheetOpenChange(false)}
+              >
+                <ArrowLeft size={14} />
+                Back
+              </Button>
+            ) : (
+              <Link
+                href={backHref}
+                className={cn(
+                  buttonVariants({ variant: 'ghost', size: 'sm' }),
+                  '-ml-2 inline-flex items-center gap-1.5',
+                )}
+              >
+                <ArrowLeft size={14} />
+                Clients
+              </Link>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
@@ -156,11 +187,7 @@ export function ClientPortfolioView({
           )}
         </div>
         <Link
-          href={
-            variant === 'contact'
-              ? clientPortfolioContactPath(entityId)
-              : clientPortfolioCompanyPath(entityId)
-          }
+          href={portfolioPermalink}
           className={cn(
             buttonVariants({ variant: 'outline', size: 'sm' }),
             'inline-flex items-center gap-1.5',
@@ -208,9 +235,13 @@ export function ClientPortfolioView({
       <Sheet open={sheetOpen} onOpenChange={onSheetOpenChange}>
         <SheetContent
           side="right"
+          forceNestedBackdrop={forceNestedBackdrop}
           showCloseButton={false}
           floatingClose
-          className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[80vw]"
+          floatingRailVisible={sheetOpen}
+          floatingRailAnchorClassName={CLIENT_PORTFOLIO_SHEET_FLOATING_RAIL_ANCHOR_80VW_CLASS}
+          floatingRail={<EntitySheetFloatingRail sourcePageHref={portfolioPermalink} />}
+          className={CLIENT_PORTFOLIO_SHEET_CONTENT_WIDTH_80VW_CLASS}
         >
           {inner}
         </SheetContent>

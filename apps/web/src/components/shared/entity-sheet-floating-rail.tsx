@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { ExternalLink, LayoutDashboard, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -12,11 +13,14 @@ export interface EntitySheetFloatingRailProps {
   sourcePageHref: string;
   /** When omitted, the workspace shortcut is hidden. */
   workspaceHref?: string | null;
+  /** Extra controls below workspace (e.g. open nested portfolio). */
+  trailing?: ReactNode;
 }
 
 export function EntitySheetFloatingRail({
   sourcePageHref,
   workspaceHref,
+  trailing,
 }: EntitySheetFloatingRailProps) {
   const handleCopyPageLink = async () => {
     try {
@@ -69,6 +73,7 @@ export function EntitySheetFloatingRail({
           <LayoutDashboard className="size-4" aria-hidden />
         </Button>
       ) : null}
+      {trailing}
     </>
   );
 }

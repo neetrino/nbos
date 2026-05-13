@@ -5,6 +5,7 @@ This note tracks **what is implemented in code** versus the full canon in `00-Cl
 ## Shipped (web + API)
 
 - **Contacts / Companies lists** under `/clients/contacts` and `/clients/companies` with search, basic filters, row sheets, deep link `?openId=`.
+- **Company / Contact row sheets** use the same detail-sheet pattern as CRM (75vw panel, floating close + rail, inline fields with draft + Save/Cancel footer). **Portfolio** opens as a nested right sheet over the row sheet (permalink + list deep link still available inside portfolio).
 - **Contact create/update** persists `messengerLinks` (WhatsApp, Telegram, preferred channel, language) via API.
 - **Company create**: searchable **primary contact** picker, optional **billing contact**, optional company phone/email/country; no manual contact UUID.
 - **Company update**: primary and billing contacts, phone/email/country; **tax status cannot be changed** after creation (API enforced).
