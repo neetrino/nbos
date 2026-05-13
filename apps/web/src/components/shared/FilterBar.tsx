@@ -15,7 +15,11 @@ import { useMemo, type ReactNode } from 'react';
 
 import {
   FILTER_BAR_CONTROL_PILL,
+  FILTER_BAR_FILTER_TRIGGER_ACTIVE,
+  FILTER_BAR_GLOBAL_CLEAR_BUTTON_TONE,
+  FILTER_BAR_GLOBAL_CLEAR_SLOT,
   FILTER_BAR_INNER_GAP,
+  FILTER_BAR_SEARCH_ACTIVE,
   FILTER_BAR_TOOLBAR_SURFACE,
 } from './filter-bar-constants';
 
@@ -74,17 +78,26 @@ function FilterBarSearchField({
   onSearchChange: (value: string) => void;
   searchPlaceholder: string;
 }) {
+  const searchActive = search.trim().length > 0;
+
   return (
     <div className="relative min-h-10 min-w-0 flex-1 md:min-w-[240px]">
       <Search
         size={16}
-        className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2"
+        className={cn(
+          'pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2',
+          searchActive ? 'text-blue-600/80 dark:text-blue-300/90' : 'text-muted-foreground',
+        )}
       />
       <Input
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder={searchPlaceholder}
-        className={cn('w-full pl-10', FILTER_BAR_CONTROL_PILL)}
+        className={cn(
+          'w-full pl-10',
+          FILTER_BAR_CONTROL_PILL,
+          searchActive && FILTER_BAR_SEARCH_ACTIVE,
+        )}
       />
     </div>
   );
@@ -115,9 +128,17 @@ function FilterBarFilterSelect({
     return row?.label ?? filter.label;
   };
 
+  const isNarrowingFilter = showAll ? value !== 'all' : value !== fallback;
+
   return (
     <Select value={value} onValueChange={(v) => onFilterChange?.(filter.key, v as string)}>
-      <SelectTrigger className={cn('w-[min(100%,160px)] sm:w-[160px]', FILTER_BAR_CONTROL_PILL)}>
+      <SelectTrigger
+        className={cn(
+          'w-[min(100%,160px)] sm:w-[160px]',
+          FILTER_BAR_CONTROL_PILL,
+          isNarrowingFilter && FILTER_BAR_FILTER_TRIGGER_ACTIVE,
+        )}
+      >
         <SelectValue placeholder={filter.label}>{resolveTriggerLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent>
@@ -154,6 +175,15 @@ function FilterBarInner({
   actions,
   hasActiveFilters,
 }: FilterBarInnerProps) {
+  const reserveGlobalClearSlot = Boolean(onClearFilters);
+
+  const handleToolbarClear = () => {
+    onClearFilters?.();
+    if (search.trim().length > 0) {
+      onSearchChange('');
+    }
+  };
+
   return (
     <div className={FILTER_BAR_INNER_GAP}>
       <FilterBarSearchField
@@ -161,6 +191,23 @@ function FilterBarInner({
         onSearchChange={onSearchChange}
         searchPlaceholder={searchPlaceholder}
       />
+
+      {reserveGlobalClearSlot ? (
+        <div className={FILTER_BAR_GLOBAL_CLEAR_SLOT}>
+          {hasActiveFilters ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={cn('size-9 shrink-0 rounded-full', FILTER_BAR_GLOBAL_CLEAR_BUTTON_TONE)}
+              onClick={handleToolbarClear}
+              aria-label="Clear active filters and search"
+            >
+              <X className="size-4" aria-hidden />
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
 
       {filters?.map((filter) => (
         <FilterBarFilterSelect
@@ -170,18 +217,6 @@ function FilterBarInner({
           onFilterChange={onFilterChange}
         />
       ))}
-
-      {hasActiveFilters && onClearFilters ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:text-foreground h-10 shrink-0 rounded-full px-3"
-          onClick={onClearFilters}
-        >
-          <X size={14} />
-          Clear
-        </Button>
-      ) : null}
 
       {actions}
     </div>
