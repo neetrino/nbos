@@ -5,6 +5,8 @@ export interface TaskLink {
   taskId: string;
   entityType: string;
   entityId: string;
+  /** Resolved title from API (project name, product name, order code, …). */
+  entityLabel?: string | null;
   createdAt: string;
 }
 

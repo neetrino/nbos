@@ -40,10 +40,11 @@ export function TaskMiniCard({
           {task.links.map((link) => (
             <span
               key={link.id}
-              className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px]"
+              className="bg-muted text-muted-foreground inline-flex max-w-[min(100%,11rem)] items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10px]"
+              title={link.entityLabel ?? link.entityType}
             >
-              <FolderKanban size={9} />
-              {link.entityType}
+              <FolderKanban size={9} className="shrink-0" />
+              <span className="min-w-0 truncate">{link.entityLabel ?? link.entityType}</span>
             </span>
           ))}
         </div>

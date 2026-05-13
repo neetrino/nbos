@@ -12,6 +12,7 @@ import { buildTaskCompletionBlockers, normalizeTaskCompletionRules } from './tas
 import { formatTaskCode, nextTaskCodeNumericSuffix } from './task-code-generation';
 import { taskFindAllPaginated } from './task-find-all-paginated.op';
 import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
+import { attachTaskLinkDisplayNames } from './task-link-display-names.op';
 import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 
 interface CreateTaskDto {
@@ -77,10 +78,12 @@ export class TasksService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: TaskQueryParams) {
-    return taskFindAllPaginated(this.prisma, params, {
+    const result = await taskFindAllPaginated(this.prisma, params, {
       base: TASK_INCLUDE,
       projectScoped: TASK_DETAIL_INCLUDE,
     });
+    await attachTaskLinkDisplayNames(this.prisma, result.items);
+    return result;
   }
 
   async findById(id: string) {
@@ -92,15 +95,18 @@ export class TasksService {
       },
     });
     if (!task) throw new NotFoundException(`Task ${id} not found`);
+    await attachTaskLinkDisplayNames(this.prisma, [task]);
     return task;
   }
 
   async findByEntity(entityType: string, entityId: string) {
-    return this.prisma.task.findMany({
+    const items = await this.prisma.task.findMany({
       where: { links: { some: { entityType, entityId } } },
       include: TASK_DETAIL_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
+    await attachTaskLinkDisplayNames(this.prisma, items);
+    return items;
   }
 
   async create(data: CreateTaskDto) {
@@ -150,12 +156,13 @@ export class TasksService {
       },
       include: TASK_INCLUDE,
     });
+    await attachTaskLinkDisplayNames(this.prisma, [task]);
     return task;
   }
 
   async update(id: string, data: UpdateTaskDto) {
     await this.findById(id);
-    return this.prisma.task.update({
+    const task = await this.prisma.task.update({
       where: { id },
       data: {
         ...(data.title && { title: data.title }),
@@ -188,6 +195,8 @@ export class TasksService {
       },
       include: TASK_DETAIL_INCLUDE,
     });
+    await attachTaskLinkDisplayNames(this.prisma, [task]);
+    return task;
   }
 
   /** Начать задачу */
@@ -196,11 +205,13 @@ export class TasksService {
     if (task.status === 'COMPLETED' || task.status === 'DONE') {
       throw new NotFoundException('Cannot start a completed task');
     }
-    return this.prisma.task.update({
+    const updated = await this.prisma.task.update({
       where: { id },
       data: { status: 'IN_PROGRESS' as TaskStatusEnum },
       include: TASK_DETAIL_INCLUDE,
     });
+    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    return updated;
   }
 
   /** Завершить задачу */
@@ -213,7 +224,7 @@ export class TasksService {
         blockers,
       });
     }
-    return this.prisma.task.update({
+    const updated = await this.prisma.task.update({
       where: { id },
       data: {
         status: 'COMPLETED' as TaskStatusEnum,
@@ -221,12 +232,14 @@ export class TasksService {
       },
       include: TASK_DETAIL_INCLUDE,
     });
+    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    return updated;
   }
 
   /** Возобновить задачу */
   async reopen(id: string) {
     await this.findById(id);
-    return this.prisma.task.update({
+    const reopened = await this.prisma.task.update({
       where: { id },
       data: {
         status: 'OPEN' as TaskStatusEnum,
@@ -234,16 +247,20 @@ export class TasksService {
       },
       include: TASK_DETAIL_INCLUDE,
     });
+    await attachTaskLinkDisplayNames(this.prisma, [reopened]);
+    return reopened;
   }
 
   /** Pause task (On hold) */
   async setOnHold(id: string) {
     await this.findById(id);
-    return this.prisma.task.update({
+    const onHold = await this.prisma.task.update({
       where: { id },
       data: { status: 'ON_HOLD' as TaskStatusEnum },
       include: TASK_DETAIL_INCLUDE,
     });
+    await attachTaskLinkDisplayNames(this.prisma, [onHold]);
+    return onHold;
   }
 
   async delete(id: string) {

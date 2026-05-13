@@ -62,7 +62,9 @@ export function TaskLinksSection({
               className="bg-secondary text-secondary-foreground inline-flex min-w-0 items-center gap-1 rounded-md px-2 py-1 text-xs"
             >
               <span className="min-w-0 truncate">
-                {link.entityType}: {link.entityId.slice(0, 8)}...
+                {link.entityLabel?.trim()
+                  ? `${link.entityType}: ${link.entityLabel}`
+                  : `${link.entityType}: ${link.entityId.slice(0, 8)}…`}
               </span>
               {onRemoveLink && (
                 <Button
