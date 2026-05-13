@@ -16,10 +16,11 @@ export type DeliveryPipelineClickKey =
   | typeof DELIVERY_PIPELINE_DONE_KEY
   | typeof DELIVERY_PIPELINE_CANCEL_KEY;
 
+/** Saturated fills aligned with CRM `DealPipelineStages` (bright blues / violets, not muted indigo). */
 const STAGE_HEX: Record<string, string> = {
   STARTING: '#22c55e',
-  DEVELOPMENT: '#6366f1',
-  QA: '#8b5cf6',
+  DEVELOPMENT: '#2563eb',
+  QA: '#7c3aed',
   TRANSFER: '#a855f7',
   [DELIVERY_PIPELINE_DONE_KEY]: '#22c55e',
   [DELIVERY_PIPELINE_CANCEL_KEY]: '#ef4444',
