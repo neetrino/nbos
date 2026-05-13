@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Handshake, ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +22,7 @@ import {
   getPartnerStatus,
 } from '@/features/partners/constants/partners';
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
+import { PartnerDetailSheet } from '@/features/partners/components/PartnerDetailSheet';
 import { PartnersPageHeader } from '@/features/partners/components/PartnersPageHeader';
 import { usePartnersCsvExport } from '@/features/partners/components/use-partners-csv-export';
 import { usePartnersScopeStatsCsvExport } from '@/features/partners/components/use-partners-scope-stats-csv-export';
@@ -34,6 +35,8 @@ import {
 } from '@/lib/api/partners';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
+import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-query';
+
 const PARTNERS_LIST_PAGE_SIZE = 100;
 
 function formatPercent(value: string | number): string {
@@ -44,6 +47,8 @@ function formatPercent(value: string | number): string {
 
 export default function PartnersPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const openPartnerId = searchParams.get(PARTNER_OPEN_QUERY)?.trim() || null;
   const [partners, setPartners] = useState<Partner[]>([]);
   const [stats, setStats] = useState<PartnerStats | null>(null);
   const [listTotal, setListTotal] = useState(0);
@@ -61,6 +66,26 @@ export default function PartnersPage() {
   const { exportCsvSubmitting, handleExportCsv } = usePartnersCsvExport(partnerListExportParams);
 
   const { handleExportScopeStatsCsv } = usePartnersScopeStatsCsvExport(stats);
+
+  const closePartnerSheet = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    p.delete(PARTNER_OPEN_QUERY);
+    const qs = p.toString();
+    router.push(qs ? `/partners?${qs}` : '/partners');
+  }, [router, searchParams]);
+
+  const openPartnerSheet = useCallback(
+    (id: string) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(PARTNER_OPEN_QUERY, id);
+      router.push(`/partners?${p.toString()}`);
+    },
+    [router, searchParams],
+  );
+
+  const handlePartnerUpdatedFromSheet = useCallback((updated: Partner) => {
+    setPartners((prev) => prev.map((x) => (x.id === updated.id ? { ...x, ...updated } : x)));
+  }, []);
 
   const fetchPartners = useCallback(async () => {
     setLoading(true);
@@ -201,7 +226,7 @@ export default function PartnersPage() {
                   <TableRow
                     key={partner.id}
                     className="cursor-pointer"
-                    onClick={() => router.push(`/partners/${partner.id}`)}
+                    onClick={() => openPartnerSheet(partner.id)}
                   >
                     <TableCell>
                       <div>
@@ -245,6 +270,14 @@ export default function PartnersPage() {
           </Table>
         </div>
       )}
+      <PartnerDetailSheet
+        partnerId={openPartnerId}
+        open={Boolean(openPartnerId)}
+        onOpenChange={(next) => {
+          if (!next) closePartnerSheet();
+        }}
+        onPartnerUpdated={handlePartnerUpdatedFromSheet}
+      />
     </div>
   );
 }

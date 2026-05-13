@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,13 +13,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { StatusBadge } from '@/components/shared';
+import { SearchField, StatusBadge } from '@/components/shared';
 import {
   PARTNER_AGREEMENT_STATUSES,
   getPartnerAgreementStatus,
 } from '@/features/partners/constants/partners';
+import { useEmployeeSearchLoader } from '@/features/projects/components/delivery-board/delivery-item-detail-employee-search';
 import { sliceIsoToDateInput } from '@/features/partners/utils/partner-detail-format';
 import { partnersApi, type Partner } from '@/lib/api/partners';
+import { driveApi } from '@/lib/api/drive';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 interface PartnerAgreementsCardProps {
@@ -28,8 +30,11 @@ interface PartnerAgreementsCardProps {
 }
 
 export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCardProps) {
+  const loadEmployees = useEmployeeSearchLoader();
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [fileDisplay, setFileDisplay] = useState('');
+  const [ownerDisplay, setOwnerDisplay] = useState('');
   const [form, setForm] = useState({
     agreementStatus: partner.agreementStatus,
     agreementStartDate: sliceIsoToDateInput(partner.agreementStartDate),
@@ -38,6 +43,18 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
     agreementFileAssetId: partner.agreementFileAssetId ?? '',
     agreementOwnerId: partner.agreementOwnerId ?? '',
   });
+
+  const searchFiles = useCallback(async (query: string) => {
+    const list = await driveApi.listFileAssets({
+      status: 'ACTIVE',
+      search: query || undefined,
+    });
+    return list.slice(0, 10).map((f) => ({
+      value: f.id,
+      label: f.displayName,
+      subtitle: f.mimeType ?? f.fileType ?? undefined,
+    }));
+  }, []);
 
   useEffect(() => {
     setForm({
@@ -48,6 +65,12 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
       agreementFileAssetId: partner.agreementFileAssetId ?? '',
       agreementOwnerId: partner.agreementOwnerId ?? '',
     });
+    setFileDisplay(partner.agreementFileAsset?.displayName ?? '');
+    setOwnerDisplay(
+      partner.agreementOwner
+        ? `${partner.agreementOwner.firstName} ${partner.agreementOwner.lastName}`
+        : '',
+    );
     setFormError(null);
   }, [partner]);
 
@@ -84,27 +107,8 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
         ) : null}
       </div>
       <p className="text-muted-foreground mt-1 text-xs">
-        Contract metadata and Drive file reference. File and owner IDs must exist in the system.
+        Link a Drive file asset and an internal owner. Search picks existing records only.
       </p>
-
-      {partner.agreementFileAsset ? (
-        <p className="text-muted-foreground mt-3 text-xs">
-          Linked file:{' '}
-          <span className="text-foreground font-medium">
-            {partner.agreementFileAsset.displayName}
-          </span>{' '}
-          <span className="font-mono">({partner.agreementFileAsset.id})</span>
-        </p>
-      ) : null}
-      {partner.agreementOwner ? (
-        <p className="text-muted-foreground mt-1 text-xs">
-          Owner:{' '}
-          <span className="text-foreground font-medium">
-            {partner.agreementOwner.firstName} {partner.agreementOwner.lastName}
-          </span>{' '}
-          <span className="font-mono">({partner.agreementOwner.id})</span>
-        </p>
-      ) : null}
 
       <form className="mt-4 space-y-4" onSubmit={submit}>
         {formError ? (
@@ -169,28 +173,43 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
           />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="agr-file">Drive file asset ID</Label>
-            <Input
-              id="agr-file"
-              className="mt-1.5 font-mono text-xs"
-              value={form.agreementFileAssetId}
-              onChange={(e) => setForm((p) => ({ ...p, agreementFileAssetId: e.target.value }))}
-              placeholder="Optional UUID"
-            />
-          </div>
-          <div>
-            <Label htmlFor="agr-owner">Agreement owner (employee ID)</Label>
-            <Input
-              id="agr-owner"
-              className="mt-1.5 font-mono text-xs"
-              value={form.agreementOwnerId}
-              onChange={(e) => setForm((p) => ({ ...p, agreementOwnerId: e.target.value }))}
-              placeholder="Optional UUID"
-            />
-          </div>
-        </div>
+        <SearchField
+          selectionMode="stage"
+          label="Agreement document (Drive)"
+          value={form.agreementFileAssetId || undefined}
+          displayValue={
+            fileDisplay ? <span className="text-foreground">{fileDisplay}</span> : undefined
+          }
+          placeholder="Search file assets…"
+          onSearch={searchFiles}
+          onStageSelect={(id, label) => {
+            setForm((p) => ({ ...p, agreementFileAssetId: id }));
+            setFileDisplay(label);
+          }}
+          onClear={() => {
+            setForm((p) => ({ ...p, agreementFileAssetId: '' }));
+            setFileDisplay('');
+          }}
+        />
+
+        <SearchField
+          selectionMode="stage"
+          label="Agreement owner"
+          value={form.agreementOwnerId || undefined}
+          displayValue={
+            ownerDisplay ? <span className="text-foreground">{ownerDisplay}</span> : undefined
+          }
+          placeholder="Search employees…"
+          onSearch={loadEmployees}
+          onStageSelect={(id, label) => {
+            setForm((p) => ({ ...p, agreementOwnerId: id }));
+            setOwnerDisplay(label);
+          }}
+          onClear={() => {
+            setForm((p) => ({ ...p, agreementOwnerId: '' }));
+            setOwnerDisplay('');
+          }}
+        />
 
         <div className="flex justify-end">
           <Button type="submit" size="sm" disabled={saving}>

@@ -17,6 +17,7 @@ import {
   getSubscriptionType,
 } from '@/features/finance/constants/finance';
 import { subscriptionDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-query';
 import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/subscription-invoice-drilldown';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
@@ -206,7 +207,7 @@ export default function SubscriptionDetailPage() {
         <div className="mt-2 text-sm">
           {subscription.partner ? (
             <Link
-              href={`/partners/${subscription.partner.id}`}
+              href={`/partners?${PARTNER_OPEN_QUERY}=${encodeURIComponent(subscription.partner.id)}`}
               className="text-primary inline-flex items-center gap-1.5 font-medium hover:underline"
             >
               {subscription.partner.name}
