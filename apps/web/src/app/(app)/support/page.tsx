@@ -37,7 +37,6 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import {
-  PageHeader,
   FilterBar,
   EmptyState,
   ErrorState,
@@ -481,76 +480,85 @@ export default function SupportPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <div className="shrink-0">
-        <PageHeader title="Support" description={`${openTickets.length} open tickets`}>
-          <SupportPageSettingsDialog
-            exportDisabled={loading || !stats}
-            onExportScopeStatsCsv={handleExportScopeStatsCsv}
-          />
-          <Tabs value={view} onValueChange={handleViewModeChange}>
-            <TabsList variant="segmented">
-              <TabsTrigger value="kanban" className="gap-1.5 px-3 py-2" aria-label="Board view">
-                <LayoutGrid size={14} aria-hidden />
-                Board
-              </TabsTrigger>
-              <TabsTrigger value="list" className="gap-1.5 px-3 py-2" aria-label="List view">
-                <List size={14} aria-hidden />
-                List
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <Button type="button" onClick={() => setCreateOpen(true)}>
-            <Plus size={16} />
-            New Ticket
-          </Button>
-        </PageHeader>
-      </div>
-
-      <div
-        className={cn(FILTER_BAR_TOOLBAR_SURFACE, 'shrink-0')}
-        aria-label="Support ticket summary"
-      >
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 sm:gap-x-10 md:gap-x-14">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-primary/12 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg sm:size-9">
-              <Ticket className="size-4 sm:size-[18px]" aria-hidden />
+      <div className="flex shrink-0 flex-col gap-4">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 md:gap-5">
+            <div className="min-w-0 shrink-0">
+              <h1 className="text-foreground text-2xl font-semibold tracking-tight">Support</h1>
+              <p className="text-muted-foreground mt-1.5 text-sm">
+                {openTickets.length} open tickets
+              </p>
             </div>
-            <div className="min-w-0">
-              <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-                Open
-              </p>
-              <p className="text-foreground text-lg leading-tight font-semibold tabular-nums sm:text-xl">
-                {openTickets.length}
-              </p>
+            <div
+              className={cn(FILTER_BAR_TOOLBAR_SURFACE, 'min-w-0 flex-1 py-2 pr-3 pl-3 sm:py-2.5')}
+              aria-label="Support ticket summary"
+            >
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:gap-x-8 md:gap-x-10">
+                <div className="flex items-center gap-2">
+                  <div className="bg-primary/12 text-primary flex size-7 shrink-0 items-center justify-center rounded-md sm:size-8">
+                    <Ticket className="size-3.5 sm:size-4" aria-hidden />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                      Open
+                    </p>
+                    <p className="text-foreground text-base leading-none font-semibold tabular-nums sm:text-lg">
+                      {openTickets.length}
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-border/70 hidden h-7 w-px shrink-0 sm:block" aria-hidden />
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-red-500/12 text-red-600 sm:size-8 dark:text-red-400">
+                    <CircleAlert className="size-3.5 sm:size-4" aria-hidden />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                      Critical P1
+                    </p>
+                    <p className="text-base leading-none font-semibold text-red-600 tabular-nums sm:text-lg dark:text-red-400">
+                      {criticalOpenCount}
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-border/70 hidden h-7 w-px shrink-0 sm:block" aria-hidden />
+                <div className="flex items-center gap-2">
+                  <div className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-md sm:size-8">
+                    <Hash className="size-3.5 sm:size-4" aria-hidden />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
+                      Total
+                    </p>
+                    <p className="text-foreground text-base leading-none font-semibold tabular-nums sm:text-lg">
+                      {tickets.length}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="bg-border/70 hidden h-8 w-px shrink-0 sm:block" aria-hidden />
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-red-500/12 text-red-600 sm:size-9 dark:text-red-400">
-              <CircleAlert className="size-4 sm:size-[18px]" aria-hidden />
-            </div>
-            <div className="min-w-0">
-              <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-                Critical P1
-              </p>
-              <p className="text-lg leading-tight font-semibold text-red-600 tabular-nums sm:text-xl dark:text-red-400">
-                {criticalOpenCount}
-              </p>
-            </div>
-          </div>
-          <div className="bg-border/70 hidden h-8 w-px shrink-0 sm:block" aria-hidden />
-          <div className="flex items-center gap-2.5">
-            <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg sm:size-9">
-              <Hash className="size-4 sm:size-[18px]" aria-hidden />
-            </div>
-            <div className="min-w-0">
-              <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
-                Total
-              </p>
-              <p className="text-foreground text-lg leading-tight font-semibold tabular-nums sm:text-xl">
-                {tickets.length}
-              </p>
-            </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2 xl:justify-end">
+            <SupportPageSettingsDialog
+              exportDisabled={loading || !stats}
+              onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            />
+            <Tabs value={view} onValueChange={handleViewModeChange}>
+              <TabsList variant="segmented">
+                <TabsTrigger value="kanban" className="gap-1.5 px-3 py-2" aria-label="Board view">
+                  <LayoutGrid size={14} aria-hidden />
+                  Board
+                </TabsTrigger>
+                <TabsTrigger value="list" className="gap-1.5 px-3 py-2" aria-label="List view">
+                  <List size={14} aria-hidden />
+                  List
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <Plus size={16} />
+              New Ticket
+            </Button>
           </div>
         </div>
       </div>
