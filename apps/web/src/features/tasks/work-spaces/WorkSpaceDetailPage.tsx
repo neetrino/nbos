@@ -138,6 +138,7 @@ export function WorkSpaceDetailPage() {
         boardView={boardView}
         setBoardView={setBoardView}
         quickCreateRef={openQuickCreateRef}
+        syncTaskSheetToUrl
       />
 
       <WorkSpaceDetailSettingsDialog

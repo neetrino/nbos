@@ -104,8 +104,8 @@ function InvoicesPageInner() {
         onPaymentRecorded={state.handlePaymentRecorded}
       />
       <CreateInvoiceDialog
-        open={state.createOpen}
-        onOpenChange={state.setCreateOpen}
+        open={state.createDialogOpen}
+        onOpenChange={state.handleCreateDialogOpenChange}
         onCreated={state.handleInvoiceCreated}
         subscriptionId={subscriptionIdFromUrl}
         initialProjectId={portfolioCreateInvoiceFromUrl ? portfolioProjectIdFromUrl : null}

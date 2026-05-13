@@ -9,6 +9,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KanbanBoard } from '@/components/shared';
@@ -18,6 +19,7 @@ import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
 import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
@@ -34,6 +36,11 @@ export type WorkSpaceRuntimeProps = {
   boardView?: WorkspaceBoardView;
   setBoardView?: Dispatch<SetStateAction<WorkspaceBoardView>>;
   quickCreateRef?: MutableRefObject<(() => void) | null>;
+  /**
+   * When true (e.g. `/work-spaces/[id]`), task sheet syncs with `TASK_OPEN_QUERY` in the URL.
+   * Leave false for embedded hosts (e.g. product tab) so their route query is not modified.
+   */
+  syncTaskSheetToUrl?: boolean;
 };
 
 export function WorkSpaceRuntime({
@@ -46,7 +53,13 @@ export function WorkSpaceRuntime({
   boardView: boardViewProp,
   setBoardView: setBoardViewProp,
   quickCreateRef,
+  syncTaskSheetToUrl = false,
 }: WorkSpaceRuntimeProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const openTaskIdFromUrl = searchParams.get(TASK_OPEN_QUERY)?.trim() || null;
+
   const { creatorId, creatorReady } = useTaskCreatorId();
   const [taskSearch, setTaskSearch] = useState('');
   const [taskFilters, setTaskFilters] = useState<Record<string, string>>({});
@@ -82,14 +95,61 @@ export function WorkSpaceRuntime({
     viewTasks,
   } = useWorkspaceRuntimeBoard(tasks, setTasks, creatorId, workspaceViewFilters, controlledBoard);
 
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [localSelectedTaskId, setLocalSelectedTaskId] = useState<string | null>(null);
+  const [localSheetOpen, setLocalSheetOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const handleTaskClick = useCallback((task: Task) => {
-    setSelectedTaskId(task.id);
-    setSheetOpen(true);
-  }, []);
+  const stripTaskOpenFromUrl = useCallback(() => {
+    if (!syncTaskSheetToUrl) return;
+    const p = new URLSearchParams(searchParams.toString());
+    if (!p.has(TASK_OPEN_QUERY)) return;
+    p.delete(TASK_OPEN_QUERY);
+    const qs = p.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }, [syncTaskSheetToUrl, router, pathname, searchParams]);
+
+  const selectedTaskId = syncTaskSheetToUrl ? openTaskIdFromUrl : localSelectedTaskId;
+  const sheetOpen = syncTaskSheetToUrl ? Boolean(openTaskIdFromUrl) : localSheetOpen;
+
+  const handleTaskClick = useCallback(
+    (task: Task) => {
+      if (syncTaskSheetToUrl) {
+        const p = new URLSearchParams(searchParams.toString());
+        p.set(TASK_OPEN_QUERY, task.id);
+        const qs = p.toString();
+        router.push(qs ? `${pathname}?${qs}` : pathname);
+      } else {
+        setLocalSelectedTaskId(task.id);
+        setLocalSheetOpen(true);
+      }
+    },
+    [syncTaskSheetToUrl, searchParams, router, pathname],
+  );
+
+  const handleTaskSheetOpenChange = useCallback(
+    (open: boolean) => {
+      if (syncTaskSheetToUrl) {
+        if (!open) stripTaskOpenFromUrl();
+      } else {
+        setLocalSheetOpen(open);
+        if (!open) setLocalSelectedTaskId(null);
+      }
+    },
+    [syncTaskSheetToUrl, stripTaskOpenFromUrl],
+  );
+
+  const handleTaskDeleteFromSheet = useCallback(
+    (taskId: string) => {
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
+      if (syncTaskSheetToUrl) {
+        if (openTaskIdFromUrl === taskId) stripTaskOpenFromUrl();
+      } else {
+        setLocalSelectedTaskId((current) => (current === taskId ? null : current));
+        setLocalSheetOpen(false);
+      }
+    },
+    [setTasks, syncTaskSheetToUrl, openTaskIdFromUrl, stripTaskOpenFromUrl],
+  );
 
   const handleCardAction = useCallback(
     async (taskId: string, action: TaskBoardAction) => {
@@ -274,13 +334,9 @@ export function WorkSpaceRuntime({
       <TaskSheet
         taskId={selectedTaskId}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={handleTaskSheetOpenChange}
         onUpdate={handleTaskUpdate}
-        onDelete={(taskId) => {
-          setTasks((prev) => prev.filter((task) => task.id !== taskId));
-          setSelectedTaskId((current) => (current === taskId ? null : current));
-          setSheetOpen(false);
-        }}
+        onDelete={handleTaskDeleteFromSheet}
       />
 
       <QuickCreateTaskDialog

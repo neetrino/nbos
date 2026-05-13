@@ -3,6 +3,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
+import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { buildInvoiceListApiParams } from '@/features/finance/utils/build-invoice-list-api-params';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
@@ -115,10 +116,30 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     };
   }, [openInvoiceIdFromUrl, stripOpenInvoiceFromUrl]);
 
-  useEffect(() => {
-    if (!portfolioCreateInvoiceFromUrl || !portfolioProjectIdFromUrl) return;
-    setCreateOpen(true);
-  }, [portfolioCreateInvoiceFromUrl, portfolioProjectIdFromUrl]);
+  const portfolioCreateIntent = useMemo(
+    () => portfolioCreateInvoiceFromUrl && Boolean(portfolioProjectIdFromUrl),
+    [portfolioCreateInvoiceFromUrl, portfolioProjectIdFromUrl],
+  );
+
+  const createDialogOpen = createOpen || portfolioCreateIntent;
+
+  const stripPortfolioCreateFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    const had = p.has(PORTFOLIO_DEEP_LINK.createInvoice) || p.has(PORTFOLIO_DEEP_LINK.projectId);
+    if (!had) return;
+    p.delete(PORTFOLIO_DEEP_LINK.createInvoice);
+    p.delete(PORTFOLIO_DEEP_LINK.projectId);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const handleCreateDialogOpenChange = useCallback(
+    (open: boolean) => {
+      setCreateOpen(open);
+      if (!open) stripPortfolioCreateFromUrl();
+    },
+    [stripPortfolioCreateFromUrl],
+  );
 
   const handleInvoiceSheetOpenChange = useCallback(
     (open: boolean) => {
@@ -159,6 +180,8 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     sheetOpen,
     setSheetOpen,
     handleInvoiceSheetOpenChange,
+    createDialogOpen,
+    handleCreateDialogOpenChange,
     createOpen,
     setCreateOpen,
     period,
