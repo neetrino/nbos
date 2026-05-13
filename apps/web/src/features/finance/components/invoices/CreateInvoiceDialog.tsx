@@ -34,6 +34,7 @@ interface CreateInvoiceDialogProps {
   onCreated: () => Promise<void> | void;
   order?: Order | null;
   subscriptionId?: string | null;
+  initialProjectId?: string | null;
 }
 
 export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {

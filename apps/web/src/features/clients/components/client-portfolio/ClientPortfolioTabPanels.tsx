@@ -7,6 +7,10 @@ import type {
   CompanyPortfolioResponse,
   ContactPortfolioResponse,
 } from '@/lib/api/client-portfolio';
+import {
+  PORTFOLIO_DRIVE_HREF,
+  PORTFOLIO_MESSENGER_HREF,
+} from '../../constants/client-portfolio-deep-links';
 
 export type ClientPortfolioTabId =
   | 'overview'
@@ -253,12 +257,44 @@ export function ClientPortfolioTabPanels({
         </p>
       );
     }
+    const scopeLabel = data.scope === 'contact' ? 'Contact' : 'Company';
+    const scopeId =
+      data.scope === 'contact'
+        ? String((data.contact as { id?: string }).id ?? '')
+        : String((data.company as { id?: string }).id ?? '');
+
     return (
-      <p className="text-muted-foreground text-sm">
-        {tab === 'communication'
-          ? 'Communication history will aggregate Messenger, calls, and manual notes (placeholder).'
-          : 'Client files will link to Drive assets filtered by contact/company context (placeholder).'}
-      </p>
+      <div className="space-y-4">
+        <p className="text-muted-foreground text-sm">
+          {tab === 'communication'
+            ? 'A unified timeline (Messenger, calls, notes) will appear here when the aggregation API is available.'
+            : 'Files stay in Drive; this tab will deep-link to client-scoped folders when the Drive UI exposes that filter.'}
+        </p>
+        {tab === 'communication' ? (
+          <Link
+            href={PORTFOLIO_MESSENGER_HREF}
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'inline-flex w-fit gap-2',
+            )}
+          >
+            Open Messenger
+          </Link>
+        ) : (
+          <Link
+            href={PORTFOLIO_DRIVE_HREF}
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'inline-flex w-fit gap-2',
+            )}
+          >
+            Open Drive
+          </Link>
+        )}
+        <p className="text-muted-foreground text-xs">
+          {scopeLabel} context ID: <span className="text-foreground font-mono">{scopeId}</span>
+        </p>
+      </div>
     );
   }
 

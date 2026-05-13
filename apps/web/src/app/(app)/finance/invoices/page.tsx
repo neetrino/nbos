@@ -18,6 +18,7 @@ import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/consta
 import { getFinancePeriodParams } from '@/features/finance/constants/finance';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { Button } from '@/components/ui/button';
+import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 
 function InvoicesPageInner() {
   const router = useRouter();
@@ -25,8 +26,15 @@ function InvoicesPageInner() {
   const searchParams = useSearchParams();
   const subscriptionIdFromUrl = searchParams.get(SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY);
   const openInvoiceIdFromUrl = searchParams.get(OPEN_INVOICE_QUERY);
+  const portfolioCreateInvoiceFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.createInvoice) === '1';
+  const portfolioProjectIdFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.projectId)?.trim() || null;
 
-  const state = useInvoicesPageState({ subscriptionIdFromUrl, openInvoiceIdFromUrl });
+  const state = useInvoicesPageState({
+    subscriptionIdFromUrl,
+    openInvoiceIdFromUrl,
+    portfolioCreateInvoiceFromUrl,
+    portfolioProjectIdFromUrl,
+  });
   const { exportCsvSubmitting, handleExportCsv } = useInvoicesCsvExport(
     state.invoiceListExportParams,
   );
@@ -100,6 +108,7 @@ function InvoicesPageInner() {
         onOpenChange={state.setCreateOpen}
         onCreated={state.handleInvoiceCreated}
         subscriptionId={subscriptionIdFromUrl}
+        initialProjectId={portfolioCreateInvoiceFromUrl ? portfolioProjectIdFromUrl : null}
       />
     </div>
   );

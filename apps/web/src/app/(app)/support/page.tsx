@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Plus,
   Headphones,
@@ -67,10 +68,15 @@ import { technicalApi, type TechnicalProductProfileResponse } from '@/lib/api/te
 import { useSupportScopeStatsCsvExport } from '@/features/support/use-support-scope-stats-csv-export';
 import { usePermission } from '@/lib/permissions';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 
 type ViewMode = 'kanban' | 'list';
 
 export default function SupportPage() {
+  const searchParams = useSearchParams();
+  const portfolioProjectIdFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.projectId)?.trim() ?? null;
+  const portfolioCreateTicketFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.createTicket) === '1';
+
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [stats, setStats] = useState<SupportStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -209,14 +215,24 @@ export default function SupportPage() {
 
   useEffect(() => {
     if (!createOpen) return;
+    const urlProject =
+      portfolioCreateTicketFromUrl && portfolioProjectIdFromUrl ? portfolioProjectIdFromUrl : '';
+    const projectOk =
+      urlProject && projectsForFilters.some((p) => p.id === urlProject) ? urlProject : '';
     setCreateTitle('');
-    setCreateProjectId('');
+    setCreateProjectId(projectOk);
     setCreateProductId('');
     setCreateCategory('INCIDENT');
     setCreatePriority('P3');
     setCreateDescription('');
     setCreateProductOptions([]);
-  }, [createOpen]);
+  }, [createOpen, portfolioCreateTicketFromUrl, portfolioProjectIdFromUrl, projectsForFilters]);
+
+  useEffect(() => {
+    if (!portfolioCreateTicketFromUrl || !portfolioProjectIdFromUrl || loading) return;
+    if (!projectsForFilters.some((p) => p.id === portfolioProjectIdFromUrl)) return;
+    setCreateOpen(true);
+  }, [portfolioCreateTicketFromUrl, portfolioProjectIdFromUrl, loading, projectsForFilters]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => {

@@ -23,11 +23,15 @@ interface RecordPaymentInput {
 interface UseInvoicesPageStateOptions {
   subscriptionIdFromUrl?: string | null;
   openInvoiceIdFromUrl?: string | null;
+  portfolioCreateInvoiceFromUrl?: boolean;
+  portfolioProjectIdFromUrl?: string | null;
 }
 
 export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const subscriptionIdFromUrl = options?.subscriptionIdFromUrl?.trim() || null;
   const openInvoiceIdFromUrl = options?.openInvoiceIdFromUrl?.trim() || null;
+  const portfolioProjectIdFromUrl = options?.portfolioProjectIdFromUrl?.trim() || null;
+  const portfolioCreateInvoiceFromUrl = options?.portfolioCreateInvoiceFromUrl === true;
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -96,6 +100,11 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
       cancelled = true;
     };
   }, [openInvoiceIdFromUrl]);
+
+  useEffect(() => {
+    if (!portfolioCreateInvoiceFromUrl || !portfolioProjectIdFromUrl) return;
+    setCreateOpen(true);
+  }, [portfolioCreateInvoiceFromUrl, portfolioProjectIdFromUrl]);
 
   return {
     invoices,

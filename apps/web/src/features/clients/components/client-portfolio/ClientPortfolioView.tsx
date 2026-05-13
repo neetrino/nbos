@@ -21,6 +21,7 @@ import {
 } from '../../constants/client-routes';
 import { cn } from '@/lib/utils';
 import { ClientPortfolioTabPanels, type ClientPortfolioTabId } from './ClientPortfolioTabPanels';
+import { ClientPortfolioQuickActions } from './ClientPortfolioQuickActions';
 
 const ALL_PORTFOLIO_TABS: ReadonlyArray<{ id: ClientPortfolioTabId; label: string }> = [
   { id: 'overview', label: 'Overview' },
@@ -148,6 +149,11 @@ export function ClientPortfolioView({
             Computed client portfolio (NBOS). Tabs and financial detail follow your role and module
             permissions.
           </p>
+          {!loading && !error && data && (
+            <div className="pt-2">
+              <ClientPortfolioQuickActions variant={variant} entityId={entityId} data={data} />
+            </div>
+          )}
         </div>
         <Link
           href={

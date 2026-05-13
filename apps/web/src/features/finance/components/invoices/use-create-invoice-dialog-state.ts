@@ -13,6 +13,8 @@ export interface CreateInvoiceDialogOuterProps {
   onCreated: () => Promise<void> | void;
   order?: Order | null;
   subscriptionId?: string | null;
+  /** Prefill project when opening from Client Portfolio deep link. */
+  initialProjectId?: string | null;
 }
 
 export interface CreateInvoiceDialogState {
@@ -34,6 +36,7 @@ export function useCreateInvoiceDialogState({
   onCreated,
   order,
   subscriptionId,
+  initialProjectId,
 }: CreateInvoiceDialogOuterProps): CreateInvoiceDialogState {
   const [form, setForm] = useState(() => getInitialInvoiceForm(order));
   const [projects, setProjects] = useState<Project[]>([]);
@@ -48,6 +51,7 @@ export function useCreateInvoiceDialogState({
       open,
       order,
       subscriptionId,
+      initialProjectId,
       setError,
       setLoadError,
       setForm,
@@ -55,7 +59,7 @@ export function useCreateInvoiceDialogState({
       setSubscriptionDetail,
       setSubscriptionLoading,
     });
-  }, [open, order, subscriptionId]);
+  }, [open, order, subscriptionId, initialProjectId]);
 
   const handleSubmit = (event: FormEvent) =>
     runCreateInvoiceSubmit(event, {

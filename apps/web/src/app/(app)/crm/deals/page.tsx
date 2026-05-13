@@ -50,6 +50,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
@@ -113,6 +114,19 @@ export default function DealsPipelinePage() {
   }, [fetchDeals]);
 
   const openDealId = searchParams.get('openDealId');
+  const portfolioContactId = searchParams.get(PORTFOLIO_DEEP_LINK.contactId)?.trim() ?? null;
+  const createDealFromPortfolio = searchParams.get(PORTFOLIO_DEEP_LINK.createDeal) === '1';
+  const dealPrefill = useMemo(() => {
+    if (!createDealFromPortfolio || !portfolioContactId) return undefined;
+    return { contactId: portfolioContactId };
+  }, [createDealFromPortfolio, portfolioContactId]);
+
+  useEffect(() => {
+    if (createDealFromPortfolio && portfolioContactId) {
+      setShowCreate(true);
+    }
+  }, [createDealFromPortfolio, portfolioContactId]);
+
   const deepLinkDealAttemptedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -564,7 +578,12 @@ export default function DealsPipelinePage() {
         </div>
       )}
 
-      <CreateDealDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchDeals} />
+      <CreateDealDialog
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        onCreated={fetchDeals}
+        prefill={dealPrefill}
+      />
 
       <DealSheet
         deal={selectedDeal}

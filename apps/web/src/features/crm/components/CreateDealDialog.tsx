@@ -65,6 +65,25 @@ export function CreateDealDialog({
     notes: '',
   });
 
+  useEffect(() => {
+    if (!open) return;
+    setForm({
+      name: '',
+      contactId: prefill?.contactId ?? '',
+      type: 'PRODUCT',
+      productCategory: '',
+      productType: '',
+      amount: '',
+      paymentType: 'CLASSIC',
+      sellerId: '',
+      sellerAssistantId: '',
+      source: 'MARKETING',
+      sourceDetail: '',
+      attributionOption: '',
+      notes: '',
+    });
+  }, [open, prefill?.contactId, prefill?.leadId]);
+
   const showCategoryField = form.type === 'PRODUCT' || form.type === 'OUTSOURCE';
 
   const filteredProductTypes = (() => {
