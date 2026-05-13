@@ -12,14 +12,8 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import {
-  PageHeader,
-  FilterBar,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  StatusBadge,
-} from '@/components/shared';
+import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { ClientsDirectoryTabs } from '@/features/clients/components/ClientsDirectoryTabs';
 import { ContactSheet } from '@/features/clients/components/ContactSheet';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
 import { CONTACT_ROLES, getContactRole } from '@/features/clients/constants/clients';
@@ -136,12 +130,22 @@ export default function ContactsPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Contacts" description={`${contacts.length} contacts`}>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus size={16} />
-          New Contact
-        </Button>
-      </PageHeader>
+      <header>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
+            <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
+              Clients
+            </h1>
+            <ClientsDirectoryTabs activeTab="contacts" />
+          </div>
+          <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
+            <Button onClick={() => setShowCreate(true)}>
+              <Plus size={16} />
+              New Contact
+            </Button>
+          </div>
+        </div>
+      </header>
 
       <FilterBar
         search={search}
