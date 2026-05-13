@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Plus,
   Headphones,
@@ -66,12 +66,16 @@ import {
   readSupportPageViewFromStorage,
   writeSupportPageViewToStorage,
 } from '@/features/support/constants/support-page-view-storage';
+import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-ticket-open-query';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 
 type ViewMode = 'kanban' | 'list';
 
 export default function SupportPage() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const openTicketIdFromUrl = searchParams.get(SUPPORT_TICKET_OPEN_QUERY)?.trim() || null;
   const portfolioProjectIdFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.projectId)?.trim() ?? null;
   const portfolioCreateTicketFromUrl = searchParams.get(PORTFOLIO_DEEP_LINK.createTicket) === '1';
 
@@ -121,10 +125,16 @@ export default function SupportPage() {
   }>(null);
   const [statusResolutionDraft, setStatusResolutionDraft] = useState('');
   const [statusCloseReason, setStatusCloseReason] = useState('CLIENT_CONFIRMED');
-  const [detailTicketId, setDetailTicketId] = useState<string | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
   const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const { me } = usePermission();
+
+  const stripSupportTicketOpenFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (!p.has(SUPPORT_TICKET_OPEN_QUERY)) return;
+    p.delete(SUPPORT_TICKET_OPEN_QUERY);
+    const qs = p.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }, [router, pathname, searchParams]);
 
   const { handleExportScopeStatsCsv } = useSupportScopeStatsCsvExport(stats);
 
@@ -473,15 +483,21 @@ export default function SupportPage() {
     }
   };
 
-  const openSupportDetail = (id: string) => {
-    setDetailTicketId(id);
-    setDetailOpen(true);
-  };
+  const openSupportDetail = useCallback(
+    (id: string) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(SUPPORT_TICKET_OPEN_QUERY, id);
+      router.push(`${pathname}?${p.toString()}`);
+    },
+    [router, pathname, searchParams],
+  );
 
-  const handleSupportDetailOpenChange = (next: boolean) => {
-    setDetailOpen(next);
-    if (!next) setDetailTicketId(null);
-  };
+  const handleSupportDetailOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) stripSupportTicketOpenFromUrl();
+    },
+    [stripSupportTicketOpenFromUrl],
+  );
 
   const isInteractiveTableTarget = (target: EventTarget | null) => {
     if (!(target instanceof Element)) return false;
@@ -1076,8 +1092,8 @@ export default function SupportPage() {
       </Dialog>
 
       <SupportTicketDetailSheet
-        ticketId={detailTicketId}
-        open={detailOpen}
+        ticketId={openTicketIdFromUrl}
+        open={Boolean(openTicketIdFromUrl)}
         onOpenChange={handleSupportDetailOpenChange}
         refreshKey={detailRefreshKey}
         meId={me?.id ?? null}

@@ -24,6 +24,7 @@ import { employeesApi, type Employee } from '@/lib/api/employees';
 import { projectsApi, type ProjectProductSummary } from '@/lib/api/projects';
 import { supportApi, type SupportTicket } from '@/lib/api/support';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-ticket-open-query';
 import { SupportTicketCreateExecutionTaskDialog } from './support-ticket-create-execution-task-dialog';
 import { SupportTicketDetailActivityTab } from './support-ticket-detail-activity-tab';
 import { SupportTicketDetailGeneralTab } from './support-ticket-detail-general-tab';
@@ -186,7 +187,10 @@ export function SupportTicketDetailSheet({
   const cov = ticket ? getTicketCoverage(ticket.coverageDecision) : undefined;
   const sla = ticket ? getTicketSlaState(ticket.slaState.state) : undefined;
 
-  const sourcePageHref = '/support';
+  const sourcePageHref =
+    ticketId && ticketId.length > 0
+      ? `/support?${SUPPORT_TICKET_OPEN_QUERY}=${encodeURIComponent(ticketId)}`
+      : '/support';
   const workspaceHref =
     ticket?.projectId && ticket.projectId.length > 0 ? `/projects/${ticket.projectId}` : null;
 
