@@ -175,7 +175,7 @@ export function SearchField(props: SearchFieldProps) {
       className={cn('group relative', disabled && 'pointer-events-none opacity-60', className)}
       ref={containerRef}
     >
-      <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-xs font-medium">
+      <div className="text-foreground/85 mb-1.5 flex items-center gap-1.5 text-sm font-medium">
         {icon && <span className="text-muted-foreground/70">{icon}</span>}
         {label}
       </div>
@@ -185,7 +185,7 @@ export function SearchField(props: SearchFieldProps) {
           <div className="relative">
             <Search
               size={14}
-              className="text-muted-foreground absolute top-1/2 left-2.5 -translate-y-1/2"
+              className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
             />
             <Input
               ref={inputRef}
@@ -197,7 +197,7 @@ export function SearchField(props: SearchFieldProps) {
               }}
               onKeyDown={handleKeyDown}
               placeholder={placeholder ?? 'Type to search...'}
-              className="h-8 pr-8 pl-8 text-sm"
+              className="pr-9 pl-9 text-sm"
             />
             {query && (
               <button
@@ -272,10 +272,10 @@ export function SearchField(props: SearchFieldProps) {
               if (!disabled) setOpen(true);
             }}
             className={cn(
-              'flex-1 rounded-lg border border-transparent px-3 py-2 text-sm transition-all',
+              'border-border/60 bg-muted/20 text-foreground flex-1 rounded-xl border px-3 py-2 text-sm shadow-sm shadow-black/[0.04] transition-[border-color,box-shadow,background-color]',
               disabled
-                ? 'cursor-not-allowed'
-                : 'hover:bg-accent/5 hover:border-border cursor-pointer',
+                ? 'cursor-not-allowed opacity-60'
+                : 'hover:border-border hover:bg-muted/30 dark:border-border/50 dark:bg-input/35 dark:hover:bg-input/45 cursor-pointer',
             )}
           >
             <div className="flex items-center justify-between">
