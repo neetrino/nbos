@@ -1,6 +1,5 @@
 'use client';
 
-import { ScrollArea } from '@/components/ui/scroll-area';
 import type { AuditLogEntry } from '@/lib/api/audit';
 import { formatSupportAuditLine } from './support-ticket-detail-helpers';
 
@@ -14,7 +13,7 @@ export function SupportTicketDetailActivityTab({
   items,
 }: SupportTicketDetailActivityTabProps) {
   return (
-    <ScrollArea className="h-[min(70vh,32rem)] px-6 py-4">
+    <div className="px-5 py-4 sm:px-7">
       {loading ? (
         <p className="text-muted-foreground text-sm">Loading activity…</p>
       ) : items.length === 0 ? (
@@ -32,6 +31,6 @@ export function SupportTicketDetailActivityTab({
           ))}
         </ul>
       )}
-    </ScrollArea>
+    </div>
   );
 }

@@ -2,9 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Headphones } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { StatusBadge, DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS } from '@/components/shared';
+import {
+  EntitySheetFloatingRail,
+  StatusBadge,
+  DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS,
+  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS,
+} from '@/components/shared';
 import {
   getTicketCategory,
   getTicketCoverage,
@@ -180,10 +186,27 @@ export function SupportTicketDetailSheet({
   const cov = ticket ? getTicketCoverage(ticket.coverageDecision) : undefined;
   const sla = ticket ? getTicketSlaState(ticket.slaState.state) : undefined;
 
+  const sourcePageHref = '/support';
+  const workspaceHref =
+    ticket?.projectId && ticket.projectId.length > 0 ? `/projects/${ticket.projectId}` : null;
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}>
+        <SheetContent
+          side="right"
+          showCloseButton={false}
+          floatingClose
+          floatingRailVisible={open}
+          floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS}
+          floatingRail={
+            <EntitySheetFloatingRail
+              sourcePageHref={sourcePageHref}
+              workspaceHref={workspaceHref}
+            />
+          }
+          className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
+        >
           <div className="border-border flex h-full min-h-0 flex-col border-l">
             <div className="border-border shrink-0 border-b px-6 py-4">
               <div className="flex items-start gap-3">
@@ -233,7 +256,7 @@ export function SupportTicketDetailSheet({
 
                 <TabsContent
                   value="general"
-                  className="mt-0 min-h-0 flex-1 data-[state=inactive]:hidden"
+                  className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
                 >
                   <SupportTicketDetailGeneralTab
                     ticket={ticket}
@@ -260,9 +283,11 @@ export function SupportTicketDetailSheet({
 
                 <TabsContent
                   value="activity"
-                  className="mt-0 min-h-0 flex-1 data-[state=inactive]:hidden"
+                  className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
                 >
-                  <SupportTicketDetailActivityTab loading={auditLoading} items={auditItems} />
+                  <ScrollArea className="min-h-0 flex-1">
+                    <SupportTicketDetailActivityTab loading={auditLoading} items={auditItems} />
+                  </ScrollArea>
                 </TabsContent>
               </Tabs>
             ) : null}
