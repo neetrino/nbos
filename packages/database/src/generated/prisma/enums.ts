@@ -1090,6 +1090,7 @@ export type ReportScheduleFrequencyEnum =
   (typeof ReportScheduleFrequencyEnum)[keyof typeof ReportScheduleFrequencyEnum];
 
 export const TicketCategoryEnum = {
+  UNCLASSIFIED: 'UNCLASSIFIED',
   INCIDENT: 'INCIDENT',
   SERVICE_REQUEST: 'SERVICE_REQUEST',
   CHANGE_REQUEST: 'CHANGE_REQUEST',

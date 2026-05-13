@@ -87,7 +87,7 @@ const SUPPORT_TASK_INCLUDE = {
 interface CreateTicketDto {
   title: string;
   projectId: string;
-  category: string;
+  category?: string;
   description?: string;
   productId?: string;
   coverageDecision?: string | null;
@@ -216,6 +216,7 @@ export class SupportService {
     const priority = (data.priority as TicketPriorityEnum) ?? 'P3';
     const sla = this.calculateSlaDeadlines(priority);
     const productId = data.productId ?? null;
+    const category = (data.category as TicketCategoryEnum | undefined) ?? 'UNCLASSIFIED';
 
     await assertSupportTechnicalLinksValid(this.prisma, {
       projectId: data.projectId,
@@ -230,7 +231,7 @@ export class SupportService {
         title: data.title,
         projectId: data.projectId,
         productId: data.productId,
-        category: data.category as TicketCategoryEnum,
+        category,
         coverageDecision: data.coverageDecision as SupportCoverageEnum | undefined,
         description: data.description,
         contactId: data.contactId,

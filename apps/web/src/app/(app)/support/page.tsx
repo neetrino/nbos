@@ -15,6 +15,7 @@ import {
   RotateCcw,
   AlertTriangle,
   Server,
+  PanelRight,
 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,7 @@ import {
 } from '@/components/shared';
 import {
   TICKET_CATEGORIES,
+  TICKET_COVERAGE_DECISIONS,
   TICKET_PRIORITIES,
   TICKET_STATUSES,
   TICKET_WAITING_STATES,
@@ -69,6 +71,8 @@ import { useSupportScopeStatsCsvExport } from '@/features/support/use-support-sc
 import { usePermission } from '@/lib/permissions';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
+import { SupportTicketDetailSheet } from '@/features/support/components/SupportTicketDetailSheet';
+import { contactsApi, type Contact } from '@/lib/api/clients';
 
 type ViewMode = 'kanban' | 'list';
 
@@ -100,52 +104,81 @@ export default function SupportPage() {
   const [createTitle, setCreateTitle] = useState('');
   const [createProjectId, setCreateProjectId] = useState('');
   const [createProductId, setCreateProductId] = useState('');
-  const [createCategory, setCreateCategory] = useState('INCIDENT');
+  const [createCategory, setCreateCategory] = useState('UNCLASSIFIED');
   const [createPriority, setCreatePriority] = useState('P3');
   const [createDescription, setCreateDescription] = useState('');
+  const [createCoverageDecision, setCreateCoverageDecision] = useState('');
+  const [createContactId, setCreateContactId] = useState('');
   const [createProductOptions, setCreateProductOptions] = useState<ProjectProductSummary[]>([]);
+  const [createContacts, setCreateContacts] = useState<Contact[]>([]);
   const [statusDialog, setStatusDialog] = useState<null | {
     ticket: SupportTicket;
     mode: 'RESOLVED' | 'CLOSED';
   }>(null);
   const [statusResolutionDraft, setStatusResolutionDraft] = useState('');
   const [statusCloseReason, setStatusCloseReason] = useState('CLIENT_CONFIRMED');
+  const [detailTicketId, setDetailTicketId] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailRefreshKey, setDetailRefreshKey] = useState(0);
   const { me } = usePermission();
 
   const { handleExportScopeStatsCsv } = useSupportScopeStatsCsvExport(stats);
 
-  const fetchTickets = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { items } = await supportApi.getAll({
-        pageSize: 100,
-        search: search || undefined,
-        projectId: filters.projectId && filters.projectId !== 'all' ? filters.projectId : undefined,
-        productId: filters.productId && filters.productId !== 'all' ? filters.productId : undefined,
-        category: filters.category && filters.category !== 'all' ? filters.category : undefined,
-        priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
-        status: filters.status && filters.status !== 'all' ? filters.status : undefined,
-        waitingState:
-          filters.waitingState && filters.waitingState !== 'all' ? filters.waitingState : undefined,
-      });
-      setTickets(items);
-      setError(null);
+  const fetchTickets = useCallback(
+    async (options?: { soft?: boolean }) => {
+      if (!options?.soft) setLoading(true);
       try {
-        setStats(await supportApi.getStats());
+        const { items } = await supportApi.getAll({
+          pageSize: 100,
+          search: search || undefined,
+          projectId:
+            filters.projectId && filters.projectId !== 'all' ? filters.projectId : undefined,
+          productId:
+            filters.productId && filters.productId !== 'all' ? filters.productId : undefined,
+          category: filters.category && filters.category !== 'all' ? filters.category : undefined,
+          priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
+          status: filters.status && filters.status !== 'all' ? filters.status : undefined,
+          waitingState:
+            filters.waitingState && filters.waitingState !== 'all'
+              ? filters.waitingState
+              : undefined,
+        });
+        setTickets(items);
+        setError(null);
+        try {
+          setStats(await supportApi.getStats());
+        } catch {
+          setStats(null);
+        }
       } catch {
+        setError('Support tickets could not be loaded. Check your connection and try again.');
         setStats(null);
+      } finally {
+        if (!options?.soft) setLoading(false);
       }
-    } catch {
-      setError('Support tickets could not be loaded. Check your connection and try again.');
-      setStats(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [search, filters]);
+    },
+    [search, filters],
+  );
+
+  const refreshSupportViews = useCallback(async () => {
+    await fetchTickets({ soft: true });
+    setDetailRefreshKey((k) => k + 1);
+  }, [fetchTickets]);
 
   useEffect(() => {
     fetchTickets();
   }, [fetchTickets]);
+
+  useEffect(() => {
+    if (!createOpen) return;
+    let cancelled = false;
+    void contactsApi.getAll({ pageSize: 200 }).then((res) => {
+      if (!cancelled) setCreateContacts(res.items);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [createOpen]);
 
   useEffect(() => {
     if (!technicalTicket?.productId) {
@@ -222,9 +255,11 @@ export default function SupportPage() {
     setCreateTitle('');
     setCreateProjectId(projectOk);
     setCreateProductId('');
-    setCreateCategory('INCIDENT');
+    setCreateCategory('UNCLASSIFIED');
     setCreatePriority('P3');
     setCreateDescription('');
+    setCreateCoverageDecision('');
+    setCreateContactId('');
     setCreateProductOptions([]);
   }, [createOpen, portfolioCreateTicketFromUrl, portfolioProjectIdFromUrl, projectsForFilters]);
 
@@ -290,7 +325,7 @@ export default function SupportPage() {
     try {
       await supportApi.updateStatus(id, status, extra);
       setError(null);
-      await fetchTickets();
+      await refreshSupportViews();
       return true;
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Status could not be updated.'));
@@ -359,10 +394,12 @@ export default function SupportPage() {
         priority: createPriority,
         description: createDescription.trim() || undefined,
         productId: createProductId || undefined,
+        coverageDecision: createCoverageDecision || undefined,
+        contactId: createContactId || undefined,
       });
       setCreateOpen(false);
       setError(null);
-      await fetchTickets();
+      await refreshSupportViews();
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Ticket could not be created.'));
     } finally {
@@ -391,7 +428,7 @@ export default function SupportPage() {
         technicalEnvironmentId: draftTechnicalEnvId || null,
       });
       setTechnicalTicket(null);
-      await fetchTickets();
+      await refreshSupportViews();
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Technical context could not be saved.'));
@@ -414,7 +451,7 @@ export default function SupportPage() {
     setActionId(ticket.id);
     try {
       await supportApi.createExecutionTask(ticket.id, { creatorId: me.id });
-      await fetchTickets();
+      await refreshSupportViews();
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Execution task could not be created.'));
@@ -428,7 +465,7 @@ export default function SupportPage() {
     setActionId(`deal:${ticket.id}`);
     try {
       await supportApi.createExtensionDeal(ticket.id, { sellerId: me.id });
-      await fetchTickets();
+      await refreshSupportViews();
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Extension Deal could not be created.'));
@@ -441,7 +478,7 @@ export default function SupportPage() {
     setActionId(`wait:${ticket.id}`);
     try {
       await supportApi.updateWaiting(ticket.id, { waitingState: value });
-      await fetchTickets();
+      await refreshSupportViews();
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Waiting state could not be updated.'));
@@ -457,7 +494,7 @@ export default function SupportPage() {
       await supportApi.escalate(escalateTicket.id, escalateReason.trim() || undefined);
       setEscalateTicket(null);
       setEscalateReason('');
-      await fetchTickets();
+      await refreshSupportViews();
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Escalation could not be recorded.'));
@@ -470,13 +507,28 @@ export default function SupportPage() {
     setActionId(`reopen:${ticket.id}`);
     try {
       await supportApi.reopen(ticket.id);
-      await fetchTickets();
+      await refreshSupportViews();
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Ticket could not be reopened.'));
     } finally {
       setActionId(null);
     }
+  };
+
+  const openSupportDetail = (id: string) => {
+    setDetailTicketId(id);
+    setDetailOpen(true);
+  };
+
+  const handleSupportDetailOpenChange = (next: boolean) => {
+    setDetailOpen(next);
+    if (!next) setDetailTicketId(null);
+  };
+
+  const isInteractiveTableTarget = (target: EventTarget | null) => {
+    if (!(target instanceof Element)) return false;
+    return Boolean(target.closest('button,select,a,input,textarea,[role="combobox"]'));
   };
 
   return (
@@ -580,7 +632,13 @@ export default function SupportPage() {
             const coverage = getTicketCoverage(ticket.coverageDecision);
             const sla = getTicketSlaState(ticket.slaState.state);
             return (
-              <div className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm">
+              <div
+                className="border-border bg-card space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
+                onClick={(e) => {
+                  if (isInteractiveTableTarget(e.target)) return;
+                  openSupportDetail(ticket.id);
+                }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-[10px] font-medium">
                     {ticket.code}
@@ -738,11 +796,34 @@ export default function SupportPage() {
                 const sla = getTicketSlaState(ticket.slaState.state);
                 const waiting = getTicketWaitingState(ticket.waitingState ?? 'NONE');
                 return (
-                  <TableRow key={ticket.id}>
+                  <TableRow
+                    key={ticket.id}
+                    className="hover:bg-muted/50 cursor-pointer"
+                    onClick={(e) => {
+                      if (isInteractiveTableTarget(e.target)) return;
+                      openSupportDetail(ticket.id);
+                    }}
+                  >
                     <TableCell>
-                      <div>
-                        <p className="font-medium">{ticket.title}</p>
-                        <p className="text-muted-foreground text-xs">{ticket.code}</p>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium">{ticket.title}</p>
+                          <p className="text-muted-foreground text-xs">{ticket.code}</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground h-7 shrink-0 gap-1 px-2 text-xs"
+                          title="Open ticket details"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openSupportDetail(ticket.id);
+                          }}
+                        >
+                          <PanelRight size={14} />
+                          Details
+                        </Button>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -1164,6 +1245,38 @@ export default function SupportPage() {
                 className="resize-y"
               />
             </div>
+            <div className="space-y-1">
+              <Label htmlFor="support-new-coverage">Coverage (optional)</Label>
+              <select
+                id="support-new-coverage"
+                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                value={createCoverageDecision}
+                onChange={(e) => setCreateCoverageDecision(e.target.value)}
+              >
+                <option value="">Decide later</option>
+                {TICKET_COVERAGE_DECISIONS.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="support-new-contact">Contact (optional)</Label>
+              <select
+                id="support-new-contact"
+                className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
+                value={createContactId}
+                onChange={(e) => setCreateContactId(e.target.value)}
+              >
+                <option value="">None</option>
+                {createContacts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.firstName} {c.lastName}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>
@@ -1261,6 +1374,36 @@ export default function SupportPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SupportTicketDetailSheet
+        ticketId={detailTicketId}
+        open={detailOpen}
+        onOpenChange={handleSupportDetailOpenChange}
+        refreshKey={detailRefreshKey}
+        meId={me?.id ?? null}
+        onListInvalidate={() => void refreshSupportViews()}
+        onRequestResolve={(t) => {
+          setStatusResolutionDraft(t.resolutionSummary ?? '');
+          setStatusDialog({ ticket: t, mode: 'RESOLVED' });
+        }}
+        onRequestClose={(t) => {
+          if (t.status !== 'RESOLVED') {
+            setError(
+              'Move the ticket to Resolved before Closed (extension delivery may close it automatically).',
+            );
+            return;
+          }
+          setStatusCloseReason('CLIENT_CONFIRMED');
+          setStatusDialog({ ticket: t, mode: 'CLOSED' });
+        }}
+        onRequestEscalate={(t) => {
+          setEscalateTicket(t);
+          setEscalateReason(t.waitingReason ?? '');
+        }}
+        onRequestTechnical={(t) => {
+          setTechnicalTicket(t);
+        }}
+      />
     </div>
   );
 }

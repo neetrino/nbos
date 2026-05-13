@@ -96,13 +96,14 @@ export const supportApi = {
   async create(data: {
     title: string;
     projectId: string;
-    category: string;
+    category?: string;
     priority?: string;
     description?: string;
     productId?: string;
     coverageDecision?: string | null;
     contactId?: string;
     billable?: boolean;
+    assignedTo?: string;
   }): Promise<SupportTicket> {
     const resp = await api.post<SupportTicket>('/api/support', data);
     return resp.data;

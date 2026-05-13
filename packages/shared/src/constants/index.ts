@@ -68,6 +68,7 @@ export const TASK_STATUSES = ['OPEN', 'IN_PROGRESS', 'REVIEW', 'ON_HOLD', 'COMPL
 export const TASK_PRIORITIES = ['CRITICAL', 'HIGH', 'NORMAL', 'LOW'] as const;
 
 export const TICKET_CATEGORIES = [
+  'UNCLASSIFIED',
   'INCIDENT',
   'SERVICE_REQUEST',
   'CHANGE_REQUEST',

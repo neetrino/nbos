@@ -1,6 +1,7 @@
 // ─── SUPPORT ──────────────────────────────────────────────
 
 enum TicketCategoryEnum {
+  UNCLASSIFIED
   INCIDENT
   SERVICE_REQUEST
   CHANGE_REQUEST
