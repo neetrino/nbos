@@ -42,18 +42,47 @@ export class PaymentsService {
 
   async findAll(params: PaymentQueryParams) {
     const { page = 1, pageSize = 20, invoiceId, search, dateFrom, dateTo } = params;
-    const where: Prisma.PaymentWhereInput = {};
+    const parts: Prisma.PaymentWhereInput[] = [];
 
-    if (invoiceId) where.invoiceId = invoiceId;
-    if (search) {
-      where.invoice = { code: { contains: search, mode: 'insensitive' } };
+    if (invoiceId) parts.push({ invoiceId });
+    const searchTrimmed = search?.trim();
+    if (searchTrimmed) {
+      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
+      parts.push({
+        OR: [
+          { notes: ic },
+          {
+            invoice: {
+              OR: [
+                { code: ic },
+                { company: { name: ic } },
+                {
+                  order: {
+                    OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
+                  },
+                },
+                {
+                  subscription: {
+                    OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
     }
     if (dateFrom || dateTo) {
-      where.paymentDate = {
-        ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-        ...(dateTo ? { lte: new Date(dateTo) } : {}),
-      };
+      parts.push({
+        paymentDate: {
+          ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+          ...(dateTo ? { lte: new Date(dateTo) } : {}),
+        },
+      });
     }
+
+    const where: Prisma.PaymentWhereInput =
+      parts.length === 0 ? {} : parts.length === 1 ? parts[0]! : { AND: parts };
 
     const [items, total] = await Promise.all([
       this.prisma.payment.findMany({

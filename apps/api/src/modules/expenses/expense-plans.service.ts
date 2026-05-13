@@ -70,17 +70,24 @@ export class ExpensePlansService {
     const page = normalizeExpenseListPage(params.page);
     const pageSize = normalizeExpenseListPageSize(params.pageSize);
     const safeCategory = pickExpenseCategoryFilter(params.category);
+    const searchTrimmed = params.search?.trim();
+    const ic = searchTrimmed
+      ? { contains: searchTrimmed, mode: 'insensitive' as const }
+      : undefined;
+    const searchOr: Prisma.ExpensePlanWhereInput['OR'] = ic
+      ? [
+          { name: ic },
+          { provider: ic },
+          { notes: ic },
+          { project: { name: ic } },
+          { project: { code: ic } },
+        ]
+      : undefined;
+
     const where: Prisma.ExpensePlanWhereInput = {
       ...(safeCategory ? { category: safeCategory as ExpenseCategoryEnum } : {}),
       ...(params.projectId?.trim() ? { projectId: params.projectId.trim() } : {}),
-      ...(params.search?.trim()
-        ? {
-            OR: [
-              { name: { contains: params.search.trim(), mode: 'insensitive' } },
-              { provider: { contains: params.search.trim(), mode: 'insensitive' } },
-            ],
-          }
-        : {}),
+      ...(searchOr ? { OR: searchOr } : {}),
     };
 
     const orderBy = this.buildOrderBy(params.sortBy, params.sortOrder);

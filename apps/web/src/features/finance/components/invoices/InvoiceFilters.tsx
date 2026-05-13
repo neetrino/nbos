@@ -37,7 +37,7 @@ export function InvoiceFilters({
         <FilterBar
           search={search}
           onSearchChange={onSearchChange}
-          searchPlaceholder="Search by invoice number, company..."
+          searchPlaceholder="Search by invoice, company, order, project…"
           filters={FILTER_CONFIGS}
           filterValues={filters}
           onFilterChange={(key, value) =>

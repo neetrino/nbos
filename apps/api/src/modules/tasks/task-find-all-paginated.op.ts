@@ -11,6 +11,7 @@ import {
   buildProjectTaskScopeWhere,
 } from './task-project-list-filter.ops';
 import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
+import { buildTaskListSearchWhere } from './task-list-search-where.op';
 
 export interface TaskFindAllPaginatedParams {
   page?: number;
@@ -77,13 +78,9 @@ export async function taskFindAllPaginated(
   if (params.involvesEmployeeId) {
     parts.push(taskWhereInvolvesEmployee(params.involvesEmployeeId));
   }
-  if (search) {
-    parts.push({
-      OR: [
-        { title: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
-      ],
-    });
+  const searchTrimmed = search?.trim();
+  if (searchTrimmed) {
+    parts.push(buildTaskListSearchWhere(searchTrimmed));
   }
 
   if (params.orderId && !params.projectId) {

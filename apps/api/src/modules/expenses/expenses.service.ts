@@ -343,8 +343,22 @@ export class ExpensesService {
     const planId = filters.expensePlanId?.trim();
     if (planId) where.expensePlanId = planId;
     if (filters.frequency) where.frequency = filters.frequency as ExpenseFrequency;
-    if (filters.search) {
-      where.name = { contains: filters.search, mode: 'insensitive' };
+    const searchTrimmed = filters.search?.trim();
+    if (searchTrimmed) {
+      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: [
+            { name: ic },
+            { notes: ic },
+            { project: { name: ic } },
+            { project: { code: ic } },
+            { expensePlan: { name: ic } },
+            { expensePlan: { provider: ic } },
+          ],
+        },
+      ];
     }
     const createdAt = this.buildDateRange(filters.dateFrom, filters.dateTo);
     if (createdAt) {

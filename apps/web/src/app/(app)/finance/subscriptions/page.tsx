@@ -137,7 +137,7 @@ function SubscriptionsPageInner() {
       <FilterBar
         search={page.search}
         onSearchChange={page.setSearch}
-        searchPlaceholder="Search by project or company..."
+        searchPlaceholder="Search by code, project, company, partner…"
         filters={filterConfigs}
         filterValues={page.filtersForBar}
         onFilterChange={handleFilterChange}

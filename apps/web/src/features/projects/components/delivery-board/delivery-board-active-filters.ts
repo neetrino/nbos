@@ -52,7 +52,11 @@ export function applyDeliveryBoardActiveFilters(
       const name = normalize(getItemLabel(item));
       const proj = item.kind === 'PRODUCT' ? item.product.project : item.extension.project;
       const projHay = proj ? normalize(`${proj.name} ${proj.code}`) : '';
-      if (!name.includes(q) && !projHay.includes(q)) return false;
+      const companyHay = proj?.company?.name != null ? normalize(String(proj.company.name)) : '';
+      const productParentHay =
+        item.kind === 'EXTENSION' ? normalize(item.extension.product.name) : '';
+      const hay = normalize(`${name} ${projHay} ${companyHay} ${productParentHay}`);
+      if (!hay.includes(q)) return false;
     }
 
     return true;

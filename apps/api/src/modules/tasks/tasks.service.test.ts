@@ -31,7 +31,16 @@ describe('TasksService', () => {
       expect(prisma.task.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            AND: expect.arrayContaining([{ workspaceId: 'ws-1' }, { planningStatus: 'BACKLOG' }]),
+            AND: expect.arrayContaining([
+              { workspaceId: 'ws-1' },
+              { planningStatus: 'BACKLOG' },
+              expect.objectContaining({
+                OR: expect.arrayContaining([
+                  { title: { contains: 'test', mode: 'insensitive' } },
+                  { code: { contains: 'test', mode: 'insensitive' } },
+                ]),
+              }),
+            ]),
           },
         }),
       );

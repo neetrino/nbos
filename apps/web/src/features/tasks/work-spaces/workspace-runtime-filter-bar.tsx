@@ -33,7 +33,7 @@ export function WorkspaceRuntimeFilterBar({
     <FilterBar
       search={search}
       onSearchChange={onSearchChange}
-      searchPlaceholder="Search tasks in this space…"
+      searchPlaceholder="Search by task, project, product, workspace…"
       filters={WORKSPACE_TASK_FILTER_CONFIGS}
       filterValues={filterValues}
       onFilterChange={onFilterChange}

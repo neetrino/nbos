@@ -69,10 +69,36 @@ export class BonusService {
         : 20;
 
     const where = this.buildWhere({ employeeId, orderId, projectId, status, type });
+    const searchTrimmed = params.search?.trim();
+    const listWhere: Prisma.BonusEntryWhereInput = searchTrimmed
+      ? {
+          AND: [
+            where,
+            {
+              OR: [
+                {
+                  employee: {
+                    firstName: { contains: searchTrimmed, mode: 'insensitive' },
+                  },
+                },
+                {
+                  employee: {
+                    lastName: { contains: searchTrimmed, mode: 'insensitive' },
+                  },
+                },
+                { employee: { email: { contains: searchTrimmed, mode: 'insensitive' } } },
+                { order: { code: { contains: searchTrimmed, mode: 'insensitive' } } },
+                { project: { name: { contains: searchTrimmed, mode: 'insensitive' } } },
+                { project: { code: { contains: searchTrimmed, mode: 'insensitive' } } },
+              ],
+            },
+          ],
+        }
+      : where;
 
     const [items, total] = await Promise.all([
       this.prisma.bonusEntry.findMany({
-        where,
+        where: listWhere,
         include: {
           employee: { select: { id: true, firstName: true, lastName: true } },
           order: { select: { id: true, code: true, totalAmount: true } },
@@ -82,7 +108,7 @@ export class BonusService {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      this.prisma.bonusEntry.count({ where }),
+      this.prisma.bonusEntry.count({ where: listWhere }),
     ]);
 
     return {

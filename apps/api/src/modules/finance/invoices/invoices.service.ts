@@ -74,8 +74,47 @@ export class InvoicesService {
     if (type) where.type = type as InvoiceTypeEnum;
     if (projectId) where.projectId = projectId;
     if (subscriptionId) where.subscriptionId = subscriptionId;
-    if (search) {
-      where.code = { contains: search, mode: 'insensitive' };
+
+    const searchTrimmed = search?.trim();
+    if (searchTrimmed) {
+      const projectMatches = await this.prisma.project.findMany({
+        where: {
+          OR: [
+            { name: { contains: searchTrimmed, mode: 'insensitive' } },
+            { code: { contains: searchTrimmed, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true },
+      });
+      const matchedProjectIds = projectMatches.map((p) => p.id);
+      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: [
+            { code: ic },
+            { govInvoiceId: ic },
+            { company: { name: ic } },
+            {
+              order: {
+                OR: [
+                  { code: ic },
+                  { project: { name: ic } },
+                  { project: { code: ic } },
+                  { product: { name: ic } },
+                  { extension: { name: ic } },
+                ],
+              },
+            },
+            {
+              subscription: {
+                OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
+              },
+            },
+            ...(matchedProjectIds.length > 0 ? [{ projectId: { in: matchedProjectIds } }] : []),
+          ],
+        },
+      ];
     }
 
     const createdAt = buildDateRange(dateFrom, dateTo);

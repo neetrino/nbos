@@ -142,8 +142,16 @@ export class PartnersService {
     const { page = 1, pageSize = 20, search, status, level, type, direction } = params;
     const where: Prisma.PartnerWhereInput = {};
 
-    if (search) {
-      where.name = { contains: search, mode: 'insensitive' };
+    if (search?.trim()) {
+      const q = search.trim();
+      const ic = { contains: q, mode: 'insensitive' as const };
+      where.OR = [
+        { name: ic },
+        { notes: ic },
+        { contact: { firstName: ic } },
+        { contact: { lastName: ic } },
+        { contact: { email: ic } },
+      ];
     }
     const statusFilter = resolvePartnerStatusFilter(status);
     if (statusFilter) where.status = statusFilter;

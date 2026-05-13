@@ -49,10 +49,16 @@ export class ProjectsService {
     const where: Prisma.ProjectWhereInput = {};
     if (isArchived !== undefined) where.isArchived = isArchived;
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
-      ];
+      const q = search.trim();
+      if (q.length > 0) {
+        where.OR = [
+          { name: { contains: q, mode: 'insensitive' } },
+          { code: { contains: q, mode: 'insensitive' } },
+          { company: { name: { contains: q, mode: 'insensitive' } } },
+          { contact: { firstName: { contains: q, mode: 'insensitive' } } },
+          { contact: { lastName: { contains: q, mode: 'insensitive' } } },
+        ];
+      }
     }
 
     const [items, total] = await Promise.all([

@@ -496,7 +496,7 @@ export default function DealsPipelinePage() {
         <FilterBar
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search deals by contact, company, amount..."
+          searchPlaceholder="Search deals by code, name, contact, company, orders, marketing…"
           filters={filterConfigs}
           filterValues={filters}
           onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}

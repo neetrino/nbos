@@ -88,7 +88,7 @@ export default function TasksPage() {
         <FilterBar
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search tasks..."
+          searchPlaceholder="Search by task, project, product, workspace…"
           filters={filterConfigs}
           filterValues={filters}
           onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}

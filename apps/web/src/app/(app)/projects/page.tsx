@@ -113,7 +113,7 @@ export default function ProjectsPage() {
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search projects by name…"
+        searchPlaceholder="Search by project name, code, company, contact…"
         onClearFilters={hasSearch ? () => setSearch('') : undefined}
       />
 

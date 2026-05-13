@@ -273,7 +273,7 @@ export function ExpensesPageContent({
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search expenses..."
+        searchPlaceholder="Search by name, notes, project, plan…"
         filters={filterConfigs}
         filterValues={filters}
         onFilterChange={handleFilterChange}

@@ -163,8 +163,14 @@ export class ProductsService {
     if (productCategory) where.productCategory = productCategory as ProductCategoryEnum;
     if (productType) where.productType = productType as ProductTypeEnum;
     if (pmId) where.pmId = pmId;
-    if (search) {
-      where.name = { contains: search, mode: 'insensitive' };
+    if (search?.trim()) {
+      const q = search.trim();
+      where.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { project: { name: { contains: q, mode: 'insensitive' } } },
+        { project: { code: { contains: q, mode: 'insensitive' } } },
+        { order: { code: { contains: q, mode: 'insensitive' } } },
+      ];
     }
 
     const [items, total] = await Promise.all([

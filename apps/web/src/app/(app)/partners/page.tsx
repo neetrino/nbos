@@ -179,7 +179,7 @@ export default function PartnersPage() {
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search by name..."
+        searchPlaceholder="Search by name, notes, contact…"
         filters={filterConfigs}
         filterValues={filters}
         onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}

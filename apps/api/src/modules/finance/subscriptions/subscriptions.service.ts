@@ -79,11 +79,16 @@ export class SubscriptionsService {
     if (projectId) andParts.push({ projectId });
     if (status) andParts.push({ status: status as SubscriptionStatusEnum });
     if (type) andParts.push({ type: type as SubscriptionTypeEnum });
-    if (search) {
+    if (search?.trim()) {
+      const q = search.trim();
+      const ic = { contains: q, mode: 'insensitive' as const };
       andParts.push({
         OR: [
-          { code: { contains: search, mode: 'insensitive' } },
-          { project: { name: { contains: search, mode: 'insensitive' } } },
+          { code: ic },
+          { project: { name: ic } },
+          { project: { code: ic } },
+          { project: { company: { name: ic } } },
+          { partner: { name: ic } },
         ],
       });
     }
@@ -136,10 +141,15 @@ export class SubscriptionsService {
     Object.assign(where, this.subscriptionPartnerWhere(partnerId));
     if (status) where.status = status as SubscriptionStatusEnum;
     if (type) where.type = type as SubscriptionTypeEnum;
-    if (search) {
+    if (search?.trim()) {
+      const q = search.trim();
+      const ic = { contains: q, mode: 'insensitive' as const };
       where.OR = [
-        { code: { contains: search, mode: 'insensitive' } },
-        { project: { name: { contains: search, mode: 'insensitive' } } },
+        { code: ic },
+        { project: { name: ic } },
+        { project: { code: ic } },
+        { project: { company: { name: ic } } },
+        { partner: { name: ic } },
       ];
     }
 

@@ -223,7 +223,7 @@ function OrdersPageContent() {
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search by order code, project..."
+        searchPlaceholder="Search by order, project, product, deal, partner…"
         filters={filterConfigs}
         filterValues={filters}
         onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}

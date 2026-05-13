@@ -121,7 +121,7 @@ export default function PaymentsPage() {
       <FilterBar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search by invoice, project..."
+        searchPlaceholder="Search by invoice, company, order, project, notes…"
         filters={[]}
         filterValues={{}}
         onFilterChange={() => {}}

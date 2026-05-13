@@ -253,6 +253,7 @@ function applyWorkSpaceSearchModeAndType(
         { name: { contains: trimmed, mode: 'insensitive' } },
         { description: { contains: trimmed, mode: 'insensitive' } },
         { project: { name: { contains: trimmed, mode: 'insensitive' } } },
+        { project: { code: { contains: trimmed, mode: 'insensitive' } } },
         { product: { name: { contains: trimmed, mode: 'insensitive' } } },
         { extension: { name: { contains: trimmed, mode: 'insensitive' } } },
       ],
