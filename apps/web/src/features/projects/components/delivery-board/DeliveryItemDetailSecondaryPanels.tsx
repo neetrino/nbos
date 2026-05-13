@@ -8,8 +8,6 @@ import { DeliveryItemDetailHistoryPanel } from './DeliveryItemDetailHistoryPanel
 
 interface DeliveryItemDetailSecondaryPanelsProps {
   view: DeliveryDetailSecondaryId;
-  projectId: string;
-  productId: string;
   auditEntityType: 'PRODUCT' | 'EXTENSION';
   auditEntityId: string;
   financeTabHref: string;
@@ -22,8 +20,6 @@ interface DeliveryItemDetailSecondaryPanelsProps {
 
 export function DeliveryItemDetailSecondaryPanels({
   view,
-  projectId,
-  productId,
   auditEntityType,
   auditEntityId,
   financeTabHref,

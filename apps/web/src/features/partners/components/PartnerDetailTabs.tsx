@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { BarChart3, FileText, Handshake, LayoutGrid, Percent, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PartnerAccrualsCard } from '@/features/partners/components/PartnerAccrualsCard';
@@ -42,10 +42,6 @@ export function PartnerDetailTabs(props: {
 }) {
   const { partner, onPartnerUpdated, accrualsReloadKey } = props;
   const [panel, setPanel] = useState<PartnerDetailTabId>('overview');
-
-  useEffect(() => {
-    setPanel('overview');
-  }, [partner.id]);
 
   return (
     <div className="w-full">

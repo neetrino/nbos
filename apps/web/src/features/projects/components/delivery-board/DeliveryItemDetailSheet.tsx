@@ -306,7 +306,6 @@ export function DeliveryItemDetailSheet({
             <DeliveryItemDetailHeader
               title={displayTitle}
               entityKind={headerProps?.entityKind ?? 'PRODUCT'}
-              projectCode={headerProps?.projectCode ?? '—'}
               workspaceHref={headerProps?.workSpaceHref ?? '#'}
               loading={loading}
               onCommitTitle={handleCommitTitle}
@@ -364,11 +363,6 @@ export function DeliveryItemDetailSheet({
               ) : panel !== 'general' && !loading && headerProps && item ? (
                 <DeliveryItemDetailSecondaryPanels
                   view={panel}
-                  projectId={
-                    (item.kind === 'PRODUCT' ? item.product.projectId : item.extension.projectId) ??
-                    ''
-                  }
-                  productId={headerProps.productId}
                   auditEntityType={item.kind === 'PRODUCT' ? 'PRODUCT' : 'EXTENSION'}
                   auditEntityId={item.kind === 'PRODUCT' ? item.product.id : item.extension.id}
                   financeTabHref={financeTabHref}

@@ -186,6 +186,7 @@ export function PartnerDetailSheet({
                     </div>
                   ) : (
                     <PartnerDetailTabs
+                      key={partner.id}
                       partner={partner}
                       onPartnerUpdated={patchPartner}
                       accrualsReloadKey={accrualsReloadKey}

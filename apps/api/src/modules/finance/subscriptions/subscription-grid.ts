@@ -215,7 +215,7 @@ export function buildSubscriptionGridPayload(
   const grandAnnualTotal = rows.reduce(
     (sum, row) =>
       sum +
-      row.months.reduce((rowSum, cell, idx) => {
+      row.months.reduce((rowSum, cell, _idx) => {
         if (!cellContributesToTotals(cell.kind)) return rowSum;
         return rowSum + row.amountMonthly;
       }, 0),

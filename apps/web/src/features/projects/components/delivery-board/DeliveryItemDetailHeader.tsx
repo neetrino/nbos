@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 interface DeliveryItemDetailHeaderProps {
   title: string;
   entityKind: 'PRODUCT' | 'EXTENSION';
-  projectCode: string;
   workspaceHref: string;
   loading: boolean;
   onCommitTitle: (trimmed: string) => Promise<void>;
@@ -20,7 +19,6 @@ interface DeliveryItemDetailHeaderProps {
 export function DeliveryItemDetailHeader({
   title,
   entityKind,
-  projectCode,
   workspaceHref,
   loading,
   onCommitTitle,

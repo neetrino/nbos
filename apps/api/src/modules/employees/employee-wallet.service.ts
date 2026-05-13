@@ -6,15 +6,11 @@ import {
   plannedDecimalForEntry,
   type WalletReleaseRollup,
 } from './employee-wallet-bonus-release-rollups';
-import {
-  mapBonusStatusToWalletGroup,
-  type WalletBonusPipelineGroup,
-} from './employee-wallet-bonus-group';
+import { mapBonusStatusToWalletGroup } from './employee-wallet-bonus-group';
 import { loadWalletBonusLedgerContext } from './employee-wallet-ledger-context';
 import { pickNextOpenPayrollSalaryLine } from './employee-wallet-next-payroll';
 import {
   buildEmployeeWalletProjectBreakdown,
-  type EmployeeWalletProjectBreakdownRow,
   type WalletPoolForBreakdown,
   walletBonusScopeLabel,
 } from './employee-wallet-project-breakdown';

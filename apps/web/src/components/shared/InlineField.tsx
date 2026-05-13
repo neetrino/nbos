@@ -55,25 +55,20 @@ type InlineFieldControlledProps = {
 
 export type InlineFieldProps = InlineFieldInlineProps | InlineFieldControlledProps;
 
-export function InlineField(props: InlineFieldProps) {
-  if (props.variant === 'controlled') {
-    return <ControlledInlineField {...props} />;
-  }
-
-  const {
-    label,
-    value,
-    displayValue,
-    type = 'text',
-    options,
-    placeholder,
-    editable = true,
-    onSave,
-    icon,
-    suffix,
-    className,
-    clearable = false,
-  } = props;
+function InlineFieldUncontrolled({
+  label,
+  value,
+  displayValue,
+  type = 'text',
+  options,
+  placeholder,
+  editable = true,
+  onSave,
+  icon,
+  suffix,
+  className,
+  clearable = false,
+}: InlineFieldInlineProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
@@ -296,4 +291,11 @@ export function InlineField(props: InlineFieldProps) {
       )}
     </div>
   );
+}
+
+export function InlineField(props: InlineFieldProps) {
+  if (props.variant === 'controlled') {
+    return <ControlledInlineField {...props} />;
+  }
+  return <InlineFieldUncontrolled {...props} />;
 }

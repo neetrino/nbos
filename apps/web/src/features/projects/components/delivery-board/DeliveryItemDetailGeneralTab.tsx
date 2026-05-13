@@ -129,7 +129,6 @@ export function DeliveryItemDetailGeneralTab({
         <div className="flex flex-col gap-4">
           {product && productPlan ? (
             <ProductPlanningSection
-              product={product}
               draft={productPlan}
               onDraftChange={onProductPlanChange}
               disabled={planningDisabled}

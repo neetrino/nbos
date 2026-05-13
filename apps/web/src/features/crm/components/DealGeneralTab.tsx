@@ -130,7 +130,6 @@ export function DealGeneralTab({
         <DealInfoSection
           draft={draft}
           patchDraft={patchDraft}
-          productTypeOptions={productTypeOptions}
           filteredProductTypeOptions={getFilteredProductTypeOptions(draft, productTypeOptions)}
           searchProjects={searchProjects}
           searchProducts={searchProducts}

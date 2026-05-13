@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { Calendar, Layers, Package, Sparkles, Tag } from 'lucide-react';
 import { InlineField } from '@/components/shared';
-import type { FullProduct } from '@/lib/api/products';
 import {
   PRODUCT_CATEGORIES,
   PRODUCT_TYPES,
@@ -12,12 +11,10 @@ import {
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
 
 export function ProductPlanningSection({
-  product,
   draft,
   onDraftChange,
   disabled = false,
 }: {
-  product: FullProduct;
   draft: ProductPlanSnapshot;
   onDraftChange: (next: ProductPlanSnapshot) => void;
   disabled?: boolean;

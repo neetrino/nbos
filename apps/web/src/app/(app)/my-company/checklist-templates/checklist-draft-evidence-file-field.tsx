@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { LucideIcon } from 'lucide-react';
 import { File, FileText, Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { driveApi } from '@/lib/api/drive';
@@ -40,14 +39,6 @@ const CHECKLIST_ATTACHMENT_GRID_CLASS =
 const ATTACHMENT_THUMB_FRAME_CLASS =
   'border-border relative flex aspect-square w-full max-h-20 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted';
 
-function pickDocIcon(mime: string | null, formatLabel: string): LucideIcon {
-  const m = mime?.toLowerCase() ?? '';
-  if (m === 'application/pdf' || formatLabel === 'PDF') {
-    return FileText;
-  }
-  return File;
-}
-
 function AttachedEvidenceFileRow({
   fileAssetId,
   disabled,
@@ -59,7 +50,9 @@ function AttachedEvidenceFileRow({
   busy: boolean;
   onRemove: () => void;
 }) {
-  const [phase, setPhase] = useState<'loading' | 'ready' | 'err'>('loading');
+  const [phase, setPhase] = useState<'loading' | 'ready' | 'err'>(() =>
+    !fileAssetId || !isUuidLike(fileAssetId) ? 'err' : 'loading',
+  );
   const [title, setTitle] = useState('');
   const [mimeType, setMimeType] = useState<string | null>(null);
   const [originalName, setOriginalName] = useState<string | null>(null);
@@ -67,11 +60,9 @@ function AttachedEvidenceFileRow({
 
   useEffect(() => {
     if (!fileAssetId || !isUuidLike(fileAssetId)) {
-      setPhase('err');
       return;
     }
     let cancelled = false;
-    setPhase('loading');
     void (async () => {
       try {
         const asset = await driveApi.getFileAsset(fileAssetId);
@@ -99,7 +90,7 @@ function AttachedEvidenceFileRow({
 
   const formatLabel = checklistAttachmentFormatLabel(mimeType, originalName ?? title);
   const showImageThumb = phase === 'ready' && previewUrl && isImageMime(mimeType);
-  const DocIcon = pickDocIcon(mimeType, formatLabel);
+  const isPdfLike = (mimeType?.toLowerCase() ?? '') === 'application/pdf' || formatLabel === 'PDF';
 
   const caption =
     phase === 'loading' ? 'Loading…' : phase === 'err' ? fileAssetId.slice(0, 12) + '…' : title;
@@ -116,7 +107,11 @@ function AttachedEvidenceFileRow({
         ) : null}
         {phase === 'ready' && !showImageThumb ? (
           <div className="flex size-full flex-col items-center justify-center gap-0.5 px-1">
-            <DocIcon className="text-muted-foreground size-7 shrink-0" />
+            {isPdfLike ? (
+              <FileText className="text-muted-foreground size-7 shrink-0" />
+            ) : (
+              <File className="text-muted-foreground size-7 shrink-0" />
+            )}
             <span className="text-muted-foreground max-w-full truncate text-[0.5625rem] font-semibold tracking-tight uppercase">
               {formatLabel}
             </span>

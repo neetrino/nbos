@@ -22,7 +22,6 @@ import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 interface DealInfoSectionProps {
   draft: DealGeneralDraft;
   patchDraft: (partial: Partial<DealGeneralDraft>) => void;
-  productTypeOptions: Array<{ value: string; label: string }>;
   filteredProductTypeOptions: Array<{ value: string; label: string }>;
   searchProjects: SearchLoader;
   searchProducts: SearchLoader;
@@ -33,7 +32,6 @@ interface DealInfoSectionProps {
 export function DealInfoSection({
   draft,
   patchDraft,
-  productTypeOptions,
   filteredProductTypeOptions,
   searchProjects,
   searchProducts,
