@@ -17,17 +17,9 @@ export function Topbar() {
           {meLoadError}
         </div>
       ) : null}
-      <header className="border-border bg-card/80 sticky top-0 z-30 flex h-16 items-center justify-between border-b px-6 backdrop-blur-sm">
-        {/* Page title area */}
-        <div className="flex items-center gap-4">
-          <h1 className="text-foreground text-lg font-semibold">Dashboard</h1>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          <NotificationDropdown />
-          <AccountMenuDropdown me={me} />
-        </div>
+      <header className="border-border bg-background/90 supports-[backdrop-filter]:bg-background/75 sticky top-0 z-30 flex h-16 shrink-0 items-center justify-end gap-2 border-b px-4 backdrop-blur-md sm:px-6">
+        <NotificationDropdown />
+        <AccountMenuDropdown me={me} />
       </header>
     </>
   );

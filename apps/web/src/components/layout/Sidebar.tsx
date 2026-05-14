@@ -389,10 +389,14 @@ function getVisibleNavItems(
   }, []);
 }
 
-export function Sidebar() {
+type SidebarProps = {
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
+};
+
+export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
   const pathname = usePathname();
   const { can, isLoading: permsLoading } = usePermission();
-  const [collapsed, setCollapsed] = useState(false);
   /** At most one section with children is expanded (accordion). */
   const [manualExpandedSection, setManualExpandedSection] = useState<{
     label: string;
@@ -580,7 +584,8 @@ export function Sidebar() {
       {/* Collapse toggle */}
       <div className="border-sidebar-border border-t p-3">
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          type="button"
+          onClick={() => onCollapsedChange(!collapsed)}
           className="text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm transition-colors"
         >
           <ChevronLeft

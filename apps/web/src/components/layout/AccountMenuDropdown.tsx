@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChevronDown, ChevronRight, LogOut, UserCircle2 } from 'lucide-react';
+import { ChevronRight, LogOut, UserCircle2 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import {
   DropdownMenu,
@@ -133,22 +133,14 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
       <DropdownMenuTrigger
         type="button"
         aria-label={`Account menu: ${displayName}`}
-        className="border-border bg-muted/40 text-foreground hover:bg-muted/60 focus-visible:ring-ring flex items-center gap-2 rounded-full border py-1 pr-2 pl-1 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:pr-3"
+        className="border-border bg-muted/30 text-foreground hover:bg-muted/55 focus-visible:ring-ring flex size-9 shrink-0 items-center justify-center rounded-full border p-0 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
-        <Avatar className="size-9 shadow-sm" size="default">
+        <Avatar className="size-8 shadow-sm" size="default">
           {photo ? <AvatarImage src={photo} alt={`${displayName} profile photo`} /> : null}
-          <AvatarFallback className="text-foreground text-sm font-semibold uppercase">
+          <AvatarFallback className="text-foreground text-xs font-semibold uppercase">
             {initials}
           </AvatarFallback>
         </Avatar>
-        <span className="hidden max-w-[160px] truncate text-left text-sm font-medium md:inline">
-          {displayName}
-        </span>
-        <ChevronDown
-          size={16}
-          className="text-muted-foreground hidden shrink-0 md:block"
-          aria-hidden
-        />
       </DropdownMenuTrigger>
       <AccountMenuPanel
         me={me}
