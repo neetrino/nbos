@@ -1,12 +1,20 @@
-# NBOS Drive — что осталось
+# NBOS — короткий фокус
 
-Канон и контекст: `docs/NBOS/02-Modules/11-Drive/08-Drive-Navigation-Project-Hub-and-Folders.md`.
+Этот файл — **направление на ближайшую работу**, не полный бэклог. Полный список: `docs/IMPLEMENTATION_PROGRESS.md`, канон: `docs/NBOS/`, дорожная карта: `docs/NBOS/00-Implementation-Roadmap.md`.
+
+---
+
+## Сейчас
+
+1. **Следующий крупный шаг** — по `IMPLEMENTATION_PROGRESS.md` блок **2A** (ручная приёмка ядра / collaboration и т.д.) или следующий модуль по `00-Implementation-Roadmap.md`, в зависимости от того, что закрываете вертикалью.
 
 ---
 
-## В работе / следующий этап
+## Drive — отложено (не в текущем фокусе)
 
-1. **Share / Move / Copy — матрица прав** по `docs/NBOS/02-Modules/11-Drive/03-Permissions-Sharing-and-Audit.md` (сейчас RBAC + доступ к файлу; не полная матрица по каждому действию в UI).
-2. **Export ZIP** — сделано: асинхронный job по **выбранным** `fileIds` (BullMQ или `DRIVE_ZIP_EXPORT_SYNC_FALLBACK` в dev), ZIP + `_manifest/export-manifest.json` внутри, результат как `FileAsset`, UI «Download as ZIP» + опрос статуса. Дальше: «вся библиотека / все проекты / отмена / TTL временных экспортов» и типы экспорта из канона §5.
+Пока **не тянем** до полного канона (других частей системы всё ещё не хватает):
 
----
+- **Матрица прав Share / Move / Copy** — когда снова в приоритете: `docs/NBOS/02-Modules/11-Drive/03-Permissions-Sharing-and-Audit.md`.
+- **Расширение Export / ZIP** (скоупы «вся библиотека», типы из разд. 5, отмена job, TTL временных экспортов) — когда снова в приоритете: `docs/NBOS/02-Modules/11-Drive/06-Drive-Storage-Export-and-Cleanup.md` §5–7.
+
+Навигация Drive / папки / текущий ZIP по выбору — см. `docs/NBOS/02-Modules/11-Drive/08-Drive-Navigation-Project-Hub-and-Folders.md` и реестр `07-Drive-Cleanup-Register.md` при возврате к глубине Drive.
