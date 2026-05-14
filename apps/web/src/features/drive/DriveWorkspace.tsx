@@ -1190,6 +1190,7 @@ export function DriveWorkspace() {
           onMoveFile={(file) => void onMoveFile(file)}
           onRemoveFromFolder={(file) => void onRemoveFromFolder(file)}
           onVersionUpload={(file, event) => void onVersionUpload(file, event)}
+          onFileDetailRefresh={() => void load()}
         />
       </div>
 

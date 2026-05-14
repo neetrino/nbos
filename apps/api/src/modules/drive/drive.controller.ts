@@ -323,7 +323,38 @@ export class DriveController {
     @Param('id') id: string,
     @Body() body: CreateFileAssetGrantDto,
   ) {
-    return this.driveService.createFileAssetGrant(id, body.granteeEmployeeId, user.id, {
+    return this.driveService.createFileAssetGrant(id, body, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Get('files/:id/grants')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List active grants on a Drive file' })
+  async listFileAssetGrants(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+  ) {
+    return this.driveService.listFileAssetGrants(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Delete('files/:id/grants/:grantId')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Revoke an active grant on a Drive file' })
+  async revokeFileAssetGrant(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Param('grantId') grantId: string,
+  ) {
+    return this.driveService.revokeFileAssetGrant(id, grantId, user.id, {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,

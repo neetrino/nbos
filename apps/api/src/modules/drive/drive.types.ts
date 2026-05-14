@@ -51,6 +51,8 @@ export interface CreateFileLinkDto {
 
 export interface CreateFileAssetGrantDto {
   granteeEmployeeId: string;
+  /** Defaults to VIEW. See `FILE_GRANT_PERMISSIONS` in drive-grant-permissions. */
+  permission?: string;
 }
 
 export interface FileAssetQueryParams {

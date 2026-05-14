@@ -73,6 +73,18 @@ export interface FileAuditEvent {
   createdAt: string;
 }
 
+export interface FileAssetGrantRow {
+  id: string;
+  fileAssetId: string;
+  granteeEmployeeId: string;
+  granteeLabel?: string;
+  grantedById: string | null;
+  permission: string;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+}
+
 export interface DriveFolder {
   id: string;
   name: string;
@@ -138,9 +150,26 @@ export const driveApi = {
 
   async createFileAssetGrant(
     fileId: string,
-    body: { granteeEmployeeId: string },
-  ): Promise<unknown> {
-    const resp = await api.post('/api/drive/files/' + encodeURIComponent(fileId) + '/grants', body);
+    body: { granteeEmployeeId: string; permission?: string },
+  ): Promise<FileAssetGrantRow> {
+    const resp = await api.post<FileAssetGrantRow>(
+      '/api/drive/files/' + encodeURIComponent(fileId) + '/grants',
+      body,
+    );
+    return resp.data;
+  },
+
+  async listFileAssetGrants(fileId: string): Promise<FileAssetGrantRow[]> {
+    const resp = await api.get<FileAssetGrantRow[]>(
+      '/api/drive/files/' + encodeURIComponent(fileId) + '/grants',
+    );
+    return resp.data;
+  },
+
+  async revokeFileAssetGrant(fileId: string, grantId: string): Promise<FileAssetGrantRow> {
+    const resp = await api.delete<FileAssetGrantRow>(
+      '/api/drive/files/' + encodeURIComponent(fileId) + '/grants/' + encodeURIComponent(grantId),
+    );
     return resp.data;
   },
 

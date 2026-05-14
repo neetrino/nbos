@@ -17,6 +17,7 @@ import { formatDriveDate, formatDriveLabel } from './drive-format';
 import { badgeVariant } from './drive-utils';
 import { getDriveFileLinkEntityHref } from './drive-file-link-entity-href';
 import { buildDriveFileHref } from './drive-file-links';
+import { FileDriveGrantsSection } from './file-drive-grants-section';
 
 export function DriveDetailPanel({
   file,
@@ -30,6 +31,7 @@ export function DriveDetailPanel({
   onMoveFile,
   onRemoveFromFolder,
   onVersionUpload,
+  onFileDetailRefresh,
 }: {
   file: FileAsset | null;
   open: boolean;
@@ -42,6 +44,8 @@ export function DriveDetailPanel({
   onMoveFile: (file: FileAsset) => void;
   onRemoveFromFolder: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
+  /** Refetch file list / detail after grants or similar mutations. */
+  onFileDetailRefresh?: () => void;
 }) {
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => (!nextOpen ? onClose() : undefined)}>
@@ -76,7 +80,11 @@ export function DriveDetailPanel({
           <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
             <FilePreviewPane file={file} />
             <aside className="border-border bg-background min-h-0 overflow-y-auto border-l">
-              <FileInfoPanel file={file} onPreview={onPreview} />
+              <FileInfoPanel
+                file={file}
+                onPreview={onPreview}
+                onFileDetailRefresh={onFileDetailRefresh}
+              />
             </aside>
           </div>
         )}
@@ -303,9 +311,11 @@ function PreviewFallback({ file, previewUrl }: { file: FileAsset; previewUrl?: s
 function FileInfoPanel({
   file,
   onPreview,
+  onFileDetailRefresh,
 }: {
   file: FileAsset;
   onPreview: (file: FileAsset) => void;
+  onFileDetailRefresh?: () => void;
 }) {
   return (
     <div className="space-y-5 p-5">
@@ -313,6 +323,7 @@ function FileInfoPanel({
       <FileMetadataBadges file={file} />
       <FileFacts file={file} />
       <BusinessLinks file={file} />
+      <FileDriveGrantsSection file={file} onChanged={onFileDetailRefresh} />
       <VersionList file={file} />
       <AuditList file={file} />
       {file.storageProvider === 'EXTERNAL_URL' && file.externalUrl && (

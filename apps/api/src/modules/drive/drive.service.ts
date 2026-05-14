@@ -22,6 +22,7 @@ import type {
   CreateGeneratedFileAssetDto,
   CreateFileVersionUploadDto,
   CreateFileLinkDto,
+  CreateFileAssetGrantDto,
   FileAssetQueryParams,
   FileEntry,
   FolderNode,
@@ -44,6 +45,7 @@ import {
   R2_DRIVE_PREFIX,
 } from './drive-storage';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
+import { normalizeFileGrantPermission } from './drive-grant-permissions';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
 import { assertFilePreviewableForDocument } from '../documents/documents-assertions';
@@ -496,14 +498,63 @@ export class DriveService {
     return { updated: jsonSafeForHttp(updated) };
   }
 
-  async createFileAssetGrant(
+  async listFileAssetGrants(fileAssetId: string, access?: DriveEntityAccess) {
+    await this.getFileAsset(fileAssetId, access);
+    const rows = await this.prisma.fileAssetGrant.findMany({
+      where: { fileAssetId, revokedAt: null },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (rows.length === 0) return [];
+    const empIds = [...new Set(rows.map((r) => r.granteeEmployeeId))];
+    const employees = await this.prisma.employee.findMany({
+      where: { id: { in: empIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const labelById = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`.trim()]));
+    return rows.map((r) => ({
+      ...jsonSafeForHttp(r),
+      granteeLabel: labelById.get(r.granteeEmployeeId) ?? r.granteeEmployeeId,
+    }));
+  }
+
+  async revokeFileAssetGrant(
     fileAssetId: string,
-    granteeEmployeeId: string,
+    grantId: string,
     actorId: string,
     access?: DriveEntityAccess,
   ) {
-    const grantee = granteeEmployeeId.trim();
+    await this.getFileAsset(fileAssetId, access);
+    const grant = await this.prisma.fileAssetGrant.findFirst({
+      where: { id: grantId, fileAssetId, revokedAt: null },
+    });
+    if (!grant) throw new NotFoundException('Grant not found or already revoked.');
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.fileAssetGrant.update({
+        where: { id: grantId },
+        data: { revokedAt: new Date() },
+      });
+      await tx.fileAuditEvent.create({
+        data: {
+          fileAssetId,
+          actorId,
+          action: 'grant_revoked',
+          metadata: { granteeEmployeeId: row.granteeEmployeeId, grantId: row.id },
+        },
+      });
+      return row;
+    });
+    return jsonSafeForHttp(updated);
+  }
+
+  async createFileAssetGrant(
+    fileAssetId: string,
+    body: CreateFileAssetGrantDto,
+    actorId: string,
+    access?: DriveEntityAccess,
+  ) {
+    const grantee = body.granteeEmployeeId.trim();
     requireText(grantee, 'granteeEmployeeId');
+    const permission = normalizeFileGrantPermission(body.permission);
     if (grantee === actorId) {
       throw new BadRequestException('You cannot grant Drive access to yourself.');
     }
@@ -511,13 +562,30 @@ export class DriveService {
     const existing = await this.prisma.fileAssetGrant.findFirst({
       where: { fileAssetId, granteeEmployeeId: grantee, revokedAt: null },
     });
-    if (existing) return jsonSafeForHttp(existing);
+    if (existing) {
+      if (existing.permission === permission) {
+        return jsonSafeForHttp(existing);
+      }
+      const row = await this.prisma.fileAssetGrant.update({
+        where: { id: existing.id },
+        data: { permission },
+      });
+      await this.prisma.fileAuditEvent.create({
+        data: {
+          fileAssetId,
+          actorId,
+          action: 'grant_updated',
+          metadata: { granteeEmployeeId: grantee, permission },
+        },
+      });
+      return jsonSafeForHttp(row);
+    }
     const row = await this.prisma.fileAssetGrant.create({
       data: {
         fileAssetId,
         granteeEmployeeId: grantee,
         grantedById: actorId,
-        permission: 'VIEW',
+        permission,
       },
     });
     await this.prisma.fileAuditEvent.create({
@@ -525,7 +593,7 @@ export class DriveService {
         fileAssetId,
         actorId,
         action: 'grant_created',
-        metadata: { granteeEmployeeId: grantee },
+        metadata: { granteeEmployeeId: grantee, permission },
       },
     });
     return jsonSafeForHttp(row);
