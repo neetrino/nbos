@@ -25,6 +25,8 @@ Phase 7 = safe migration + adapter-ready integration foundation
 Later = real provider depth where credentials, runtime and product need are clear
 ```
 
+Phase 7 follows the NBOS build-vs-integrate policy: NBOS keeps source-of-truth domain state and business rules in its own core modules, while external systems are used through adapters, embeds or import/export bridges where they provide commodity infrastructure. Do not replace CRM, Finance, Projects/Delivery, Support, Credentials, Drive metadata or Reports formulas with external product state unless a separate architecture decision explicitly accepts the split-source-of-truth cost.
+
 ## 2. Phase 7 closure gate
 
 | Area                        | Closure target                                                                                        |

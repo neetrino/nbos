@@ -18,17 +18,41 @@ Use it before building or changing any module together with:
 
 These rules apply to all modules unless a module-specific decision explicitly says otherwise.
 
-| Area                 | Decision                                                                                                          | Reason                                                                                          |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Realtime             | Use Socket.io through NestJS Gateway. Do not use raw WebSocket directly.                                          | Rooms, reconnects, auth handshake and Redis adapter support matter more than low-level control. |
-| Source of truth      | PostgreSQL DB is the source of truth. Realtime only delivers events.                                              | Prevents lost or inconsistent messages, statuses, notifications and money states.               |
-| API                  | Use REST + OpenAPI for commands, reads and history.                                                               | Keeps web, future mobile and integrations on stable contracts.                                  |
-| Async work           | Use BullMQ for external, long-running, scheduled or retryable work.                                               | HTTP requests must not block on WhatsApp, email, billing, SLA, exports or webhook retries.      |
-| Internal events      | Use synchronous domain events only for local in-process reactions; use queues when retry/idempotency is required. | Keeps module boundaries clear without losing reliability for critical flows.                    |
-| Files                | Drive owns files; modules link `FileAsset` records.                                                               | Prevents each module from inventing its own storage model.                                      |
-| Audit                | Use one Audit Log for sensitive and business-critical actions.                                                    | Finance, credentials, permissions, payments and external sends require traceability.            |
-| Missing dependencies | Missing linked modules, data or integrations must not crash the current module.                                   | NBOS is built module by module and must degrade gracefully.                                     |
-| Fake data            | Never fake financial, payment, payroll, credential, audit or report data.                                         | Missing data must be visible, not hidden behind misleading values.                              |
+| Area                 | Decision                                                                                                                                                                      | Reason                                                                                                                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Realtime             | Use Socket.io through NestJS Gateway. Do not use raw WebSocket directly.                                                                                                      | Rooms, reconnects, auth handshake and Redis adapter support matter more than low-level control.                                                                                    |
+| Source of truth      | PostgreSQL DB is the source of truth. Realtime only delivers events.                                                                                                          | Prevents lost or inconsistent messages, statuses, notifications and money states.                                                                                                  |
+| API                  | Use REST + OpenAPI for commands, reads and history.                                                                                                                           | Keeps web, future mobile and integrations on stable contracts.                                                                                                                     |
+| Async work           | Use BullMQ for external, long-running, scheduled or retryable work.                                                                                                           | HTTP requests must not block on WhatsApp, email, billing, SLA, exports or webhook retries.                                                                                         |
+| Internal events      | Use synchronous domain events only for local in-process reactions; use queues when retry/idempotency is required.                                                             | Keeps module boundaries clear without losing reliability for critical flows.                                                                                                       |
+| Files                | Drive owns files; modules link `FileAsset` records.                                                                                                                           | Prevents each module from inventing its own storage model.                                                                                                                         |
+| Audit                | Use one Audit Log for sensitive and business-critical actions.                                                                                                                | Finance, credentials, permissions, payments and external sends require traceability.                                                                                               |
+| Missing dependencies | Missing linked modules, data or integrations must not crash the current module.                                                                                               | NBOS is built module by module and must degrade gracefully.                                                                                                                        |
+| Fake data            | Never fake financial, payment, payroll, credential, audit or report data.                                                                                                     | Missing data must be visible, not hidden behind misleading values.                                                                                                                 |
+| Build vs integrate   | NBOS owns core business logic and source-of-truth records; external products/services are allowed only behind adapters or embeds where they do not replace NBOS domain state. | Prevents CRM, Finance, Delivery, Support, Drive, Mail or Messenger from becoming split-brain systems while still avoiding custom infrastructure where it is not the product value. |
+
+## Build Vs Integrate Policy
+
+NBOS is not a white-label shell over separate CRM, project, finance and support products. The product value is the shared operating model around Lead, Deal, Order, Project, Product/Extension, Invoice, Payment, Task, Credential, Support Ticket, Partner and Audit.
+
+Build inside NBOS:
+
+- CRM pipeline, stage gates and Lead-to-Cash transitions.
+- Projects Hub, Delivery Board, Product/Extension lifecycle and Work Spaces.
+- Finance operational journal, invoices, payments, subscriptions, expenses, payroll, bonus and partner payouts.
+- Support lifecycle, SLA, change-control and links to delivery/technical assets.
+- Credentials permission, encryption, reveal/export and audit flows.
+- Reports formulas that depend on NBOS domain rules.
+
+Integrate or embed through adapters:
+
+- WhatsApp, Telegram and other external message channels.
+- Gmail, IMAP/SMTP and external mail sync/send providers.
+- Google Calendar / Google Drive / Google Workspace sync when explicitly approved.
+- Payment, bank statement, government invoice and accounting-system bridges.
+- Heavy BI, collaborative office editing or other commodity capabilities when native NBOS depth is not the current product value.
+
+Any proposal to replace a core NBOS module with an open-source or SaaS product requires an explicit architecture decision because it changes the source of truth and migration model.
 
 ## Module Decisions
 
