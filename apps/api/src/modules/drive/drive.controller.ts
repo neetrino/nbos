@@ -30,6 +30,8 @@ import type {
   CopyFolderFileDto,
   MoveFolderFileDto,
   RenameDriveFolderDto,
+  AddFolderFileDto,
+  ExportDriveManifestDto,
 } from './drive.types';
 
 @ApiTags('Drive')
@@ -129,6 +131,17 @@ export class DriveController {
     await this.driveFolders.removeFile(folderId, fileId, user.id);
   }
 
+  @Post('folders/:folderId/files')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Add an existing FileAsset to a folder (new placement)' })
+  async addFileToFolder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('folderId') folderId: string,
+    @Body() body: AddFolderFileDto,
+  ) {
+    return this.driveFolders.addFileToFolder(folderId, body.fileAssetId.trim(), user.id);
+  }
+
   @Get('files')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'List DB-backed Drive file assets' })
@@ -191,11 +204,40 @@ export class DriveController {
     });
   }
 
+  @Get('files/library-link-aggregates')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Aggregate other entity links for files in a library context',
+    description:
+      'Counts FileLink rows grouped by entityType/entityId for files linked to the given context, excluding the context anchor link.',
+  })
+  @ApiQuery({ name: 'entityType', required: true })
+  @ApiQuery({ name: 'entityId', required: true })
+  async getLibraryRelatedLinkAggregates(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
+  ) {
+    return this.driveService.getLibraryRelatedLinkAggregates(entityType, entityId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
   @Get('cleanup-summary')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'Drive maintenance counters (upload sessions)' })
   async getDriveCleanupSummary() {
     return this.driveService.getDriveCleanupSummary();
+  }
+
+  @Post('cleanup/purge/:kind')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Delete failed or expired pending upload session rows' })
+  async purgeDriveUploadSessions(@Param('kind') kind: string) {
+    return this.driveService.purgeDriveUploadSessions(kind);
   }
 
   @Get('files/:id/preview-url')
@@ -226,6 +268,40 @@ export class DriveController {
         driveScope: request.permissionScope,
       },
     );
+  }
+
+  @Post('files/export-manifest')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Build a JSON export manifest for selected Drive files (ZIP companion)',
+  })
+  async exportDriveManifest(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: ExportDriveManifestDto,
+  ) {
+    return this.driveService.buildDriveExportManifest(body.fileIds ?? [], {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/:id/permanent-delete')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({
+    summary: 'Permanently delete an archived file (requires no active business links)',
+  })
+  async permanentlyDeleteFileAsset(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+  ) {
+    return this.driveService.permanentlyDeleteFileAsset(id, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Get('files/:id')

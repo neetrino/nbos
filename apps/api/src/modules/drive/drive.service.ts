@@ -618,6 +618,30 @@ export class DriveService {
     }));
   }
 
+  async getLibraryRelatedLinkAggregates(
+    entityType: string | undefined,
+    entityId: string | undefined,
+    access?: DriveEntityAccess,
+  ) {
+    const et = requireText(entityType, 'entityType');
+    const eid = requireText(entityId, 'entityId');
+    const fileWhere = await this.buildFileAssetWhere({ entityType: et, entityId: eid }, access);
+    const rows = await this.prisma.fileLink.groupBy({
+      by: ['entityType', 'entityId'],
+      where: {
+        unlinkedAt: null,
+        NOT: { AND: [{ entityType: et }, { entityId: eid }] },
+        fileAsset: fileWhere,
+      },
+      _count: { id: true },
+    });
+    return rows.map((r) => ({
+      entityType: r.entityType,
+      entityId: r.entityId,
+      count: r._count.id,
+    }));
+  }
+
   async getDriveCleanupSummary() {
     const now = new Date();
     const [failedUploadSessions, expiredPendingUploadSessions] = await Promise.all([
@@ -627,6 +651,77 @@ export class DriveService {
       }),
     ]);
     return { failedUploadSessions, expiredPendingUploadSessions };
+  }
+
+  async purgeDriveUploadSessions(kindParam: string) {
+    const kind = kindParam.trim().toLowerCase().replace(/-/g, '_');
+    if (kind !== 'expired_pending' && kind !== 'failed') {
+      throw new BadRequestException('kind must be expired_pending (or expired-pending) or failed.');
+    }
+    const now = new Date();
+    if (kind === 'failed') {
+      const r = await this.prisma.fileUploadSession.deleteMany({ where: { status: 'FAILED' } });
+      return { deleted: r.count, kind };
+    }
+    const r = await this.prisma.fileUploadSession.deleteMany({
+      where: { status: 'PENDING', expiresAt: { lt: now } },
+    });
+    return { deleted: r.count, kind };
+  }
+
+  async buildDriveExportManifest(fileIds: string[], access?: DriveEntityAccess) {
+    const unique = [...new Set(fileIds.map((id) => id.trim()).filter(Boolean))].slice(0, 40);
+    if (unique.length === 0) {
+      throw new BadRequestException('fileIds must include at least one id.');
+    }
+    const files: Array<{
+      id: string;
+      displayName: string;
+      mimeType: string | null;
+      sizeBytes: unknown;
+      purpose: string | null;
+    }> = [];
+    for (const id of unique) {
+      const asset = await this.getFileAsset(id, access);
+      files.push({
+        id: asset.id,
+        displayName: asset.displayName,
+        mimeType: asset.mimeType,
+        sizeBytes: asset.sizeBytes,
+        purpose: asset.purpose,
+      });
+    }
+    return jsonSafeForHttp({ generatedAt: new Date().toISOString(), files });
+  }
+
+  async permanentlyDeleteFileAsset(id: string, actorId: string, access?: DriveEntityAccess) {
+    const file = await this.getFileAsset(id, access);
+    if (file.status !== 'ARCHIVED') {
+      throw new BadRequestException('Only archived files can be permanently deleted.');
+    }
+    const activeLinks = await this.prisma.fileLink.count({
+      where: { fileAssetId: id, unlinkedAt: null },
+    });
+    if (activeLinks > 0) {
+      throw new BadRequestException('Remove active business links before permanent delete.');
+    }
+    return jsonSafeForHttp(
+      await this.prisma.$transaction(async (tx) => {
+        await tx.fileAuditEvent.create({
+          data: {
+            fileAssetId: id,
+            actorId,
+            action: 'permanent_deleted',
+            metadata: {},
+          },
+        });
+        return tx.fileAsset.update({
+          where: { id },
+          data: { status: 'DELETED', deletedAt: new Date() },
+          include: FILE_ASSET_INCLUDE,
+        });
+      }),
+    );
   }
 
   async getProjectStructure(projectId: string): Promise<FolderNode> {

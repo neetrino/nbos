@@ -177,12 +177,52 @@ export class DriveFolderService {
     });
   }
 
+  /** Adds a file to a folder when it is not already placed there (Library → Company/Personal). */
+  async addFileToFolder(folderId: string, fileAssetId: string, userId: string) {
+    await this.assertCanUseFolder(folderId, userId);
+    const existing = await this.prisma.driveFolderItem.findFirst({
+      where: { folderId, fileAssetId, itemType: 'FILE', removedAt: null },
+    });
+    if (existing) {
+      return jsonSafeForHttp(existing);
+    }
+    return this.prisma.$transaction(async (tx) => {
+      const item = await tx.driveFolderItem.create({
+        data: {
+          folderId,
+          itemType: 'FILE',
+          fileAssetId,
+          placedById: userId,
+        },
+      });
+      await tx.fileAuditEvent.create({
+        data: {
+          fileAssetId,
+          actorId: userId,
+          action: 'folder_placement_added',
+          metadata: { folderId, folderItemId: item.id },
+        },
+      });
+      return jsonSafeForHttp(item);
+    });
+  }
+
   async removeFile(folderId: string, fileAssetId: string, userId: string) {
     await this.assertCanUseFolder(folderId, userId);
     const placement = await this.findActiveFilePlacement(folderId, fileAssetId);
-    await this.prisma.driveFolderItem.update({
-      where: { id: placement.id },
-      data: { removedAt: new Date() },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.driveFolderItem.update({
+        where: { id: placement.id },
+        data: { removedAt: new Date() },
+      });
+      await tx.fileAuditEvent.create({
+        data: {
+          fileAssetId,
+          actorId: userId,
+          action: 'folder_placement_removed',
+          metadata: { folderId },
+        },
+      });
     });
   }
 
@@ -195,10 +235,21 @@ export class DriveFolderService {
     await this.assertCanUseFolder(sourceFolderId, userId);
     await this.assertCanUseFolder(targetFolderId, userId);
     const placement = await this.findActiveFilePlacement(sourceFolderId, fileAssetId);
-    const moved = await this.prisma.driveFolderItem.update({
-      where: { id: placement.id },
-      data: { folderId: targetFolderId, placedById: userId, placedAt: new Date() },
-      include: { fileAsset: { include: FILE_ASSET_INCLUDE } },
+    const moved = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.driveFolderItem.update({
+        where: { id: placement.id },
+        data: { folderId: targetFolderId, placedById: userId, placedAt: new Date() },
+        include: { fileAsset: { include: FILE_ASSET_INCLUDE } },
+      });
+      await tx.fileAuditEvent.create({
+        data: {
+          fileAssetId,
+          actorId: userId,
+          action: 'folder_placement_moved',
+          metadata: { sourceFolderId, targetFolderId },
+        },
+      });
+      return row;
     });
     return jsonSafeForHttp(moved.fileAsset);
   }

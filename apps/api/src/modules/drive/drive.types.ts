@@ -55,6 +55,14 @@ export interface CreateFileAssetGrantDto {
   permission?: string;
 }
 
+export interface AddFolderFileDto {
+  fileAssetId: string;
+}
+
+export interface ExportDriveManifestDto {
+  fileIds: string[];
+}
+
 export interface FileAssetQueryParams {
   entityType?: string;
   entityId?: string;

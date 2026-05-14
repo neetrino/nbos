@@ -461,4 +461,47 @@ export const driveApi = {
       params: { path: filePath },
     });
   },
+
+  async addFileToFolder(folderId: string, fileAssetId: string): Promise<unknown> {
+    const resp = await api.post('/api/drive/folders/' + encodeURIComponent(folderId) + '/files', {
+      fileAssetId,
+    });
+    return resp.data;
+  },
+
+  async getLibraryLinkAggregates(params: {
+    entityType: string;
+    entityId: string;
+  }): Promise<{ entityType: string; entityId: string; count: number }[]> {
+    const resp = await api.get('/api/drive/files/library-link-aggregates', { params });
+    return resp.data;
+  },
+
+  async purgeDriveCleanup(
+    kind: 'expired-pending' | 'failed',
+  ): Promise<{ deleted: number; kind: string }> {
+    const resp = await api.post('/api/drive/cleanup/purge/' + encodeURIComponent(kind));
+    return resp.data;
+  },
+
+  async buildExportManifest(fileIds: string[]): Promise<{
+    generatedAt: string;
+    files: Array<{
+      id: string;
+      displayName: string;
+      mimeType: string | null;
+      sizeBytes: unknown;
+      purpose: string | null;
+    }>;
+  }> {
+    const resp = await api.post('/api/drive/files/export-manifest', { fileIds });
+    return resp.data;
+  },
+
+  async permanentlyDeleteFileAsset(id: string): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/permanent-delete',
+    );
+    return resp.data;
+  },
 };
