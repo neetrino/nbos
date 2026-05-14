@@ -13,6 +13,13 @@ import { ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   driveApi,
   type DriveFolder,
   type DriveFolderListing,
@@ -68,6 +75,8 @@ import {
   DRIVE_DEEP_LINK_PROJECT_ID_QUERY,
   DRIVE_DEEP_LINK_TASK_ID_QUERY,
 } from './drive-deep-link';
+import { DRIVE_FILE_SORT_STORAGE_KEY, type DriveFileSortKey } from './drive-file-sort';
+import { toFileSizeNumber } from './drive-format';
 
 type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
 
@@ -98,6 +107,20 @@ export function DriveWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [insightsOpen, setInsightsOpen] = useState(false);
+  const [maintenanceSummary, setMaintenanceSummary] = useState<{
+    failedUploadSessions: number;
+    expiredPendingUploadSessions: number;
+  } | null>(null);
+  const [purgeBusy, setPurgeBusy] = useState(false);
+  const [linkAggregates, setLinkAggregates] = useState<
+    { entityType: string; entityId: string; count: number }[]
+  >([]);
+  const [fileSort, setFileSort] = useState<DriveFileSortKey>(() => {
+    if (typeof window === 'undefined') return 'updated';
+    const r = window.localStorage.getItem(DRIVE_FILE_SORT_STORAGE_KEY);
+    return r === 'name' || r === 'size' || r === 'updated' ? r : 'updated';
+  });
+  const [libraryPlacePickerOpen, setLibraryPlacePickerOpen] = useState(false);
   const [folderListing, setFolderListing] = useState<DriveFolderListing | null>(null);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [folderTrail, setFolderTrail] = useState<DriveFolder[]>([]);
@@ -530,6 +553,43 @@ export function DriveWorkspace() {
     window.localStorage.setItem(DRIVE_VIEW_MODE_STORAGE_KEY, viewMode);
   }, [viewMode]);
 
+  useEffect(() => {
+    window.localStorage.setItem(DRIVE_FILE_SORT_STORAGE_KEY, fileSort);
+  }, [fileSort]);
+
+  useEffect(() => {
+    if (!insightsOpen) return;
+    let cancelled = false;
+    void driveApi.getDriveCleanupSummary().then((s) => {
+      if (!cancelled) setMaintenanceSummary(s);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [insightsOpen]);
+
+  useEffect(() => {
+    if (!insightsOpen || !systemLibraryLink) {
+      setLinkAggregates([]);
+      return;
+    }
+    let cancelled = false;
+    void driveApi
+      .getLibraryLinkAggregates({
+        entityType: systemLibraryLink.entityType,
+        entityId: systemLibraryLink.entityId,
+      })
+      .then((rows) => {
+        if (!cancelled) setLinkAggregates(rows);
+      })
+      .catch(() => {
+        if (!cancelled) setLinkAggregates([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [insightsOpen, systemLibraryLink]);
+
   const activeLibraryEntityLabel = useMemo(() => {
     if (!systemLibraryLink) return null;
     const row = mergedLibraryEntityRows.find(
@@ -561,11 +621,65 @@ export function DriveWorkspace() {
     selectedLibrary,
     selectedSpace.key,
   ]);
+  const sortedFiles = useMemo(() => {
+    const list = [...files];
+    const byUpdated = (a: FileAsset, b: FileAsset) =>
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    if (fileSort === 'name') {
+      list.sort((a, b) => a.displayName.localeCompare(b.displayName));
+    } else if (fileSort === 'size') {
+      list.sort((a, b) => toFileSizeNumber(b.sizeBytes) - toFileSizeNumber(a.sizeBytes));
+    } else {
+      list.sort(byUpdated);
+    }
+    return list;
+  }, [files, fileSort]);
   const stats = useMemo(() => buildDriveStats(files), [files]);
   const libraryCounts = useMemo(
     () => buildLibraryCounts(rawFiles, selectedSpace.key),
     [rawFiles, selectedSpace.key],
   );
+
+  const handlePurgeFailed = useCallback(async () => {
+    setPurgeBusy(true);
+    try {
+      const r = await driveApi.purgeDriveCleanup('failed');
+      toast.success(r.deleted === 0 ? 'Nothing to purge' : `Removed ${r.deleted} failed sessions`);
+      const s = await driveApi.getDriveCleanupSummary();
+      setMaintenanceSummary(s);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Purge failed');
+    } finally {
+      setPurgeBusy(false);
+    }
+  }, []);
+
+  const handlePurgeExpired = useCallback(async () => {
+    setPurgeBusy(true);
+    try {
+      const r = await driveApi.purgeDriveCleanup('expired-pending');
+      toast.success(
+        r.deleted === 0 ? 'Nothing to purge' : `Removed ${r.deleted} expired pending sessions`,
+      );
+      const s = await driveApi.getDriveCleanupSummary();
+      setMaintenanceSummary(s);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Purge failed');
+    } finally {
+      setPurgeBusy(false);
+    }
+  }, []);
+
+  const maintenanceCleanupProp = useMemo(() => {
+    if (!insightsOpen || !maintenanceSummary) return null;
+    return {
+      failedUploadSessions: maintenanceSummary.failedUploadSessions,
+      expiredPendingUploadSessions: maintenanceSummary.expiredPendingUploadSessions,
+      purgeBusy,
+      onPurgeFailed: () => void handlePurgeFailed(),
+      onPurgeExpired: () => void handlePurgeExpired(),
+    };
+  }, [handlePurgeExpired, handlePurgeFailed, insightsOpen, maintenanceSummary, purgeBusy]);
 
   const handleDragMoveFilesToFolder = useCallback(
     async (fileIds: string[], targetFolderId: string) => {
@@ -774,6 +888,49 @@ export function DriveWorkspace() {
         () => driveApi.copyFolderFile({ targetFolderId, fileId: file.id }),
         'File copied',
       );
+    }
+  }
+
+  async function handleLibraryPlaceConfirm(targetFolderId: string) {
+    if (selectedIds.length === 0) return;
+    setBusy(true);
+    try {
+      for (const id of selectedIds) {
+        await driveApi.addFileToFolder(targetFolderId, id);
+      }
+      toast.success(
+        selectedIds.length === 1
+          ? 'File added to folder'
+          : `${selectedIds.length} files placed in folder`,
+      );
+      setLibraryPlacePickerOpen(false);
+      setSelectedIds([]);
+      await load();
+      if (driveStorageSpace) void loadFolders();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not place files in folder');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleExportManifestForSelection() {
+    if (selectedIds.length === 0) return;
+    setBusy(true);
+    try {
+      const manifest = await driveApi.buildExportManifest(selectedIds);
+      const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `drive-export-manifest-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Manifest downloaded');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Export failed');
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -1042,6 +1199,8 @@ export function DriveWorkspace() {
         onViewModeChange={setViewMode}
         onRefresh={() => void load()}
         loading={loading}
+        maintenanceCleanup={maintenanceCleanupProp}
+        libraryLinkAggregates={insightsOpen ? linkAggregates : []}
       />
 
       {error && (
@@ -1115,8 +1274,47 @@ export function DriveWorkspace() {
               onArchive={() => void onBulkArchive()}
               onRestore={() => void onBulkRestore()}
               onClear={() => setSelectedIds([])}
+              showLibraryBulkActions={Boolean(
+                browseSystemLibraryUploads && systemLibraryLink && selectedSpace.key === 'system',
+              )}
+              onPlaceInCompanyFolder={() => setLibraryPlacePickerOpen(true)}
+              onExportManifest={() => void handleExportManifestForSelection()}
             />
           )}
+
+          {!browseSystemLibraryEntityRoot ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-muted-foreground text-xs font-medium">Sort</span>
+              <Select
+                value={fileSort}
+                onValueChange={(v) =>
+                  setFileSort(
+                    (v === 'name' || v === 'size' || v === 'updated'
+                      ? v
+                      : 'updated') as DriveFileSortKey,
+                  )
+                }
+              >
+                <SelectTrigger className="h-8 w-[10.5rem]" aria-label="Sort files">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="updated">Recently updated</SelectItem>
+                  <SelectItem value="name">Name (A–Z)</SelectItem>
+                  <SelectItem value="size">Size (largest first)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
+
+          {driveDeepLinkProjectId &&
+          selectedSpace.key === 'system' &&
+          selectedLibrary.key === 'projects' ? (
+            <p className="text-muted-foreground text-xs">
+              Project hub: files are scoped to this project. Open Company or Personal Drive to
+              manage folder trees.
+            </p>
+          ) : null}
 
           {browseSystemLibraryUploads && systemLibraryLink ? (
             <div className="border-border/60 bg-muted/20 flex flex-wrap items-center gap-1 rounded-2xl border px-3 py-2 text-sm">
@@ -1148,7 +1346,7 @@ export function DriveWorkspace() {
             />
           ) : (
             <DriveFileSurface
-              files={files}
+              files={sortedFiles}
               folders={folderListing?.folders ?? []}
               loading={loading}
               viewMode={viewMode}
@@ -1191,8 +1389,22 @@ export function DriveWorkspace() {
           onRemoveFromFolder={(file) => void onRemoveFromFolder(file)}
           onVersionUpload={(file, event) => void onVersionUpload(file, event)}
           onFileDetailRefresh={() => void load()}
+          onPermanentDeleteSuccess={() => {
+            void load();
+            setSelected(null);
+          }}
         />
       </div>
+
+      <DriveFolderPickerDialog
+        open={libraryPlacePickerOpen}
+        onOpenChange={setLibraryPlacePickerOpen}
+        space="COMPANY"
+        title="Place files in Company Drive"
+        description="Choose a folder. Selected library files will be added as placements (the FileAsset is not duplicated)."
+        confirmLabel="Place here"
+        onConfirm={(targetFolderId) => void handleLibraryPlaceConfirm(targetFolderId)}
+      />
 
       {driveStorageSpace && (
         <DriveFolderPickerDialog

@@ -1,6 +1,15 @@
 import { useEffect, useState, type ChangeEvent, type ReactNode } from 'react';
 import Link from 'next/link';
-import { Archive, ArrowUpRight, Copy, File, FolderInput, Loader2, Upload } from 'lucide-react';
+import {
+  Archive,
+  ArrowUpRight,
+  Copy,
+  File,
+  FolderInput,
+  Loader2,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -9,6 +18,7 @@ import {
   ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
 } from '@/components/shared';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { toast } from 'sonner';
 import { driveApi } from '@/lib/api/drive';
 import type { FileAsset } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
@@ -32,6 +42,7 @@ export function DriveDetailPanel({
   onRemoveFromFolder,
   onVersionUpload,
   onFileDetailRefresh,
+  onPermanentDeleteSuccess,
 }: {
   file: FileAsset | null;
   open: boolean;
@@ -46,6 +57,8 @@ export function DriveDetailPanel({
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
   /** Refetch file list / detail after grants or similar mutations. */
   onFileDetailRefresh?: () => void;
+  /** After permanent delete: refresh list and close sheet. */
+  onPermanentDeleteSuccess?: () => void;
 }) {
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => (!nextOpen ? onClose() : undefined)}>
@@ -69,6 +82,7 @@ export function DriveDetailPanel({
                   onMoveFile={onMoveFile}
                   onRemoveFromFolder={onRemoveFromFolder}
                   onVersionUpload={onVersionUpload}
+                  onPermanentDeleteSuccess={onPermanentDeleteSuccess}
                 />
               }
             />
@@ -102,6 +116,7 @@ function DriveFileRailTrailing({
   onMoveFile,
   onRemoveFromFolder,
   onVersionUpload,
+  onPermanentDeleteSuccess,
 }: {
   file: FileAsset;
   busy: boolean;
@@ -111,9 +126,26 @@ function DriveFileRailTrailing({
   onMoveFile: (file: FileAsset) => void;
   onRemoveFromFolder: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
+  onPermanentDeleteSuccess?: () => void;
 }) {
   const archiveLabel = file.status === 'ARCHIVED' ? 'Restore file' : 'Archive file';
   const archiveHint = file.status === 'ARCHIVED' ? 'Restore' : 'Archive';
+
+  async function handlePermanentDelete() {
+    const linkCount = file.links.length;
+    const msg =
+      linkCount > 0
+        ? `This file has ${linkCount} active business link(s). Remove links first, or the server will reject delete. Permanently delete anyway?`
+        : 'Permanently delete this archived file? This cannot be undone.';
+    if (!window.confirm(msg)) return;
+    try {
+      await driveApi.permanentlyDeleteFileAsset(file.id);
+      toast.success('File permanently deleted');
+      onPermanentDeleteSuccess?.();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Permanent delete failed');
+    }
+  }
 
   return (
     <>
@@ -126,6 +158,16 @@ function DriveFileRailTrailing({
       >
         <Archive className="size-4" aria-hidden />
       </RailTrailButton>
+      {file.status === 'ARCHIVED' ? (
+        <RailTrailButton
+          ariaLabel="Delete forever"
+          hint="Delete forever"
+          disabled={busy}
+          onClick={() => void handlePermanentDelete()}
+        >
+          <Trash2 className="size-4" aria-hidden />
+        </RailTrailButton>
+      ) : null}
       <RailTrailButton
         ariaLabel="Copy file"
         hint="Copy"
@@ -242,6 +284,55 @@ function FilePreviewPane({ file }: { file: FileAsset }) {
   );
 }
 
+function CodeTextPreview({ url, title }: { url: string; title: string }) {
+  const [body, setBody] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error('Preview fetch failed');
+        return res.text();
+      })
+      .then((raw) => {
+        const max = 200_000;
+        const clipped = raw.length > max ? `${raw.slice(0, max)}\n…(truncated)` : raw;
+        if (!cancelled) setBody(clipped);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  if (failed) {
+    return (
+      <p className="text-muted-foreground max-w-md text-center text-sm">
+        In-browser preview failed (CORS or size). Use &quot;Open file&quot; from the file menu.
+      </p>
+    );
+  }
+  if (body === null) {
+    return (
+      <Loader2
+        className="text-muted-foreground size-8 animate-spin"
+        aria-label={`Loading ${title}`}
+      />
+    );
+  }
+  return (
+    <pre
+      className="bg-background border-border max-h-[min(70vh,560px)] w-full max-w-full overflow-auto rounded-2xl border p-4 text-left font-mono text-xs leading-relaxed whitespace-pre-wrap"
+      tabIndex={0}
+    >
+      {body}
+    </pre>
+  );
+}
+
 function PreviewContent({
   file,
   preview,
@@ -256,6 +347,12 @@ function PreviewContent({
   }
   if (!preview?.url) return <PreviewFallback file={file} />;
   const mimeType = preview.mimeType ?? file.mimeType ?? '';
+  const isCodeLike =
+    file.fileType === 'CODE' ||
+    mimeType.startsWith('text/') ||
+    mimeType === 'application/json' ||
+    mimeType.includes('javascript') ||
+    mimeType.includes('typescript');
   if (mimeType.startsWith('image/')) {
     return (
       <img
@@ -275,13 +372,29 @@ function PreviewContent({
       />
     );
   }
-  if (mimeType === 'application/pdf' || mimeType.startsWith('text/')) {
+  if (isCodeLike) {
+    return <CodeTextPreview url={preview.url} title={file.displayName} />;
+  }
+  if (mimeType === 'application/pdf') {
     return (
-      <iframe
-        title={file.displayName}
-        src={preview.url}
-        className="bg-background h-full w-full rounded-2xl border"
-      />
+      <div className="flex h-full min-h-[min(70vh,560px)] w-full max-w-full flex-col gap-2">
+        <iframe
+          title={file.displayName}
+          src={preview.url}
+          className="bg-background min-h-0 w-full flex-1 rounded-2xl border"
+        />
+        <p className="text-muted-foreground text-center text-xs">
+          Large PDFs:{' '}
+          <button
+            type="button"
+            className={cn(buttonVariants({ variant: 'link' }), 'h-auto p-0 text-xs')}
+            onClick={() => window.open(preview.url, '_blank', 'noopener,noreferrer')}
+          >
+            Open in new tab
+          </button>{' '}
+          if the embedded viewer is slow.
+        </p>
+      </div>
     );
   }
   return <PreviewFallback file={file} previewUrl={preview.url} />;

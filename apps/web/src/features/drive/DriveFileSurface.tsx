@@ -234,8 +234,12 @@ function DriveEmptyState() {
       <File className="text-muted-foreground/40 mx-auto" size={40} />
       <h2 className="text-foreground mt-4 font-semibold">No files in this view</h2>
       <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm">
-        Upload from a linked module or adjust filters. Drive keeps honest empty states instead of
-        inventing files or mixing unrelated libraries.
+        Try another library or space, clear search, or upload from a linked record. Empty views are
+        intentional — NBOS does not mix unrelated libraries.
+      </p>
+      <p className="text-muted-foreground mx-auto mt-3 max-w-md text-xs">
+        Tip: open <strong className="text-foreground">Analytics</strong> in the header for counts;
+        use bulk actions when files are selected.
       </p>
     </div>
   );

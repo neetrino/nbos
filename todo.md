@@ -9,18 +9,18 @@
 
 ## Подтверждено к реализации
 
-1. **Grants — UI:** кому доступ / отзыв (`revokedAt`), роли кроме `VIEW` по канону, уведомления (API grants уже есть).
-2. **Share / Move / Copy:** матрица прав по `docs/NBOS/02-Modules/11-Drive/03-Permissions-Sharing-and-Audit.md`; аудит на каждое значимое действие.
-3. **Удаление:** корзина / delete forever; в UI защита и предупреждения для business-linked файлов.
-4. **Quick attach:** **Project** (как было), **Product / Task / Finance** — `EntityDriveQuickAttach` + deep links в `drive-deep-link.ts` (`buildDriveHrefWithProduct`, `buildDriveHrefWithTask`, `buildDriveHrefWithFinanceProject` для вкладки Finance на продукте).
-5. **Library graph API:** агрегации и выборки по **графу связей**, не только `listFileAssets` и `context-summary` по `purpose`.
-6. **Export ZIP:** отдельный job + storage + download + manifest (Project / Product / Client / Finance) — не путать с report export jobs.
-7. **Cleanup UI:** экран оператора + действия (сейчас есть только метрики `GET /api/drive/cleanup-summary`).
-8. **Preview:** подсветка кода; UX для больших PDF; при необходимости — streaming video (базовый `<video>` уже есть).
-9. **Drive UI:** довести empty states и мелкие подсказки (аналитика уже за кнопкой Analytics).
-10. **DnD:** перетаскивание файлов **между** Library и Company/Personal (сейчас DnD внутри Company/Personal).
-11. **Папки проекта в Drive:** отдельный **scope дерева** под `PROJECT` (сейчас: deep link, Library, файлы по ссылке — без отдельного дерева «только проект»).
-12. **Reorder файлов в папке** — если продуктово закрепят в каноне (иначе достаточно сортировки по дате/имени).
+1. **Grants — UI:** сделано — список / отзыв / роли (`FILE_GRANT_PERMISSIONS`), панель в детали файла; push-уведомления получателям — вне текущего MVP (toast у выдавшего).
+2. **Share / Move / Copy:** аудит на перенос/снятие/добавление placement в папку (`folder_placement_*`); матрица прав по документу — частично (как и раньше на уровне RBAC + `getFileAsset`).
+3. **Удаление:** архив как раньше; **delete forever** — `POST .../permanent-delete` (только `ARCHIVED`, без активных links) + кнопка в rail детали файла.
+4. **Quick attach:** сделано ранее (Project / Product / Task / Finance).
+5. **Library graph API:** `GET /api/drive/files/library-link-aggregates` + таблица в Analytics по текущему library-контексту.
+6. **Export ZIP:** пока **манифест JSON** (`POST /api/drive/files/export-manifest`) + скачивание из bulk в Library; полноценный ZIP job + storage — следующий этап.
+7. **Cleanup UI:** счётчики + **Purge failed / Purge expired** в Analytics; `POST /api/drive/cleanup/purge/:kind`.
+8. **Preview:** текст/код через `fetch` + `<pre>`; для PDF — подсказка «открыть в новой вкладке»; video без изменений.
+9. **Drive UI:** обновлены empty states и подсказка про Analytics.
+10. **DnD Library → Company:** перетаскивание между панелями без общего split-view не доведено; **MVP:** bulk «Place in Company folder…» + API `POST /folders/:id/files`.
+11. **Папки проекта:** подсказка при deep link `projectId` в Library Projects (отдельное дерево папок только под PROJECT — без нового API дерева).
+12. **Reorder:** сортировка списка **по дате / имени / размеру** (persist в `localStorage`); ручной порядок в папке без канона — не делали.
 
 ---
 
