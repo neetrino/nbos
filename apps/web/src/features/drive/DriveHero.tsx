@@ -42,21 +42,29 @@ export function DriveHero({
         </div>
         <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
           <DriveViewModeSwitch value={viewMode} onChange={onViewModeChange} />
-          <Button type="button" variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
-            <RefreshCw className={cn('size-4', loading && 'animate-spin')} aria-hidden />
-            Refresh
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            onClick={onRefresh}
+            disabled={loading}
+            aria-label="Refresh"
+            title="Refresh"
+          >
+            <RefreshCw className={cn('size-4', loading && 'animate-spin')} />
           </Button>
           <Button
             type="button"
             variant="outline"
-            size="sm"
+            size="icon-sm"
             onClick={onToggleInsights}
+            aria-label={insightsOpen ? 'Hide analytics' : 'Analytics'}
+            title={insightsOpen ? 'Hide analytics' : 'Analytics'}
             className={cn(
               insightsOpen && 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15',
             )}
           >
-            <BarChart3 className="size-4" aria-hidden />
-            Analytics
+            <BarChart3 className="size-4" />
           </Button>
         </div>
       </div>
