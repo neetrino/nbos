@@ -18,6 +18,7 @@ import { DriveFileSurface } from './DriveFileSurface';
 import { DriveHero } from './DriveHero';
 import { DriveLibraries } from './DriveLibraries';
 import { DriveToolbar } from './DriveToolbar';
+import { buildDriveFileAbsoluteUrl } from './drive-file-links';
 import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
 import { buildDriveStats, fileMatchesLibrary, getInitialViewMode } from './drive-utils';
 
@@ -78,13 +79,44 @@ export function DriveWorkspace() {
   }, [files]);
 
   async function onPreview(file: FileAsset) {
+    setSelected(file);
+  }
+
+  async function onCopyLink(file: FileAsset) {
     try {
-      const { url } = await driveApi.getFileAssetPreviewUrl(file.id);
-      window.open(url, '_blank', 'noopener,noreferrer');
+      await navigator.clipboard.writeText(buildDriveFileAbsoluteUrl(file));
+      toast.success('File link copied');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to open file');
+      toast.error(err instanceof Error ? err.message : 'Failed to copy file link');
     }
   }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const fileId = new URLSearchParams(window.location.search).get('fileId');
+    if (!fileId) return;
+    const existing = rawFiles.find((file) => file.id === fileId);
+    if (existing) {
+      setSelected(existing);
+      return;
+    }
+    let cancelled = false;
+    driveApi
+      .getFileAsset(fileId)
+      .then((file) => {
+        if (cancelled) return;
+        setRawFiles((current) =>
+          current.some((item) => item.id === file.id) ? current : [file, ...current],
+        );
+        setSelected(file);
+      })
+      .catch((err) => {
+        toast.error(err instanceof Error ? err.message : 'Could not open Drive file');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [rawFiles]);
 
   async function onArchive(file: FileAsset) {
     await mutateFile(() => driveApi.archiveFileAsset(file.id), 'File archived');
@@ -247,6 +279,7 @@ export function DriveWorkspace() {
           onArchive={(file) => void onArchive(file)}
           onRestore={(file) => void onRestore(file)}
           onPreview={(file) => void onPreview(file)}
+          onCopyLink={(file) => void onCopyLink(file)}
           onVersionUpload={(file, event) => void onVersionUpload(file, event)}
         />
       </div>

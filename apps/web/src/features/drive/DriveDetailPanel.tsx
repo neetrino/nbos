@@ -1,18 +1,26 @@
-import type { ChangeEvent, ReactNode } from 'react';
-import { Archive, ArrowUpRight, Download, Upload } from 'lucide-react';
+import { useEffect, useState, type ChangeEvent, type ReactNode } from 'react';
+import {
+  Archive,
+  ArrowUpRight,
+  Copy,
+  File,
+  FolderInput,
+  Link2,
+  Loader2,
+  Upload,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { driveApi } from '@/lib/api/drive';
 import type { FileAsset } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
+import { formatFileSize } from './drive-format';
 import { formatDriveDate, formatDriveLabel } from './drive-format';
 import { badgeVariant } from './drive-utils';
+
+const RAIL_CONTROL_CLASS =
+  'size-10 shrink-0 rounded-l-full rounded-r-none border-0 bg-primary text-primary-foreground shadow-md hover:bg-primary/90 max-sm:rounded-full';
 
 export function DriveDetailPanel({
   file,
@@ -22,6 +30,7 @@ export function DriveDetailPanel({
   onArchive,
   onRestore,
   onPreview,
+  onCopyLink,
   onVersionUpload,
 }: {
   file: FileAsset | null;
@@ -31,45 +40,244 @@ export function DriveDetailPanel({
   onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onPreview: (file: FileAsset) => void;
+  onCopyLink: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => (!nextOpen ? onClose() : undefined)}>
-      <SheetContent className="w-full overflow-y-auto p-0 sm:max-w-[420px]" floatingClose>
-        <SheetHeader className="border-border border-b p-5">
-          <SheetTitle>File details</SheetTitle>
-          <SheetDescription>Metadata, links, versions and audit trail.</SheetDescription>
-        </SheetHeader>
-        {file && (
-          <div className="space-y-5 p-5">
-            <FileHeading file={file} />
-            <FileMetadataBadges file={file} />
-            <FileActions
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        floatingClose
+        floatingRailVisible={open}
+        floatingRailAnchorClassName="sm:right-[82vw]"
+        floatingRail={
+          file ? (
+            <DriveFileRail
               file={file}
               busy={busy}
-              onPreview={onPreview}
+              onCopyLink={onCopyLink}
               onArchive={onArchive}
               onRestore={onRestore}
               onVersionUpload={onVersionUpload}
             />
-            <BusinessLinks file={file} />
-            <VersionList file={file} />
-            <AuditList file={file} />
-            {file.storageProvider === 'EXTERNAL_URL' && file.externalUrl && (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => onPreview(file)}
-              >
-                <ArrowUpRight />
-                Open external source
-              </Button>
-            )}
+          ) : null
+        }
+        className="w-full gap-0 overflow-hidden p-0 sm:max-w-none sm:data-[side=right]:w-[82vw]"
+      >
+        {file && (
+          <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <FilePreviewPane file={file} />
+            <aside className="border-border bg-background min-h-0 overflow-y-auto border-l">
+              <FileInfoPanel file={file} onPreview={onPreview} />
+            </aside>
           </div>
         )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function DriveFileRail({
+  file,
+  busy,
+  onCopyLink,
+  onArchive,
+  onRestore,
+  onVersionUpload,
+}: {
+  file: FileAsset;
+  busy: boolean;
+  onCopyLink: (file: FileAsset) => void;
+  onArchive: (file: FileAsset) => void;
+  onRestore: (file: FileAsset) => void;
+  onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <>
+      <RailButton label="Copy file link" disabled={busy} onClick={() => onCopyLink(file)}>
+        <Link2 className="size-4" aria-hidden />
+      </RailButton>
+      <RailVersionUpload file={file} busy={busy} onVersionUpload={onVersionUpload} />
+      <RailButton
+        label={file.status === 'ARCHIVED' ? 'Restore file' : 'Archive file'}
+        disabled={busy}
+        onClick={() => (file.status === 'ARCHIVED' ? onRestore(file) : onArchive(file))}
+      >
+        <Archive className="size-4" aria-hidden />
+      </RailButton>
+      <RailButton label="Copy file later" disabled>
+        <Copy className="size-4" aria-hidden />
+      </RailButton>
+      <RailButton label="Move file later" disabled>
+        <FolderInput className="size-4" aria-hidden />
+      </RailButton>
+    </>
+  );
+}
+
+function RailButton({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  onClick?: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="default"
+      size="icon"
+      className={RAIL_CONTROL_CLASS}
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      {children}
+    </Button>
+  );
+}
+
+function RailVersionUpload({
+  file,
+  busy,
+  onVersionUpload,
+}: {
+  file: FileAsset;
+  busy: boolean;
+  onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  const disabled = busy || file.storageProvider !== 'R2';
+  return (
+    <label
+      className={cn(
+        RAIL_CONTROL_CLASS,
+        'inline-flex cursor-pointer items-center justify-center',
+        disabled && 'pointer-events-none opacity-50',
+      )}
+      title="Upload new version"
+      aria-label="Upload new version"
+    >
+      <Upload className="size-4" aria-hidden />
+      <input
+        type="file"
+        className="hidden"
+        disabled={disabled}
+        onChange={(event) => onVersionUpload(file, event)}
+      />
+    </label>
+  );
+}
+
+function FilePreviewPane({ file }: { file: FileAsset }) {
+  const [preview, setPreview] = useState<{
+    fileId: string;
+    url: string;
+    mimeType: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    driveApi.getFileAssetPreviewUrl(file.id).then((result) => {
+      if (!cancelled) setPreview({ fileId: file.id, ...result });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [file.id]);
+
+  const activePreview = preview?.fileId === file.id ? preview : null;
+
+  return (
+    <main className="bg-muted/40 flex min-h-0 items-center justify-center p-6">
+      <PreviewContent file={file} preview={activePreview} loading={!activePreview} />
+    </main>
+  );
+}
+
+function PreviewContent({
+  file,
+  preview,
+  loading,
+}: {
+  file: FileAsset;
+  preview: { url: string; mimeType: string | null } | null;
+  loading: boolean;
+}) {
+  if (loading) {
+    return <Loader2 className="text-muted-foreground size-8 animate-spin" />;
+  }
+  if (!preview?.url) return <PreviewFallback file={file} />;
+  const mimeType = preview.mimeType ?? file.mimeType ?? '';
+  if (mimeType.startsWith('image/')) {
+    return (
+      <img
+        src={preview.url}
+        alt={file.displayName}
+        className="max-h-full max-w-full rounded-2xl object-contain shadow-sm"
+      />
+    );
+  }
+  if (mimeType === 'application/pdf' || mimeType.startsWith('text/')) {
+    return (
+      <iframe
+        title={file.displayName}
+        src={preview.url}
+        className="bg-background h-full w-full rounded-2xl border"
+      />
+    );
+  }
+  return <PreviewFallback file={file} previewUrl={preview.url} />;
+}
+
+function PreviewFallback({ file, previewUrl }: { file: FileAsset; previewUrl?: string }) {
+  return (
+    <div className="border-border bg-background max-w-md rounded-3xl border p-8 text-center shadow-sm">
+      <File className="text-muted-foreground mx-auto size-12" />
+      <h2 className="text-foreground mt-4 text-lg font-semibold">{file.displayName}</h2>
+      <p className="text-muted-foreground mt-2 text-sm">
+        Preview is not available for this file type. Open it in a new tab or copy the file link.
+      </p>
+      {previewUrl ? (
+        <Button
+          className="mt-5"
+          onClick={() => window.open(previewUrl, '_blank', 'noopener,noreferrer')}
+        >
+          <ArrowUpRight />
+          Open file
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+function FileInfoPanel({
+  file,
+  onPreview,
+}: {
+  file: FileAsset;
+  onPreview: (file: FileAsset) => void;
+}) {
+  return (
+    <div className="space-y-5 p-5">
+      <FileHeading file={file} />
+      <FileMetadataBadges file={file} />
+      <FileFacts file={file} />
+      <BusinessLinks file={file} />
+      <VersionList file={file} />
+      <AuditList file={file} />
+      {file.storageProvider === 'EXTERNAL_URL' && file.externalUrl && (
+        <Button type="button" variant="outline" className="w-full" onClick={() => onPreview(file)}>
+          <ArrowUpRight />
+          Open external source
+        </Button>
+      )}
+    </div>
   );
 }
 
@@ -98,71 +306,23 @@ function FileMetadataBadges({ file }: { file: FileAsset }) {
   );
 }
 
-function FileActions({
-  file,
-  busy,
-  onPreview,
-  onArchive,
-  onRestore,
-  onVersionUpload,
-}: {
-  file: FileAsset;
-  busy: boolean;
-  onPreview: (file: FileAsset) => void;
-  onArchive: (file: FileAsset) => void;
-  onRestore: (file: FileAsset) => void;
-  onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
-}) {
+function FileFacts({ file }: { file: FileAsset }) {
   return (
-    <div className="grid grid-cols-2 gap-2">
-      <Button
-        type="button"
-        onClick={() => onPreview(file)}
-        disabled={busy || file.status === 'DELETED'}
-      >
-        <Download />
-        Open
-      </Button>
-      <VersionUploadLabel file={file} busy={busy} onVersionUpload={onVersionUpload} />
-      <Button
-        type="button"
-        variant="outline"
-        disabled={busy}
-        onClick={() => (file.status === 'ARCHIVED' ? onRestore(file) : onArchive(file))}
-        className="col-span-2"
-      >
-        <Archive />
-        {file.status === 'ARCHIVED' ? 'Restore from archive' : 'Archive safely'}
-      </Button>
+    <div className="bg-muted/50 grid grid-cols-2 gap-3 rounded-2xl p-3 text-xs">
+      <Fact label="Size" value={formatFileSize(file.sizeBytes)} />
+      <Fact label="Updated" value={formatDriveDate(file.updatedAt)} />
+      <Fact label="Source" value={file.sourceModule ?? 'Not set'} />
+      <Fact label="Storage" value={formatDriveLabel(file.storageProvider)} />
     </div>
   );
 }
 
-function VersionUploadLabel({
-  file,
-  busy,
-  onVersionUpload,
-}: {
-  file: FileAsset;
-  busy: boolean;
-  onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
-}) {
+function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <label
-      className={cn(
-        'border-border bg-background hover:bg-muted inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium',
-        (busy || file.storageProvider !== 'R2') && 'pointer-events-none opacity-50',
-      )}
-    >
-      <Upload className="size-4" />
-      Version
-      <input
-        type="file"
-        className="hidden"
-        disabled={busy || file.storageProvider !== 'R2'}
-        onChange={(event) => onVersionUpload(file, event)}
-      />
-    </label>
+    <div>
+      <div className="text-muted-foreground">{label}</div>
+      <div className="text-foreground mt-1 truncate font-medium">{value}</div>
+    </div>
   );
 }
 
