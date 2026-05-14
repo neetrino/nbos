@@ -18,6 +18,13 @@ const FOLDER_TABLE_ROW_GRID =
 const FOLDER_TABLE_MAIN_GRID =
   'grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3';
 
+/** Folder card: overflow menu appears on card hover / focus-within. */
+const FOLDER_CARD_MENU_HOVER =
+  'opacity-0 pointer-events-none transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100';
+
+const FOLDER_CARD_ICON_CLASS =
+  'text-foreground/80 dark:text-foreground/70 h-[min(5.25rem,47cqh)] w-[min(5.25rem,47cqw)] shrink-0';
+
 export function DriveFolderCardRow({
   folder,
   compact,
@@ -32,68 +39,114 @@ export function DriveFolderCardRow({
   onDeleteFolder?: (folder: DriveFolder) => void;
 }) {
   const showMenu = Boolean(onRenameFolder || onDeleteFolder);
+
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          'border-border/60 bg-card/90 hover:border-primary/25 group hover:bg-card relative flex w-full items-center gap-2 border shadow-sm transition-colors',
+          'rounded-xl p-2.5',
+        )}
+      >
+        <button
+          type="button"
+          onClick={() => onOpenFolder(folder)}
+          className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left outline-none focus-visible:ring-2"
+        >
+          <Folder className="text-muted-foreground size-5 shrink-0" strokeWidth={2} />
+          <div className="min-w-0 flex-1">
+            <p className="text-foreground truncate text-sm font-medium">{folder.name}</p>
+            <p className="text-muted-foreground text-[11px] leading-tight">{folder.space}</p>
+          </div>
+        </button>
+        {showMenu && (
+          <div className={cn('shrink-0', FOLDER_CARD_MENU_HOVER)}>
+            <FolderOverflowMenu
+              folder={folder}
+              onRenameFolder={onRenameFolder}
+              onDeleteFolder={onDeleteFolder}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
-        'border-border/60 bg-card/90 hover:border-primary/25 group hover:bg-card relative flex w-full items-center gap-2 border shadow-sm transition-colors',
-        compact ? 'rounded-xl p-2.5' : 'rounded-2xl p-3',
+        'border-border/60 bg-card/90 hover:border-primary/25 group hover:bg-card @container relative flex aspect-square w-full flex-col overflow-hidden border shadow-sm transition-colors',
+        'rounded-2xl',
       )}
     >
       <button
         type="button"
         onClick={() => onOpenFolder(folder)}
-        className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left outline-none focus-visible:ring-2"
+        className="focus-visible:ring-ring flex min-h-0 flex-1 flex-col px-3 pt-10 pb-3 text-center outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
-        <div
-          className={cn(
-            'flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/30 to-amber-600/10 text-amber-800 dark:from-amber-400/15 dark:to-amber-500/5 dark:text-amber-300',
-            compact ? 'size-9' : 'size-10',
-          )}
-        >
-          <Folder className={compact ? 'size-[1.05rem]' : 'size-[1.15rem]'} strokeWidth={2} />
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          <Folder className={FOLDER_CARD_ICON_CLASS} strokeWidth={1.35} aria-hidden />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-foreground truncate text-sm font-medium">{folder.name}</p>
-          <p className="text-muted-foreground text-[11px] leading-tight">{folder.space}</p>
+        <div className="min-h-0 shrink-0 space-y-0.5 pt-1">
+          <p className="text-foreground line-clamp-2 text-sm font-semibold">{folder.name}</p>
+          <p className="text-muted-foreground text-[11px] leading-tight tracking-wide uppercase">
+            {folder.space}
+          </p>
         </div>
       </button>
       {showMenu && (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={(props) => (
-              <Button
-                {...props}
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="text-muted-foreground size-9 shrink-0 rounded-xl"
-                aria-label={`Folder actions for ${folder.name}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  props.onClick?.(e);
-                }}
-              >
-                <MoreHorizontal className="size-4" />
-              </Button>
-            )}
+        <div className={cn('absolute top-2 right-2 z-10', FOLDER_CARD_MENU_HOVER)}>
+          <FolderOverflowMenu
+            folder={folder}
+            onRenameFolder={onRenameFolder}
+            onDeleteFolder={onDeleteFolder}
           />
-          <DropdownMenuContent
-            align="end"
-            className="min-w-40"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {onRenameFolder && (
-              <DropdownMenuItem onClick={() => onRenameFolder(folder)}>Rename</DropdownMenuItem>
-            )}
-            {onDeleteFolder && (
-              <DropdownMenuItem variant="destructive" onClick={() => onDeleteFolder(folder)}>
-                Delete
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        </div>
       )}
     </div>
+  );
+}
+
+function FolderOverflowMenu({
+  folder,
+  onRenameFolder,
+  onDeleteFolder,
+}: {
+  folder: DriveFolder;
+  onRenameFolder?: (folder: DriveFolder) => void;
+  onDeleteFolder?: (folder: DriveFolder) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={(props) => (
+          <Button
+            {...props}
+            type="button"
+            size="icon"
+            variant="secondary"
+            className="bg-background/90 text-muted-foreground size-8 shrink-0 shadow-sm backdrop-blur-sm"
+            aria-label={`Folder actions for ${folder.name}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              props.onClick?.(e);
+            }}
+          >
+            <MoreHorizontal className="size-4" />
+          </Button>
+        )}
+      />
+      <DropdownMenuContent align="end" className="min-w-40" onClick={(e) => e.stopPropagation()}>
+        {onRenameFolder && (
+          <DropdownMenuItem onClick={() => onRenameFolder(folder)}>Rename</DropdownMenuItem>
+        )}
+        {onDeleteFolder && (
+          <DropdownMenuItem variant="destructive" onClick={() => onDeleteFolder(folder)}>
+            Delete
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

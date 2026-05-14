@@ -754,6 +754,15 @@ export function DriveWorkspace() {
             onDeleteFolder={
               driveStorageSpace ? (folder) => setDeleteFolderTarget(folder) : undefined
             }
+            fileMenu={{
+              onOpenDetails: onPreview,
+              onCopyFile,
+              onMoveFile,
+              onArchive,
+              onRestore,
+              onRemoveFromFolder: browseDriveFolders ? onRemoveFromFolder : undefined,
+              busy,
+            }}
           />
         </main>
 

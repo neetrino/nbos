@@ -3,7 +3,7 @@ import type { DriveFolder, FileAsset } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate, formatDriveLabel, formatFileSize } from './drive-format';
 import type { DriveViewMode } from './drive-options';
-import { DriveFileCardThumbnail } from './DriveFileCardThumbnail';
+import { DriveFileCard, DriveFileCheckbox, type DriveFileCardMenuHandlers } from './DriveFileCard';
 import { DriveFolderCardRow, DriveFolderTableRow } from './DriveFolderRows';
 
 const FILE_TABLE_GRID_CLASS =
@@ -21,6 +21,7 @@ export function DriveFileSurface({
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  fileMenu,
 }: {
   files: FileAsset[];
   folders: DriveFolder[];
@@ -33,6 +34,7 @@ export function DriveFileSurface({
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
+  fileMenu?: DriveFileCardMenuHandlers;
 }) {
   if (loading) {
     return (
@@ -76,7 +78,7 @@ export function DriveFileSurface({
         />
       ))}
       {files.map((file) => (
-        <FileCard
+        <DriveFileCard
           key={file.id}
           file={file}
           compact={viewMode === 'list'}
@@ -84,6 +86,7 @@ export function DriveFileSurface({
           checked={checkedIds.includes(file.id)}
           onSelect={onSelect}
           onToggleChecked={onToggleChecked}
+          menu={fileMenu}
         />
       ))}
     </div>
@@ -163,103 +166,6 @@ function DriveEmptyState() {
   );
 }
 
-function FileCard({
-  file,
-  compact,
-  selected,
-  checked,
-  onSelect,
-  onToggleChecked,
-}: {
-  file: FileAsset;
-  compact: boolean;
-  selected: boolean;
-  checked: boolean;
-  onSelect: (file: FileAsset) => void;
-  onToggleChecked: (file: FileAsset, checked: boolean) => void;
-}) {
-  if (compact) {
-    return (
-      <button
-        type="button"
-        onClick={() => onSelect(file)}
-        className={cn(
-          'border-border/70 bg-card/80 hover:bg-muted/40 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-all',
-          selected && 'border-primary/60 ring-primary/15 ring-2',
-        )}
-      >
-        <FileCheckbox
-          file={file}
-          checked={checked}
-          onToggleChecked={onToggleChecked}
-          className="mt-0 shrink-0 self-center"
-        />
-        <div className="border-border/60 relative size-12 shrink-0 overflow-hidden rounded-lg border">
-          <DriveFileCardThumbnail file={file} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="text-foreground truncate text-sm font-semibold">{file.displayName}</h3>
-          <p className="text-muted-foreground mt-0.5 truncate text-xs">
-            {formatFileSize(file.sizeBytes)}
-          </p>
-        </div>
-      </button>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={() => onSelect(file)}
-      className={cn(
-        'border-border/70 bg-card/80 group flex w-full flex-col overflow-hidden rounded-2xl border text-left transition-all hover:-translate-y-0.5 hover:shadow-md',
-        selected && 'border-primary/60 ring-primary/20 ring-2',
-      )}
-    >
-      <div className="border-border/60 relative aspect-[4/3] w-full shrink-0 border-b">
-        <div className="absolute top-2 left-2 z-10">
-          <FileCheckbox
-            file={file}
-            checked={checked}
-            onToggleChecked={onToggleChecked}
-            className="mt-0"
-          />
-        </div>
-        <DriveFileCardThumbnail file={file} />
-      </div>
-      <div className="min-w-0 p-3">
-        <h3 className="text-foreground line-clamp-2 text-sm font-semibold">{file.displayName}</h3>
-        <p className="text-muted-foreground mt-1 truncate text-xs">
-          {formatFileSize(file.sizeBytes)}
-        </p>
-      </div>
-    </button>
-  );
-}
-
-function FileCheckbox({
-  file,
-  checked,
-  onToggleChecked,
-  className,
-}: {
-  file: FileAsset;
-  checked: boolean;
-  onToggleChecked: (file: FileAsset, checked: boolean) => void;
-  className?: string;
-}) {
-  return (
-    <input
-      type="checkbox"
-      checked={checked}
-      onChange={(event) => onToggleChecked(file, event.target.checked)}
-      onClick={(event) => event.stopPropagation()}
-      className={cn('h-4 w-4 rounded border', className)}
-      aria-label={`Select ${file.displayName}`}
-    />
-  );
-}
-
 function FileTableRow({
   file,
   selected,
@@ -283,7 +189,7 @@ function FileTableRow({
         selected && 'bg-primary/5',
       )}
     >
-      <FileCheckbox
+      <DriveFileCheckbox
         file={file}
         checked={checked}
         onToggleChecked={onToggleChecked}
