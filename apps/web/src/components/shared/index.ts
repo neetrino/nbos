@@ -23,5 +23,7 @@ export {
 export { DetailSheetSection, type DetailSheetSectionProps } from './DetailSheetSection';
 export {
   EntitySheetFloatingRail,
+  ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
+  ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
   type EntitySheetFloatingRailProps,
 } from './entity-sheet-floating-rail';

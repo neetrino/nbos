@@ -214,7 +214,7 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
   {
     key: 'system',
     title: 'System Libraries',
-    segmentLabel: 'Library company',
+    segmentLabel: 'Library Company',
     icon: FileStack,
     libraryKeys: SYSTEM_LIBRARY_KEYS,
     defaultLibraryKey: 'all',

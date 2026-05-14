@@ -6,11 +6,13 @@ import { DRIVE_SPACES, type DriveSpaceOption } from './drive-options';
 import { formatFileSize } from './drive-format';
 import type { DriveStats } from './drive-types';
 
+const TAB_SCROLL =
+  'min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+
 export function DriveHero({
   stats,
   loading,
   selectedSpace,
-  counts,
   insightsOpen,
   onRefresh,
   onSelectSpace,
@@ -19,7 +21,6 @@ export function DriveHero({
   stats: DriveStats;
   loading: boolean;
   selectedSpace: DriveSpaceOption;
-  counts: Map<string, number>;
   insightsOpen: boolean;
   onRefresh: () => void;
   onSelectSpace: (space: DriveSpaceOption) => void;
@@ -27,22 +28,32 @@ export function DriveHero({
 }) {
   return (
     <section className="border-border/70 bg-card/80 rounded-2xl border px-4 py-3 shadow-sm">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-foreground text-xl font-semibold tracking-tight">Drive</h1>
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+          <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">Drive</h1>
+          <div className={TAB_SCROLL}>
+            <DriveSpaceTabs selected={selectedSpace} onSelect={onSelectSpace} />
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={onToggleInsights}>
-            <BarChart3 />
-            {insightsOpen ? 'Hide insights' : 'Insights'}
-          </Button>
-          <Button type="button" variant="outline" onClick={onRefresh} disabled={loading}>
-            <RefreshCw className={cn(loading && 'animate-spin')} />
+        <div className="flex shrink-0 items-center gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
+            <RefreshCw className={cn('size-4', loading && 'animate-spin')} aria-hidden />
             Refresh
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onToggleInsights}
+            className={cn(
+              insightsOpen && 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15',
+            )}
+          >
+            <BarChart3 className="size-4" aria-hidden />
+            Analytics
           </Button>
         </div>
       </div>
-      <DriveSpaceTabs selected={selectedSpace} counts={counts} onSelect={onSelectSpace} />
 
       {insightsOpen && <DriveInsights stats={stats} />}
     </section>
@@ -51,57 +62,39 @@ export function DriveHero({
 
 function DriveSpaceTabs({
   selected,
-  counts,
   onSelect,
 }: {
   selected: DriveSpaceOption;
-  counts: Map<string, number>;
   onSelect: (space: DriveSpaceOption) => void;
 }) {
   return (
-    <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+    <div
+      className="bg-muted/70 inline-flex items-center gap-0.5 rounded-full p-1"
+      role="tablist"
+      aria-label="Drive spaces"
+    >
       {DRIVE_SPACES.map((space) => {
-        const Icon = space.icon;
         const active = space.key === selected.key;
-        const count = getSpaceCount(space, counts);
         return (
           <button
             key={space.key}
             type="button"
+            role="tab"
+            aria-selected={active}
             onClick={() => onSelect(space)}
             className={cn(
-              'flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-all',
+              'rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors sm:px-4',
               active
-                ? 'border-primary/40 bg-primary text-primary-foreground shadow-sm'
-                : 'border-border/70 bg-background/60 text-foreground hover:bg-muted/70',
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            <span
-              className={cn(
-                'rounded-xl p-2',
-                active ? 'bg-primary-foreground/15' : 'bg-muted text-muted-foreground',
-              )}
-            >
-              <Icon className="size-4" />
-            </span>
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold">{space.title}</span>
-            <span
-              className={cn(
-                'text-xs font-medium',
-                active ? 'text-primary-foreground/80' : 'text-muted-foreground',
-              )}
-            >
-              {count}
-            </span>
+            {space.segmentLabel}
           </button>
         );
       })}
     </div>
   );
-}
-
-function getSpaceCount(space: DriveSpaceOption, counts: Map<string, number>): number {
-  return space.libraryKeys.reduce((total, key) => total + (counts.get(key) ?? 0), 0);
 }
 
 function DriveInsights({ stats }: { stats: DriveStats }) {

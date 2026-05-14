@@ -135,6 +135,7 @@ function SheetContent({
                 size="icon"
                 className="group/sheet-floating-close bg-primary text-primary-foreground hover:bg-primary/90 relative size-11 shrink-0 overflow-visible rounded-full border-0 shadow-md sm:rounded-l-full sm:rounded-r-none"
                 aria-label="Close panel"
+                title="Close"
               />
             }
           >

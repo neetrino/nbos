@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-const RAIL_CONTROL_CLASS =
+/** Shared with drive / custom trailing rail controls for identical hover chips. */
+export const ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS =
   'group/rail-control relative size-10 shrink-0 overflow-visible rounded-l-full rounded-r-none border-0 bg-primary text-primary-foreground shadow-md hover:bg-primary/90 max-sm:rounded-full';
 
-const RAIL_HINT_CLASS =
+export const ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS =
   'pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-all duration-150 group-hover/rail-control:translate-x-0 group-hover/rail-control:opacity-100 group-focus-visible/rail-control:translate-x-0 group-focus-visible/rail-control:opacity-100 max-sm:left-full max-sm:ml-2 max-sm:translate-x-1 sm:right-full sm:mr-2 sm:-translate-x-1';
 
 export interface EntitySheetFloatingRailProps {
@@ -47,36 +48,39 @@ export function EntitySheetFloatingRail({
         type="button"
         variant="default"
         size="icon"
-        className={cn(RAIL_CONTROL_CLASS)}
+        className={cn(ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS)}
         aria-label="Copy page link"
+        title="Copy link"
         onClick={() => void handleCopyPageLink()}
       >
         <Link2 className="size-4" aria-hidden />
-        <span className={RAIL_HINT_CLASS}>Copy link</span>
+        <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Copy link</span>
       </Button>
       <Button
         type="button"
         variant="default"
         size="icon"
-        className={cn(RAIL_CONTROL_CLASS)}
+        className={cn(ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS)}
         aria-label="Open record in new tab"
+        title="Open"
         onClick={() => openHref(sourcePageHref)}
         disabled={!sourcePageHref || sourcePageHref === '#'}
       >
         <ExternalLink className="size-4" aria-hidden />
-        <span className={RAIL_HINT_CLASS}>Open</span>
+        <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Open</span>
       </Button>
       {showWorkspace && workspaceHref ? (
         <Button
           type="button"
           variant="default"
           size="icon"
-          className={cn(RAIL_CONTROL_CLASS)}
+          className={cn(ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS)}
           aria-label="Open workspace in new tab"
+          title="Dashboard"
           onClick={() => openHref(workspaceHref)}
         >
           <LayoutDashboard className="size-4" aria-hidden />
-          <span className={RAIL_HINT_CLASS}>Dashboard</span>
+          <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Dashboard</span>
         </Button>
       ) : null}
       {trailing}
