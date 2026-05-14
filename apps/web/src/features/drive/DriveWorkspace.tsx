@@ -71,6 +71,7 @@ import { DriveFolderPickerDialog } from './DriveFolderPickerDialog';
 import { DriveSpaceFolderTree } from './DriveSpaceFolderTree';
 import {
   DRIVE_DEEP_LINK_FINANCE_PROJECT_ID_QUERY,
+  DRIVE_DEEP_LINK_OPEN_FILE_ID_QUERY,
   DRIVE_DEEP_LINK_PRODUCT_ID_QUERY,
   DRIVE_DEEP_LINK_PROJECT_ID_QUERY,
   DRIVE_DEEP_LINK_TASK_ID_QUERY,
@@ -89,6 +90,7 @@ export function DriveWorkspace() {
   const driveDeepLinkTaskId = searchParams.get(DRIVE_DEEP_LINK_TASK_ID_QUERY)?.trim() ?? '';
   const driveDeepLinkFinanceProjectId =
     searchParams.get(DRIVE_DEEP_LINK_FINANCE_PROJECT_ID_QUERY)?.trim() ?? '';
+  const driveOpenFileId = searchParams.get(DRIVE_DEEP_LINK_OPEN_FILE_ID_QUERY)?.trim() ?? '';
   const [selectedSpace, setSelectedSpace] = useState<DriveSpaceOption>(getInitialDriveSpace);
   const [selectedLibrary, setSelectedLibrary] = useState<DriveLibraryOption>(() => {
     const space = getInitialDriveSpace();
@@ -146,6 +148,22 @@ export function DriveWorkspace() {
   const [libraryEntityFoldersLoading, setLibraryEntityFoldersLoading] = useState(false);
 
   useLayoutEffect(() => {
+    if (driveOpenFileId) {
+      const sharedSpace = DRIVE_SPACES.find((item) => item.key === 'shared');
+      const sharedLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'shared');
+      if (sharedSpace) {
+        setSelectedSpace(sharedSpace);
+        window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, sharedSpace.key);
+      }
+      if (sharedLibrary) setSelectedLibrary(sharedLibrary);
+      setSystemLibraryLink(null);
+      setDrivePinnedProjectRow(null);
+      setDrivePinnedProductRow(null);
+      setDrivePinnedTaskRow(null);
+      setDrivePinnedFinanceProjectRow(null);
+      return;
+    }
+
     if (driveDeepLinkProductId) {
       const systemSpace = DRIVE_SPACES.find((item) => item.key === 'system');
       const productsLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'products');
@@ -238,6 +256,7 @@ export function DriveWorkspace() {
       setViewMode(rawMode);
     }
   }, [
+    driveOpenFileId,
     driveDeepLinkProjectId,
     driveDeepLinkProductId,
     driveDeepLinkTaskId,
@@ -452,7 +471,11 @@ export function DriveWorkspace() {
       });
       setRawFiles(list);
       setSelectedIds((current) => current.filter((id) => list.some((file) => file.id === id)));
-      setSelected((current) => list.find((file) => file.id === current?.id) ?? null);
+      setSelected((current) => {
+        const preferredId = driveOpenFileId || current?.id;
+        if (!preferredId) return null;
+        return list.find((file) => file.id === preferredId) ?? null;
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load Drive files';
       setError(message);
@@ -462,6 +485,7 @@ export function DriveWorkspace() {
     }
   }, [
     browseSystemLibraryUploads,
+    driveOpenFileId,
     effectiveStatus,
     purpose,
     search,

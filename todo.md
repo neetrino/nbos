@@ -1,51 +1,23 @@
-# NBOS Drive — backlog (зафиксировано в чате)
+# NBOS Drive — что осталось
 
-**Подтверждено:** делаем пункты **1–12** ниже (бывшие 1, 3–13 из списка «всё согласен кроме одного»).  
-**Не подтверждено:** отдельный блок **«Папки под сущностью в Library»** (бывший п.2) — решение после обсуждения: нужно ли вообще и в каком объёме.
-
-**Канон навигации / Project hub:** `docs/NBOS/02-Modules/11-Drive/08-Drive-Navigation-Project-Hub-and-Folders.md` (один `FileAsset`, ссылки, Library vs Company/Personal).
+Канон и контекст: `docs/NBOS/02-Modules/11-Drive/08-Drive-Navigation-Project-Hub-and-Folders.md`.
 
 ---
 
-## Подтверждено к реализации
+## В работе / следующий этап
 
-1. **Grants — UI:** сделано — список / отзыв / роли (`FILE_GRANT_PERMISSIONS`), панель в детали файла; push-уведомления получателям — вне текущего MVP (toast у выдавшего).
-2. **Share / Move / Copy:** аудит на перенос/снятие/добавление placement в папку (`folder_placement_*`); матрица прав по документу — частично (как и раньше на уровне RBAC + `getFileAsset`).
-3. **Удаление:** архив как раньше; **delete forever** — `POST .../permanent-delete` (только `ARCHIVED`, без активных links) + кнопка в rail детали файла.
-4. **Quick attach:** сделано ранее (Project / Product / Task / Finance).
-5. **Library graph API:** `GET /api/drive/files/library-link-aggregates` + таблица в Analytics по текущему library-контексту.
-6. **Export ZIP:** пока **манифест JSON** (`POST /api/drive/files/export-manifest`) + скачивание из bulk в Library; полноценный ZIP job + storage — следующий этап.
-7. **Cleanup UI:** счётчики + **Purge failed / Purge expired** в Analytics; `POST /api/drive/cleanup/purge/:kind`.
-8. **Preview:** текст/код через `fetch` + `<pre>`; для PDF — подсказка «открыть в новой вкладке»; video без изменений.
-9. **Drive UI:** обновлены empty states и подсказка про Analytics.
-10. **DnD Library → Company:** перетаскивание между панелями без общего split-view не доведено; **MVP:** bulk «Place in Company folder…» + API `POST /folders/:id/files`.
-11. **Папки проекта:** подсказка при deep link `projectId` в Library Projects (отдельное дерево папок только под PROJECT — без нового API дерева).
-12. **Reorder:** сортировка списка **по дате / имени / размеру** (persist в `localStorage`); ручной порядок в папке без канона — не делали.
+1. **Share / Move / Copy — матрица прав** по `docs/NBOS/02-Modules/11-Drive/03-Permissions-Sharing-and-Audit.md` (сейчас RBAC + доступ к файлу; не полная матрица по каждому действию в UI).
+
+2. **Export ZIP** — отдельный job, storage, скачивание, manifest (не только `POST /api/drive/files/export-manifest` + JSON в Library).
+
+3. **DnD Library ↔ Company/Personal** — перетаскивание между панелями при общем layout / split-view (сейчас: bulk «Place in Company folder…» + API).
+
+4. **Дерево папок только под PROJECT** в Drive — отдельный scope/API/UI, не только deep link + подсказка.
+
+5. **Ручной порядок файлов в папке** (`sortOrder` в БД и т.п.) — только если закрепят в каноне; иначе достаточно текущей сортировки в UI.
 
 ---
 
-## На обсуждение (решение позже) — «папки под сущностью» в System Library
+## На решение продукта (не в текущем backlog)
 
-**Идея:** не только виртуальная «папка = запись сущности» и путь в `displayName` при upload folder, а **настоящие вложенные папки в БД** (модель размещения файлов под `PROJECT` / `DEAL` / … внутри Library).
-
-**Зачем это вообще предлагалось**
-
-- В каноне Library часто описывается как **структурированный вход** (секции / подпапки), а не плоский список.
-- Когда команды привыкли к **иерархии как в проводнике** («Handoff / Legal / Q1»), одного плоского списка + длинных имён файлов мало: хочется переименовывать папки, права на папку, перемещать пачками.
-
-**Что уже даёт текущая реализация без п.2**
-
-- Виртуальные папки по **записи** (сетка сущностей → файлы).
-- **Upload folder** в Library: относительный путь из ОС попадает в **`displayName`** — визуально видно «папку», но это **не** отдельные `DriveFolder` под сущностью.
-
-**Почему п.2 могут и не делать**
-
-- Дублирует частично **Company/Personal** дерево: многие хранят «живую» иерархию там, а в Library держат только привязку к сделке/проекту.
-- Дорого: миграции, API, права на узлы, UI дерева в каждой библиотеке, edge cases (переименование, удаление, квоты).
-
-**Когда имеет смысл вернуться к п.2**
-
-- Если продукт явно скажет: «в карточке проекта / сделки в NBOS должны быть **реальные подпапки** с теми же операциями, что в Company Drive».
-- Если без этого блокируется onboarding или клиентский портал.
-
-Итог: п.2 оставлен **вне** подтверждённого backlog до твоего решения после обсуждения.
+**Реальные подпапки в System Library** под сущность (`PROJECT` / `DEAL` / …) vs виртуальные папки и `displayName` при upload folder — см. историю обсуждения в чате; без sign-off не делаем.

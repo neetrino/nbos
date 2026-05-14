@@ -48,6 +48,8 @@ import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { normalizeFileGrantPermission } from './drive-grant-permissions';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
+import { notifyDriveFileGrantRecipient } from './drive-grant-notify.ops';
+import { NotificationService } from '../notifications/notification.service';
 import { assertFilePreviewableForDocument } from '../documents/documents-assertions';
 import type { DocumentsReadAccess } from '../documents/documents-access-read';
 import { buildSessionUploadStorageKey } from './drive-upload-path';
@@ -100,6 +102,7 @@ export class DriveService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly r2: DriveR2Client,
+    private readonly notifications: NotificationService,
   ) {}
 
   async listFiles(projectId: string, prefix?: string): Promise<FileEntry[]> {
@@ -578,6 +581,17 @@ export class DriveService {
           metadata: { granteeEmployeeId: grantee, permission },
         },
       });
+      await notifyDriveFileGrantRecipient({
+        prisma: this.prisma,
+        notifications: this.notifications,
+        logger: this.logger,
+        kind: 'updated',
+        fileAssetId,
+        grantId: row.id,
+        granteeEmployeeId: grantee,
+        actorId,
+        permission,
+      });
       return jsonSafeForHttp(row);
     }
     const row = await this.prisma.fileAssetGrant.create({
@@ -595,6 +609,17 @@ export class DriveService {
         action: 'grant_created',
         metadata: { granteeEmployeeId: grantee, permission },
       },
+    });
+    await notifyDriveFileGrantRecipient({
+      prisma: this.prisma,
+      notifications: this.notifications,
+      logger: this.logger,
+      kind: 'created',
+      fileAssetId,
+      grantId: row.id,
+      granteeEmployeeId: grantee,
+      actorId,
+      permission,
     });
     return jsonSafeForHttp(row);
   }

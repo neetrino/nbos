@@ -1,3 +1,9 @@
+/**
+ * Open Drive → Shared with me and focus this file (matches notification links from the API).
+ * Keep in sync with `DRIVE_OPEN_FILE_QUERY` in `apps/api/src/modules/drive/drive-grant-notify.ops.ts`.
+ */
+export const DRIVE_DEEP_LINK_OPEN_FILE_ID_QUERY = 'driveOpenFileId';
+
 /** Query param: open Drive Library → Projects with this project pre-selected for uploads. */
 export const DRIVE_DEEP_LINK_PROJECT_ID_QUERY = 'projectId';
 
@@ -9,6 +15,12 @@ export const DRIVE_DEEP_LINK_TASK_ID_QUERY = 'driveTaskId';
 
 /** Open Drive Library → Finance scoped to this project (project-linked finance files). */
 export const DRIVE_DEEP_LINK_FINANCE_PROJECT_ID_QUERY = 'driveFinanceProjectId';
+
+export function buildDriveHrefOpenSharedFile(fileAssetId: string): string {
+  const p = new URLSearchParams();
+  p.set(DRIVE_DEEP_LINK_OPEN_FILE_ID_QUERY, fileAssetId);
+  return `/drive?${p.toString()}`;
+}
 
 export function buildDriveHrefWithProject(projectId: string): string {
   const p = new URLSearchParams();

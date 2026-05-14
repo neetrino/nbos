@@ -43,6 +43,10 @@ function makeUnavailableR2() {
   };
 }
 
+function makeNotificationsMock() {
+  return { create: vi.fn().mockResolvedValue({ id: 'n1' }) };
+}
+
 describe('DriveService', () => {
   describe('with R2 configured', () => {
     let service: DriveService;
@@ -51,7 +55,11 @@ describe('DriveService', () => {
     beforeEach(() => {
       vi.clearAllMocks();
       prisma = createMockPrisma();
-      service = new DriveService(prisma as never, makeR2Mock() as never);
+      service = new DriveService(
+        prisma as never,
+        makeR2Mock() as never,
+        makeNotificationsMock() as never,
+      );
     });
 
     it('should list files from R2 (under Drive/ prefix)', async () => {
@@ -388,7 +396,11 @@ describe('DriveService', () => {
 
   describe('without R2 configured', () => {
     it('should throw NotFoundException when listing files', async () => {
-      const service = new DriveService(createMockPrisma() as never, makeUnavailableR2() as never);
+      const service = new DriveService(
+        createMockPrisma() as never,
+        makeUnavailableR2() as never,
+        makeNotificationsMock() as never,
+      );
       await expect(service.listFiles('p1')).rejects.toThrow(NotFoundException);
     });
   });

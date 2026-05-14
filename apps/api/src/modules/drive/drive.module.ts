@@ -4,8 +4,10 @@ import { DriveService } from './drive.service';
 import { DriveR2Client } from './drive-r2.client';
 import { DriveUploadSessionService } from './drive-upload-session.service';
 import { DriveFolderService } from './drive-folder.service';
+import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
+  imports: [NotificationModule],
   controllers: [DriveController],
   providers: [DriveR2Client, DriveService, DriveUploadSessionService, DriveFolderService],
   exports: [DriveService, DriveUploadSessionService],
