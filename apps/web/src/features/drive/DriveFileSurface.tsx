@@ -34,8 +34,10 @@ export function DriveFileSurface({
   viewMode,
   selectedId,
   checkedIds,
+  checkedFolderIds,
   onSelect,
   onToggleChecked,
+  onToggleFolderChecked,
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
@@ -49,8 +51,10 @@ export function DriveFileSurface({
   viewMode: DriveViewMode;
   selectedId: string | null;
   checkedIds: string[];
+  checkedFolderIds: string[];
   onSelect: (file: FileAsset) => void;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
+  onToggleFolderChecked?: (folder: DriveFolder, checked: boolean) => void;
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
@@ -111,8 +115,10 @@ export function DriveFileSurface({
         folders={folders}
         selectedId={selectedId}
         checkedIds={checkedIds}
+        checkedFolderIds={checkedFolderIds}
         onSelect={onSelect}
         onToggleChecked={onToggleChecked}
+        onToggleFolderChecked={onToggleFolderChecked}
         onOpenFolder={onOpenFolder}
         onRenameFolder={onRenameFolder}
         onDeleteFolder={onDeleteFolder}
@@ -140,6 +146,8 @@ export function DriveFileSurface({
           onDeleteFolder={onDeleteFolder}
           fileDropHighlight={dropTargetFolderId === folder.id}
           fileDropHandlers={buildFolderDropHandlers(folder.id)}
+          folderChecked={onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined}
+          onToggleFolderChecked={onToggleFolderChecked}
         />
       ))}
       {files.map((file) => (
@@ -164,8 +172,10 @@ function FileTable({
   folders,
   selectedId,
   checkedIds,
+  checkedFolderIds,
   onSelect,
   onToggleChecked,
+  onToggleFolderChecked,
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
@@ -177,8 +187,10 @@ function FileTable({
   folders: DriveFolder[];
   selectedId: string | null;
   checkedIds: string[];
+  checkedFolderIds: string[];
   onSelect: (file: FileAsset) => void;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
+  onToggleFolderChecked?: (folder: DriveFolder, checked: boolean) => void;
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
@@ -211,6 +223,8 @@ function FileTable({
           onDeleteFolder={onDeleteFolder}
           fileDropHighlight={dropTargetFolderId === folder.id}
           fileDropHandlers={buildFolderDropHandlers(folder.id)}
+          folderChecked={onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined}
+          onToggleFolderChecked={onToggleFolderChecked}
         />
       ))}
       {files.map((file) => (

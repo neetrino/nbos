@@ -19,6 +19,10 @@ const FOLDER_TABLE_ROW_GRID =
 const FOLDER_TABLE_MAIN_GRID =
   'grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3';
 
+/** Aligns folder table rows with `DriveFileSurface` file table columns when bulk-select is on. */
+const DRIVE_FOLDER_FILE_TABLE_GRID =
+  'grid w-full grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px_44px] gap-3';
+
 /** Folder card: overflow menu appears on card hover / focus-within. */
 const FOLDER_CARD_MENU_HOVER =
   'opacity-0 pointer-events-none transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100';
@@ -40,6 +44,8 @@ export function DriveFolderCardRow({
   onDeleteFolder,
   fileDropHighlight,
   fileDropHandlers,
+  folderChecked,
+  onToggleFolderChecked,
 }: {
   folder: DriveFolder;
   compact: boolean;
@@ -48,6 +54,8 @@ export function DriveFolderCardRow({
   onDeleteFolder?: (folder: DriveFolder) => void;
   fileDropHighlight?: boolean;
   fileDropHandlers?: DriveFolderFileDropHandlers;
+  folderChecked?: boolean;
+  onToggleFolderChecked?: (folder: DriveFolder, checked: boolean) => void;
 }) {
   const showMenu = Boolean(onRenameFolder || onDeleteFolder);
 
@@ -70,6 +78,16 @@ export function DriveFolderCardRow({
     return shell(
       'relative flex w-full items-center gap-2 rounded-xl p-2.5',
       <>
+        {onToggleFolderChecked ? (
+          <input
+            type="checkbox"
+            checked={Boolean(folderChecked)}
+            onChange={(event) => onToggleFolderChecked(folder, event.target.checked)}
+            onClick={(event) => event.stopPropagation()}
+            className="mt-0.5 size-4 shrink-0 self-start"
+            aria-label={`Select folder ${folder.name}`}
+          />
+        ) : null}
         <button
           type="button"
           draggable={false}
@@ -98,6 +116,17 @@ export function DriveFolderCardRow({
   return shell(
     '@container relative flex aspect-square w-full flex-col overflow-hidden rounded-2xl',
     <>
+      {onToggleFolderChecked ? (
+        <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
+          <input
+            type="checkbox"
+            checked={Boolean(folderChecked)}
+            onChange={(event) => onToggleFolderChecked(folder, event.target.checked)}
+            className="border-border bg-background/95 size-4 rounded shadow-sm"
+            aria-label={`Select folder ${folder.name}`}
+          />
+        </div>
+      ) : null}
       <button
         type="button"
         draggable={false}
@@ -177,6 +206,8 @@ export function DriveFolderTableRow({
   onDeleteFolder,
   fileDropHighlight,
   fileDropHandlers,
+  folderChecked,
+  onToggleFolderChecked,
 }: {
   folder: DriveFolder;
   onOpenFolder: (folder: DriveFolder) => void;
@@ -184,26 +215,111 @@ export function DriveFolderTableRow({
   onDeleteFolder?: (folder: DriveFolder) => void;
   fileDropHighlight?: boolean;
   fileDropHandlers?: DriveFolderFileDropHandlers;
+  folderChecked?: boolean;
+  onToggleFolderChecked?: (folder: DriveFolder, checked: boolean) => void;
 }) {
   const showMenu = Boolean(onRenameFolder || onDeleteFolder);
+  if (!onToggleFolderChecked) {
+    return (
+      <div
+        className={cn(
+          'hover:bg-muted/50 px-4 py-3',
+          FOLDER_TABLE_ROW_GRID,
+          fileDropHighlight && 'bg-primary/8 ring-primary/30 ring-2 ring-inset',
+        )}
+        onDragOver={fileDropHandlers?.onDragOver}
+        onDragLeave={fileDropHandlers?.onDragLeave}
+        onDrop={fileDropHandlers?.onDrop}
+      >
+        <div
+          role="button"
+          tabIndex={0}
+          draggable={false}
+          className={cn(
+            FOLDER_TABLE_MAIN_GRID,
+            'focus-visible:ring-ring col-span-6 cursor-pointer text-left text-sm outline-none focus-visible:ring-2',
+          )}
+          onClick={() => onOpenFolder(folder)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onOpenFolder(folder);
+            }
+          }}
+        >
+          <Folder className="size-4 self-center text-amber-600 dark:text-amber-400" />
+          <span className="truncate font-medium">{folder.name}</span>
+          <span className="text-muted-foreground text-xs">Folder</span>
+          <span className="text-muted-foreground text-xs">{folder.space}</span>
+          <span className="text-muted-foreground text-xs">{formatDriveDate(folder.updatedAt)}</span>
+          <span />
+        </div>
+        {showMenu ? (
+          <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={(props) => (
+                  <Button
+                    {...props}
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="text-muted-foreground size-8"
+                    aria-label={`Folder actions for ${folder.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      props.onClick?.(e);
+                    }}
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                )}
+              />
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                {onRenameFolder && (
+                  <DropdownMenuItem onClick={() => onRenameFolder(folder)}>Rename</DropdownMenuItem>
+                )}
+                {onDeleteFolder && (
+                  <DropdownMenuItem variant="destructive" onClick={() => onDeleteFolder(folder)}>
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : (
+          <span />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
         'hover:bg-muted/50 px-4 py-3',
-        FOLDER_TABLE_ROW_GRID,
+        DRIVE_FOLDER_FILE_TABLE_GRID,
         fileDropHighlight && 'bg-primary/8 ring-primary/30 ring-2 ring-inset',
       )}
       onDragOver={fileDropHandlers?.onDragOver}
       onDragLeave={fileDropHandlers?.onDragLeave}
       onDrop={fileDropHandlers?.onDrop}
     >
+      <input
+        type="checkbox"
+        checked={Boolean(folderChecked)}
+        onChange={(event) => onToggleFolderChecked(folder, event.target.checked)}
+        onClick={(event) => event.stopPropagation()}
+        className="mt-2.5 size-4 shrink-0 self-start"
+        aria-label={`Select folder ${folder.name}`}
+      />
       <div
         role="button"
         tabIndex={0}
         draggable={false}
         className={cn(
           FOLDER_TABLE_MAIN_GRID,
-          'focus-visible:ring-ring col-span-6 cursor-pointer text-left text-sm outline-none focus-visible:ring-2',
+          'focus-visible:ring-ring col-span-5 cursor-pointer text-left text-sm outline-none focus-visible:ring-2',
         )}
         onClick={() => onOpenFolder(folder)}
         onKeyDown={(event) => {

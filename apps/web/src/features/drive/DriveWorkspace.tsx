@@ -82,6 +82,11 @@ import {
   type DriveFileSortKey,
 } from './drive-file-sort';
 import { toFileSizeNumber } from './drive-format';
+import { collectFileAssetIdsInFolderSubtree } from './drive-folder-selection-expand';
+import { DRIVE_ZIP_UI_MAX_FILES } from './drive-zip-ui-limits';
+
+const DRIVE_ZIP_EXPORT_POLL_INTERVAL_MS = 900;
+const DRIVE_ZIP_EXPORT_POLL_MAX_ATTEMPTS = 180;
 
 type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
 
@@ -112,6 +117,7 @@ export function DriveWorkspace() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedFolderIds, setSelectedFolderIds] = useState<string[]>([]);
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [maintenanceSummary, setMaintenanceSummary] = useState<{
     failedUploadSessions: number;
@@ -663,6 +669,23 @@ export function DriveWorkspace() {
     }
     return list;
   }, [files, fileSort]);
+
+  const visibleFolderIdsForBulk = useMemo(() => {
+    if (!browseDriveFolders || !driveStorageSpace) return [];
+    return (folderListing?.folders ?? []).map((f) => f.id);
+  }, [browseDriveFolders, driveStorageSpace, folderListing?.folders]);
+
+  const allVisibleBulkItemsSelected = useMemo(() => {
+    const filesAll = sortedFiles.every((f) => selectedIds.includes(f.id));
+    const foldersAll =
+      visibleFolderIdsForBulk.length === 0 ||
+      visibleFolderIdsForBulk.every((id) => selectedFolderIds.includes(id));
+    return filesAll && foldersAll;
+  }, [sortedFiles, selectedIds, visibleFolderIdsForBulk, selectedFolderIds]);
+
+  const canSelectAllInView =
+    (sortedFiles.length > 0 || visibleFolderIdsForBulk.length > 0) && !allVisibleBulkItemsSelected;
+
   const stats = useMemo(() => buildDriveStats(files), [files]);
   const libraryCounts = useMemo(
     () => buildLibraryCounts(rawFiles, selectedSpace.key),
@@ -861,19 +884,15 @@ export function DriveWorkspace() {
   }
 
   async function onBulkArchive() {
-    if (selectedIds.length === 0) return;
-    await mutateFiles(
-      async () => driveApi.archiveFileAssets(selectedIds),
-      'Selected files archived',
-    );
+    const ids = await resolveBulkFileAssetIds();
+    if (ids.length === 0) return;
+    await mutateFiles(async () => driveApi.archiveFileAssets(ids), 'Selected files archived');
   }
 
   async function onBulkRestore() {
-    if (selectedIds.length === 0) return;
-    await mutateFiles(
-      async () => driveApi.restoreFileAssets(selectedIds),
-      'Selected files restored',
-    );
+    const ids = await resolveBulkFileAssetIds();
+    if (ids.length === 0) return;
+    await mutateFiles(async () => driveApi.restoreFileAssets(ids), 'Selected files restored');
   }
 
   async function mutateFileAllowThrow(action: () => Promise<FileAsset>, success: string) {
@@ -921,19 +940,19 @@ export function DriveWorkspace() {
   }
 
   async function handleLibraryPlaceConfirm(targetFolderId: string) {
-    if (selectedIds.length === 0) return;
+    const ids = await resolveBulkFileAssetIds();
+    if (ids.length === 0) return;
     setBusy(true);
     try {
-      for (const id of selectedIds) {
+      for (const id of ids) {
         await driveApi.addFileToFolder(targetFolderId, id);
       }
       toast.success(
-        selectedIds.length === 1
-          ? 'File added to folder'
-          : `${selectedIds.length} files placed in folder`,
+        ids.length === 1 ? 'File added to folder' : `${ids.length} files placed in folder`,
       );
       setLibraryPlacePickerOpen(false);
       setSelectedIds([]);
+      setSelectedFolderIds([]);
       await load();
       if (driveStorageSpace) void loadFolders();
     } catch (err) {
@@ -943,14 +962,22 @@ export function DriveWorkspace() {
     }
   }
 
-  const DRIVE_ZIP_EXPORT_POLL_INTERVAL_MS = 900;
-  const DRIVE_ZIP_EXPORT_POLL_MAX_ATTEMPTS = 180;
-
   async function handleZipExportForSelection() {
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0 && selectedFolderIds.length === 0) return;
     setBusy(true);
     try {
-      const job = await driveApi.createDriveZipExport(selectedIds);
+      const merged = await resolveBulkFileAssetIds();
+      if (merged.length === 0) {
+        toast.error('No files to export in the current selection.');
+        return;
+      }
+      if (merged.length > DRIVE_ZIP_UI_MAX_FILES) {
+        toast.error(
+          `ZIP export allows at most ${DRIVE_ZIP_UI_MAX_FILES} files (folders are expanded). Reduce the selection.`,
+        );
+        return;
+      }
+      const job = await driveApi.createDriveZipExport(merged);
       toast.message('ZIP export queued', {
         description: 'The download opens automatically when the archive is ready.',
       });
@@ -1047,6 +1074,7 @@ export function DriveWorkspace() {
     try {
       await action();
       setSelectedIds([]);
+      setSelectedFolderIds([]);
       toast.success(success);
       await load();
       await loadFolders();
@@ -1065,6 +1093,43 @@ export function DriveWorkspace() {
       return current;
     });
   }
+
+  const toggleFolderChecked = useCallback((folder: DriveFolder, checked: boolean) => {
+    setSelectedFolderIds((current) => {
+      const has = current.includes(folder.id);
+      if (checked && !has) return [...current, folder.id];
+      if (!checked && has) return current.filter((id) => id !== folder.id);
+      return current;
+    });
+  }, []);
+
+  const selectAllVisibleInDrive = useCallback(() => {
+    setSelectedIds(sortedFiles.map((f) => f.id));
+    if (browseDriveFolders && driveStorageSpace) {
+      setSelectedFolderIds((folderListing?.folders ?? []).map((f) => f.id));
+    } else {
+      setSelectedFolderIds([]);
+    }
+  }, [sortedFiles, browseDriveFolders, driveStorageSpace, folderListing?.folders]);
+
+  const resolveBulkFileAssetIds = useCallback(async (): Promise<string[]> => {
+    const space = driveStorageSpace;
+    const union = new Set(selectedIds);
+    if (!space) return [...union];
+    for (const folderId of selectedFolderIds) {
+      const fromFolder = await collectFileAssetIdsInFolderSubtree(space, folderId);
+      for (const id of fromFolder) {
+        union.add(id);
+      }
+    }
+    return [...union];
+  }, [driveStorageSpace, selectedIds, selectedFolderIds]);
+
+  useEffect(() => {
+    if (!browseDriveFolders) {
+      setSelectedFolderIds([]);
+    }
+  }, [browseDriveFolders]);
 
   async function onVersionUpload(file: FileAsset, event: ChangeEvent<HTMLInputElement>) {
     const uploadedFile = event.target.files?.[0];
@@ -1233,6 +1298,7 @@ export function DriveWorkspace() {
           setSelectedSpace(space);
           setSelectedLibrary(library ?? DEFAULT_DRIVE_LIBRARY);
           setSelectedIds([]);
+          setSelectedFolderIds([]);
           setSystemLibraryLink(null);
           window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, space.key);
         }}
@@ -1261,6 +1327,7 @@ export function DriveWorkspace() {
             onSelect={(library) => {
               setSelectedLibrary(library);
               setSelectedIds([]);
+              setSelectedFolderIds([]);
               setSystemLibraryLink(null);
               if (library.key === 'company' || library.key === 'personal') {
                 goToDriveRoot();
@@ -1308,14 +1375,21 @@ export function DriveWorkspace() {
         </div>
 
         <main className="min-w-0 space-y-4">
-          {selectedIds.length > 0 && !browseSystemLibraryEntityRoot && (
+          {selectedIds.length + selectedFolderIds.length > 0 && !browseSystemLibraryEntityRoot && (
             <BulkActionBar
-              count={selectedIds.length}
+              count={selectedIds.length + selectedFolderIds.length}
+              selectedFileCount={selectedIds.length}
+              selectedFolderCount={selectedFolderIds.length}
               archived={effectiveStatus === 'ARCHIVED'}
               busy={busy}
+              showSelectAll={canSelectAllInView}
+              onSelectAll={selectAllVisibleInDrive}
               onArchive={() => void onBulkArchive()}
               onRestore={() => void onBulkRestore()}
-              onClear={() => setSelectedIds([])}
+              onClear={() => {
+                setSelectedIds([]);
+                setSelectedFolderIds([]);
+              }}
               showLibraryBulkActions={Boolean(
                 browseSystemLibraryUploads && systemLibraryLink && selectedSpace.key === 'system',
               )}
@@ -1394,8 +1468,12 @@ export function DriveWorkspace() {
               viewMode={viewMode}
               selectedId={selected?.id ?? null}
               checkedIds={selectedIds}
+              checkedFolderIds={selectedFolderIds}
               onSelect={setSelected}
               onToggleChecked={toggleChecked}
+              onToggleFolderChecked={
+                browseDriveFolders && driveStorageSpace ? toggleFolderChecked : undefined
+              }
               onOpenFolder={openFolder}
               onRenameFolder={
                 driveStorageSpace ? (folder) => setRenameFolderTarget(folder) : undefined
