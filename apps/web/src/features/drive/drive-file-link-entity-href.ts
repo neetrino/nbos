@@ -103,6 +103,10 @@ export function getDriveFileLinkEntityHref(
     }
     case 'EXPENSE':
       return `/finance/expenses/${encodeURIComponent(id)}`;
+    case 'PAYMENT':
+      return `/finance/payments`;
+    case 'REPORT':
+      return `/finance/reports`;
     default:
       return null;
   }

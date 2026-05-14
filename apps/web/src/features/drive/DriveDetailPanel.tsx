@@ -257,6 +257,16 @@ function PreviewContent({
       />
     );
   }
+  if (mimeType.startsWith('video/')) {
+    return (
+      <video
+        controls
+        className="max-h-full max-w-full rounded-2xl shadow-sm"
+        src={preview.url}
+        aria-label={file.displayName}
+      />
+    );
+  }
   if (mimeType === 'application/pdf' || mimeType.startsWith('text/')) {
     return (
       <iframe

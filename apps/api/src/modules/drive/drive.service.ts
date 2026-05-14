@@ -60,11 +60,33 @@ export interface DriveEntityAccess {
   driveScope?: string;
 }
 
-/** Files the viewer did not originate as sole owner/uploader (NBOS “Shared with me” heuristic). */
+/** “Shared with me”: not sole self-origin, or explicit grant to the viewer. */
 function buildSharedWithMeWhereClause(employeeId: string): Prisma.FileAssetWhereInput {
-  return {
+  const notSoleSelfOrigin: Prisma.FileAssetWhereInput = {
     NOT: {
       OR: [{ ownerId: employeeId }, { AND: [{ ownerId: null }, { createdById: employeeId }] }],
+    },
+  };
+  const activeGrant: Prisma.FileAssetWhereInput = {
+    assetGrants: {
+      some: {
+        granteeEmployeeId: employeeId,
+        revokedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+    },
+  };
+  return { OR: [notSoleSelfOrigin, activeGrant] };
+}
+
+function activeFileAssetGrantWhere(employeeId: string): Prisma.FileAssetWhereInput {
+  return {
+    assetGrants: {
+      some: {
+        granteeEmployeeId: employeeId,
+        revokedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
     },
   };
 }
@@ -474,6 +496,71 @@ export class DriveService {
     return { updated: jsonSafeForHttp(updated) };
   }
 
+  async createFileAssetGrant(
+    fileAssetId: string,
+    granteeEmployeeId: string,
+    actorId: string,
+    access?: DriveEntityAccess,
+  ) {
+    const grantee = granteeEmployeeId.trim();
+    requireText(grantee, 'granteeEmployeeId');
+    if (grantee === actorId) {
+      throw new BadRequestException('You cannot grant Drive access to yourself.');
+    }
+    await this.getFileAsset(fileAssetId, access);
+    const existing = await this.prisma.fileAssetGrant.findFirst({
+      where: { fileAssetId, granteeEmployeeId: grantee, revokedAt: null },
+    });
+    if (existing) return jsonSafeForHttp(existing);
+    const row = await this.prisma.fileAssetGrant.create({
+      data: {
+        fileAssetId,
+        granteeEmployeeId: grantee,
+        grantedById: actorId,
+        permission: 'VIEW',
+      },
+    });
+    await this.prisma.fileAuditEvent.create({
+      data: {
+        fileAssetId,
+        actorId,
+        action: 'grant_created',
+        metadata: { granteeEmployeeId: grantee },
+      },
+    });
+    return jsonSafeForHttp(row);
+  }
+
+  async getLibraryContextSummary(
+    entityType: string | undefined,
+    entityId: string | undefined,
+    access?: DriveEntityAccess,
+  ) {
+    const et = requireText(entityType, 'entityType');
+    const eid = requireText(entityId, 'entityId');
+    const where = await this.buildFileAssetWhere({ entityType: et, entityId: eid }, access);
+    const rows = await this.prisma.fileAsset.groupBy({
+      by: ['purpose'],
+      where,
+      _count: { id: true },
+    });
+    return rows.map((r) => ({
+      purpose: r.purpose ?? 'UNKNOWN',
+      count: r._count.id,
+    }));
+  }
+
+  async getDriveCleanupSummary() {
+    const now = new Date();
+    const [failedUploadSessions, expiredPendingUploadSessions] = await Promise.all([
+      this.prisma.fileUploadSession.count({ where: { status: 'FAILED' } }),
+      this.prisma.fileUploadSession.count({
+        where: { status: 'PENDING', expiresAt: { lt: now } },
+      }),
+    ]);
+    return { failedUploadSessions, expiredPendingUploadSessions };
+  }
+
   async getProjectStructure(projectId: string): Promise<FolderNode> {
     const prefix = `${R2_DRIVE_PREFIX}projects/${projectId}/`;
 
@@ -538,10 +625,12 @@ export class DriveService {
     if (!access) return {};
     const scope = normalizeScope(access.driveScope);
     if (DRIVE_WIDE_SCOPES.has(scope)) return {};
-    const selfOwnerWhere: Prisma.FileAssetWhereInput = {
-      OR: [{ ownerId: access.employeeId }, { createdById: access.employeeId }],
-    };
-    if (scope === 'OWN') return selfOwnerWhere;
+    const grantWhere = activeFileAssetGrantWhere(access.employeeId);
+    if (scope === 'OWN') {
+      return {
+        OR: [{ ownerId: access.employeeId }, { createdById: access.employeeId }, grantWhere],
+      };
+    }
     if (scope === 'DEPARTMENT') {
       const colleagueRows = await this.prisma.employeeDepartment.findMany({
         where: { departmentId: { in: access.departmentIds } },
@@ -555,10 +644,11 @@ export class DriveService {
           { createdById: { in: colleagueIds } },
           { ownerId: access.employeeId },
           { createdById: access.employeeId },
+          grantWhere,
         ],
       };
     }
-    return { id: { in: [] } };
+    return grantWhere;
   }
 }
 

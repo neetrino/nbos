@@ -287,7 +287,13 @@ describe('DriveService', () => {
           where: expect.objectContaining({
             AND: expect.arrayContaining([
               expect.objectContaining({
-                OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
+                OR: expect.arrayContaining([
+                  { ownerId: 'emp-1' },
+                  { createdById: 'emp-1' },
+                  expect.objectContaining({
+                    assetGrants: expect.any(Object),
+                  }),
+                ]),
               }),
             ]),
           }),
@@ -306,12 +312,25 @@ describe('DriveService', () => {
           where: expect.objectContaining({
             AND: expect.arrayContaining([
               expect.objectContaining({
-                NOT: {
-                  OR: [
-                    { ownerId: 'emp-1' },
-                    { AND: [{ ownerId: null }, { createdById: 'emp-1' }] },
-                  ],
-                },
+                OR: [
+                  {
+                    NOT: {
+                      OR: [
+                        { ownerId: 'emp-1' },
+                        { AND: [{ ownerId: null }, { createdById: 'emp-1' }] },
+                      ],
+                    },
+                  },
+                  {
+                    assetGrants: {
+                      some: {
+                        granteeEmployeeId: 'emp-1',
+                        revokedAt: null,
+                        OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }],
+                      },
+                    },
+                  },
+                ],
               }),
             ]),
           }),

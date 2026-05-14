@@ -114,6 +114,36 @@ export const driveApi = {
     return resp.data;
   },
 
+  async getLibraryContextSummary(params: {
+    entityType: string;
+    entityId: string;
+  }): Promise<{ purpose: string; count: number }[]> {
+    const resp = await api.get<{ purpose: string; count: number }[]>(
+      '/api/drive/files/context-summary',
+      { params },
+    );
+    return resp.data;
+  },
+
+  async getDriveCleanupSummary(): Promise<{
+    failedUploadSessions: number;
+    expiredPendingUploadSessions: number;
+  }> {
+    const resp = await api.get<{
+      failedUploadSessions: number;
+      expiredPendingUploadSessions: number;
+    }>('/api/drive/cleanup-summary');
+    return resp.data;
+  },
+
+  async createFileAssetGrant(
+    fileId: string,
+    body: { granteeEmployeeId: string },
+  ): Promise<unknown> {
+    const resp = await api.post('/api/drive/files/' + encodeURIComponent(fileId) + '/grants', body);
+    return resp.data;
+  },
+
   async listDriveLibrary(contextType: string, contextId: string): Promise<FileAsset[]> {
     const resp = await api.get<FileAsset[]>('/api/drive/library', {
       params: { contextType, contextId },

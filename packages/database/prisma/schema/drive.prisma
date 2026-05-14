@@ -125,6 +125,7 @@ model FileAsset {
   emailAttachments            EmailAttachment[]
   reportExportJobs            ReportExportJob[]
   partnerAgreementDocuments   Partner[]                  @relation("PartnerAgreementDocument")
+  assetGrants                 FileAssetGrant[]
 
   @@index([status])
   @@index([purpose])
@@ -132,6 +133,23 @@ model FileAsset {
   @@index([storageKey])
   @@index([createdAt])
   @@map("file_assets")
+}
+
+model FileAssetGrant {
+  id                String    @id @default(uuid())
+  fileAssetId       String    @map("file_asset_id")
+  granteeEmployeeId String    @map("grantee_employee_id")
+  grantedById       String?   @map("granted_by_id")
+  permission        String    @default("VIEW")
+  expiresAt         DateTime? @map("expires_at")
+  revokedAt         DateTime? @map("revoked_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  fileAsset FileAsset @relation(fields: [fileAssetId], references: [id], onDelete: Cascade)
+
+  @@index([fileAssetId])
+  @@index([granteeEmployeeId, revokedAt])
+  @@map("file_asset_grants")
 }
 
 model DriveFolder {

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/shared';
 import type { FullProject } from '@/lib/api/projects';
 import { buildDriveHrefWithProject } from '@/features/drive/drive-deep-link';
+import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
 
 interface ProjectHeaderProps {
   project: FullProject;
@@ -33,13 +34,16 @@ export function ProjectHeader({ project, onBack }: ProjectHeaderProps) {
           </div>
         </div>
       </div>
-      <Link
-        href={buildDriveHrefWithProject(project.id)}
-        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
-      >
-        <HardDrive className="size-4" aria-hidden />
-        Drive files
-      </Link>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <EntityDriveQuickAttach entityType="PROJECT" entityId={project.id} />
+        <Link
+          href={buildDriveHrefWithProject(project.id)}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+        >
+          <HardDrive className="size-4" aria-hidden />
+          Drive files
+        </Link>
+      </div>
     </div>
   );
 }

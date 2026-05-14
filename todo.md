@@ -1,13 +1,17 @@
-1. **Drive / пространства:** явные **grants** (таблица + UI share) и расширение «Shared with me» поверх эвристики `ownerId`/`createdById`; **Shared with me** сейчас: API `sharedWithMe` + вкладка Drive «Shared».
-2. **DriveFolder:** вложенные папки **под сущностью** в System Libraries (схема + API + UI), если закрепляем в каноне; сейчас только виртуальные «папки-записи» и пути в `displayName` при upload.
-3. **Файлы:** семантика **Share** (общий доступ к тому же `FileAsset`); довести **Move/Copy/Remove** и согласованность с правами/аудитом.
-4. **Удаление:** политика trash / delete forever / защита business-linked файлов по канону + UI.
-5. **Entity quick attach:** компонент быстрого прикрепления в карточках Project / Product / Task / Finance.
-6. **API библиотек:** context library endpoints по **entity graph**, не только UI-фильтрация и `listFileAssets` с query.
-7. **Export:** ZIP + manifest (Project / Product / Client / Finance).
-8. **Cleanup dashboard:** сироты, старые вложения задач, failed sessions, большие файлы.
-9. **Preview:** inline image / PDF / video / code вместо только presigned open.
-10. **Drive UI:** крупные информационные блоки убрать; аналитика только за действием Insights/Analytics (если ещё не так).
-11. **Upload:** drag-drop между вкладками Library ↔ Company/Personal; сохранение структуры папок там, где ещё нет паритета с Company/Personal.
-12. **Drive ↔ сущности:** отдельный **scope папок проекта** в Drive; deep link для типов без URL (PAYMENT, REPORT и т.д.), когда появятся маршруты в приложении.
-13. **Drag & drop:** на папки при переключении Library; reorder файлов внутри папки (если нужен по канону).
+# NBOS Drive — что ещё не закрыто полностью
+
+Полный канон по всем 13 линиям = отдельные релизы. Ниже — реальный остаток после текущего кода.
+
+1. **Grants:** UI «кому доступ» / отзыв (`revokedAt`), роли кроме `VIEW`, уведомления.
+2. **Папки под сущностью в Library:** отдельная модель размещения в БД, не только `displayName` путей.
+3. **Share / Move / Copy:** матрица прав по канону `03-Permissions`; аудит на каждое действие.
+4. **Удаление:** delete forever, корзина, защита linked-файлов в UI.
+5. **Quick attach:** те же кнопки на Product / Task / Finance карточках (сейчас — Project).
+6. **Library graph API:** агрегации по связям графа, не только `purpose` counts.
+7. **Export ZIP:** job + storage + download (не только отчётные export jobs).
+8. **Cleanup UI:** экран оператора + действия (не только `GET /api/drive/cleanup-summary`).
+9. **Preview:** подсветка кода, UX больших PDF, streaming video при необходимости.
+10. **Drive UI:** мелкие empty states (аналитика уже за кнопкой Analytics).
+11. **DnD:** между Library и Company/Personal.
+12. **Папки проекта в Drive:** отдельный scope дерева под `PROJECT`.
+13. **Reorder:** порядок файлов в папке, если закрепят в каноне.

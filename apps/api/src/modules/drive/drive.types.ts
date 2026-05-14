@@ -49,6 +49,10 @@ export interface CreateFileLinkDto {
   linkedById?: string;
 }
 
+export interface CreateFileAssetGrantDto {
+  granteeEmployeeId: string;
+}
+
 export interface FileAssetQueryParams {
   entityType?: string;
   entityId?: string;

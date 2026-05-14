@@ -22,6 +22,7 @@ import type {
   CompleteUploadSessionDto,
   CompleteFileVersionDto,
   CreateFileAssetDto,
+  CreateFileAssetGrantDto,
   CreateFileVersionUploadDto,
   CreateFileLinkDto,
   CreateUploadSessionDto,
@@ -172,6 +173,31 @@ export class DriveController {
     );
   }
 
+  @Get('files/context-summary')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Count Drive files linked to an entity, grouped by purpose' })
+  @ApiQuery({ name: 'entityType', required: true })
+  @ApiQuery({ name: 'entityId', required: true })
+  async getLibraryContextSummary(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
+  ) {
+    return this.driveService.getLibraryContextSummary(entityType, entityId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Get('cleanup-summary')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Drive maintenance counters (upload sessions)' })
+  async getDriveCleanupSummary() {
+    return this.driveService.getDriveCleanupSummary();
+  }
+
   @Get('files/:id/preview-url')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({
@@ -282,6 +308,22 @@ export class DriveController {
     @Body() body: CreateFileLinkDto,
   ) {
     return this.driveService.linkFileAsset(id, body, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/:id/grants')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Grant another employee view access to a Drive file (Shared with me)' })
+  async createFileAssetGrant(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Body() body: CreateFileAssetGrantDto,
+  ) {
+    return this.driveService.createFileAssetGrant(id, body.granteeEmployeeId, user.id, {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,
