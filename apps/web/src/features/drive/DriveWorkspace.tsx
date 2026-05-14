@@ -9,7 +9,9 @@ import {
   type ChangeEvent,
 } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   driveApi,
   type DriveFolder,
@@ -35,8 +37,14 @@ import { DriveFileSurface } from './DriveFileSurface';
 import { DriveHero } from './DriveHero';
 import { DriveLibraries } from './DriveLibraries';
 import { DriveLibraryEntityPicker, type LibraryUploadLink } from './DriveLibraryEntityPicker';
+import { DriveLibraryVirtualFolderGrid } from './DriveLibraryVirtualFolderGrid';
+import { getDriveClientUploadDisplayName } from './drive-client-upload-display-name';
 import { buildDriveLibraryUploadSessionFields } from './drive-library-upload-defaults';
 import type { DriveLibraryEntityRow } from './drive-library-entity-loaders';
+import {
+  loadDriveLibraryEntityRows,
+  mergeDriveLibraryEntityRows,
+} from './drive-library-entity-loaders';
 import { DriveSidebarCreateMenu } from './DriveSidebarCreateMenu';
 import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
 import {
@@ -92,6 +100,10 @@ export function DriveWorkspace() {
   const [drivePinnedProjectRow, setDrivePinnedProjectRow] = useState<DriveLibraryEntityRow | null>(
     null,
   );
+  const [libraryEntityFolderRows, setLibraryEntityFolderRows] = useState<DriveLibraryEntityRow[]>(
+    [],
+  );
+  const [libraryEntityFoldersLoading, setLibraryEntityFoldersLoading] = useState(false);
 
   useLayoutEffect(() => {
     if (driveDeepLinkProjectId) {
@@ -183,6 +195,18 @@ export function DriveWorkspace() {
     );
   }, [selectedLibrary.entityTypes, selectedLibrary.key, selectedSpace.key]);
 
+  const libraryPinnedEntityRows = useMemo((): DriveLibraryEntityRow[] | undefined => {
+    if (selectedLibrary.key === 'projects' && drivePinnedProjectRow) return [drivePinnedProjectRow];
+    return undefined;
+  }, [drivePinnedProjectRow, selectedLibrary.key]);
+
+  const mergedLibraryEntityRows = useMemo(
+    () => mergeDriveLibraryEntityRows(libraryEntityFolderRows, libraryPinnedEntityRows),
+    [libraryEntityFolderRows, libraryPinnedEntityRows],
+  );
+
+  const browseSystemLibraryEntityRoot = browseSystemLibraryUploads && !systemLibraryLink;
+
   const atStorageLibraryRoot = activeFolderId === null && folderTrail.length === 0;
 
   const placementFolderId = useMemo(
@@ -199,10 +223,18 @@ export function DriveWorkspace() {
     setLoading(true);
     setError(null);
     try {
+      const scopedToLibraryEntity =
+        browseSystemLibraryUploads && systemLibraryLink
+          ? {
+              entityType: systemLibraryLink.entityType,
+              entityId: systemLibraryLink.entityId,
+            }
+          : {};
       const list = await driveApi.listFileAssets({
         status: effectiveStatus,
         purpose: purpose === ALL_PURPOSES ? undefined : purpose,
         search: search || undefined,
+        ...scopedToLibraryEntity,
       });
       setRawFiles(list);
       setSelectedIds((current) => current.filter((id) => list.some((file) => file.id === id)));
@@ -214,7 +246,7 @@ export function DriveWorkspace() {
     } finally {
       setLoading(false);
     }
-  }, [effectiveStatus, purpose, search]);
+  }, [browseSystemLibraryUploads, effectiveStatus, purpose, search, systemLibraryLink]);
 
   useEffect(() => {
     void load();
@@ -226,15 +258,35 @@ export function DriveWorkspace() {
   }, [selectedLibrary.key]);
 
   useEffect(() => {
-    setSystemLibraryLink(null);
-  }, [selectedLibrary.key, selectedSpace.key]);
-
-  useEffect(() => {
     if (!browseDriveFolders) {
       setActiveFolderId(null);
       setFolderTrail([]);
     }
   }, [browseDriveFolders]);
+
+  useEffect(() => {
+    if (!browseSystemLibraryUploads) {
+      setLibraryEntityFolderRows([]);
+      setLibraryEntityFoldersLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLibraryEntityFoldersLoading(true);
+    void loadDriveLibraryEntityRows(selectedLibrary.key)
+      .then((rows) => {
+        if (!cancelled) setLibraryEntityFolderRows(rows);
+      })
+      .catch((err: unknown) => {
+        toast.error(err instanceof Error ? err.message : 'Could not load library records');
+        if (!cancelled) setLibraryEntityFolderRows([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLibraryEntityFoldersLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [browseSystemLibraryUploads, selectedLibrary.key]);
 
   const loadFolders = useCallback(async () => {
     if (!driveStorageSpace) {
@@ -280,12 +332,28 @@ export function DriveWorkspace() {
     window.localStorage.setItem(DRIVE_VIEW_MODE_STORAGE_KEY, viewMode);
   }, [viewMode]);
 
+  const activeLibraryEntityLabel = useMemo(() => {
+    if (!systemLibraryLink) return null;
+    const row = mergedLibraryEntityRows.find(
+      (r) => r.entityType === systemLibraryLink.entityType && r.id === systemLibraryLink.entityId,
+    );
+    if (row) return row.label;
+    const shortId =
+      systemLibraryLink.entityId.length > 10
+        ? `${systemLibraryLink.entityId.slice(0, 8)}…`
+        : systemLibraryLink.entityId;
+    return `${systemLibraryLink.entityType} ${shortId}`;
+  }, [mergedLibraryEntityRows, systemLibraryLink]);
+
   const files = useMemo(() => {
+    if (browseSystemLibraryEntityRoot) {
+      return [];
+    }
     if (folderListing && browseDriveFolders) {
       return folderListing.files;
     }
     return rawFiles.filter((file) => fileMatchesLibrary(file, selectedLibrary));
-  }, [browseDriveFolders, folderListing, rawFiles, selectedLibrary]);
+  }, [browseDriveFolders, browseSystemLibraryEntityRoot, folderListing, rawFiles, selectedLibrary]);
   const stats = useMemo(() => buildDriveStats(files), [files]);
   const libraryCounts = useMemo(() => buildLibraryCounts(rawFiles), [rawFiles]);
 
@@ -631,17 +699,20 @@ export function DriveWorkspace() {
         event.target.value = '';
         return;
       }
-      if (uploadedFiles.some((f) => fileUsesNestedFolderUpload(f))) {
-        toast.error('Folder uploads belong in Company or Personal Drive.');
-        event.target.value = '';
-        return;
-      }
       setBusy(true);
       try {
         for (const uploadedFile of uploadedFiles) {
           await uploadFileToLinkedEntity(uploadedFile, systemLibraryLink);
         }
-        toast.success(uploadedFiles.length === 1 ? 'File uploaded' : 'Files uploaded');
+        toast.success(
+          uploadedFiles.length === 1
+            ? 'File uploaded'
+            : uploadedFiles.some(
+                  (f) => 'webkitRelativePath' in f && String(f.webkitRelativePath).includes('/'),
+                )
+              ? `${uploadedFiles.length} files uploaded (folder paths in display names)`
+              : `${uploadedFiles.length} files uploaded`,
+        );
         await load();
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Upload failed');
@@ -676,12 +747,6 @@ export function DriveWorkspace() {
     }
   }
 
-  function fileUsesNestedFolderUpload(file: File): boolean {
-    const relativePath = 'webkitRelativePath' in file ? String(file.webkitRelativePath) : '';
-    const segments = relativePath.split('/').filter(Boolean);
-    return segments.length > 1;
-  }
-
   async function ensureUploadTargetFolder(file: File, folderCache: Map<string, string>) {
     const relativePath = 'webkitRelativePath' in file ? String(file.webkitRelativePath) : '';
     const parts = relativePath.split('/').filter(Boolean).slice(0, -1);
@@ -707,9 +772,11 @@ export function DriveWorkspace() {
   async function uploadFileToLinkedEntity(file: File, link: LibraryUploadLink) {
     const contentType = file.type || FALLBACK_MIME_TYPE;
     const meta = buildDriveLibraryUploadSessionFields(selectedLibrary);
+    const displayName = getDriveClientUploadDisplayName(file);
     const session = await driveApi.createUploadSession({
       fileName: file.name,
       contentType,
+      displayName,
       entityType: link.entityType,
       entityId: link.entityId,
       sourceModule: meta.sourceModule,
@@ -757,6 +824,7 @@ export function DriveWorkspace() {
           setSelectedSpace(space);
           setSelectedLibrary(library ?? DEFAULT_DRIVE_LIBRARY);
           setSelectedIds([]);
+          setSystemLibraryLink(null);
           window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, space.key);
         }}
         insightsOpen={insightsOpen}
@@ -782,6 +850,7 @@ export function DriveWorkspace() {
             onSelect={(library) => {
               setSelectedLibrary(library);
               setSelectedIds([]);
+              setSystemLibraryLink(null);
               if (library.key === 'company' || library.key === 'personal') {
                 goToDriveRoot();
               }
@@ -804,11 +873,7 @@ export function DriveWorkspace() {
                     libraryKey={selectedLibrary.key}
                     value={systemLibraryLink}
                     onChange={setSystemLibraryLink}
-                    pinnedRows={
-                      selectedLibrary.key === 'projects' && drivePinnedProjectRow
-                        ? [drivePinnedProjectRow]
-                        : undefined
-                    }
+                    pinnedRows={libraryPinnedEntityRows}
                   />
                   <DriveSidebarCreateMenu
                     busy={busy}
@@ -841,7 +906,7 @@ export function DriveWorkspace() {
         </div>
 
         <main className="min-w-0 space-y-4">
-          {selectedIds.length > 0 && (
+          {selectedIds.length > 0 && !browseSystemLibraryEntityRoot && (
             <BulkActionBar
               count={selectedIds.length}
               archived={effectiveStatus === 'ARCHIVED'}
@@ -852,34 +917,64 @@ export function DriveWorkspace() {
             />
           )}
 
-          <DriveFileSurface
-            files={files}
-            folders={folderListing?.folders ?? []}
-            loading={loading}
-            viewMode={viewMode}
-            selectedId={selected?.id ?? null}
-            checkedIds={selectedIds}
-            onSelect={setSelected}
-            onToggleChecked={toggleChecked}
-            onOpenFolder={openFolder}
-            onRenameFolder={
-              driveStorageSpace ? (folder) => setRenameFolderTarget(folder) : undefined
-            }
-            onDeleteFolder={
-              driveStorageSpace ? (folder) => setDeleteFolderTarget(folder) : undefined
-            }
-            fileMenu={{
-              onOpenDetails: onPreview,
-              onCopyFile,
-              onMoveFile,
-              onArchive,
-              onRestore,
-              onRemoveFromFolder: browseDriveFolders ? onRemoveFromFolder : undefined,
-              busy,
-            }}
-            fileDrag={fileDragConfig}
-            folderFileDrop={folderFileDropConfig}
-          />
+          {browseSystemLibraryUploads && systemLibraryLink ? (
+            <div className="border-border/60 bg-muted/20 flex flex-wrap items-center gap-1 rounded-2xl border px-3 py-2 text-sm">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground h-8 shrink-0 px-2"
+                onClick={() => setSystemLibraryLink(null)}
+              >
+                All {selectedLibrary.title}
+              </Button>
+              <ChevronRight className="text-muted-foreground size-4 shrink-0" aria-hidden />
+              <span className="text-foreground min-w-0 flex-1 truncate font-medium">
+                {activeLibraryEntityLabel ?? 'Record'}
+              </span>
+            </div>
+          ) : null}
+
+          {browseSystemLibraryEntityRoot ? (
+            <DriveLibraryVirtualFolderGrid
+              libraryTitle={selectedLibrary.title}
+              rows={mergedLibraryEntityRows}
+              loading={libraryEntityFoldersLoading}
+              searchQuery={search}
+              onOpenRow={(row) =>
+                setSystemLibraryLink({ entityType: row.entityType, entityId: row.id })
+              }
+            />
+          ) : (
+            <DriveFileSurface
+              files={files}
+              folders={folderListing?.folders ?? []}
+              loading={loading}
+              viewMode={viewMode}
+              selectedId={selected?.id ?? null}
+              checkedIds={selectedIds}
+              onSelect={setSelected}
+              onToggleChecked={toggleChecked}
+              onOpenFolder={openFolder}
+              onRenameFolder={
+                driveStorageSpace ? (folder) => setRenameFolderTarget(folder) : undefined
+              }
+              onDeleteFolder={
+                driveStorageSpace ? (folder) => setDeleteFolderTarget(folder) : undefined
+              }
+              fileMenu={{
+                onOpenDetails: onPreview,
+                onCopyFile,
+                onMoveFile,
+                onArchive,
+                onRestore,
+                onRemoveFromFolder: browseDriveFolders ? onRemoveFromFolder : undefined,
+                busy,
+              }}
+              fileDrag={fileDragConfig}
+              folderFileDrop={folderFileDropConfig}
+            />
+          )}
         </main>
 
         <DriveDetailPanel

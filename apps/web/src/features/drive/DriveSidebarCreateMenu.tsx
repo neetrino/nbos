@@ -21,7 +21,7 @@ export function DriveSidebarCreateMenu({
   busy: boolean;
   /** When false, trigger stays disabled (e.g. system library without entity pick). */
   entityContextReady?: boolean;
-  /** `library-entity`: only file upload (system libraries with entity link). */
+  /** `library-entity`: uploads linked to a record; new folder only in storage drives. */
   menuMode?: 'storage' | 'library-entity';
   onNewFolder: () => void;
   onFilesSelected: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -74,15 +74,33 @@ export function DriveSidebarCreateMenu({
               </DropdownMenuItem>
             </>
           ) : (
-            <DropdownMenuItem
-              disabled={busy || !entityContextReady}
-              onClick={() => {
-                filesInputRef.current?.click();
-              }}
-            >
-              <Upload className="size-4" aria-hidden />
-              Upload files
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuItem disabled className="cursor-not-allowed opacity-60">
+                <FolderPlus className="size-4" aria-hidden />
+                New folder
+                <span className="text-muted-foreground ml-1 block text-[10px] font-normal normal-case">
+                  (Company / Personal Drive)
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={busy || !entityContextReady}
+                onClick={() => {
+                  filesInputRef.current?.click();
+                }}
+              >
+                <Upload className="size-4" aria-hidden />
+                Upload files
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={busy || !entityContextReady}
+                onClick={() => {
+                  folderInputRef.current?.click();
+                }}
+              >
+                <FolderPlus className="size-4" aria-hidden />
+                Upload folder
+              </DropdownMenuItem>
+            </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>

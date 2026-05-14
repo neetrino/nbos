@@ -17,6 +17,23 @@ export type DriveLibraryEntityRow = {
   entityType: string;
 };
 
+/** Merges API rows with pinned rows (e.g. deep-linked project) without duplicates. */
+export function mergeDriveLibraryEntityRows(
+  base: DriveLibraryEntityRow[],
+  pinned?: readonly DriveLibraryEntityRow[],
+): DriveLibraryEntityRow[] {
+  if (!pinned?.length) return base;
+  const map = new Map<string, DriveLibraryEntityRow>();
+  for (const row of pinned) {
+    map.set(`${row.entityType}:${row.id}`, row);
+  }
+  for (const row of base) {
+    const k = `${row.entityType}:${row.id}`;
+    if (!map.has(k)) map.set(k, row);
+  }
+  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
 const isSystemEntityLibrary = (key: DriveLibraryKey): boolean =>
   ['deals', 'projects', 'products', 'clients', 'finance', 'partners', 'tasks', 'support'].includes(
     key,

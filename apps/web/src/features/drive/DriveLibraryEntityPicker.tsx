@@ -13,24 +13,9 @@ import {
 import type { DriveLibraryKey } from './drive-options';
 import {
   loadDriveLibraryEntityRows,
+  mergeDriveLibraryEntityRows,
   type DriveLibraryEntityRow,
 } from './drive-library-entity-loaders';
-
-function mergePickerRows(
-  base: DriveLibraryEntityRow[],
-  pinned?: readonly DriveLibraryEntityRow[],
-): DriveLibraryEntityRow[] {
-  if (!pinned?.length) return base;
-  const map = new Map<string, DriveLibraryEntityRow>();
-  for (const row of pinned) {
-    map.set(`${row.entityType}:${row.id}`, row);
-  }
-  for (const row of base) {
-    const k = `${row.entityType}:${row.id}`;
-    if (!map.has(k)) map.set(k, row);
-  }
-  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
-}
 
 export type LibraryUploadLink = { entityType: string; entityId: string };
 
@@ -67,7 +52,10 @@ export function DriveLibraryEntityPicker({
     };
   }, [libraryKey]);
 
-  const displayRows = useMemo(() => mergePickerRows(rows, pinnedRows), [rows, pinnedRows]);
+  const displayRows = useMemo(
+    () => mergeDriveLibraryEntityRows(rows, pinnedRows),
+    [rows, pinnedRows],
+  );
 
   const composite = useMemo(() => (value ? `${value.entityType}:${value.entityId}` : ''), [value]);
 
