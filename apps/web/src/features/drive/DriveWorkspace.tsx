@@ -25,7 +25,6 @@ import { DriveFileSurface } from './DriveFileSurface';
 import { DriveHero } from './DriveHero';
 import { DriveLibraries } from './DriveLibraries';
 import { DriveToolbar } from './DriveToolbar';
-import { buildDriveFileAbsoluteUrl } from './drive-file-links';
 import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
 import {
   buildDriveStats,
@@ -149,15 +148,6 @@ export function DriveWorkspace() {
       setActiveFolderId(next.at(-1)?.id ?? null);
       return next;
     });
-  }
-
-  async function onCopyLink(file: FileAsset) {
-    try {
-      await navigator.clipboard.writeText(buildDriveFileAbsoluteUrl(file));
-      toast.success('File link copied');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to copy file link');
-    }
   }
 
   useEffect(() => {
@@ -489,7 +479,6 @@ export function DriveWorkspace() {
           onArchive={(file) => void onArchive(file)}
           onRestore={(file) => void onRestore(file)}
           onPreview={(file) => void onPreview(file)}
-          onCopyLink={(file) => void onCopyLink(file)}
           onCopyFile={(file) => void onCopyFile(file)}
           onMoveFile={(file) => void onMoveFile(file)}
           onRemoveFromFolder={(file) => void onRemoveFromFolder(file)}

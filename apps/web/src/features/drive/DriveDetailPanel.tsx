@@ -1,16 +1,12 @@
 import { useEffect, useState, type ChangeEvent, type ReactNode } from 'react';
-import {
-  Archive,
-  ArrowUpRight,
-  Copy,
-  File,
-  FolderInput,
-  Link2,
-  Loader2,
-  Upload,
-} from 'lucide-react';
+import { Archive, ArrowUpRight, Copy, File, FolderInput, Loader2, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  EntitySheetFloatingRail,
+  ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
+  ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
+} from '@/components/shared';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { driveApi } from '@/lib/api/drive';
 import type { FileAsset } from '@/lib/api/drive';
@@ -18,9 +14,7 @@ import { cn } from '@/lib/utils';
 import { formatFileSize } from './drive-format';
 import { formatDriveDate, formatDriveLabel } from './drive-format';
 import { badgeVariant } from './drive-utils';
-
-const RAIL_CONTROL_CLASS =
-  'size-10 shrink-0 rounded-l-full rounded-r-none border-0 bg-primary text-primary-foreground shadow-md hover:bg-primary/90 max-sm:rounded-full';
+import { buildDriveFileHref } from './drive-file-links';
 
 export function DriveDetailPanel({
   file,
@@ -30,7 +24,6 @@ export function DriveDetailPanel({
   onArchive,
   onRestore,
   onPreview,
-  onCopyLink,
   onCopyFile,
   onMoveFile,
   onRemoveFromFolder,
@@ -43,7 +36,6 @@ export function DriveDetailPanel({
   onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onPreview: (file: FileAsset) => void;
-  onCopyLink: (file: FileAsset) => void;
   onCopyFile: (file: FileAsset) => void;
   onMoveFile: (file: FileAsset) => void;
   onRemoveFromFolder: (file: FileAsset) => void;
@@ -59,16 +51,20 @@ export function DriveDetailPanel({
         floatingRailAnchorClassName="sm:right-[82vw]"
         floatingRail={
           file ? (
-            <DriveFileRail
-              file={file}
-              busy={busy}
-              onCopyLink={onCopyLink}
-              onArchive={onArchive}
-              onRestore={onRestore}
-              onCopyFile={onCopyFile}
-              onMoveFile={onMoveFile}
-              onRemoveFromFolder={onRemoveFromFolder}
-              onVersionUpload={onVersionUpload}
+            <EntitySheetFloatingRail
+              sourcePageHref={buildDriveFileHref(file.id)}
+              trailing={
+                <DriveFileRailTrailing
+                  file={file}
+                  busy={busy}
+                  onArchive={onArchive}
+                  onRestore={onRestore}
+                  onCopyFile={onCopyFile}
+                  onMoveFile={onMoveFile}
+                  onRemoveFromFolder={onRemoveFromFolder}
+                  onVersionUpload={onVersionUpload}
+                />
+              }
             />
           ) : null
         }
@@ -87,10 +83,9 @@ export function DriveDetailPanel({
   );
 }
 
-function DriveFileRail({
+function DriveFileRailTrailing({
   file,
   busy,
-  onCopyLink,
   onArchive,
   onRestore,
   onCopyFile,
@@ -100,7 +95,6 @@ function DriveFileRail({
 }: {
   file: FileAsset;
   busy: boolean;
-  onCopyLink: (file: FileAsset) => void;
   onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onCopyFile: (file: FileAsset) => void;
@@ -108,43 +102,57 @@ function DriveFileRail({
   onRemoveFromFolder: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
 }) {
+  const archiveLabel = file.status === 'ARCHIVED' ? 'Restore file' : 'Archive file';
+  const archiveHint = file.status === 'ARCHIVED' ? 'Restore' : 'Archive';
+
   return (
     <>
-      <RailButton label="Copy file link" disabled={busy} onClick={() => onCopyLink(file)}>
-        <Link2 className="size-4" aria-hidden />
-      </RailButton>
       <RailVersionUpload file={file} busy={busy} onVersionUpload={onVersionUpload} />
-      <RailButton
-        label={file.status === 'ARCHIVED' ? 'Restore file' : 'Archive file'}
+      <RailTrailButton
+        ariaLabel={archiveLabel}
+        hint={archiveHint}
         disabled={busy}
         onClick={() => (file.status === 'ARCHIVED' ? onRestore(file) : onArchive(file))}
       >
         <Archive className="size-4" aria-hidden />
-      </RailButton>
-      <RailButton label="Copy file" disabled={busy} onClick={() => onCopyFile(file)}>
+      </RailTrailButton>
+      <RailTrailButton
+        ariaLabel="Copy file"
+        hint="Copy"
+        disabled={busy}
+        onClick={() => onCopyFile(file)}
+      >
         <Copy className="size-4" aria-hidden />
-      </RailButton>
-      <RailButton label="Move file" disabled={busy} onClick={() => onMoveFile(file)}>
+      </RailTrailButton>
+      <RailTrailButton
+        ariaLabel="Move file"
+        hint="Move"
+        disabled={busy}
+        onClick={() => onMoveFile(file)}
+      >
         <FolderInput className="size-4" aria-hidden />
-      </RailButton>
-      <RailButton
-        label="Remove from folder"
+      </RailTrailButton>
+      <RailTrailButton
+        ariaLabel="Remove from folder"
+        hint="Remove"
         disabled={busy}
         onClick={() => onRemoveFromFolder(file)}
       >
         <File className="size-4" aria-hidden />
-      </RailButton>
+      </RailTrailButton>
     </>
   );
 }
 
-function RailButton({
-  label,
+function RailTrailButton({
+  ariaLabel,
+  hint,
   disabled,
   onClick,
   children,
 }: {
-  label: string;
+  ariaLabel: string;
+  hint: string;
   disabled?: boolean;
   onClick?: () => void;
   children: ReactNode;
@@ -154,13 +162,14 @@ function RailButton({
       type="button"
       variant="default"
       size="icon"
-      className={RAIL_CONTROL_CLASS}
-      aria-label={label}
-      title={label}
+      className={ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS}
+      aria-label={ariaLabel}
+      title={hint}
       disabled={disabled}
       onClick={onClick}
     >
       {children}
+      <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>{hint}</span>
     </Button>
   );
 }
@@ -178,14 +187,15 @@ function RailVersionUpload({
   return (
     <label
       className={cn(
-        RAIL_CONTROL_CLASS,
+        ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
         'inline-flex cursor-pointer items-center justify-center',
         disabled && 'pointer-events-none opacity-50',
       )}
-      title="Upload new version"
+      title="Upload"
       aria-label="Upload new version"
     >
       <Upload className="size-4" aria-hidden />
+      <span className={ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS}>Upload</span>
       <input
         type="file"
         className="hidden"
