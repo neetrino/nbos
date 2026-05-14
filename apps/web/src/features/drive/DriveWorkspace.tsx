@@ -9,9 +9,9 @@ import {
   type FileAsset,
 } from '@/lib/api/drive';
 import {
-  DEFAULT_DRIVE_SPACE,
   DEFAULT_DRIVE_LIBRARY,
   DRIVE_LIBRARIES,
+  DRIVE_SPACE_STORAGE_KEY,
   DRIVE_VIEW_MODE_STORAGE_KEY,
   FALLBACK_MIME_TYPE,
   type DriveLibraryOption,
@@ -30,6 +30,7 @@ import {
   buildDriveStats,
   buildLibraryCounts,
   fileMatchesLibrary,
+  getInitialDriveSpace,
   getInitialViewMode,
 } from './drive-utils';
 import {
@@ -43,8 +44,13 @@ type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
 
 export function DriveWorkspace() {
   const [rawFiles, setRawFiles] = useState<FileAsset[]>([]);
-  const [selectedSpace, setSelectedSpace] = useState<DriveSpaceOption>(DEFAULT_DRIVE_SPACE);
-  const [selectedLibrary, setSelectedLibrary] = useState<DriveLibraryOption>(DEFAULT_DRIVE_LIBRARY);
+  const [selectedSpace, setSelectedSpace] = useState<DriveSpaceOption>(getInitialDriveSpace);
+  const [selectedLibrary, setSelectedLibrary] = useState<DriveLibraryOption>(() => {
+    const space = getInitialDriveSpace();
+    return (
+      DRIVE_LIBRARIES.find((item) => item.key === space.defaultLibraryKey) ?? DEFAULT_DRIVE_LIBRARY
+    );
+  });
   const [selected, setSelected] = useState<FileAsset | null>(null);
   const status: DriveStatusFilter = 'ACTIVE';
   const purpose: PurposeFilter = ALL_PURPOSES;
@@ -486,6 +492,7 @@ export function DriveWorkspace() {
           setSelectedSpace(space);
           setSelectedLibrary(library ?? DEFAULT_DRIVE_LIBRARY);
           setSelectedIds([]);
+          window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, space.key);
         }}
         insightsOpen={insightsOpen}
         onToggleInsights={() => setInsightsOpen((current) => !current)}

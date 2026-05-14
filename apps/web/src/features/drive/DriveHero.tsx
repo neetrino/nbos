@@ -89,6 +89,7 @@ function DriveSpaceTabs({
     >
       {DRIVE_SPACES.map((space) => {
         const active = space.key === selected.key;
+        const Icon = space.icon;
         return (
           <button
             key={space.key}
@@ -97,12 +98,22 @@ function DriveSpaceTabs({
             aria-selected={active}
             onClick={() => onSelect(space)}
             className={cn(
-              'rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors sm:px-4',
+              'inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-bold tracking-tight whitespace-nowrap transition-colors sm:px-3.5',
               active
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground',
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
             )}
           >
+            <span
+              className={cn(
+                'flex size-7 shrink-0 items-center justify-center rounded-full',
+                active
+                  ? 'bg-primary-foreground/20 text-primary-foreground'
+                  : 'bg-muted text-muted-foreground',
+              )}
+            >
+              <Icon className="size-4" aria-hidden />
+            </span>
             {space.segmentLabel}
           </button>
         );

@@ -1,6 +1,12 @@
 import type { FileAsset } from '@/lib/api/drive';
-import type { DriveLibraryOption, DriveViewMode } from './drive-options';
-import { DRIVE_LIBRARIES, DRIVE_VIEW_MODE_STORAGE_KEY } from './drive-options';
+import type { DriveLibraryOption, DriveSpaceOption, DriveViewMode } from './drive-options';
+import {
+  DRIVE_LIBRARIES,
+  DRIVE_SPACE_STORAGE_KEY,
+  DRIVE_SPACES,
+  DEFAULT_DRIVE_SPACE,
+  DRIVE_VIEW_MODE_STORAGE_KEY,
+} from './drive-options';
 import { toFileSizeNumber } from './drive-format';
 import type { DriveStats } from './drive-types';
 
@@ -8,6 +14,14 @@ export function getInitialViewMode(): DriveViewMode {
   if (typeof window === 'undefined') return 'cards';
   const saved = window.localStorage.getItem(DRIVE_VIEW_MODE_STORAGE_KEY);
   return saved === 'cards' || saved === 'list' || saved === 'table' ? saved : 'cards';
+}
+
+export function getInitialDriveSpace(): DriveSpaceOption {
+  if (typeof window === 'undefined') return DEFAULT_DRIVE_SPACE;
+  const raw = window.localStorage.getItem(DRIVE_SPACE_STORAGE_KEY);
+  if (!raw) return DEFAULT_DRIVE_SPACE;
+  const found = DRIVE_SPACES.find((space) => space.key === raw);
+  return found ?? DEFAULT_DRIVE_SPACE;
 }
 
 export function fileMatchesLibrary(file: FileAsset, library: DriveLibraryOption): boolean {

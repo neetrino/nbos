@@ -9,6 +9,7 @@ import {
   FolderKanban,
   Handshake,
   Headset,
+  Library,
   ListTodo,
   PackageCheck,
   Share2,
@@ -214,16 +215,16 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
   {
     key: 'system',
     title: 'System Libraries',
-    segmentLabel: 'Library Company',
-    icon: FileStack,
+    segmentLabel: 'Library',
+    icon: Library,
     libraryKeys: SYSTEM_LIBRARY_KEYS,
     defaultLibraryKey: 'all',
   },
   {
     key: 'company',
     title: 'Company Drive',
-    segmentLabel: 'Company Drive',
-    icon: FolderOpen,
+    segmentLabel: 'Company',
+    icon: Building2,
     libraryKeys: ['company', 'archive'],
     defaultLibraryKey: 'company',
   },
@@ -238,7 +239,7 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
   {
     key: 'shared',
     title: 'Shared with me',
-    segmentLabel: 'Shared with me',
+    segmentLabel: 'Shared',
     icon: Share2,
     libraryKeys: ['shared', 'archive'],
     defaultLibraryKey: 'shared',
@@ -250,3 +251,6 @@ export const DEFAULT_DRIVE_SPACE = DRIVE_SPACES[0]!;
 export const FALLBACK_MIME_TYPE = 'application/octet-stream';
 
 export const DRIVE_VIEW_MODE_STORAGE_KEY = 'nbos.drive.viewMode';
+
+/** Persisted `DriveSpaceOption.key` for restoring the Drive space tab. */
+export const DRIVE_SPACE_STORAGE_KEY = 'nbos.drive.spaceKey';
