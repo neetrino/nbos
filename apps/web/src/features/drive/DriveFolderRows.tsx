@@ -1,5 +1,6 @@
 'use client';
 
+import type { DragEvent, ReactNode } from 'react';
 import { Folder, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,31 +26,53 @@ const FOLDER_CARD_MENU_HOVER =
 const FOLDER_CARD_ICON_CLASS =
   'text-foreground/80 dark:text-foreground/70 h-[min(5.25rem,47cqh)] w-[min(5.25rem,47cqw)] shrink-0';
 
+export type DriveFolderFileDropHandlers = {
+  onDragOver: (e: DragEvent) => void;
+  onDragLeave: (e: DragEvent) => void;
+  onDrop: (e: DragEvent) => void;
+};
+
 export function DriveFolderCardRow({
   folder,
   compact,
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  fileDropHighlight,
+  fileDropHandlers,
 }: {
   folder: DriveFolder;
   compact: boolean;
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
+  fileDropHighlight?: boolean;
+  fileDropHandlers?: DriveFolderFileDropHandlers;
 }) {
   const showMenu = Boolean(onRenameFolder || onDeleteFolder);
 
+  const shell = (layoutClass: string, children: ReactNode) => (
+    <div
+      className={cn(
+        layoutClass,
+        'border-border/60 bg-card/90 hover:border-primary/25 group hover:bg-card border shadow-sm transition-colors',
+        fileDropHighlight && 'ring-primary ring-2 ring-offset-2',
+      )}
+      onDragOver={fileDropHandlers?.onDragOver}
+      onDragLeave={fileDropHandlers?.onDragLeave}
+      onDrop={fileDropHandlers?.onDrop}
+    >
+      {children}
+    </div>
+  );
+
   if (compact) {
-    return (
-      <div
-        className={cn(
-          'border-border/60 bg-card/90 hover:border-primary/25 group hover:bg-card relative flex w-full items-center gap-2 border shadow-sm transition-colors',
-          'rounded-xl p-2.5',
-        )}
-      >
+    return shell(
+      'relative flex w-full items-center gap-2 rounded-xl p-2.5',
+      <>
         <button
           type="button"
+          draggable={false}
           onClick={() => onOpenFolder(folder)}
           className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left outline-none focus-visible:ring-2"
         >
@@ -68,19 +91,16 @@ export function DriveFolderCardRow({
             />
           </div>
         )}
-      </div>
+      </>,
     );
   }
 
-  return (
-    <div
-      className={cn(
-        'border-border/60 bg-card/90 hover:border-primary/25 group hover:bg-card @container relative flex aspect-square w-full flex-col overflow-hidden border shadow-sm transition-colors',
-        'rounded-2xl',
-      )}
-    >
+  return shell(
+    '@container relative flex aspect-square w-full flex-col overflow-hidden rounded-2xl',
+    <>
       <button
         type="button"
+        draggable={false}
         onClick={() => onOpenFolder(folder)}
         className="focus-visible:ring-ring flex min-h-0 flex-1 flex-col px-3 pt-10 pb-3 text-center outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
@@ -103,7 +123,7 @@ export function DriveFolderCardRow({
           />
         </div>
       )}
-    </div>
+    </>,
   );
 }
 
@@ -155,18 +175,32 @@ export function DriveFolderTableRow({
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  fileDropHighlight,
+  fileDropHandlers,
 }: {
   folder: DriveFolder;
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
+  fileDropHighlight?: boolean;
+  fileDropHandlers?: DriveFolderFileDropHandlers;
 }) {
   const showMenu = Boolean(onRenameFolder || onDeleteFolder);
   return (
-    <div className={cn('hover:bg-muted/50 px-4 py-3', FOLDER_TABLE_ROW_GRID)}>
+    <div
+      className={cn(
+        'hover:bg-muted/50 px-4 py-3',
+        FOLDER_TABLE_ROW_GRID,
+        fileDropHighlight && 'bg-primary/8 ring-primary/30 ring-2 ring-inset',
+      )}
+      onDragOver={fileDropHandlers?.onDragOver}
+      onDragLeave={fileDropHandlers?.onDragLeave}
+      onDrop={fileDropHandlers?.onDrop}
+    >
       <div
         role="button"
         tabIndex={0}
+        draggable={false}
         className={cn(
           FOLDER_TABLE_MAIN_GRID,
           'focus-visible:ring-ring col-span-6 cursor-pointer text-left text-sm outline-none focus-visible:ring-2',

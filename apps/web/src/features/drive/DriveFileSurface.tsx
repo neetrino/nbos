@@ -1,10 +1,28 @@
+'use client';
+
+import { useCallback, useState, type DragEvent } from 'react';
 import { File, FileArchive, FileImage, FileText, Loader2 } from 'lucide-react';
 import type { DriveFolder, FileAsset } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate, formatDriveLabel, formatFileSize } from './drive-format';
 import type { DriveViewMode } from './drive-options';
-import { DriveFileCard, DriveFileCheckbox, type DriveFileCardMenuHandlers } from './DriveFileCard';
-import { DriveFolderCardRow, DriveFolderTableRow } from './DriveFolderRows';
+import {
+  DriveFileCard,
+  DriveFileCheckbox,
+  type DriveFileCardDragConfig,
+  type DriveFileCardMenuHandlers,
+} from './DriveFileCard';
+import {
+  DriveFolderCardRow,
+  DriveFolderTableRow,
+  type DriveFolderFileDropHandlers,
+} from './DriveFolderRows';
+import {
+  DRIVE_FILE_DRAG_MIME,
+  dataTransferHasDriveFileDrag,
+  parseDriveFileDragPayload,
+  stringifyDriveFileDragPayload,
+} from './drive-file-drag';
 
 const FILE_TABLE_GRID_CLASS =
   'grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px_44px] gap-3';
@@ -22,6 +40,8 @@ export function DriveFileSurface({
   onRenameFolder,
   onDeleteFolder,
   fileMenu,
+  fileDrag,
+  folderFileDrop,
 }: {
   files: FileAsset[];
   folders: DriveFolder[];
@@ -35,7 +55,47 @@ export function DriveFileSurface({
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
   fileMenu?: DriveFileCardMenuHandlers;
+  fileDrag?: DriveFileCardDragConfig;
+  folderFileDrop?: {
+    sourceFolderId: string;
+    onMoveFilesToFolder: (fileIds: string[], targetFolderId: string) => void | Promise<void>;
+    busy?: boolean;
+  };
 }) {
+  const [dropTargetFolderId, setDropTargetFolderId] = useState<string | null>(null);
+
+  const buildFolderDropHandlers = useCallback(
+    (folderId: string): DriveFolderFileDropHandlers | undefined => {
+      if (!folderFileDrop) return undefined;
+      const { sourceFolderId, onMoveFilesToFolder, busy } = folderFileDrop;
+      if (folderId === sourceFolderId) return undefined;
+
+      return {
+        onDragOver: (event: DragEvent) => {
+          if (busy || !dataTransferHasDriveFileDrag(event.dataTransfer)) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'move';
+          setDropTargetFolderId(folderId);
+        },
+        onDragLeave: (event: DragEvent) => {
+          const next = event.relatedTarget as Node | null;
+          if (next && event.currentTarget.contains(next)) return;
+          setDropTargetFolderId((current) => (current === folderId ? null : current));
+        },
+        onDrop: (event: DragEvent) => {
+          event.preventDefault();
+          setDropTargetFolderId(null);
+          if (busy) return;
+          const raw = event.dataTransfer.getData(DRIVE_FILE_DRAG_MIME);
+          const parsed = parseDriveFileDragPayload(raw);
+          if (!parsed?.fileIds.length) return;
+          void onMoveFilesToFolder([...parsed.fileIds], folderId);
+        },
+      };
+    },
+    [folderFileDrop],
+  );
+
   if (loading) {
     return (
       <div className="border-border/70 bg-card/60 flex justify-center rounded-3xl border py-16">
@@ -56,6 +116,9 @@ export function DriveFileSurface({
         onOpenFolder={onOpenFolder}
         onRenameFolder={onRenameFolder}
         onDeleteFolder={onDeleteFolder}
+        fileDrag={fileDrag}
+        dropTargetFolderId={dropTargetFolderId}
+        buildFolderDropHandlers={buildFolderDropHandlers}
       />
     );
   }
@@ -75,6 +138,8 @@ export function DriveFileSurface({
           onOpenFolder={onOpenFolder}
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
+          fileDropHighlight={dropTargetFolderId === folder.id}
+          fileDropHandlers={buildFolderDropHandlers(folder.id)}
         />
       ))}
       {files.map((file) => (
@@ -87,6 +152,7 @@ export function DriveFileSurface({
           onSelect={onSelect}
           onToggleChecked={onToggleChecked}
           menu={fileMenu}
+          fileDrag={fileDrag}
         />
       ))}
     </div>
@@ -103,6 +169,9 @@ function FileTable({
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
+  fileDrag,
+  dropTargetFolderId,
+  buildFolderDropHandlers,
 }: {
   files: FileAsset[];
   folders: DriveFolder[];
@@ -113,6 +182,9 @@ function FileTable({
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
+  fileDrag?: DriveFileCardDragConfig;
+  dropTargetFolderId: string | null;
+  buildFolderDropHandlers: (folderId: string) => DriveFolderFileDropHandlers | undefined;
 }) {
   return (
     <div className="border-border/70 bg-card/80 overflow-hidden rounded-3xl border">
@@ -137,6 +209,8 @@ function FileTable({
           onOpenFolder={onOpenFolder}
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
+          fileDropHighlight={dropTargetFolderId === folder.id}
+          fileDropHandlers={buildFolderDropHandlers(folder.id)}
         />
       ))}
       {files.map((file) => (
@@ -147,6 +221,7 @@ function FileTable({
           checked={checkedIds.includes(file.id)}
           onSelect={onSelect}
           onToggleChecked={onToggleChecked}
+          fileDrag={fileDrag}
         />
       ))}
     </div>
@@ -172,21 +247,38 @@ function FileTableRow({
   checked,
   onSelect,
   onToggleChecked,
+  fileDrag,
 }: {
   file: FileAsset;
   selected: boolean;
   checked: boolean;
   onSelect: (file: FileAsset) => void;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
+  fileDrag?: DriveFileCardDragConfig;
 }) {
+  const draggable = Boolean(fileDrag);
   return (
     <button
       type="button"
+      draggable={draggable}
+      onDragStart={
+        fileDrag
+          ? (event) => {
+              const ids = fileDrag.resolveDragFileIds(file);
+              event.dataTransfer.setData(
+                DRIVE_FILE_DRAG_MIME,
+                stringifyDriveFileDragPayload({ fileIds: ids }),
+              );
+              event.dataTransfer.effectAllowed = 'move';
+            }
+          : undefined
+      }
       onClick={() => onSelect(file)}
       className={cn(
         'hover:bg-muted/50 w-full px-4 py-3 text-left text-sm',
         FILE_TABLE_GRID_CLASS,
         selected && 'bg-primary/5',
+        draggable && 'cursor-grab active:cursor-grabbing',
       )}
     >
       <DriveFileCheckbox

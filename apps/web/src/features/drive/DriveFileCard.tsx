@@ -12,6 +12,14 @@ import {
 import { cn } from '@/lib/utils';
 import { formatFileSize } from './drive-format';
 import { DriveFileCardThumbnail } from './DriveFileCardThumbnail';
+import { DRIVE_FILE_DRAG_MIME, stringifyDriveFileDragPayload } from './drive-file-drag';
+
+/** When set, file cards can be dragged onto folder drop targets (same source folder). */
+export type DriveFileCardDragConfig = {
+  sourceFolderId: string;
+  /** If the dragged file is among checked rows, all checked ids move; otherwise only this file. */
+  resolveDragFileIds: (file: FileAsset) => string[];
+};
 
 /** Shown on card hover; keep visible when row is checked (multi-select). */
 const CARD_CONTROL_HOVER =
@@ -41,6 +49,7 @@ export function DriveFileCheckbox({
   return (
     <input
       type="checkbox"
+      draggable={false}
       checked={checked}
       onChange={(event) => onToggleChecked(file, event.target.checked)}
       onClick={(event) => event.stopPropagation()}
@@ -58,6 +67,7 @@ export function DriveFileCard(props: {
   onSelect: (file: FileAsset) => void;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
   menu?: DriveFileCardMenuHandlers;
+  fileDrag?: DriveFileCardDragConfig;
 }) {
   const { compact, menu } = props;
   const menuBusy = menu?.busy ?? false;
@@ -75,6 +85,7 @@ function DriveFileCardListRow({
   onToggleChecked,
   menu,
   menuBusy,
+  fileDrag,
 }: {
   file: FileAsset;
   selected: boolean;
@@ -83,17 +94,34 @@ function DriveFileCardListRow({
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
   menu?: DriveFileCardMenuHandlers;
   menuBusy: boolean;
+  fileDrag?: DriveFileCardDragConfig;
 }) {
   const showMenu = Boolean(menu);
+  const draggable = Boolean(fileDrag);
   return (
     <div
+      draggable={draggable}
+      onDragStart={
+        fileDrag
+          ? (event) => {
+              const ids = fileDrag.resolveDragFileIds(file);
+              event.dataTransfer.setData(
+                DRIVE_FILE_DRAG_MIME,
+                stringifyDriveFileDragPayload({ fileIds: ids }),
+              );
+              event.dataTransfer.effectAllowed = 'move';
+            }
+          : undefined
+      }
       className={cn(
         'border-border/70 bg-card/80 group hover:bg-muted/40 relative w-full rounded-2xl border transition-all',
         selected && 'border-primary/60 ring-primary/15 ring-2',
+        draggable && 'cursor-grab active:cursor-grabbing',
       )}
     >
       <button
         type="button"
+        draggable={false}
         onClick={() => onSelect(file)}
         className="focus-visible:ring-ring flex w-full items-center gap-3 rounded-2xl py-3 pr-3 pl-10 text-left outline-none focus-visible:ring-2 md:pl-12"
       >
@@ -138,6 +166,7 @@ function DriveFileCardGrid({
   onToggleChecked,
   menu,
   menuBusy,
+  fileDrag,
 }: {
   file: FileAsset;
   selected: boolean;
@@ -146,17 +175,34 @@ function DriveFileCardGrid({
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
   menu?: DriveFileCardMenuHandlers;
   menuBusy: boolean;
+  fileDrag?: DriveFileCardDragConfig;
 }) {
   const showMenu = Boolean(menu);
+  const draggable = Boolean(fileDrag);
   return (
     <div
+      draggable={draggable}
+      onDragStart={
+        fileDrag
+          ? (event) => {
+              const ids = fileDrag.resolveDragFileIds(file);
+              event.dataTransfer.setData(
+                DRIVE_FILE_DRAG_MIME,
+                stringifyDriveFileDragPayload({ fileIds: ids }),
+              );
+              event.dataTransfer.effectAllowed = 'move';
+            }
+          : undefined
+      }
       className={cn(
         'border-border/70 bg-card/80 group relative flex w-full flex-col overflow-hidden rounded-2xl border text-left transition-all hover:-translate-y-0.5 hover:shadow-md',
         selected && 'border-primary/60 ring-primary/20 ring-2',
+        draggable && 'cursor-grab active:cursor-grabbing',
       )}
     >
       <button
         type="button"
+        draggable={false}
         onClick={() => onSelect(file)}
         className="focus-visible:ring-ring flex min-h-0 w-full flex-1 flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
@@ -212,6 +258,7 @@ function FileCardActionsMenu({
           <Button
             {...props}
             type="button"
+            draggable={false}
             size="icon"
             variant="secondary"
             className="bg-background/90 text-muted-foreground size-8 shrink-0 shadow-sm backdrop-blur-sm"

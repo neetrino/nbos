@@ -12,4 +12,4 @@
 12. **System Libraries (Library):** 🟢 **PARTIAL — сделано:** выбор сущности (picker по библиотеке), загрузка файлов с `entityType`/`entityId` в upload session + поля из канона библиотеки (`sourceModule`/`purpose`/`visibility`). **Осталось:** виртуальные папки по сущности; полный паритет «New folder / Upload folder» в system libraries (сейчас в Library — только upload файлов; папки — в Company/Personal).
 13. **Двусторонняя работа Drive ↔ Project (и др.):** из Drive положить файл сразу в проект (без обхода через карточку проекта); из проекта открыть Drive и вести папки там — требует контекстного scope + UI выбора проекта в Library.
 14. **Shared with me** и полная модель пространств из п.1 — TODO.
-15. **Drag & drop** файлов на папки (и в сайдбаре, и в списке) — TODO.
+15. **Drag & drop** файлов на папки (и в сайдбаре, и в списке) — 🟢 **PARTIAL:** Company/Personal — drag файлов на папки в сетке/листе/таблице и в дереве сайдбара (`moveFolderFile`); без drag между вкладками Library / без reorder внутри папки.

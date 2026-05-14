@@ -1,10 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type DragEvent } from 'react';
 import { ChevronRight, Folder } from 'lucide-react';
 import { driveApi, type DriveFolder } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { buildFolderTree, type FolderTreeNode } from './drive-folder-tree';
+import {
+  DRIVE_FILE_DRAG_MIME,
+  dataTransferHasDriveFileDrag,
+  parseDriveFileDragPayload,
+} from './drive-file-drag';
+import type { DriveFolderFileDropHandlers } from './DriveFolderRows';
 
 const TREE_DEPTH_PADDING = ['pl-0', 'pl-2.5', 'pl-5', 'pl-8', 'pl-11', 'pl-[3.25rem]'] as const;
 
@@ -12,14 +18,52 @@ export function DriveSpaceFolderTree({
   space,
   activeFolderId,
   onSelectFolderPath,
+  folderFileDrop,
 }: {
   space: 'COMPANY' | 'PERSONAL';
   activeFolderId: string | null;
   onSelectFolderPath: (pathFromRoot: DriveFolder[]) => void;
+  folderFileDrop?: {
+    sourceFolderId: string;
+    onMoveFilesToFolder: (fileIds: string[], targetFolderId: string) => void | Promise<void>;
+    busy?: boolean;
+  };
 }) {
   const [tree, setTree] = useState<FolderTreeNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [dropTargetFolderId, setDropTargetFolderId] = useState<string | null>(null);
+
+  const buildFolderDropHandlers = useCallback(
+    (folderId: string): DriveFolderFileDropHandlers | undefined => {
+      if (!folderFileDrop) return undefined;
+      const { sourceFolderId, onMoveFilesToFolder, busy } = folderFileDrop;
+      if (folderId === sourceFolderId) return undefined;
+      return {
+        onDragOver: (event: DragEvent) => {
+          if (busy || !dataTransferHasDriveFileDrag(event.dataTransfer)) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = 'move';
+          setDropTargetFolderId(folderId);
+        },
+        onDragLeave: (event: DragEvent) => {
+          const next = event.relatedTarget as Node | null;
+          if (next && event.currentTarget.contains(next)) return;
+          setDropTargetFolderId((current) => (current === folderId ? null : current));
+        },
+        onDrop: (event: DragEvent) => {
+          event.preventDefault();
+          setDropTargetFolderId(null);
+          if (busy) return;
+          const raw = event.dataTransfer.getData(DRIVE_FILE_DRAG_MIME);
+          const parsed = parseDriveFileDragPayload(raw);
+          if (!parsed?.fileIds.length) return;
+          void onMoveFilesToFolder([...parsed.fileIds], folderId);
+        },
+      };
+    },
+    [folderFileDrop],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,6 +111,8 @@ export function DriveSpaceFolderTree({
               depth={0}
               expanded={expanded}
               activeFolderId={activeFolderId}
+              dropTargetFolderId={dropTargetFolderId}
+              buildFolderDropHandlers={buildFolderDropHandlers}
               onToggle={(id) => {
                 setExpanded((prev) => {
                   const next = new Set(prev);
@@ -126,6 +172,8 @@ function TreeBranch({
   depth,
   expanded,
   activeFolderId,
+  dropTargetFolderId,
+  buildFolderDropHandlers,
   onToggle,
   onSelectFolderPath,
 }: {
@@ -134,12 +182,16 @@ function TreeBranch({
   depth: number;
   expanded: ReadonlySet<string>;
   activeFolderId: string | null;
+  dropTargetFolderId: string | null;
+  buildFolderDropHandlers: (folderId: string) => DriveFolderFileDropHandlers | undefined;
   onToggle: (id: string) => void;
   onSelectFolderPath: (pathFromRoot: DriveFolder[]) => void;
 }) {
   const hasChildren = node.children.length > 0;
   const isOpen = expanded.has(node.id);
   const isActive = activeFolderId === node.id;
+  const dropHandlers = buildFolderDropHandlers(node.id);
+  const dropHighlight = dropTargetFolderId === node.id;
 
   return (
     <li>
@@ -147,13 +199,18 @@ function TreeBranch({
         className={cn(
           'flex min-h-8 items-center gap-0.5 rounded-lg',
           isActive && 'bg-primary/12 ring-primary/20 ring-1',
+          dropHighlight && 'ring-primary ring-2 ring-offset-1',
           TREE_DEPTH_PADDING[Math.min(depth, TREE_DEPTH_PADDING.length - 1)],
         )}
+        onDragOver={dropHandlers?.onDragOver}
+        onDragLeave={dropHandlers?.onDragLeave}
+        onDrop={dropHandlers?.onDrop}
       >
         {hasChildren ? (
           <button
             type="button"
             aria-expanded={isOpen}
+            draggable={false}
             className="text-muted-foreground hover:text-foreground flex size-7 shrink-0 items-center justify-center rounded-md"
             onClick={() => onToggle(node.id)}
           >
@@ -164,6 +221,7 @@ function TreeBranch({
         )}
         <button
           type="button"
+          draggable={false}
           onClick={() => {
             const path = buildPath(rootNodes, node.id);
             if (path) onSelectFolderPath(path);
@@ -175,7 +233,7 @@ function TreeBranch({
         </button>
       </div>
       {hasChildren && isOpen && (
-        <ul className="space-y-0.5">
+        <ul className="border-border/40 ml-1.5 space-y-0.5 border-l pl-1">
           {node.children.map((child) => (
             <TreeBranch
               key={child.id}
@@ -184,6 +242,8 @@ function TreeBranch({
               depth={depth + 1}
               expanded={expanded}
               activeFolderId={activeFolderId}
+              dropTargetFolderId={dropTargetFolderId}
+              buildFolderDropHandlers={buildFolderDropHandlers}
               onToggle={onToggle}
               onSelectFolderPath={onSelectFolderPath}
             />

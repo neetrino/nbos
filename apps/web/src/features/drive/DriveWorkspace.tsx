@@ -229,6 +229,54 @@ export function DriveWorkspace() {
   const stats = useMemo(() => buildDriveStats(files), [files]);
   const libraryCounts = useMemo(() => buildLibraryCounts(rawFiles), [rawFiles]);
 
+  const handleDragMoveFilesToFolder = useCallback(
+    async (fileIds: string[], targetFolderId: string) => {
+      const source = placementFolderId;
+      if (!source || targetFolderId === source || fileIds.length === 0) return;
+      setBusy(true);
+      try {
+        for (const fileId of fileIds) {
+          await driveApi.moveFolderFile({
+            sourceFolderId: source,
+            targetFolderId,
+            fileId,
+          });
+        }
+        toast.success(fileIds.length === 1 ? 'File moved' : `${fileIds.length} files moved`);
+        await loadFolders();
+        await load();
+        setFolderTreeVersion((v) => v + 1);
+        setSelectedIds((ids) => ids.filter((id) => !fileIds.includes(id)));
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Move failed');
+      } finally {
+        setBusy(false);
+      }
+    },
+    [load, loadFolders, placementFolderId],
+  );
+
+  const fileDragConfig = useMemo(() => {
+    if (!browseDriveFolders || !placementFolderId) return undefined;
+    return {
+      sourceFolderId: placementFolderId,
+      resolveDragFileIds: (file: FileAsset) =>
+        selectedIds.length > 0 && selectedIds.includes(file.id) ? [...selectedIds] : [file.id],
+    };
+  }, [browseDriveFolders, placementFolderId, selectedIds]);
+
+  const folderFileDropConfig = useMemo(
+    () =>
+      browseDriveFolders && placementFolderId
+        ? {
+            sourceFolderId: placementFolderId,
+            onMoveFilesToFolder: handleDragMoveFilesToFolder,
+            busy,
+          }
+        : undefined,
+    [browseDriveFolders, busy, handleDragMoveFilesToFolder, placementFolderId],
+  );
+
   useEffect(() => {
     setSelected((current) => {
       if (!current) return null;
@@ -717,6 +765,7 @@ export function DriveWorkspace() {
                         key={folderTreeVersion}
                         space={driveStorageSpace}
                         activeFolderId={activeFolderId}
+                        folderFileDrop={folderFileDropConfig}
                         onSelectFolderPath={navigateFolderPath}
                       />
                     ),
@@ -763,6 +812,8 @@ export function DriveWorkspace() {
               onRemoveFromFolder: browseDriveFolders ? onRemoveFromFolder : undefined,
               busy,
             }}
+            fileDrag={fileDragConfig}
+            folderFileDrop={folderFileDropConfig}
           />
         </main>
 
