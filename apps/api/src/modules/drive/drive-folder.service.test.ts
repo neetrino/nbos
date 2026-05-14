@@ -87,4 +87,51 @@ describe('DriveFolderService', () => {
       }),
     );
   });
+
+  it('lists folder tree for a space', async () => {
+    prisma.driveFolder.findMany.mockResolvedValue([
+      { id: 'a', name: 'Alpha', space: 'COMPANY', parentId: null },
+    ]);
+    const result = (await service.listFolderTree('COMPANY', 'user-1')) as {
+      space: string;
+      folders: { id: string }[];
+    };
+    expect(result.space).toBe('COMPANY');
+    expect(result.folders).toHaveLength(1);
+    expect(prisma.driveFolder.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ space: 'COMPANY', deletedAt: null }),
+      }),
+    );
+  });
+
+  it('renames a folder', async () => {
+    prisma.driveFolder.update.mockResolvedValue({ id: 'folder-1', name: 'Renamed' });
+    const out = await service.renameFolder('folder-1', { name: 'Renamed' }, 'user-1');
+    expect((out as { name: string }).name).toBe('Renamed');
+    expect(prisma.driveFolder.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'folder-1' },
+        data: { name: 'Renamed' },
+      }),
+    );
+  });
+
+  it('soft-deletes an empty folder in a transaction', async () => {
+    prisma.driveFolder.count.mockResolvedValueOnce(0).mockResolvedValueOnce(0);
+    await service.deleteFolder('folder-1', 'user-1');
+    expect(prisma.$transaction).toHaveBeenCalled();
+    expect(prisma.driveFolderItem.updateMany).toHaveBeenCalled();
+    expect(prisma.driveFolder.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'folder-1' },
+        data: { deletedAt: expect.any(Date) },
+      }),
+    );
+  });
+
+  it('refuses delete when the folder has child folders', async () => {
+    prisma.driveFolder.count.mockResolvedValueOnce(1);
+    await expect(service.deleteFolder('folder-1', 'user-1')).rejects.toThrow('subfolders');
+  });
 });

@@ -32,6 +32,14 @@ import {
   fileMatchesLibrary,
   getInitialViewMode,
 } from './drive-utils';
+import {
+  DriveCreateFolderDialog,
+  DriveDeleteFolderDialog,
+  DriveRenameFolderDialog,
+} from './DriveFolderActionDialogs';
+import { DriveFolderPickerDialog } from './DriveFolderPickerDialog';
+
+type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
 
 export function DriveWorkspace() {
   const [rawFiles, setRawFiles] = useState<FileAsset[]>([]);
@@ -50,8 +58,17 @@ export function DriveWorkspace() {
   const [folderListing, setFolderListing] = useState<DriveFolderListing | null>(null);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [folderTrail, setFolderTrail] = useState<DriveFolder[]>([]);
+  const [folderFilePicker, setFolderFilePicker] = useState<FolderFilePickerState | null>(null);
+  const [createFolderOpen, setCreateFolderOpen] = useState(false);
+  const [renameFolderTarget, setRenameFolderTarget] = useState<DriveFolder | null>(null);
+  const [deleteFolderTarget, setDeleteFolderTarget] = useState<DriveFolder | null>(null);
 
   const effectiveStatus = selectedLibrary.status ?? status;
+
+  const moveExcludeFolderIds = useMemo(() => {
+    if (!activeFolderId) return new Set<string>();
+    return new Set([activeFolderId]);
+  }, [activeFolderId]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -185,31 +202,21 @@ export function DriveWorkspace() {
     await mutateFile(() => driveApi.restoreFileAsset(file.id), 'File restored');
   }
 
-  async function onMoveFile(file: FileAsset) {
+  function onMoveFile(file: FileAsset) {
     if (!activeFolderId) {
       toast.error('Open a folder before moving files.');
       return;
     }
-    const targetFolderId = window.prompt('Target folder id');
-    if (!targetFolderId?.trim()) return;
-    await mutateFile(
-      () =>
-        driveApi.moveFolderFile({
-          sourceFolderId: activeFolderId,
-          targetFolderId: targetFolderId.trim(),
-          fileId: file.id,
-        }),
-      'File moved',
-    );
+    if (!freeDriveSpace) return;
+    setFolderFilePicker({ mode: 'move', file });
   }
 
-  async function onCopyFile(file: FileAsset) {
-    const targetFolderId = window.prompt('Target folder id', activeFolderId ?? '');
-    if (!targetFolderId?.trim()) return;
-    await mutateFile(
-      () => driveApi.copyFolderFile({ targetFolderId: targetFolderId.trim(), fileId: file.id }),
-      'File copied',
-    );
+  function onCopyFile(file: FileAsset) {
+    if (!freeDriveSpace) {
+      toast.error('Open Company or Personal Drive to copy into a folder.');
+      return;
+    }
+    setFolderFilePicker({ mode: 'copy', file });
   }
 
   async function onRemoveFromFolder(file: FileAsset) {
@@ -238,6 +245,97 @@ export function DriveWorkspace() {
       async () => driveApi.restoreFileAssets(selectedIds),
       'Selected files restored',
     );
+  }
+
+  async function mutateFileAllowThrow(action: () => Promise<FileAsset>, success: string) {
+    setBusy(true);
+    try {
+      setSelected(await action());
+      toast.success(success);
+      await load();
+      await loadFolders();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Drive action failed');
+      throw err;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleFolderPickerConfirm(targetFolderId: string) {
+    if (!folderFilePicker) {
+      throw new Error('Picker state was cleared.');
+    }
+    const { mode, file } = folderFilePicker;
+    if (mode === 'move') {
+      if (!activeFolderId) {
+        toast.error('Open a folder before moving files.');
+        throw new Error('Missing source folder for move.');
+      }
+      await mutateFileAllowThrow(
+        () =>
+          driveApi.moveFolderFile({
+            sourceFolderId: activeFolderId,
+            targetFolderId,
+            fileId: file.id,
+          }),
+        'File moved',
+      );
+    } else {
+      await mutateFileAllowThrow(
+        () => driveApi.copyFolderFile({ targetFolderId, fileId: file.id }),
+        'File copied',
+      );
+    }
+  }
+
+  async function submitCreateFolder(name: string) {
+    if (!freeDriveSpace) {
+      toast.error('Open Company or Personal Drive first.');
+      throw new Error('No Drive space selected.');
+    }
+    try {
+      await driveApi.createFolder({
+        name,
+        space: freeDriveSpace,
+        parentId: activeFolderId,
+      });
+      toast.success('Folder created');
+      await loadFolders();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not create folder');
+      throw err;
+    }
+  }
+
+  async function submitRenameFolder(folderId: string, name: string) {
+    try {
+      await driveApi.renameFolder(folderId, { name });
+      toast.success('Folder renamed');
+      await loadFolders();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not rename folder');
+      throw err;
+    }
+  }
+
+  async function confirmDeleteFolder(folderId: string) {
+    try {
+      await driveApi.deleteFolder(folderId);
+      toast.success('Folder deleted');
+      if (activeFolderId === folderId) {
+        goBackFolder();
+      }
+      await loadFolders();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not delete folder');
+      throw err;
+    }
+  }
+
+  function openCreateFolderDialog() {
+    if (!freeDriveSpace) return;
+    setCreateFolderOpen(true);
   }
 
   async function mutateFile(action: () => Promise<FileAsset>, success: string) {
@@ -307,23 +405,6 @@ export function DriveWorkspace() {
     } finally {
       setBusy(false);
       event.target.value = '';
-    }
-  }
-
-  async function onCreateFolder() {
-    if (!freeDriveSpace) return;
-    const name = window.prompt('Folder name');
-    if (!name?.trim()) return;
-    try {
-      await driveApi.createFolder({
-        name,
-        space: freeDriveSpace,
-        parentId: activeFolderId,
-      });
-      toast.success('Folder created');
-      await loadFolders();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not create folder');
     }
   }
 
@@ -399,6 +480,7 @@ export function DriveWorkspace() {
       <DriveHero
         stats={stats}
         selectedSpace={selectedSpace}
+        viewMode={viewMode}
         onSelectSpace={(space) => {
           const library = DRIVE_LIBRARIES.find((item) => item.key === space.defaultLibraryKey);
           setSelectedSpace(space);
@@ -407,6 +489,7 @@ export function DriveWorkspace() {
         }}
         insightsOpen={insightsOpen}
         onToggleInsights={() => setInsightsOpen((current) => !current)}
+        onViewModeChange={setViewMode}
         onRefresh={() => void load()}
         loading={loading}
       />
@@ -434,15 +517,13 @@ export function DriveWorkspace() {
             search={search}
             status={status}
             purpose={purpose}
-            viewMode={viewMode}
             lockedStatus={selectedLibrary.status}
             onSearchChange={setSearch}
             onStatusChange={setStatus}
             onPurposeChange={setPurpose}
-            onViewModeChange={setViewMode}
             freeDriveSpace={freeDriveSpace}
             busy={busy}
-            onCreateFolder={() => void onCreateFolder()}
+            onCreateFolder={openCreateFolderDialog}
             onFolderUpload={(event) => void onFolderUpload(event)}
           />
 
@@ -468,6 +549,8 @@ export function DriveWorkspace() {
             onToggleChecked={toggleChecked}
             onOpenFolder={openFolder}
             onBack={folderTrail.length > 0 ? goBackFolder : undefined}
+            onRenameFolder={freeDriveSpace ? (folder) => setRenameFolderTarget(folder) : undefined}
+            onDeleteFolder={freeDriveSpace ? (folder) => setDeleteFolderTarget(folder) : undefined}
           />
         </main>
 
@@ -485,6 +568,50 @@ export function DriveWorkspace() {
           onVersionUpload={(file, event) => void onVersionUpload(file, event)}
         />
       </div>
+
+      {freeDriveSpace && (
+        <DriveFolderPickerDialog
+          open={Boolean(folderFilePicker)}
+          onOpenChange={(next) => {
+            if (!next) setFolderFilePicker(null);
+          }}
+          space={freeDriveSpace}
+          title={folderFilePicker?.mode === 'move' ? 'Move file' : 'Copy file'}
+          description={
+            folderFilePicker?.mode === 'move'
+              ? 'Choose the folder where this file should live next.'
+              : 'Choose the folder for the new copy of this file.'
+          }
+          confirmLabel={folderFilePicker?.mode === 'move' ? 'Move here' : 'Copy here'}
+          excludeFolderIds={folderFilePicker?.mode === 'move' ? moveExcludeFolderIds : undefined}
+          initialSelectedFolderId={folderFilePicker?.mode === 'copy' ? activeFolderId : null}
+          onConfirm={(targetFolderId) => handleFolderPickerConfirm(targetFolderId)}
+        />
+      )}
+
+      <DriveCreateFolderDialog
+        open={createFolderOpen}
+        onOpenChange={setCreateFolderOpen}
+        onSubmit={(name) => submitCreateFolder(name)}
+      />
+
+      <DriveRenameFolderDialog
+        folder={renameFolderTarget}
+        open={renameFolderTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setRenameFolderTarget(null);
+        }}
+        onSubmit={(folderId, name) => submitRenameFolder(folderId, name)}
+      />
+
+      <DriveDeleteFolderDialog
+        folder={deleteFolderTarget}
+        open={deleteFolderTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setDeleteFolderTarget(null);
+        }}
+        onConfirm={(folderId) => confirmDeleteFolder(folderId)}
+      />
     </div>
   );
 }

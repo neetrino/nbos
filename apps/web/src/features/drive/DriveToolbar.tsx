@@ -1,5 +1,5 @@
 import type { ChangeEvent } from 'react';
-import { FolderPlus, Grid3X3, List, Search, Table2, Upload, type LucideIcon } from 'lucide-react';
+import { FolderPlus, Search, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -9,13 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 import {
   PURPOSE_OPTIONS,
   STATUS_FILTERS,
   type DriveLibraryOption,
   type DriveStatusFilter,
-  type DriveViewMode,
 } from './drive-options';
 import { formatDriveLabel } from './drive-format';
 import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
@@ -25,14 +23,12 @@ export function DriveToolbar({
   search,
   status,
   purpose,
-  viewMode,
   lockedStatus,
   freeDriveSpace,
   busy,
   onSearchChange,
   onStatusChange,
   onPurposeChange,
-  onViewModeChange,
   onCreateFolder,
   onFolderUpload,
 }: {
@@ -40,51 +36,46 @@ export function DriveToolbar({
   search: string;
   status: DriveStatusFilter;
   purpose: PurposeFilter;
-  viewMode: DriveViewMode;
   lockedStatus?: DriveStatusFilter;
   freeDriveSpace: 'COMPANY' | 'PERSONAL' | null;
   busy: boolean;
   onSearchChange: (value: string) => void;
   onStatusChange: (value: DriveStatusFilter) => void;
   onPurposeChange: (value: PurposeFilter) => void;
-  onViewModeChange: (value: DriveViewMode) => void;
   onCreateFolder: () => void;
   onFolderUpload: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div className="border-border/70 bg-card/80 rounded-3xl border p-4">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <h2 className="text-foreground text-lg font-semibold">{library.title}</h2>
           <p className="text-muted-foreground text-sm">{library.description}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {freeDriveSpace && (
-            <>
-              <Button type="button" variant="outline" onClick={onCreateFolder} disabled={busy}>
-                <FolderPlus />
-                New folder
-              </Button>
-              <label className="border-border bg-background hover:bg-muted inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium">
-                <Upload className="size-4" />
-                Upload files
-                <input
-                  type="file"
-                  multiple
-                  className="hidden"
-                  disabled={busy}
-                  onChange={onFolderUpload}
-                />
-              </label>
-              <label className="border-border bg-background hover:bg-muted inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium">
-                <FolderPlus className="size-4" />
-                Upload folder
-                <FolderUploadInput disabled={busy} onChange={onFolderUpload} />
-              </label>
-            </>
-          )}
-          <ViewModeSwitch value={viewMode} onChange={onViewModeChange} />
-        </div>
+        {freeDriveSpace ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" onClick={onCreateFolder} disabled={busy}>
+              <FolderPlus />
+              New folder
+            </Button>
+            <label className="border-border bg-background hover:bg-muted inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium">
+              <Upload className="size-4" />
+              Upload files
+              <input
+                type="file"
+                multiple
+                className="hidden"
+                disabled={busy}
+                onChange={onFolderUpload}
+              />
+            </label>
+            <label className="border-border bg-background hover:bg-muted inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium">
+              <FolderPlus className="size-4" />
+              Upload folder
+              <FolderUploadInput disabled={busy} onChange={onFolderUpload} />
+            </label>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_220px]">
@@ -177,57 +168,5 @@ function PurposeSelect({
         ))}
       </SelectContent>
     </Select>
-  );
-}
-
-function ViewModeSwitch({
-  value,
-  onChange,
-}: {
-  value: DriveViewMode;
-  onChange: (value: DriveViewMode) => void;
-}) {
-  const options: Array<{ value: DriveViewMode; label: string; icon: LucideIcon }> = [
-    { value: 'cards', label: 'Cards', icon: Grid3X3 },
-    { value: 'list', label: 'List', icon: List },
-    { value: 'table', label: 'Table', icon: Table2 },
-  ];
-
-  return (
-    <div className="bg-muted/60 flex w-fit rounded-2xl p-1">
-      {options.map((option) => (
-        <ViewModeButton
-          key={option.value}
-          option={option}
-          active={value === option.value}
-          onChange={onChange}
-        />
-      ))}
-    </div>
-  );
-}
-
-function ViewModeButton({
-  option,
-  active,
-  onChange,
-}: {
-  option: { value: DriveViewMode; label: string; icon: LucideIcon };
-  active: boolean;
-  onChange: (value: DriveViewMode) => void;
-}) {
-  const Icon = option.icon;
-  return (
-    <button
-      type="button"
-      onClick={() => onChange(option.value)}
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-colors',
-        active ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
-      )}
-    >
-      <Icon className="size-3.5" />
-      {option.label}
-    </button>
   );
 }

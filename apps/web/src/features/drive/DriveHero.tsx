@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { Archive, BarChart3, File, FileText, Layers3, RefreshCw, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { DRIVE_SPACES, type DriveSpaceOption } from './drive-options';
+import { DRIVE_SPACES, type DriveSpaceOption, type DriveViewMode } from './drive-options';
+import { DriveViewModeSwitch } from './DriveViewModeSwitch';
 import { formatFileSize } from './drive-format';
 import type { DriveStats } from './drive-types';
 
@@ -13,29 +14,34 @@ export function DriveHero({
   stats,
   loading,
   selectedSpace,
+  viewMode,
   insightsOpen,
   onRefresh,
   onSelectSpace,
+  onViewModeChange,
   onToggleInsights,
 }: {
   stats: DriveStats;
   loading: boolean;
   selectedSpace: DriveSpaceOption;
+  viewMode: DriveViewMode;
   insightsOpen: boolean;
   onRefresh: () => void;
   onSelectSpace: (space: DriveSpaceOption) => void;
+  onViewModeChange: (mode: DriveViewMode) => void;
   onToggleInsights: () => void;
 }) {
   return (
     <section className="border-border/70 bg-card/80 rounded-2xl border px-4 py-3 shadow-sm">
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
         <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
           <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">Drive</h1>
           <div className={TAB_SCROLL}>
             <DriveSpaceTabs selected={selectedSpace} onSelect={onSelectSpace} />
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
+          <DriveViewModeSwitch value={viewMode} onChange={onViewModeChange} />
           <Button type="button" variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
             <RefreshCw className={cn('size-4', loading && 'animate-spin')} aria-hidden />
             Refresh
