@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+} from 'react';
 import { toast } from 'sonner';
 import {
   driveApi,
@@ -12,6 +19,7 @@ import {
   DEFAULT_DRIVE_LIBRARY,
   DRIVE_LIBRARIES,
   DRIVE_SPACE_STORAGE_KEY,
+  DRIVE_SPACES,
   DRIVE_VIEW_MODE_STORAGE_KEY,
   FALLBACK_MIME_TYPE,
   type DriveLibraryOption,
@@ -72,6 +80,22 @@ export function DriveWorkspace() {
   const [rootStorageFolderId, setRootStorageFolderId] = useState<string | null>(null);
   const [folderTreeVersion, setFolderTreeVersion] = useState(0);
 
+  useLayoutEffect(() => {
+    const rawSpace = window.localStorage.getItem(DRIVE_SPACE_STORAGE_KEY);
+    const space = rawSpace ? DRIVE_SPACES.find((item) => item.key === rawSpace) : undefined;
+    if (space) {
+      setSelectedSpace(space);
+      setSelectedLibrary(
+        DRIVE_LIBRARIES.find((item) => item.key === space.defaultLibraryKey) ??
+          DEFAULT_DRIVE_LIBRARY,
+      );
+    }
+    const rawMode = window.localStorage.getItem(DRIVE_VIEW_MODE_STORAGE_KEY);
+    if (rawMode === 'cards' || rawMode === 'list' || rawMode === 'table') {
+      setViewMode(rawMode);
+    }
+  }, []);
+
   const effectiveStatus = selectedLibrary.status ?? status;
 
   const driveStorageSpace = useMemo((): 'COMPANY' | 'PERSONAL' | null => {
@@ -86,6 +110,8 @@ export function DriveWorkspace() {
       (selectedLibrary.key === 'company' || selectedLibrary.key === 'personal'),
     [driveStorageSpace, selectedLibrary.key],
   );
+
+  const atStorageLibraryRoot = activeFolderId === null && folderTrail.length === 0;
 
   const placementFolderId = useMemo(
     () => activeFolderId ?? rootStorageFolderId ?? null,
@@ -573,9 +599,13 @@ export function DriveWorkspace() {
             space={selectedSpace}
             selected={selectedLibrary}
             counts={libraryCounts}
+            atStorageLibraryRoot={atStorageLibraryRoot}
             onSelect={(library) => {
               setSelectedLibrary(library);
               setSelectedIds([]);
+              if (library.key === 'company' || library.key === 'personal') {
+                goToDriveRoot();
+              }
             }}
             sidebarCreateMenu={
               browseDriveFolders && driveStorageSpace ? (
@@ -627,7 +657,6 @@ export function DriveWorkspace() {
             onSelect={setSelected}
             onToggleChecked={toggleChecked}
             onOpenFolder={openFolder}
-            onBack={folderTrail.length > 0 ? goBackFolder : undefined}
             onRenameFolder={
               driveStorageSpace ? (folder) => setRenameFolderTarget(folder) : undefined
             }

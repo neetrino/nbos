@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, type ChangeEvent } from 'react';
-import { ChevronDown, FolderPlus, Plus, Upload } from 'lucide-react';
+import { FolderPlus, Plus, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -32,16 +32,12 @@ export function DriveSidebarCreateMenu({
             <Button
               {...props}
               type="button"
-              variant="default"
+              variant="outline"
               disabled={busy}
-              className="h-10 w-full justify-between gap-2 rounded-2xl px-3 font-medium shadow-sm"
+              className="border-border bg-background text-foreground hover:bg-muted h-12 w-full rounded-2xl border shadow-sm"
               aria-label="Create or upload"
             >
-              <span className="flex items-center gap-2">
-                <Plus className="size-4 shrink-0" aria-hidden />
-                New
-              </span>
-              <ChevronDown className="text-primary-foreground/80 size-4 shrink-0" aria-hidden />
+              <Plus className="size-6 shrink-0" aria-hidden />
             </Button>
           )}
         />

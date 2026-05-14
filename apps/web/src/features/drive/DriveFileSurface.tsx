@@ -1,4 +1,4 @@
-import { ArrowLeft, File, FileArchive, FileImage, FileText, Loader2 } from 'lucide-react';
+import { File, FileArchive, FileImage, FileText, Loader2 } from 'lucide-react';
 import type { DriveFolder, FileAsset } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate, formatDriveLabel, formatFileSize } from './drive-format';
@@ -19,7 +19,6 @@ export function DriveFileSurface({
   onSelect,
   onToggleChecked,
   onOpenFolder,
-  onBack,
   onRenameFolder,
   onDeleteFolder,
 }: {
@@ -32,7 +31,6 @@ export function DriveFileSurface({
   onSelect: (file: FileAsset) => void;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
   onOpenFolder: (folder: DriveFolder) => void;
-  onBack?: () => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
 }) {
@@ -54,7 +52,6 @@ export function DriveFileSurface({
         onSelect={onSelect}
         onToggleChecked={onToggleChecked}
         onOpenFolder={onOpenFolder}
-        onBack={onBack}
         onRenameFolder={onRenameFolder}
         onDeleteFolder={onDeleteFolder}
       />
@@ -68,16 +65,6 @@ export function DriveFileSurface({
           : 'space-y-2',
       )}
     >
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          className="border-border/70 bg-card/80 hover:bg-muted col-span-full flex w-full items-center gap-3 rounded-2xl border p-4 text-left text-sm"
-        >
-          <ArrowLeft className="size-4" />
-          Back to parent
-        </button>
-      )}
       {folders.map((folder) => (
         <DriveFolderCardRow
           key={folder.id}
@@ -111,7 +98,6 @@ function FileTable({
   onSelect,
   onToggleChecked,
   onOpenFolder,
-  onBack,
   onRenameFolder,
   onDeleteFolder,
 }: {
@@ -122,7 +108,6 @@ function FileTable({
   onSelect: (file: FileAsset) => void;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
   onOpenFolder: (folder: DriveFolder) => void;
-  onBack?: () => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
 }) {
@@ -142,19 +127,6 @@ function FileTable({
         <span className="text-right">Size</span>
         <span />
       </div>
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          className={cn(
-            'hover:bg-muted/50 w-full px-4 py-3 text-left text-sm',
-            FILE_TABLE_GRID_CLASS,
-          )}
-        >
-          <ArrowLeft className="size-4 self-center" />
-          <span className="col-span-6 font-medium">Back to parent</span>
-        </button>
-      )}
       {folders.map((folder) => (
         <DriveFolderTableRow
           key={folder.id}

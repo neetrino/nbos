@@ -173,7 +173,7 @@ export const DRIVE_LIBRARIES: DriveLibraryOption[] = [
   },
   {
     key: 'personal',
-    title: 'Personal',
+    title: 'Personal Drive',
     description: 'Your private work files',
     icon: CircleUserRound,
     visibility: ['PERSONAL'],

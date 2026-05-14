@@ -175,7 +175,7 @@ function TreeBranch({
         </button>
       </div>
       {hasChildren && isOpen && (
-        <ul className="border-border/40 ml-1.5 border-l pl-1">
+        <ul className="space-y-0.5">
           {node.children.map((child) => (
             <TreeBranch
               key={child.id}
