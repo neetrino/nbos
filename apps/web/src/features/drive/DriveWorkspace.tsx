@@ -8,6 +8,7 @@ import {
   useState,
   type ChangeEvent,
 } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import {
   driveApi,
@@ -15,6 +16,7 @@ import {
   type DriveFolderListing,
   type FileAsset,
 } from '@/lib/api/drive';
+import { projectsApi } from '@/lib/api/projects';
 import {
   DEFAULT_DRIVE_LIBRARY,
   DRIVE_LIBRARIES,
@@ -34,6 +36,7 @@ import { DriveHero } from './DriveHero';
 import { DriveLibraries } from './DriveLibraries';
 import { DriveLibraryEntityPicker, type LibraryUploadLink } from './DriveLibraryEntityPicker';
 import { buildDriveLibraryUploadSessionFields } from './drive-library-upload-defaults';
+import type { DriveLibraryEntityRow } from './drive-library-entity-loaders';
 import { DriveSidebarCreateMenu } from './DriveSidebarCreateMenu';
 import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
 import {
@@ -50,10 +53,14 @@ import {
 } from './DriveFolderActionDialogs';
 import { DriveFolderPickerDialog } from './DriveFolderPickerDialog';
 import { DriveSpaceFolderTree } from './DriveSpaceFolderTree';
+import { DRIVE_DEEP_LINK_PROJECT_ID_QUERY } from './drive-deep-link';
 
 type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
 
 export function DriveWorkspace() {
+  const searchParams = useSearchParams();
+  const driveDeepLinkProjectId = searchParams.get(DRIVE_DEEP_LINK_PROJECT_ID_QUERY)?.trim() ?? '';
+
   const [rawFiles, setRawFiles] = useState<FileAsset[]>([]);
   const [selectedSpace, setSelectedSpace] = useState<DriveSpaceOption>(getInitialDriveSpace);
   const [selectedLibrary, setSelectedLibrary] = useState<DriveLibraryOption>(() => {
@@ -82,8 +89,29 @@ export function DriveWorkspace() {
   const [rootStorageFolderId, setRootStorageFolderId] = useState<string | null>(null);
   const [folderTreeVersion, setFolderTreeVersion] = useState(0);
   const [systemLibraryLink, setSystemLibraryLink] = useState<LibraryUploadLink | null>(null);
+  const [drivePinnedProjectRow, setDrivePinnedProjectRow] = useState<DriveLibraryEntityRow | null>(
+    null,
+  );
 
   useLayoutEffect(() => {
+    if (driveDeepLinkProjectId) {
+      const systemSpace = DRIVE_SPACES.find((item) => item.key === 'system');
+      const projectsLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'projects');
+      if (systemSpace) {
+        setSelectedSpace(systemSpace);
+        window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, systemSpace.key);
+      }
+      if (projectsLibrary) setSelectedLibrary(projectsLibrary);
+      setSystemLibraryLink({
+        entityType: 'PROJECT',
+        entityId: driveDeepLinkProjectId,
+      });
+      return;
+    }
+
+    setSystemLibraryLink(null);
+    setDrivePinnedProjectRow(null);
+
     const rawSpace = window.localStorage.getItem(DRIVE_SPACE_STORAGE_KEY);
     const space = rawSpace ? DRIVE_SPACES.find((item) => item.key === rawSpace) : undefined;
     if (space) {
@@ -97,7 +125,39 @@ export function DriveWorkspace() {
     if (rawMode === 'cards' || rawMode === 'list' || rawMode === 'table') {
       setViewMode(rawMode);
     }
-  }, []);
+  }, [driveDeepLinkProjectId]);
+
+  useEffect(() => {
+    const pid = driveDeepLinkProjectId;
+    if (!pid || selectedSpace.key !== 'system' || selectedLibrary.key !== 'projects') {
+      setDrivePinnedProjectRow(null);
+      return;
+    }
+    let cancelled = false;
+    void projectsApi
+      .getById(pid)
+      .then((p) => {
+        if (!cancelled) {
+          setDrivePinnedProjectRow({
+            id: p.id,
+            entityType: 'PROJECT',
+            label: `${p.code} — ${p.name}`,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDrivePinnedProjectRow({
+            id: pid,
+            entityType: 'PROJECT',
+            label: `Project ${pid.slice(0, 8)}…`,
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [driveDeepLinkProjectId, selectedLibrary.key, selectedSpace.key]);
 
   const effectiveStatus = selectedLibrary.status ?? status;
 
@@ -744,6 +804,11 @@ export function DriveWorkspace() {
                     libraryKey={selectedLibrary.key}
                     value={systemLibraryLink}
                     onChange={setSystemLibraryLink}
+                    pinnedRows={
+                      selectedLibrary.key === 'projects' && drivePinnedProjectRow
+                        ? [drivePinnedProjectRow]
+                        : undefined
+                    }
                   />
                   <DriveSidebarCreateMenu
                     busy={busy}

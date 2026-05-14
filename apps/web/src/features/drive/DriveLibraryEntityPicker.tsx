@@ -16,16 +16,35 @@ import {
   type DriveLibraryEntityRow,
 } from './drive-library-entity-loaders';
 
+function mergePickerRows(
+  base: DriveLibraryEntityRow[],
+  pinned?: readonly DriveLibraryEntityRow[],
+): DriveLibraryEntityRow[] {
+  if (!pinned?.length) return base;
+  const map = new Map<string, DriveLibraryEntityRow>();
+  for (const row of pinned) {
+    map.set(`${row.entityType}:${row.id}`, row);
+  }
+  for (const row of base) {
+    const k = `${row.entityType}:${row.id}`;
+    if (!map.has(k)) map.set(k, row);
+  }
+  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
 export type LibraryUploadLink = { entityType: string; entityId: string };
 
 export function DriveLibraryEntityPicker({
   libraryKey,
   value,
   onChange,
+  pinnedRows,
 }: {
   libraryKey: DriveLibraryKey;
   value: LibraryUploadLink | null;
   onChange: (next: LibraryUploadLink | null) => void;
+  /** Ensures deep-linked entities appear in the list even if outside the first page of results. */
+  pinnedRows?: readonly DriveLibraryEntityRow[];
 }) {
   const [rows, setRows] = useState<DriveLibraryEntityRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +67,8 @@ export function DriveLibraryEntityPicker({
     };
   }, [libraryKey]);
 
+  const displayRows = useMemo(() => mergePickerRows(rows, pinnedRows), [rows, pinnedRows]);
+
   const composite = useMemo(() => (value ? `${value.entityType}:${value.entityId}` : ''), [value]);
 
   return (
@@ -56,7 +77,7 @@ export function DriveLibraryEntityPicker({
         Link uploads to
       </Label>
       <Select
-        disabled={loading || rows.length === 0}
+        disabled={loading || displayRows.length === 0}
         value={composite || undefined}
         onValueChange={(next) => {
           if (!next) {
@@ -70,12 +91,16 @@ export function DriveLibraryEntityPicker({
         <SelectTrigger className="bg-background h-9 w-full rounded-xl text-left text-xs">
           <SelectValue
             placeholder={
-              loading ? 'Loading…' : rows.length === 0 ? 'Nothing to link yet' : 'Choose a record…'
+              loading
+                ? 'Loading…'
+                : displayRows.length === 0
+                  ? 'Nothing to link yet'
+                  : 'Choose a record…'
             }
           />
         </SelectTrigger>
         <SelectContent className="max-h-64">
-          {rows.map((row) => (
+          {displayRows.map((row) => (
             <SelectItem
               key={`${row.entityType}:${row.id}`}
               value={`${row.entityType}:${row.id}`}

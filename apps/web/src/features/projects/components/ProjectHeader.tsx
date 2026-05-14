@@ -1,9 +1,12 @@
 'use client';
 
-import { ArrowLeft, FolderKanban } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft, FolderKanban, HardDrive } from 'lucide-react';
+import Link from 'next/link';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/shared';
 import type { FullProject } from '@/lib/api/projects';
+import { buildDriveHrefWithProject } from '@/features/drive/drive-deep-link';
 
 interface ProjectHeaderProps {
   project: FullProject;
@@ -30,6 +33,13 @@ export function ProjectHeader({ project, onBack }: ProjectHeaderProps) {
           </div>
         </div>
       </div>
+      <Link
+        href={buildDriveHrefWithProject(project.id)}
+        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+      >
+        <HardDrive className="size-4" aria-hidden />
+        Drive files
+      </Link>
     </div>
   );
 }
