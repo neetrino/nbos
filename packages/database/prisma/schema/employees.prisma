@@ -83,6 +83,7 @@ model Employee {
   inAppNotificationsReceived       InAppNotification[]
   dashboardPreference              DashboardPreference?
   reportExportJobsRequested        ReportExportJob[]
+  driveZipExportJobsRequested      DriveZipExportJob[]
   reportSchedulesOwned             ReportSchedule[]
   savedReportViews                 SavedReportView[]
   personalLinks                    PersonalLink[]

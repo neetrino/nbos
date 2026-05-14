@@ -1,4 +1,4 @@
-import { Archive } from 'lucide-react';
+import { Archive, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function BulkActionBar({
@@ -10,6 +10,7 @@ export function BulkActionBar({
   onClear,
   showLibraryBulkActions,
   onPlaceInCompanyFolder,
+  onZipExport,
 }: {
   count: number;
   archived: boolean;
@@ -19,6 +20,7 @@ export function BulkActionBar({
   onClear: () => void;
   showLibraryBulkActions?: boolean;
   onPlaceInCompanyFolder?: () => void;
+  onZipExport?: () => void;
 }) {
   return (
     <div className="border-border/70 bg-card flex flex-col gap-3 rounded-2xl border p-3 sm:flex-row sm:items-center sm:justify-between">
@@ -35,6 +37,12 @@ export function BulkActionBar({
               Place in Company folder…
             </Button>
           </>
+        ) : null}
+        {onZipExport ? (
+          <Button type="button" variant="outline" disabled={busy} onClick={() => onZipExport()}>
+            <Package />
+            Download as ZIP
+          </Button>
         ) : null}
         <Button
           type="button"

@@ -89,6 +89,14 @@ enum DriveFolderItemTypeEnum {
   FOLDER
 }
 
+enum DriveZipExportJobStatusEnum {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 model FileAsset {
   id               String                  @id @default(uuid())
   displayName      String                  @map("display_name")
@@ -124,6 +132,7 @@ model FileAsset {
   messengerDirectAttachments  MessengerDirectMessageAttachment[]
   emailAttachments            EmailAttachment[]
   reportExportJobs            ReportExportJob[]
+  driveZipExportOutputs       DriveZipExportJob[]                @relation("DriveZipExportOutputFile")
   partnerAgreementDocuments   Partner[]                  @relation("PartnerAgreementDocument")
   assetGrants                 FileAssetGrant[]
 
@@ -150,6 +159,30 @@ model FileAssetGrant {
   @@index([fileAssetId])
   @@index([granteeEmployeeId, revokedAt])
   @@map("file_asset_grants")
+}
+
+model DriveZipExportJob {
+  id              String                     @id @default(uuid())
+  status          DriveZipExportJobStatusEnum @default(QUEUED)
+  requestedById String                     @map("requested_by_id")
+  fileIds         Json                       @map("file_ids")
+  accessSnapshot  Json                       @map("access_snapshot")
+  fileAssetId     String?                    @map("file_asset_id")
+  errorMessage    String?                    @map("error_message")
+  queuedAt        DateTime                   @default(now()) @map("queued_at")
+  startedAt       DateTime?                  @map("started_at")
+  completedAt     DateTime?                  @map("completed_at")
+  failedAt        DateTime?                  @map("failed_at")
+  createdAt       DateTime                   @default(now()) @map("created_at")
+  updatedAt       DateTime                   @updatedAt @map("updated_at")
+
+  requestedBy Employee   @relation(fields: [requestedById], references: [id], onDelete: Restrict)
+  fileAsset     FileAsset? @relation("DriveZipExportOutputFile", fields: [fileAssetId], references: [id], onDelete: SetNull)
+
+  @@index([requestedById, queuedAt])
+  @@index([status, queuedAt])
+  @@index([fileAssetId])
+  @@map("drive_zip_export_jobs")
 }
 
 model DriveFolder {

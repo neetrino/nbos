@@ -24,6 +24,7 @@ async function main() {
   await prisma.savedReportView.deleteMany();
   await prisma.reportSchedule.deleteMany();
   await prisma.reportExportJob.deleteMany();
+  await prisma.driveZipExportJob.deleteMany();
   await prisma.documentActivityEvent.deleteMany();
   await prisma.documentTagOnDocument.deleteMany();
   await prisma.documentAttachment.deleteMany();

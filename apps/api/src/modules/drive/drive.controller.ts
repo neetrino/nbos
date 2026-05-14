@@ -18,6 +18,8 @@ import { buildDocumentsReadAccess } from '../documents/documents-read-access.dto
 import { DriveService } from './drive.service';
 import { DriveUploadSessionService } from './drive-upload-session.service';
 import { DriveFolderService } from './drive-folder.service';
+import { DriveZipExportService } from './drive-zip-export.service';
+import { CreateDriveZipExportBodyDto } from './create-drive-zip-export.dto';
 import type {
   CompleteUploadSessionDto,
   CompleteFileVersionDto,
@@ -41,6 +43,7 @@ export class DriveController {
     private readonly driveService: DriveService,
     private readonly driveUploadSessions: DriveUploadSessionService,
     private readonly driveFolders: DriveFolderService,
+    private readonly driveZipExports: DriveZipExportService,
   ) {}
 
   @Get('folders')
@@ -237,6 +240,39 @@ export class DriveController {
   @ApiOperation({ summary: 'Delete failed or expired pending upload session rows' })
   async purgeDriveUploadSessions(@Param('kind') kind: string) {
     return this.driveService.purgeDriveUploadSessions(kind);
+  }
+
+  @Get('zip-exports')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List Drive ZIP export jobs for the current user' })
+  async listDriveZipExports(@CurrentUser() user: CurrentUserPayload) {
+    return this.driveZipExports.listZipExportJobs(user.id);
+  }
+
+  @Post('zip-exports')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Queue ZIP export for selected Drive files',
+    description:
+      'Creates an asynchronous job. R2-backed FileAssets are packed under `files/`; `_manifest/export-manifest.json` lists included and skipped ids. Requires REDIS_URL or DRIVE_ZIP_EXPORT_SYNC_FALLBACK=true (dev only).',
+  })
+  async createDriveZipExport(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: CreateDriveZipExportBodyDto,
+  ) {
+    return this.driveZipExports.createZipExportJob(user.id, body.fileIds, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Get('zip-exports/:id')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Get a Drive ZIP export job by id (requester only)' })
+  async getDriveZipExport(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.driveZipExports.getZipExportJob(id, user.id);
   }
 
   @Get('files/:id/preview-url')

@@ -943,6 +943,39 @@ export function DriveWorkspace() {
     }
   }
 
+  const DRIVE_ZIP_EXPORT_POLL_INTERVAL_MS = 900;
+  const DRIVE_ZIP_EXPORT_POLL_MAX_ATTEMPTS = 180;
+
+  async function handleZipExportForSelection() {
+    if (selectedIds.length === 0) return;
+    setBusy(true);
+    try {
+      const job = await driveApi.createDriveZipExport(selectedIds);
+      toast.message('ZIP export queued', {
+        description: 'The download opens automatically when the archive is ready.',
+      });
+      for (let attempt = 0; attempt < DRIVE_ZIP_EXPORT_POLL_MAX_ATTEMPTS; attempt++) {
+        await new Promise((r) => setTimeout(r, DRIVE_ZIP_EXPORT_POLL_INTERVAL_MS));
+        const row = await driveApi.getDriveZipExportJob(job.id);
+        if (row.status === 'COMPLETED' && row.fileAsset?.id) {
+          const { url } = await driveApi.getFileAssetPreviewUrl(row.fileAsset.id);
+          window.open(url, '_blank', 'noopener,noreferrer');
+          toast.success('ZIP download started');
+          return;
+        }
+        if (row.status === 'FAILED') {
+          toast.error(row.errorMessage ?? 'ZIP export failed');
+          return;
+        }
+      }
+      toast.error('ZIP export is taking longer than expected. Try again in a minute.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not start ZIP export');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function submitCreateFolder(name: string) {
     if (!driveStorageSpace) {
       toast.error('Open Company or Personal Drive first.');
@@ -1287,6 +1320,7 @@ export function DriveWorkspace() {
                 browseSystemLibraryUploads && systemLibraryLink && selectedSpace.key === 'system',
               )}
               onPlaceInCompanyFolder={() => setLibraryPlacePickerOpen(true)}
+              onZipExport={() => void handleZipExportForSelection()}
             />
           )}
 

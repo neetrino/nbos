@@ -205,6 +205,7 @@ export class DriveService {
 
   /**
    * Returns a time-limited URL suitable for `<img src>` or download redirects.
+   * Uses the same access rules as `getFileAsset` (any non-deleted status, e.g. ARCHIVED in archive view).
    * When `gate` is set, requires the same document read rules as Documents detail and a
    * `DocumentAttachment` or active `DOCUMENT` `FileLink` for the file on that document.
    */
@@ -226,7 +227,6 @@ export class DriveService {
         id: assetId,
         ...(await this.buildDriveAssetAccessWhere(access)),
         deletedAt: null,
-        status: 'ACTIVE',
       },
       include: {
         versions: { where: { isCurrent: true }, take: 1, orderBy: { versionNumber: 'desc' } },
@@ -742,6 +742,45 @@ export class DriveService {
     }
 
     return root;
+  }
+
+  /**
+   * Reads the current R2 object for a file the viewer can access (for server-side packaging, e.g. ZIP export).
+   * Returns null when the asset is not stored in R2.
+   */
+  async fetchR2CurrentObjectBuffer(
+    fileId: string,
+    access?: DriveEntityAccess,
+  ): Promise<{ displayName: string; mimeType: string | null; buffer: Buffer } | null> {
+    const file = await this.prisma.fileAsset.findFirst({
+      where: { id: fileId, deletedAt: null, ...(await this.buildDriveAssetAccessWhere(access)) },
+      include: {
+        versions: {
+          where: { isCurrent: true },
+          orderBy: { versionNumber: 'desc' },
+          take: 1,
+        },
+      },
+    });
+    if (!file || file.storageProvider !== 'R2') return null;
+    const key = file.versions[0]?.storageKey ?? file.storageKey;
+    if (!key) return null;
+    const response = await this.r2
+      .ensureS3()
+      .send(new GetObjectCommand({ Bucket: this.r2.bucket, Key: key }));
+    const stream = response.Body;
+    if (!stream) {
+      throw new BadRequestException('R2 object body missing.');
+    }
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream as AsyncIterable<Uint8Array>) {
+      chunks.push(Buffer.from(chunk));
+    }
+    return {
+      displayName: file.displayName,
+      mimeType: file.mimeType,
+      buffer: Buffer.concat(chunks),
+    };
   }
 
   private async buildFileAssetWhere(

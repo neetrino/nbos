@@ -7,17 +7,6 @@
 ## В работе / следующий этап
 
 1. **Share / Move / Copy — матрица прав** по `docs/NBOS/02-Modules/11-Drive/03-Permissions-Sharing-and-Audit.md` (сейчас RBAC + доступ к файлу; не полная матрица по каждому действию в UI).
-
-2. **Export ZIP** — отдельный job, storage, скачивание (при необходимости внутренний список файлов для job, без отдельного пользовательского JSON-экспорта).
-
-3. **DnD Library ↔ Company/Personal** — перетаскивание между панелями при общем layout / split-view (сейчас: bulk «Place in Company folder…» + API).
-
-4. **Дерево папок только под PROJECT** в Drive — отдельный scope/API/UI, не только deep link + подсказка.
-
-5. **Ручной порядок файлов в папке** (`sortOrder` в БД и т.п.) — только если закрепят в каноне; иначе достаточно текущей сортировки в UI.
+2. **Export ZIP** — сделано: асинхронный job по **выбранным** `fileIds` (BullMQ или `DRIVE_ZIP_EXPORT_SYNC_FALLBACK` в dev), ZIP + `_manifest/export-manifest.json` внутри, результат как `FileAsset`, UI «Download as ZIP» + опрос статуса. Дальше: «вся библиотека / все проекты / отмена / TTL временных экспортов» и типы экспорта из канона §5.
 
 ---
-
-## На решение продукта (не в текущем backlog)
-
-**Реальные подпапки в System Library** под сущность (`PROJECT` / `DEAL` / …) vs виртуальные папки и `displayName` при upload folder — см. историю обсуждения в чате; без sign-off не делаем.

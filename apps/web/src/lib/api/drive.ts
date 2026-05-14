@@ -85,6 +85,26 @@ export interface FileAssetGrantRow {
   createdAt: string;
 }
 
+export type DriveZipExportJobStatus =
+  | 'QUEUED'
+  | 'PROCESSING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'CANCELLED';
+
+export interface DriveZipExportJobSummary {
+  id: string;
+  status: DriveZipExportJobStatus;
+  requestedById?: string;
+  fileIds: unknown;
+  errorMessage: string | null;
+  queuedAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  failedAt: string | null;
+  fileAsset: { id: string; displayName: string; mimeType: string | null } | null;
+}
+
 export interface DriveFolder {
   id: string;
   name: string;
@@ -481,6 +501,23 @@ export const driveApi = {
     kind: 'expired-pending' | 'failed',
   ): Promise<{ deleted: number; kind: string }> {
     const resp = await api.post('/api/drive/cleanup/purge/' + encodeURIComponent(kind));
+    return resp.data;
+  },
+
+  async createDriveZipExport(fileIds: string[]): Promise<DriveZipExportJobSummary> {
+    const resp = await api.post<DriveZipExportJobSummary>('/api/drive/zip-exports', { fileIds });
+    return resp.data;
+  },
+
+  async listDriveZipExportJobs(): Promise<DriveZipExportJobSummary[]> {
+    const resp = await api.get<DriveZipExportJobSummary[]>('/api/drive/zip-exports');
+    return resp.data;
+  },
+
+  async getDriveZipExportJob(id: string): Promise<DriveZipExportJobSummary> {
+    const resp = await api.get<DriveZipExportJobSummary>(
+      '/api/drive/zip-exports/' + encodeURIComponent(id),
+    );
     return resp.data;
   },
 
