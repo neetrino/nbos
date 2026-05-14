@@ -1,15 +1,20 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { PrismaClient, type InputJsonValue, type Prisma } from '@nbos/database';
+import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { isWideCalendarScope } from './calendar-access';
 import {
-  deliveryExtensionWhere,
-  deliveryProductWhere,
-  isWideCalendarScope,
-} from './calendar-access';
-import { extensionDeadlineProjection, productDeadlineProjection } from './calendar-projections';
+  fetchDeliveryDeadlineProjections,
+  fetchMeetingCalendarProjections,
+  fetchPersonalCalendarProjections,
+} from './calendar-event-listing';
+import {
+  assertMeetingConflictsAcknowledgedOrThrow,
+  classifyMeetingConflicts,
+  findScheduledMeetingOverlaps,
+} from './calendar-meeting-conflicts';
+import { normalizeInternalParticipantIds } from './calendar-participants';
 import type {
-  CalendarEventProjection,
   CalendarLayer,
   CalendarRangeQuery,
   CreateCalendarMeetingDto,
@@ -52,10 +57,6 @@ function assertDateOrder(startsAt: Date, endsAt: Date) {
   }
 }
 
-function normalizeParticipants(ids: string[] | undefined, actorId: string): string[] {
-  return Array.from(new Set([actorId, ...(ids ?? [])].filter(Boolean)));
-}
-
 @Injectable()
 export class CalendarService {
   constructor(
@@ -72,12 +73,14 @@ export class CalendarService {
     const layer = parseLayer(query.layer);
     const groups = await Promise.all([
       layer === 'ALL' || layer === 'MEETINGS'
-        ? this.listMeetings(userId, accessScope, from, to)
+        ? fetchMeetingCalendarProjections(this.prisma, userId, accessScope, from, to)
         : [],
       layer === 'ALL' || layer === 'DELIVERY_DEADLINES'
-        ? this.listDeliveryDeadlines(userId, accessScope, from, to)
+        ? fetchDeliveryDeadlineProjections(this.prisma, userId, accessScope, from, to)
         : [],
-      layer === 'ALL' || layer === 'PERSONAL' ? this.listPersonalEvents(userId, from, to) : [],
+      layer === 'ALL' || layer === 'PERSONAL'
+        ? fetchPersonalCalendarProjections(this.prisma, userId, from, to)
+        : [],
     ]);
     return groups.flat().sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   }
@@ -89,6 +92,46 @@ export class CalendarService {
     const endsAt = parseDate(body.endsAt, new Date(NaN));
     assertDateOrder(startsAt, endsAt);
 
+    const effectiveStatus = body.status ?? 'SCHEDULED';
+    const internalParticipantIds = normalizeInternalParticipantIds(
+      body.internalParticipantIds,
+      userId,
+    );
+    const projectId = body.projectId ?? null;
+    const dealId = body.dealId ?? null;
+    const contactId = body.contactId ?? null;
+
+    let conflictChanges: InputJsonValue | undefined;
+    if (effectiveStatus === 'SCHEDULED') {
+      const overlaps = await findScheduledMeetingOverlaps(this.prisma, {
+        startsAt,
+        endsAt,
+        internalParticipantIds,
+        projectId,
+        dealId,
+        contactId,
+      });
+      const conflicts = classifyMeetingConflicts(overlaps, {
+        internalParticipantIds,
+        projectId,
+        dealId,
+        contactId,
+      });
+      assertMeetingConflictsAcknowledgedOrThrow(conflicts, body.conflictOverrideReason);
+      const reason = body.conflictOverrideReason?.trim();
+      if (conflicts.length > 0 && reason) {
+        conflictChanges = {
+          conflictOverrideReason: reason,
+          conflicts: conflicts.map((c) => ({
+            code: c.code,
+            meetingId: c.meetingId,
+            meetingTitle: c.meetingTitle,
+            detail: c.detail,
+          })),
+        };
+      }
+    }
+
     const meeting = await this.prisma.calendarMeeting.create({
       data: {
         title,
@@ -99,13 +142,13 @@ export class CalendarService {
         locationOrLink: body.locationOrLink ?? null,
         agenda: body.agenda ?? null,
         outcomeNotes: body.outcomeNotes ?? null,
-        status: body.status ?? 'SCHEDULED',
-        internalParticipantIds: normalizeParticipants(body.internalParticipantIds, userId),
+        status: effectiveStatus,
+        internalParticipantIds,
         externalParticipants: body.externalParticipants as InputJsonValue | undefined,
-        projectId: body.projectId ?? null,
+        projectId,
         productId: body.productId ?? null,
-        dealId: body.dealId ?? null,
-        contactId: body.contactId ?? null,
+        dealId,
+        contactId,
         createdById: userId,
       },
     });
@@ -115,6 +158,7 @@ export class CalendarService {
       action: 'calendar.meeting_created',
       userId,
       projectId: meeting.projectId ?? undefined,
+      ...(conflictChanges ? { changes: conflictChanges } : {}),
     });
     return meeting;
   }
@@ -132,6 +176,44 @@ export class CalendarService {
     const endsAt = body.endsAt ? parseDate(body.endsAt, existing.endsAt) : existing.endsAt;
     assertDateOrder(startsAt, endsAt);
 
+    const mergedStatus = body.status !== undefined ? body.status : existing.status;
+    const mergedInternalIds =
+      body.internalParticipantIds !== undefined
+        ? normalizeInternalParticipantIds(body.internalParticipantIds, existing.createdById)
+        : existing.internalParticipantIds;
+
+    let conflictChanges: InputJsonValue | undefined;
+    if (mergedStatus === 'SCHEDULED') {
+      const overlaps = await findScheduledMeetingOverlaps(this.prisma, {
+        startsAt,
+        endsAt,
+        internalParticipantIds: mergedInternalIds,
+        projectId: existing.projectId,
+        dealId: existing.dealId,
+        contactId: existing.contactId,
+        excludeMeetingId: id,
+      });
+      const conflicts = classifyMeetingConflicts(overlaps, {
+        internalParticipantIds: mergedInternalIds,
+        projectId: existing.projectId,
+        dealId: existing.dealId,
+        contactId: existing.contactId,
+      });
+      assertMeetingConflictsAcknowledgedOrThrow(conflicts, body.conflictOverrideReason);
+      const reason = body.conflictOverrideReason?.trim();
+      if (conflicts.length > 0 && reason) {
+        conflictChanges = {
+          conflictOverrideReason: reason,
+          conflicts: conflicts.map((c) => ({
+            code: c.code,
+            meetingId: c.meetingId,
+            meetingTitle: c.meetingTitle,
+            detail: c.detail,
+          })),
+        };
+      }
+    }
+
     const meeting = await this.prisma.calendarMeeting.update({
       where: { id },
       data: {
@@ -145,10 +227,7 @@ export class CalendarService {
         ...(body.outcomeNotes !== undefined && { outcomeNotes: body.outcomeNotes }),
         ...(body.status !== undefined && { status: body.status }),
         ...(body.internalParticipantIds !== undefined && {
-          internalParticipantIds: normalizeParticipants(
-            body.internalParticipantIds,
-            existing.createdById,
-          ),
+          internalParticipantIds: mergedInternalIds,
         }),
       },
     });
@@ -158,6 +237,7 @@ export class CalendarService {
       action: 'calendar.meeting_updated',
       userId,
       projectId: meeting.projectId ?? undefined,
+      ...(conflictChanges ? { changes: conflictChanges } : {}),
     });
     return meeting;
   }
@@ -212,79 +292,5 @@ export class CalendarService {
     if (isWideCalendarScope(accessScope) || meeting.createdById === userId) return meeting;
     if (meeting.internalParticipantIds.includes(userId)) return meeting;
     throw new ForbiddenException('Calendar meeting is not accessible.');
-  }
-
-  private listMeetings(userId: string, accessScope: string, from: Date, to: Date) {
-    const visibility: Prisma.CalendarMeetingWhereInput = isWideCalendarScope(accessScope)
-      ? {}
-      : { OR: [{ createdById: userId }, { internalParticipantIds: { has: userId } }] };
-    return this.prisma.calendarMeeting
-      .findMany({
-        where: { startsAt: { lt: to }, endsAt: { gt: from }, ...visibility },
-        orderBy: { startsAt: 'asc' },
-      })
-      .then((rows) =>
-        rows.map<CalendarEventProjection>((row) => ({
-          id: `meeting:${row.id}`,
-          layer: 'MEETINGS',
-          title: row.title,
-          startsAt: row.startsAt.toISOString(),
-          endsAt: row.endsAt.toISOString(),
-          isAllDay: false,
-          description: row.agenda,
-          status: row.status,
-          sourceType: 'MEETING',
-          sourceId: row.id,
-          sourceHref: null,
-          badge: row.meetingType,
-          projectName: null,
-          ownerName: null,
-        })),
-      );
-  }
-
-  private async listDeliveryDeadlines(userId: string, scope: string, from: Date, to: Date) {
-    const [products, extensions] = await Promise.all([
-      this.prisma.product.findMany({
-        where: deliveryProductWhere(userId, scope, from, to),
-        include: { project: { select: { id: true, name: true } }, pm: true },
-        orderBy: { deadline: 'asc' },
-      }),
-      this.prisma.extension.findMany({
-        where: deliveryExtensionWhere(userId, scope, from, to),
-        include: { project: { select: { id: true, name: true } }, product: true, assignee: true },
-        orderBy: { deadline: 'asc' },
-      }),
-    ]);
-    return [
-      ...products.map(productDeadlineProjection),
-      ...extensions.map(extensionDeadlineProjection),
-    ];
-  }
-
-  private listPersonalEvents(userId: string, from: Date, to: Date) {
-    return this.prisma.personalCalendarEvent
-      .findMany({
-        where: { ownerId: userId, status: 'ACTIVE', startsAt: { lt: to }, endsAt: { gt: from } },
-        orderBy: { startsAt: 'asc' },
-      })
-      .then((rows) =>
-        rows.map<CalendarEventProjection>((row) => ({
-          id: `personal:${row.id}`,
-          layer: 'PERSONAL',
-          title: row.title,
-          startsAt: row.startsAt.toISOString(),
-          endsAt: row.endsAt.toISOString(),
-          isAllDay: row.isAllDay,
-          description: row.notes,
-          status: row.status,
-          sourceType: 'PERSONAL_EVENT',
-          sourceId: row.id,
-          sourceHref: null,
-          badge: 'Personal',
-          projectName: null,
-          ownerName: null,
-        })),
-      );
   }
 }

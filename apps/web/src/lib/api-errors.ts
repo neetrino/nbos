@@ -3,6 +3,9 @@ export interface ApiFieldError {
   message: string;
 }
 
+/** Backend `ConflictException` body code when calendar meeting overlaps existing schedule. */
+export const CALENDAR_MEETING_CONFLICT_CODE = 'CALENDAR_MEETING_CONFLICT';
+
 export interface ApiErrorPayload {
   statusCode?: number;
   code?: string;
@@ -51,6 +54,10 @@ export function isStageGateApiError(error: unknown): error is ApiError {
 
 export function isBusinessTransitionApiError(error: unknown): error is ApiError {
   return error instanceof ApiError && error.code === 'BUSINESS_TRANSITION_UNAVAILABLE';
+}
+
+export function isCalendarMeetingConflictApiError(error: unknown): error is ApiError {
+  return error instanceof ApiError && error.code === CALENDAR_MEETING_CONFLICT_CODE;
 }
 
 /** User-visible message from axios-wrapped `ApiError`; otherwise `fallback` (e.g. generic connection copy). */

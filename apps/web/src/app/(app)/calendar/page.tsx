@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { calendarApi, type CalendarEventProjection, type CalendarLayer } from '@/lib/api/calendar';
+import { Button } from '@/components/ui/button';
+import { CreateMeetingCalendarDialog } from './calendar-create-meeting-dialog';
+import { CreatePersonalCalendarDialog } from './calendar-create-personal-dialog';
 import { CalendarEmptyState, DayCell, EventCard, WEEKDAYS } from './calendar-view-parts';
 
 const LAYERS: Array<{ key: CalendarLayer; label: string }> = [
@@ -57,6 +60,8 @@ export default function CalendarPage() {
   const [events, setEvents] = useState<CalendarEventProjection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [meetingOpen, setMeetingOpen] = useState(false);
+  const [personalOpen, setPersonalOpen] = useState(false);
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -131,7 +136,13 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Button type="button" variant="secondary" size="sm" onClick={() => setMeetingOpen(true)}>
+          New meeting
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => setPersonalOpen(true)}>
+          Personal event
+        </Button>
         <button
           type="button"
           onClick={goToToday}
@@ -208,6 +219,19 @@ export default function CalendarPage() {
           )}
         </div>
       </div>
+
+      <CreateMeetingCalendarDialog
+        open={meetingOpen}
+        onOpenChange={setMeetingOpen}
+        selectedDate={selectedDate}
+        onCreated={() => void loadEvents()}
+      />
+      <CreatePersonalCalendarDialog
+        open={personalOpen}
+        onOpenChange={setPersonalOpen}
+        selectedDate={selectedDate}
+        onCreated={() => void loadEvents()}
+      />
     </div>
   );
 }
