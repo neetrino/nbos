@@ -16,6 +16,7 @@ import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../c
 import { buildDocumentsReadAccess } from '../documents/documents-read-access.dto';
 import { DriveService } from './drive.service';
 import { DriveUploadSessionService } from './drive-upload-session.service';
+import { DriveFolderService } from './drive-folder.service';
 import type {
   CompleteUploadSessionDto,
   CompleteFileVersionDto,
@@ -23,6 +24,7 @@ import type {
   CreateFileVersionUploadDto,
   CreateFileLinkDto,
   CreateUploadSessionDto,
+  CreateDriveFolderDto,
 } from './drive.types';
 
 @ApiTags('Drive')
@@ -32,7 +34,28 @@ export class DriveController {
   constructor(
     private readonly driveService: DriveService,
     private readonly driveUploadSessions: DriveUploadSessionService,
+    private readonly driveFolders: DriveFolderService,
   ) {}
+
+  @Get('folders')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List user-created Drive folders and files' })
+  @ApiQuery({ name: 'space', required: true, description: 'COMPANY | PERSONAL' })
+  @ApiQuery({ name: 'parentId', required: false, description: 'Folder id or root' })
+  async listFolders(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('space') space?: string,
+    @Query('parentId') parentId?: string,
+  ) {
+    return this.driveFolders.listFolder({ space, parentId }, user.id);
+  }
+
+  @Post('folders')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Create a user folder in Company or Personal Drive' })
+  async createFolder(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateDriveFolderDto) {
+    return this.driveFolders.createFolder(body, user.id);
+  }
 
   @Get('files')
   @RequirePermission('DRIVE', 'VIEW')

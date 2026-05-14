@@ -16,6 +16,9 @@ const SHEET_NESTED_ABOVE_PARENT_RAIL_Z_CLASS = 'z-[70]';
 /** Nested sheet popup uses z-70; rail sits above the panel seam so tabs stay clickable. */
 const SHEET_NESTED_FLOATING_RAIL_Z_INDEX = 71;
 
+const SHEET_FLOATING_RAIL_HINT_CLASS =
+  'pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 rounded-full bg-foreground px-2.5 py-1 text-xs font-medium text-background opacity-0 shadow-lg transition-all duration-150 group-hover/sheet-floating-close:translate-x-0 group-hover/sheet-floating-close:opacity-100 group-focus-visible/sheet-floating-close:translate-x-0 group-focus-visible/sheet-floating-close:opacity-100 max-sm:left-full max-sm:ml-2 max-sm:translate-x-1 sm:right-full sm:mr-2 sm:-translate-x-1';
+
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
@@ -130,12 +133,13 @@ function SheetContent({
                 type="button"
                 variant="default"
                 size="icon"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 size-11 shrink-0 rounded-full border-0 shadow-md sm:rounded-l-full sm:rounded-r-none"
+                className="group/sheet-floating-close bg-primary text-primary-foreground hover:bg-primary/90 relative size-11 shrink-0 overflow-visible rounded-full border-0 shadow-md sm:rounded-l-full sm:rounded-r-none"
                 aria-label="Close panel"
               />
             }
           >
             <XIcon className="size-5" />
+            <span className={SHEET_FLOATING_RAIL_HINT_CLASS}>Close</span>
             <span className="sr-only">Close</span>
           </SheetPrimitive.Close>
           {floatingRail}

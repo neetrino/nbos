@@ -61,8 +61,9 @@ export interface FileAssetQueryParams {
 export interface CreateUploadSessionDto {
   fileName: string;
   contentType: string;
-  entityType: string;
-  entityId: string;
+  entityType?: string;
+  entityId?: string;
+  folderId?: string;
   displayName?: string;
   purpose?: string;
   sourceModule?: string;
@@ -101,4 +102,15 @@ export interface FileUploadSessionCompleteRow {
   visibility: string;
   confidentiality: string;
   linkType: string;
+}
+
+export interface CreateDriveFolderDto {
+  name: string;
+  space: string;
+  parentId?: string;
+}
+
+export interface DriveFolderQueryParams {
+  space?: string;
+  parentId?: string;
 }

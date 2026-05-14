@@ -2,20 +2,27 @@ import type { ReactNode } from 'react';
 import { Archive, BarChart3, File, FileText, Layers3, RefreshCw, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { DRIVE_SPACES, type DriveSpaceOption } from './drive-options';
 import { formatFileSize } from './drive-format';
 import type { DriveStats } from './drive-types';
 
 export function DriveHero({
   stats,
   loading,
+  selectedSpace,
+  counts,
   insightsOpen,
   onRefresh,
+  onSelectSpace,
   onToggleInsights,
 }: {
   stats: DriveStats;
   loading: boolean;
+  selectedSpace: DriveSpaceOption;
+  counts: Map<string, number>;
   insightsOpen: boolean;
   onRefresh: () => void;
+  onSelectSpace: (space: DriveSpaceOption) => void;
   onToggleInsights: () => void;
 }) {
   return (
@@ -23,9 +30,6 @@ export function DriveHero({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-foreground text-xl font-semibold tracking-tight">Drive</h1>
-          <p className="text-muted-foreground text-xs">
-            System libraries, company folders and personal files in one workspace.
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={onToggleInsights}>
@@ -38,10 +42,66 @@ export function DriveHero({
           </Button>
         </div>
       </div>
+      <DriveSpaceTabs selected={selectedSpace} counts={counts} onSelect={onSelectSpace} />
 
       {insightsOpen && <DriveInsights stats={stats} />}
     </section>
   );
+}
+
+function DriveSpaceTabs({
+  selected,
+  counts,
+  onSelect,
+}: {
+  selected: DriveSpaceOption;
+  counts: Map<string, number>;
+  onSelect: (space: DriveSpaceOption) => void;
+}) {
+  return (
+    <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      {DRIVE_SPACES.map((space) => {
+        const Icon = space.icon;
+        const active = space.key === selected.key;
+        const count = getSpaceCount(space, counts);
+        return (
+          <button
+            key={space.key}
+            type="button"
+            onClick={() => onSelect(space)}
+            className={cn(
+              'flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-all',
+              active
+                ? 'border-primary/40 bg-primary text-primary-foreground shadow-sm'
+                : 'border-border/70 bg-background/60 text-foreground hover:bg-muted/70',
+            )}
+          >
+            <span
+              className={cn(
+                'rounded-xl p-2',
+                active ? 'bg-primary-foreground/15' : 'bg-muted text-muted-foreground',
+              )}
+            >
+              <Icon className="size-4" />
+            </span>
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold">{space.title}</span>
+            <span
+              className={cn(
+                'text-xs font-medium',
+                active ? 'text-primary-foreground/80' : 'text-muted-foreground',
+              )}
+            >
+              {count}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function getSpaceCount(space: DriveSpaceOption, counts: Map<string, number>): number {
+  return space.libraryKeys.reduce((total, key) => total + (counts.get(key) ?? 0), 0);
 }
 
 function DriveInsights({ stats }: { stats: DriveStats }) {

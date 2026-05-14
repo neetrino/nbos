@@ -15,6 +15,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
+export type DriveSpaceKey = 'system' | 'company' | 'personal' | 'shared';
+
 export type DriveLibraryKey =
   | 'all'
   | 'deals'
@@ -44,6 +46,14 @@ export interface DriveLibraryOption {
   purposes?: string[];
   visibility?: string[];
   status?: DriveStatusFilter;
+}
+
+export interface DriveSpaceOption {
+  key: DriveSpaceKey;
+  title: string;
+  icon: LucideIcon;
+  libraryKeys: DriveLibraryKey[];
+  defaultLibraryKey: DriveLibraryKey;
 }
 
 export const STATUS_FILTERS: DriveStatusFilter[] = ['ACTIVE', 'APPROVED', 'ARCHIVED'];
@@ -197,6 +207,39 @@ export const FREE_DRIVE_LIBRARY_KEYS: DriveLibraryKey[] = ['company', 'personal'
 export const MAINTENANCE_LIBRARY_KEYS: DriveLibraryKey[] = ['archive'];
 
 export const DEFAULT_DRIVE_LIBRARY = DRIVE_LIBRARIES[0]!;
+
+export const DRIVE_SPACES: DriveSpaceOption[] = [
+  {
+    key: 'system',
+    title: 'System Libraries',
+    icon: FileStack,
+    libraryKeys: SYSTEM_LIBRARY_KEYS,
+    defaultLibraryKey: 'all',
+  },
+  {
+    key: 'company',
+    title: 'Company Drive',
+    icon: FolderOpen,
+    libraryKeys: ['company', 'archive'],
+    defaultLibraryKey: 'company',
+  },
+  {
+    key: 'personal',
+    title: 'Personal',
+    icon: CircleUserRound,
+    libraryKeys: ['personal', 'archive'],
+    defaultLibraryKey: 'personal',
+  },
+  {
+    key: 'shared',
+    title: 'Shared with me',
+    icon: Share2,
+    libraryKeys: ['shared', 'archive'],
+    defaultLibraryKey: 'shared',
+  },
+];
+
+export const DEFAULT_DRIVE_SPACE = DRIVE_SPACES[0]!;
 
 export const FALLBACK_MIME_TYPE = 'application/octet-stream';
 

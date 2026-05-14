@@ -79,6 +79,16 @@ enum FileLinkTypeEnum {
   OTHER
 }
 
+enum DriveSpaceEnum {
+  COMPANY
+  PERSONAL
+}
+
+enum DriveFolderItemTypeEnum {
+  FILE
+  FOLDER
+}
+
 model FileAsset {
   id               String                  @id @default(uuid())
   displayName      String                  @map("display_name")
@@ -106,6 +116,7 @@ model FileAsset {
 
   versions                    FileVersion[]
   links                       FileLink[]
+  folderPlacements            DriveFolderItem[]                  @relation("DriveFolderItemFileAsset")
   auditEvents                 FileAuditEvent[]
   documentCovers              Document[]                          @relation("DocumentCoverAsset")
   documentAttachments         DocumentAttachment[]
@@ -121,6 +132,49 @@ model FileAsset {
   @@index([storageKey])
   @@index([createdAt])
   @@map("file_assets")
+}
+
+model DriveFolder {
+  id          String         @id @default(uuid())
+  name        String
+  space       DriveSpaceEnum
+  ownerId     String?        @map("owner_id")
+  createdById String?        @map("created_by_id")
+  parentId    String?        @map("parent_id")
+  archivedAt  DateTime?      @map("archived_at")
+  deletedAt   DateTime?      @map("deleted_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  parent              DriveFolder?      @relation("DriveFolderTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children            DriveFolder[]     @relation("DriveFolderTree")
+  folderItems         DriveFolderItem[] @relation("DriveFolderItemFolder")
+  childFolderPlacements DriveFolderItem[] @relation("DriveFolderItemChildFolder")
+
+  @@index([space, ownerId])
+  @@index([parentId])
+  @@index([deletedAt])
+  @@map("drive_folders")
+}
+
+model DriveFolderItem {
+  id            String                  @id @default(uuid())
+  folderId      String                  @map("folder_id")
+  itemType      DriveFolderItemTypeEnum @map("item_type")
+  fileAssetId   String?                 @map("file_asset_id")
+  childFolderId String?                 @map("child_folder_id")
+  placedById    String?                 @map("placed_by_id")
+  placedAt      DateTime                @default(now()) @map("placed_at")
+  removedAt     DateTime?               @map("removed_at")
+
+  folder      DriveFolder  @relation("DriveFolderItemFolder", fields: [folderId], references: [id], onDelete: Cascade)
+  fileAsset   FileAsset?   @relation("DriveFolderItemFileAsset", fields: [fileAssetId], references: [id], onDelete: Cascade)
+  childFolder DriveFolder? @relation("DriveFolderItemChildFolder", fields: [childFolderId], references: [id], onDelete: Cascade)
+
+  @@index([folderId, removedAt])
+  @@index([fileAssetId])
+  @@index([childFolderId])
+  @@map("drive_folder_items")
 }
 
 model FileVersion {
@@ -201,6 +255,7 @@ model FileUploadSession {
   linkType        FileLinkTypeEnum            @default(ATTACHMENT) @map("link_type")
   createdById     String?                     @map("created_by_id")
   fileAssetId     String?                     @map("file_asset_id")
+  folderId        String?                     @map("folder_id")
   expiresAt       DateTime                    @map("expires_at")
   failedReason    String?                     @map("failed_reason")
   createdAt       DateTime                    @default(now()) @map("created_at")
@@ -209,5 +264,6 @@ model FileUploadSession {
   @@index([status, expiresAt])
   @@index([createdById])
   @@index([entityType, entityId])
+  @@index([folderId])
   @@map("file_upload_sessions")
 }

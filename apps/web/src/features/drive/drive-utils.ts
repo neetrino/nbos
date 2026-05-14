@@ -1,6 +1,6 @@
 import type { FileAsset } from '@/lib/api/drive';
 import type { DriveLibraryOption, DriveViewMode } from './drive-options';
-import { DRIVE_VIEW_MODE_STORAGE_KEY } from './drive-options';
+import { DRIVE_LIBRARIES, DRIVE_VIEW_MODE_STORAGE_KEY } from './drive-options';
 import { toFileSizeNumber } from './drive-format';
 import type { DriveStats } from './drive-types';
 
@@ -31,6 +31,15 @@ export function buildDriveStats(files: FileAsset[]): DriveStats {
       approvedFiles: stats.approvedFiles + (file.status === 'APPROVED' ? 1 : 0),
     }),
     { totalFiles: 0, totalSize: 0, linkedFiles: 0, sensitiveFiles: 0, approvedFiles: 0 },
+  );
+}
+
+export function buildLibraryCounts(files: FileAsset[]): Map<string, number> {
+  return new Map(
+    DRIVE_LIBRARIES.map((library) => [
+      library.key,
+      files.filter((file) => fileMatchesLibrary(file, library)).length,
+    ]),
   );
 }
 

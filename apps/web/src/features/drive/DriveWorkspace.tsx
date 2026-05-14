@@ -4,11 +4,13 @@ import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'rea
 import { toast } from 'sonner';
 import { driveApi, type FileAsset } from '@/lib/api/drive';
 import {
+  DEFAULT_DRIVE_SPACE,
   DEFAULT_DRIVE_LIBRARY,
   DRIVE_LIBRARIES,
   DRIVE_VIEW_MODE_STORAGE_KEY,
   FALLBACK_MIME_TYPE,
   type DriveLibraryOption,
+  type DriveSpaceOption,
   type DriveStatusFilter,
   type DriveViewMode,
 } from './drive-options';
@@ -20,10 +22,16 @@ import { DriveLibraries } from './DriveLibraries';
 import { DriveToolbar } from './DriveToolbar';
 import { buildDriveFileAbsoluteUrl } from './drive-file-links';
 import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
-import { buildDriveStats, fileMatchesLibrary, getInitialViewMode } from './drive-utils';
+import {
+  buildDriveStats,
+  buildLibraryCounts,
+  fileMatchesLibrary,
+  getInitialViewMode,
+} from './drive-utils';
 
 export function DriveWorkspace() {
   const [rawFiles, setRawFiles] = useState<FileAsset[]>([]);
+  const [selectedSpace, setSelectedSpace] = useState<DriveSpaceOption>(DEFAULT_DRIVE_SPACE);
   const [selectedLibrary, setSelectedLibrary] = useState<DriveLibraryOption>(DEFAULT_DRIVE_LIBRARY);
   const [selected, setSelected] = useState<FileAsset | null>(null);
   const [status, setStatus] = useState<DriveStatusFilter>('ACTIVE');
@@ -75,7 +83,10 @@ export function DriveWorkspace() {
   const libraryCounts = useMemo(() => buildLibraryCounts(rawFiles), [rawFiles]);
 
   useEffect(() => {
-    setSelected((current) => files.find((file) => file.id === current?.id) ?? files[0] ?? null);
+    setSelected((current) => {
+      if (!current) return null;
+      return files.find((file) => file.id === current.id) ?? null;
+    });
   }, [files]);
 
   async function onPreview(file: FileAsset) {
@@ -213,6 +224,14 @@ export function DriveWorkspace() {
     <div className="space-y-4">
       <DriveHero
         stats={stats}
+        selectedSpace={selectedSpace}
+        counts={libraryCounts}
+        onSelectSpace={(space) => {
+          const library = DRIVE_LIBRARIES.find((item) => item.key === space.defaultLibraryKey);
+          setSelectedSpace(space);
+          setSelectedLibrary(library ?? DEFAULT_DRIVE_LIBRARY);
+          setSelectedIds([]);
+        }}
         insightsOpen={insightsOpen}
         onToggleInsights={() => setInsightsOpen((current) => !current)}
         onRefresh={() => void load()}
@@ -227,6 +246,7 @@ export function DriveWorkspace() {
 
       <div className="grid gap-4 xl:grid-cols-[260px_minmax(0,1fr)]">
         <DriveLibraries
+          space={selectedSpace}
           selected={selectedLibrary}
           counts={libraryCounts}
           onSelect={(library) => {
@@ -284,14 +304,5 @@ export function DriveWorkspace() {
         />
       </div>
     </div>
-  );
-}
-
-function buildLibraryCounts(files: FileAsset[]): Map<string, number> {
-  return new Map(
-    DRIVE_LIBRARIES.map((library) => [
-      library.key,
-      files.filter((file) => fileMatchesLibrary(file, library)).length,
-    ]),
   );
 }
