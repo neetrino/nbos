@@ -52,45 +52,41 @@ export function DriveSpaceFolderTree({
   }, [activeFolderId, ancestorIds]);
 
   return (
-    <div className="border-border/70 bg-card/80 max-h-[min(420px,55vh)] overflow-hidden rounded-2xl border">
-      <div className="text-muted-foreground border-border/60 border-b px-3 py-2 text-[11px] font-semibold tracking-wide uppercase">
-        Folders
-      </div>
-      <div className="max-h-[min(380px,50vh)] overflow-y-auto p-1.5">
-        {loading ? (
-          <p className="text-muted-foreground px-2 py-3 text-xs">Loading…</p>
-        ) : tree.length === 0 ? (
-          <p className="text-muted-foreground px-2 py-3 text-xs">No folders yet</p>
-        ) : (
-          <ul className="space-y-0.5">
-            {tree.map((node) => (
-              <TreeBranch
-                key={node.id}
-                rootNodes={tree}
-                node={node}
-                depth={0}
-                expanded={expanded}
-                activeFolderId={activeFolderId}
-                onToggle={(id) => {
-                  setExpanded((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(id)) next.delete(id);
-                    else next.add(id);
-                    return next;
-                  });
-                }}
-                onSelectFolderPath={onSelectFolderPath}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
+    <div className="max-h-[min(360px,48vh)] overflow-y-auto py-0.5 pr-0.5">
+      {loading ? (
+        <p className="text-muted-foreground px-1 py-2 text-xs">Loading…</p>
+      ) : tree.length === 0 ? (
+        <p className="text-muted-foreground px-1 py-2 text-xs">No folders yet</p>
+      ) : (
+        <ul className="space-y-0.5">
+          {tree.map((node) => (
+            <TreeBranch
+              key={node.id}
+              rootNodes={tree}
+              node={node}
+              depth={0}
+              expanded={expanded}
+              activeFolderId={activeFolderId}
+              onToggle={(id) => {
+                setExpanded((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                });
+              }}
+              onSelectFolderPath={onSelectFolderPath}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
 
 function stripChildren(n: FolderTreeNode): DriveFolder {
-  const { children: _ch, ...rest } = n;
+  const { children, ...rest } = n;
+  void children;
   return rest;
 }
 

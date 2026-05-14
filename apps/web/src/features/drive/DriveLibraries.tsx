@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { DRIVE_LIBRARIES, type DriveLibraryOption, type DriveSpaceOption } from './drive-options';
 
@@ -6,11 +7,15 @@ export function DriveLibraries({
   selected,
   counts,
   onSelect,
+  sidebarCreateMenu,
+  folderTreeSlot,
 }: {
   space: DriveSpaceOption;
   selected: DriveLibraryOption;
   counts: Map<string, number>;
   onSelect: (library: DriveLibraryOption) => void;
+  sidebarCreateMenu?: ReactNode;
+  folderTreeSlot?: { forLibraryKey: 'company' | 'personal'; children: ReactNode };
 }) {
   const folders = space.libraryKeys
     .map((key) => DRIVE_LIBRARIES.find((library) => library.key === key))
@@ -18,15 +23,22 @@ export function DriveLibraries({
 
   return (
     <aside className="border-border/70 bg-card/80 h-fit rounded-3xl border p-2">
+      {sidebarCreateMenu}
       <div className="space-y-1">
         {folders.map((library) => (
-          <LibraryButton
-            key={library.key}
-            library={library}
-            count={counts.get(library.key) ?? 0}
-            active={library.key === selected.key}
-            onSelect={onSelect}
-          />
+          <div key={library.key} className="space-y-0">
+            <LibraryButton
+              library={library}
+              count={counts.get(library.key) ?? 0}
+              active={library.key === selected.key}
+              onSelect={onSelect}
+            />
+            {folderTreeSlot?.forLibraryKey === library.key ? (
+              <div className="border-border/50 ml-2 border-l pt-0.5 pb-0.5 pl-2.5">
+                {folderTreeSlot.children}
+              </div>
+            ) : null}
+          </div>
         ))}
       </div>
     </aside>

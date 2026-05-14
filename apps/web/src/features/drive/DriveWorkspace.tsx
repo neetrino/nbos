@@ -24,6 +24,7 @@ import { DriveDetailPanel } from './DriveDetailPanel';
 import { DriveFileSurface } from './DriveFileSurface';
 import { DriveHero } from './DriveHero';
 import { DriveLibraries } from './DriveLibraries';
+import { DriveSidebarCreateMenu } from './DriveSidebarCreateMenu';
 import { DriveToolbar } from './DriveToolbar';
 import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
 import {
@@ -575,26 +576,36 @@ export function DriveWorkspace() {
               setSelectedLibrary(library);
               setSelectedIds([]);
             }}
+            sidebarCreateMenu={
+              browseDriveFolders && driveStorageSpace ? (
+                <DriveSidebarCreateMenu
+                  busy={busy}
+                  onNewFolder={openCreateFolderDialog}
+                  onFilesSelected={(event) => void onFolderUpload(event)}
+                  onFolderUpload={(event) => void onFolderUpload(event)}
+                />
+              ) : undefined
+            }
+            folderTreeSlot={
+              browseDriveFolders && driveStorageSpace
+                ? {
+                    forLibraryKey: driveStorageSpace === 'COMPANY' ? 'company' : 'personal',
+                    children: (
+                      <DriveSpaceFolderTree
+                        key={folderTreeVersion}
+                        space={driveStorageSpace}
+                        activeFolderId={activeFolderId}
+                        onSelectFolderPath={navigateFolderPath}
+                      />
+                    ),
+                  }
+                : undefined
+            }
           />
-          {browseDriveFolders && driveStorageSpace && (
-            <DriveSpaceFolderTree
-              key={folderTreeVersion}
-              space={driveStorageSpace}
-              activeFolderId={activeFolderId}
-              onSelectFolderPath={navigateFolderPath}
-            />
-          )}
         </div>
 
         <main className="min-w-0 space-y-4">
-          <DriveToolbar
-            search={search}
-            driveStorageSpace={driveStorageSpace}
-            busy={busy}
-            onSearchChange={setSearch}
-            onCreateFolder={openCreateFolderDialog}
-            onFolderUpload={(event) => void onFolderUpload(event)}
-          />
+          <DriveToolbar search={search} onSearchChange={setSearch} />
 
           {selectedIds.length > 0 && (
             <BulkActionBar
