@@ -25,7 +25,6 @@ import { DriveFileSurface } from './DriveFileSurface';
 import { DriveHero } from './DriveHero';
 import { DriveLibraries } from './DriveLibraries';
 import { DriveSidebarCreateMenu } from './DriveSidebarCreateMenu';
-import { DriveToolbar } from './DriveToolbar';
 import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
 import {
   buildDriveStats,
@@ -546,6 +545,8 @@ export function DriveWorkspace() {
         stats={stats}
         selectedSpace={selectedSpace}
         viewMode={viewMode}
+        search={search}
+        onSearchChange={setSearch}
         onSelectSpace={(space) => {
           const library = DRIVE_LIBRARIES.find((item) => item.key === space.defaultLibraryKey);
           setSelectedSpace(space);
@@ -605,8 +606,6 @@ export function DriveWorkspace() {
         </div>
 
         <main className="min-w-0 space-y-4">
-          <DriveToolbar search={search} onSearchChange={setSearch} />
-
           {selectedIds.length > 0 && (
             <BulkActionBar
               count={selectedIds.length}

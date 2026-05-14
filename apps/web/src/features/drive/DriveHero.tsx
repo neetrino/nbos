@@ -3,12 +3,13 @@ import { Archive, BarChart3, File, FileText, Layers3, RefreshCw, ShieldAlert } f
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { DRIVE_SPACES, type DriveSpaceOption, type DriveViewMode } from './drive-options';
+import { DriveToolbar } from './DriveToolbar';
 import { DriveViewModeSwitch } from './DriveViewModeSwitch';
 import { formatFileSize } from './drive-format';
 import type { DriveStats } from './drive-types';
 
 const TAB_SCROLL =
-  'min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+  'min-w-0 max-w-[min(100%,20rem)] shrink-0 overflow-x-auto sm:max-w-[min(100%,26rem)] md:max-w-[min(100%,32rem)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 export function DriveHero({
   stats,
@@ -16,6 +17,8 @@ export function DriveHero({
   selectedSpace,
   viewMode,
   insightsOpen,
+  search,
+  onSearchChange,
   onRefresh,
   onSelectSpace,
   onViewModeChange,
@@ -26,6 +29,8 @@ export function DriveHero({
   selectedSpace: DriveSpaceOption;
   viewMode: DriveViewMode;
   insightsOpen: boolean;
+  search: string;
+  onSearchChange: (value: string) => void;
   onRefresh: () => void;
   onSelectSpace: (space: DriveSpaceOption) => void;
   onViewModeChange: (mode: DriveViewMode) => void;
@@ -33,14 +38,19 @@ export function DriveHero({
 }) {
   return (
     <section className="border-border/70 bg-card/80 rounded-2xl border px-4 py-3 shadow-sm">
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+      <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
+        <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-4">
           <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">Drive</h1>
           <div className={TAB_SCROLL}>
             <DriveSpaceTabs selected={selectedSpace} onSelect={onSelectSpace} />
           </div>
         </div>
-        <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
+        <div className="w-full min-w-0 flex-1 basis-full sm:basis-0 sm:px-1">
+          <div className="mx-auto max-w-3xl">
+            <DriveToolbar search={search} onSearchChange={onSearchChange} variant="header" />
+          </div>
+        </div>
+        <div className="ml-auto flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto">
           <DriveViewModeSwitch value={viewMode} onChange={onViewModeChange} />
           <Button
             type="button"
