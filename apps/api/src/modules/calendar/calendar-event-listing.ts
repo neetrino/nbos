@@ -1,22 +1,20 @@
-import type { PrismaClient, Prisma } from '@nbos/database';
-import {
-  deliveryExtensionWhere,
-  deliveryProductWhere,
-  isWideCalendarScope,
-} from './calendar-access';
+import type { PrismaClient } from '@nbos/database';
+import { deliveryExtensionWhere, deliveryProductWhere } from './calendar-access';
+import { resolveMeetingListVisibilityWhere } from './calendar-meeting-visibility';
 import { extensionDeadlineProjection, productDeadlineProjection } from './calendar-projections';
 import type { CalendarEventProjection } from './calendar.types';
 
 export async function fetchMeetingCalendarProjections(
-  prisma: Pick<InstanceType<typeof PrismaClient>, 'calendarMeeting'>,
+  prisma: Pick<
+    InstanceType<typeof PrismaClient>,
+    'calendarMeeting' | 'deal' | 'product' | 'extension'
+  >,
   userId: string,
   accessScope: string,
   from: Date,
   to: Date,
 ): Promise<CalendarEventProjection[]> {
-  const visibility: Prisma.CalendarMeetingWhereInput = isWideCalendarScope(accessScope)
-    ? {}
-    : { OR: [{ createdById: userId }, { internalParticipantIds: { has: userId } }] };
+  const visibility = await resolveMeetingListVisibilityWhere(prisma, userId, accessScope);
   const rows = await prisma.calendarMeeting.findMany({
     where: { startsAt: { lt: to }, endsAt: { gt: from }, ...visibility },
     orderBy: { startsAt: 'asc' },

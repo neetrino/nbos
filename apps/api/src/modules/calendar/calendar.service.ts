@@ -1,8 +1,13 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
-import { isWideCalendarScope } from './calendar-access';
 import {
   fetchDeliveryDeadlineProjections,
   fetchMeetingCalendarProjections,
@@ -14,6 +19,7 @@ import {
   findScheduledMeetingOverlaps,
 } from './calendar-meeting-conflicts';
 import { normalizeInternalParticipantIds } from './calendar-participants';
+import { fetchMeetingVisibilityIds, isMeetingVisibleToViewer } from './calendar-meeting-visibility';
 import type {
   CalendarLayer,
   CalendarRangeQuery,
@@ -83,6 +89,24 @@ export class CalendarService {
         : [],
     ]);
     return groups.flat().sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  }
+
+  async getMeetingById(userId: string, accessScope: string, id: string) {
+    const meeting = await this.prisma.calendarMeeting.findUnique({ where: { id } });
+    if (!meeting) throw new NotFoundException('Calendar meeting not found.');
+    const ids = await fetchMeetingVisibilityIds(this.prisma, userId);
+    if (!isMeetingVisibleToViewer(meeting, userId, accessScope, ids)) {
+      throw new ForbiddenException('Calendar meeting is not accessible.');
+    }
+    return meeting;
+  }
+
+  async getPersonalEventById(userId: string, id: string) {
+    const row = await this.prisma.personalCalendarEvent.findFirst({
+      where: { id, ownerId: userId },
+    });
+    if (!row) throw new ForbiddenException('Personal calendar event is not accessible.');
+    return row;
   }
 
   async createMeeting(userId: string, body: CreateCalendarMeetingDto) {
@@ -289,8 +313,8 @@ export class CalendarService {
   private async getMeetingForMutation(userId: string, accessScope: string, id: string) {
     const meeting = await this.prisma.calendarMeeting.findUnique({ where: { id } });
     if (!meeting) throw new ForbiddenException('Calendar meeting is not accessible.');
-    if (isWideCalendarScope(accessScope) || meeting.createdById === userId) return meeting;
-    if (meeting.internalParticipantIds.includes(userId)) return meeting;
+    const ids = await fetchMeetingVisibilityIds(this.prisma, userId);
+    if (isMeetingVisibleToViewer(meeting, userId, accessScope, ids)) return meeting;
     throw new ForbiddenException('Calendar meeting is not accessible.');
   }
 }

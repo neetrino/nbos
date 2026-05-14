@@ -70,13 +70,57 @@ export function DayCell({
   );
 }
 
-export function EventCard({ event }: { event: CalendarEventProjection }) {
+export function EventCard({
+  event,
+  onMeetingOrPersonalClick,
+}: {
+  event: CalendarEventProjection;
+  onMeetingOrPersonalClick?: (event: CalendarEventProjection) => void;
+}) {
   const style = LAYER_STYLES[event.layer];
+
+  if (event.layer === 'DELIVERY_DEADLINES' && event.sourceHref) {
+    return (
+      <a
+        href={event.sourceHref}
+        className={`border-border block rounded-xl border p-3 ${style.bg}`}
+      >
+        <EventCardInner event={event} style={style} />
+      </a>
+    );
+  }
+
+  if (
+    (event.layer === 'MEETINGS' || event.layer === 'PERSONAL') &&
+    typeof onMeetingOrPersonalClick === 'function'
+  ) {
+    return (
+      <button
+        type="button"
+        onClick={() => onMeetingOrPersonalClick(event)}
+        className={`border-border block w-full cursor-pointer rounded-xl border p-3 text-left ${style.bg} hover:opacity-95`}
+      >
+        <EventCardInner event={event} style={style} />
+      </button>
+    );
+  }
+
   return (
-    <a
-      href={event.sourceHref ?? undefined}
-      className={`border-border block rounded-xl border p-3 ${style.bg}`}
-    >
+    <div className={`border-border rounded-xl border p-3 ${style.bg}`}>
+      <EventCardInner event={event} style={style} />
+    </div>
+  );
+}
+
+function EventCardInner({
+  event,
+  style,
+}: {
+  event: CalendarEventProjection;
+  style: (typeof LAYER_STYLES)[CalendarEventProjection['layer']];
+}) {
+  return (
+    <>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className={`text-sm font-medium ${style.text}`}>{event.title}</p>
@@ -101,7 +145,7 @@ export function EventCard({ event }: { event: CalendarEventProjection }) {
         <span>{event.status.replaceAll('_', ' ')}</span>
         {event.ownerName && <span>{event.ownerName}</span>}
       </div>
-    </a>
+    </>
   );
 }
 

@@ -1,11 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { calendarApi, type CalendarEventProjection, type CalendarLayer } from '@/lib/api/calendar';
 import { Button } from '@/components/ui/button';
 import { CreateMeetingCalendarDialog } from './calendar-create-meeting-dialog';
 import { CreatePersonalCalendarDialog } from './calendar-create-personal-dialog';
+import { CalendarEventDetailSheet } from './calendar-event-detail-sheet';
+import {
+  CALENDAR_DEFAULT_LAYER_STORAGE_KEY,
+  parseStoredCalendarLayer,
+} from './calendar-ui-constants';
 import { CalendarEmptyState, DayCell, EventCard, WEEKDAYS } from './calendar-view-parts';
 
 const LAYERS: Array<{ key: CalendarLayer; label: string }> = [
@@ -62,6 +67,34 @@ export default function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   const [meetingOpen, setMeetingOpen] = useState(false);
   const [personalOpen, setPersonalOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetEvent, setSheetEvent] = useState<CalendarEventProjection | null>(null);
+
+  useLayoutEffect(() => {
+    const stored = parseStoredCalendarLayer(
+      typeof window !== 'undefined'
+        ? localStorage.getItem(CALENDAR_DEFAULT_LAYER_STORAGE_KEY)
+        : null,
+    );
+    if (stored) setLayer(stored);
+  }, []);
+
+  const persistLayer = useCallback((value: CalendarLayer) => {
+    setLayer(value);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(CALENDAR_DEFAULT_LAYER_STORAGE_KEY, value);
+    }
+  }, []);
+
+  const openEventSheet = useCallback((ev: CalendarEventProjection) => {
+    setSheetEvent(ev);
+    setSheetOpen(true);
+  }, []);
+
+  const onSheetOpenChange = useCallback((open: boolean) => {
+    setSheetOpen(open);
+    if (!open) setSheetEvent(null);
+  }, []);
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -123,7 +156,7 @@ export default function CalendarPage() {
             <button
               key={item.key}
               type="button"
-              onClick={() => setLayer(item.key)}
+              onClick={() => persistLayer(item.key)}
               className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
                 layer === item.key
                   ? 'bg-primary text-primary-foreground'
@@ -211,7 +244,7 @@ export default function CalendarPage() {
           ) : selectedEvents.length > 0 ? (
             <div className="mt-4 space-y-3">
               {selectedEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
+                <EventCard key={event.id} event={event} onMeetingOrPersonalClick={openEventSheet} />
               ))}
             </div>
           ) : (
@@ -219,6 +252,12 @@ export default function CalendarPage() {
           )}
         </div>
       </div>
+
+      <CalendarEventDetailSheet
+        event={sheetEvent}
+        open={sheetOpen}
+        onOpenChange={onSheetOpenChange}
+      />
 
       <CreateMeetingCalendarDialog
         open={meetingOpen}
