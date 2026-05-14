@@ -19,6 +19,7 @@ coverage/
 
 # Prisma
 packages/database/prisma/*.db
+packages/database/src/generated/prisma/
 
 # Logs and temp
 *.log

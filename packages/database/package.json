@@ -12,6 +12,9 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "prebuild": "prisma generate",
+    "build": "prisma generate",
+    "pretypecheck": "prisma generate",
     "generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",

@@ -449,6 +449,7 @@ async function main() {
   for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
     const company = moduleMap.COMPANY;
     const checklistScopes = moduleMap.CHECKLIST_TEMPLATES;
+    if (!company) continue;
     const [viewScope, editScope, , addScope] = company;
     const checklistViewFromMatrix = checklistScopes?.[0] ?? 'NONE';
 
@@ -464,7 +465,8 @@ async function main() {
     if (writeScope === 'NONE') continue;
 
     const hasChecklistCrudFromMatrix =
-      Boolean(checklistScopes) && (checklistScopes[1] !== 'NONE' || checklistScopes[2] !== 'NONE');
+      checklistScopes !== undefined &&
+      (checklistScopes[1] !== 'NONE' || checklistScopes[2] !== 'NONE');
 
     const checklistCompanyActions: ('add' | 'edit' | 'publish' | 'archive')[] =
       hasChecklistCrudFromMatrix ? ['publish', 'archive'] : ['add', 'edit', 'publish', 'archive'];

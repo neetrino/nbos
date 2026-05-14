@@ -5,4 +5,5 @@ build
 coverage
 pnpm-lock.yaml
 prisma/migrations
+packages/database/src/generated/prisma
 .git
