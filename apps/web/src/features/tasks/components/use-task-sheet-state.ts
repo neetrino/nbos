@@ -73,6 +73,17 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     };
   }, [hydrateTask, open, taskId]);
 
+  const refetchTask = useCallback(async () => {
+    if (!taskId) return;
+    try {
+      const nextTask = await tasksApi.getById(taskId);
+      hydrateTask(nextTask);
+      setGeneralError(null);
+    } catch (caught) {
+      setGeneralError(getApiErrorMessage(caught, 'Task could not be refreshed.'));
+    }
+  }, [hydrateTask, taskId]);
+
   const setLocalTask = useCallback(
     (recipe: (current: Task) => Task) => {
       setTask((current) => {
@@ -325,5 +336,6 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     handleDeleteTask,
     handleSendMessage,
     searchEmployees,
+    refetchTask,
   };
 }

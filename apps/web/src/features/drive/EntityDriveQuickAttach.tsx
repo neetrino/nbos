@@ -4,13 +4,13 @@ import { useRef, useState, type ChangeEvent } from 'react';
 import { Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { DRIVE_LIBRARIES, type DriveLibraryOption } from './drive-options';
+import { DRIVE_LIBRARIES, type DriveLibraryKey, type DriveLibraryOption } from './drive-options';
 import { uploadDriveFilesToEntity } from './drive-entity-upload';
 
-function resolveProjectsLibrary(): DriveLibraryOption {
-  const lib = DRIVE_LIBRARIES.find((item) => item.key === 'projects');
+function resolveDriveLibraryOption(key: DriveLibraryKey): DriveLibraryOption {
+  const lib = DRIVE_LIBRARIES.find((item) => item.key === key);
   if (!lib) {
-    throw new Error('Drive projects library config is missing.');
+    throw new Error(`Drive library '${key}' is missing.`);
   }
   return lib;
 }
@@ -18,10 +18,13 @@ function resolveProjectsLibrary(): DriveLibraryOption {
 export function EntityDriveQuickAttach({
   entityType,
   entityId,
+  libraryKey = 'projects',
   onUploaded,
 }: {
   entityType: string;
   entityId: string;
+  /** Library defaults for upload session (`sourceModule` / `purpose` / `visibility`). */
+  libraryKey?: DriveLibraryKey;
   onUploaded?: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +36,11 @@ export function EntityDriveQuickAttach({
     if (files.length === 0) return;
     setBusy(true);
     try {
-      await uploadDriveFilesToEntity(files, { entityType, entityId }, resolveProjectsLibrary());
+      await uploadDriveFilesToEntity(
+        files,
+        { entityType, entityId },
+        resolveDriveLibraryOption(libraryKey),
+      );
       toast.success(files.length === 1 ? 'File attached' : `${files.length} files attached`);
       onUploaded?.();
     } catch (err) {

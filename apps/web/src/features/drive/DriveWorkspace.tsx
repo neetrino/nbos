@@ -19,6 +19,8 @@ import {
   type FileAsset,
 } from '@/lib/api/drive';
 import { projectsApi } from '@/lib/api/projects';
+import { productsApi } from '@/lib/api/products';
+import { tasksApi } from '@/lib/api/tasks';
 import {
   DEFAULT_DRIVE_LIBRARY,
   DRIVE_LIBRARIES,
@@ -60,7 +62,11 @@ import {
 } from './DriveFolderActionDialogs';
 import { DriveFolderPickerDialog } from './DriveFolderPickerDialog';
 import { DriveSpaceFolderTree } from './DriveSpaceFolderTree';
-import { DRIVE_DEEP_LINK_PROJECT_ID_QUERY } from './drive-deep-link';
+import {
+  DRIVE_DEEP_LINK_PRODUCT_ID_QUERY,
+  DRIVE_DEEP_LINK_PROJECT_ID_QUERY,
+  DRIVE_DEEP_LINK_TASK_ID_QUERY,
+} from './drive-deep-link';
 
 type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
 
@@ -69,6 +75,8 @@ type LibraryUploadLink = { entityType: string; entityId: string };
 export function DriveWorkspace() {
   const searchParams = useSearchParams();
   const driveDeepLinkProjectId = searchParams.get(DRIVE_DEEP_LINK_PROJECT_ID_QUERY)?.trim() ?? '';
+  const driveDeepLinkProductId = searchParams.get(DRIVE_DEEP_LINK_PRODUCT_ID_QUERY)?.trim() ?? '';
+  const driveDeepLinkTaskId = searchParams.get(DRIVE_DEEP_LINK_TASK_ID_QUERY)?.trim() ?? '';
 
   const [rawFiles, setRawFiles] = useState<FileAsset[]>([]);
   const [selectedSpace, setSelectedSpace] = useState<DriveSpaceOption>(getInitialDriveSpace);
@@ -101,12 +109,50 @@ export function DriveWorkspace() {
   const [drivePinnedProjectRow, setDrivePinnedProjectRow] = useState<DriveLibraryEntityRow | null>(
     null,
   );
+  const [drivePinnedProductRow, setDrivePinnedProductRow] = useState<DriveLibraryEntityRow | null>(
+    null,
+  );
+  const [drivePinnedTaskRow, setDrivePinnedTaskRow] = useState<DriveLibraryEntityRow | null>(null);
   const [libraryEntityFolderRows, setLibraryEntityFolderRows] = useState<DriveLibraryEntityRow[]>(
     [],
   );
   const [libraryEntityFoldersLoading, setLibraryEntityFoldersLoading] = useState(false);
 
   useLayoutEffect(() => {
+    if (driveDeepLinkProductId) {
+      const systemSpace = DRIVE_SPACES.find((item) => item.key === 'system');
+      const productsLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'products');
+      if (systemSpace) {
+        setSelectedSpace(systemSpace);
+        window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, systemSpace.key);
+      }
+      if (productsLibrary) setSelectedLibrary(productsLibrary);
+      setSystemLibraryLink({
+        entityType: 'PRODUCT',
+        entityId: driveDeepLinkProductId,
+      });
+      setDrivePinnedProjectRow(null);
+      setDrivePinnedTaskRow(null);
+      return;
+    }
+
+    if (driveDeepLinkTaskId) {
+      const systemSpace = DRIVE_SPACES.find((item) => item.key === 'system');
+      const tasksLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'tasks');
+      if (systemSpace) {
+        setSelectedSpace(systemSpace);
+        window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, systemSpace.key);
+      }
+      if (tasksLibrary) setSelectedLibrary(tasksLibrary);
+      setSystemLibraryLink({
+        entityType: 'TASK',
+        entityId: driveDeepLinkTaskId,
+      });
+      setDrivePinnedProjectRow(null);
+      setDrivePinnedProductRow(null);
+      return;
+    }
+
     if (driveDeepLinkProjectId) {
       const systemSpace = DRIVE_SPACES.find((item) => item.key === 'system');
       const projectsLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'projects');
@@ -119,11 +165,15 @@ export function DriveWorkspace() {
         entityType: 'PROJECT',
         entityId: driveDeepLinkProjectId,
       });
+      setDrivePinnedProductRow(null);
+      setDrivePinnedTaskRow(null);
       return;
     }
 
     setSystemLibraryLink(null);
     setDrivePinnedProjectRow(null);
+    setDrivePinnedProductRow(null);
+    setDrivePinnedTaskRow(null);
 
     const rawSpace = window.localStorage.getItem(DRIVE_SPACE_STORAGE_KEY);
     const space = rawSpace ? DRIVE_SPACES.find((item) => item.key === rawSpace) : undefined;
@@ -138,7 +188,7 @@ export function DriveWorkspace() {
     if (rawMode === 'cards' || rawMode === 'list' || rawMode === 'table') {
       setViewMode(rawMode);
     }
-  }, [driveDeepLinkProjectId]);
+  }, [driveDeepLinkProjectId, driveDeepLinkProductId, driveDeepLinkTaskId]);
 
   useEffect(() => {
     const pid = driveDeepLinkProjectId;
@@ -172,6 +222,70 @@ export function DriveWorkspace() {
     };
   }, [driveDeepLinkProjectId, selectedLibrary.key, selectedSpace.key]);
 
+  useEffect(() => {
+    const pid = driveDeepLinkProductId;
+    if (!pid || selectedSpace.key !== 'system' || selectedLibrary.key !== 'products') {
+      setDrivePinnedProductRow(null);
+      return;
+    }
+    let cancelled = false;
+    void productsApi
+      .getById(pid)
+      .then((p) => {
+        if (!cancelled) {
+          setDrivePinnedProductRow({
+            id: p.id,
+            entityType: 'PRODUCT',
+            label: p.project ? `${p.name} (${p.project.code})` : p.name,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDrivePinnedProductRow({
+            id: pid,
+            entityType: 'PRODUCT',
+            label: `Product ${pid.slice(0, 8)}…`,
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [driveDeepLinkProductId, selectedLibrary.key, selectedSpace.key]);
+
+  useEffect(() => {
+    const tid = driveDeepLinkTaskId;
+    if (!tid || selectedSpace.key !== 'system' || selectedLibrary.key !== 'tasks') {
+      setDrivePinnedTaskRow(null);
+      return;
+    }
+    let cancelled = false;
+    void tasksApi
+      .getById(tid)
+      .then((t) => {
+        if (!cancelled) {
+          setDrivePinnedTaskRow({
+            id: t.id,
+            entityType: 'TASK',
+            label: `${t.code} — ${t.title}`,
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDrivePinnedTaskRow({
+            id: tid,
+            entityType: 'TASK',
+            label: `Task ${tid.slice(0, 8)}…`,
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [driveDeepLinkTaskId, selectedLibrary.key, selectedSpace.key]);
+
   const effectiveStatus = selectedLibrary.status ?? status;
 
   const driveStorageSpace = useMemo((): 'COMPANY' | 'PERSONAL' | null => {
@@ -198,8 +312,10 @@ export function DriveWorkspace() {
 
   const libraryPinnedEntityRows = useMemo((): DriveLibraryEntityRow[] | undefined => {
     if (selectedLibrary.key === 'projects' && drivePinnedProjectRow) return [drivePinnedProjectRow];
+    if (selectedLibrary.key === 'products' && drivePinnedProductRow) return [drivePinnedProductRow];
+    if (selectedLibrary.key === 'tasks' && drivePinnedTaskRow) return [drivePinnedTaskRow];
     return undefined;
-  }, [drivePinnedProjectRow, selectedLibrary.key]);
+  }, [drivePinnedProductRow, drivePinnedProjectRow, drivePinnedTaskRow, selectedLibrary.key]);
 
   const mergedLibraryEntityRows = useMemo(
     () => mergeDriveLibraryEntityRows(libraryEntityFolderRows, libraryPinnedEntityRows),

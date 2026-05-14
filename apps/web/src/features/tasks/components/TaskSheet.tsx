@@ -1,7 +1,9 @@
 'use client';
-import { Loader2 } from 'lucide-react';
+import { HardDrive, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { Badge } from '@/components/ui/badge';
+import { buttonVariants } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { StatusBadge } from '@/components/shared';
@@ -22,6 +24,8 @@ import { TaskDatesSection, TaskLinksSection, TaskPeopleSection } from './TaskDet
 import { TaskSubtasksSection } from './TaskSubtasksSection';
 import { TaskSheetGeneralSection } from './TaskSheetGeneralSection';
 import { TaskSheetStickyFooter } from './TaskSheetStickyFooter';
+import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
+import { buildDriveHrefWithTask } from '@/features/drive/drive-deep-link';
 import { TaskSummaryCard } from './TaskSheetSummaryCard';
 import { useTaskSheetState } from './use-task-sheet-state';
 
@@ -106,6 +110,25 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                         label={readyForCompletion ? 'Ready' : 'Blocked'}
                         variant={readyForCompletion ? 'green' : 'red'}
                       />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <EntityDriveQuickAttach
+                        libraryKey="tasks"
+                        entityType="TASK"
+                        entityId={state.task.id}
+                        onUploaded={() => void state.refetchTask()}
+                      />
+                      <Link
+                        href={buildDriveHrefWithTask(state.task.id)}
+                        className={cn(
+                          buttonVariants({ variant: 'outline', size: 'sm' }),
+                          'gap-1.5',
+                        )}
+                      >
+                        <HardDrive className="size-4" aria-hidden />
+                        Drive files
+                      </Link>
                     </div>
 
                     <TaskSummaryCard task={state.task} />

@@ -22,6 +22,8 @@
 
 Файл не должен копироваться в несколько мест только потому, что он нужен в Deal, Product и Client Portfolio. Физически файл хранится один раз, а в NBOS он виден через разные `Libraries / Библиотеки` и связи.
 
+Навигация Library vs Project hub, deep links и целевая модель папок под проектом: **`08-Drive-Navigation-Project-Hub-and-Folders.md`**.
+
 ---
 
 ## 2. Граница модуля

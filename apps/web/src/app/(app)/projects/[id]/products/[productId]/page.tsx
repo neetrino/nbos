@@ -14,8 +14,10 @@ import {
   ServerCog,
   ChevronRight,
   ChevronsUpDown,
+  HardDrive,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/shared';
@@ -34,6 +36,9 @@ import { ProductTicketsTab } from '@/features/projects/components/product-tabs/P
 import { ProductTechnicalTab } from '@/features/projects/components/product-tabs/ProductTechnicalTab';
 import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
+import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
+import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
+import { cn } from '@/lib/utils';
 
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -229,6 +234,21 @@ export default function ProductDetailPage() {
               </div>
             </div>
           </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <EntityDriveQuickAttach
+            libraryKey="products"
+            entityType="PRODUCT"
+            entityId={product.id}
+            onUploaded={() => void fetchProduct()}
+          />
+          <Link
+            href={buildDriveHrefWithProduct(product.id)}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+          >
+            <HardDrive className="size-4" aria-hidden />
+            Drive files
+          </Link>
         </div>
       </div>
 
