@@ -24,7 +24,6 @@ import {
   KeyRound,
   Settings,
   ChevronLeft,
-  Search,
   Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -453,19 +452,6 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
           </div>
         )}
       </div>
-
-      {/* Search */}
-      {!collapsed && (
-        <div className="border-sidebar-border border-b px-3 py-3">
-          <button className="bg-secondary text-muted-foreground hover:bg-secondary/80 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors">
-            <Search size={16} />
-            <span>Search...</span>
-            <kbd className="border-border bg-background ml-auto rounded border px-1.5 py-0.5 text-[10px] font-medium">
-              ⌘K
-            </kbd>
-          </button>
-        </div>
-      )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-3">
