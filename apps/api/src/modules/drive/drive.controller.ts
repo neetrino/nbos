@@ -31,7 +31,6 @@ import type {
   MoveFolderFileDto,
   RenameDriveFolderDto,
   AddFolderFileDto,
-  ExportDriveManifestDto,
 } from './drive.types';
 
 @ApiTags('Drive')
@@ -268,23 +267,6 @@ export class DriveController {
         driveScope: request.permissionScope,
       },
     );
-  }
-
-  @Post('files/export-manifest')
-  @RequirePermission('DRIVE', 'VIEW')
-  @ApiOperation({
-    summary: 'Build a JSON export manifest for selected Drive files (ZIP companion)',
-  })
-  async exportDriveManifest(
-    @CurrentUser() user: CurrentUserPayload,
-    @Req() request: Request & { permissionScope?: string },
-    @Body() body: ExportDriveManifestDto,
-  ) {
-    return this.driveService.buildDriveExportManifest(body.fileIds ?? [], {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
   }
 
   @Post('files/:id/permanent-delete')

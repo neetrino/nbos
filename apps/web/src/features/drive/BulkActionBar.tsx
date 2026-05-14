@@ -10,7 +10,6 @@ export function BulkActionBar({
   onClear,
   showLibraryBulkActions,
   onPlaceInCompanyFolder,
-  onExportManifest,
 }: {
   count: number;
   archived: boolean;
@@ -20,7 +19,6 @@ export function BulkActionBar({
   onClear: () => void;
   showLibraryBulkActions?: boolean;
   onPlaceInCompanyFolder?: () => void;
-  onExportManifest?: () => void;
 }) {
   return (
     <div className="border-border/70 bg-card flex flex-col gap-3 rounded-2xl border p-3 sm:flex-row sm:items-center sm:justify-between">
@@ -35,14 +33,6 @@ export function BulkActionBar({
               onClick={() => onPlaceInCompanyFolder?.()}
             >
               Place in Company folder…
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy}
-              onClick={() => onExportManifest?.()}
-            >
-              Export manifest (JSON)
             </Button>
           </>
         ) : null}

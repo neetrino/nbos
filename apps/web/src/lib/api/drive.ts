@@ -484,20 +484,6 @@ export const driveApi = {
     return resp.data;
   },
 
-  async buildExportManifest(fileIds: string[]): Promise<{
-    generatedAt: string;
-    files: Array<{
-      id: string;
-      displayName: string;
-      mimeType: string | null;
-      sizeBytes: unknown;
-      purpose: string | null;
-    }>;
-  }> {
-    const resp = await api.post('/api/drive/files/export-manifest', { fileIds });
-    return resp.data;
-  },
-
   async permanentlyDeleteFileAsset(id: string): Promise<FileAsset> {
     const resp = await api.post<FileAsset>(
       '/api/drive/files/' + encodeURIComponent(id) + '/permanent-delete',

@@ -76,7 +76,11 @@ import {
   DRIVE_DEEP_LINK_PROJECT_ID_QUERY,
   DRIVE_DEEP_LINK_TASK_ID_QUERY,
 } from './drive-deep-link';
-import { DRIVE_FILE_SORT_STORAGE_KEY, type DriveFileSortKey } from './drive-file-sort';
+import {
+  DRIVE_FILE_SORT_STORAGE_KEY,
+  parseDriveFileSortKey,
+  type DriveFileSortKey,
+} from './drive-file-sort';
 import { toFileSizeNumber } from './drive-format';
 
 type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
@@ -117,11 +121,8 @@ export function DriveWorkspace() {
   const [linkAggregates, setLinkAggregates] = useState<
     { entityType: string; entityId: string; count: number }[]
   >([]);
-  const [fileSort, setFileSort] = useState<DriveFileSortKey>(() => {
-    if (typeof window === 'undefined') return 'updated';
-    const r = window.localStorage.getItem(DRIVE_FILE_SORT_STORAGE_KEY);
-    return r === 'name' || r === 'size' || r === 'updated' ? r : 'updated';
-  });
+  /** SSR-safe default; preferences hydrate in `useLayoutEffect` below. */
+  const [fileSort, setFileSort] = useState<DriveFileSortKey>('updated');
   const [libraryPlacePickerOpen, setLibraryPlacePickerOpen] = useState(false);
   const [folderListing, setFolderListing] = useState<DriveFolderListing | null>(null);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
@@ -262,6 +263,10 @@ export function DriveWorkspace() {
     driveDeepLinkTaskId,
     driveDeepLinkFinanceProjectId,
   ]);
+
+  useLayoutEffect(() => {
+    setFileSort(parseDriveFileSortKey(window.localStorage.getItem(DRIVE_FILE_SORT_STORAGE_KEY)));
+  }, []);
 
   useEffect(() => {
     const pid = driveDeepLinkProjectId;
@@ -938,26 +943,6 @@ export function DriveWorkspace() {
     }
   }
 
-  async function handleExportManifestForSelection() {
-    if (selectedIds.length === 0) return;
-    setBusy(true);
-    try {
-      const manifest = await driveApi.buildExportManifest(selectedIds);
-      const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `drive-export-manifest-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success('Manifest downloaded');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Export failed');
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function submitCreateFolder(name: string) {
     if (!driveStorageSpace) {
       toast.error('Open Company or Personal Drive first.');
@@ -1302,7 +1287,6 @@ export function DriveWorkspace() {
                 browseSystemLibraryUploads && systemLibraryLink && selectedSpace.key === 'system',
               )}
               onPlaceInCompanyFolder={() => setLibraryPlacePickerOpen(true)}
-              onExportManifest={() => void handleExportManifestForSelection()}
             />
           )}
 

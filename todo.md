@@ -8,7 +8,7 @@
 
 1. **Share / Move / Copy — матрица прав** по `docs/NBOS/02-Modules/11-Drive/03-Permissions-Sharing-and-Audit.md` (сейчас RBAC + доступ к файлу; не полная матрица по каждому действию в UI).
 
-2. **Export ZIP** — отдельный job, storage, скачивание, manifest (не только `POST /api/drive/files/export-manifest` + JSON в Library).
+2. **Export ZIP** — отдельный job, storage, скачивание (при необходимости внутренний список файлов для job, без отдельного пользовательского JSON-экспорта).
 
 3. **DnD Library ↔ Company/Personal** — перетаскивание между панелями при общем layout / split-view (сейчас: bulk «Place in Company folder…» + API).
 

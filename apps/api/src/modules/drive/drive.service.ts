@@ -694,31 +694,6 @@ export class DriveService {
     return { deleted: r.count, kind };
   }
 
-  async buildDriveExportManifest(fileIds: string[], access?: DriveEntityAccess) {
-    const unique = [...new Set(fileIds.map((id) => id.trim()).filter(Boolean))].slice(0, 40);
-    if (unique.length === 0) {
-      throw new BadRequestException('fileIds must include at least one id.');
-    }
-    const files: Array<{
-      id: string;
-      displayName: string;
-      mimeType: string | null;
-      sizeBytes: unknown;
-      purpose: string | null;
-    }> = [];
-    for (const id of unique) {
-      const asset = await this.getFileAsset(id, access);
-      files.push({
-        id: asset.id,
-        displayName: asset.displayName,
-        mimeType: asset.mimeType,
-        sizeBytes: asset.sizeBytes,
-        purpose: asset.purpose,
-      });
-    }
-    return jsonSafeForHttp({ generatedAt: new Date().toISOString(), files });
-  }
-
   async permanentlyDeleteFileAsset(id: string, actorId: string, access?: DriveEntityAccess) {
     const file = await this.getFileAsset(id, access);
     if (file.status !== 'ARCHIVED') {
