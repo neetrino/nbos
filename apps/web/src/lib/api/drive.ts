@@ -73,6 +73,26 @@ export interface FileAuditEvent {
   createdAt: string;
 }
 
+export interface DriveFolder {
+  id: string;
+  name: string;
+  space: 'COMPANY' | 'PERSONAL';
+  ownerId: string | null;
+  createdById: string | null;
+  parentId: string | null;
+  archivedAt: string | null;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DriveFolderListing {
+  space: 'COMPANY' | 'PERSONAL';
+  parentId: string | null;
+  folders: DriveFolder[];
+  files: FileAsset[];
+}
+
 export const driveApi = {
   async listFileAssets(params?: {
     entityType?: string;
@@ -93,11 +113,31 @@ export const driveApi = {
     return resp.data;
   },
 
+  async listFolder(params: {
+    space: 'COMPANY' | 'PERSONAL';
+    parentId?: string | null;
+  }): Promise<DriveFolderListing> {
+    const resp = await api.get<DriveFolderListing>('/api/drive/folders', {
+      params: { space: params.space, parentId: params.parentId ?? 'root' },
+    });
+    return resp.data;
+  },
+
+  async createFolder(data: {
+    name: string;
+    space: 'COMPANY' | 'PERSONAL';
+    parentId?: string | null;
+  }): Promise<DriveFolder> {
+    const resp = await api.post<DriveFolder>('/api/drive/folders', data);
+    return resp.data;
+  },
+
   async createUploadSession(data: {
     fileName: string;
     contentType: string;
-    entityType: string;
-    entityId: string;
+    entityType?: string;
+    entityId?: string;
+    folderId?: string;
     displayName?: string;
     purpose?: string;
     sourceModule?: string;

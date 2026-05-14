@@ -29,6 +29,7 @@ import { buildFileAssetCreateInputForCompletedSession } from './drive-upload-com
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
+import { DriveFolderService } from './drive-folder.service';
 
 @Injectable()
 export class DriveUploadSessionService {
@@ -37,6 +38,7 @@ export class DriveUploadSessionService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly r2: DriveR2Client,
+    private readonly folders: DriveFolderService,
   ) {}
 
   async listDriveLibrary(contextType: string | undefined, contextId: string | undefined) {
@@ -48,8 +50,12 @@ export class DriveUploadSessionService {
   async createUploadSession(dto: CreateUploadSessionDto, userId: string) {
     const fileName = requireText(dto.fileName, 'fileName');
     const contentType = requireText(dto.contentType, 'contentType');
-    requireText(dto.entityType, 'entityType');
-    requireText(dto.entityId, 'entityId');
+    if (!dto.folderId) {
+      requireText(dto.entityType, 'entityType');
+      requireText(dto.entityId, 'entityId');
+    } else {
+      await this.folders.assertCanUseFolder(dto.folderId, userId);
+    }
 
     const sessionId = randomUUID();
     const storageKey = buildSessionUploadStorageKey(sessionId, fileName);
@@ -60,8 +66,9 @@ export class DriveUploadSessionService {
       data: {
         id: sessionId,
         storageKey,
-        entityType: dto.entityType.trim(),
-        entityId: dto.entityId.trim(),
+        entityType: dto.entityType?.trim() ?? 'DRIVE_FOLDER',
+        entityId: dto.entityId?.trim() ?? dto.folderId ?? sessionId,
+        folderId: dto.folderId?.trim(),
         displayName,
         originalName: fileName,
         mimeType: contentType,
@@ -139,6 +146,16 @@ export class DriveUploadSessionService {
         where: { id: sessionId },
         data: { status: 'COMPLETED', fileAssetId: file.id },
       });
+      if (fresh.folderId) {
+        await tx.driveFolderItem.create({
+          data: {
+            folderId: fresh.folderId,
+            itemType: 'FILE',
+            fileAssetId: file.id,
+            placedById: userId,
+          },
+        });
+      }
       return jsonSafeForHttp(file);
     });
   }

@@ -73,6 +73,8 @@ export const ModelName = {
   DocumentAttachment: 'DocumentAttachment',
   DocumentActivityEvent: 'DocumentActivityEvent',
   FileAsset: 'FileAsset',
+  DriveFolder: 'DriveFolder',
+  DriveFolderItem: 'DriveFolderItem',
   FileVersion: 'FileVersion',
   FileLink: 'FileLink',
   FileAuditEvent: 'FileAuditEvent',
@@ -660,6 +662,36 @@ export const FileAssetScalarFieldEnum = {
 export type FileAssetScalarFieldEnum =
   (typeof FileAssetScalarFieldEnum)[keyof typeof FileAssetScalarFieldEnum];
 
+export const DriveFolderScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  space: 'space',
+  ownerId: 'ownerId',
+  createdById: 'createdById',
+  parentId: 'parentId',
+  archivedAt: 'archivedAt',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DriveFolderScalarFieldEnum =
+  (typeof DriveFolderScalarFieldEnum)[keyof typeof DriveFolderScalarFieldEnum];
+
+export const DriveFolderItemScalarFieldEnum = {
+  id: 'id',
+  folderId: 'folderId',
+  itemType: 'itemType',
+  fileAssetId: 'fileAssetId',
+  childFolderId: 'childFolderId',
+  placedById: 'placedById',
+  placedAt: 'placedAt',
+  removedAt: 'removedAt',
+} as const;
+
+export type DriveFolderItemScalarFieldEnum =
+  (typeof DriveFolderItemScalarFieldEnum)[keyof typeof DriveFolderItemScalarFieldEnum];
+
 export const FileVersionScalarFieldEnum = {
   id: 'id',
   fileAssetId: 'fileAssetId',
@@ -720,6 +752,7 @@ export const FileUploadSessionScalarFieldEnum = {
   linkType: 'linkType',
   createdById: 'createdById',
   fileAssetId: 'fileAssetId',
+  folderId: 'folderId',
   expiresAt: 'expiresAt',
   failedReason: 'failedReason',
   createdAt: 'createdAt',

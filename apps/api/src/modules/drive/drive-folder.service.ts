@@ -70,12 +70,17 @@ export class DriveFolderService {
     return jsonSafeForHttp(folder);
   }
 
-  async placeFile(folderId: string, fileAssetId: string, userId: string) {
+  async assertCanUseFolder(folderId: string, userId: string) {
     const folder = await this.prisma.driveFolder.findUnique({ where: { id: folderId } });
     if (!folder || folder.deletedAt) throw new NotFoundException(`Folder ${folderId} not found`);
     if (folder.space === 'PERSONAL' && folder.ownerId !== userId) {
       throw new NotFoundException(`Folder ${folderId} not found`);
     }
+    return folder;
+  }
+
+  async placeFile(folderId: string, fileAssetId: string, userId: string) {
+    await this.assertCanUseFolder(folderId, userId);
     return this.prisma.driveFolderItem.create({
       data: {
         folderId,

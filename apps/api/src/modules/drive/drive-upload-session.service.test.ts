@@ -29,6 +29,12 @@ function makeR2Mock() {
   };
 }
 
+function makeFolderMock() {
+  return {
+    placeFile: vi.fn(),
+  };
+}
+
 describe('DriveUploadSessionService', () => {
   let service: DriveUploadSessionService;
   let prisma: MockPrisma;
@@ -36,7 +42,11 @@ describe('DriveUploadSessionService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     prisma = createMockPrisma();
-    service = new DriveUploadSessionService(prisma as never, makeR2Mock() as never);
+    service = new DriveUploadSessionService(
+      prisma as never,
+      makeR2Mock() as never,
+      makeFolderMock() as never,
+    );
   });
 
   it('lists library using SUPPORT context mapping', async () => {

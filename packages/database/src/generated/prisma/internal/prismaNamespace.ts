@@ -400,6 +400,8 @@ export const ModelName = {
   DocumentAttachment: 'DocumentAttachment',
   DocumentActivityEvent: 'DocumentActivityEvent',
   FileAsset: 'FileAsset',
+  DriveFolder: 'DriveFolder',
+  DriveFolderItem: 'DriveFolderItem',
   FileVersion: 'FileVersion',
   FileLink: 'FileLink',
   FileAuditEvent: 'FileAuditEvent',
@@ -520,6 +522,8 @@ export type TypeMap<
       | 'documentAttachment'
       | 'documentActivityEvent'
       | 'fileAsset'
+      | 'driveFolder'
+      | 'driveFolderItem'
       | 'fileVersion'
       | 'fileLink'
       | 'fileAuditEvent'
@@ -2475,6 +2479,156 @@ export type TypeMap<
         count: {
           args: Prisma.FileAssetCountArgs<ExtArgs>;
           result: runtime.Types.Utils.Optional<Prisma.FileAssetCountAggregateOutputType> | number;
+        };
+      };
+    };
+    DriveFolder: {
+      payload: Prisma.$DriveFolderPayload<ExtArgs>;
+      fields: Prisma.DriveFolderFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DriveFolderFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DriveFolderFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload>;
+        };
+        findFirst: {
+          args: Prisma.DriveFolderFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DriveFolderFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload>;
+        };
+        findMany: {
+          args: Prisma.DriveFolderFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload>[];
+        };
+        create: {
+          args: Prisma.DriveFolderCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload>;
+        };
+        createMany: {
+          args: Prisma.DriveFolderCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DriveFolderCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload>[];
+        };
+        delete: {
+          args: Prisma.DriveFolderDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload>;
+        };
+        update: {
+          args: Prisma.DriveFolderUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload>;
+        };
+        deleteMany: {
+          args: Prisma.DriveFolderDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DriveFolderUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DriveFolderUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload>[];
+        };
+        upsert: {
+          args: Prisma.DriveFolderUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderPayload>;
+        };
+        aggregate: {
+          args: Prisma.DriveFolderAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDriveFolder>;
+        };
+        groupBy: {
+          args: Prisma.DriveFolderGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DriveFolderGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DriveFolderCountArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DriveFolderCountAggregateOutputType> | number;
+        };
+      };
+    };
+    DriveFolderItem: {
+      payload: Prisma.$DriveFolderItemPayload<ExtArgs>;
+      fields: Prisma.DriveFolderItemFieldRefs;
+      operations: {
+        findUnique: {
+          args: Prisma.DriveFolderItemFindUniqueArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload> | null;
+        };
+        findUniqueOrThrow: {
+          args: Prisma.DriveFolderItemFindUniqueOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload>;
+        };
+        findFirst: {
+          args: Prisma.DriveFolderItemFindFirstArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload> | null;
+        };
+        findFirstOrThrow: {
+          args: Prisma.DriveFolderItemFindFirstOrThrowArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload>;
+        };
+        findMany: {
+          args: Prisma.DriveFolderItemFindManyArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload>[];
+        };
+        create: {
+          args: Prisma.DriveFolderItemCreateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload>;
+        };
+        createMany: {
+          args: Prisma.DriveFolderItemCreateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        createManyAndReturn: {
+          args: Prisma.DriveFolderItemCreateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload>[];
+        };
+        delete: {
+          args: Prisma.DriveFolderItemDeleteArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload>;
+        };
+        update: {
+          args: Prisma.DriveFolderItemUpdateArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload>;
+        };
+        deleteMany: {
+          args: Prisma.DriveFolderItemDeleteManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateMany: {
+          args: Prisma.DriveFolderItemUpdateManyArgs<ExtArgs>;
+          result: BatchPayload;
+        };
+        updateManyAndReturn: {
+          args: Prisma.DriveFolderItemUpdateManyAndReturnArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload>[];
+        };
+        upsert: {
+          args: Prisma.DriveFolderItemUpsertArgs<ExtArgs>;
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DriveFolderItemPayload>;
+        };
+        aggregate: {
+          args: Prisma.DriveFolderItemAggregateArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDriveFolderItem>;
+        };
+        groupBy: {
+          args: Prisma.DriveFolderItemGroupByArgs<ExtArgs>;
+          result: runtime.Types.Utils.Optional<Prisma.DriveFolderItemGroupByOutputType>[];
+        };
+        count: {
+          args: Prisma.DriveFolderItemCountArgs<ExtArgs>;
+          result:
+            | runtime.Types.Utils.Optional<Prisma.DriveFolderItemCountAggregateOutputType>
+            | number;
         };
       };
     };
@@ -8663,6 +8817,36 @@ export const FileAssetScalarFieldEnum = {
 export type FileAssetScalarFieldEnum =
   (typeof FileAssetScalarFieldEnum)[keyof typeof FileAssetScalarFieldEnum];
 
+export const DriveFolderScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  space: 'space',
+  ownerId: 'ownerId',
+  createdById: 'createdById',
+  parentId: 'parentId',
+  archivedAt: 'archivedAt',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const;
+
+export type DriveFolderScalarFieldEnum =
+  (typeof DriveFolderScalarFieldEnum)[keyof typeof DriveFolderScalarFieldEnum];
+
+export const DriveFolderItemScalarFieldEnum = {
+  id: 'id',
+  folderId: 'folderId',
+  itemType: 'itemType',
+  fileAssetId: 'fileAssetId',
+  childFolderId: 'childFolderId',
+  placedById: 'placedById',
+  placedAt: 'placedAt',
+  removedAt: 'removedAt',
+} as const;
+
+export type DriveFolderItemScalarFieldEnum =
+  (typeof DriveFolderItemScalarFieldEnum)[keyof typeof DriveFolderItemScalarFieldEnum];
+
 export const FileVersionScalarFieldEnum = {
   id: 'id',
   fileAssetId: 'fileAssetId',
@@ -8723,6 +8907,7 @@ export const FileUploadSessionScalarFieldEnum = {
   linkType: 'linkType',
   createdById: 'createdById',
   fileAssetId: 'fileAssetId',
+  folderId: 'folderId',
   expiresAt: 'expiresAt',
   failedReason: 'failedReason',
   createdAt: 'createdAt',
@@ -10845,6 +11030,38 @@ export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
 export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>;
 
 /**
+ * Reference to a field of type 'DriveSpaceEnum'
+ */
+export type EnumDriveSpaceEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DriveSpaceEnum'
+>;
+
+/**
+ * Reference to a field of type 'DriveSpaceEnum[]'
+ */
+export type ListEnumDriveSpaceEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DriveSpaceEnum[]'
+>;
+
+/**
+ * Reference to a field of type 'DriveFolderItemTypeEnum'
+ */
+export type EnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DriveFolderItemTypeEnum'
+>;
+
+/**
+ * Reference to a field of type 'DriveFolderItemTypeEnum[]'
+ */
+export type ListEnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
+  $PrismaModel,
+  'DriveFolderItemTypeEnum[]'
+>;
+
+/**
  * Reference to a field of type 'FileLinkTypeEnum'
  */
 export type EnumFileLinkTypeEnumFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -12182,6 +12399,8 @@ export type GlobalOmitConfig = {
   documentAttachment?: Prisma.DocumentAttachmentOmit;
   documentActivityEvent?: Prisma.DocumentActivityEventOmit;
   fileAsset?: Prisma.FileAssetOmit;
+  driveFolder?: Prisma.DriveFolderOmit;
+  driveFolderItem?: Prisma.DriveFolderItemOmit;
   fileVersion?: Prisma.FileVersionOmit;
   fileLink?: Prisma.FileLinkOmit;
   fileAuditEvent?: Prisma.FileAuditEventOmit;

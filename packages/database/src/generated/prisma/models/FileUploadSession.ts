@@ -40,6 +40,7 @@ export type FileUploadSessionMinAggregateOutputType = {
   linkType: $Enums.FileLinkTypeEnum | null;
   createdById: string | null;
   fileAssetId: string | null;
+  folderId: string | null;
   expiresAt: Date | null;
   failedReason: string | null;
   createdAt: Date | null;
@@ -62,6 +63,7 @@ export type FileUploadSessionMaxAggregateOutputType = {
   linkType: $Enums.FileLinkTypeEnum | null;
   createdById: string | null;
   fileAssetId: string | null;
+  folderId: string | null;
   expiresAt: Date | null;
   failedReason: string | null;
   createdAt: Date | null;
@@ -84,6 +86,7 @@ export type FileUploadSessionCountAggregateOutputType = {
   linkType: number;
   createdById: number;
   fileAssetId: number;
+  folderId: number;
   expiresAt: number;
   failedReason: number;
   createdAt: number;
@@ -107,6 +110,7 @@ export type FileUploadSessionMinAggregateInputType = {
   linkType?: true;
   createdById?: true;
   fileAssetId?: true;
+  folderId?: true;
   expiresAt?: true;
   failedReason?: true;
   createdAt?: true;
@@ -129,6 +133,7 @@ export type FileUploadSessionMaxAggregateInputType = {
   linkType?: true;
   createdById?: true;
   fileAssetId?: true;
+  folderId?: true;
   expiresAt?: true;
   failedReason?: true;
   createdAt?: true;
@@ -151,6 +156,7 @@ export type FileUploadSessionCountAggregateInputType = {
   linkType?: true;
   createdById?: true;
   fileAssetId?: true;
+  folderId?: true;
   expiresAt?: true;
   failedReason?: true;
   createdAt?: true;
@@ -251,6 +257,7 @@ export type FileUploadSessionGroupByOutputType = {
   linkType: $Enums.FileLinkTypeEnum;
   createdById: string | null;
   fileAssetId: string | null;
+  folderId: string | null;
   expiresAt: Date;
   failedReason: string | null;
   createdAt: Date;
@@ -299,6 +306,7 @@ export type FileUploadSessionWhereInput = {
   linkType?: Prisma.EnumFileLinkTypeEnumFilter<'FileUploadSession'> | $Enums.FileLinkTypeEnum;
   createdById?: Prisma.StringNullableFilter<'FileUploadSession'> | string | null;
   fileAssetId?: Prisma.StringNullableFilter<'FileUploadSession'> | string | null;
+  folderId?: Prisma.StringNullableFilter<'FileUploadSession'> | string | null;
   expiresAt?: Prisma.DateTimeFilter<'FileUploadSession'> | Date | string;
   failedReason?: Prisma.StringNullableFilter<'FileUploadSession'> | string | null;
   createdAt?: Prisma.DateTimeFilter<'FileUploadSession'> | Date | string;
@@ -321,6 +329,7 @@ export type FileUploadSessionOrderByWithRelationInput = {
   linkType?: Prisma.SortOrder;
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder;
   fileAssetId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  folderId?: Prisma.SortOrderInput | Prisma.SortOrder;
   expiresAt?: Prisma.SortOrder;
   failedReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -356,6 +365,7 @@ export type FileUploadSessionWhereUniqueInput = Prisma.AtLeast<
     linkType?: Prisma.EnumFileLinkTypeEnumFilter<'FileUploadSession'> | $Enums.FileLinkTypeEnum;
     createdById?: Prisma.StringNullableFilter<'FileUploadSession'> | string | null;
     fileAssetId?: Prisma.StringNullableFilter<'FileUploadSession'> | string | null;
+    folderId?: Prisma.StringNullableFilter<'FileUploadSession'> | string | null;
     expiresAt?: Prisma.DateTimeFilter<'FileUploadSession'> | Date | string;
     failedReason?: Prisma.StringNullableFilter<'FileUploadSession'> | string | null;
     createdAt?: Prisma.DateTimeFilter<'FileUploadSession'> | Date | string;
@@ -380,6 +390,7 @@ export type FileUploadSessionOrderByWithAggregationInput = {
   linkType?: Prisma.SortOrder;
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder;
   fileAssetId?: Prisma.SortOrderInput | Prisma.SortOrder;
+  folderId?: Prisma.SortOrderInput | Prisma.SortOrder;
   expiresAt?: Prisma.SortOrder;
   failedReason?: Prisma.SortOrderInput | Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -423,6 +434,7 @@ export type FileUploadSessionScalarWhereWithAggregatesInput = {
     | $Enums.FileLinkTypeEnum;
   createdById?: Prisma.StringNullableWithAggregatesFilter<'FileUploadSession'> | string | null;
   fileAssetId?: Prisma.StringNullableWithAggregatesFilter<'FileUploadSession'> | string | null;
+  folderId?: Prisma.StringNullableWithAggregatesFilter<'FileUploadSession'> | string | null;
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<'FileUploadSession'> | Date | string;
   failedReason?: Prisma.StringNullableWithAggregatesFilter<'FileUploadSession'> | string | null;
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'FileUploadSession'> | Date | string;
@@ -445,6 +457,7 @@ export type FileUploadSessionCreateInput = {
   linkType?: $Enums.FileLinkTypeEnum;
   createdById?: string | null;
   fileAssetId?: string | null;
+  folderId?: string | null;
   expiresAt: Date | string;
   failedReason?: string | null;
   createdAt?: Date | string;
@@ -467,6 +480,7 @@ export type FileUploadSessionUncheckedCreateInput = {
   linkType?: $Enums.FileLinkTypeEnum;
   createdById?: string | null;
   fileAssetId?: string | null;
+  folderId?: string | null;
   expiresAt: Date | string;
   failedReason?: string | null;
   createdAt?: Date | string;
@@ -496,6 +510,7 @@ export type FileUploadSessionUpdateInput = {
   linkType?: Prisma.EnumFileLinkTypeEnumFieldUpdateOperationsInput | $Enums.FileLinkTypeEnum;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   fileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  folderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   failedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -525,6 +540,7 @@ export type FileUploadSessionUncheckedUpdateInput = {
   linkType?: Prisma.EnumFileLinkTypeEnumFieldUpdateOperationsInput | $Enums.FileLinkTypeEnum;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   fileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  folderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   failedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -547,6 +563,7 @@ export type FileUploadSessionCreateManyInput = {
   linkType?: $Enums.FileLinkTypeEnum;
   createdById?: string | null;
   fileAssetId?: string | null;
+  folderId?: string | null;
   expiresAt: Date | string;
   failedReason?: string | null;
   createdAt?: Date | string;
@@ -576,6 +593,7 @@ export type FileUploadSessionUpdateManyMutationInput = {
   linkType?: Prisma.EnumFileLinkTypeEnumFieldUpdateOperationsInput | $Enums.FileLinkTypeEnum;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   fileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  folderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   failedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -605,6 +623,7 @@ export type FileUploadSessionUncheckedUpdateManyInput = {
   linkType?: Prisma.EnumFileLinkTypeEnumFieldUpdateOperationsInput | $Enums.FileLinkTypeEnum;
   createdById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   fileAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+  folderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
   failedReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -627,6 +646,7 @@ export type FileUploadSessionCountOrderByAggregateInput = {
   linkType?: Prisma.SortOrder;
   createdById?: Prisma.SortOrder;
   fileAssetId?: Prisma.SortOrder;
+  folderId?: Prisma.SortOrder;
   expiresAt?: Prisma.SortOrder;
   failedReason?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -649,6 +669,7 @@ export type FileUploadSessionMaxOrderByAggregateInput = {
   linkType?: Prisma.SortOrder;
   createdById?: Prisma.SortOrder;
   fileAssetId?: Prisma.SortOrder;
+  folderId?: Prisma.SortOrder;
   expiresAt?: Prisma.SortOrder;
   failedReason?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -671,6 +692,7 @@ export type FileUploadSessionMinOrderByAggregateInput = {
   linkType?: Prisma.SortOrder;
   createdById?: Prisma.SortOrder;
   fileAssetId?: Prisma.SortOrder;
+  folderId?: Prisma.SortOrder;
   expiresAt?: Prisma.SortOrder;
   failedReason?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
@@ -700,6 +722,7 @@ export type FileUploadSessionSelect<
     linkType?: boolean;
     createdById?: boolean;
     fileAssetId?: boolean;
+    folderId?: boolean;
     expiresAt?: boolean;
     failedReason?: boolean;
     createdAt?: boolean;
@@ -727,6 +750,7 @@ export type FileUploadSessionSelectCreateManyAndReturn<
     linkType?: boolean;
     createdById?: boolean;
     fileAssetId?: boolean;
+    folderId?: boolean;
     expiresAt?: boolean;
     failedReason?: boolean;
     createdAt?: boolean;
@@ -754,6 +778,7 @@ export type FileUploadSessionSelectUpdateManyAndReturn<
     linkType?: boolean;
     createdById?: boolean;
     fileAssetId?: boolean;
+    folderId?: boolean;
     expiresAt?: boolean;
     failedReason?: boolean;
     createdAt?: boolean;
@@ -778,6 +803,7 @@ export type FileUploadSessionSelectScalar = {
   linkType?: boolean;
   createdById?: boolean;
   fileAssetId?: boolean;
+  folderId?: boolean;
   expiresAt?: boolean;
   failedReason?: boolean;
   createdAt?: boolean;
@@ -802,6 +828,7 @@ export type FileUploadSessionOmit<
   | 'linkType'
   | 'createdById'
   | 'fileAssetId'
+  | 'folderId'
   | 'expiresAt'
   | 'failedReason'
   | 'createdAt'
@@ -831,6 +858,7 @@ export type $FileUploadSessionPayload<
       linkType: $Enums.FileLinkTypeEnum;
       createdById: string | null;
       fileAssetId: string | null;
+      folderId: string | null;
       expiresAt: Date;
       failedReason: string | null;
       createdAt: Date;
@@ -1422,6 +1450,7 @@ export interface FileUploadSessionFieldRefs {
   readonly linkType: Prisma.FieldRef<'FileUploadSession', 'FileLinkTypeEnum'>;
   readonly createdById: Prisma.FieldRef<'FileUploadSession', 'String'>;
   readonly fileAssetId: Prisma.FieldRef<'FileUploadSession', 'String'>;
+  readonly folderId: Prisma.FieldRef<'FileUploadSession', 'String'>;
   readonly expiresAt: Prisma.FieldRef<'FileUploadSession', 'DateTime'>;
   readonly failedReason: Prisma.FieldRef<'FileUploadSession', 'String'>;
   readonly createdAt: Prisma.FieldRef<'FileUploadSession', 'DateTime'>;

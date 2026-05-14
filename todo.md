@@ -8,3 +8,4 @@
 8. Cleanup dashboard: orphan files, old task attachments, failed sessions, large files.
 9. Preview depth: image/PDF/video/code inline preview вместо только presigned open.
 10. Drive UI cleanup: no large always-visible informational blocks; file details open on demand, analytics lives behind an Insights/Analytics action.
+11. Missing now: create folders, upload files from computer directly into Company/Personal folders, and later upload whole folders from computer with structure preservation.

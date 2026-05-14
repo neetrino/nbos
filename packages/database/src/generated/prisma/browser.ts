@@ -142,6 +142,16 @@ export type DocumentActivityEvent = Prisma.DocumentActivityEventModel;
  */
 export type FileAsset = Prisma.FileAssetModel;
 /**
+ * Model DriveFolder
+ *
+ */
+export type DriveFolder = Prisma.DriveFolderModel;
+/**
+ * Model DriveFolderItem
+ *
+ */
+export type DriveFolderItem = Prisma.DriveFolderItemModel;
+/**
  * Model FileVersion
  *
  */

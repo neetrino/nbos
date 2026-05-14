@@ -1,4 +1,6 @@
-import { Grid3X3, List, Search, Table2, type LucideIcon } from 'lucide-react';
+import type { ChangeEvent } from 'react';
+import { FolderPlus, Grid3X3, List, Search, Table2, Upload, type LucideIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -25,10 +27,14 @@ export function DriveToolbar({
   purpose,
   viewMode,
   lockedStatus,
+  freeDriveSpace,
+  busy,
   onSearchChange,
   onStatusChange,
   onPurposeChange,
   onViewModeChange,
+  onCreateFolder,
+  onFolderUpload,
 }: {
   library: DriveLibraryOption;
   search: string;
@@ -36,10 +42,14 @@ export function DriveToolbar({
   purpose: PurposeFilter;
   viewMode: DriveViewMode;
   lockedStatus?: DriveStatusFilter;
+  freeDriveSpace: 'COMPANY' | 'PERSONAL' | null;
+  busy: boolean;
   onSearchChange: (value: string) => void;
   onStatusChange: (value: DriveStatusFilter) => void;
   onPurposeChange: (value: PurposeFilter) => void;
   onViewModeChange: (value: DriveViewMode) => void;
+  onCreateFolder: () => void;
+  onFolderUpload: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div className="border-border/70 bg-card/80 rounded-3xl border p-4">
@@ -48,7 +58,33 @@ export function DriveToolbar({
           <h2 className="text-foreground text-lg font-semibold">{library.title}</h2>
           <p className="text-muted-foreground text-sm">{library.description}</p>
         </div>
-        <ViewModeSwitch value={viewMode} onChange={onViewModeChange} />
+        <div className="flex flex-wrap items-center gap-2">
+          {freeDriveSpace && (
+            <>
+              <Button type="button" variant="outline" onClick={onCreateFolder} disabled={busy}>
+                <FolderPlus />
+                New folder
+              </Button>
+              <label className="border-border bg-background hover:bg-muted inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium">
+                <Upload className="size-4" />
+                Upload files
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  disabled={busy}
+                  onChange={onFolderUpload}
+                />
+              </label>
+              <label className="border-border bg-background hover:bg-muted inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium">
+                <FolderPlus className="size-4" />
+                Upload folder
+                <FolderUploadInput disabled={busy} onChange={onFolderUpload} />
+              </label>
+            </>
+          )}
+          <ViewModeSwitch value={viewMode} onChange={onViewModeChange} />
+        </div>
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_220px]">
@@ -69,6 +105,25 @@ export function DriveToolbar({
         <PurposeSelect value={purpose} onChange={onPurposeChange} />
       </div>
     </div>
+  );
+}
+
+function FolderUploadInput({
+  disabled,
+  onChange,
+}: {
+  disabled: boolean;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <input
+      type="file"
+      multiple
+      className="hidden"
+      disabled={disabled}
+      onChange={onChange}
+      {...{ webkitdirectory: '', directory: '' }}
+    />
   );
 }
 

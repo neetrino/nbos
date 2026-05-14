@@ -32,6 +32,8 @@ export type * from './models/DocumentTagOnDocument';
 export type * from './models/DocumentAttachment';
 export type * from './models/DocumentActivityEvent';
 export type * from './models/FileAsset';
+export type * from './models/DriveFolder';
+export type * from './models/DriveFolderItem';
 export type * from './models/FileVersion';
 export type * from './models/FileLink';
 export type * from './models/FileAuditEvent';

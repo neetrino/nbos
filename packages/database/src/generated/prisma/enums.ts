@@ -459,6 +459,21 @@ export const FileLinkTypeEnum = {
 
 export type FileLinkTypeEnum = (typeof FileLinkTypeEnum)[keyof typeof FileLinkTypeEnum];
 
+export const DriveSpaceEnum = {
+  COMPANY: 'COMPANY',
+  PERSONAL: 'PERSONAL',
+} as const;
+
+export type DriveSpaceEnum = (typeof DriveSpaceEnum)[keyof typeof DriveSpaceEnum];
+
+export const DriveFolderItemTypeEnum = {
+  FILE: 'FILE',
+  FOLDER: 'FOLDER',
+} as const;
+
+export type DriveFolderItemTypeEnum =
+  (typeof DriveFolderItemTypeEnum)[keyof typeof DriveFolderItemTypeEnum];
+
 export const FileUploadSessionStatusEnum = {
   PENDING: 'PENDING',
   COMPLETED: 'COMPLETED',

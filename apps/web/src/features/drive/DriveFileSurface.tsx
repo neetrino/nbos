@@ -1,6 +1,15 @@
-import { File, FileArchive, FileImage, FileText, Loader2, MoreHorizontal } from 'lucide-react';
+import {
+  ArrowLeft,
+  File,
+  FileArchive,
+  FileImage,
+  FileText,
+  Folder,
+  Loader2,
+  MoreHorizontal,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { FileAsset } from '@/lib/api/drive';
+import type { DriveFolder, FileAsset } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate, formatDriveLabel, formatFileSize } from './drive-format';
 import type { DriveViewMode } from './drive-options';
@@ -8,20 +17,26 @@ import { badgeVariant } from './drive-utils';
 
 export function DriveFileSurface({
   files,
+  folders,
   loading,
   viewMode,
   selectedId,
   checkedIds,
   onSelect,
   onToggleChecked,
+  onOpenFolder,
+  onBack,
 }: {
   files: FileAsset[];
+  folders: DriveFolder[];
   loading: boolean;
   viewMode: DriveViewMode;
   selectedId: string | null;
   checkedIds: string[];
   onSelect: (file: FileAsset) => void;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
+  onOpenFolder: (folder: DriveFolder) => void;
+  onBack?: () => void;
 }) {
   if (loading) {
     return (
@@ -30,15 +45,18 @@ export function DriveFileSurface({
       </div>
     );
   }
-  if (files.length === 0) return <DriveEmptyState />;
+  if (files.length === 0 && folders.length === 0) return <DriveEmptyState />;
   if (viewMode === 'table') {
     return (
       <FileTable
         files={files}
+        folders={folders}
         selectedId={selectedId}
         checkedIds={checkedIds}
         onSelect={onSelect}
         onToggleChecked={onToggleChecked}
+        onOpenFolder={onOpenFolder}
+        onBack={onBack}
       />
     );
   }
@@ -48,6 +66,24 @@ export function DriveFileSurface({
         viewMode === 'cards' ? 'grid gap-3 md:grid-cols-2 2xl:grid-cols-3' : 'space-y-2',
       )}
     >
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="border-border/70 bg-card/80 hover:bg-muted flex w-full items-center gap-3 rounded-2xl border p-4 text-left text-sm"
+        >
+          <ArrowLeft className="size-4" />
+          Back to parent
+        </button>
+      )}
+      {folders.map((folder) => (
+        <FolderCard
+          key={folder.id}
+          folder={folder}
+          compact={viewMode === 'list'}
+          onOpenFolder={onOpenFolder}
+        />
+      ))}
       {files.map((file) => (
         <FileCard
           key={file.id}
@@ -65,16 +101,22 @@ export function DriveFileSurface({
 
 function FileTable({
   files,
+  folders,
   selectedId,
   checkedIds,
   onSelect,
   onToggleChecked,
+  onOpenFolder,
+  onBack,
 }: {
   files: FileAsset[];
+  folders: DriveFolder[];
   selectedId: string | null;
   checkedIds: string[];
   onSelect: (file: FileAsset) => void;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
+  onOpenFolder: (folder: DriveFolder) => void;
+  onBack?: () => void;
 }) {
   return (
     <div className="border-border/70 bg-card/80 overflow-hidden rounded-3xl border">
@@ -86,6 +128,19 @@ function FileTable({
         <span>Updated</span>
         <span className="text-right">Size</span>
       </div>
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="hover:bg-muted/50 grid w-full grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3 px-4 py-3 text-left text-sm"
+        >
+          <ArrowLeft className="size-4 self-center" />
+          <span className="font-medium">Back to parent</span>
+        </button>
+      )}
+      {folders.map((folder) => (
+        <FolderTableRow key={folder.id} folder={folder} onOpenFolder={onOpenFolder} />
+      ))}
       {files.map((file) => (
         <FileTableRow
           key={file.id}
@@ -97,6 +152,59 @@ function FileTable({
         />
       ))}
     </div>
+  );
+}
+
+function FolderCard({
+  folder,
+  compact,
+  onOpenFolder,
+}: {
+  folder: DriveFolder;
+  compact: boolean;
+  onOpenFolder: (folder: DriveFolder) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpenFolder(folder)}
+      className={cn(
+        'border-border/70 bg-card/80 hover:border-primary/40 group w-full rounded-3xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md',
+        compact && 'rounded-2xl',
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className="rounded-2xl bg-amber-500/10 p-3 text-amber-600">
+          <Folder className="size-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-foreground truncate text-sm font-semibold">{folder.name}</h3>
+          <p className="text-muted-foreground mt-1 text-xs">{folder.space} folder</p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function FolderTableRow({
+  folder,
+  onOpenFolder,
+}: {
+  folder: DriveFolder;
+  onOpenFolder: (folder: DriveFolder) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpenFolder(folder)}
+      className="hover:bg-muted/50 grid w-full grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3 px-4 py-3 text-left text-sm"
+    >
+      <Folder className="size-4 self-center text-amber-600" />
+      <span className="truncate font-medium">{folder.name}</span>
+      <span className="text-muted-foreground text-xs">Folder</span>
+      <span className="text-muted-foreground text-xs">{folder.space}</span>
+      <span className="text-muted-foreground text-xs">{formatDriveDate(folder.updatedAt)}</span>
+    </button>
   );
 }
 

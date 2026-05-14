@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { toast } from 'sonner';
-import { driveApi, type FileAsset } from '@/lib/api/drive';
+import {
+  driveApi,
+  type DriveFolder,
+  type DriveFolderListing,
+  type FileAsset,
+} from '@/lib/api/drive';
 import {
   DEFAULT_DRIVE_SPACE,
   DEFAULT_DRIVE_LIBRARY,
@@ -43,6 +48,9 @@ export function DriveWorkspace() {
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [insightsOpen, setInsightsOpen] = useState(false);
+  const [folderListing, setFolderListing] = useState<DriveFolderListing | null>(null);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [folderTrail, setFolderTrail] = useState<DriveFolder[]>([]);
 
   const effectiveStatus = selectedLibrary.status ?? status;
 
@@ -71,13 +79,50 @@ export function DriveWorkspace() {
     void load();
   }, [load]);
 
+  const freeDriveSpace =
+    selectedLibrary.key === 'company'
+      ? 'COMPANY'
+      : selectedLibrary.key === 'personal'
+        ? 'PERSONAL'
+        : null;
+
+  useEffect(() => {
+    setActiveFolderId(null);
+    setFolderTrail([]);
+  }, [selectedLibrary.key]);
+
+  const loadFolders = useCallback(async () => {
+    if (!freeDriveSpace) {
+      setFolderListing(null);
+      setActiveFolderId(null);
+      setFolderTrail([]);
+      return;
+    }
+    try {
+      const listing = await driveApi.listFolder({
+        space: freeDriveSpace,
+        parentId: activeFolderId,
+      });
+      setFolderListing(listing);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to load Drive folder');
+    }
+  }, [activeFolderId, freeDriveSpace]);
+
+  useEffect(() => {
+    void loadFolders();
+  }, [loadFolders]);
+
   useEffect(() => {
     window.localStorage.setItem(DRIVE_VIEW_MODE_STORAGE_KEY, viewMode);
   }, [viewMode]);
 
   const files = useMemo(
-    () => rawFiles.filter((file) => fileMatchesLibrary(file, selectedLibrary)),
-    [rawFiles, selectedLibrary],
+    () =>
+      folderListing
+        ? folderListing.files
+        : rawFiles.filter((file) => fileMatchesLibrary(file, selectedLibrary)),
+    [folderListing, rawFiles, selectedLibrary],
   );
   const stats = useMemo(() => buildDriveStats(files), [files]);
   const libraryCounts = useMemo(() => buildLibraryCounts(rawFiles), [rawFiles]);
@@ -91,6 +136,19 @@ export function DriveWorkspace() {
 
   async function onPreview(file: FileAsset) {
     setSelected(file);
+  }
+
+  function openFolder(folder: DriveFolder) {
+    setFolderTrail((current) => [...current, folder]);
+    setActiveFolderId(folder.id);
+  }
+
+  function goBackFolder() {
+    setFolderTrail((current) => {
+      const next = current.slice(0, -1);
+      setActiveFolderId(next.at(-1)?.id ?? null);
+      return next;
+    });
   }
 
   async function onCopyLink(file: FileAsset) {
@@ -159,6 +217,7 @@ export function DriveWorkspace() {
       setSelected(await action());
       toast.success(success);
       await load();
+      await loadFolders();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Drive action failed');
     } finally {
@@ -173,6 +232,7 @@ export function DriveWorkspace() {
       setSelectedIds([]);
       toast.success(success);
       await load();
+      await loadFolders();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Drive action failed');
     } finally {
@@ -212,12 +272,97 @@ export function DriveWorkspace() {
       setSelected(updated);
       toast.success('New version uploaded');
       await load();
+      await loadFolders();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Version upload failed');
     } finally {
       setBusy(false);
       event.target.value = '';
     }
+  }
+
+  async function onCreateFolder() {
+    if (!freeDriveSpace) return;
+    const name = window.prompt('Folder name');
+    if (!name?.trim()) return;
+    try {
+      await driveApi.createFolder({
+        name,
+        space: freeDriveSpace,
+        parentId: activeFolderId,
+      });
+      toast.success('Folder created');
+      await loadFolders();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not create folder');
+    }
+  }
+
+  async function onFolderUpload(event: ChangeEvent<HTMLInputElement>) {
+    if (!freeDriveSpace || !activeFolderId) {
+      toast.error('Open or create a folder before uploading files.');
+      event.target.value = '';
+      return;
+    }
+    const uploadedFiles = Array.from(event.target.files ?? []);
+    if (uploadedFiles.length === 0) return;
+    setBusy(true);
+    try {
+      const folderCache = new Map<string, string>();
+      for (const uploadedFile of uploadedFiles) {
+        const targetFolderId = await ensureUploadTargetFolder(uploadedFile, folderCache);
+        await uploadFileToFolder(uploadedFile, targetFolderId);
+      }
+      toast.success(uploadedFiles.length === 1 ? 'File uploaded' : 'Files uploaded');
+      await loadFolders();
+      await load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setBusy(false);
+      event.target.value = '';
+    }
+  }
+
+  async function ensureUploadTargetFolder(file: File, folderCache: Map<string, string>) {
+    const relativePath = 'webkitRelativePath' in file ? String(file.webkitRelativePath) : '';
+    const parts = relativePath.split('/').filter(Boolean).slice(0, -1);
+    let parentId = activeFolderId;
+    for (const part of parts) {
+      const key = `${parentId ?? 'root'}/${part}`;
+      const cached = folderCache.get(key);
+      if (cached) {
+        parentId = cached;
+        continue;
+      }
+      const folder = await driveApi.createFolder({
+        name: part,
+        space: freeDriveSpace ?? 'COMPANY',
+        parentId,
+      });
+      folderCache.set(key, folder.id);
+      parentId = folder.id;
+    }
+    return parentId ?? activeFolderId;
+  }
+
+  async function uploadFileToFolder(file: File, folderId: string | null) {
+    if (!folderId || !freeDriveSpace) return;
+    const contentType = file.type || FALLBACK_MIME_TYPE;
+    const session = await driveApi.createUploadSession({
+      fileName: file.name,
+      contentType,
+      folderId,
+      sourceModule: 'DRIVE',
+      visibility: freeDriveSpace === 'PERSONAL' ? 'PERSONAL' : 'INTERNAL',
+      confidentiality: 'CONFIDENTIAL',
+    });
+    await fetch(session.uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': contentType },
+    });
+    await driveApi.completeUploadSession(session.sessionId, { sizeBytes: file.size });
   }
 
   return (
@@ -267,6 +412,10 @@ export function DriveWorkspace() {
             onStatusChange={setStatus}
             onPurposeChange={setPurpose}
             onViewModeChange={setViewMode}
+            freeDriveSpace={freeDriveSpace}
+            busy={busy}
+            onCreateFolder={() => void onCreateFolder()}
+            onFolderUpload={(event) => void onFolderUpload(event)}
           />
 
           {selectedIds.length > 0 && (
@@ -282,12 +431,15 @@ export function DriveWorkspace() {
 
           <DriveFileSurface
             files={files}
+            folders={folderListing?.folders ?? []}
             loading={loading}
             viewMode={viewMode}
             selectedId={selected?.id ?? null}
             checkedIds={selectedIds}
             onSelect={setSelected}
             onToggleChecked={toggleChecked}
+            onOpenFolder={openFolder}
+            onBack={folderTrail.length > 0 ? goBackFolder : undefined}
           />
         </main>
 

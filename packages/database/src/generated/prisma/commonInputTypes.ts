@@ -1819,6 +1819,56 @@ export type BigIntNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBigIntNullableFilter<$PrismaModel>;
 };
 
+export type EnumDriveSpaceEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.DriveSpaceEnum | Prisma.EnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.DriveSpaceEnum[] | Prisma.ListEnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.DriveSpaceEnum[] | Prisma.ListEnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDriveSpaceEnumFilter<$PrismaModel> | $Enums.DriveSpaceEnum;
+};
+
+export type EnumDriveSpaceEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DriveSpaceEnum | Prisma.EnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.DriveSpaceEnum[] | Prisma.ListEnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.DriveSpaceEnum[] | Prisma.ListEnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDriveSpaceEnumWithAggregatesFilter<$PrismaModel> | $Enums.DriveSpaceEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDriveSpaceEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDriveSpaceEnumFilter<$PrismaModel>;
+};
+
+export type EnumDriveFolderItemTypeEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DriveFolderItemTypeEnum
+    | Prisma.EnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DriveFolderItemTypeEnum[]
+    | Prisma.ListEnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DriveFolderItemTypeEnum[]
+    | Prisma.ListEnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumDriveFolderItemTypeEnumFilter<$PrismaModel>
+    | $Enums.DriveFolderItemTypeEnum;
+};
+
+export type EnumDriveFolderItemTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DriveFolderItemTypeEnum
+    | Prisma.EnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DriveFolderItemTypeEnum[]
+    | Prisma.ListEnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DriveFolderItemTypeEnum[]
+    | Prisma.ListEnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumDriveFolderItemTypeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.DriveFolderItemTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDriveFolderItemTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDriveFolderItemTypeEnumFilter<$PrismaModel>;
+};
+
 export type EnumFileLinkTypeEnumFilter<$PrismaModel = never> = {
   equals?: $Enums.FileLinkTypeEnum | Prisma.EnumFileLinkTypeEnumFieldRefInput<$PrismaModel>;
   in?: $Enums.FileLinkTypeEnum[] | Prisma.ListEnumFileLinkTypeEnumFieldRefInput<$PrismaModel>;
@@ -5967,6 +6017,56 @@ export type NestedFloatNullableFilter<$PrismaModel = never> = {
   gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
   gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>;
   not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null;
+};
+
+export type NestedEnumDriveSpaceEnumFilter<$PrismaModel = never> = {
+  equals?: $Enums.DriveSpaceEnum | Prisma.EnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.DriveSpaceEnum[] | Prisma.ListEnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.DriveSpaceEnum[] | Prisma.ListEnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDriveSpaceEnumFilter<$PrismaModel> | $Enums.DriveSpaceEnum;
+};
+
+export type NestedEnumDriveSpaceEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DriveSpaceEnum | Prisma.EnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  in?: $Enums.DriveSpaceEnum[] | Prisma.ListEnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  notIn?: $Enums.DriveSpaceEnum[] | Prisma.ListEnumDriveSpaceEnumFieldRefInput<$PrismaModel>;
+  not?: Prisma.NestedEnumDriveSpaceEnumWithAggregatesFilter<$PrismaModel> | $Enums.DriveSpaceEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDriveSpaceEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDriveSpaceEnumFilter<$PrismaModel>;
+};
+
+export type NestedEnumDriveFolderItemTypeEnumFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DriveFolderItemTypeEnum
+    | Prisma.EnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DriveFolderItemTypeEnum[]
+    | Prisma.ListEnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DriveFolderItemTypeEnum[]
+    | Prisma.ListEnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumDriveFolderItemTypeEnumFilter<$PrismaModel>
+    | $Enums.DriveFolderItemTypeEnum;
+};
+
+export type NestedEnumDriveFolderItemTypeEnumWithAggregatesFilter<$PrismaModel = never> = {
+  equals?:
+    | $Enums.DriveFolderItemTypeEnum
+    | Prisma.EnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  in?:
+    | $Enums.DriveFolderItemTypeEnum[]
+    | Prisma.ListEnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  notIn?:
+    | $Enums.DriveFolderItemTypeEnum[]
+    | Prisma.ListEnumDriveFolderItemTypeEnumFieldRefInput<$PrismaModel>;
+  not?:
+    | Prisma.NestedEnumDriveFolderItemTypeEnumWithAggregatesFilter<$PrismaModel>
+    | $Enums.DriveFolderItemTypeEnum;
+  _count?: Prisma.NestedIntFilter<$PrismaModel>;
+  _min?: Prisma.NestedEnumDriveFolderItemTypeEnumFilter<$PrismaModel>;
+  _max?: Prisma.NestedEnumDriveFolderItemTypeEnumFilter<$PrismaModel>;
 };
 
 export type NestedEnumFileLinkTypeEnumFilter<$PrismaModel = never> = {
