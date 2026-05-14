@@ -11,6 +11,7 @@ export function DriveLibraries({
   onSelect,
   atStorageLibraryRoot,
   sidebarCreateMenu,
+  contextSlot,
   folderTreeSlot,
 }: {
   space: DriveSpaceOption;
@@ -20,6 +21,7 @@ export function DriveLibraries({
   /** When false, Company/Personal row is not highlighted (user is inside a subfolder). */
   atStorageLibraryRoot: boolean;
   sidebarCreateMenu?: ReactNode;
+  contextSlot?: ReactNode;
   folderTreeSlot?: { forLibraryKey: 'company' | 'personal'; children: ReactNode };
 }) {
   const folders = space.libraryKeys
@@ -29,6 +31,7 @@ export function DriveLibraries({
   return (
     <aside className="border-border/70 bg-card/80 h-fit rounded-3xl border p-2">
       {sidebarCreateMenu}
+      {contextSlot}
       <div className="space-y-1">
         {folders.map((library) => (
           <div key={library.key} className="space-y-0">

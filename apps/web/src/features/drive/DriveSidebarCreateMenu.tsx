@@ -12,11 +12,17 @@ import {
 
 export function DriveSidebarCreateMenu({
   busy,
+  entityContextReady = true,
+  menuMode = 'storage',
   onNewFolder,
   onFilesSelected,
   onFolderUpload,
 }: {
   busy: boolean;
+  /** When false, trigger stays disabled (e.g. system library without entity pick). */
+  entityContextReady?: boolean;
+  /** `library-entity`: only file upload (system libraries with entity link). */
+  menuMode?: 'storage' | 'library-entity';
   onNewFolder: () => void;
   onFilesSelected: (event: ChangeEvent<HTMLInputElement>) => void;
   onFolderUpload: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -33,7 +39,7 @@ export function DriveSidebarCreateMenu({
               {...props}
               type="button"
               variant="outline"
-              disabled={busy}
+              disabled={busy || !entityContextReady}
               className="border-border bg-background text-foreground hover:bg-muted h-12 w-full rounded-2xl border shadow-sm"
               aria-label="Create or upload"
             >
@@ -42,28 +48,42 @@ export function DriveSidebarCreateMenu({
           )}
         />
         <DropdownMenuContent align="start" className="min-w-[200px]">
-          <DropdownMenuItem onClick={() => onNewFolder()}>
-            <FolderPlus className="size-4" aria-hidden />
-            New folder
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={busy}
-            onClick={() => {
-              filesInputRef.current?.click();
-            }}
-          >
-            <Upload className="size-4" aria-hidden />
-            Upload files
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={busy}
-            onClick={() => {
-              folderInputRef.current?.click();
-            }}
-          >
-            <FolderPlus className="size-4" aria-hidden />
-            Upload folder
-          </DropdownMenuItem>
+          {menuMode === 'storage' ? (
+            <>
+              <DropdownMenuItem onClick={() => onNewFolder()}>
+                <FolderPlus className="size-4" aria-hidden />
+                New folder
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={busy}
+                onClick={() => {
+                  filesInputRef.current?.click();
+                }}
+              >
+                <Upload className="size-4" aria-hidden />
+                Upload files
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={busy}
+                onClick={() => {
+                  folderInputRef.current?.click();
+                }}
+              >
+                <FolderPlus className="size-4" aria-hidden />
+                Upload folder
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <DropdownMenuItem
+              disabled={busy || !entityContextReady}
+              onClick={() => {
+                filesInputRef.current?.click();
+              }}
+            >
+              <Upload className="size-4" aria-hidden />
+              Upload files
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
       <input

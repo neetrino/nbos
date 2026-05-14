@@ -32,6 +32,8 @@ import { DriveDetailPanel } from './DriveDetailPanel';
 import { DriveFileSurface } from './DriveFileSurface';
 import { DriveHero } from './DriveHero';
 import { DriveLibraries } from './DriveLibraries';
+import { DriveLibraryEntityPicker, type LibraryUploadLink } from './DriveLibraryEntityPicker';
+import { buildDriveLibraryUploadSessionFields } from './drive-library-upload-defaults';
 import { DriveSidebarCreateMenu } from './DriveSidebarCreateMenu';
 import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
 import {
@@ -79,6 +81,7 @@ export function DriveWorkspace() {
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<DriveFolder | null>(null);
   const [rootStorageFolderId, setRootStorageFolderId] = useState<string | null>(null);
   const [folderTreeVersion, setFolderTreeVersion] = useState(0);
+  const [systemLibraryLink, setSystemLibraryLink] = useState<LibraryUploadLink | null>(null);
 
   useLayoutEffect(() => {
     const rawSpace = window.localStorage.getItem(DRIVE_SPACE_STORAGE_KEY);
@@ -110,6 +113,15 @@ export function DriveWorkspace() {
       (selectedLibrary.key === 'company' || selectedLibrary.key === 'personal'),
     [driveStorageSpace, selectedLibrary.key],
   );
+
+  const browseSystemLibraryUploads = useMemo(() => {
+    if (selectedSpace.key !== 'system') return false;
+    return (
+      selectedLibrary.key !== 'all' &&
+      selectedLibrary.key !== 'archive' &&
+      Boolean(selectedLibrary.entityTypes?.length)
+    );
+  }, [selectedLibrary.entityTypes, selectedLibrary.key, selectedSpace.key]);
 
   const atStorageLibraryRoot = activeFolderId === null && folderTrail.length === 0;
 
@@ -152,6 +164,10 @@ export function DriveWorkspace() {
     setActiveFolderId(null);
     setFolderTrail([]);
   }, [selectedLibrary.key]);
+
+  useEffect(() => {
+    setSystemLibraryLink(null);
+  }, [selectedLibrary.key, selectedSpace.key]);
 
   useEffect(() => {
     if (!browseDriveFolders) {
@@ -498,13 +514,41 @@ export function DriveWorkspace() {
   }
 
   async function onFolderUpload(event: ChangeEvent<HTMLInputElement>) {
+    const uploadedFiles = Array.from(event.target.files ?? []);
+    if (uploadedFiles.length === 0) return;
+
+    if (browseSystemLibraryUploads) {
+      if (!systemLibraryLink) {
+        toast.error('Choose a record to link files to first.');
+        event.target.value = '';
+        return;
+      }
+      if (uploadedFiles.some((f) => fileUsesNestedFolderUpload(f))) {
+        toast.error('Folder uploads belong in Company or Personal Drive.');
+        event.target.value = '';
+        return;
+      }
+      setBusy(true);
+      try {
+        for (const uploadedFile of uploadedFiles) {
+          await uploadFileToLinkedEntity(uploadedFile, systemLibraryLink);
+        }
+        toast.success(uploadedFiles.length === 1 ? 'File uploaded' : 'Files uploaded');
+        await load();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Upload failed');
+      } finally {
+        setBusy(false);
+        event.target.value = '';
+      }
+      return;
+    }
+
     if (!driveStorageSpace || !placementFolderId) {
       toast.error('Drive is still loading. Try again in a moment.');
       event.target.value = '';
       return;
     }
-    const uploadedFiles = Array.from(event.target.files ?? []);
-    if (uploadedFiles.length === 0) return;
     setBusy(true);
     try {
       const folderCache = new Map<string, string>();
@@ -522,6 +566,12 @@ export function DriveWorkspace() {
       setBusy(false);
       event.target.value = '';
     }
+  }
+
+  function fileUsesNestedFolderUpload(file: File): boolean {
+    const relativePath = 'webkitRelativePath' in file ? String(file.webkitRelativePath) : '';
+    const segments = relativePath.split('/').filter(Boolean);
+    return segments.length > 1;
   }
 
   async function ensureUploadTargetFolder(file: File, folderCache: Map<string, string>) {
@@ -544,6 +594,27 @@ export function DriveWorkspace() {
       parentId = folder.id;
     }
     return parentId ?? placementFolderId;
+  }
+
+  async function uploadFileToLinkedEntity(file: File, link: LibraryUploadLink) {
+    const contentType = file.type || FALLBACK_MIME_TYPE;
+    const meta = buildDriveLibraryUploadSessionFields(selectedLibrary);
+    const session = await driveApi.createUploadSession({
+      fileName: file.name,
+      contentType,
+      entityType: link.entityType,
+      entityId: link.entityId,
+      sourceModule: meta.sourceModule,
+      purpose: meta.purpose,
+      visibility: meta.visibility,
+      confidentiality: 'CONFIDENTIAL',
+    });
+    await fetch(session.uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': contentType },
+    });
+    await driveApi.completeUploadSession(session.sessionId, { sizeBytes: file.size });
   }
 
   async function uploadFileToFolder(file: File, folderId: string | null) {
@@ -615,6 +686,26 @@ export function DriveWorkspace() {
                   onFilesSelected={(event) => void onFolderUpload(event)}
                   onFolderUpload={(event) => void onFolderUpload(event)}
                 />
+              ) : undefined
+            }
+            contextSlot={
+              browseSystemLibraryUploads ? (
+                <>
+                  <DriveLibraryEntityPicker
+                    key={selectedLibrary.key}
+                    libraryKey={selectedLibrary.key}
+                    value={systemLibraryLink}
+                    onChange={setSystemLibraryLink}
+                  />
+                  <DriveSidebarCreateMenu
+                    busy={busy}
+                    menuMode="library-entity"
+                    entityContextReady={systemLibraryLink !== null}
+                    onNewFolder={openCreateFolderDialog}
+                    onFilesSelected={(event) => void onFolderUpload(event)}
+                    onFolderUpload={(event) => void onFolderUpload(event)}
+                  />
+                </>
               ) : undefined
             }
             folderTreeSlot={
