@@ -3,7 +3,11 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import { PrismaClient, type DriveSpaceEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import type { CreateDriveFolderDto, DriveFolderQueryParams } from './drive.types';
+import type {
+  CreateDriveFolderDto,
+  DriveFolderQueryParams,
+  RenameDriveFolderDto,
+} from './drive.types';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { DriveR2Client } from './drive-r2.client';
@@ -44,6 +48,53 @@ export class DriveFolderService {
       folders,
       files: placements.map((placement) => placement.fileAsset).filter(Boolean),
     });
+  }
+
+  async listFolderTree(space: string, userId: string) {
+    const normalized = normalizeSpace(space);
+    const ownerWhere = normalized === 'PERSONAL' ? { ownerId: userId } : {};
+    const folders = await this.prisma.driveFolder.findMany({
+      where: { space: normalized, deletedAt: null, ...ownerWhere },
+      orderBy: [{ name: 'asc' }],
+    });
+    return jsonSafeForHttp({ space: normalized, folders });
+  }
+
+  async renameFolder(folderId: string, dto: RenameDriveFolderDto, userId: string) {
+    await this.assertCanUseFolder(folderId, userId);
+    const name = dto.name.trim();
+    if (!name) throw new BadRequestException('Folder name is required.');
+    const folder = await this.prisma.driveFolder.update({
+      where: { id: folderId },
+      data: { name: name.slice(0, 180) },
+    });
+    return jsonSafeForHttp(folder);
+  }
+
+  async deleteFolder(folderId: string, userId: string) {
+    await this.assertCanUseFolder(folderId, userId);
+    const childFolders = await this.prisma.driveFolder.count({
+      where: { parentId: folderId, deletedAt: null },
+    });
+    if (childFolders > 0) {
+      throw new BadRequestException('Remove or delete subfolders first.');
+    }
+    const activeItems = await this.prisma.driveFolderItem.count({
+      where: { folderId, removedAt: null },
+    });
+    if (activeItems > 0) {
+      throw new BadRequestException('Folder is not empty.');
+    }
+    await this.prisma.$transaction([
+      this.prisma.driveFolderItem.updateMany({
+        where: { childFolderId: folderId, removedAt: null },
+        data: { removedAt: new Date() },
+      }),
+      this.prisma.driveFolder.update({
+        where: { id: folderId },
+        data: { deletedAt: new Date() },
+      }),
+    ]);
   }
 
   async createFolder(dto: CreateDriveFolderDto, userId: string) {

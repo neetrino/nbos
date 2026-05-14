@@ -123,3 +123,7 @@ export interface MoveFolderFileDto {
 export interface CopyFolderFileDto {
   targetFolderId: string;
 }
+
+export interface RenameDriveFolderDto {
+  name: string;
+}

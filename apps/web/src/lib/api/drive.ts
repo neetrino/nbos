@@ -93,6 +93,11 @@ export interface DriveFolderListing {
   files: FileAsset[];
 }
 
+export interface DriveFolderTreeResponse {
+  space: 'COMPANY' | 'PERSONAL';
+  folders: DriveFolder[];
+}
+
 export const driveApi = {
   async listFileAssets(params?: {
     entityType?: string;
@@ -123,6 +128,15 @@ export const driveApi = {
     return resp.data;
   },
 
+  async listFolderTree(params: {
+    space: 'COMPANY' | 'PERSONAL';
+  }): Promise<DriveFolderTreeResponse> {
+    const resp = await api.get<DriveFolderTreeResponse>('/api/drive/folders/tree', {
+      params: { space: params.space },
+    });
+    return resp.data;
+  },
+
   async createFolder(data: {
     name: string;
     space: 'COMPANY' | 'PERSONAL';
@@ -130,6 +144,18 @@ export const driveApi = {
   }): Promise<DriveFolder> {
     const resp = await api.post<DriveFolder>('/api/drive/folders', data);
     return resp.data;
+  },
+
+  async renameFolder(folderId: string, data: { name: string }): Promise<DriveFolder> {
+    const resp = await api.patch<DriveFolder>(
+      '/api/drive/folders/' + encodeURIComponent(folderId),
+      data,
+    );
+    return resp.data;
+  },
+
+  async deleteFolder(folderId: string): Promise<void> {
+    await api.delete('/api/drive/folders/' + encodeURIComponent(folderId));
   },
 
   async moveFolderFile(data: {

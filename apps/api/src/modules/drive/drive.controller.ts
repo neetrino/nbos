@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Param,
   Query,
@@ -27,6 +28,7 @@ import type {
   CreateDriveFolderDto,
   CopyFolderFileDto,
   MoveFolderFileDto,
+  RenameDriveFolderDto,
 } from './drive.types';
 
 @ApiTags('Drive')
@@ -52,11 +54,38 @@ export class DriveController {
     return this.driveFolders.listFolder({ space, parentId }, user.id);
   }
 
+  @Get('folders/tree')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List all Drive folders in a space (flat list for tree UI)' })
+  @ApiQuery({ name: 'space', required: true, description: 'COMPANY | PERSONAL' })
+  async listFolderTree(@CurrentUser() user: CurrentUserPayload, @Query('space') space?: string) {
+    return this.driveFolders.listFolderTree(space ?? '', user.id);
+  }
+
   @Post('folders')
   @RequirePermission('DRIVE', 'ADD')
   @ApiOperation({ summary: 'Create a user folder in Company or Personal Drive' })
   async createFolder(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateDriveFolderDto) {
     return this.driveFolders.createFolder(body, user.id);
+  }
+
+  @Patch('folders/:folderId')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Rename a user Drive folder' })
+  async renameFolder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('folderId') folderId: string,
+    @Body() body: RenameDriveFolderDto,
+  ) {
+    return this.driveFolders.renameFolder(folderId, body, user.id);
+  }
+
+  @Delete('folders/:folderId')
+  @RequirePermission('DRIVE', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Soft-delete an empty Drive folder' })
+  async deleteFolder(@CurrentUser() user: CurrentUserPayload, @Param('folderId') folderId: string) {
+    await this.driveFolders.deleteFolder(folderId, user.id);
   }
 
   @Post('folders/:folderId/files/:fileId/move')

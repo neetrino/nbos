@@ -1,19 +1,13 @@
-import {
-  ArrowLeft,
-  File,
-  FileArchive,
-  FileImage,
-  FileText,
-  Folder,
-  Loader2,
-  MoreHorizontal,
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, File, FileArchive, FileImage, FileText, Loader2 } from 'lucide-react';
 import type { DriveFolder, FileAsset } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate, formatDriveLabel, formatFileSize } from './drive-format';
 import type { DriveViewMode } from './drive-options';
-import { badgeVariant } from './drive-utils';
+import { DriveFileCardThumbnail } from './DriveFileCardThumbnail';
+import { DriveFolderCardRow, DriveFolderTableRow } from './DriveFolderRows';
+
+const FILE_TABLE_GRID_CLASS =
+  'grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px_44px] gap-3';
 
 export function DriveFileSurface({
   files,
@@ -26,6 +20,8 @@ export function DriveFileSurface({
   onToggleChecked,
   onOpenFolder,
   onBack,
+  onRenameFolder,
+  onDeleteFolder,
 }: {
   files: FileAsset[];
   folders: DriveFolder[];
@@ -37,6 +33,8 @@ export function DriveFileSurface({
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
   onOpenFolder: (folder: DriveFolder) => void;
   onBack?: () => void;
+  onRenameFolder?: (folder: DriveFolder) => void;
+  onDeleteFolder?: (folder: DriveFolder) => void;
 }) {
   if (loading) {
     return (
@@ -57,31 +55,37 @@ export function DriveFileSurface({
         onToggleChecked={onToggleChecked}
         onOpenFolder={onOpenFolder}
         onBack={onBack}
+        onRenameFolder={onRenameFolder}
+        onDeleteFolder={onDeleteFolder}
       />
     );
   }
   return (
     <div
       className={cn(
-        viewMode === 'cards' ? 'grid gap-3 md:grid-cols-2 2xl:grid-cols-3' : 'space-y-2',
+        viewMode === 'cards'
+          ? 'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7'
+          : 'space-y-2',
       )}
     >
       {onBack && (
         <button
           type="button"
           onClick={onBack}
-          className="border-border/70 bg-card/80 hover:bg-muted flex w-full items-center gap-3 rounded-2xl border p-4 text-left text-sm"
+          className="border-border/70 bg-card/80 hover:bg-muted col-span-full flex w-full items-center gap-3 rounded-2xl border p-4 text-left text-sm"
         >
           <ArrowLeft className="size-4" />
           Back to parent
         </button>
       )}
       {folders.map((folder) => (
-        <FolderCard
+        <DriveFolderCardRow
           key={folder.id}
           folder={folder}
           compact={viewMode === 'list'}
           onOpenFolder={onOpenFolder}
+          onRenameFolder={onRenameFolder}
+          onDeleteFolder={onDeleteFolder}
         />
       ))}
       {files.map((file) => (
@@ -108,6 +112,8 @@ function FileTable({
   onToggleChecked,
   onOpenFolder,
   onBack,
+  onRenameFolder,
+  onDeleteFolder,
 }: {
   files: FileAsset[];
   folders: DriveFolder[];
@@ -117,29 +123,46 @@ function FileTable({
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
   onOpenFolder: (folder: DriveFolder) => void;
   onBack?: () => void;
+  onRenameFolder?: (folder: DriveFolder) => void;
+  onDeleteFolder?: (folder: DriveFolder) => void;
 }) {
   return (
     <div className="border-border/70 bg-card/80 overflow-hidden rounded-3xl border">
-      <div className="text-muted-foreground grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3 border-b px-4 py-3 text-xs font-medium">
+      <div
+        className={cn(
+          'text-muted-foreground border-b px-4 py-3 text-xs font-medium',
+          FILE_TABLE_GRID_CLASS,
+        )}
+      >
         <span />
         <span>Name</span>
         <span>Purpose</span>
         <span>Access</span>
         <span>Updated</span>
         <span className="text-right">Size</span>
+        <span />
       </div>
       {onBack && (
         <button
           type="button"
           onClick={onBack}
-          className="hover:bg-muted/50 grid w-full grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3 px-4 py-3 text-left text-sm"
+          className={cn(
+            'hover:bg-muted/50 w-full px-4 py-3 text-left text-sm',
+            FILE_TABLE_GRID_CLASS,
+          )}
         >
           <ArrowLeft className="size-4 self-center" />
-          <span className="font-medium">Back to parent</span>
+          <span className="col-span-6 font-medium">Back to parent</span>
         </button>
       )}
       {folders.map((folder) => (
-        <FolderTableRow key={folder.id} folder={folder} onOpenFolder={onOpenFolder} />
+        <DriveFolderTableRow
+          key={folder.id}
+          folder={folder}
+          onOpenFolder={onOpenFolder}
+          onRenameFolder={onRenameFolder}
+          onDeleteFolder={onDeleteFolder}
+        />
       ))}
       {files.map((file) => (
         <FileTableRow
@@ -152,59 +175,6 @@ function FileTable({
         />
       ))}
     </div>
-  );
-}
-
-function FolderCard({
-  folder,
-  compact,
-  onOpenFolder,
-}: {
-  folder: DriveFolder;
-  compact: boolean;
-  onOpenFolder: (folder: DriveFolder) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onOpenFolder(folder)}
-      className={cn(
-        'border-border/70 bg-card/80 hover:border-primary/40 group w-full rounded-3xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md',
-        compact && 'rounded-2xl',
-      )}
-    >
-      <div className="flex items-start gap-3">
-        <div className="rounded-2xl bg-amber-500/10 p-3 text-amber-600">
-          <Folder className="size-5" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="text-foreground truncate text-sm font-semibold">{folder.name}</h3>
-          <p className="text-muted-foreground mt-1 text-xs">{folder.space} folder</p>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function FolderTableRow({
-  folder,
-  onOpenFolder,
-}: {
-  folder: DriveFolder;
-  onOpenFolder: (folder: DriveFolder) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onOpenFolder(folder)}
-      className="hover:bg-muted/50 grid w-full grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3 px-4 py-3 text-left text-sm"
-    >
-      <Folder className="size-4 self-center text-amber-600" />
-      <span className="truncate font-medium">{folder.name}</span>
-      <span className="text-muted-foreground text-xs">Folder</span>
-      <span className="text-muted-foreground text-xs">{folder.space}</span>
-      <span className="text-muted-foreground text-xs">{formatDriveDate(folder.updatedAt)}</span>
-    </button>
   );
 }
 
@@ -236,34 +206,60 @@ function FileCard({
   onSelect: (file: FileAsset) => void;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
 }) {
+  if (compact) {
+    return (
+      <button
+        type="button"
+        onClick={() => onSelect(file)}
+        className={cn(
+          'border-border/70 bg-card/80 hover:bg-muted/40 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-all',
+          selected && 'border-primary/60 ring-primary/15 ring-2',
+        )}
+      >
+        <FileCheckbox
+          file={file}
+          checked={checked}
+          onToggleChecked={onToggleChecked}
+          className="mt-0 shrink-0 self-center"
+        />
+        <div className="border-border/60 relative size-12 shrink-0 overflow-hidden rounded-lg border">
+          <DriveFileCardThumbnail file={file} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-foreground truncate text-sm font-semibold">{file.displayName}</h3>
+          <p className="text-muted-foreground mt-0.5 truncate text-xs">
+            {formatFileSize(file.sizeBytes)}
+          </p>
+        </div>
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
       onClick={() => onSelect(file)}
       className={cn(
-        'border-border/70 bg-card/80 group w-full rounded-3xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md',
-        selected && 'border-primary/60 ring-primary/20 ring-4',
-        compact && 'rounded-2xl',
+        'border-border/70 bg-card/80 group flex w-full flex-col overflow-hidden rounded-2xl border text-left transition-all hover:-translate-y-0.5 hover:shadow-md',
+        selected && 'border-primary/60 ring-primary/20 ring-2',
       )}
     >
-      <div className="flex items-start gap-3">
-        <FileCheckbox file={file} checked={checked} onToggleChecked={onToggleChecked} />
-        <div className="bg-primary/10 text-primary rounded-2xl p-3">
-          <FileTypeIcon fileType={file.fileType} className="size-5" />
+      <div className="border-border/60 relative aspect-[4/3] w-full shrink-0 border-b">
+        <div className="absolute top-2 left-2 z-10">
+          <FileCheckbox
+            file={file}
+            checked={checked}
+            onToggleChecked={onToggleChecked}
+            className="mt-0"
+          />
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-foreground line-clamp-2 text-sm font-semibold">
-              {file.displayName}
-            </h3>
-            <MoreHorizontal className="text-muted-foreground size-4 opacity-0 transition-opacity group-hover:opacity-100" />
-          </div>
-          <p className="text-muted-foreground mt-1 truncate text-xs">
-            {formatDriveLabel(file.purpose)} · {formatFileSize(file.sizeBytes)}
-          </p>
-          <FileBadges file={file} />
-          {!compact && <FileCardFooter file={file} />}
-        </div>
+        <DriveFileCardThumbnail file={file} />
+      </div>
+      <div className="min-w-0 p-3">
+        <h3 className="text-foreground line-clamp-2 text-sm font-semibold">{file.displayName}</h3>
+        <p className="text-muted-foreground mt-1 truncate text-xs">
+          {formatFileSize(file.sizeBytes)}
+        </p>
       </div>
     </button>
   );
@@ -273,10 +269,12 @@ function FileCheckbox({
   file,
   checked,
   onToggleChecked,
+  className,
 }: {
   file: FileAsset;
   checked: boolean;
   onToggleChecked: (file: FileAsset, checked: boolean) => void;
+  className?: string;
 }) {
   return (
     <input
@@ -284,29 +282,9 @@ function FileCheckbox({
       checked={checked}
       onChange={(event) => onToggleChecked(file, event.target.checked)}
       onClick={(event) => event.stopPropagation()}
-      className="mt-2 h-4 w-4"
+      className={cn('h-4 w-4 rounded border', className)}
       aria-label={`Select ${file.displayName}`}
     />
-  );
-}
-
-function FileBadges({ file }: { file: FileAsset }) {
-  return (
-    <div className="mt-3 flex flex-wrap gap-1.5">
-      <Badge variant={badgeVariant(file.status)}>{formatDriveLabel(file.status)}</Badge>
-      <Badge variant={badgeVariant(file.confidentiality)}>
-        {formatDriveLabel(file.confidentiality)}
-      </Badge>
-    </div>
-  );
-}
-
-function FileCardFooter({ file }: { file: FileAsset }) {
-  return (
-    <div className="text-muted-foreground mt-4 flex items-center justify-between text-xs">
-      <span>{file.links.length} links</span>
-      <span>{formatDriveDate(file.updatedAt)}</span>
-    </div>
   );
 }
 
@@ -328,11 +306,17 @@ function FileTableRow({
       type="button"
       onClick={() => onSelect(file)}
       className={cn(
-        'hover:bg-muted/50 grid w-full grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3 px-4 py-3 text-left text-sm',
+        'hover:bg-muted/50 w-full px-4 py-3 text-left text-sm',
+        FILE_TABLE_GRID_CLASS,
         selected && 'bg-primary/5',
       )}
     >
-      <FileCheckbox file={file} checked={checked} onToggleChecked={onToggleChecked} />
+      <FileCheckbox
+        file={file}
+        checked={checked}
+        onToggleChecked={onToggleChecked}
+        className="mt-2 self-start"
+      />
       <span className="flex min-w-0 items-center gap-2">
         <FileTypeIcon fileType={file.fileType} className="text-muted-foreground size-4 shrink-0" />
         <span className="truncate font-medium">{file.displayName}</span>
@@ -347,6 +331,7 @@ function FileTableRow({
       <span className="text-muted-foreground text-right text-xs">
         {formatFileSize(file.sizeBytes)}
       </span>
+      <span />
     </button>
   );
 }
