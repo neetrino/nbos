@@ -46,8 +46,8 @@ export function DriveWorkspace() {
   const [selectedSpace, setSelectedSpace] = useState<DriveSpaceOption>(DEFAULT_DRIVE_SPACE);
   const [selectedLibrary, setSelectedLibrary] = useState<DriveLibraryOption>(DEFAULT_DRIVE_LIBRARY);
   const [selected, setSelected] = useState<FileAsset | null>(null);
-  const [status, setStatus] = useState<DriveStatusFilter>('ACTIVE');
-  const [purpose, setPurpose] = useState<PurposeFilter>(ALL_PURPOSES);
+  const status: DriveStatusFilter = 'ACTIVE';
+  const purpose: PurposeFilter = ALL_PURPOSES;
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<DriveViewMode>(getInitialViewMode);
   const [loading, setLoading] = useState(true);
@@ -513,16 +513,10 @@ export function DriveWorkspace() {
 
         <main className="min-w-0 space-y-4">
           <DriveToolbar
-            library={selectedLibrary}
             search={search}
-            status={status}
-            purpose={purpose}
-            lockedStatus={selectedLibrary.status}
-            onSearchChange={setSearch}
-            onStatusChange={setStatus}
-            onPurposeChange={setPurpose}
             freeDriveSpace={freeDriveSpace}
             busy={busy}
+            onSearchChange={setSearch}
             onCreateFolder={openCreateFolderDialog}
             onFolderUpload={(event) => void onFolderUpload(event)}
           />

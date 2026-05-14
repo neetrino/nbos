@@ -2,58 +2,36 @@ import type { ChangeEvent } from 'react';
 import { FolderPlus, Search, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  PURPOSE_OPTIONS,
-  STATUS_FILTERS,
-  type DriveLibraryOption,
-  type DriveStatusFilter,
-} from './drive-options';
-import { formatDriveLabel } from './drive-format';
-import { ALL_PURPOSES, type PurposeFilter } from './drive-types';
 
 export function DriveToolbar({
-  library,
   search,
-  status,
-  purpose,
-  lockedStatus,
   freeDriveSpace,
   busy,
   onSearchChange,
-  onStatusChange,
-  onPurposeChange,
   onCreateFolder,
   onFolderUpload,
 }: {
-  library: DriveLibraryOption;
   search: string;
-  status: DriveStatusFilter;
-  purpose: PurposeFilter;
-  lockedStatus?: DriveStatusFilter;
   freeDriveSpace: 'COMPANY' | 'PERSONAL' | null;
   busy: boolean;
   onSearchChange: (value: string) => void;
-  onStatusChange: (value: DriveStatusFilter) => void;
-  onPurposeChange: (value: PurposeFilter) => void;
   onCreateFolder: () => void;
   onFolderUpload: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div className="border-border/70 bg-card/80 rounded-3xl border p-4">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div>
-          <h2 className="text-foreground text-lg font-semibold">{library.title}</h2>
-          <p className="text-muted-foreground text-sm">{library.description}</p>
+    <div className="border-border/70 bg-card/80 rounded-3xl border p-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+        <div className="relative min-w-0 flex-1">
+          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Input
+            value={search}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder="Search by name or filename…"
+            className="pl-9"
+          />
         </div>
         {freeDriveSpace ? (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
             <Button type="button" variant="outline" onClick={onCreateFolder} disabled={busy}>
               <FolderPlus />
               New folder
@@ -77,24 +55,6 @@ export function DriveToolbar({
           </div>
         ) : null}
       </div>
-
-      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_220px]">
-        <div className="relative">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search by name or original filename..."
-            className="pl-9"
-          />
-        </div>
-        <StatusSelect
-          value={lockedStatus ?? status}
-          locked={Boolean(lockedStatus)}
-          onChange={onStatusChange}
-        />
-        <PurposeSelect value={purpose} onChange={onPurposeChange} />
-      </div>
     </div>
   );
 }
@@ -115,58 +75,5 @@ function FolderUploadInput({
       onChange={onChange}
       {...{ webkitdirectory: '', directory: '' }}
     />
-  );
-}
-
-function StatusSelect({
-  value,
-  locked,
-  onChange,
-}: {
-  value: DriveStatusFilter;
-  locked: boolean;
-  onChange: (value: DriveStatusFilter) => void;
-}) {
-  return (
-    <Select
-      value={value}
-      onValueChange={(item) => onChange(item as DriveStatusFilter)}
-      disabled={locked}
-    >
-      <SelectTrigger>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {STATUS_FILTERS.map((item) => (
-          <SelectItem key={item} value={item}>
-            {formatDriveLabel(item)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-function PurposeSelect({
-  value,
-  onChange,
-}: {
-  value: PurposeFilter;
-  onChange: (value: PurposeFilter) => void;
-}) {
-  return (
-    <Select value={value} onValueChange={(item) => onChange(item as PurposeFilter)}>
-      <SelectTrigger>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL_PURPOSES}>All purposes</SelectItem>
-        {PURPOSE_OPTIONS.map((item) => (
-          <SelectItem key={item} value={item}>
-            {formatDriveLabel(item)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   );
 }
