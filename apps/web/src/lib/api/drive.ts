@@ -132,6 +132,40 @@ export const driveApi = {
     return resp.data;
   },
 
+  async moveFolderFile(data: {
+    sourceFolderId: string;
+    targetFolderId: string;
+    fileId: string;
+  }): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/folders/' +
+        encodeURIComponent(data.sourceFolderId) +
+        '/files/' +
+        encodeURIComponent(data.fileId) +
+        '/move',
+      { sourceFolderId: data.sourceFolderId, targetFolderId: data.targetFolderId },
+    );
+    return resp.data;
+  },
+
+  async copyFolderFile(data: { targetFolderId: string; fileId: string }): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/folders/' +
+        encodeURIComponent(data.targetFolderId) +
+        '/files/' +
+        encodeURIComponent(data.fileId) +
+        '/copy',
+      { targetFolderId: data.targetFolderId },
+    );
+    return resp.data;
+  },
+
+  async removeFolderFile(folderId: string, fileId: string): Promise<void> {
+    await api.delete(
+      '/api/drive/folders/' + encodeURIComponent(folderId) + '/files/' + encodeURIComponent(fileId),
+    );
+  },
+
   async createUploadSession(data: {
     fileName: string;
     contentType: string;

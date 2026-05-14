@@ -51,6 +51,8 @@ export interface DriveLibraryOption {
 export interface DriveSpaceOption {
   key: DriveSpaceKey;
   title: string;
+  /** Short label for the header segmented control */
+  segmentLabel: string;
   icon: LucideIcon;
   libraryKeys: DriveLibraryKey[];
   defaultLibraryKey: DriveLibraryKey;
@@ -212,6 +214,7 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
   {
     key: 'system',
     title: 'System Libraries',
+    segmentLabel: 'Library company',
     icon: FileStack,
     libraryKeys: SYSTEM_LIBRARY_KEYS,
     defaultLibraryKey: 'all',
@@ -219,6 +222,7 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
   {
     key: 'company',
     title: 'Company Drive',
+    segmentLabel: 'Company Drive',
     icon: FolderOpen,
     libraryKeys: ['company', 'archive'],
     defaultLibraryKey: 'company',
@@ -226,6 +230,7 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
   {
     key: 'personal',
     title: 'Personal',
+    segmentLabel: 'Personal',
     icon: CircleUserRound,
     libraryKeys: ['personal', 'archive'],
     defaultLibraryKey: 'personal',
@@ -233,6 +238,7 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
   {
     key: 'shared',
     title: 'Shared with me',
+    segmentLabel: 'Shared with me',
     icon: Share2,
     libraryKeys: ['shared', 'archive'],
     defaultLibraryKey: 'shared',

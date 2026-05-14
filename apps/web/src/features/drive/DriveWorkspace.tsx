@@ -195,6 +195,45 @@ export function DriveWorkspace() {
     await mutateFile(() => driveApi.restoreFileAsset(file.id), 'File restored');
   }
 
+  async function onMoveFile(file: FileAsset) {
+    if (!activeFolderId) {
+      toast.error('Open a folder before moving files.');
+      return;
+    }
+    const targetFolderId = window.prompt('Target folder id');
+    if (!targetFolderId?.trim()) return;
+    await mutateFile(
+      () =>
+        driveApi.moveFolderFile({
+          sourceFolderId: activeFolderId,
+          targetFolderId: targetFolderId.trim(),
+          fileId: file.id,
+        }),
+      'File moved',
+    );
+  }
+
+  async function onCopyFile(file: FileAsset) {
+    const targetFolderId = window.prompt('Target folder id', activeFolderId ?? '');
+    if (!targetFolderId?.trim()) return;
+    await mutateFile(
+      () => driveApi.copyFolderFile({ targetFolderId: targetFolderId.trim(), fileId: file.id }),
+      'File copied',
+    );
+  }
+
+  async function onRemoveFromFolder(file: FileAsset) {
+    if (!activeFolderId) {
+      toast.error('Open a folder before removing files from it.');
+      return;
+    }
+    await mutateFiles(
+      async () => driveApi.removeFolderFile(activeFolderId, file.id),
+      'File removed from folder',
+    );
+    setSelected(null);
+  }
+
   async function onBulkArchive() {
     if (selectedIds.length === 0) return;
     await mutateFiles(
@@ -370,7 +409,6 @@ export function DriveWorkspace() {
       <DriveHero
         stats={stats}
         selectedSpace={selectedSpace}
-        counts={libraryCounts}
         onSelectSpace={(space) => {
           const library = DRIVE_LIBRARIES.find((item) => item.key === space.defaultLibraryKey);
           setSelectedSpace(space);
@@ -452,6 +490,9 @@ export function DriveWorkspace() {
           onRestore={(file) => void onRestore(file)}
           onPreview={(file) => void onPreview(file)}
           onCopyLink={(file) => void onCopyLink(file)}
+          onCopyFile={(file) => void onCopyFile(file)}
+          onMoveFile={(file) => void onMoveFile(file)}
+          onRemoveFromFolder={(file) => void onRemoveFromFolder(file)}
           onVersionUpload={(file, event) => void onVersionUpload(file, event)}
         />
       </div>

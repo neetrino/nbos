@@ -31,6 +31,9 @@ export function DriveDetailPanel({
   onRestore,
   onPreview,
   onCopyLink,
+  onCopyFile,
+  onMoveFile,
+  onRemoveFromFolder,
   onVersionUpload,
 }: {
   file: FileAsset | null;
@@ -41,6 +44,9 @@ export function DriveDetailPanel({
   onRestore: (file: FileAsset) => void;
   onPreview: (file: FileAsset) => void;
   onCopyLink: (file: FileAsset) => void;
+  onCopyFile: (file: FileAsset) => void;
+  onMoveFile: (file: FileAsset) => void;
+  onRemoveFromFolder: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
@@ -59,6 +65,9 @@ export function DriveDetailPanel({
               onCopyLink={onCopyLink}
               onArchive={onArchive}
               onRestore={onRestore}
+              onCopyFile={onCopyFile}
+              onMoveFile={onMoveFile}
+              onRemoveFromFolder={onRemoveFromFolder}
               onVersionUpload={onVersionUpload}
             />
           ) : null
@@ -84,6 +93,9 @@ function DriveFileRail({
   onCopyLink,
   onArchive,
   onRestore,
+  onCopyFile,
+  onMoveFile,
+  onRemoveFromFolder,
   onVersionUpload,
 }: {
   file: FileAsset;
@@ -91,6 +103,9 @@ function DriveFileRail({
   onCopyLink: (file: FileAsset) => void;
   onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
+  onCopyFile: (file: FileAsset) => void;
+  onMoveFile: (file: FileAsset) => void;
+  onRemoveFromFolder: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
@@ -106,11 +121,18 @@ function DriveFileRail({
       >
         <Archive className="size-4" aria-hidden />
       </RailButton>
-      <RailButton label="Copy file later" disabled>
+      <RailButton label="Copy file" disabled={busy} onClick={() => onCopyFile(file)}>
         <Copy className="size-4" aria-hidden />
       </RailButton>
-      <RailButton label="Move file later" disabled>
+      <RailButton label="Move file" disabled={busy} onClick={() => onMoveFile(file)}>
         <FolderInput className="size-4" aria-hidden />
+      </RailButton>
+      <RailButton
+        label="Remove from folder"
+        disabled={busy}
+        onClick={() => onRemoveFromFolder(file)}
+      >
+        <File className="size-4" aria-hidden />
       </RailButton>
     </>
   );

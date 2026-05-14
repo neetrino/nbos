@@ -114,3 +114,12 @@ export interface DriveFolderQueryParams {
   space?: string;
   parentId?: string;
 }
+
+export interface MoveFolderFileDto {
+  sourceFolderId: string;
+  targetFolderId: string;
+}
+
+export interface CopyFolderFileDto {
+  targetFolderId: string;
+}

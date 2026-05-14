@@ -25,6 +25,8 @@ import type {
   CreateFileLinkDto,
   CreateUploadSessionDto,
   CreateDriveFolderDto,
+  CopyFolderFileDto,
+  MoveFolderFileDto,
 } from './drive.types';
 
 @ApiTags('Drive')
@@ -55,6 +57,46 @@ export class DriveController {
   @ApiOperation({ summary: 'Create a user folder in Company or Personal Drive' })
   async createFolder(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateDriveFolderDto) {
     return this.driveFolders.createFolder(body, user.id);
+  }
+
+  @Post('folders/:folderId/files/:fileId/move')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Move a file placement between user folders' })
+  async moveFolderFile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('folderId') folderId: string,
+    @Param('fileId') fileId: string,
+    @Body() body: MoveFolderFileDto,
+  ) {
+    return this.driveFolders.moveFile(
+      body.sourceFolderId ?? folderId,
+      body.targetFolderId,
+      fileId,
+      user.id,
+    );
+  }
+
+  @Post('folders/:folderId/files/:fileId/copy')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Copy a file into a user folder as an independent FileAsset' })
+  async copyFolderFile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('fileId') fileId: string,
+    @Body() body: CopyFolderFileDto,
+  ) {
+    return this.driveFolders.copyFile(body.targetFolderId, fileId, user.id);
+  }
+
+  @Delete('folders/:folderId/files/:fileId')
+  @RequirePermission('DRIVE', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remove a file from a user folder without deleting the FileAsset' })
+  async removeFolderFile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('folderId') folderId: string,
+    @Param('fileId') fileId: string,
+  ) {
+    await this.driveFolders.removeFile(folderId, fileId, user.id);
   }
 
   @Get('files')
