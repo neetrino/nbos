@@ -56,6 +56,8 @@ export interface FileAssetQueryParams {
   status?: string;
   sourceModule?: string;
   search?: string;
+  /** When true, exclude files the viewer owns as sole uploader (NBOS Shared with me). */
+  sharedWithMe?: boolean;
 }
 
 export interface CreateUploadSessionDto {

@@ -181,7 +181,7 @@ export const DRIVE_LIBRARIES: DriveLibraryOption[] = [
   {
     key: 'shared',
     title: 'Shared with me',
-    description: 'Files others shared',
+    description: 'Files you can access but did not upload as your own',
     icon: Share2,
   },
   {

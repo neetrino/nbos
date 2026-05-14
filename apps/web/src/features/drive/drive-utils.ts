@@ -13,8 +13,20 @@ export function getInitialDriveSpace(): DriveSpaceOption {
   return DEFAULT_DRIVE_SPACE;
 }
 
-export function fileMatchesLibrary(file: FileAsset, library: DriveLibraryOption): boolean {
+export type FileMatchesLibraryContext = {
+  /** When `shared`, refines the `shared` library row (active vs archive split). */
+  spaceKey?: string;
+};
+
+export function fileMatchesLibrary(
+  file: FileAsset,
+  library: DriveLibraryOption,
+  ctx?: FileMatchesLibraryContext,
+): boolean {
   if (library.key === 'all') return true;
+  if (library.key === 'shared' && ctx?.spaceKey === 'shared') {
+    return file.status !== 'ARCHIVED';
+  }
   if (library.status) return file.status === library.status;
   const linkTypes = file.links.map((link) => link.entityType);
   const hasModule = library.sourceModules?.includes((file.sourceModule ?? '').toUpperCase());
@@ -37,11 +49,11 @@ export function buildDriveStats(files: FileAsset[]): DriveStats {
   );
 }
 
-export function buildLibraryCounts(files: FileAsset[]): Map<string, number> {
+export function buildLibraryCounts(files: FileAsset[], spaceKey?: string): Map<string, number> {
   return new Map(
     DRIVE_LIBRARIES.map((library) => [
       library.key,
-      files.filter((file) => fileMatchesLibrary(file, library)).length,
+      files.filter((file) => fileMatchesLibrary(file, library, { spaceKey })).length,
     ]),
   );
 }

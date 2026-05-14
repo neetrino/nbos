@@ -295,6 +295,30 @@ describe('DriveService', () => {
       );
     });
 
+    it('lists File Assets with sharedWithMe excluding sole self-originated files', async () => {
+      await service.listFileAssets(
+        { sharedWithMe: true },
+        { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'ALL' },
+      );
+
+      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                NOT: {
+                  OR: [
+                    { ownerId: 'emp-1' },
+                    { AND: [{ ownerId: null }, { createdById: 'emp-1' }] },
+                  ],
+                },
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
     it('restores archived file asset lifecycle state', async () => {
       prisma.fileAsset.findFirst.mockResolvedValueOnce({ id: 'f1' });
       prisma.fileAsset.update.mockResolvedValueOnce({

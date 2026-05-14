@@ -137,6 +137,12 @@ export class DriveController {
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'sourceModule', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({
+    name: 'sharedWithMe',
+    required: false,
+    description:
+      'When true, list files shared with the viewer (not originated as sole owner/uploader).',
+  })
   async listFileAssets(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
@@ -146,6 +152,7 @@ export class DriveController {
     @Query('status') status?: string,
     @Query('sourceModule') sourceModule?: string,
     @Query('search') search?: string,
+    @Query('sharedWithMe') sharedWithMe?: string,
   ) {
     return this.driveService.listFileAssets(
       {
@@ -155,6 +162,7 @@ export class DriveController {
         status,
         sourceModule,
         search,
+        sharedWithMe: sharedWithMe === 'true',
       },
       {
         employeeId: user.id,

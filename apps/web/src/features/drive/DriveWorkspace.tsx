@@ -230,10 +230,12 @@ export function DriveWorkspace() {
               entityId: systemLibraryLink.entityId,
             }
           : {};
+      const sharedDriveSpace = selectedSpace.key === 'shared';
       const list = await driveApi.listFileAssets({
-        status: effectiveStatus,
+        status: sharedDriveSpace ? undefined : effectiveStatus,
         purpose: purpose === ALL_PURPOSES ? undefined : purpose,
         search: search || undefined,
+        ...(sharedDriveSpace ? { sharedWithMe: true } : {}),
         ...scopedToLibraryEntity,
       });
       setRawFiles(list);
@@ -246,7 +248,14 @@ export function DriveWorkspace() {
     } finally {
       setLoading(false);
     }
-  }, [browseSystemLibraryUploads, effectiveStatus, purpose, search, systemLibraryLink]);
+  }, [
+    browseSystemLibraryUploads,
+    effectiveStatus,
+    purpose,
+    search,
+    selectedSpace.key,
+    systemLibraryLink,
+  ]);
 
   useEffect(() => {
     void load();
@@ -352,10 +361,22 @@ export function DriveWorkspace() {
     if (folderListing && browseDriveFolders) {
       return folderListing.files;
     }
-    return rawFiles.filter((file) => fileMatchesLibrary(file, selectedLibrary));
-  }, [browseDriveFolders, browseSystemLibraryEntityRoot, folderListing, rawFiles, selectedLibrary]);
+    return rawFiles.filter((file) =>
+      fileMatchesLibrary(file, selectedLibrary, { spaceKey: selectedSpace.key }),
+    );
+  }, [
+    browseDriveFolders,
+    browseSystemLibraryEntityRoot,
+    folderListing,
+    rawFiles,
+    selectedLibrary,
+    selectedSpace.key,
+  ]);
   const stats = useMemo(() => buildDriveStats(files), [files]);
-  const libraryCounts = useMemo(() => buildLibraryCounts(rawFiles), [rawFiles]);
+  const libraryCounts = useMemo(
+    () => buildLibraryCounts(rawFiles, selectedSpace.key),
+    [rawFiles, selectedSpace.key],
+  );
 
   const handleDragMoveFilesToFolder = useCallback(
     async (fileIds: string[], targetFolderId: string) => {

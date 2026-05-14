@@ -108,6 +108,7 @@ export const driveApi = {
     status?: string;
     sourceModule?: string;
     search?: string;
+    sharedWithMe?: boolean;
   }): Promise<FileAsset[]> {
     const resp = await api.get<FileAsset[]>('/api/drive/files', { params });
     return resp.data;

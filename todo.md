@@ -1,15 +1,13 @@
-1. Drive spaces model: System Libraries (NBOS автоматические связи), Company Drive (свободные общие папки), Personal Drive (личные папки), Shared with me.
-2. Drive folder system: `DriveFolder` + `FolderPlacement` для пользовательских папок; system libraries не удаляются и не перемещаются как обычные папки. Backend + migration + basic UI: PARTIAL (есть root storage `__nbos_drive_root__`, дерево в сайдбаре Company/Personal, rename/delete, picker). 🟢 UX: отдельная строка «Root» в сайдбаре убрана; дерево вложено под Company/Personal; действия создания — одна кнопка «+» с меню.
-3. File actions semantics: Move = перенести placement, Share = доступ к тому же FileAsset, Copy = новый независимый FileAsset. Move/Copy/Remove from folder: PARTIAL (включая root placement).
-4. Delete semantics: Remove from folder, Move to trash everywhere, Delete forever only from Trash/cleanup with permissions/audit; business-linked files protected.
-5. Entity quick attach component для карточек Project/Product/Task/Finance.
-6. Настоящие context library endpoints по entity graph, а не только UI-фильтрация.
-7. Export jobs: Project/Product/Client/Finance ZIP + manifest.
-8. Cleanup dashboard: orphan files, old task attachments, failed sessions, large files.
-9. Preview depth: image/PDF/video/code inline preview вместо только presigned open.
-10. Drive UI cleanup: no large always-visible informational blocks; file details open on demand, analytics lives behind an Insights/Analytics action. 🟢 Частично: сайдбар Drive (Library) — компактнее: дерево под пунктом диска, одна кнопка «+» с меню вместо трёх кнопок в тулбаре.
-11. Upload polish: drag-drop; upload whole folders from computer with structure preservation (частично есть). Загрузка в корень Company/Personal: DONE (скрытый root bucket + кнопки при вкладке Company/Personal даже на Archive).
-12. **System Libraries (Library):** 🟢 **PARTIAL — сделано:** виртуальные папки по записи + scoped `listFileAssets`; picker; **Upload folder** в Library (пути из вложенных каталогов → `displayName`, без отдельных `DriveFolder`). **New folder** в Library по-прежнему только Company/Personal (пункт меню disabled с подсказкой). **Осталось:** настоящие вложенные папки под сущностью в БД, если появит в каноне.
-13. **Двусторонняя работа Drive ↔ Project (и др.):** 🟢 **PARTIAL:** «Drive files» с проекта; в деталях файла — «Open» по ссылкам (если у файла есть и `PROJECT`, и `PRODUCT`, продукт открывается как `/projects/{id}/products/{productId}`, иначе delivery board). **Осталось:** «вести папки» проекта в Drive как отдельный scope; типы без deep link (PAYMENT/REPORT и т.д.).
-14. **Shared with me** и полная модель пространств из п.1 — TODO.
-15. **Drag & drop** файлов на папки (и в сайдбаре, и в списке) — 🟢 **PARTIAL:** Company/Personal — drag файлов на папки в сетке/листе/таблице и в дереве сайдбара (`moveFolderFile`); без drag между вкладками Library / без reorder внутри папки.
+1. **Drive / пространства:** явные **grants** (таблица + UI share) и расширение «Shared with me» поверх эвристики `ownerId`/`createdById`; **Shared with me** сейчас: API `sharedWithMe` + вкладка Drive «Shared».
+2. **DriveFolder:** вложенные папки **под сущностью** в System Libraries (схема + API + UI), если закрепляем в каноне; сейчас только виртуальные «папки-записи» и пути в `displayName` при upload.
+3. **Файлы:** семантика **Share** (общий доступ к тому же `FileAsset`); довести **Move/Copy/Remove** и согласованность с правами/аудитом.
+4. **Удаление:** политика trash / delete forever / защита business-linked файлов по канону + UI.
+5. **Entity quick attach:** компонент быстрого прикрепления в карточках Project / Product / Task / Finance.
+6. **API библиотек:** context library endpoints по **entity graph**, не только UI-фильтрация и `listFileAssets` с query.
+7. **Export:** ZIP + manifest (Project / Product / Client / Finance).
+8. **Cleanup dashboard:** сироты, старые вложения задач, failed sessions, большие файлы.
+9. **Preview:** inline image / PDF / video / code вместо только presigned open.
+10. **Drive UI:** крупные информационные блоки убрать; аналитика только за действием Insights/Analytics (если ещё не так).
+11. **Upload:** drag-drop между вкладками Library ↔ Company/Personal; сохранение структуры папок там, где ещё нет паритета с Company/Personal.
+12. **Drive ↔ сущности:** отдельный **scope папок проекта** в Drive; deep link для типов без URL (PAYMENT, REPORT и т.д.), когда появятся маршруты в приложении.
+13. **Drag & drop:** на папки при переключении Library; reorder файлов внутри папки (если нужен по канону).

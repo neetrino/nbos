@@ -60,6 +60,15 @@ export interface DriveEntityAccess {
   driveScope?: string;
 }
 
+/** Files the viewer did not originate as sole owner/uploader (NBOS “Shared with me” heuristic). */
+function buildSharedWithMeWhereClause(employeeId: string): Prisma.FileAssetWhereInput {
+  return {
+    NOT: {
+      OR: [{ ownerId: employeeId }, { AND: [{ ownerId: null }, { createdById: employeeId }] }],
+    },
+  };
+}
+
 @Injectable()
 export class DriveService {
   private readonly logger = new Logger(DriveService.name);
@@ -504,6 +513,13 @@ export class DriveService {
           some: { entityType: params.entityType, entityId: params.entityId, unlinkedAt: null },
         },
       });
+    }
+    if (params.sharedWithMe === true) {
+      const employeeId = access?.employeeId?.trim();
+      if (!employeeId) {
+        throw new BadRequestException('sharedWithMe requires an authenticated employee context.');
+      }
+      clauses.push(buildSharedWithMeWhereClause(employeeId));
     }
     if (params.search) {
       clauses.push({
