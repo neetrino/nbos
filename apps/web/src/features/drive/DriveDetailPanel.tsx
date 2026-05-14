@@ -2,6 +2,13 @@ import type { ChangeEvent, ReactNode } from 'react';
 import { Archive, ArrowUpRight, Download, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import type { FileAsset } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate, formatDriveLabel } from './drive-format';
@@ -9,51 +16,60 @@ import { badgeVariant } from './drive-utils';
 
 export function DriveDetailPanel({
   file,
+  open,
   busy,
+  onClose,
   onArchive,
   onRestore,
   onPreview,
   onVersionUpload,
 }: {
   file: FileAsset | null;
+  open: boolean;
   busy: boolean;
+  onClose: () => void;
   onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onPreview: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
 }) {
-  if (!file) {
-    return (
-      <aside className="border-border/70 bg-card/80 h-fit rounded-3xl border p-5">
-        <p className="text-muted-foreground text-sm">
-          Select a file to view metadata, business links, versions and audit.
-        </p>
-      </aside>
-    );
-  }
-
   return (
-    <aside className="border-border/70 bg-card/80 h-fit space-y-5 rounded-3xl border p-5 xl:sticky xl:top-5">
-      <FileHeading file={file} />
-      <FileMetadataBadges file={file} />
-      <FileActions
-        file={file}
-        busy={busy}
-        onPreview={onPreview}
-        onArchive={onArchive}
-        onRestore={onRestore}
-        onVersionUpload={onVersionUpload}
-      />
-      <BusinessLinks file={file} />
-      <VersionList file={file} />
-      <AuditList file={file} />
-      {file.storageProvider === 'EXTERNAL_URL' && file.externalUrl && (
-        <Button type="button" variant="outline" className="w-full" onClick={() => onPreview(file)}>
-          <ArrowUpRight />
-          Open external source
-        </Button>
-      )}
-    </aside>
+    <Sheet open={open} onOpenChange={(nextOpen) => (!nextOpen ? onClose() : undefined)}>
+      <SheetContent className="w-full overflow-y-auto p-0 sm:max-w-[420px]" floatingClose>
+        <SheetHeader className="border-border border-b p-5">
+          <SheetTitle>File details</SheetTitle>
+          <SheetDescription>Metadata, links, versions and audit trail.</SheetDescription>
+        </SheetHeader>
+        {file && (
+          <div className="space-y-5 p-5">
+            <FileHeading file={file} />
+            <FileMetadataBadges file={file} />
+            <FileActions
+              file={file}
+              busy={busy}
+              onPreview={onPreview}
+              onArchive={onArchive}
+              onRestore={onRestore}
+              onVersionUpload={onVersionUpload}
+            />
+            <BusinessLinks file={file} />
+            <VersionList file={file} />
+            <AuditList file={file} />
+            {file.storageProvider === 'EXTERNAL_URL' && file.externalUrl && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => onPreview(file)}
+              >
+                <ArrowUpRight />
+                Open external source
+              </Button>
+            )}
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }
 

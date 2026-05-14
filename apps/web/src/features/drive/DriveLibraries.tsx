@@ -1,5 +1,12 @@
-import { DRIVE_LIBRARIES, type DriveLibraryOption } from './drive-options';
 import { cn } from '@/lib/utils';
+import {
+  DRIVE_LIBRARIES,
+  FREE_DRIVE_LIBRARY_KEYS,
+  MAINTENANCE_LIBRARY_KEYS,
+  SYSTEM_LIBRARY_KEYS,
+  type DriveLibraryKey,
+  type DriveLibraryOption,
+} from './drive-options';
 
 export function DriveLibraries({
   selected,
@@ -13,11 +20,58 @@ export function DriveLibraries({
   return (
     <aside className="border-border/70 bg-card/80 h-fit rounded-3xl border p-3">
       <div className="px-2 py-2">
-        <h2 className="text-foreground text-sm font-semibold">Libraries</h2>
-        <p className="text-muted-foreground mt-1 text-xs">Views by business context.</p>
+        <h2 className="text-foreground text-sm font-semibold">Drive spaces</h2>
+        <p className="text-muted-foreground mt-1 text-xs">System, company and personal views.</p>
       </div>
-      <div className="mt-2 space-y-1">
-        {DRIVE_LIBRARIES.map((library) => (
+      <LibraryGroup
+        title="System libraries"
+        keys={SYSTEM_LIBRARY_KEYS}
+        selected={selected}
+        counts={counts}
+        onSelect={onSelect}
+      />
+      <LibraryGroup
+        title="Free drive"
+        keys={FREE_DRIVE_LIBRARY_KEYS}
+        selected={selected}
+        counts={counts}
+        onSelect={onSelect}
+      />
+      <LibraryGroup
+        title="Maintenance"
+        keys={MAINTENANCE_LIBRARY_KEYS}
+        selected={selected}
+        counts={counts}
+        onSelect={onSelect}
+      />
+    </aside>
+  );
+}
+
+function LibraryGroup({
+  title,
+  keys,
+  selected,
+  counts,
+  onSelect,
+}: {
+  title: string;
+  keys: DriveLibraryKey[];
+  selected: DriveLibraryOption;
+  counts: Map<string, number>;
+  onSelect: (library: DriveLibraryOption) => void;
+}) {
+  const libraries = keys
+    .map((key) => DRIVE_LIBRARIES.find((library) => library.key === key))
+    .filter((library): library is DriveLibraryOption => Boolean(library));
+
+  return (
+    <div className="mt-3">
+      <div className="text-muted-foreground px-2 pb-1 text-[11px] font-medium tracking-wide uppercase">
+        {title}
+      </div>
+      <div className="space-y-1">
+        {libraries.map((library) => (
           <LibraryButton
             key={library.key}
             library={library}
@@ -27,7 +81,7 @@ export function DriveLibraries({
           />
         ))}
       </div>
-    </aside>
+    </div>
   );
 }
 

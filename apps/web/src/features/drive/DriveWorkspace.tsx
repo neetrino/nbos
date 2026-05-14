@@ -33,6 +33,7 @@ export function DriveWorkspace() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [insightsOpen, setInsightsOpen] = useState(false);
 
   const effectiveStatus = selectedLibrary.status ?? status;
 
@@ -177,8 +178,14 @@ export function DriveWorkspace() {
   }
 
   return (
-    <div className="space-y-6">
-      <DriveHero stats={stats} onRefresh={() => void load()} loading={loading} />
+    <div className="space-y-4">
+      <DriveHero
+        stats={stats}
+        insightsOpen={insightsOpen}
+        onToggleInsights={() => setInsightsOpen((current) => !current)}
+        onRefresh={() => void load()}
+        loading={loading}
+      />
 
       {error && (
         <div className="bg-destructive/10 text-destructive rounded-2xl px-4 py-3 text-sm">
@@ -186,7 +193,7 @@ export function DriveWorkspace() {
         </div>
       )}
 
-      <div className="grid gap-5 xl:grid-cols-[260px_minmax(0,1fr)_360px]">
+      <div className="grid gap-4 xl:grid-cols-[260px_minmax(0,1fr)]">
         <DriveLibraries
           selected={selectedLibrary}
           counts={libraryCounts}
@@ -234,7 +241,9 @@ export function DriveWorkspace() {
 
         <DriveDetailPanel
           file={selected}
+          open={Boolean(selected)}
           busy={busy}
+          onClose={() => setSelected(null)}
           onArchive={(file) => void onArchive(file)}
           onRestore={(file) => void onRestore(file)}
           onPreview={(file) => void onPreview(file)}

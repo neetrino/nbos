@@ -5,12 +5,13 @@ import {
   Building2,
   CircleUserRound,
   FileStack,
+  FolderOpen,
   FolderKanban,
   Handshake,
   Headset,
   ListTodo,
   PackageCheck,
-  ShieldCheck,
+  Share2,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -26,6 +27,7 @@ export type DriveLibraryKey =
   | 'support'
   | 'company'
   | 'personal'
+  | 'shared'
   | 'archive';
 
 export type DriveViewMode = 'cards' | 'list' | 'table';
@@ -150,9 +152,9 @@ export const DRIVE_LIBRARIES: DriveLibraryOption[] = [
   },
   {
     key: 'company',
-    title: 'Company Library',
-    description: 'SOP, templates and training',
-    icon: ShieldCheck,
+    title: 'Company Drive',
+    description: 'Free company folders',
+    icon: FolderOpen,
     sourceModules: ['MY_COMPANY', 'COMPANY'],
     purposes: ['SOP_DOCUMENT', 'TRAINING_MATERIAL'],
   },
@@ -164,6 +166,12 @@ export const DRIVE_LIBRARIES: DriveLibraryOption[] = [
     visibility: ['PERSONAL'],
   },
   {
+    key: 'shared',
+    title: 'Shared with me',
+    description: 'Files others shared',
+    icon: Share2,
+  },
+  {
     key: 'archive',
     title: 'Archive',
     description: 'Hidden but recoverable assets',
@@ -171,6 +179,22 @@ export const DRIVE_LIBRARIES: DriveLibraryOption[] = [
     status: 'ARCHIVED',
   },
 ];
+
+export const SYSTEM_LIBRARY_KEYS: DriveLibraryKey[] = [
+  'all',
+  'deals',
+  'projects',
+  'products',
+  'clients',
+  'finance',
+  'partners',
+  'tasks',
+  'support',
+];
+
+export const FREE_DRIVE_LIBRARY_KEYS: DriveLibraryKey[] = ['company', 'personal', 'shared'];
+
+export const MAINTENANCE_LIBRARY_KEYS: DriveLibraryKey[] = ['archive'];
 
 export const DEFAULT_DRIVE_LIBRARY = DRIVE_LIBRARIES[0]!;
 
