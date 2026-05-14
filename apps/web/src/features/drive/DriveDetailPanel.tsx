@@ -1,7 +1,8 @@
 import { useEffect, useState, type ChangeEvent, type ReactNode } from 'react';
+import Link from 'next/link';
 import { Archive, ArrowUpRight, Copy, File, FolderInput, Loader2, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   EntitySheetFloatingRail,
   ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { formatFileSize } from './drive-format';
 import { formatDriveDate, formatDriveLabel } from './drive-format';
 import { badgeVariant } from './drive-utils';
+import { getDriveFileLinkEntityHref } from './drive-file-link-entity-href';
 import { buildDriveFileHref } from './drive-file-links';
 
 export function DriveDetailPanel({
@@ -364,14 +366,37 @@ function BusinessLinks({ file }: { file: FileAsset }) {
       {file.links.length === 0 ? (
         <p className="text-muted-foreground text-xs">No active entity links.</p>
       ) : (
-        file.links.map((link) => (
-          <div key={link.id} className="bg-muted/60 rounded-2xl px-3 py-2 text-xs">
-            <div className="text-foreground font-medium">{formatDriveLabel(link.entityType)}</div>
-            <div className="text-muted-foreground mt-0.5">
-              {formatDriveLabel(link.linkType)} · {link.isPrimary ? 'Primary' : 'Linked'}
+        file.links.map((link) => {
+          const href = getDriveFileLinkEntityHref(link, file.links);
+          return (
+            <div
+              key={link.id}
+              className="bg-muted/60 flex flex-col gap-2 rounded-2xl px-3 py-2 text-xs sm:flex-row sm:items-start sm:justify-between"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="text-foreground font-medium">
+                  {formatDriveLabel(link.entityType)}
+                </div>
+                <div className="text-muted-foreground mt-0.5">
+                  {formatDriveLabel(link.linkType)} · {link.isPrimary ? 'Primary' : 'Linked'}
+                </div>
+              </div>
+              {href ? (
+                <Link
+                  href={href}
+                  className={cn(
+                    buttonVariants({ variant: 'outline', size: 'sm' }),
+                    'shrink-0 self-start sm:self-center',
+                  )}
+                  aria-label={`Open linked ${formatDriveLabel(link.entityType)}`}
+                >
+                  Open
+                  <ArrowUpRight className="size-3.5" aria-hidden />
+                </Link>
+              ) : null}
             </div>
-          </div>
-        ))
+          );
+        })
       )}
     </DetailSection>
   );
