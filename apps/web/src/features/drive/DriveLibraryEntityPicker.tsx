@@ -66,7 +66,7 @@ export function DriveLibraryEntityPicker({
       </Label>
       <Select
         disabled={loading || displayRows.length === 0}
-        value={composite || undefined}
+        value={composite}
         onValueChange={(next) => {
           if (!next) {
             onChange(null);
