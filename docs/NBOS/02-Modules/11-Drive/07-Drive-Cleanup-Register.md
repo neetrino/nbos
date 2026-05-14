@@ -13,7 +13,7 @@
 - entity links foundation exists;
 - version metadata foundation exists;
 - purpose metadata foundation exists;
-- нет logical libraries;
+- main Drive UI has logical libraries navigation over DB-backed `FileAsset` records;
 - нет cleanup/export/backup;
 - list/get/preview и связанные DB-backed операции учитывают **entity-level RBAC scope** (`OWN` / `DEPARTMENT` / `ALL`) поверх module permissions — см. **2026-05-06** в §3.2;
 - batch archive/restore для multi-select — shipped (см. IMPLEMENTATION_PROGRESS / Drive slice).
@@ -77,18 +77,18 @@
 
 ### 3.3. Frontend UI
 
-| Gap                  | Status    | Needed                                                    |
-| -------------------- | --------- | --------------------------------------------------------- |
-| Libraries navigation | `MISSING` | Deals, Projects, Products, Clients, Finance, Partners...  |
-| File detail drawer   | `DONE`    | Links, versions, visibility/confidentiality badges, audit |
-| Entity quick attach  | `MISSING` | Reusable upload component for cards                       |
-| Purpose selector     | `MISSING` | Offer, Proof, Design, Delivery, Task Attachment, etc.     |
-| Contextual file tabs | `MISSING` | Files tab in Product, Client Portfolio, Finance cards     |
-| Export UI            | `MISSING` | Export by project/client/purpose/period                   |
-| Cleanup dashboard    | `MISSING` | Orphans, old task files, drafts, storage usage            |
-| Preview support      | `MISSING` | PDF/image/video/code previews                             |
-| Permission badges    | `DONE`    | Visibility/confidentiality badges in detail/list          |
-| Last selected view   | `MISSING` | Remember grid/list/table per user where useful            |
+| Gap                  | Status    | Needed                                                                                                                                                                                                                                                       |
+| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Libraries navigation | `PARTIAL` | Main Drive cockpit now exposes Deals, Projects, Products, Clients, Finance, Partners, Tasks, Support, Company, Personal and Archive logical views over the current FileAsset API; context-specific entity routes still need deeper backend/library endpoints |
+| File detail drawer   | `DONE`    | Links, versions, visibility/confidentiality badges, audit                                                                                                                                                                                                    |
+| Entity quick attach  | `MISSING` | Reusable upload component for cards                                                                                                                                                                                                                          |
+| Purpose selector     | `MISSING` | Offer, Proof, Design, Delivery, Task Attachment, etc.                                                                                                                                                                                                        |
+| Contextual file tabs | `MISSING` | Files tab in Product, Client Portfolio, Finance cards                                                                                                                                                                                                        |
+| Export UI            | `MISSING` | Export by project/client/purpose/period                                                                                                                                                                                                                      |
+| Cleanup dashboard    | `MISSING` | Orphans, old task files, drafts, storage usage                                                                                                                                                                                                               |
+| Preview support      | `MISSING` | PDF/image/video/code previews                                                                                                                                                                                                                                |
+| Permission badges    | `DONE`    | Visibility/confidentiality badges in detail/list                                                                                                                                                                                                             |
+| Last selected view   | `PARTIAL` | Main Drive page remembers cards/list/table view in local browser storage; per-user server preference can be added later if needed                                                                                                                            |
 
 ---
 
