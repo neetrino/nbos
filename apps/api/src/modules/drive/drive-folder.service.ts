@@ -8,6 +8,7 @@ import type {
   DriveFolderQueryParams,
   RenameDriveFolderDto,
 } from './drive.types';
+import { DRIVE_ROOT_STORAGE_FOLDER_NAME } from './drive-root-folder.constants';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { DriveR2Client } from './drive-r2.client';
@@ -26,20 +27,30 @@ export class DriveFolderService {
     const space = normalizeSpace(params.space);
     const parentId = normalizeParentId(params.parentId);
     const ownerWhere = space === 'PERSONAL' ? { ownerId: userId } : {};
-    const folderWhere = { space, parentId, deletedAt: null, ...ownerWhere };
+    const rootStorage = await this.findOrCreateRootStorageFolder(space, userId);
+    const fileContainerId = parentId ?? rootStorage.id;
+
+    const folderWhere =
+      parentId === null
+        ? {
+            space,
+            parentId: null,
+            deletedAt: null,
+            id: { not: rootStorage.id },
+            ...ownerWhere,
+          }
+        : { space, parentId, deletedAt: null, ...ownerWhere };
 
     const [folders, placements] = await Promise.all([
       this.prisma.driveFolder.findMany({
         where: folderWhere,
         orderBy: [{ name: 'asc' }],
       }),
-      parentId
-        ? this.prisma.driveFolderItem.findMany({
-            where: { folderId: parentId, removedAt: null, itemType: 'FILE' },
-            include: { fileAsset: { include: FILE_ASSET_INCLUDE } },
-            orderBy: { placedAt: 'desc' },
-          })
-        : Promise.resolve([]),
+      this.prisma.driveFolderItem.findMany({
+        where: { folderId: fileContainerId, removedAt: null, itemType: 'FILE' },
+        include: { fileAsset: { include: FILE_ASSET_INCLUDE } },
+        orderBy: { placedAt: 'desc' },
+      }),
     ]);
 
     return jsonSafeForHttp({
@@ -47,6 +58,7 @@ export class DriveFolderService {
       parentId,
       folders,
       files: placements.map((placement) => placement.fileAsset).filter(Boolean),
+      rootStorageFolderId: rootStorage.id,
     });
   }
 
@@ -54,14 +66,24 @@ export class DriveFolderService {
     const normalized = normalizeSpace(space);
     const ownerWhere = normalized === 'PERSONAL' ? { ownerId: userId } : {};
     const folders = await this.prisma.driveFolder.findMany({
-      where: { space: normalized, deletedAt: null, ...ownerWhere },
+      where: {
+        space: normalized,
+        deletedAt: null,
+        NOT: {
+          AND: [{ parentId: null }, { name: DRIVE_ROOT_STORAGE_FOLDER_NAME }],
+        },
+        ...ownerWhere,
+      },
       orderBy: [{ name: 'asc' }],
     });
     return jsonSafeForHttp({ space: normalized, folders });
   }
 
   async renameFolder(folderId: string, dto: RenameDriveFolderDto, userId: string) {
-    await this.assertCanUseFolder(folderId, userId);
+    const existing = await this.assertCanUseFolder(folderId, userId);
+    if (this.isReservedRootStorageFolder(existing)) {
+      throw new BadRequestException('The root storage folder cannot be renamed.');
+    }
     const name = dto.name.trim();
     if (!name) throw new BadRequestException('Folder name is required.');
     const folder = await this.prisma.driveFolder.update({
@@ -72,7 +94,10 @@ export class DriveFolderService {
   }
 
   async deleteFolder(folderId: string, userId: string) {
-    await this.assertCanUseFolder(folderId, userId);
+    const existing = await this.assertCanUseFolder(folderId, userId);
+    if (this.isReservedRootStorageFolder(existing)) {
+      throw new BadRequestException('The root storage folder cannot be deleted.');
+    }
     const childFolders = await this.prisma.driveFolder.count({
       where: { parentId: folderId, deletedAt: null },
     });
@@ -100,6 +125,9 @@ export class DriveFolderService {
   async createFolder(dto: CreateDriveFolderDto, userId: string) {
     const name = dto.name.trim();
     if (!name) throw new BadRequestException('Folder name is required.');
+    if (name === DRIVE_ROOT_STORAGE_FOLDER_NAME) {
+      throw new BadRequestException('This folder name is reserved.');
+    }
     const space = normalizeSpace(dto.space);
     const parentId = normalizeParentId(dto.parentId);
     if (parentId) await this.assertFolderAccess(parentId, space, userId);
@@ -251,6 +279,33 @@ export class DriveFolderService {
     });
     if (!placement) throw new NotFoundException('File placement not found.');
     return placement;
+  }
+
+  private async findOrCreateRootStorageFolder(space: DriveSpaceEnum, userId: string) {
+    const ownerFilter = space === 'PERSONAL' ? { ownerId: userId } : { ownerId: null };
+    const existing = await this.prisma.driveFolder.findFirst({
+      where: {
+        space,
+        parentId: null,
+        name: DRIVE_ROOT_STORAGE_FOLDER_NAME,
+        deletedAt: null,
+        ...ownerFilter,
+      },
+    });
+    if (existing) return existing;
+    return this.prisma.driveFolder.create({
+      data: {
+        name: DRIVE_ROOT_STORAGE_FOLDER_NAME,
+        space,
+        parentId: null,
+        ownerId: space === 'PERSONAL' ? userId : null,
+        createdById: userId,
+      },
+    });
+  }
+
+  private isReservedRootStorageFolder(folder: { name: string; parentId: string | null }) {
+    return folder.parentId === null && folder.name === DRIVE_ROOT_STORAGE_FOLDER_NAME;
   }
 }
 

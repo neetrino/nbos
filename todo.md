@@ -1,6 +1,6 @@
 1. Drive spaces model: System Libraries (NBOS автоматические связи), Company Drive (свободные общие папки), Personal Drive (личные папки), Shared with me.
-2. Drive folder system: `DriveFolder` + `FolderPlacement` для пользовательских папок; system libraries не удаляются и не перемещаются как обычные папки. Backend + migration + basic UI: PARTIAL.
-3. File actions semantics: Move = перенести placement, Share = доступ к тому же FileAsset, Copy = новый независимый FileAsset. Move/Copy/Remove from folder: PARTIAL.
+2. Drive folder system: `DriveFolder` + `FolderPlacement` для пользовательских папок; system libraries не удаляются и не перемещаются как обычные папки. Backend + migration + basic UI: PARTIAL (есть root storage `__nbos_drive_root__`, дерево в сайдбаре Company/Personal, rename/delete, picker).
+3. File actions semantics: Move = перенести placement, Share = доступ к тому же FileAsset, Copy = новый независимый FileAsset. Move/Copy/Remove from folder: PARTIAL (включая root placement).
 4. Delete semantics: Remove from folder, Move to trash everywhere, Delete forever only from Trash/cleanup with permissions/audit; business-linked files protected.
 5. Entity quick attach component для карточек Project/Product/Task/Finance.
 6. Настоящие context library endpoints по entity graph, а не только UI-фильтрация.
@@ -8,4 +8,8 @@
 8. Cleanup dashboard: orphan files, old task attachments, failed sessions, large files.
 9. Preview depth: image/PDF/video/code inline preview вместо только presigned open.
 10. Drive UI cleanup: no large always-visible informational blocks; file details open on demand, analytics lives behind an Insights/Analytics action.
-11. Missing now: polish folder picker/drag-drop for create folders, upload files from computer directly into Company/Personal folders, and upload whole folders from computer with structure preservation.
+11. Upload polish: drag-drop; upload whole folders from computer with structure preservation (частично есть). Загрузка в корень Company/Personal: DONE (скрытый root bucket + кнопки при вкладке Company/Personal даже на Archive).
+12. **System Libraries (Library):** те же действия «New folder / Upload files / Upload folder», что в Company/Personal, но с привязкой к выбранному контексту (Project/Product/…): выбор сущности, `entityType`/`entityId` в upload session, опционально виртуальные папки по сущности — **TODO** (не путать с вкладкой Archive в Company space, там кнопки уже показываются).
+13. **Двусторонняя работа Drive ↔ Project (и др.):** из Drive положить файл сразу в проект (без обхода через карточку проекта); из проекта открыть Drive и вести папки там — требует контекстного scope + UI выбора проекта в Library.
+14. **Shared with me** и полная модель пространств из п.1 — TODO.
+15. **Drag & drop** файлов на папки (и в сайдбаре, и в списке) — TODO.

@@ -5,14 +5,14 @@ import { Input } from '@/components/ui/input';
 
 export function DriveToolbar({
   search,
-  freeDriveSpace,
+  driveStorageSpace,
   busy,
   onSearchChange,
   onCreateFolder,
   onFolderUpload,
 }: {
   search: string;
-  freeDriveSpace: 'COMPANY' | 'PERSONAL' | null;
+  driveStorageSpace: 'COMPANY' | 'PERSONAL' | null;
   busy: boolean;
   onSearchChange: (value: string) => void;
   onCreateFolder: () => void;
@@ -30,7 +30,7 @@ export function DriveToolbar({
             className="pl-9"
           />
         </div>
-        {freeDriveSpace ? (
+        {driveStorageSpace ? (
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <Button type="button" variant="outline" onClick={onCreateFolder} disabled={busy}>
               <FolderPlus />

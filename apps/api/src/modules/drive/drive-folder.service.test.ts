@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DriveFolderService } from './drive-folder.service';
+import { DRIVE_ROOT_STORAGE_FOLDER_NAME } from './drive-root-folder.constants';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
 const mockSend = vi.fn();
@@ -133,5 +134,28 @@ describe('DriveFolderService', () => {
   it('refuses delete when the folder has child folders', async () => {
     prisma.driveFolder.count.mockResolvedValueOnce(1);
     await expect(service.deleteFolder('folder-1', 'user-1')).rejects.toThrow('subfolders');
+  });
+
+  it('lists root files against the hidden root storage folder', async () => {
+    prisma.driveFolder.findFirst.mockResolvedValueOnce({
+      id: 'root-bucket',
+      name: DRIVE_ROOT_STORAGE_FOLDER_NAME,
+      parentId: null,
+      space: 'COMPANY',
+      ownerId: null,
+    });
+    prisma.driveFolder.findMany.mockResolvedValueOnce([]);
+    prisma.driveFolderItem.findMany.mockResolvedValueOnce([]);
+    const result = (await service.listFolder({ space: 'COMPANY', parentId: 'root' }, 'user-1')) as {
+      rootStorageFolderId: string;
+      folders: unknown[];
+    };
+    expect(result.rootStorageFolderId).toBe('root-bucket');
+    expect(result.folders).toEqual([]);
+    expect(prisma.driveFolderItem.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ folderId: 'root-bucket', itemType: 'FILE' }),
+      }),
+    );
   });
 });

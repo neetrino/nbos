@@ -91,6 +91,8 @@ export interface DriveFolderListing {
   parentId: string | null;
   folders: DriveFolder[];
   files: FileAsset[];
+  /** Internal bucket for files shown at drive root (parentId null in UI). */
+  rootStorageFolderId?: string;
 }
 
 export interface DriveFolderTreeResponse {
