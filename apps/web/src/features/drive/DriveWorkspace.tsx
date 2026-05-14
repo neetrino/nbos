@@ -36,7 +36,6 @@ import { DriveDetailPanel } from './DriveDetailPanel';
 import { DriveFileSurface } from './DriveFileSurface';
 import { DriveHero } from './DriveHero';
 import { DriveLibraries } from './DriveLibraries';
-import { DriveLibraryEntityPicker, type LibraryUploadLink } from './DriveLibraryEntityPicker';
 import { DriveLibraryVirtualFolderGrid } from './DriveLibraryVirtualFolderGrid';
 import { getDriveClientUploadDisplayName } from './drive-client-upload-display-name';
 import { buildDriveLibraryUploadSessionFields } from './drive-library-upload-defaults';
@@ -64,6 +63,8 @@ import { DriveSpaceFolderTree } from './DriveSpaceFolderTree';
 import { DRIVE_DEEP_LINK_PROJECT_ID_QUERY } from './drive-deep-link';
 
 type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
+
+type LibraryUploadLink = { entityType: string; entityId: string };
 
 export function DriveWorkspace() {
   const searchParams = useSearchParams();
@@ -888,23 +889,14 @@ export function DriveWorkspace() {
             }
             contextSlot={
               browseSystemLibraryUploads ? (
-                <>
-                  <DriveLibraryEntityPicker
-                    key={selectedLibrary.key}
-                    libraryKey={selectedLibrary.key}
-                    value={systemLibraryLink}
-                    onChange={setSystemLibraryLink}
-                    pinnedRows={libraryPinnedEntityRows}
-                  />
-                  <DriveSidebarCreateMenu
-                    busy={busy}
-                    menuMode="library-entity"
-                    entityContextReady={systemLibraryLink !== null}
-                    onNewFolder={openCreateFolderDialog}
-                    onFilesSelected={(event) => void onFolderUpload(event)}
-                    onFolderUpload={(event) => void onFolderUpload(event)}
-                  />
-                </>
+                <DriveSidebarCreateMenu
+                  busy={busy}
+                  menuMode="library-entity"
+                  entityContextReady={systemLibraryLink !== null}
+                  onNewFolder={openCreateFolderDialog}
+                  onFilesSelected={(event) => void onFolderUpload(event)}
+                  onFolderUpload={(event) => void onFolderUpload(event)}
+                />
               ) : undefined
             }
             folderTreeSlot={
