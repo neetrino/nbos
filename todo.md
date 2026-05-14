@@ -12,7 +12,7 @@
 1. **Grants — UI:** кому доступ / отзыв (`revokedAt`), роли кроме `VIEW` по канону, уведомления (API grants уже есть).
 2. **Share / Move / Copy:** матрица прав по `docs/NBOS/02-Modules/11-Drive/03-Permissions-Sharing-and-Audit.md`; аудит на каждое значимое действие.
 3. **Удаление:** корзина / delete forever; в UI защита и предупреждения для business-linked файлов.
-4. **Quick attach:** те же кнопки прикрепления на карточках **Product / Task / Finance** (на **Project** уже было; **Product** и **Task** — см. `EntityDriveQuickAttach` + deep links `buildDriveHrefWithProduct` / `buildDriveHrefWithTask` в `drive-deep-link.ts`; **Finance** — ещё нет).
+4. **Quick attach:** **Project** (как было), **Product / Task / Finance** — `EntityDriveQuickAttach` + deep links в `drive-deep-link.ts` (`buildDriveHrefWithProduct`, `buildDriveHrefWithTask`, `buildDriveHrefWithFinanceProject` для вкладки Finance на продукте).
 5. **Library graph API:** агрегации и выборки по **графу связей**, не только `listFileAssets` и `context-summary` по `purpose`.
 6. **Export ZIP:** отдельный job + storage + download + manifest (Project / Product / Client / Finance) — не путать с report export jobs.
 7. **Cleanup UI:** экран оператора + действия (сейчас есть только метрики `GET /api/drive/cleanup-summary`).

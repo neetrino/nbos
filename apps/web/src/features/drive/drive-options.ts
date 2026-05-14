@@ -132,7 +132,7 @@ export const DRIVE_LIBRARIES: DriveLibraryOption[] = [
     description: 'Invoices, payments and exports',
     icon: Banknote,
     sourceModules: ['FINANCE', 'REPORTS'],
-    entityTypes: ['INVOICE', 'EXPENSE', 'PAYMENT', 'REPORT'],
+    entityTypes: ['INVOICE', 'EXPENSE', 'PAYMENT', 'REPORT', 'PROJECT'],
     purposes: ['INVOICE_REQUEST_PROOF', 'PAYMENT_PROOF', 'EXPENSE_PROOF'],
   },
   {

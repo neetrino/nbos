@@ -302,6 +302,7 @@ export default function ProductDetailPage() {
               subscriptions={projectData.subscriptions as never[]}
               expenses={projectData.expenses as never[]}
               domains={projectData.domains as never[]}
+              onAfterDriveUpload={() => void fetchProduct()}
             />
           ) : (
             <div className="text-muted-foreground py-8 text-center text-sm">Loading...</div>
