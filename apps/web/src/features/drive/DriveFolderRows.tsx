@@ -23,7 +23,7 @@ const FOLDER_TABLE_MAIN_GRID =
 const DRIVE_FOLDER_FILE_TABLE_GRID =
   'grid w-full grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px_44px] gap-3';
 
-/** Folder card: overflow menu appears on card hover / focus-within. */
+/** Folder card: checkbox and overflow menu show on hover; stay visible when checked / menu open. */
 const FOLDER_CARD_MENU_HOVER =
   'opacity-0 pointer-events-none transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100';
 
@@ -79,20 +79,32 @@ export function DriveFolderCardRow({
       'relative flex w-full items-center gap-2 rounded-xl p-2.5',
       <>
         {onToggleFolderChecked ? (
-          <input
-            type="checkbox"
-            checked={Boolean(folderChecked)}
-            onChange={(event) => onToggleFolderChecked(folder, event.target.checked)}
-            onClick={(event) => event.stopPropagation()}
-            className="mt-0.5 size-4 shrink-0 self-start"
-            aria-label={`Select folder ${folder.name}`}
-          />
+          <div
+            className={cn(
+              'absolute top-1/2 left-2.5 z-10 -translate-y-1/2',
+              FOLDER_CARD_MENU_HOVER,
+              folderChecked && 'pointer-events-auto opacity-100',
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={Boolean(folderChecked)}
+              onChange={(event) => onToggleFolderChecked(folder, event.target.checked)}
+              onClick={(event) => event.stopPropagation()}
+              className="size-4 shrink-0"
+              aria-label={`Select folder ${folder.name}`}
+            />
+          </div>
         ) : null}
         <button
           type="button"
           draggable={false}
           onClick={() => onOpenFolder(folder)}
-          className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left outline-none focus-visible:ring-2"
+          className={cn(
+            'focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left outline-none focus-visible:ring-2',
+            onToggleFolderChecked && 'pl-9',
+          )}
         >
           <Folder className="text-muted-foreground size-5 shrink-0" strokeWidth={2} />
           <div className="min-w-0 flex-1">
@@ -117,7 +129,14 @@ export function DriveFolderCardRow({
     '@container relative flex aspect-square w-full flex-col overflow-hidden rounded-2xl',
     <>
       {onToggleFolderChecked ? (
-        <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
+        <div
+          className={cn(
+            'absolute top-2 left-2 z-10',
+            FOLDER_CARD_MENU_HOVER,
+            folderChecked && 'pointer-events-auto opacity-100',
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
           <input
             type="checkbox"
             checked={Boolean(folderChecked)}
