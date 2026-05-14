@@ -581,7 +581,6 @@ export function DriveWorkspace() {
               key={folderTreeVersion}
               space={driveStorageSpace}
               activeFolderId={activeFolderId}
-              onSelectRoot={goToDriveRoot}
               onSelectFolderPath={navigateFolderPath}
             />
           )}

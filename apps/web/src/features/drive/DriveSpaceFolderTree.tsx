@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronRight, Folder, Home } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ChevronRight, Folder } from 'lucide-react';
 import { driveApi, type DriveFolder } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { buildFolderTree, type FolderTreeNode } from './drive-folder-tree';
@@ -12,12 +11,10 @@ const TREE_DEPTH_PADDING = ['pl-0', 'pl-2.5', 'pl-5', 'pl-8', 'pl-11', 'pl-[3.25
 export function DriveSpaceFolderTree({
   space,
   activeFolderId,
-  onSelectRoot,
   onSelectFolderPath,
 }: {
   space: 'COMPANY' | 'PERSONAL';
   activeFolderId: string | null;
-  onSelectRoot: () => void;
   onSelectFolderPath: (pathFromRoot: DriveFolder[]) => void;
 }) {
   const [tree, setTree] = useState<FolderTreeNode[]>([]);
@@ -60,16 +57,6 @@ export function DriveSpaceFolderTree({
         Folders
       </div>
       <div className="max-h-[min(380px,50vh)] overflow-y-auto p-1.5">
-        <Button
-          type="button"
-          variant={activeFolderId === null ? 'secondary' : 'ghost'}
-          size="sm"
-          className="mb-1 h-9 w-full justify-start gap-2 px-2 font-normal"
-          onClick={onSelectRoot}
-        >
-          <Home className="size-3.5 shrink-0 opacity-80" />
-          <span className="truncate text-left text-sm">Root</span>
-        </Button>
         {loading ? (
           <p className="text-muted-foreground px-2 py-3 text-xs">Loading…</p>
         ) : tree.length === 0 ? (
