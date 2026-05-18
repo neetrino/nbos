@@ -536,6 +536,7 @@ export class DriveController {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,
+      documentsAccess: buildDocumentsReadAccess(user),
     });
   }
 

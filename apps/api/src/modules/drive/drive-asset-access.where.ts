@@ -1,4 +1,5 @@
 import type { Prisma, PrismaClient } from '@nbos/database';
+import type { FileGrantPermission } from './drive-grant-permissions';
 import type { DriveEntityAccess } from './drive-access.types';
 
 const DRIVE_WIDE_SCOPES = new Set<string>(['ALL']);
@@ -28,13 +29,17 @@ export function buildSharedWithMeWhereClause(employeeId: string): Prisma.FileAss
   return { OR: [notSoleSelfOrigin, activeGrant] };
 }
 
-function activeFileAssetGrantWhere(employeeId: string): Prisma.FileAssetWhereInput {
+function activeFileAssetGrantWhere(
+  employeeId: string,
+  permissions?: readonly FileGrantPermission[],
+): Prisma.FileAssetWhereInput {
   return {
     assetGrants: {
       some: {
         granteeEmployeeId: employeeId,
         revokedAt: null,
         OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        ...(permissions && permissions.length > 0 ? { permission: { in: [...permissions] } } : {}),
       },
     },
   };
@@ -111,4 +116,67 @@ export async function buildDriveAssetAccessWhere(
     };
   }
   return ownScopeWhere(access.employeeId);
+}
+
+export async function buildDriveAssetBaseAccessWhere(
+  prisma: InstanceType<typeof PrismaClient>,
+  access?: DriveEntityAccess,
+): Promise<Prisma.FileAssetWhereInput> {
+  if (!access) return {};
+  const scope = normalizeScope(access.driveScope);
+  if (DRIVE_WIDE_SCOPES.has(scope)) {
+    return {
+      OR: [
+        {
+          AND: [
+            { visibility: { notIn: [...SELF_ONLY_VISIBILITIES] as never[] } },
+            { confidentiality: { notIn: [...SENSITIVE_CONFIDENTIALITIES] as never[] } },
+          ],
+        },
+        selfOriginWhere(access.employeeId),
+      ],
+    };
+  }
+  if (scope === 'OWN') {
+    return selfOriginWhere(access.employeeId);
+  }
+  if (scope === 'DEPARTMENT') {
+    const colleagueRows = await prisma.employeeDepartment.findMany({
+      where: { departmentId: { in: access.departmentIds } },
+      select: { employeeId: true },
+      distinct: ['employeeId'],
+    });
+    const colleagueIds = colleagueRows.map((row) => row.employeeId);
+    return {
+      AND: [
+        {
+          OR: [
+            { ownerId: { in: colleagueIds } },
+            { createdById: { in: colleagueIds } },
+            { ownerId: access.employeeId },
+            { createdById: access.employeeId },
+          ],
+        },
+        {
+          OR: [
+            {
+              AND: [
+                { visibility: { notIn: [...SELF_ONLY_VISIBILITIES] as never[] } },
+                { confidentiality: { notIn: [...SENSITIVE_CONFIDENTIALITIES] as never[] } },
+              ],
+            },
+            selfOriginWhere(access.employeeId),
+          ],
+        },
+      ],
+    };
+  }
+  return selfOriginWhere(access.employeeId);
+}
+
+export function buildDriveAssetGrantAccessWhere(
+  employeeId: string,
+  permissions?: readonly FileGrantPermission[],
+): Prisma.FileAssetWhereInput {
+  return activeFileAssetGrantWhere(employeeId, permissions);
 }

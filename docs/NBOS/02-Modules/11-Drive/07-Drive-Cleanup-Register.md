@@ -116,6 +116,9 @@
 - `WORK_SPACE` context access no longer depends on pre-existing linked files; direct workspace delivery graph membership is checked first;
 - `INVOICE` / `PAYMENT` / `EXPENSE` contexts now require an accessible project anchor instead of passing on entity existence alone;
 - `COMPANY` / `CONTACT` / `PARTNER` / `CLIENT_SERVICE_RECORD` scoped access now resolves through related project/deal/partner graphs instead of entity existence alone;
+- grant-only users now need action-specific permissions for version/share/delete/export; visibility alone is no longer enough for mutating or exporting files;
+- sensitive file grants are locked to `VIEW`, support optional `expiresAt`, and carry `reason` in audit metadata;
+- scoped folder `copy` now creates a new `FileAsset` plus the target entity `FileLink`; restricted/sensitive files cannot be copied as independent assets; business-linked files cannot be copied into Personal Drive;
 - archive/restore/trash audit actor is always `CurrentUser.id`;
 - batch archive/restore audit writes only for реально изменённых файлов.
 

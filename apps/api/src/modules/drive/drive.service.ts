@@ -47,7 +47,7 @@ import {
   R2_DRIVE_PREFIX,
 } from './drive-storage';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
-import { normalizeFileGrantPermission } from './drive-grant-permissions';
+import { normalizeFileGrantPermission, type FileGrantPermission } from './drive-grant-permissions';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
 import { notifyDriveFileGrantRecipient } from './drive-grant-notify.ops';
@@ -58,11 +58,20 @@ import { readTenantOrganizationId } from './drive-tenant';
 import { buildVersionStagingKey, versionStagingPrefix } from './drive-storage-home-path';
 import {
   buildDriveAssetAccessWhere,
+  buildDriveAssetBaseAccessWhere,
+  buildDriveAssetGrantAccessWhere,
   buildSharedWithMeWhereClause,
 } from './drive-asset-access.where';
 import { DriveProjectHubService } from './drive-project-hub.service';
+import { assertDriveEntityContextAccessible } from './drive-entity-context-access';
+import type { DriveEntityContextAccess } from './drive-access.types';
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 3600;
+const SENSITIVE_GRANT_LOCKED_CONFIDENTIALITIES = new Set<string>([
+  'FINANCE_SENSITIVE',
+  'LEGAL_SENSITIVE',
+  'SECRET_ADJACENT',
+]);
 
 @Injectable()
 export class DriveService {
@@ -177,8 +186,14 @@ export class DriveService {
     return { archived, trash };
   }
 
-  async getFileAsset(id: string, access?: DriveEntityAccess) {
-    const where = await buildDriveAssetAccessWhere(this.prisma, access);
+  async getFileAsset(
+    id: string,
+    access?: DriveEntityAccess,
+    grantPermissions?: readonly FileGrantPermission[],
+  ) {
+    const where = grantPermissions?.length
+      ? await this.buildActionAccessWhere(access, grantPermissions)
+      : await buildDriveAssetAccessWhere(this.prisma, access);
     const file = await this.prisma.fileAsset.findFirst({
       where: { id, ...where, deletedAt: null },
       include: FILE_ASSET_INCLUDE,
@@ -302,8 +317,9 @@ export class DriveService {
     });
   }
 
-  async linkFileAsset(id: string, data: CreateFileLinkDto, access?: DriveEntityAccess) {
-    await this.getFileAsset(id, access);
+  async linkFileAsset(id: string, data: CreateFileLinkDto, access?: DriveEntityContextAccess) {
+    await this.getFileAsset(id, access, ['SHARE']);
+    await this.assertTargetEntityLinkAllowed(data, access);
     return this.prisma.fileLink.create({
       data: { fileAssetId: id, ...buildLinkCreateInput(data) },
     });
@@ -314,7 +330,7 @@ export class DriveService {
     data: CreateFileVersionUploadDto,
     access?: DriveEntityAccess,
   ) {
-    const file = await this.getFileAsset(id, access);
+    const file = await this.getFileAsset(id, access, ['UPLOAD_VERSION']);
     if (file.storageProvider !== 'R2') {
       throw new BadRequestException('Only R2-backed files support version uploads.');
     }
@@ -345,7 +361,7 @@ export class DriveService {
     if (!storageKey.startsWith(stagingPrefix)) {
       throw new BadRequestException('storageKey does not belong to this file version upload.');
     }
-    await this.getFileAsset(id, access);
+    await this.getFileAsset(id, access, ['UPLOAD_VERSION']);
     try {
       await this.r2
         .ensureS3()
@@ -400,7 +416,7 @@ export class DriveService {
   }
 
   async archiveFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
-    await this.getFileAsset(id, access);
+    await this.getFileAsset(id, access, ['DELETE']);
     return jsonSafeForHttp(
       await this.prisma.fileAsset.update({
         where: { id },
@@ -415,7 +431,7 @@ export class DriveService {
   }
 
   async restoreFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
-    await this.getFileAsset(id, access);
+    await this.getFileAsset(id, access, ['DELETE']);
     return jsonSafeForHttp(
       await this.prisma.fileAsset.update({
         where: { id },
@@ -435,7 +451,7 @@ export class DriveService {
       throw new BadRequestException('ids must include at least one file id.');
     }
     const now = new Date();
-    const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
+    const accessWhere = await this.buildActionAccessWhere(access, ['DELETE']);
     const updated = await this.prisma.$transaction(async (tx) => {
       const matched = await tx.fileAsset.findMany({
         where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
@@ -468,7 +484,7 @@ export class DriveService {
     if (uniqueIds.length === 0) {
       throw new BadRequestException('ids must include at least one file id.');
     }
-    const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
+    const accessWhere = await this.buildActionAccessWhere(access, ['DELETE']);
     const updated = await this.prisma.$transaction(async (tx) => {
       const matched = await tx.fileAsset.findMany({
         where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
@@ -497,7 +513,7 @@ export class DriveService {
   }
 
   async restoreTrashFileAsset(id: string, actorId?: string, access?: DriveEntityAccess) {
-    const file = await this.findTrashFileAsset(id, access);
+    const file = await this.findTrashFileAsset(id, access, ['DELETE']);
     return jsonSafeForHttp(
       await this.prisma.fileAsset.update({
         where: { id: file.id },
@@ -517,7 +533,7 @@ export class DriveService {
     if (uniqueIds.length === 0) {
       throw new BadRequestException('ids must include at least one file id.');
     }
-    const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
+    const accessWhere = await this.buildActionAccessWhere(access, ['DELETE']);
     const updated = await this.prisma.$transaction(async (tx) => {
       const matched = await tx.fileAsset.findMany({
         where: {
@@ -592,7 +608,7 @@ export class DriveService {
     actorId: string,
     access?: DriveEntityAccess,
   ) {
-    await this.getFileAsset(fileAssetId, access);
+    await this.getFileAsset(fileAssetId, access, ['SHARE']);
     const grant = await this.prisma.fileAssetGrant.findFirst({
       where: { id: grantId, fileAssetId, revokedAt: null },
     });
@@ -624,10 +640,13 @@ export class DriveService {
     const grantee = body.granteeEmployeeId.trim();
     requireText(grantee, 'granteeEmployeeId');
     const permission = normalizeFileGrantPermission(body.permission);
+    const expiresAt = this.parseOptionalGrantExpiry(body.expiresAt);
+    const reason = body.reason?.trim() || null;
     if (grantee === actorId) {
       throw new BadRequestException('You cannot grant Drive access to yourself.');
     }
-    await this.getFileAsset(fileAssetId, access);
+    const file = await this.getFileAsset(fileAssetId, access, ['SHARE']);
+    this.assertGrantCompatibleWithConfidentiality(file, permission);
     const existing = await this.prisma.fileAssetGrant.findFirst({
       where: { fileAssetId, granteeEmployeeId: grantee, revokedAt: null },
     });
@@ -637,14 +656,14 @@ export class DriveService {
       }
       const row = await this.prisma.fileAssetGrant.update({
         where: { id: existing.id },
-        data: { permission },
+        data: { permission, expiresAt },
       });
       await this.prisma.fileAuditEvent.create({
         data: {
           fileAssetId,
           actorId,
           action: 'grant_updated',
-          metadata: { granteeEmployeeId: grantee, permission },
+          metadata: { granteeEmployeeId: grantee, permission, expiresAt, reason },
         },
       });
       await notifyDriveFileGrantRecipient({
@@ -666,6 +685,7 @@ export class DriveService {
         granteeEmployeeId: grantee,
         grantedById: actorId,
         permission,
+        expiresAt,
       },
     });
     await this.prisma.fileAuditEvent.create({
@@ -673,7 +693,7 @@ export class DriveService {
         fileAssetId,
         actorId,
         action: 'grant_created',
-        metadata: { granteeEmployeeId: grantee, permission },
+        metadata: { granteeEmployeeId: grantee, permission, expiresAt, reason },
       },
     });
     await notifyDriveFileGrantRecipient({
@@ -761,7 +781,7 @@ export class DriveService {
   }
 
   async permanentlyDeleteFileAsset(id: string, actorId: string, access?: DriveEntityAccess) {
-    const file = await this.getFileAsset(id, access);
+    const file = await this.getFileAsset(id, access, ['DELETE']);
     if (file.status !== 'ARCHIVED') {
       throw new BadRequestException('Only archived files can be permanently deleted.');
     }
@@ -817,12 +837,16 @@ export class DriveService {
   async fetchR2CurrentObjectBuffer(
     fileId: string,
     access?: DriveEntityAccess,
+    grantPermissions?: readonly FileGrantPermission[],
   ): Promise<{ displayName: string; mimeType: string | null; buffer: Buffer } | null> {
+    const accessWhere = grantPermissions?.length
+      ? await this.buildActionAccessWhere(access, grantPermissions)
+      : await buildDriveAssetAccessWhere(this.prisma, access);
     const file = await this.prisma.fileAsset.findFirst({
       where: {
         id: fileId,
         deletedAt: null,
-        ...(await buildDriveAssetAccessWhere(this.prisma, access)),
+        ...accessWhere,
       },
       include: {
         versions: {
@@ -853,8 +877,14 @@ export class DriveService {
     };
   }
 
-  private async findTrashFileAsset(id: string, access?: DriveEntityAccess) {
-    const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
+  private async findTrashFileAsset(
+    id: string,
+    access?: DriveEntityAccess,
+    grantPermissions?: readonly FileGrantPermission[],
+  ) {
+    const accessWhere = grantPermissions?.length
+      ? await this.buildActionAccessWhere(access, grantPermissions)
+      : await buildDriveAssetAccessWhere(this.prisma, access);
     const file = await this.prisma.fileAsset.findFirst({
       where: {
         id,
@@ -919,5 +949,46 @@ export class DriveService {
       });
     }
     return clauses.length === 1 ? clauses[0]! : { AND: clauses };
+  }
+
+  private async buildActionAccessWhere(
+    access: DriveEntityAccess | undefined,
+    grantPermissions: readonly FileGrantPermission[],
+  ): Promise<Prisma.FileAssetWhereInput> {
+    if (!access?.employeeId) return {};
+    const baseWhere = await buildDriveAssetBaseAccessWhere(this.prisma, access);
+    return {
+      OR: [baseWhere, buildDriveAssetGrantAccessWhere(access.employeeId, grantPermissions)],
+    };
+  }
+
+  private assertGrantCompatibleWithConfidentiality(
+    file: { confidentiality?: string | null },
+    permission: FileGrantPermission,
+  ) {
+    if (
+      file.confidentiality &&
+      SENSITIVE_GRANT_LOCKED_CONFIDENTIALITIES.has(file.confidentiality) &&
+      permission !== 'VIEW'
+    ) {
+      throw new BadRequestException('Sensitive Drive files may only be shared with VIEW grants.');
+    }
+  }
+
+  private parseOptionalGrantExpiry(value: string | undefined) {
+    if (!value?.trim()) return null;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new BadRequestException('expiresAt must be a valid ISO datetime.');
+    }
+    return parsed;
+  }
+
+  private async assertTargetEntityLinkAllowed(
+    data: CreateFileLinkDto,
+    access?: DriveEntityContextAccess,
+  ) {
+    if (!access?.employeeId) return;
+    await assertDriveEntityContextAccessible(this.prisma, data.entityType, data.entityId, access);
   }
 }

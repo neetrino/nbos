@@ -53,6 +53,10 @@ export interface CreateFileAssetGrantDto {
   granteeEmployeeId: string;
   /** Defaults to VIEW. See `FILE_GRANT_PERMISSIONS` in drive-grant-permissions. */
   permission?: string;
+  /** Optional ISO date for temporary access. */
+  expiresAt?: string;
+  /** Optional audit reason for explicit sharing. */
+  reason?: string;
 }
 
 export interface AddFolderFileDto {

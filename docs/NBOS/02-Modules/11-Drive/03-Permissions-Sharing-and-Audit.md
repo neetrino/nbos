@@ -33,6 +33,10 @@ Can access file =
 - `WORK_SPACE` уже не опирается на наличие старого linked file: Drive проверяет direct workspace participation через связанные product / extension / project delivery graphs.
 - `INVOICE`, `PAYMENT`, `EXPENSE` в Drive больше не проходят по одному existence-check: для scoped access они должны быть привязаны к доступному project graph.
 - `COMPANY`, `CONTACT`, `PARTNER`, `CLIENT_SERVICE_RECORD` для scoped access тоже больше не считаются "видимыми по факту существования": Drive требует связанный business graph (projects / deals / partner flows / service project anchor).
+- mutation/export actions больше не наследуются автоматически из одного факта "файл виден": grant-only access теперь отдельно проверяет `UPLOAD_VERSION`, `SHARE`, `DELETE`, `EXPORT`.
+- explicit grant теперь поддерживает optional `expiresAt`, а audit metadata хранит `reason`.
+- sensitive files (`FINANCE_SENSITIVE`, `LEGAL_SENSITIVE`, `SECRET_ADJACENT`) допускают только `VIEW` grant.
+- `Copy` больше не используется как обход policy: restricted/sensitive files нельзя копировать как независимые assets, а business-linked files нельзя копировать в Personal Drive.
 
 ---
 
@@ -102,6 +106,12 @@ Drive должен поддерживать явные grants:
 - reason;
 - expiration date, если временный доступ;
 - audit event.
+
+Текущее runtime покрывает:
+
+- `reason` в audit metadata;
+- `expiresAt` на `FileAssetGrant`;
+- запрет non-`VIEW` grants для sensitive files.
 
 ---
 

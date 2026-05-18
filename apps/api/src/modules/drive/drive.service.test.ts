@@ -282,6 +282,112 @@ describe('DriveService', () => {
       );
     });
 
+    it('rejects non-view grants for sensitive files', async () => {
+      prisma.fileAsset.findFirst.mockResolvedValueOnce({
+        id: 'f1',
+        confidentiality: 'FINANCE_SENSITIVE',
+      });
+
+      await expect(
+        service.createFileAssetGrant(
+          'f1',
+          { granteeEmployeeId: 'emp-2', permission: 'SHARE' },
+          'emp-1',
+          { employeeId: 'emp-1', departmentIds: [], driveScope: 'OWN' },
+        ),
+      ).rejects.toThrow('Sensitive Drive files may only be shared with VIEW grants.');
+    });
+
+    it('stores optional grant expiry and audit reason', async () => {
+      prisma.fileAsset.findFirst.mockResolvedValueOnce({
+        id: 'f1',
+        confidentiality: 'CONFIDENTIAL',
+      });
+      prisma.fileAssetGrant.findFirst.mockResolvedValueOnce(null);
+
+      await service.createFileAssetGrant(
+        'f1',
+        {
+          granteeEmployeeId: 'emp-2',
+          permission: 'VIEW',
+          expiresAt: '2026-06-01T12:00:00.000Z',
+          reason: 'Temporary review access',
+        },
+        'emp-1',
+        { employeeId: 'emp-1', departmentIds: [], driveScope: 'OWN' },
+      );
+
+      expect(prisma.fileAssetGrant.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            granteeEmployeeId: 'emp-2',
+            expiresAt: new Date('2026-06-01T12:00:00.000Z'),
+          }),
+        }),
+      );
+      expect(prisma.fileAuditEvent.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            metadata: expect.objectContaining({
+              reason: 'Temporary review access',
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('rejects linking a file into an inaccessible target business context', async () => {
+      prisma.fileAsset.findFirst.mockResolvedValueOnce({ id: 'f1' });
+      prisma.company.findUnique.mockResolvedValueOnce({ id: 'company-1' });
+      prisma.company.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        service.linkFileAsset(
+          'f1',
+          {
+            entityType: 'COMPANY',
+            entityId: 'company-1',
+            linkedById: 'emp-1',
+          },
+          {
+            employeeId: 'emp-1',
+            departmentIds: [],
+            driveScope: 'OWN',
+          },
+        ),
+      ).rejects.toThrow('Drive context not found.');
+    });
+
+    it('requires upload-version permission when access comes only from a grant', async () => {
+      prisma.fileAsset.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        service.createVersionUploadUrl(
+          'f1',
+          { fileName: 'v2.pdf', contentType: 'application/pdf' },
+          { employeeId: 'emp-1', departmentIds: [], driveScope: 'OWN' },
+        ),
+      ).rejects.toThrow('File asset f1 not found');
+
+      expect(prisma.fileAsset.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: 'f1',
+            OR: expect.arrayContaining([
+              expect.any(Object),
+              expect.objectContaining({
+                assetGrants: {
+                  some: expect.objectContaining({
+                    permission: { in: ['UPLOAD_VERSION'] },
+                  }),
+                },
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
     it('lists File Assets by entity link', async () => {
       await service.listFileAssets({ entityType: 'PRODUCT', entityId: 'product-1' });
 

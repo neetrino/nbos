@@ -112,6 +112,76 @@ describe('DriveFolderService', () => {
     );
   });
 
+  it('links a copied file to the scoped target folder entity', async () => {
+    prisma.driveFolder.findUnique.mockResolvedValue({
+      id: 'folder-2',
+      space: 'COMPANY',
+      ownerId: null,
+      deletedAt: null,
+      scopeEntityType: 'PROJECT',
+      scopeEntityId: 'project-1',
+    });
+    prisma.fileAsset.create.mockResolvedValue({ id: 'file-copy', links: [], versions: [] });
+    mockSend.mockResolvedValue({});
+
+    await service.copyFile('folder-2', 'file-1', 'user-1');
+
+    expect(prisma.fileAsset.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          links: {
+            create: expect.objectContaining({
+              entityType: 'PROJECT',
+              entityId: 'project-1',
+              linkType: 'ATTACHMENT',
+            }),
+          },
+        }),
+      }),
+    );
+  });
+
+  it('rejects copying restricted or sensitive files as independent assets', async () => {
+    prisma.fileAsset.findFirst.mockResolvedValueOnce({
+      id: 'file-1',
+      displayName: 'Payroll.xlsx',
+      originalName: 'Payroll.xlsx',
+      fileType: 'SPREADSHEET',
+      purpose: 'OTHER',
+      visibility: 'INTERNAL',
+      confidentiality: 'FINANCE_SENSITIVE',
+      storageProvider: 'R2',
+      storageKey: 'Drive/uploads/source/Payroll.xlsx',
+      externalUrl: null,
+      mimeType: 'application/vnd.ms-excel',
+      sizeBytes: 123n,
+      checksum: 'abc',
+      deletedAt: null,
+    });
+
+    await expect(service.copyFile('folder-1', 'file-1', 'user-1')).rejects.toThrow(
+      'Restricted or sensitive Drive files cannot be copied as independent files.',
+    );
+    expect(prisma.fileAsset.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects copying business-linked files into Personal Drive', async () => {
+    prisma.driveFolder.findUnique.mockResolvedValue({
+      id: 'personal-folder',
+      space: 'PERSONAL',
+      ownerId: 'user-1',
+      deletedAt: null,
+      scopeEntityType: null,
+      scopeEntityId: null,
+    });
+    prisma.fileLink.count.mockResolvedValueOnce(1);
+
+    await expect(service.copyFile('personal-folder', 'file-1', 'user-1')).rejects.toThrow(
+      'Business-linked Drive files cannot be copied into Personal Drive.',
+    );
+    expect(prisma.fileAsset.create).not.toHaveBeenCalled();
+  });
+
   it('lists folder tree for a space', async () => {
     prisma.driveFolder.findMany.mockResolvedValue([
       { id: 'a', name: 'Alpha', space: 'COMPANY', parentId: null },

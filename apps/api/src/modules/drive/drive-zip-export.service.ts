@@ -165,8 +165,10 @@ export class DriveZipExportService {
       const counts = new Map<string, number>();
       let rawTotal = 0;
       for (const fileId of ids) {
-        const row = await this.driveService.getFileAsset(fileId, access);
-        const packed = await this.driveService.fetchR2CurrentObjectBuffer(fileId, access);
+        const row = await this.driveService.getFileAsset(fileId, access, ['EXPORT']);
+        const packed = await this.driveService.fetchR2CurrentObjectBuffer(fileId, access, [
+          'EXPORT',
+        ]);
         if (!packed) {
           manifestEntries.push({
             fileId,

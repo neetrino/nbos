@@ -23,8 +23,15 @@ import { resolveStorageHomeContextPath } from './drive-storage-home-resolver';
 import { buildStorageHomeKeyFromParams } from './drive-storage-home-path';
 import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
 import type { DriveEntityAccess } from './drive-access.types';
+import { buildLinkCreateInput } from './drive-metadata';
 
 const ROOT_PARENT_TOKEN = 'root';
+const COPY_RESTRICTED_VISIBILITIES = new Set<string>(['PERSONAL', 'RESTRICTED']);
+const COPY_SENSITIVE_CONFIDENTIALITIES = new Set<string>([
+  'FINANCE_SENSITIVE',
+  'LEGAL_SENSITIVE',
+  'SECRET_ADJACENT',
+]);
 
 @Injectable()
 export class DriveFolderService {
@@ -328,8 +335,9 @@ export class DriveFolderService {
     userId: string,
     access?: DriveEntityAccess,
   ) {
-    await this.assertCanUseFolder(targetFolderId, userId);
+    const targetFolder = await this.assertCanUseFolder(targetFolderId, userId);
     const source = await this.getAccessibleFileAsset(fileAssetId, access);
+    await this.assertCopyAllowed(source.id, source, targetFolder);
     const storageKey = await this.copyStorageObject(
       source.storageKey,
       source.displayName,
@@ -365,6 +373,17 @@ export class DriveFolderService {
               },
             }
           : undefined,
+        links:
+          targetFolder.scopeEntityType && targetFolder.scopeEntityId
+            ? {
+                create: buildLinkCreateInput({
+                  entityType: targetFolder.scopeEntityType,
+                  entityId: targetFolder.scopeEntityId,
+                  linkType: 'ATTACHMENT',
+                  linkedById: userId,
+                }),
+              }
+            : undefined,
         folderPlacements: {
           create: { folderId: targetFolderId, itemType: 'FILE', placedById: userId },
         },
@@ -496,6 +515,35 @@ export class DriveFolderService {
       throw new NotFoundException(`File asset ${fileAssetId} not found`);
     }
     return source;
+  }
+
+  private async assertCopyAllowed(
+    sourceFileAssetId: string,
+    source: { visibility: string; confidentiality: string },
+    targetFolder: {
+      space: DriveSpaceEnum;
+      scopeEntityType: string | null;
+      scopeEntityId: string | null;
+    },
+  ) {
+    if (
+      COPY_RESTRICTED_VISIBILITIES.has(source.visibility) ||
+      COPY_SENSITIVE_CONFIDENTIALITIES.has(source.confidentiality)
+    ) {
+      throw new BadRequestException(
+        'Restricted or sensitive Drive files cannot be copied as independent files.',
+      );
+    }
+    if (targetFolder.space === 'PERSONAL') {
+      const activeLinks = await this.prisma.fileLink.count({
+        where: { fileAssetId: sourceFileAssetId, unlinkedAt: null },
+      });
+      if (activeLinks > 0) {
+        throw new BadRequestException(
+          'Business-linked Drive files cannot be copied into Personal Drive.',
+        );
+      }
+    }
   }
 }
 
