@@ -13,6 +13,9 @@ export const DRIVE_DEEP_LINK_PRODUCT_ID_QUERY = 'driveProductId';
 /** Open Drive Library → Tasks with this task pre-selected. */
 export const DRIVE_DEEP_LINK_TASK_ID_QUERY = 'driveTaskId';
 
+/** Open Drive Library → Tasks & Work Spaces with this work space pre-selected. */
+export const DRIVE_DEEP_LINK_WORKSPACE_ID_QUERY = 'driveWorkSpaceId';
+
 /** Open Drive Library → Finance scoped to this project (project-linked finance files). */
 export const DRIVE_DEEP_LINK_FINANCE_PROJECT_ID_QUERY = 'driveFinanceProjectId';
 
@@ -37,6 +40,12 @@ export function buildDriveHrefWithProduct(productId: string): string {
 export function buildDriveHrefWithTask(taskId: string): string {
   const p = new URLSearchParams();
   p.set(DRIVE_DEEP_LINK_TASK_ID_QUERY, taskId);
+  return `/drive?${p.toString()}`;
+}
+
+export function buildDriveHrefWithWorkSpace(workSpaceId: string): string {
+  const p = new URLSearchParams();
+  p.set(DRIVE_DEEP_LINK_WORKSPACE_ID_QUERY, workSpaceId);
   return `/drive?${p.toString()}`;
 }
 

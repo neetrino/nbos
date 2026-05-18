@@ -164,11 +164,13 @@ export async function loadDriveLibraryEntityRows(
           name: t.title,
         }),
       );
-      const wsRows = wsData.items.map((w) => ({
-        id: w.id,
-        label: `Workspace: ${w.name}`,
-        entityType: 'WORK_SPACE',
-      }));
+      const wsRows = wsData.items.map((w) =>
+        buildDriveLibraryEntityRow({
+          id: w.id,
+          entityType: 'WORK_SPACE',
+          name: w.name,
+        }),
+      );
       return [...taskRows, ...wsRows].sort((a, b) => a.label.localeCompare(b.label));
     }
     case 'support': {

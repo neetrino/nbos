@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowUpRight, Plus, Settings } from 'lucide-react';
+import { ArrowUpRight, HardDrive, Plus, Settings } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
@@ -20,6 +21,8 @@ import {
   getWorkSpaceTypeVariant,
 } from './work-space-utils';
 import type { WorkspaceBoardView } from './use-workspace-runtime-board';
+import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
+import { buildDriveHrefWithWorkSpace } from '@/features/drive/drive-deep-link';
 
 export function WorkSpaceDetailPage() {
   const params = useParams<{ id: string }>();
@@ -91,6 +94,18 @@ export function WorkSpaceDetailPage() {
             Context <ArrowUpRight size={14} />
           </Link>
         )}
+        <EntityDriveQuickAttach
+          libraryKey="tasks"
+          entityType="WORK_SPACE"
+          entityId={workspace.id}
+        />
+        <Link
+          href={buildDriveHrefWithWorkSpace(workspace.id)}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+        >
+          <HardDrive className="size-4" aria-hidden />
+          Drive files
+        </Link>
         <Button
           type="button"
           variant="outline"

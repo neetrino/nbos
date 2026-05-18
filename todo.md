@@ -13,7 +13,7 @@
 
 ## Осталось
 
-1. **TASK / WORKSPACE Library UX:** scope в API уже есть; нужно довести входы/экраны Library → Task / Work Space → folders + files.
+1. ~~**TASK / WORKSPACE Library UX:** deep link, pinned rows, entity root files merge, Work Space → Drive entry.~~
 2. **Library actions UX:** чекбоксы/кнопки для файлов и ручных папок в Library, с чётким разделением:
    - `DriveFolderItem` actions: place/move/remove from folder, rename/delete только ручных scoped folders;
    - `FileLink` actions: link/unlink from entity, share/grants, archive;
