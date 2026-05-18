@@ -109,6 +109,7 @@
 
 - legacy raw-R2 project routes are disabled and no longer serve data;
 - `/drive/library` now applies the same file access filter as list/get/preview/export flows;
+- общий file access filter now blocks `PERSONAL` / `RESTRICTED` / sensitive confidentiality files for non-owner, non-uploader, non-granted viewers;
 - folder list/add/move/copy/remove now require file-level access, not only folder access;
 - upload session create and complete re-check `entityType` / `entityId` before writing `FileAsset` / `FileLink`;
 - archive/restore/trash audit actor is always `CurrentUser.id`;

@@ -332,6 +332,95 @@ describe('DriveService', () => {
       );
     });
 
+    it('applies layered sensitivity guard to ALL drive scope', async () => {
+      await service.listFileAssets(
+        { search: 'offer' },
+        { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'ALL' },
+      );
+
+      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                OR: expect.arrayContaining([
+                  expect.objectContaining({
+                    AND: [
+                      { visibility: { notIn: ['PERSONAL', 'RESTRICTED'] } },
+                      {
+                        confidentiality: {
+                          notIn: ['FINANCE_SENSITIVE', 'LEGAL_SENSITIVE', 'SECRET_ADJACENT'],
+                        },
+                      },
+                    ],
+                  }),
+                  expect.objectContaining({
+                    OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
+                  }),
+                  expect.objectContaining({
+                    assetGrants: expect.any(Object),
+                  }),
+                ]),
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('applies department scope together with layered sensitivity guard', async () => {
+      prisma.employeeDepartment.findMany.mockResolvedValueOnce([{ employeeId: 'emp-2' }]);
+
+      await service.listFileAssets(
+        { search: 'offer' },
+        { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'DEPARTMENT' },
+      );
+
+      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            AND: expect.arrayContaining([
+              expect.objectContaining({
+                AND: expect.arrayContaining([
+                  expect.objectContaining({
+                    OR: expect.arrayContaining([
+                      { ownerId: { in: ['emp-2'] } },
+                      { createdById: { in: ['emp-2'] } },
+                      { ownerId: 'emp-1' },
+                      { createdById: 'emp-1' },
+                      expect.objectContaining({
+                        assetGrants: expect.any(Object),
+                      }),
+                    ]),
+                  }),
+                  expect.objectContaining({
+                    OR: expect.arrayContaining([
+                      expect.objectContaining({
+                        AND: [
+                          { visibility: { notIn: ['PERSONAL', 'RESTRICTED'] } },
+                          {
+                            confidentiality: {
+                              notIn: ['FINANCE_SENSITIVE', 'LEGAL_SENSITIVE', 'SECRET_ADJACENT'],
+                            },
+                          },
+                        ],
+                      }),
+                      expect.objectContaining({
+                        OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
+                      }),
+                      expect.objectContaining({
+                        assetGrants: expect.any(Object),
+                      }),
+                    ]),
+                  }),
+                ]),
+              }),
+            ]),
+          }),
+        }),
+      );
+    });
+
     it('lists File Assets with sharedWithMe excluding sole self-originated files', async () => {
       await service.listFileAssets(
         { sharedWithMe: true },
