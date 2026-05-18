@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowUpRight, HardDrive, Plus, Settings } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getWorkspaceBoardViewSegments } from '@/features/tasks/tasks-board-view-segments';
@@ -22,8 +21,7 @@ import {
   getWorkSpaceTypeVariant,
 } from './work-space-utils';
 import type { WorkspaceBoardView } from './use-workspace-runtime-board';
-import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
-import { buildDriveHrefWithWorkSpace } from '@/features/drive/drive-deep-link';
+import { WorkSpaceDriveSheet } from './WorkSpaceDriveSheet';
 
 export function WorkSpaceDetailPage() {
   const params = useParams<{ id: string }>();
@@ -35,6 +33,7 @@ export function WorkSpaceDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [driveOpen, setDriveOpen] = useState(false);
   const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
   const openQuickCreateRef = useRef<(() => void) | null>(null);
 
@@ -98,18 +97,16 @@ export function WorkSpaceDetailPage() {
             Context <ArrowUpRight size={14} />
           </Link>
         )}
-        <EntityDriveQuickAttach
-          libraryKey="tasks"
-          entityType="WORK_SPACE"
-          entityId={workspace.id}
-        />
-        <Link
-          href={buildDriveHrefWithWorkSpace(workspace.id)}
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          onClick={() => setDriveOpen(true)}
         >
           <HardDrive className="size-4" aria-hidden />
-          Drive files
-        </Link>
+          Drive
+        </Button>
         <Button
           type="button"
           variant="outline"
@@ -175,6 +172,13 @@ export function WorkSpaceDetailPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onUpdated={handleWorkspaceUpdate}
+      />
+
+      <WorkSpaceDriveSheet
+        open={driveOpen}
+        onOpenChange={setDriveOpen}
+        workSpaceId={workspace.id}
+        workSpaceName={workspace.name}
       />
     </div>
   );
