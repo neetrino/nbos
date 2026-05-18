@@ -2,12 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { jsonSafeForHttp } from './drive-json-safe';
+import { DRIVE_CLEANUP_CANDIDATE_PREVIEW_LIMIT } from './drive-zip-export.constants';
 import {
-  DRIVE_CLEANUP_CANDIDATE_PREVIEW_LIMIT,
-  DRIVE_TASK_ATTACHMENT_RETENTION_MS,
-  DRIVE_TRASH_RETENTION_MS,
-  DRIVE_ZIP_EXPORT_ARTIFACT_TTL_MS,
-} from './drive-zip-export.constants';
+  expiredPendingUploadSessionWhere,
+  failedUploadSessionWhere,
+  oldTaskAttachmentLinkWhere,
+  orphanFileWhere,
+  softDeletedRetentionWhere,
+  temporaryExportFileWhere,
+} from './drive-cleanup-where';
 
 export interface DriveCleanupCandidateItem {
   id: string;
@@ -44,25 +47,14 @@ export class DriveCleanupCandidatesService {
   }
 
   private async orphanFiles(): Promise<DriveCleanupCandidateCategory> {
+    const where = orphanFileWhere();
     const rows = await this.prisma.fileAsset.findMany({
-      where: {
-        deletedAt: null,
-        status: { in: ['ACTIVE', 'ARCHIVED'] },
-        links: { none: { unlinkedAt: null } },
-        folderPlacements: { none: { removedAt: null } },
-      },
+      where,
       select: { id: true, displayName: true, sizeBytes: true, createdAt: true },
       orderBy: { createdAt: 'asc' },
       take: DRIVE_CLEANUP_CANDIDATE_PREVIEW_LIMIT,
     });
-    const count = await this.prisma.fileAsset.count({
-      where: {
-        deletedAt: null,
-        status: { in: ['ACTIVE', 'ARCHIVED'] },
-        links: { none: { unlinkedAt: null } },
-        folderPlacements: { none: { removedAt: null } },
-      },
-    });
+    const count = await this.prisma.fileAsset.count({ where });
     return this.category(
       'orphan_files',
       'Orphan files (no links or folder placement)',
@@ -72,13 +64,14 @@ export class DriveCleanupCandidatesService {
   }
 
   private async failedUploadSessions(): Promise<DriveCleanupCandidateCategory> {
+    const where = failedUploadSessionWhere();
     const rows = await this.prisma.fileUploadSession.findMany({
-      where: { status: 'FAILED' },
+      where,
       select: { id: true, displayName: true, storageKey: true, createdAt: true },
       orderBy: { createdAt: 'asc' },
       take: DRIVE_CLEANUP_CANDIDATE_PREVIEW_LIMIT,
     });
-    const count = await this.prisma.fileUploadSession.count({ where: { status: 'FAILED' } });
+    const count = await this.prisma.fileUploadSession.count({ where });
     return this.category(
       'failed_upload_sessions',
       'Failed upload sessions',
@@ -95,7 +88,7 @@ export class DriveCleanupCandidatesService {
   }
 
   private async expiredPendingUploadSessions(now: Date): Promise<DriveCleanupCandidateCategory> {
-    const where = { status: 'PENDING' as const, expiresAt: { lt: now } };
+    const where = expiredPendingUploadSessionWhere(now);
     const rows = await this.prisma.fileUploadSession.findMany({
       where,
       select: { id: true, displayName: true, expiresAt: true, createdAt: true },
@@ -157,42 +150,31 @@ export class DriveCleanupCandidatesService {
   }
 
   private async temporaryExports(now: Date): Promise<DriveCleanupCandidateCategory> {
-    const cutoff = new Date(now.getTime() - DRIVE_ZIP_EXPORT_ARTIFACT_TTL_MS);
-    const where = {
-      status: 'COMPLETED' as const,
-      completedAt: { lt: cutoff },
-      fileAssetId: { not: null },
-    };
-    const rows = await this.prisma.driveZipExportJob.findMany({
-      where,
-      select: {
-        id: true,
-        completedAt: true,
-        fileAsset: { select: { id: true, displayName: true, sizeBytes: true } },
-      },
-      orderBy: { completedAt: 'asc' },
+    const fileWhere = temporaryExportFileWhere(now);
+    const rows = await this.prisma.fileAsset.findMany({
+      where: fileWhere,
+      select: { id: true, displayName: true, sizeBytes: true, createdAt: true },
+      orderBy: { createdAt: 'asc' },
       take: DRIVE_CLEANUP_CANDIDATE_PREVIEW_LIMIT,
     });
-    const count = await this.prisma.driveZipExportJob.count({ where });
+    const count = await this.prisma.fileAsset.count({ where: fileWhere });
     return this.category(
       'temporary_exports',
       'Expired Drive ZIP export artifacts',
       count,
       rows,
       (row) => ({
-        id: row.fileAsset?.id ?? row.id,
-        kind: 'export_job',
-        label: row.fileAsset?.displayName ?? `Export ${row.id}`,
-        detail: row.id,
-        sizeBytes: row.fileAsset?.sizeBytes?.toString() ?? null,
-        createdAt: row.completedAt?.toISOString(),
+        id: row.id,
+        kind: 'file_asset',
+        label: row.displayName,
+        sizeBytes: row.sizeBytes?.toString() ?? null,
+        createdAt: row.createdAt.toISOString(),
       }),
     );
   }
 
   private async softDeletedRetention(now: Date): Promise<DriveCleanupCandidateCategory> {
-    const cutoff = new Date(now.getTime() - DRIVE_TRASH_RETENTION_MS);
-    const where = { status: 'DELETED' as const, deletedAt: { lt: cutoff } };
+    const where = softDeletedRetentionWhere(now);
     const rows = await this.prisma.fileAsset.findMany({
       where,
       select: { id: true, displayName: true, deletedAt: true, sizeBytes: true },
@@ -217,12 +199,7 @@ export class DriveCleanupCandidatesService {
   }
 
   private async oldTaskAttachments(now: Date): Promise<DriveCleanupCandidateCategory> {
-    const cutoff = new Date(now.getTime() - DRIVE_TASK_ATTACHMENT_RETENTION_MS);
-    const where = {
-      entityType: 'TASK',
-      unlinkedAt: null,
-      linkedAt: { lt: cutoff },
-    };
+    const where = oldTaskAttachmentLinkWhere(now);
     const rows = await this.prisma.fileLink.findMany({
       where,
       select: {
@@ -240,10 +217,10 @@ export class DriveCleanupCandidatesService {
       count,
       rows,
       (row) => ({
-        id: row.fileAsset?.id ?? row.id,
+        id: row.id,
         kind: 'file_link',
         label: row.fileAsset?.displayName ?? row.id,
-        detail: row.linkedAt.toISOString(),
+        detail: row.fileAsset?.id ?? undefined,
         sizeBytes: row.fileAsset?.sizeBytes?.toString() ?? null,
         createdAt: row.linkedAt.toISOString(),
       }),

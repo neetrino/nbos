@@ -24,14 +24,16 @@
 - Typed ZIP exports: `drive.project_zip`, `drive.product_zip`, `drive.client_zip`, `drive.finance_zip`, `drive.task_attachments_zip`.
 - `POST /drive/zip-exports` принимает `exportKind` + `exportParams` или `fileIds`.
 - `POST /drive/zip-exports/:id/cancel` для `QUEUED`.
-- `GET /drive/cleanup/candidates` — review surface без destructive purge.
+- `GET /drive/cleanup/candidates` — review surface.
+- `POST /drive/cleanup/apply` — confirmed cleanup (`ids` или `applyAll` для sessions / expired ZIP artifacts) + audit.
+- Analytics UI: выбор кандидатов, Apply selected / batch.
 
 ---
 
-## Следующий срез
+## Следующий срез (Drive polish, не блокер)
 
-- UI: cleanup confirmed actions; export jobs polling while insights closed.
+- Export jobs polling while insights closed.
 - Upload widget на карточках CRM / Product / Task.
 - Полная UI-матрица Share/Move/Copy.
 - Rich preview.
-- Подтверждённый cleanup action API (после review candidates).
+- Доп. export kinds из канона (Offer, Meeting, Full backup).

@@ -69,6 +69,8 @@ export function DriveHero({
     onCancelExport: (jobId: string) => void;
     onDownloadExport: (fileAssetId: string) => void;
     onRefresh: () => void;
+    onApplyCleanup: (kind: string, ids: string[]) => void;
+    onApplyCleanupAll: (kind: string) => void;
   } | null;
   lifecycleView?: DriveLifecycleView;
 }) {

@@ -14,8 +14,6 @@ describe('DriveCleanupCandidatesService', () => {
     prisma.fileUploadSession.findMany.mockResolvedValue([]);
     prisma.fileUploadSession.count.mockResolvedValue(0);
     prisma.fileAsset.groupBy.mockResolvedValue([]);
-    prisma.driveZipExportJob.findMany.mockResolvedValue([]);
-    prisma.driveZipExportJob.count.mockResolvedValue(0);
     prisma.fileLink.findMany.mockResolvedValue([]);
     prisma.fileLink.count.mockResolvedValue(0);
     service = new DriveCleanupCandidatesService(prisma as never);

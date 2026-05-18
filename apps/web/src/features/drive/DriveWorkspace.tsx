@@ -1199,6 +1199,53 @@ export function DriveWorkspace() {
     [refreshInsightsOperations],
   );
 
+  const handleApplyCleanup = useCallback(
+    async (kind: string, ids: string[]) => {
+      if (
+        !window.confirm(
+          `Apply cleanup for ${ids.length} selected item(s)? This cannot be undone automatically.`,
+        )
+      ) {
+        return;
+      }
+      setBusy(true);
+      try {
+        const result = await driveApi.applyDriveCleanup({ kind, ids });
+        const skipped = result.skipped > 0 ? ` (${result.skipped} skipped)` : '';
+        toast.success(`Applied ${result.applied} item(s)${skipped}`);
+        await refreshInsightsOperations();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Cleanup apply failed');
+      } finally {
+        setBusy(false);
+      }
+    },
+    [refreshInsightsOperations],
+  );
+
+  const handleApplyCleanupAll = useCallback(
+    async (kind: string) => {
+      if (
+        !window.confirm(
+          'Run batch cleanup for this category (up to 100 items)? This cannot be undone automatically.',
+        )
+      ) {
+        return;
+      }
+      setBusy(true);
+      try {
+        const result = await driveApi.applyDriveCleanup({ kind, applyAll: true });
+        toast.success(`Applied ${result.applied} item(s) in batch`);
+        await refreshInsightsOperations();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Cleanup apply failed');
+      } finally {
+        setBusy(false);
+      }
+    },
+    [refreshInsightsOperations],
+  );
+
   const handleTypedExport = useCallback(
     async (action: DriveTypedExportAction) => {
       setBusy(true);
@@ -1229,11 +1276,15 @@ export function DriveWorkspace() {
       onCancelExport: handleCancelExport,
       onDownloadExport: handleDownloadExport,
       onRefresh: () => void refreshInsightsOperations(),
+      onApplyCleanup: handleApplyCleanup,
+      onApplyCleanupAll: handleApplyCleanupAll,
     };
   }, [
     busy,
     cleanupCategories,
     exportJobs,
+    handleApplyCleanup,
+    handleApplyCleanupAll,
     handleCancelExport,
     handleDownloadExport,
     handleTypedExport,

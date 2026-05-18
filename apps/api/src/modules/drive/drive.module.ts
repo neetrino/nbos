@@ -11,6 +11,7 @@ import { DriveProjectHubService } from './drive-project-hub.service';
 import { DriveDealWonLinksService } from './drive-deal-won-links.service';
 import { DriveTypedExportResolver } from './drive-typed-export-resolver';
 import { DriveCleanupCandidatesService } from './drive-cleanup-candidates.service';
+import { DriveCleanupApplyService } from './drive-cleanup-apply.service';
 import { NotificationModule } from '../notifications/notification.module';
 import { AuditModule } from '../audit/audit.module';
 
@@ -29,6 +30,7 @@ import { AuditModule } from '../audit/audit.module';
     DriveDealWonLinksService,
     DriveTypedExportResolver,
     DriveCleanupCandidatesService,
+    DriveCleanupApplyService,
   ],
   exports: [DriveService, DriveUploadSessionService, DriveDealWonLinksService],
 })

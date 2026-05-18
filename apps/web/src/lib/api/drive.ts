@@ -552,6 +552,20 @@ export const driveApi = {
     return resp.data;
   },
 
+  async applyDriveCleanup(input: {
+    kind: string;
+    ids?: string[];
+    applyAll?: boolean;
+  }): Promise<{ kind: string; applied: number; skipped: number; ids: string[] }> {
+    const resp = await api.post<{
+      kind: string;
+      applied: number;
+      skipped: number;
+      ids: string[];
+    }>('/api/drive/cleanup/apply', input);
+    return resp.data;
+  },
+
   async listDriveZipExportJobs(): Promise<DriveZipExportJobSummary[]> {
     const resp = await api.get<DriveZipExportJobSummary[]>('/api/drive/zip-exports');
     return resp.data;

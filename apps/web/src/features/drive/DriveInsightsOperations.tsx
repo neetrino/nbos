@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { DriveCleanupCandidateCategory, DriveZipExportJobSummary } from '@/lib/api/drive';
 import { labelDriveZipExportKind, type DriveTypedExportAction } from './drive-export-ui';
+import { DriveCleanupReviewSection } from './DriveCleanupReviewSection';
 
 function exportStatusTone(status: DriveZipExportJobSummary['status']): string {
   if (status === 'COMPLETED') return 'text-emerald-600 dark:text-emerald-400';
@@ -20,6 +21,8 @@ export function DriveInsightsOperations({
   onCancelExport,
   onDownloadExport,
   onRefresh,
+  onApplyCleanup,
+  onApplyCleanupAll,
 }: {
   busy: boolean;
   typedExportActions: DriveTypedExportAction[];
@@ -29,10 +32,9 @@ export function DriveInsightsOperations({
   onCancelExport: (jobId: string) => void;
   onDownloadExport: (fileAssetId: string) => void;
   onRefresh: () => void;
+  onApplyCleanup: (kind: string, ids: string[]) => void;
+  onApplyCleanupAll: (kind: string) => void;
 }) {
-  const cleanupTotal = cleanupCategories.reduce((sum, row) => sum + row.count, 0);
-  const activeCategories = cleanupCategories.filter((category) => category.count > 0);
-
   return (
     <div className="space-y-2">
       <div className="bg-card/80 border-border/60 rounded-xl border px-3 py-2">
@@ -123,33 +125,14 @@ export function DriveInsightsOperations({
 
       <div className="bg-card/80 border-border/60 rounded-xl border px-3 py-2">
         <p className="text-foreground text-xs font-semibold">Cleanup review</p>
-        <p className="text-muted-foreground mt-0.5 text-xs">
-          {cleanupTotal === 0
-            ? 'No cleanup candidates right now.'
-            : `${cleanupTotal} item(s) across ${activeCategories.length} categories — review only, nothing is deleted automatically.`}
-        </p>
-        {activeCategories.length > 0 ? (
-          <ul className="mt-2 max-h-40 space-y-2 overflow-y-auto">
-            {activeCategories.map((category) => (
-              <li key={category.kind} className="bg-muted/30 rounded-lg px-2 py-1.5">
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="text-foreground font-medium">{category.label}</span>
-                  <span className="text-muted-foreground shrink-0">{category.count}</span>
-                </div>
-                {category.preview.length > 0 ? (
-                  <ul className="text-muted-foreground mt-1 space-y-0.5 text-[11px]">
-                    {category.preview.slice(0, 5).map((item) => (
-                      <li key={`${category.kind}:${item.id}`} className="truncate">
-                        {item.label}
-                        {item.detail ? ` · ${item.detail}` : ''}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        <div className="mt-2">
+          <DriveCleanupReviewSection
+            busy={busy}
+            categories={cleanupCategories}
+            onApply={onApplyCleanup}
+            onApplyAll={onApplyCleanupAll}
+          />
+        </div>
       </div>
     </div>
   );

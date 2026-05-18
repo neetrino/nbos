@@ -21,6 +21,8 @@ import { DriveFolderService } from './drive-folder.service';
 import { DriveZipExportService } from './drive-zip-export.service';
 import { DriveProjectHubService } from './drive-project-hub.service';
 import { DriveCleanupCandidatesService } from './drive-cleanup-candidates.service';
+import { DriveCleanupApplyService } from './drive-cleanup-apply.service';
+import { ApplyDriveCleanupDto } from './apply-drive-cleanup.dto';
 import { CreateDriveZipExportBodyDto } from './create-drive-zip-export.dto';
 import type {
   CompleteUploadSessionDto,
@@ -48,6 +50,7 @@ export class DriveController {
     private readonly driveZipExports: DriveZipExportService,
     private readonly driveProjectHub: DriveProjectHubService,
     private readonly driveCleanupCandidates: DriveCleanupCandidatesService,
+    private readonly driveCleanupApply: DriveCleanupApplyService,
   ) {}
 
   @Get('folders')
@@ -361,6 +364,20 @@ export class DriveController {
   })
   async listDriveCleanupCandidates() {
     return this.driveCleanupCandidates.listCandidates();
+  }
+
+  @Post('cleanup/apply')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({
+    summary: 'Apply reviewed Drive cleanup for selected candidate ids',
+    description:
+      'Runs a confirmed cleanup action for one candidate category. Use ids from GET /drive/cleanup/candidates, or applyAll for failed/expired sessions and expired export artifacts (capped).',
+  })
+  async applyDriveCleanup(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: ApplyDriveCleanupDto,
+  ) {
+    return this.driveCleanupApply.applyCleanup(user.id, body.kind, body.ids, body.applyAll);
   }
 
   @Post('cleanup/purge/:kind')
