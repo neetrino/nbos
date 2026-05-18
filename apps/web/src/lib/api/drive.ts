@@ -149,7 +149,13 @@ export const driveApi = {
     projectCode: string;
     projectName: string;
     deals: { id: string; label: string; fileCount: number }[];
-    products: { id: string; label: string; fileCount: number }[];
+    products: {
+      id: string;
+      label: string;
+      fileCount: number;
+      extensions: { id: string; label: string; fileCount: number }[];
+    }[];
+    client: { id: string; label: string; fileCount: number; entityType: 'COMPANY' | 'CONTACT' }[];
     tasks: { id: string; label: string; fileCount: number }[];
     invoices: { id: string; label: string; fileCount: number }[];
   }> {

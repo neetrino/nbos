@@ -687,7 +687,7 @@ export function DriveWorkspace() {
       const projectId = libraryEntityFolderScope?.scopeEntityId ?? systemLibraryLink?.entityId;
       const projectHubParams =
         projectHubFileBrowse && projectId
-          ? resolveProjectHubFileListParams(projectId, projectHubView, listBase)
+          ? resolveProjectHubFileListParams(projectId, projectHubView, listBase, projectHubSummary)
           : {};
       const list = await driveApi.listFileAssets({
         ...listBase,
@@ -716,6 +716,7 @@ export function DriveWorkspace() {
     libraryEntityFolderScope,
     projectHubAwaitingFocus,
     projectHubFileBrowse,
+    projectHubSummary,
     projectHubView,
     purpose,
     search,

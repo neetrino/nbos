@@ -16,7 +16,7 @@
 1. ~~**TASK / WORKSPACE Library UX:** deep link, pinned rows, entity root files merge, Work Space → Drive entry.~~
 2. ~~**Library actions UX:** folder vs FileLink actions; scoped move/copy picker; unlink from record; hub virtual без folder actions.~~
 3. ~~**R2 storage home:** новые файлы в `nbos/tenants/{organizationId}/files/...` (нужен `NBOS_TENANT_ORGANIZATION_ID` в env API).~~
-4. **Project hub refinements:** добавить Client / Company section и Extension section, если нужно вывести их отдельно от Project files / Products.
+4. ~~**Project hub refinements:** Client tab (Company + Contact); Extensions nested under Products.~~
 5. **Docs cleanup after implementation:** сверить `07-Drive-Cleanup-Register.md` с фактически реализованными Drive-слайсами.
 
 ## Отложено (не этот срез)
