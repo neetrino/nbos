@@ -50,11 +50,12 @@ export class DriveUploadSessionService {
   async createUploadSession(dto: CreateUploadSessionDto, userId: string) {
     const fileName = requireText(dto.fileName, 'fileName');
     const contentType = requireText(dto.contentType, 'contentType');
+    if (dto.folderId) {
+      await this.folders.assertCanUseFolder(dto.folderId, userId);
+    }
     if (!dto.folderId) {
       requireText(dto.entityType, 'entityType');
       requireText(dto.entityId, 'entityId');
-    } else {
-      await this.folders.assertCanUseFolder(dto.folderId, userId);
     }
 
     const sessionId = randomUUID();

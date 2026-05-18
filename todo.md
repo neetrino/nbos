@@ -6,9 +6,9 @@
 
 ## Срезы (порядок)
 
-1. **Prisma + API:** `DriveFolder.scopeEntityType` / `scopeEntityId`; list/create/move в scope.
-2. **DEAL scoped folders** — Library → Deal → дерево + upload.
-3. **PROJECT scoped folders + hub** — секции (Deal, Products, Finance, Tasks) + Unsorted.
+1. ~~**Prisma + API:** `DriveFolder.scopeEntityType` / `scopeEntityId`; list/create/move в scope.~~
+2. ~~**DEAL / PROJECT / … scoped folders (web):** Library → запись → дерево в сайдбаре, New folder, upload в папку + FileLink.~~
+3. **PROJECT hub** — виртуальные секции (Deal, Products, Finance, Tasks) + Unsorted.
 4. **Deal Won policy** — автоматические `FileLink` на PROJECT / PRODUCT / CLIENT.
 5. **TASK / WORKSPACE** scoped folders.
 6. **R2 storage home** — новые файлы в `nbos/tenants/{organizationId}/files/...`.

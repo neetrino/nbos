@@ -118,9 +118,18 @@ export interface DriveFolder {
   updatedAt: string;
 }
 
+export type DriveFolderListParams = {
+  space?: 'COMPANY' | 'PERSONAL';
+  parentId?: string | null;
+  scopeEntityType?: string;
+  scopeEntityId?: string;
+};
+
 export interface DriveFolderListing {
   space: 'COMPANY' | 'PERSONAL';
   parentId: string | null;
+  scopeEntityType?: string | null;
+  scopeEntityId?: string | null;
   folders: DriveFolder[];
   files: FileAsset[];
   /** Internal bucket for files shown at drive root (parentId null in UI). */
@@ -129,6 +138,8 @@ export interface DriveFolderListing {
 
 export interface DriveFolderTreeResponse {
   space: 'COMPANY' | 'PERSONAL';
+  scopeEntityType?: string | null;
+  scopeEntityId?: string | null;
   folders: DriveFolder[];
 }
 
@@ -200,29 +211,35 @@ export const driveApi = {
     return resp.data;
   },
 
-  async listFolder(params: {
-    space: 'COMPANY' | 'PERSONAL';
-    parentId?: string | null;
-  }): Promise<DriveFolderListing> {
+  async listFolder(params: DriveFolderListParams): Promise<DriveFolderListing> {
     const resp = await api.get<DriveFolderListing>('/api/drive/folders', {
-      params: { space: params.space, parentId: params.parentId ?? 'root' },
+      params: {
+        space: params.space,
+        parentId: params.parentId ?? 'root',
+        scopeEntityType: params.scopeEntityType,
+        scopeEntityId: params.scopeEntityId,
+      },
     });
     return resp.data;
   },
 
-  async listFolderTree(params: {
-    space: 'COMPANY' | 'PERSONAL';
-  }): Promise<DriveFolderTreeResponse> {
+  async listFolderTree(params: DriveFolderListParams): Promise<DriveFolderTreeResponse> {
     const resp = await api.get<DriveFolderTreeResponse>('/api/drive/folders/tree', {
-      params: { space: params.space },
+      params: {
+        space: params.space,
+        scopeEntityType: params.scopeEntityType,
+        scopeEntityId: params.scopeEntityId,
+      },
     });
     return resp.data;
   },
 
   async createFolder(data: {
     name: string;
-    space: 'COMPANY' | 'PERSONAL';
+    space?: 'COMPANY' | 'PERSONAL';
     parentId?: string | null;
+    scopeEntityType?: string;
+    scopeEntityId?: string;
   }): Promise<DriveFolder> {
     const resp = await api.post<DriveFolder>('/api/drive/folders', data);
     return resp.data;

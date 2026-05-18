@@ -83,6 +83,7 @@ import {
 } from './drive-file-sort';
 import { toFileSizeNumber } from './drive-format';
 import { collectFileAssetIdsInFolderSubtree } from './drive-folder-selection-expand';
+import { resolveDriveEntityFolderScope } from './drive-entity-folder-scope';
 import { DRIVE_ZIP_UI_MAX_FILES } from './drive-zip-ui-limits';
 
 const DRIVE_ZIP_EXPORT_POLL_INTERVAL_MS = 900;
@@ -417,6 +418,14 @@ export function DriveWorkspace() {
     [driveStorageSpace, selectedLibrary.key],
   );
 
+  const libraryEntityFolderScope = useMemo(() => {
+    if (!systemLibraryLink) return null;
+    return resolveDriveEntityFolderScope(systemLibraryLink.entityType, systemLibraryLink.entityId);
+  }, [systemLibraryLink]);
+
+  const browseEntityScopedFolders = Boolean(libraryEntityFolderScope);
+  const browseFoldersInView = browseDriveFolders || browseEntityScopedFolders;
+
   const browseSystemLibraryUploads = useMemo(() => {
     if (selectedSpace.key !== 'system') return false;
     return (
@@ -514,11 +523,11 @@ export function DriveWorkspace() {
   }, [selectedLibrary.key]);
 
   useEffect(() => {
-    if (!browseDriveFolders) {
+    if (!browseFoldersInView) {
       setActiveFolderId(null);
       setFolderTrail([]);
     }
-  }, [browseDriveFolders]);
+  }, [browseFoldersInView]);
 
   useEffect(() => {
     if (!browseSystemLibraryUploads) {
@@ -545,6 +554,22 @@ export function DriveWorkspace() {
   }, [browseSystemLibraryUploads, selectedLibrary.key]);
 
   const loadFolders = useCallback(async () => {
+    if (browseEntityScopedFolders && libraryEntityFolderScope) {
+      try {
+        const listing = await driveApi.listFolder({
+          scopeEntityType: libraryEntityFolderScope.scopeEntityType,
+          scopeEntityId: libraryEntityFolderScope.scopeEntityId,
+          parentId: activeFolderId,
+        });
+        setFolderListing(listing);
+        if (listing.rootStorageFolderId) {
+          setRootStorageFolderId(listing.rootStorageFolderId);
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to load record folders');
+      }
+      return;
+    }
     if (!driveStorageSpace) {
       setFolderListing(null);
       setRootStorageFolderId(null);
@@ -578,7 +603,13 @@ export function DriveWorkspace() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to load Drive folder');
     }
-  }, [activeFolderId, browseDriveFolders, driveStorageSpace]);
+  }, [
+    activeFolderId,
+    browseDriveFolders,
+    browseEntityScopedFolders,
+    driveStorageSpace,
+    libraryEntityFolderScope,
+  ]);
 
   useEffect(() => {
     void loadFolders();
@@ -642,14 +673,14 @@ export function DriveWorkspace() {
     if (browseSystemLibraryEntityRoot) {
       return [];
     }
-    if (folderListing && browseDriveFolders) {
+    if (folderListing && browseFoldersInView) {
       return folderListing.files;
     }
     return rawFiles.filter((file) =>
       fileMatchesLibrary(file, selectedLibrary, { spaceKey: selectedSpace.key }),
     );
   }, [
-    browseDriveFolders,
+    browseFoldersInView,
     browseSystemLibraryEntityRoot,
     folderListing,
     rawFiles,
@@ -671,9 +702,9 @@ export function DriveWorkspace() {
   }, [files, fileSort]);
 
   const visibleFolderIdsForBulk = useMemo(() => {
-    if (!browseDriveFolders || !driveStorageSpace) return [];
+    if (!browseFoldersInView) return [];
     return (folderListing?.folders ?? []).map((f) => f.id);
-  }, [browseDriveFolders, driveStorageSpace, folderListing?.folders]);
+  }, [browseFoldersInView, folderListing?.folders]);
 
   const allVisibleBulkItemsSelected = useMemo(() => {
     const filesAll = sortedFiles.every((f) => selectedIds.includes(f.id));
@@ -761,24 +792,24 @@ export function DriveWorkspace() {
   );
 
   const fileDragConfig = useMemo(() => {
-    if (!browseDriveFolders || !placementFolderId) return undefined;
+    if (!browseFoldersInView || !placementFolderId) return undefined;
     return {
       sourceFolderId: placementFolderId,
       resolveDragFileIds: (file: FileAsset) =>
         selectedIds.length > 0 && selectedIds.includes(file.id) ? [...selectedIds] : [file.id],
     };
-  }, [browseDriveFolders, placementFolderId, selectedIds]);
+  }, [browseFoldersInView, placementFolderId, selectedIds]);
 
   const folderFileDropConfig = useMemo(
     () =>
-      browseDriveFolders && placementFolderId
+      browseFoldersInView && placementFolderId
         ? {
             sourceFolderId: placementFolderId,
             onMoveFilesToFolder: handleDragMoveFilesToFolder,
             busy,
           }
         : undefined,
-    [browseDriveFolders, busy, handleDragMoveFilesToFolder, placementFolderId],
+    [browseFoldersInView, busy, handleDragMoveFilesToFolder, placementFolderId],
   );
 
   useEffect(() => {
@@ -809,6 +840,10 @@ export function DriveWorkspace() {
     setFolderTrail([]);
     setActiveFolderId(null);
   }
+
+  useEffect(() => {
+    goToDriveRoot();
+  }, [libraryEntityFolderScope?.scopeEntityType, libraryEntityFolderScope?.scopeEntityId]);
 
   function navigateFolderPath(pathFromRoot: DriveFolder[]) {
     if (pathFromRoot.length === 0) {
@@ -1004,16 +1039,25 @@ export function DriveWorkspace() {
   }
 
   async function submitCreateFolder(name: string) {
-    if (!driveStorageSpace) {
-      toast.error('Open Company or Personal Drive first.');
-      throw new Error('No Drive space selected.');
+    if (!driveStorageSpace && !libraryEntityFolderScope) {
+      toast.error('Open a folder context first.');
+      throw new Error('No folder context.');
     }
     try {
-      await driveApi.createFolder({
-        name,
-        space: driveStorageSpace,
-        parentId: activeFolderId,
-      });
+      await driveApi.createFolder(
+        libraryEntityFolderScope
+          ? {
+              name,
+              scopeEntityType: libraryEntityFolderScope.scopeEntityType,
+              scopeEntityId: libraryEntityFolderScope.scopeEntityId,
+              parentId: activeFolderId,
+            }
+          : {
+              name,
+              space: driveStorageSpace!,
+              parentId: activeFolderId,
+            },
+      );
       toast.success('Folder created');
       await loadFolders();
       setFolderTreeVersion((v) => v + 1);
@@ -1051,7 +1095,7 @@ export function DriveWorkspace() {
   }
 
   function openCreateFolderDialog() {
-    if (!driveStorageSpace) return;
+    if (!driveStorageSpace && !libraryEntityFolderScope) return;
     setCreateFolderOpen(true);
   }
 
@@ -1105,12 +1149,12 @@ export function DriveWorkspace() {
 
   const selectAllVisibleInDrive = useCallback(() => {
     setSelectedIds(sortedFiles.map((f) => f.id));
-    if (browseDriveFolders && driveStorageSpace) {
+    if (browseFoldersInView) {
       setSelectedFolderIds((folderListing?.folders ?? []).map((f) => f.id));
     } else {
       setSelectedFolderIds([]);
     }
-  }, [sortedFiles, browseDriveFolders, driveStorageSpace, folderListing?.folders]);
+  }, [sortedFiles, browseFoldersInView, folderListing?.folders]);
 
   const resolveBulkFileAssetIds = useCallback(async (): Promise<string[]> => {
     const space = driveStorageSpace;
@@ -1126,10 +1170,10 @@ export function DriveWorkspace() {
   }, [driveStorageSpace, selectedIds, selectedFolderIds]);
 
   useEffect(() => {
-    if (!browseDriveFolders) {
+    if (!browseFoldersInView) {
       setSelectedFolderIds([]);
     }
-  }, [browseDriveFolders]);
+  }, [browseFoldersInView]);
 
   async function onVersionUpload(file: FileAsset, event: ChangeEvent<HTMLInputElement>) {
     const uploadedFile = event.target.files?.[0];
@@ -1175,8 +1219,14 @@ export function DriveWorkspace() {
       }
       setBusy(true);
       try {
+        const folderCache = new Map<string, string>();
         for (const uploadedFile of uploadedFiles) {
-          await uploadFileToLinkedEntity(uploadedFile, systemLibraryLink);
+          if (browseEntityScopedFolders && placementFolderId) {
+            const targetFolderId = await ensureUploadTargetFolder(uploadedFile, folderCache);
+            await uploadFileToLinkedEntity(uploadedFile, systemLibraryLink, targetFolderId);
+          } else {
+            await uploadFileToLinkedEntity(uploadedFile, systemLibraryLink);
+          }
         }
         toast.success(
           uploadedFiles.length === 1
@@ -1188,6 +1238,10 @@ export function DriveWorkspace() {
               : `${uploadedFiles.length} files uploaded`,
         );
         await load();
+        if (browseEntityScopedFolders) {
+          await loadFolders();
+          setFolderTreeVersion((v) => v + 1);
+        }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Upload failed');
       } finally {
@@ -1232,18 +1286,31 @@ export function DriveWorkspace() {
         parentId = cached;
         continue;
       }
-      const folder = await driveApi.createFolder({
-        name: part,
-        space: driveStorageSpace ?? 'COMPANY',
-        parentId,
-      });
+      const folder = await driveApi.createFolder(
+        libraryEntityFolderScope
+          ? {
+              name: part,
+              scopeEntityType: libraryEntityFolderScope.scopeEntityType,
+              scopeEntityId: libraryEntityFolderScope.scopeEntityId,
+              parentId,
+            }
+          : {
+              name: part,
+              space: driveStorageSpace ?? 'COMPANY',
+              parentId,
+            },
+      );
       folderCache.set(key, folder.id);
       parentId = folder.id;
     }
     return parentId ?? placementFolderId;
   }
 
-  async function uploadFileToLinkedEntity(file: File, link: LibraryUploadLink) {
+  async function uploadFileToLinkedEntity(
+    file: File,
+    link: LibraryUploadLink,
+    folderId?: string | null,
+  ) {
     const contentType = file.type || FALLBACK_MIME_TYPE;
     const meta = buildDriveLibraryUploadSessionFields(selectedLibrary);
     const displayName = getDriveClientUploadDisplayName(file);
@@ -1253,6 +1320,7 @@ export function DriveWorkspace() {
       displayName,
       entityType: link.entityType,
       entityId: link.entityId,
+      folderId: folderId ?? undefined,
       sourceModule: meta.sourceModule,
       purpose: meta.purpose,
       visibility: meta.visibility,
@@ -1349,6 +1417,7 @@ export function DriveWorkspace() {
                   busy={busy}
                   menuMode="library-entity"
                   entityContextReady={systemLibraryLink !== null}
+                  entityScopedFolders={browseEntityScopedFolders}
                   onNewFolder={openCreateFolderDialog}
                   onFilesSelected={(event) => void onFolderUpload(event)}
                   onFolderUpload={(event) => void onFolderUpload(event)}
@@ -1369,7 +1438,21 @@ export function DriveWorkspace() {
                       />
                     ),
                   }
-                : undefined
+                : browseEntityScopedFolders && libraryEntityFolderScope
+                  ? {
+                      forLibraryKey: selectedLibrary.key,
+                      children: (
+                        <DriveSpaceFolderTree
+                          key={`${folderTreeVersion}-${libraryEntityFolderScope.scopeEntityId}`}
+                          space="COMPANY"
+                          entityScope={libraryEntityFolderScope}
+                          activeFolderId={activeFolderId}
+                          folderFileDrop={folderFileDropConfig}
+                          onSelectFolderPath={navigateFolderPath}
+                        />
+                      ),
+                    }
+                  : undefined
             }
           />
         </div>
@@ -1423,15 +1506,6 @@ export function DriveWorkspace() {
             </div>
           ) : null}
 
-          {driveDeepLinkProjectId &&
-          selectedSpace.key === 'system' &&
-          selectedLibrary.key === 'projects' ? (
-            <p className="text-muted-foreground text-xs">
-              Project hub: files are scoped to this project. Open Company or Personal Drive to
-              manage folder trees.
-            </p>
-          ) : null}
-
           {browseSystemLibraryUploads && systemLibraryLink ? (
             <div className="border-border/60 bg-muted/20 flex flex-wrap items-center gap-1 rounded-2xl border px-3 py-2 text-sm">
               <Button
@@ -1471,15 +1545,13 @@ export function DriveWorkspace() {
               checkedFolderIds={selectedFolderIds}
               onSelect={setSelected}
               onToggleChecked={toggleChecked}
-              onToggleFolderChecked={
-                browseDriveFolders && driveStorageSpace ? toggleFolderChecked : undefined
-              }
+              onToggleFolderChecked={browseFoldersInView ? toggleFolderChecked : undefined}
               onOpenFolder={openFolder}
               onRenameFolder={
-                driveStorageSpace ? (folder) => setRenameFolderTarget(folder) : undefined
+                browseFoldersInView ? (folder) => setRenameFolderTarget(folder) : undefined
               }
               onDeleteFolder={
-                driveStorageSpace ? (folder) => setDeleteFolderTarget(folder) : undefined
+                browseFoldersInView ? (folder) => setDeleteFolderTarget(folder) : undefined
               }
               fileMenu={{
                 onOpenDetails: onPreview,
@@ -1487,7 +1559,7 @@ export function DriveWorkspace() {
                 onMoveFile,
                 onArchive,
                 onRestore,
-                onRemoveFromFolder: browseDriveFolders ? onRemoveFromFolder : undefined,
+                onRemoveFromFolder: browseFoldersInView ? onRemoveFromFolder : undefined,
                 busy,
               }}
               fileDrag={fileDragConfig}

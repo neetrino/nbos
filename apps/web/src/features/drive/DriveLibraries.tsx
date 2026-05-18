@@ -22,7 +22,7 @@ export function DriveLibraries({
   atStorageLibraryRoot: boolean;
   sidebarCreateMenu?: ReactNode;
   contextSlot?: ReactNode;
-  folderTreeSlot?: { forLibraryKey: 'company' | 'personal'; children: ReactNode };
+  folderTreeSlot?: { forLibraryKey: DriveLibraryOption['key']; children: ReactNode };
 }) {
   const folders = space.libraryKeys
     .map((key) => DRIVE_LIBRARIES.find((library) => library.key === key))

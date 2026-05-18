@@ -16,11 +16,13 @@ const TREE_DEPTH_PADDING = ['pl-0', 'pl-2.5', 'pl-5', 'pl-8', 'pl-11', 'pl-[3.25
 
 export function DriveSpaceFolderTree({
   space,
+  entityScope,
   activeFolderId,
   onSelectFolderPath,
   folderFileDrop,
 }: {
   space: 'COMPANY' | 'PERSONAL';
+  entityScope?: { scopeEntityType: string; scopeEntityId: string };
   activeFolderId: string | null;
   onSelectFolderPath: (pathFromRoot: DriveFolder[]) => void;
   folderFileDrop?: {
@@ -68,14 +70,21 @@ export function DriveSpaceFolderTree({
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await driveApi.listFolderTree({ space });
+      const res = await driveApi.listFolderTree(
+        entityScope
+          ? {
+              scopeEntityType: entityScope.scopeEntityType,
+              scopeEntityId: entityScope.scopeEntityId,
+            }
+          : { space },
+      );
       const built = buildFolderTree(res.folders);
       setTree(built);
       setExpanded(new Set(built.map((n) => n.id)));
     } finally {
       setLoading(false);
     }
-  }, [space]);
+  }, [entityScope, space]);
 
   useEffect(() => {
     void load();

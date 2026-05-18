@@ -14,6 +14,7 @@ export function DriveSidebarCreateMenu({
   busy,
   entityContextReady = true,
   menuMode = 'storage',
+  entityScopedFolders = false,
   onNewFolder,
   onFilesSelected,
   onFolderUpload,
@@ -21,8 +22,10 @@ export function DriveSidebarCreateMenu({
   busy: boolean;
   /** When false, trigger stays disabled (e.g. system library without entity pick). */
   entityContextReady?: boolean;
-  /** `library-entity`: uploads linked to a record; new folder only in storage drives. */
+  /** `library-entity`: uploads linked to a record; new folder when `entityScopedFolders`. */
   menuMode?: 'storage' | 'library-entity';
+  /** When true inside library-entity, New folder creates scoped entity folders. */
+  entityScopedFolders?: boolean;
   onNewFolder: () => void;
   onFilesSelected: (event: ChangeEvent<HTMLInputElement>) => void;
   onFolderUpload: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -48,7 +51,7 @@ export function DriveSidebarCreateMenu({
           )}
         />
         <DropdownMenuContent align="start" className="min-w-[200px]">
-          {menuMode === 'storage' ? (
+          {menuMode === 'storage' || entityScopedFolders ? (
             <>
               <DropdownMenuItem onClick={() => onNewFolder()}>
                 <FolderPlus className="size-4" aria-hidden />
@@ -75,13 +78,6 @@ export function DriveSidebarCreateMenu({
             </>
           ) : (
             <>
-              <DropdownMenuItem disabled className="cursor-not-allowed opacity-60">
-                <FolderPlus className="size-4" aria-hidden />
-                New folder
-                <span className="text-muted-foreground ml-1 block text-[10px] font-normal normal-case">
-                  (Company / Personal Drive)
-                </span>
-              </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={busy || !entityContextReady}
                 onClick={() => {

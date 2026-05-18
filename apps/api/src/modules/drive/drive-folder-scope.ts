@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 /** Library entity scopes with dedicated folder trees (see doc 08). */
 export const DRIVE_FOLDER_ENTITY_SCOPES = [
   'DEAL',
+  'LEAD',
   'PROJECT',
   'PRODUCT',
   'EXTENSION',
@@ -28,12 +29,13 @@ export function parseEntityScope(input: {
   if (!scopeEntityType || !scopeEntityId) {
     throw new BadRequestException('scopeEntityType and scopeEntityId must be provided together.');
   }
-  if (!DRIVE_FOLDER_ENTITY_SCOPES.includes(scopeEntityType as DriveFolderEntityScope)) {
+  const scopeType = scopeEntityType === 'WORK_SPACE' ? 'WORKSPACE' : scopeEntityType;
+  if (!DRIVE_FOLDER_ENTITY_SCOPES.includes(scopeType as DriveFolderEntityScope)) {
     throw new BadRequestException(
-      `scopeEntityType must be one of: ${DRIVE_FOLDER_ENTITY_SCOPES.join(', ')}.`,
+      `scopeEntityType must be one of: ${DRIVE_FOLDER_ENTITY_SCOPES.join(', ')}, WORK_SPACE.`,
     );
   }
-  return { scopeEntityType, scopeEntityId };
+  return { scopeEntityType: scopeType, scopeEntityId };
 }
 
 export function scopeMatchesFolder(
