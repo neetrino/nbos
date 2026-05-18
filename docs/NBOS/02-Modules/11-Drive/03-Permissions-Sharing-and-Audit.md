@@ -21,6 +21,14 @@ Can access file =
   + explicit grants
 ```
 
+Текущее состояние runtime на `2026-05-18`:
+
+- DB-backed file APIs, `/drive/library`, preview/export flows и folder placements используют общий file access filter;
+- upload session проверяет target context и при create, и при complete;
+- folder placement сам по себе не даёт доступ к файлу, если file-level access не проходит;
+- actor для archive/restore/trash audit всегда берётся с сервера (`CurrentUser.id`);
+- полный canonical resolver для всех entity graphs, confidentiality edge cases и advanced grants остаётся отдельным Phase 2.
+
 ---
 
 ## 2. Visibility
@@ -132,6 +140,8 @@ Audit обязателен для:
 - restore;
 - export;
 - external share.
+
+Минимальная Phase 1 гарантия: клиент не должен передавать `actorId` для lifecycle audit как source of truth. Сервер пишет actor самостоятельно.
 
 Audit event:
 

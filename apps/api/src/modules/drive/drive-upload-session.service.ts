@@ -33,6 +33,10 @@ import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
 import { DriveFolderService } from './drive-folder.service';
+import type { DocumentsReadAccess } from '../documents/documents-access-read';
+import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access.types';
+import { assertDriveEntityContextAccessible } from './drive-entity-context-access';
+import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
 
 @Injectable()
 export class DriveUploadSessionService {
@@ -45,13 +49,26 @@ export class DriveUploadSessionService {
     private readonly config: ConfigService,
   ) {}
 
-  async listDriveLibrary(contextType: string | undefined, contextId: string | undefined) {
+  async listDriveLibrary(
+    contextType: string | undefined,
+    contextId: string | undefined,
+    access?: DriveEntityAccess,
+    documentsAccess?: DocumentsReadAccess,
+  ) {
     const entityType = resolveDriveLibraryEntityType(contextType);
     const entityId = requireText(contextId, 'contextId');
-    return this.listFileAssetsByEntity(entityType, entityId);
+    return this.listFileAssetsByEntity(entityType, entityId, {
+      ...(access ?? { employeeId: '', departmentIds: [] }),
+      ...(documentsAccess ? { documentsAccess } : {}),
+    });
   }
 
-  async createUploadSession(dto: CreateUploadSessionDto, userId: string) {
+  async createUploadSession(
+    dto: CreateUploadSessionDto,
+    userId: string,
+    access?: DriveEntityAccess,
+    documentsAccess?: DocumentsReadAccess,
+  ) {
     const fileName = requireText(dto.fileName, 'fileName');
     const contentType = requireText(dto.contentType, 'contentType');
     if (dto.folderId) {
@@ -66,6 +83,14 @@ export class DriveUploadSessionService {
     const fileAssetId = randomUUID();
     const entityType = dto.entityType?.trim() ?? 'DRIVE_FOLDER';
     const entityId = dto.entityId?.trim() ?? dto.folderId ?? sessionId;
+    if (!dto.folderId && access) {
+      await assertDriveEntityContextAccessible(
+        this.prisma,
+        entityType,
+        entityId,
+        documentsAccess ? { ...access, documentsAccess } : access,
+      );
+    }
     const purpose = pickPurpose(dto.purpose);
     const displayName = (dto.displayName?.trim() || fileName).slice(0, 500);
     const orgId = readTenantOrganizationId(this.config);
@@ -121,7 +146,13 @@ export class DriveUploadSessionService {
     };
   }
 
-  async completeUploadSession(sessionId: string, userId: string, dto: CompleteUploadSessionDto) {
+  async completeUploadSession(
+    sessionId: string,
+    userId: string,
+    dto: CompleteUploadSessionDto,
+    access?: DriveEntityAccess,
+    documentsAccess?: DocumentsReadAccess,
+  ) {
     const session = await this.prisma.fileUploadSession.findUnique({ where: { id: sessionId } });
     if (!session) throw new NotFoundException(`Upload session ${sessionId} not found`);
     if (session.createdById !== userId) {
@@ -136,6 +167,15 @@ export class DriveUploadSessionService {
         data: { status: 'EXPIRED', failedReason: 'session_expired' },
       });
       throw new BadRequestException('Upload session has expired.');
+    }
+
+    if (!session.folderId && access) {
+      await assertDriveEntityContextAccessible(
+        this.prisma,
+        session.entityType,
+        session.entityId,
+        documentsAccess ? { ...access, documentsAccess } : access,
+      );
     }
 
     try {
@@ -199,10 +239,15 @@ export class DriveUploadSessionService {
     });
   }
 
-  private async listFileAssetsByEntity(entityType: string, entityId: string) {
+  private async listFileAssetsByEntity(
+    entityType: string,
+    entityId: string,
+    access?: DriveEntityContextAccess,
+  ) {
     const where: Prisma.FileAssetWhereInput = {
       deletedAt: null,
       links: { some: { entityType, entityId, unlinkedAt: null } },
+      ...(access?.employeeId ? await buildDriveAssetAccessWhere(this.prisma, access) : {}),
     };
     return jsonSafeForHttp(
       await this.prisma.fileAsset.findMany({

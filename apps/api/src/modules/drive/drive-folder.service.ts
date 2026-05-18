@@ -21,6 +21,8 @@ import { DriveR2Client } from './drive-r2.client';
 import { readTenantOrganizationId } from './drive-tenant';
 import { resolveStorageHomeContextPath } from './drive-storage-home-resolver';
 import { buildStorageHomeKeyFromParams } from './drive-storage-home-path';
+import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
+import type { DriveEntityAccess } from './drive-access.types';
 
 const ROOT_PARENT_TOKEN = 'root';
 
@@ -32,7 +34,7 @@ export class DriveFolderService {
     private readonly config: ConfigService,
   ) {}
 
-  async listFolder(params: DriveFolderQueryParams, userId: string) {
+  async listFolder(params: DriveFolderQueryParams, userId: string, access?: DriveEntityAccess) {
     const entityScope = parseEntityScope(params);
     const space = entityScope ? 'COMPANY' : normalizeSpace(params.space);
     if (entityScope && params.space?.trim()) {
@@ -70,7 +72,15 @@ export class DriveFolderService {
         orderBy: [{ name: 'asc' }],
       }),
       this.prisma.driveFolderItem.findMany({
-        where: { folderId: fileContainerId, removedAt: null, itemType: 'FILE' },
+        where: {
+          folderId: fileContainerId,
+          removedAt: null,
+          itemType: 'FILE',
+          fileAsset: {
+            deletedAt: null,
+            ...(await buildDriveAssetAccessWhere(this.prisma, access)),
+          },
+        },
         include: { fileAsset: { include: FILE_ASSET_INCLUDE } },
         orderBy: { placedAt: 'desc' },
       }),
@@ -222,8 +232,14 @@ export class DriveFolderService {
   }
 
   /** Adds a file to a folder when it is not already placed there (Library → Company/Personal). */
-  async addFileToFolder(folderId: string, fileAssetId: string, userId: string) {
+  async addFileToFolder(
+    folderId: string,
+    fileAssetId: string,
+    userId: string,
+    access?: DriveEntityAccess,
+  ) {
     await this.assertCanUseFolder(folderId, userId);
+    await this.assertCanAccessFileAsset(fileAssetId, access);
     const existing = await this.prisma.driveFolderItem.findFirst({
       where: { folderId, fileAssetId, itemType: 'FILE', removedAt: null },
     });
@@ -251,8 +267,14 @@ export class DriveFolderService {
     });
   }
 
-  async removeFile(folderId: string, fileAssetId: string, userId: string) {
+  async removeFile(
+    folderId: string,
+    fileAssetId: string,
+    userId: string,
+    access?: DriveEntityAccess,
+  ) {
     await this.assertCanUseFolder(folderId, userId);
+    await this.assertCanAccessFileAsset(fileAssetId, access);
     const placement = await this.findActiveFilePlacement(folderId, fileAssetId);
     await this.prisma.$transaction(async (tx) => {
       await tx.driveFolderItem.update({
@@ -275,9 +297,11 @@ export class DriveFolderService {
     targetFolderId: string,
     fileAssetId: string,
     userId: string,
+    access?: DriveEntityAccess,
   ) {
     await this.assertCanUseFolder(sourceFolderId, userId);
     await this.assertCanUseFolder(targetFolderId, userId);
+    await this.assertCanAccessFileAsset(fileAssetId, access);
     const placement = await this.findActiveFilePlacement(sourceFolderId, fileAssetId);
     const moved = await this.prisma.$transaction(async (tx) => {
       const row = await tx.driveFolderItem.update({
@@ -298,11 +322,14 @@ export class DriveFolderService {
     return jsonSafeForHttp(moved.fileAsset);
   }
 
-  async copyFile(targetFolderId: string, fileAssetId: string, userId: string) {
+  async copyFile(
+    targetFolderId: string,
+    fileAssetId: string,
+    userId: string,
+    access?: DriveEntityAccess,
+  ) {
     await this.assertCanUseFolder(targetFolderId, userId);
-    const source = await this.prisma.fileAsset.findUnique({ where: { id: fileAssetId } });
-    if (!source || source.deletedAt)
-      throw new NotFoundException(`File asset ${fileAssetId} not found`);
+    const source = await this.getAccessibleFileAsset(fileAssetId, access);
     const storageKey = await this.copyStorageObject(
       source.storageKey,
       source.displayName,
@@ -451,6 +478,24 @@ export class DriveFolderService {
 
   private isReservedRootStorageFolder(folder: { name: string; parentId: string | null }) {
     return folder.parentId === null && folder.name === DRIVE_ROOT_STORAGE_FOLDER_NAME;
+  }
+
+  private async assertCanAccessFileAsset(fileAssetId: string, access?: DriveEntityAccess) {
+    await this.getAccessibleFileAsset(fileAssetId, access);
+  }
+
+  private async getAccessibleFileAsset(fileAssetId: string, access?: DriveEntityAccess) {
+    const source = await this.prisma.fileAsset.findFirst({
+      where: {
+        id: fileAssetId,
+        deletedAt: null,
+        ...(await buildDriveAssetAccessWhere(this.prisma, access)),
+      },
+    });
+    if (!source) {
+      throw new NotFoundException(`File asset ${fileAssetId} not found`);
+    }
+    return source;
   }
 }
 

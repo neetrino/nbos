@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { NotFoundException } from '@nestjs/common';
 import { DriveFolderService } from './drive-folder.service';
 import { DRIVE_ROOT_STORAGE_FOLDER_NAME } from './drive-root-folder.constants';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
@@ -34,6 +35,22 @@ describe('DriveFolderService', () => {
       deletedAt: null,
       scopeEntityType: null,
       scopeEntityId: null,
+    });
+    prisma.fileAsset.findFirst.mockResolvedValue({
+      id: 'file-1',
+      displayName: 'Contract.pdf',
+      originalName: 'Contract.pdf',
+      fileType: 'DOCUMENT',
+      purpose: 'CONTRACT',
+      visibility: 'INTERNAL',
+      confidentiality: 'CONFIDENTIAL',
+      storageProvider: 'R2',
+      storageKey: 'Drive/uploads/source/Contract.pdf',
+      externalUrl: null,
+      mimeType: 'application/pdf',
+      sizeBytes: 123n,
+      checksum: 'abc',
+      deletedAt: null,
     });
     service = new DriveFolderService(
       prisma as never,
@@ -75,22 +92,6 @@ describe('DriveFolderService', () => {
       deletedAt: null,
       scopeEntityType: null,
       scopeEntityId: null,
-    });
-    prisma.fileAsset.findUnique.mockResolvedValue({
-      id: 'file-1',
-      displayName: 'Contract.pdf',
-      originalName: 'Contract.pdf',
-      fileType: 'DOCUMENT',
-      purpose: 'CONTRACT',
-      visibility: 'INTERNAL',
-      confidentiality: 'CONFIDENTIAL',
-      storageProvider: 'R2',
-      storageKey: 'Drive/uploads/source/Contract.pdf',
-      externalUrl: null,
-      mimeType: 'application/pdf',
-      sizeBytes: 123n,
-      checksum: 'abc',
-      deletedAt: null,
     });
     prisma.fileAsset.create.mockResolvedValue({ id: 'file-copy', links: [], versions: [] });
     mockSend.mockResolvedValue({});
@@ -236,5 +237,14 @@ describe('DriveFolderService', () => {
         }),
       }),
     );
+  });
+
+  it('refuses folder placement changes when file is not accessible', async () => {
+    prisma.fileAsset.findFirst.mockResolvedValueOnce(null);
+
+    await expect(service.removeFile('folder-1', 'file-1', 'user-1')).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(prisma.driveFolderItem.findFirst).not.toHaveBeenCalled();
   });
 });

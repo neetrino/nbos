@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from '@nbos/database';
-import type { DriveEntityAccess } from './drive.service';
+import type { DriveEntityAccess } from './drive-access.types';
 
 const DRIVE_WIDE_SCOPES = new Set<string>(['ALL']);
 

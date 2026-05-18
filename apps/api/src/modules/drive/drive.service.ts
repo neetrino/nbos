@@ -28,6 +28,7 @@ import type {
   FileEntry,
   FolderNode,
 } from './drive.types';
+import type { DriveEntityAccess } from './drive-access.types';
 import {
   buildInitialVersion,
   buildLinkCreateInput,
@@ -62,12 +63,6 @@ import {
 import { DriveProjectHubService } from './drive-project-hub.service';
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 3600;
-
-export interface DriveEntityAccess {
-  employeeId: string;
-  departmentIds: string[];
-  driveScope?: string;
-}
 
 @Injectable()
 export class DriveService {
@@ -442,19 +437,25 @@ export class DriveService {
     const now = new Date();
     const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
     const updated = await this.prisma.$transaction(async (tx) => {
-      await tx.fileAsset.updateMany({
+      const matched = await tx.fileAsset.findMany({
         where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
+        select: { id: true },
+      });
+      const matchedIds = matched.map((row) => row.id);
+      if (matchedIds.length === 0) return [];
+      await tx.fileAsset.updateMany({
+        where: { id: { in: matchedIds }, deletedAt: null, ...accessWhere },
         data: { status: 'ARCHIVED', archivedAt: now },
       });
       await tx.fileAuditEvent.createMany({
-        data: uniqueIds.map((fileAssetId) => ({
+        data: matchedIds.map((fileAssetId) => ({
           fileAssetId,
           actorId: actorId ?? null,
           action: 'archived',
         })),
       });
       return tx.fileAsset.findMany({
-        where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
+        where: { id: { in: matchedIds }, deletedAt: null, ...accessWhere },
         include: FILE_ASSET_INCLUDE,
         orderBy: { createdAt: 'desc' },
       });
@@ -469,19 +470,25 @@ export class DriveService {
     }
     const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
     const updated = await this.prisma.$transaction(async (tx) => {
-      await tx.fileAsset.updateMany({
+      const matched = await tx.fileAsset.findMany({
         where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
+        select: { id: true },
+      });
+      const matchedIds = matched.map((row) => row.id);
+      if (matchedIds.length === 0) return [];
+      await tx.fileAsset.updateMany({
+        where: { id: { in: matchedIds }, deletedAt: null, ...accessWhere },
         data: { status: 'ACTIVE', archivedAt: null },
       });
       await tx.fileAuditEvent.createMany({
-        data: uniqueIds.map((fileAssetId) => ({
+        data: matchedIds.map((fileAssetId) => ({
           fileAssetId,
           actorId: actorId ?? null,
           action: 'restored',
         })),
       });
       return tx.fileAsset.findMany({
-        where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
+        where: { id: { in: matchedIds }, deletedAt: null, ...accessWhere },
         include: FILE_ASSET_INCLUDE,
         orderBy: { createdAt: 'desc' },
       });
@@ -512,9 +519,20 @@ export class DriveService {
     }
     const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
     const updated = await this.prisma.$transaction(async (tx) => {
-      await tx.fileAsset.updateMany({
+      const matched = await tx.fileAsset.findMany({
         where: {
           id: { in: uniqueIds },
+          status: 'DELETED',
+          deletedAt: { not: null },
+          ...accessWhere,
+        },
+        select: { id: true },
+      });
+      const matchedIds = matched.map((row) => row.id);
+      if (matchedIds.length === 0) return [];
+      await tx.fileAsset.updateMany({
+        where: {
+          id: { in: matchedIds },
           status: 'DELETED',
           deletedAt: { not: null },
           ...accessWhere,
@@ -522,14 +540,14 @@ export class DriveService {
         data: { status: 'ACTIVE', archivedAt: null, deletedAt: null },
       });
       await tx.fileAuditEvent.createMany({
-        data: uniqueIds.map((fileAssetId) => ({
+        data: matchedIds.map((fileAssetId) => ({
           fileAssetId,
           actorId: actorId ?? null,
           action: 'restored_from_trash',
         })),
       });
       return tx.fileAsset.findMany({
-        where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
+        where: { id: { in: matchedIds }, deletedAt: null, ...accessWhere },
         include: FILE_ASSET_INCLUDE,
         orderBy: { createdAt: 'desc' },
       });

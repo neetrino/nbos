@@ -34,6 +34,7 @@ export function createMockPrisma() {
     payment: createModelMock(),
     product: createModelMock(),
     extension: createModelMock(),
+    checklistTemplate: createModelMock(),
     checklistInstance: createModelMock(),
     subscription: createModelMock(),
     workSpace: createModelMock(),

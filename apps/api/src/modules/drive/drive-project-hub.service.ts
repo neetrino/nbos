@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import type { DriveEntityAccess } from './drive.service';
+import type { DriveEntityAccess } from './drive-access.types';
 import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
 import type {
   ProjectDriveHubSummary,

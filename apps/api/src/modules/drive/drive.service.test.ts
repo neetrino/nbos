@@ -396,7 +396,9 @@ describe('DriveService', () => {
         if (typeof cb !== 'function') return undefined;
         return (cb as (tx: MockPrisma) => Promise<unknown>)(prisma);
       });
-      prisma.fileAsset.findMany.mockResolvedValueOnce([{ id: 'f1' }, { id: 'f2' }]);
+      prisma.fileAsset.findMany
+        .mockResolvedValueOnce([{ id: 'f1' }, { id: 'f2' }])
+        .mockResolvedValueOnce([{ id: 'f1' }, { id: 'f2' }]);
 
       const result = await service.archiveFileAssets(['f1', 'f2', 'f1'], 'employee-1');
 
@@ -414,6 +416,22 @@ describe('DriveService', () => {
         }),
       );
       expect(result).toHaveProperty('updated');
+    });
+
+    it('creates batch archive audit only for matched files', async () => {
+      prisma.$transaction.mockImplementationOnce(async (cb: unknown) => {
+        if (typeof cb !== 'function') return undefined;
+        return (cb as (tx: MockPrisma) => Promise<unknown>)(prisma);
+      });
+      prisma.fileAsset.findMany
+        .mockResolvedValueOnce([{ id: 'f2' }])
+        .mockResolvedValueOnce([{ id: 'f2' }]);
+
+      await service.archiveFileAssets(['f1', 'f2'], 'employee-1');
+
+      expect(prisma.fileAuditEvent.createMany).toHaveBeenCalledWith({
+        data: [expect.objectContaining({ fileAssetId: 'f2', action: 'archived' })],
+      });
     });
   });
 

@@ -19,11 +19,12 @@
 - file grants API (`FileAssetGrant`), version upload, archive/batch restore;
 - ZIP export job (selection → async/sync job, manifest);
 - maintenance: `GET cleanup-summary`, purge failed/expired upload sessions;
-- entity-level RBAC scope на list/get (`OWN` / `DEPARTMENT` / `ALL`).
+- entity-level RBAC scope на list/get (`OWN` / `DEPARTMENT` / `ALL`);
+- Phase 1 hardening: legacy raw-R2 HTTP routes disabled, `/drive/library` uses common file access filtering, folder placements enforce file-level access, upload session create/complete re-check target context, lifecycle audit actor is server-owned.
 
-**Still backlog:** полная матрица Share/Move/Copy по канону §3 permissions, расширенные export types / TTL / cancel, cleanup candidates dashboard, rich preview, reusable card upload widget.
+**Still backlog:** полная матрица Share/Move/Copy по канону §3 permissions, canonical layered entity/confidentiality/grants resolver, расширенные export types / TTL / cancel, cleanup candidates dashboard, rich preview, reusable card upload widget.
 
-**Legacy (сохранено, не source of truth):** `GET /drive/:projectId` R2 prefix listing (`Drive/projects/{projectId}/...`) — для старых объектов; новые файлы не используют этот путь.
+**Legacy:** raw `GET/POST/DELETE /drive/:projectId...` routes disabled on `2026-05-18` and are no longer an active Drive surface.
 
 ### 1.0. Architecture alignment (2026-05-18)
 
@@ -87,22 +88,31 @@
 
 ### 3.2. Backend API
 
-| Gap                  | Status    | Needed                                                                                                                                                                                                         |
-| -------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Upload session       | `DONE`    | `POST /drive/upload-sessions`, presign, complete, fail, `HeadObject` gate                                                                                                                                      |
-| Entity-aware upload  | `PARTIAL` | Session + storage home path resolver; reusable upload on CRM/Product **cards** still missing                                                                                                                   |
-| File list by library | `DONE`    | `GET /drive/library`, `GET /drive/files` with entity filters; Project hub sections via `GET /drive/project-hub/:projectId`                                                                                     |
-| Scoped folders API   | `DONE`    | `GET/POST /drive/folders` with `scopeEntityType` / `scopeEntityId`; listFolder scope guard                                                                                                                     |
-| Folder placement API | `DONE`    | add/move/copy/remove placement; copy creates new `FileAsset` in R2 storage home                                                                                                                                |
-| File detail          | `DONE`    | Metadata, versions, active links and recent audit are exposed in Drive UI                                                                                                                                      |
-| Version upload       | `DONE`    | Existing R2 File Asset can receive a new current version                                                                                                                                                       |
-| Link/unlink API      | `DONE`    | Connect file to additional entities without copying                                                                                                                                                            |
-| Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later                                                                                                                                                           |
-| Folder move/copy API | `PARTIAL` | Move/copy placement + copy `FileAsset` shipped; full Share/Move/Copy matrix + trash lifecycle per doc 03 **MISSING**                                                                                           |
-| Export API           | `PARTIAL` | `POST /drive/zip-exports` (selection ZIP + manifest); typed exports (Project/Product/Client/…) **MISSING**                                                                                                     |
-| Cleanup API          | `PARTIAL` | Upload-session purge (`cleanup-summary`, `cleanup/purge/:kind`); orphan/candidate review queue **MISSING**                                                                                                     |
-| Deal Won link policy | `DONE`    | `DriveDealWonLinksService` — auto `FileLink` to PROJECT/PRODUCT/CONTACT/COMPANY/EXTENSION                                                                                                                      |
-| Permission resolver  | `PARTIAL` | **2026-05-06:** Drive DB-backed file APIs now enforce entity-level RBAC scope (`OWN/DEPARTMENT/ALL`) via file owner/creator + department colleagues; project/entity graph-depth resolver can be expanded later |
+| Gap                  | Status    | Needed                                                                                                                                                                                                                |
+| -------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Upload session       | `DONE`    | `POST /drive/upload-sessions`, presign, complete, fail, `HeadObject` gate                                                                                                                                             |
+| Entity-aware upload  | `PARTIAL` | Session + storage home path resolver; reusable upload on CRM/Product **cards** still missing                                                                                                                          |
+| File list by library | `DONE`    | `GET /drive/library`, `GET /drive/files` with entity filters; Project hub sections via `GET /drive/project-hub/:projectId`; common file access filter applied across list/get/library flows                           |
+| Scoped folders API   | `DONE`    | `GET/POST /drive/folders` with `scopeEntityType` / `scopeEntityId`; listFolder scope guard                                                                                                                            |
+| Folder placement API | `DONE`    | add/move/copy/remove placement; copy creates new `FileAsset` in R2 storage home                                                                                                                                       |
+| File detail          | `DONE`    | Metadata, versions, active links and recent audit are exposed in Drive UI                                                                                                                                             |
+| Version upload       | `DONE`    | Existing R2 File Asset can receive a new current version                                                                                                                                                              |
+| Link/unlink API      | `DONE`    | Connect file to additional entities without copying                                                                                                                                                                   |
+| Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later                                                                                                                                                                  |
+| Folder move/copy API | `PARTIAL` | Move/copy placement + copy `FileAsset` shipped; full Share/Move/Copy matrix + trash lifecycle per doc 03 **MISSING**                                                                                                  |
+| Export API           | `PARTIAL` | `POST /drive/zip-exports` (selection ZIP + manifest); typed exports (Project/Product/Client/…) **MISSING**                                                                                                            |
+| Cleanup API          | `PARTIAL` | Upload-session purge (`cleanup-summary`, `cleanup/purge/:kind`); orphan/candidate review queue **MISSING**                                                                                                            |
+| Deal Won link policy | `DONE`    | `DriveDealWonLinksService` — auto `FileLink` to PROJECT/PRODUCT/CONTACT/COMPANY/EXTENSION                                                                                                                             |
+| Permission resolver  | `PARTIAL` | **2026-05-18:** common DB-backed file APIs, library listing, folder placements and upload-session materialization now share the same access gate; full layered entity/confidentiality/grants resolver remains Phase 2 |
+
+### 3.2.1. Phase 1 hardening closed
+
+- legacy raw-R2 project routes are disabled and no longer serve data;
+- `/drive/library` now applies the same file access filter as list/get/preview/export flows;
+- folder list/add/move/copy/remove now require file-level access, not only folder access;
+- upload session create and complete re-check `entityType` / `entityId` before writing `FileAsset` / `FileLink`;
+- archive/restore/trash audit actor is always `CurrentUser.id`;
+- batch archive/restore audit writes only for реально изменённых файлов.
 
 ### 3.3. Frontend UI
 
@@ -214,13 +224,7 @@ Recommended endpoint family:
 | `POST /drive/exports`                      | Create export job                                        |
 | `GET /drive/cleanup/candidates`            | Review cleanup candidates                                |
 
-The old endpoints can remain temporarily as legacy wrappers:
-
-- `GET /drive/:projectId`
-- `POST /drive/:projectId/upload-url`
-- `GET /drive/:projectId/download-url`
-
-But they should call the new service layer or be marked deprecated.
+The old endpoints are now disabled and should not be reintroduced as compatibility wrappers. Any future compatibility layer must delegate into DB-backed `FileAsset` authorization instead of raw R2 path access.
 
 ### Phase 3 - Libraries UI
 

@@ -40,6 +40,7 @@ function makeR2Mock() {
 function makeFolderMock() {
   return {
     placeFile: vi.fn(),
+    assertCanUseFolder: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -64,7 +65,11 @@ describe('DriveUploadSessionService', () => {
   });
 
   it('lists library using SUPPORT context mapping', async () => {
-    await service.listDriveLibrary('SUPPORT', 'ticket-1');
+    await service.listDriveLibrary('SUPPORT', 'ticket-1', {
+      employeeId: 'user-1',
+      departmentIds: [],
+      driveScope: 'ALL',
+    });
 
     expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -76,7 +81,11 @@ describe('DriveUploadSessionService', () => {
   });
 
   it('lists library for DOCUMENT context', async () => {
-    await service.listDriveLibrary('DOCUMENT', 'doc-uuid');
+    await service.listDriveLibrary('DOCUMENT', 'doc-uuid', {
+      employeeId: 'user-1',
+      departmentIds: [],
+      driveScope: 'ALL',
+    });
 
     expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -111,6 +120,7 @@ describe('DriveUploadSessionService', () => {
         entityId: 'p1',
       },
       'user-1',
+      { employeeId: 'user-1', departmentIds: [], driveScope: 'ALL' },
     );
 
     expect(result.uploadUrl).toBe('https://presigned-url.example.com');
@@ -159,9 +169,63 @@ describe('DriveUploadSessionService', () => {
       links: [],
     });
 
-    const out = await service.completeUploadSession('sess-1', 'user-1', { sizeBytes: 12 });
+    prisma.task.findUnique.mockResolvedValue({
+      creatorId: 'user-1',
+      assigneeId: null,
+      coAssignees: [],
+      observers: [],
+    });
+
+    const out = await service.completeUploadSession(
+      'sess-1',
+      'user-1',
+      { sizeBytes: 12 },
+      { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+    );
 
     expect(out.id).toBe('fa-1');
     expect(prisma.$transaction).toHaveBeenCalled();
+  });
+
+  it('rejects upload session creation for inaccessible task context', async () => {
+    prisma.task.findUnique.mockResolvedValue({
+      creatorId: 'someone-else',
+      assigneeId: null,
+      coAssignees: [],
+      observers: [],
+    });
+
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'doc.pdf',
+          contentType: 'application/pdf',
+          entityType: 'TASK',
+          entityId: 'task-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).rejects.toThrow('Drive context not found');
+  });
+
+  it('rejects library listing when access scope is applied', async () => {
+    await service.listDriveLibrary('SUPPORT', 'ticket-1', {
+      employeeId: 'user-1',
+      departmentIds: ['dep-1'],
+      driveScope: 'OWN',
+    });
+
+    expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          OR: expect.arrayContaining([
+            { ownerId: 'user-1' },
+            { createdById: 'user-1' },
+            expect.objectContaining({ assetGrants: expect.any(Object) }),
+          ]),
+        }),
+      }),
+    );
   });
 });

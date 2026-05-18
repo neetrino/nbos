@@ -11,7 +11,8 @@ import {
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
-import { DriveService, type DriveEntityAccess } from './drive.service';
+import { DriveService } from './drive.service';
+import type { DriveEntityAccess } from './drive-access.types';
 import { DriveExportZipQueueService } from './drive-export-zip-queue.service';
 import { R2_DRIVE_PREFIX } from './drive-storage';
 import { jsonSafeForHttp } from './drive-json-safe';
