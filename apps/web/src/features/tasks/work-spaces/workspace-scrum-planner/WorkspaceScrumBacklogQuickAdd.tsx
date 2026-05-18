@@ -54,7 +54,8 @@ export function WorkspaceScrumBacklogQuickAdd({
     creatorReady && !creatorId ? 'Employee profile required' : 'Task name — press Enter to create';
 
   return (
-    <div
+    <form
+      autoComplete="off"
       className={cn(
         'border-border/70 bg-muted/35 mb-2 shrink-0 rounded-lg border px-2 py-1.5',
         'transition-[border-color,box-shadow,background-color]',
@@ -62,13 +63,26 @@ export function WorkspaceScrumBacklogQuickAdd({
           'focus-within:border-primary/80 focus-within:bg-background focus-within:ring-primary/30 focus-within:ring-2',
         disabled && 'pointer-events-none opacity-60',
       )}
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submit();
+      }}
     >
       <Input
+        type="text"
+        name="workspace-scrum-backlog-quick-title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={onKeyDown}
         disabled={disabled}
         placeholder={placeholder}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        data-1p-ignore
+        data-lpignore="true"
+        data-form-type="other"
         className={cn(
           'text-foreground caret-primary h-7 border-0 bg-transparent pr-1 pl-2 text-sm shadow-none',
           'placeholder:text-muted-foreground/80',
@@ -76,6 +90,6 @@ export function WorkspaceScrumBacklogQuickAdd({
         )}
         aria-label="New backlog task title"
       />
-    </div>
+    </form>
   );
 }
