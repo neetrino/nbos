@@ -28,7 +28,7 @@ export function WorkSpaceAreaSegmented({
           <TabsTrigger
             key={segment.value}
             value={segment.value}
-            className="px-4 py-2 text-sm font-medium"
+            className="px-3 py-1.5 text-xs font-medium"
           >
             {segment.label}
           </TabsTrigger>

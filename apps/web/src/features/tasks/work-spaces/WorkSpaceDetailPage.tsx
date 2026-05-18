@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowUpRight, HardDrive, Plus, Settings } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
+import { ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getWorkspaceBoardViewSegments } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
@@ -97,9 +97,18 @@ export function WorkSpaceDetailPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title={workspace.name}
-        description={
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
+            <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
+              {workspace.name}
+            </h1>
+            <WorkSpaceAreaSegmented
+              value={workspaceArea}
+              onValueChange={setWorkspaceArea}
+              className="min-w-0"
+            />
+          </div>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <StatusBadge
               label={getWorkSpaceTypeLabel(workspace.type)}
@@ -111,68 +120,64 @@ export function WorkSpaceDetailPage() {
             />
             <span className="text-muted-foreground tabular-nums">{tasks.length} tasks</span>
           </div>
-        }
-      >
-        {contextHref && (
-          <Link href={contextHref} className={buttonVariants({ variant: 'outline' })}>
-            Context <ArrowUpRight size={14} />
-          </Link>
-        )}
-        <WorkSpaceAreaSegmented
-          value={workspaceArea}
-          onValueChange={setWorkspaceArea}
-          className="min-w-0 flex-1 sm:flex-initial"
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          onClick={() => setDriveOpen(true)}
-        >
-          <HardDrive className="size-4" aria-hidden />
-          Drive
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={() => setSettingsOpen(true)}
-          aria-label="Work space settings"
-        >
-          <Settings size={16} />
-        </Button>
-        {!isPlanningArea ? (
-          <>
-            <Tabs
-              value={boardView}
-              onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
-            >
-              <TabsList variant="segmented">
-                {getWorkspaceBoardViewSegments(workspace.scrumEnabled).map((segment) => (
-                  <TabsTrigger
-                    key={segment.value}
-                    value={segment.value}
-                    aria-label={segment.ariaLabel}
-                    className="gap-1.5 px-3 py-2"
-                  >
-                    {segment.icon}
-                    {segment.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-            <Button
-              onClick={() => openQuickCreateRef.current?.()}
-              disabled={newTaskDisabled}
-              title={newTaskDisabled ? 'Employee profile required' : undefined}
-            >
-              <Plus size={16} />
-              New Task
-            </Button>
-          </>
-        ) : null}
-      </PageHeader>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+          {contextHref && (
+            <Link href={contextHref} className={buttonVariants({ variant: 'outline' })}>
+              Context <ArrowUpRight size={14} />
+            </Link>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setDriveOpen(true)}
+          >
+            <HardDrive className="size-4" aria-hidden />
+            Drive
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Work space settings"
+          >
+            <Settings size={16} />
+          </Button>
+          {!isPlanningArea ? (
+            <>
+              <Tabs
+                value={boardView}
+                onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
+              >
+                <TabsList variant="segmented">
+                  {getWorkspaceBoardViewSegments(workspace.scrumEnabled).map((segment) => (
+                    <TabsTrigger
+                      key={segment.value}
+                      value={segment.value}
+                      aria-label={segment.ariaLabel}
+                      className="gap-1.5 px-3 py-2"
+                    >
+                      {segment.icon}
+                      {segment.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+              <Button
+                onClick={() => openQuickCreateRef.current?.()}
+                disabled={newTaskDisabled}
+                title={newTaskDisabled ? 'Employee profile required' : undefined}
+              >
+                <Plus size={16} />
+                New Task
+              </Button>
+            </>
+          ) : null}
+        </div>
+      </div>
 
       <WorkSpaceRuntime
         workspace={workspace}

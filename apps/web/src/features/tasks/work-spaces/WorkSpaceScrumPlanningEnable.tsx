@@ -25,14 +25,13 @@ export function WorkSpaceScrumPlanningEnable({
   };
 
   return (
-    <div className="border-border bg-muted/20 flex shrink-0 flex-wrap items-center justify-between gap-4 rounded-xl border px-4 py-3">
-      <div>
-        <p className="text-sm font-medium">Scrum planning</p>
-        <p className="text-muted-foreground text-xs">
-          Backlog, sprint blocks, and drag-and-drop between planning and execution.
-        </p>
-      </div>
+    <div
+      className="border-border bg-muted/20 flex w-fit shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1"
+      title="Backlog, sprint blocks, and drag-and-drop between planning and execution."
+    >
+      <span className="text-xs font-medium">Scrum planning</span>
       <Switch
+        size="sm"
         checked={workspace.scrumEnabled}
         onCheckedChange={(checked) => void handleChange(checked)}
         disabled={saving}
