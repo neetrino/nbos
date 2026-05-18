@@ -7,6 +7,7 @@ import { DriveFolderService } from './drive-folder.service';
 import { DriveZipExportService } from './drive-zip-export.service';
 import { DriveExportZipQueueService } from './drive-export-zip-queue.service';
 import { DriveExportZipWorker } from './drive-export-zip.worker';
+import { DriveProjectHubService } from './drive-project-hub.service';
 import { NotificationModule } from '../notifications/notification.module';
 import { AuditModule } from '../audit/audit.module';
 
@@ -21,6 +22,7 @@ import { AuditModule } from '../audit/audit.module';
     DriveZipExportService,
     DriveExportZipQueueService,
     DriveExportZipWorker,
+    DriveProjectHubService,
   ],
   exports: [DriveService, DriveUploadSessionService],
 })

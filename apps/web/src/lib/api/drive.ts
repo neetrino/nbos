@@ -144,6 +144,21 @@ export interface DriveFolderTreeResponse {
 }
 
 export const driveApi = {
+  async getProjectDriveHubSummary(projectId: string): Promise<{
+    projectId: string;
+    projectCode: string;
+    projectName: string;
+    unsortedCount: number;
+    allProjectLinkedCount: number;
+    deals: { id: string; label: string; fileCount: number }[];
+    products: { id: string; label: string; fileCount: number }[];
+    tasks: { id: string; label: string; fileCount: number }[];
+    invoices: { id: string; label: string; fileCount: number }[];
+  }> {
+    const resp = await api.get(`/api/drive/project-hub/${encodeURIComponent(projectId)}`);
+    return resp.data;
+  },
+
   async listFileAssets(params?: {
     entityType?: string;
     entityId?: string;
@@ -152,6 +167,8 @@ export const driveApi = {
     sourceModule?: string;
     search?: string;
     sharedWithMe?: boolean;
+    projectHubUnsorted?: boolean;
+    projectId?: string;
   }): Promise<FileAsset[]> {
     const resp = await api.get<FileAsset[]>('/api/drive/files', { params });
     return resp.data;

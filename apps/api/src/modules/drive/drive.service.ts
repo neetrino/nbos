@@ -53,46 +53,19 @@ import { NotificationService } from '../notifications/notification.service';
 import { assertFilePreviewableForDocument } from '../documents/documents-assertions';
 import type { DocumentsReadAccess } from '../documents/documents-access-read';
 import { buildSessionUploadStorageKey } from './drive-upload-path';
+import {
+  buildDriveAssetAccessWhere,
+  buildSharedWithMeWhereClause,
+} from './drive-asset-access.where';
+import { DriveProjectHubService } from './drive-project-hub.service';
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 3600;
 const VERSION_UPLOAD_PREFIX = `${R2_DRIVE_PREFIX}uploads/versions`;
-const DRIVE_WIDE_SCOPES = new Set<string>(['ALL']);
 
 export interface DriveEntityAccess {
   employeeId: string;
   departmentIds: string[];
   driveScope?: string;
-}
-
-/** “Shared with me”: not sole self-origin, or explicit grant to the viewer. */
-function buildSharedWithMeWhereClause(employeeId: string): Prisma.FileAssetWhereInput {
-  const notSoleSelfOrigin: Prisma.FileAssetWhereInput = {
-    NOT: {
-      OR: [{ ownerId: employeeId }, { AND: [{ ownerId: null }, { createdById: employeeId }] }],
-    },
-  };
-  const activeGrant: Prisma.FileAssetWhereInput = {
-    assetGrants: {
-      some: {
-        granteeEmployeeId: employeeId,
-        revokedAt: null,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-    },
-  };
-  return { OR: [notSoleSelfOrigin, activeGrant] };
-}
-
-function activeFileAssetGrantWhere(employeeId: string): Prisma.FileAssetWhereInput {
-  return {
-    assetGrants: {
-      some: {
-        granteeEmployeeId: employeeId,
-        revokedAt: null,
-        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      },
-    },
-  };
 }
 
 @Injectable()
@@ -103,6 +76,7 @@ export class DriveService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly r2: DriveR2Client,
     private readonly notifications: NotificationService,
+    private readonly projectHub: DriveProjectHubService,
   ) {}
 
   async listFiles(projectId: string, prefix?: string): Promise<FileEntry[]> {
@@ -194,7 +168,7 @@ export class DriveService {
   }
 
   async getFileAsset(id: string, access?: DriveEntityAccess) {
-    const where = await this.buildDriveAssetAccessWhere(access);
+    const where = await buildDriveAssetAccessWhere(this.prisma, access);
     const file = await this.prisma.fileAsset.findFirst({
       where: { id, ...where, deletedAt: null },
       include: FILE_ASSET_INCLUDE,
@@ -225,7 +199,7 @@ export class DriveService {
     const file = await this.prisma.fileAsset.findFirst({
       where: {
         id: assetId,
-        ...(await this.buildDriveAssetAccessWhere(access)),
+        ...(await buildDriveAssetAccessWhere(this.prisma, access)),
         deletedAt: null,
       },
       include: {
@@ -452,7 +426,7 @@ export class DriveService {
       throw new BadRequestException('ids must include at least one file id.');
     }
     const now = new Date();
-    const accessWhere = await this.buildDriveAssetAccessWhere(access);
+    const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.fileAsset.updateMany({
         where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
@@ -479,7 +453,7 @@ export class DriveService {
     if (uniqueIds.length === 0) {
       throw new BadRequestException('ids must include at least one file id.');
     }
-    const accessWhere = await this.buildDriveAssetAccessWhere(access);
+    const accessWhere = await buildDriveAssetAccessWhere(this.prisma, access);
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.fileAsset.updateMany({
         where: { id: { in: uniqueIds }, deletedAt: null, ...accessWhere },
@@ -753,7 +727,11 @@ export class DriveService {
     access?: DriveEntityAccess,
   ): Promise<{ displayName: string; mimeType: string | null; buffer: Buffer } | null> {
     const file = await this.prisma.fileAsset.findFirst({
-      where: { id: fileId, deletedAt: null, ...(await this.buildDriveAssetAccessWhere(access)) },
+      where: {
+        id: fileId,
+        deletedAt: null,
+        ...(await buildDriveAssetAccessWhere(this.prisma, access)),
+      },
       include: {
         versions: {
           where: { isCurrent: true },
@@ -790,13 +768,15 @@ export class DriveService {
     const clauses: Prisma.FileAssetWhereInput[] = [
       {
         deletedAt: null,
-        ...(await this.buildDriveAssetAccessWhere(access)),
+        ...(await buildDriveAssetAccessWhere(this.prisma, access)),
       },
     ];
     if (params.status) clauses.push({ status: params.status as FileAssetStatusEnum });
     if (params.purpose) clauses.push({ purpose: params.purpose as FilePurposeEnum });
     if (params.sourceModule) clauses.push({ sourceModule: params.sourceModule });
-    if (params.entityType && params.entityId) {
+    if (params.projectHubUnsorted && params.projectId) {
+      clauses.push(await this.projectHub.buildUnsortedWhere(params.projectId));
+    } else if (params.entityType && params.entityId) {
       clauses.push({
         links: {
           some: { entityType: params.entityType, entityId: params.entityId, unlinkedAt: null },
@@ -820,40 +800,4 @@ export class DriveService {
     }
     return clauses.length === 1 ? clauses[0]! : { AND: clauses };
   }
-
-  private async buildDriveAssetAccessWhere(
-    access?: DriveEntityAccess,
-  ): Promise<Prisma.FileAssetWhereInput> {
-    if (!access) return {};
-    const scope = normalizeScope(access.driveScope);
-    if (DRIVE_WIDE_SCOPES.has(scope)) return {};
-    const grantWhere = activeFileAssetGrantWhere(access.employeeId);
-    if (scope === 'OWN') {
-      return {
-        OR: [{ ownerId: access.employeeId }, { createdById: access.employeeId }, grantWhere],
-      };
-    }
-    if (scope === 'DEPARTMENT') {
-      const colleagueRows = await this.prisma.employeeDepartment.findMany({
-        where: { departmentId: { in: access.departmentIds } },
-        select: { employeeId: true },
-        distinct: ['employeeId'],
-      });
-      const colleagueIds = colleagueRows.map((row) => row.employeeId);
-      return {
-        OR: [
-          { ownerId: { in: colleagueIds } },
-          { createdById: { in: colleagueIds } },
-          { ownerId: access.employeeId },
-          { createdById: access.employeeId },
-          grantWhere,
-        ],
-      };
-    }
-    return grantWhere;
-  }
-}
-
-function normalizeScope(scope: string | undefined): string {
-  return scope?.trim().toUpperCase() ?? 'NONE';
 }

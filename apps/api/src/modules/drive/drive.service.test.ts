@@ -47,6 +47,13 @@ function makeNotificationsMock() {
   return { create: vi.fn().mockResolvedValue({ id: 'n1' }) };
 }
 
+function makeProjectHubMock() {
+  return {
+    getSummary: vi.fn(),
+    buildUnsortedWhere: vi.fn().mockResolvedValue({}),
+  };
+}
+
 describe('DriveService', () => {
   describe('with R2 configured', () => {
     let service: DriveService;
@@ -59,6 +66,7 @@ describe('DriveService', () => {
         prisma as never,
         makeR2Mock() as never,
         makeNotificationsMock() as never,
+        makeProjectHubMock() as never,
       );
     });
 
@@ -400,6 +408,7 @@ describe('DriveService', () => {
         createMockPrisma() as never,
         makeUnavailableR2() as never,
         makeNotificationsMock() as never,
+        makeProjectHubMock() as never,
       );
       await expect(service.listFiles('p1')).rejects.toThrow(NotFoundException);
     });

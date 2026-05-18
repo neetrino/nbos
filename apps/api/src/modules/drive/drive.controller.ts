@@ -19,6 +19,7 @@ import { DriveService } from './drive.service';
 import { DriveUploadSessionService } from './drive-upload-session.service';
 import { DriveFolderService } from './drive-folder.service';
 import { DriveZipExportService } from './drive-zip-export.service';
+import { DriveProjectHubService } from './drive-project-hub.service';
 import { CreateDriveZipExportBodyDto } from './create-drive-zip-export.dto';
 import type {
   CompleteUploadSessionDto,
@@ -44,6 +45,7 @@ export class DriveController {
     private readonly driveUploadSessions: DriveUploadSessionService,
     private readonly driveFolders: DriveFolderService,
     private readonly driveZipExports: DriveZipExportService,
+    private readonly driveProjectHub: DriveProjectHubService,
   ) {}
 
   @Get('folders')
@@ -165,6 +167,23 @@ export class DriveController {
     return this.driveFolders.addFileToFolder(folderId, body.fileAssetId.trim(), user.id);
   }
 
+  @Get('project-hub/:projectId')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Project Library hub section counts (deals, products, unsorted, …)',
+  })
+  async getProjectDriveHubSummary(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('projectId') projectId: string,
+  ) {
+    return this.driveProjectHub.getSummary(projectId.trim(), {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
   @Get('files')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'List DB-backed Drive file assets' })
@@ -174,6 +193,12 @@ export class DriveController {
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'sourceModule', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({
+    name: 'projectHubUnsorted',
+    required: false,
+    description: 'When true with projectId, list PROJECT-linked files not in project folders.',
+  })
+  @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({
     name: 'sharedWithMe',
     required: false,
@@ -189,6 +214,8 @@ export class DriveController {
     @Query('status') status?: string,
     @Query('sourceModule') sourceModule?: string,
     @Query('search') search?: string,
+    @Query('projectHubUnsorted') projectHubUnsorted?: string,
+    @Query('projectId') projectId?: string,
     @Query('sharedWithMe') sharedWithMe?: string,
   ) {
     return this.driveService.listFileAssets(
@@ -199,6 +226,8 @@ export class DriveController {
         status,
         sourceModule,
         search,
+        projectHubUnsorted: projectHubUnsorted === 'true',
+        projectId: projectId?.trim() || undefined,
         sharedWithMe: sharedWithMe === 'true',
       },
       {

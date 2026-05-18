@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, type ChangeEvent } from 'react';
-import { FolderPlus, Plus, Upload } from 'lucide-react';
+import { Ban, FolderPlus, Plus, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 export function DriveSidebarCreateMenu({
   busy,
@@ -32,6 +33,7 @@ export function DriveSidebarCreateMenu({
 }) {
   const filesInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
+  const canCreate = !busy && entityContextReady;
 
   return (
     <div className="mb-2">
@@ -42,11 +44,27 @@ export function DriveSidebarCreateMenu({
               {...props}
               type="button"
               variant="outline"
-              disabled={busy || !entityContextReady}
-              className="border-border bg-background text-foreground hover:bg-muted h-12 w-full rounded-2xl border shadow-sm"
-              aria-label="Create or upload"
+              disabled={!canCreate}
+              className={cn(
+                'border-border bg-background hover:bg-muted h-12 w-full rounded-2xl border shadow-sm',
+                canCreate
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:bg-background disabled:opacity-100',
+              )}
+              aria-label={
+                canCreate
+                  ? 'Create or upload'
+                  : 'Create and upload unavailable — select a record first'
+              }
+              title={
+                canCreate ? undefined : 'Select a record in the list to upload or create folders'
+              }
             >
-              <Plus className="size-6 shrink-0" aria-hidden />
+              {canCreate ? (
+                <Plus className="size-6 shrink-0" aria-hidden />
+              ) : (
+                <Ban className="size-6 shrink-0" aria-hidden />
+              )}
             </Button>
           )}
         />

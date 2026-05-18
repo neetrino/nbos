@@ -68,6 +68,9 @@ export interface FileAssetQueryParams {
   search?: string;
   /** When true, exclude files the viewer owns as sole uploader (NBOS Shared with me). */
   sharedWithMe?: boolean;
+  /** Project hub: files linked to PROJECT without placement in PROJECT-scoped folders. */
+  projectHubUnsorted?: boolean;
+  projectId?: string;
 }
 
 export interface CreateUploadSessionDto {
