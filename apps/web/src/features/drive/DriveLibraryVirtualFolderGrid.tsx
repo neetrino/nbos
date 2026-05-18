@@ -104,12 +104,14 @@ function LibraryEntityTable({
   onOpenRow: (row: DriveLibraryEntityRow) => void;
 }) {
   return (
-    <div className="border-border/70 bg-card/80 overflow-hidden rounded-2xl border">
-      <div className="text-muted-foreground border-border/60 grid grid-cols-[40px_minmax(220px,1fr)_130px_120px] gap-3 border-b px-4 py-2 text-xs font-medium">
+    <div className="border-border/70 bg-card/80 overflow-hidden rounded-3xl border">
+      <div className="text-muted-foreground border-border/60 grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3 border-b px-4 py-3 text-xs font-medium">
         <span />
         <span>Name</span>
+        <span>Kind</span>
         <span>Type</span>
-        <span>Code</span>
+        <span>Updated</span>
+        <span />
       </div>
       <div className="divide-border/60 divide-y">
         {rows.map((row) => (

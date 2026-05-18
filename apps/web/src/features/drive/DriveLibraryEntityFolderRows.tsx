@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils';
 import { formatDriveLabel } from './drive-format';
 import type { DriveLibraryEntityRow } from './drive-library-entity-loaders';
 
-const ENTITY_TABLE_GRID = 'grid w-full grid-cols-[40px_minmax(220px,1fr)_130px_120px] gap-3';
+const ENTITY_TABLE_MAIN_GRID =
+  'grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3';
 
 const ENTITY_CARD_ICON_CLASS =
   'text-foreground/80 dark:text-foreground/70 h-[min(5.25rem,47cqh)] w-[min(5.25rem,47cqw)] shrink-0';
@@ -23,16 +24,11 @@ export function DriveLibraryEntityCardRow({
 
   if (compact) {
     return (
-      <div className="border-border/60 bg-card/90 hover:border-primary/25 hover:bg-card relative flex w-full items-center gap-2 rounded-xl border p-2.5 shadow-sm transition-colors">
-        {row.code ? (
-          <span className="text-muted-foreground absolute top-2 right-2 max-w-[45%] truncate font-mono text-[10px] leading-none">
-            {row.code}
-          </span>
-        ) : null}
+      <div className="border-border/60 bg-card/90 hover:border-primary/25 hover:bg-card flex w-full items-center gap-2 rounded-xl border p-2.5 shadow-sm transition-colors">
         <button
           type="button"
           onClick={() => onOpenRow(row)}
-          className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl pr-14 text-left outline-none focus-visible:ring-2"
+          className="focus-visible:ring-ring flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left outline-none focus-visible:ring-2"
         >
           <Folder className="text-muted-foreground size-5 shrink-0" strokeWidth={2} />
           <div className="min-w-0 flex-1">
@@ -48,11 +44,6 @@ export function DriveLibraryEntityCardRow({
 
   return (
     <div className="border-border/60 bg-card/90 hover:border-primary/25 group hover:bg-card relative flex aspect-square w-full flex-col overflow-hidden rounded-2xl border shadow-sm transition-colors">
-      {row.code ? (
-        <span className="text-muted-foreground absolute top-2 right-2 z-10 max-w-[calc(100%-1rem)] truncate font-mono text-[10px] leading-none">
-          {row.code}
-        </span>
-      ) : null}
       <button
         type="button"
         onClick={() => onOpenRow(row)}
@@ -79,13 +70,15 @@ export function DriveLibraryEntityTableRow({
   row: DriveLibraryEntityRow;
   onOpenRow: (row: DriveLibraryEntityRow) => void;
 }) {
+  const typeLabel = formatDriveLabel(row.entityType);
+
   return (
     <div
       role="button"
       tabIndex={0}
       className={cn(
-        ENTITY_TABLE_GRID,
-        'hover:bg-muted/50 focus-visible:ring-ring cursor-pointer px-4 py-3 text-left text-sm outline-none focus-visible:ring-2',
+        ENTITY_TABLE_MAIN_GRID,
+        'hover:bg-muted/50 focus-visible:ring-ring w-full cursor-pointer px-4 py-3 text-left text-sm outline-none focus-visible:ring-2',
       )}
       onClick={() => onOpenRow(row)}
       onKeyDown={(event) => {
@@ -97,8 +90,10 @@ export function DriveLibraryEntityTableRow({
     >
       <Folder className="size-4 self-center text-amber-600 dark:text-amber-400" />
       <span className="truncate font-medium">{row.label}</span>
-      <span className="text-muted-foreground text-xs">{formatDriveLabel(row.entityType)}</span>
-      <span className="text-muted-foreground truncate font-mono text-xs">{row.code ?? '—'}</span>
+      <span className="text-muted-foreground text-xs">Folder</span>
+      <span className="text-muted-foreground text-xs">{typeLabel}</span>
+      <span className="text-muted-foreground text-xs">—</span>
+      <span />
     </div>
   );
 }
