@@ -9,7 +9,6 @@ import {
   type ChangeEvent,
 } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -93,6 +92,7 @@ import {
   isProjectHubFileBrowse,
   projectHubSectionNeedsFocus,
   resolveProjectHubFileListParams,
+  resolveProjectHubFocusLabel,
   type DriveProjectHubView,
   type ProjectDriveHubSummary,
 } from './drive-project-hub-view';
@@ -788,6 +788,31 @@ export function DriveWorkspace() {
         : systemLibraryLink.entityId;
     return `${systemLibraryLink.entityType} ${shortId}`;
   }, [mergedLibraryEntityRows, systemLibraryLink]);
+
+  const currentBrowseTitle = useMemo(() => {
+    const folderName = folderTrail.at(-1)?.name;
+    if (folderName) return folderName;
+
+    if (projectHubFileBrowse && projectHubSummary) {
+      const focusLabel = resolveProjectHubFocusLabel(projectHubSummary, projectHubView);
+      if (focusLabel) return focusLabel;
+    }
+
+    if (activeLibraryEntityLabel) return activeLibraryEntityLabel;
+    if (isProjectLibraryHub && projectHubSummary?.projectName) {
+      return projectHubSummary.projectName;
+    }
+
+    return selectedLibrary.title;
+  }, [
+    activeLibraryEntityLabel,
+    folderTrail,
+    isProjectLibraryHub,
+    projectHubFileBrowse,
+    projectHubSummary,
+    projectHubView,
+    selectedLibrary.title,
+  ]);
 
   const files = useMemo(() => {
     if (browseSystemLibraryEntityRoot) {
@@ -1619,27 +1644,32 @@ export function DriveWorkspace() {
           )}
 
           {!browseSystemLibraryEntityRoot ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-muted-foreground text-xs font-medium">Sort</span>
-              <Select
-                value={fileSort}
-                onValueChange={(v) =>
-                  setFileSort(
-                    (v === 'name' || v === 'size' || v === 'updated'
-                      ? v
-                      : 'updated') as DriveFileSortKey,
-                  )
-                }
-              >
-                <SelectTrigger className="h-8 w-[10.5rem]" aria-label="Sort files">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="updated">Recently updated</SelectItem>
-                  <SelectItem value="name">Name (A–Z)</SelectItem>
-                  <SelectItem value="size">Size (largest first)</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-foreground min-w-0 flex-1 truncate text-lg font-semibold tracking-tight">
+                {currentBrowseTitle}
+              </h2>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <span className="text-muted-foreground text-xs font-medium">Sort</span>
+                <Select
+                  value={fileSort}
+                  onValueChange={(v) =>
+                    setFileSort(
+                      (v === 'name' || v === 'size' || v === 'updated'
+                        ? v
+                        : 'updated') as DriveFileSortKey,
+                    )
+                  }
+                >
+                  <SelectTrigger className="h-8 w-[10.5rem]" aria-label="Sort files">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="updated">Recently updated</SelectItem>
+                    <SelectItem value="name">Name (A–Z)</SelectItem>
+                    <SelectItem value="size">Size (largest first)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           ) : null}
 
@@ -1655,24 +1685,6 @@ export function DriveWorkspace() {
             <p className="text-muted-foreground text-sm">
               Select a record below to view files in this section.
             </p>
-          ) : null}
-
-          {browseSystemLibraryUploads && systemLibraryLink ? (
-            <div className="border-border/60 bg-muted/20 flex flex-wrap items-center gap-1 rounded-2xl border px-3 py-2 text-sm">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground h-8 shrink-0 px-2"
-                onClick={() => setSystemLibraryLink(null)}
-              >
-                All {selectedLibrary.title}
-              </Button>
-              <ChevronRight className="text-muted-foreground size-4 shrink-0" aria-hidden />
-              <span className="text-foreground min-w-0 flex-1 truncate font-medium">
-                {activeLibraryEntityLabel ?? 'Record'}
-              </span>
-            </div>
           ) : null}
 
           {browseSystemLibraryEntityRoot ? (

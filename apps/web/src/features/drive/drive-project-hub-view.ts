@@ -67,3 +67,22 @@ export function projectHubSectionNeedsFocus(section: DriveProjectHubSection): bo
     section === 'deals' || section === 'products' || section === 'tasks' || section === 'finance'
   );
 }
+
+/** Label for the focused row in deals / products / tasks / finance. */
+export function resolveProjectHubFocusLabel(
+  summary: ProjectDriveHubSummary,
+  view: DriveProjectHubView,
+): string | null {
+  if (!view.focusEntityId) return null;
+  const rows =
+    view.section === 'deals'
+      ? summary.deals
+      : view.section === 'products'
+        ? summary.products
+        : view.section === 'tasks'
+          ? summary.tasks
+          : view.section === 'finance'
+            ? summary.invoices
+            : [];
+  return rows.find((row) => row.id === view.focusEntityId)?.label ?? null;
+}
