@@ -3,6 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DriveViewMode } from './drive-options';
+import { driveFolderRowLayout, driveItemsContainerClass } from './drive-view-layout';
 import {
   DriveLibraryEntityCardRow,
   DriveLibraryEntityTableRow,
@@ -75,18 +76,12 @@ export function DriveLibraryVirtualFolderGrid({
       {viewMode === 'table' ? (
         <LibraryEntityTable rows={visible} onOpenRow={onOpenRow} />
       ) : (
-        <div
-          className={cn(
-            viewMode === 'cards'
-              ? 'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7'
-              : 'space-y-2',
-          )}
-        >
+        <div className={cn(driveItemsContainerClass(viewMode))}>
           {visible.map((row) => (
             <DriveLibraryEntityCardRow
               key={`${row.entityType}:${row.id}`}
               row={row}
-              compact={viewMode === 'list'}
+              layout={driveFolderRowLayout(viewMode)}
               onOpenRow={onOpenRow}
             />
           ))}

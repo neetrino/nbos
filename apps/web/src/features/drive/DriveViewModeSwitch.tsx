@@ -1,4 +1,4 @@
-import { Grid3X3, List, Table2, type LucideIcon } from 'lucide-react';
+import { Grid3X3, LayoutGrid, List, Table2, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DriveViewMode } from './drive-options';
 
@@ -13,6 +13,7 @@ export function DriveViewModeSwitch({
 }) {
   const options: Array<{ value: DriveViewMode; label: string; icon: LucideIcon }> = [
     { value: 'cards', label: 'Cards', icon: Grid3X3 },
+    { value: 'tiles', label: 'Tiles', icon: LayoutGrid },
     { value: 'list', label: 'List', icon: List },
     { value: 'table', label: 'Table', icon: Table2 },
   ];

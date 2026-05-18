@@ -10,7 +10,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { formatFileSize } from './drive-format';
+import { formatDriveLabel, formatFileSize } from './drive-format';
+import { DriveTileShell } from './DriveTileShell';
 import { DriveFileCardThumbnail } from './DriveFileCardThumbnail';
 import { DRIVE_FILE_DRAG_MIME, stringifyDriveFileDragPayload } from './drive-file-drag';
 
@@ -59,9 +60,11 @@ export function DriveFileCheckbox({
   );
 }
 
+type DriveFileCardLayout = 'grid' | 'list' | 'tiles';
+
 export function DriveFileCard(props: {
   file: FileAsset;
-  compact: boolean;
+  layout: DriveFileCardLayout;
   selected: boolean;
   checked: boolean;
   onSelect: (file: FileAsset) => void;
@@ -69,12 +72,93 @@ export function DriveFileCard(props: {
   menu?: DriveFileCardMenuHandlers;
   fileDrag?: DriveFileCardDragConfig;
 }) {
-  const { compact, menu } = props;
+  const { layout, menu } = props;
   const menuBusy = menu?.busy ?? false;
-  if (compact) {
+  if (layout === 'list') {
     return <DriveFileCardListRow {...props} menuBusy={menuBusy} />;
   }
+  if (layout === 'tiles') {
+    return <DriveFileCardTileRow {...props} menuBusy={menuBusy} />;
+  }
   return <DriveFileCardGrid {...props} menuBusy={menuBusy} />;
+}
+
+function DriveFileCardTileRow({
+  file,
+  selected,
+  checked,
+  onSelect,
+  onToggleChecked,
+  menu,
+  menuBusy,
+  fileDrag,
+}: {
+  file: FileAsset;
+  selected: boolean;
+  checked: boolean;
+  onSelect: (file: FileAsset) => void;
+  onToggleChecked: (file: FileAsset, checked: boolean) => void;
+  menu?: DriveFileCardMenuHandlers;
+  menuBusy: boolean;
+  fileDrag?: DriveFileCardDragConfig;
+}) {
+  const showMenu = Boolean(menu);
+  const draggable = Boolean(fileDrag);
+  const purposeLabel = file.purpose ? formatDriveLabel(file.purpose) : 'File';
+
+  return (
+    <div
+      draggable={draggable}
+      onDragStart={
+        fileDrag
+          ? (event) => {
+              const ids = fileDrag.resolveDragFileIds(file);
+              event.dataTransfer.setData(
+                DRIVE_FILE_DRAG_MIME,
+                stringifyDriveFileDragPayload({ fileIds: ids }),
+              );
+              event.dataTransfer.effectAllowed = 'move';
+            }
+          : undefined
+      }
+      className={cn(
+        'group relative',
+        selected && 'ring-primary rounded-2xl ring-2 ring-offset-2',
+        draggable && 'cursor-grab active:cursor-grabbing',
+      )}
+    >
+      <div
+        className={cn(
+          'absolute top-2 left-2 z-10',
+          CARD_CONTROL_HOVER,
+          checked && 'pointer-events-auto opacity-100',
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <DriveFileCheckbox
+          file={file}
+          checked={checked}
+          onToggleChecked={onToggleChecked}
+          className="border-border bg-background/95 shadow-sm"
+        />
+      </div>
+      <DriveTileShell
+        title={file.displayName}
+        subtitle={purposeLabel}
+        icon={
+          <div className="relative size-full">
+            <DriveFileCardThumbnail file={file} />
+          </div>
+        }
+        onClick={() => onSelect(file)}
+      />
+      {showMenu && menu ? (
+        <div className={cn('absolute top-2 right-2 z-10', CARD_CONTROL_HOVER)}>
+          <FileCardActionsMenu file={file} handlers={menu} busy={menuBusy} align="end" />
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function DriveFileCardListRow({

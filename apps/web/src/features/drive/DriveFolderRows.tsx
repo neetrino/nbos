@@ -12,6 +12,9 @@ import {
 import type { DriveFolder } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate } from './drive-format';
+import { DriveTileShell } from './DriveTileShell';
+
+type DriveFolderRowLayout = 'cards' | 'list' | 'tiles';
 
 const FOLDER_TABLE_ROW_GRID =
   'grid w-full grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px_44px] gap-3';
@@ -38,7 +41,7 @@ export type DriveFolderFileDropHandlers = {
 
 export function DriveFolderCardRow({
   folder,
-  compact,
+  layout,
   onOpenFolder,
   onRenameFolder,
   onDeleteFolder,
@@ -48,7 +51,7 @@ export function DriveFolderCardRow({
   onToggleFolderChecked,
 }: {
   folder: DriveFolder;
-  compact: boolean;
+  layout: DriveFolderRowLayout;
   onOpenFolder: (folder: DriveFolder) => void;
   onRenameFolder?: (folder: DriveFolder) => void;
   onDeleteFolder?: (folder: DriveFolder) => void;
@@ -74,7 +77,55 @@ export function DriveFolderCardRow({
     </div>
   );
 
-  if (compact) {
+  if (layout === 'tiles') {
+    return (
+      <div
+        className={cn(
+          'group relative',
+          fileDropHighlight && 'ring-primary rounded-2xl ring-2 ring-offset-2',
+        )}
+        onDragOver={fileDropHandlers?.onDragOver}
+        onDragLeave={fileDropHandlers?.onDragLeave}
+        onDrop={fileDropHandlers?.onDrop}
+      >
+        {onToggleFolderChecked ? (
+          <div
+            className={cn(
+              'absolute top-2 left-2 z-10',
+              FOLDER_CARD_MENU_HOVER,
+              folderChecked && 'pointer-events-auto opacity-100',
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={Boolean(folderChecked)}
+              onChange={(event) => onToggleFolderChecked(folder, event.target.checked)}
+              className="border-border bg-background/95 size-4 rounded shadow-sm"
+              aria-label={`Select folder ${folder.name}`}
+            />
+          </div>
+        ) : null}
+        <DriveTileShell
+          title={folder.name}
+          subtitle={folder.space}
+          icon={<Folder className="size-5" strokeWidth={2} aria-hidden />}
+          onClick={() => onOpenFolder(folder)}
+        />
+        {showMenu ? (
+          <div className={cn('absolute top-2 right-2 z-10', FOLDER_CARD_MENU_HOVER)}>
+            <FolderOverflowMenu
+              folder={folder}
+              onRenameFolder={onRenameFolder}
+              onDeleteFolder={onDeleteFolder}
+            />
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (layout === 'list') {
     return shell(
       'relative flex w-full items-center gap-2 rounded-xl p-2.5',
       <>

@@ -274,7 +274,7 @@ export function DriveWorkspace() {
       );
     }
     const rawMode = window.localStorage.getItem(DRIVE_VIEW_MODE_STORAGE_KEY);
-    if (rawMode === 'cards' || rawMode === 'list' || rawMode === 'table') {
+    if (rawMode === 'cards' || rawMode === 'tiles' || rawMode === 'list' || rawMode === 'table') {
       setViewMode(rawMode);
     }
   }, [

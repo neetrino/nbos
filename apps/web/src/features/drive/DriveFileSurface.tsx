@@ -7,6 +7,11 @@ import { cn } from '@/lib/utils';
 import { formatDriveDate, formatDriveLabel, formatFileSize } from './drive-format';
 import type { DriveViewMode } from './drive-options';
 import {
+  driveFileCardLayout,
+  driveFolderRowLayout,
+  driveItemsContainerClass,
+} from './drive-view-layout';
+import {
   DriveFileCard,
   DriveFileCheckbox,
   type DriveFileCardDragConfig,
@@ -128,19 +133,16 @@ export function DriveFileSurface({
       />
     );
   }
+  const folderLayout = driveFolderRowLayout(viewMode);
+  const fileLayout = driveFileCardLayout(viewMode);
+
   return (
-    <div
-      className={cn(
-        viewMode === 'cards'
-          ? 'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7'
-          : 'space-y-2',
-      )}
-    >
+    <div className={cn(driveItemsContainerClass(viewMode))}>
       {folders.map((folder) => (
         <DriveFolderCardRow
           key={folder.id}
           folder={folder}
-          compact={viewMode === 'list'}
+          layout={folderLayout}
           onOpenFolder={onOpenFolder}
           onRenameFolder={onRenameFolder}
           onDeleteFolder={onDeleteFolder}
@@ -154,7 +156,7 @@ export function DriveFileSurface({
         <DriveFileCard
           key={file.id}
           file={file}
-          compact={viewMode === 'list'}
+          layout={fileLayout}
           selected={file.id === selectedId}
           checked={checkedIds.includes(file.id)}
           onSelect={onSelect}

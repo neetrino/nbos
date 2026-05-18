@@ -1,9 +1,15 @@
 'use client';
 
-import { Folder } from 'lucide-react';
+import { Folder, FolderKanban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDriveLabel } from './drive-format';
-import type { DriveLibraryEntityRow } from './drive-library-entity-loaders';
+import {
+  driveLibraryEntityTileTitle,
+  type DriveLibraryEntityRow,
+} from './drive-library-entity-loaders';
+import { DriveTileShell } from './DriveTileShell';
+
+type DriveLibraryEntityLayout = 'cards' | 'list' | 'tiles';
 
 const ENTITY_TABLE_MAIN_GRID =
   'grid grid-cols-[40px_minmax(220px,1fr)_130px_120px_110px_100px] gap-3';
@@ -13,16 +19,27 @@ const ENTITY_CARD_ICON_CLASS =
 
 export function DriveLibraryEntityCardRow({
   row,
-  compact,
+  layout,
   onOpenRow,
 }: {
   row: DriveLibraryEntityRow;
-  compact: boolean;
+  layout: DriveLibraryEntityLayout;
   onOpenRow: (row: DriveLibraryEntityRow) => void;
 }) {
   const typeLabel = formatDriveLabel(row.entityType);
 
-  if (compact) {
+  if (layout === 'tiles') {
+    return (
+      <DriveTileShell
+        title={driveLibraryEntityTileTitle(row)}
+        subtitle={typeLabel}
+        icon={<FolderKanban className="size-5" aria-hidden />}
+        onClick={() => onOpenRow(row)}
+      />
+    );
+  }
+
+  if (layout === 'list') {
     return (
       <div className="border-border/60 bg-card/90 hover:border-primary/25 hover:bg-card flex w-full items-center gap-2 rounded-xl border p-2.5 shadow-sm transition-colors">
         <button

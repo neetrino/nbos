@@ -33,7 +33,7 @@ export type DriveLibraryKey =
   | 'shared'
   | 'archive';
 
-export type DriveViewMode = 'cards' | 'list' | 'table';
+export type DriveViewMode = 'cards' | 'tiles' | 'list' | 'table';
 
 export type DriveStatusFilter = 'ACTIVE' | 'APPROVED' | 'ARCHIVED';
 
