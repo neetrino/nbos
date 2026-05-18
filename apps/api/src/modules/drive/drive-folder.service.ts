@@ -9,6 +9,11 @@ import type {
   RenameDriveFolderDto,
 } from './drive.types';
 import { DRIVE_ROOT_STORAGE_FOLDER_NAME } from './drive-root-folder.constants';
+import {
+  parseEntityScope,
+  scopeMatchesFolder,
+  type DriveFolderEntityScopeFilter,
+} from './drive-folder-scope';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { DriveR2Client } from './drive-r2.client';
@@ -24,10 +29,19 @@ export class DriveFolderService {
   ) {}
 
   async listFolder(params: DriveFolderQueryParams, userId: string) {
-    const space = normalizeSpace(params.space);
+    const entityScope = parseEntityScope(params);
+    const space = entityScope ? 'COMPANY' : normalizeSpace(params.space);
+    if (entityScope && params.space?.trim()) {
+      const requested = params.space.trim().toUpperCase();
+      if (requested !== 'COMPANY') {
+        throw new BadRequestException('Entity-scoped folders use space COMPANY only.');
+      }
+    }
     const parentId = normalizeParentId(params.parentId);
-    const ownerWhere = space === 'PERSONAL' ? { ownerId: userId } : {};
-    const rootStorage = await this.findOrCreateRootStorageFolder(space, userId);
+    const ownerWhere =
+      space === 'PERSONAL' ? { ownerId: userId } : entityScope ? { ownerId: null } : {};
+    const scopeWhere = entityScopeWhere(entityScope);
+    const rootStorage = await this.findOrCreateRootStorageFolder(space, userId, entityScope);
     const fileContainerId = parentId ?? rootStorage.id;
 
     const folderWhere =
@@ -38,8 +52,9 @@ export class DriveFolderService {
             deletedAt: null,
             id: { not: rootStorage.id },
             ...ownerWhere,
+            ...scopeWhere,
           }
-        : { space, parentId, deletedAt: null, ...ownerWhere };
+        : { space, parentId, deletedAt: null, ...ownerWhere, ...scopeWhere };
 
     const [folders, placements] = await Promise.all([
       this.prisma.driveFolder.findMany({
@@ -56,15 +71,23 @@ export class DriveFolderService {
     return jsonSafeForHttp({
       space,
       parentId,
+      scopeEntityType: entityScope?.scopeEntityType ?? null,
+      scopeEntityId: entityScope?.scopeEntityId ?? null,
       folders,
       files: placements.map((placement) => placement.fileAsset).filter(Boolean),
       rootStorageFolderId: rootStorage.id,
     });
   }
 
-  async listFolderTree(space: string, userId: string) {
-    const normalized = normalizeSpace(space);
-    const ownerWhere = normalized === 'PERSONAL' ? { ownerId: userId } : {};
+  async listFolderTree(
+    space: string,
+    userId: string,
+    scopeParams?: { scopeEntityType?: string; scopeEntityId?: string },
+  ) {
+    const entityScope = parseEntityScope(scopeParams ?? {});
+    const normalized = entityScope ? 'COMPANY' : normalizeSpace(space);
+    const ownerWhere =
+      normalized === 'PERSONAL' ? { ownerId: userId } : entityScope ? { ownerId: null } : {};
     const folders = await this.prisma.driveFolder.findMany({
       where: {
         space: normalized,
@@ -73,10 +96,16 @@ export class DriveFolderService {
           AND: [{ parentId: null }, { name: DRIVE_ROOT_STORAGE_FOLDER_NAME }],
         },
         ...ownerWhere,
+        ...entityScopeWhere(entityScope),
       },
       orderBy: [{ name: 'asc' }],
     });
-    return jsonSafeForHttp({ space: normalized, folders });
+    return jsonSafeForHttp({
+      space: normalized,
+      scopeEntityType: entityScope?.scopeEntityType ?? null,
+      scopeEntityId: entityScope?.scopeEntityId ?? null,
+      folders,
+    });
   }
 
   async renameFolder(folderId: string, dto: RenameDriveFolderDto, userId: string) {
@@ -128,15 +157,21 @@ export class DriveFolderService {
     if (name === DRIVE_ROOT_STORAGE_FOLDER_NAME) {
       throw new BadRequestException('This folder name is reserved.');
     }
-    const space = normalizeSpace(dto.space);
+    const entityScope = parseEntityScope(dto);
+    const space = entityScope ? 'COMPANY' : normalizeSpace(dto.space);
+    if (entityScope && dto.space?.trim() && dto.space.trim().toUpperCase() !== 'COMPANY') {
+      throw new BadRequestException('Entity-scoped folders use space COMPANY only.');
+    }
     const parentId = normalizeParentId(dto.parentId);
-    if (parentId) await this.assertFolderAccess(parentId, space, userId);
+    if (parentId) await this.assertFolderAccess(parentId, space, userId, entityScope);
 
     const folder = await this.prisma.driveFolder.create({
       data: {
         name: name.slice(0, 180),
         space,
         parentId,
+        scopeEntityType: entityScope?.scopeEntityType ?? null,
+        scopeEntityId: entityScope?.scopeEntityId ?? null,
         ownerId: space === 'PERSONAL' ? userId : null,
         createdById: userId,
       },
@@ -162,6 +197,7 @@ export class DriveFolderService {
     if (folder.space === 'PERSONAL' && folder.ownerId !== userId) {
       throw new NotFoundException(`Folder ${folderId} not found`);
     }
+    // TODO: entity-scoped folder access via module RBAC (DEAL/PROJECT membership).
     return folder;
   }
 
@@ -301,9 +337,17 @@ export class DriveFolderService {
     return jsonSafeForHttp(copied);
   }
 
-  private async assertFolderAccess(folderId: string, space: DriveSpaceEnum, userId: string) {
+  private async assertFolderAccess(
+    folderId: string,
+    space: DriveSpaceEnum,
+    userId: string,
+    entityScope: DriveFolderEntityScopeFilter | null,
+  ) {
     const folder = await this.prisma.driveFolder.findUnique({ where: { id: folderId } });
     if (!folder || folder.deletedAt || folder.space !== space) {
+      throw new NotFoundException(`Folder ${folderId} not found`);
+    }
+    if (!scopeMatchesFolder(folder, entityScope)) {
       throw new NotFoundException(`Folder ${folderId} not found`);
     }
     if (space === 'PERSONAL' && folder.ownerId !== userId) {
@@ -332,8 +376,13 @@ export class DriveFolderService {
     return placement;
   }
 
-  private async findOrCreateRootStorageFolder(space: DriveSpaceEnum, userId: string) {
+  private async findOrCreateRootStorageFolder(
+    space: DriveSpaceEnum,
+    userId: string,
+    entityScope: DriveFolderEntityScopeFilter | null,
+  ) {
     const ownerFilter = space === 'PERSONAL' ? { ownerId: userId } : { ownerId: null };
+    const scopeWhere = entityScopeWhere(entityScope);
     const existing = await this.prisma.driveFolder.findFirst({
       where: {
         space,
@@ -341,6 +390,7 @@ export class DriveFolderService {
         name: DRIVE_ROOT_STORAGE_FOLDER_NAME,
         deletedAt: null,
         ...ownerFilter,
+        ...scopeWhere,
       },
     });
     if (existing) return existing;
@@ -349,6 +399,8 @@ export class DriveFolderService {
         name: DRIVE_ROOT_STORAGE_FOLDER_NAME,
         space,
         parentId: null,
+        scopeEntityType: entityScope?.scopeEntityType ?? null,
+        scopeEntityId: entityScope?.scopeEntityId ?? null,
         ownerId: space === 'PERSONAL' ? userId : null,
         createdById: userId,
       },
@@ -370,4 +422,14 @@ function normalizeParentId(input: string | undefined): string | null {
   const value = input?.trim();
   if (!value || value === ROOT_PARENT_TOKEN) return null;
   return value;
+}
+
+function entityScopeWhere(scope: DriveFolderEntityScopeFilter | null) {
+  if (!scope) {
+    return { scopeEntityType: null, scopeEntityId: null };
+  }
+  return {
+    scopeEntityType: scope.scopeEntityType,
+    scopeEntityId: scope.scopeEntityId,
+  };
 }

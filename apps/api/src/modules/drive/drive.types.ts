@@ -118,13 +118,18 @@ export interface FileUploadSessionCompleteRow {
 
 export interface CreateDriveFolderDto {
   name: string;
-  space: string;
+  /** Required for Company/Personal; optional when scopeEntityType + scopeEntityId are set (defaults to COMPANY). */
+  space?: string;
   parentId?: string;
+  scopeEntityType?: string;
+  scopeEntityId?: string;
 }
 
 export interface DriveFolderQueryParams {
   space?: string;
   parentId?: string;
+  scopeEntityType?: string;
+  scopeEntityId?: string;
 }
 
 export interface MoveFolderFileDto {

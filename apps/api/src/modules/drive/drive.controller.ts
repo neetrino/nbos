@@ -49,22 +49,43 @@ export class DriveController {
   @Get('folders')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'List user-created Drive folders and files' })
-  @ApiQuery({ name: 'space', required: true, description: 'COMPANY | PERSONAL' })
+  @ApiQuery({
+    name: 'space',
+    required: false,
+    description: 'COMPANY | PERSONAL (required without entity scope)',
+  })
   @ApiQuery({ name: 'parentId', required: false, description: 'Folder id or root' })
+  @ApiQuery({ name: 'scopeEntityType', required: false, description: 'DEAL | PROJECT | …' })
+  @ApiQuery({ name: 'scopeEntityId', required: false })
   async listFolders(
     @CurrentUser() user: CurrentUserPayload,
     @Query('space') space?: string,
     @Query('parentId') parentId?: string,
+    @Query('scopeEntityType') scopeEntityType?: string,
+    @Query('scopeEntityId') scopeEntityId?: string,
   ) {
-    return this.driveFolders.listFolder({ space, parentId }, user.id);
+    return this.driveFolders.listFolder(
+      { space, parentId, scopeEntityType, scopeEntityId },
+      user.id,
+    );
   }
 
   @Get('folders/tree')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'List all Drive folders in a space (flat list for tree UI)' })
-  @ApiQuery({ name: 'space', required: true, description: 'COMPANY | PERSONAL' })
-  async listFolderTree(@CurrentUser() user: CurrentUserPayload, @Query('space') space?: string) {
-    return this.driveFolders.listFolderTree(space ?? '', user.id);
+  @ApiQuery({ name: 'space', required: false, description: 'COMPANY | PERSONAL' })
+  @ApiQuery({ name: 'scopeEntityType', required: false })
+  @ApiQuery({ name: 'scopeEntityId', required: false })
+  async listFolderTree(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('space') space?: string,
+    @Query('scopeEntityType') scopeEntityType?: string,
+    @Query('scopeEntityId') scopeEntityId?: string,
+  ) {
+    return this.driveFolders.listFolderTree(space ?? '', user.id, {
+      scopeEntityType,
+      scopeEntityId,
+    });
   }
 
   @Post('folders')

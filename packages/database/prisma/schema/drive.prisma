@@ -186,16 +186,19 @@ model DriveZipExportJob {
 }
 
 model DriveFolder {
-  id          String         @id @default(uuid())
-  name        String
-  space       DriveSpaceEnum
-  ownerId     String?        @map("owner_id")
-  createdById String?        @map("created_by_id")
-  parentId    String?        @map("parent_id")
-  archivedAt  DateTime?      @map("archived_at")
-  deletedAt   DateTime?      @map("deleted_at")
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
+  id               String         @id @default(uuid())
+  name             String
+  space            DriveSpaceEnum
+  /// When set with scopeEntityId, folder belongs to a Library entity (DEAL, PROJECT, …), not Company/Personal free tree.
+  scopeEntityType  String?        @map("scope_entity_type")
+  scopeEntityId    String?        @map("scope_entity_id")
+  ownerId          String?        @map("owner_id")
+  createdById      String?        @map("created_by_id")
+  parentId         String?        @map("parent_id")
+  archivedAt       DateTime?      @map("archived_at")
+  deletedAt        DateTime?      @map("deleted_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
 
   parent              DriveFolder?      @relation("DriveFolderTree", fields: [parentId], references: [id], onDelete: SetNull)
   children            DriveFolder[]     @relation("DriveFolderTree")
@@ -203,6 +206,7 @@ model DriveFolder {
   childFolderPlacements DriveFolderItem[] @relation("DriveFolderItemChildFolder")
 
   @@index([space, ownerId])
+  @@index([scopeEntityType, scopeEntityId])
   @@index([parentId])
   @@index([deletedAt])
   @@map("drive_folders")
