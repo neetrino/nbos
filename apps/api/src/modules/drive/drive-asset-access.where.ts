@@ -1,6 +1,7 @@
 import type { Prisma, PrismaClient } from '@nbos/database';
 import type { FileGrantPermission } from './drive-grant-permissions';
 import type { DriveEntityAccess } from './drive-access.types';
+import { buildDriveInheritedLinkFileAccessWhere } from './drive-inherited-link-access';
 
 const DRIVE_WIDE_SCOPES = new Set<string>(['ALL']);
 const SELF_ONLY_VISIBILITIES = new Set<string>(['PERSONAL', 'RESTRICTED']);
@@ -89,9 +90,10 @@ export async function buildDriveAssetAccessWhere(
   if (DRIVE_WIDE_SCOPES.has(scope)) {
     return layeredSensitivityWhere(access.employeeId);
   }
+  const inheritedWhere = await buildDriveInheritedLinkFileAccessWhere(prisma, access);
   const grantWhere = activeFileAssetGrantWhere(access.employeeId);
   if (scope === 'OWN') {
-    return ownScopeWhere(access.employeeId);
+    return { OR: [ownScopeWhere(access.employeeId), inheritedWhere] };
   }
   if (scope === 'DEPARTMENT') {
     const colleagueRows = await prisma.employeeDepartment.findMany({
@@ -100,7 +102,7 @@ export async function buildDriveAssetAccessWhere(
       distinct: ['employeeId'],
     });
     const colleagueIds = colleagueRows.map((row) => row.employeeId);
-    return {
+    const departmentScope: Prisma.FileAssetWhereInput = {
       AND: [
         {
           OR: [
@@ -114,8 +116,9 @@ export async function buildDriveAssetAccessWhere(
         layeredSensitivityWhere(access.employeeId),
       ],
     };
+    return { OR: [departmentScope, inheritedWhere] };
   }
-  return ownScopeWhere(access.employeeId);
+  return { OR: [ownScopeWhere(access.employeeId), inheritedWhere] };
 }
 
 export async function buildDriveAssetBaseAccessWhere(

@@ -1561,6 +1561,14 @@ export function DriveWorkspace() {
     setFolderFilePicker({ mode: 'copy', file });
   }
 
+  function onShareFile(file: FileAsset) {
+    if (!driveActionCapabilities.canShareFile) {
+      toast.error('Sharing is not available in this view.');
+      return;
+    }
+    setSelected(file);
+  }
+
   async function onUnlinkFromRecord(file: FileAsset) {
     const record = driveActionCapabilities.libraryRecordLink;
     if (!record) return;
@@ -2340,6 +2348,10 @@ export function DriveWorkspace() {
                 onUnlinkFromRecord:
                   !inLifecycleView && driveActionCapabilities.canUnlinkFromRecord
                     ? (f) => void onUnlinkFromRecord(f)
+                    : undefined,
+                onShareFile:
+                  !inLifecycleView && driveActionCapabilities.canShareFile
+                    ? onShareFile
                     : undefined,
                 busy,
               }}

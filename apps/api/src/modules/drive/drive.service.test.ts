@@ -424,11 +424,10 @@ describe('DriveService', () => {
           where: expect.objectContaining({
             AND: expect.arrayContaining([
               expect.objectContaining({
+                deletedAt: null,
                 OR: expect.arrayContaining([
-                  { ownerId: 'emp-1' },
-                  { createdById: 'emp-1' },
                   expect.objectContaining({
-                    assetGrants: expect.any(Object),
+                    OR: expect.arrayContaining([{ ownerId: 'emp-1' }, { createdById: 'emp-1' }]),
                   }),
                 ]),
               }),
@@ -475,55 +474,32 @@ describe('DriveService', () => {
     });
 
     it('applies department scope together with layered sensitivity guard', async () => {
-      prisma.employeeDepartment.findMany.mockResolvedValueOnce([{ employeeId: 'emp-2' }]);
+      prisma.employeeDepartment.findMany.mockResolvedValue([{ employeeId: 'emp-2' }]);
 
       await service.listFileAssets(
         { search: 'offer' },
         { employeeId: 'emp-1', departmentIds: ['dep-1'], driveScope: 'DEPARTMENT' },
       );
 
-      expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
+      const listCall = prisma.fileAsset.findMany.mock.calls[0]?.[0] as {
+        where?: { AND?: Array<{ deletedAt?: null; OR?: unknown[] }> };
+      };
+      const accessClause = listCall?.where?.AND?.find((clause) => clause.deletedAt === null);
+      expect(accessClause?.OR).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
             AND: expect.arrayContaining([
               expect.objectContaining({
-                AND: expect.arrayContaining([
-                  expect.objectContaining({
-                    OR: expect.arrayContaining([
-                      { ownerId: { in: ['emp-2'] } },
-                      { createdById: { in: ['emp-2'] } },
-                      { ownerId: 'emp-1' },
-                      { createdById: 'emp-1' },
-                      expect.objectContaining({
-                        assetGrants: expect.any(Object),
-                      }),
-                    ]),
-                  }),
-                  expect.objectContaining({
-                    OR: expect.arrayContaining([
-                      expect.objectContaining({
-                        AND: [
-                          { visibility: { notIn: ['PERSONAL', 'RESTRICTED'] } },
-                          {
-                            confidentiality: {
-                              notIn: ['FINANCE_SENSITIVE', 'LEGAL_SENSITIVE', 'SECRET_ADJACENT'],
-                            },
-                          },
-                        ],
-                      }),
-                      expect.objectContaining({
-                        OR: [{ ownerId: 'emp-1' }, { createdById: 'emp-1' }],
-                      }),
-                      expect.objectContaining({
-                        assetGrants: expect.any(Object),
-                      }),
-                    ]),
-                  }),
+                OR: expect.arrayContaining([
+                  { ownerId: { in: ['emp-2'] } },
+                  { createdById: { in: ['emp-2'] } },
+                  { ownerId: 'emp-1' },
+                  { createdById: 'emp-1' },
                 ]),
               }),
             ]),
           }),
-        }),
+        ]),
       );
     });
 

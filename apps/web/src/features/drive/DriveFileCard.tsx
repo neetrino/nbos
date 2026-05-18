@@ -1,6 +1,14 @@
 'use client';
 
-import { Archive, Copy, FolderInput, Link2Off, MoreHorizontal, PanelRightOpen } from 'lucide-react';
+import {
+  Archive,
+  Copy,
+  FolderInput,
+  Link2Off,
+  MoreHorizontal,
+  PanelRightOpen,
+  UserPlus,
+} from 'lucide-react';
 import type { FileAsset } from '@/lib/api/drive';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +42,7 @@ export type DriveFileCardMenuHandlers = {
   onMoveFile?: (file: FileAsset) => void;
   onRemoveFromFolder?: (file: FileAsset) => void;
   onUnlinkFromRecord?: (file: FileAsset) => void;
+  onShareFile?: (file: FileAsset) => void;
   busy?: boolean;
 };
 
@@ -391,6 +400,12 @@ function FileCardActionsMenuItems({
         <PanelRightOpen className="size-4" />
         Open details
       </DropdownMenuItem>
+      {handlers.onShareFile ? (
+        <DropdownMenuItem disabled={busy} onClick={() => handlers.onShareFile?.(file)}>
+          <UserPlus className="size-4" />
+          Share access…
+        </DropdownMenuItem>
+      ) : null}
       {handlers.onCopyFile ? (
         <DropdownMenuItem disabled={busy} onClick={() => handlers.onCopyFile?.(file)}>
           <Copy className="size-4" />

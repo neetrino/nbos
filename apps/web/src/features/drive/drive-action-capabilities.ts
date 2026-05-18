@@ -18,6 +18,8 @@ export type DriveActionCapabilities = {
   canRemoveFromFolder: boolean;
   canMovePlacementInTree: boolean;
   canCopyIntoFolderTree: boolean;
+  /** Open detail panel → access grants (Share). */
+  canShareFile: boolean;
   /** `FileLink` context for the open library record (incl. project hub virtual focus). */
   libraryRecordLink: DriveLibraryRecordLink | null;
   canUnlinkFromRecord: boolean;
@@ -55,6 +57,11 @@ export function resolveDriveActionCapabilities(input: {
   }
 
   const scopedFolderTree = folderPlacementMode && Boolean(input.libraryEntityFolderScope);
+  const companyOrPersonal = Boolean(input.driveStorageSpace);
+  const canCopyIntoFolderTree =
+    scopedFolderTree ||
+    companyOrPersonal ||
+    (isVirtualFileBrowse && inSystemLibrary && Boolean(libraryRecordLink));
 
   return {
     showFolderBulkSelection: folderPlacementMode,
@@ -62,7 +69,9 @@ export function resolveDriveActionCapabilities(input: {
     showFolderFileDragDrop: folderPlacementMode && Boolean(input.placementFolderId),
     canRemoveFromFolder: folderPlacementMode && Boolean(input.placementFolderId),
     canMovePlacementInTree: folderPlacementMode && Boolean(input.placementFolderId),
-    canCopyIntoFolderTree: scopedFolderTree || Boolean(input.driveStorageSpace),
+    canCopyIntoFolderTree,
+    canShareFile:
+      companyOrPersonal || folderPlacementMode || (inSystemLibrary && Boolean(libraryRecordLink)),
     libraryRecordLink: inSystemLibrary ? libraryRecordLink : null,
     canUnlinkFromRecord: inSystemLibrary && Boolean(libraryRecordLink),
     canPlaceInCompanyFolder: inSystemLibrary && Boolean(libraryRecordLink),
