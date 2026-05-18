@@ -42,7 +42,11 @@ export class DriveFolderService {
       space === 'PERSONAL' ? { ownerId: userId } : entityScope ? { ownerId: null } : {};
     const scopeWhere = entityScopeWhere(entityScope);
     const rootStorage = await this.findOrCreateRootStorageFolder(space, userId, entityScope);
+    if (parentId) {
+      await this.assertFolderAccess(parentId, space, userId, entityScope);
+    }
     const fileContainerId = parentId ?? rootStorage.id;
+    await this.assertFolderContainerScope(fileContainerId, entityScope);
 
     const folderWhere =
       parentId === null
@@ -335,6 +339,19 @@ export class DriveFolderService {
       include: FILE_ASSET_INCLUDE,
     });
     return jsonSafeForHttp(copied);
+  }
+
+  private async assertFolderContainerScope(
+    folderId: string,
+    entityScope: DriveFolderEntityScopeFilter | null,
+  ) {
+    const folder = await this.prisma.driveFolder.findUnique({ where: { id: folderId } });
+    if (!folder || folder.deletedAt) {
+      throw new NotFoundException(`Folder ${folderId} not found`);
+    }
+    if (!scopeMatchesFolder(folder, entityScope)) {
+      throw new NotFoundException(`Folder ${folderId} not found`);
+    }
   }
 
   private async assertFolderAccess(

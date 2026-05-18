@@ -143,6 +143,18 @@ describe('DriveFolderService', () => {
       parentId: null,
       space: 'COMPANY',
       ownerId: null,
+      scopeEntityType: null,
+      scopeEntityId: null,
+    });
+    prisma.driveFolder.findUnique.mockResolvedValue({
+      id: 'root-bucket',
+      name: DRIVE_ROOT_STORAGE_FOLDER_NAME,
+      parentId: null,
+      space: 'COMPANY',
+      ownerId: null,
+      deletedAt: null,
+      scopeEntityType: null,
+      scopeEntityId: null,
     });
     prisma.driveFolder.findMany.mockResolvedValueOnce([]);
     prisma.driveFolderItem.findMany.mockResolvedValueOnce([]);
@@ -155,6 +167,51 @@ describe('DriveFolderService', () => {
     expect(prisma.driveFolderItem.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ folderId: 'root-bucket', itemType: 'FILE' }),
+      }),
+    );
+  });
+
+  it('lists entity-scoped project root with scoped storage folder', async () => {
+    prisma.driveFolder.findFirst.mockResolvedValueOnce({
+      id: 'project-root-a',
+      name: DRIVE_ROOT_STORAGE_FOLDER_NAME,
+      parentId: null,
+      space: 'COMPANY',
+      ownerId: null,
+      scopeEntityType: 'PROJECT',
+      scopeEntityId: 'project-a',
+    });
+    prisma.driveFolder.findUnique.mockResolvedValue({
+      id: 'project-root-a',
+      name: DRIVE_ROOT_STORAGE_FOLDER_NAME,
+      parentId: null,
+      space: 'COMPANY',
+      ownerId: null,
+      deletedAt: null,
+      scopeEntityType: 'PROJECT',
+      scopeEntityId: 'project-a',
+    });
+    prisma.driveFolder.findMany.mockResolvedValueOnce([]);
+    prisma.driveFolderItem.findMany.mockResolvedValueOnce([]);
+
+    const result = (await service.listFolder(
+      { scopeEntityType: 'PROJECT', scopeEntityId: 'project-a', parentId: 'root' },
+      'user-1',
+    )) as {
+      rootStorageFolderId: string;
+      scopeEntityId: string | null;
+      files: unknown[];
+    };
+
+    expect(result.rootStorageFolderId).toBe('project-root-a');
+    expect(result.scopeEntityId).toBe('project-a');
+    expect(result.files).toEqual([]);
+    expect(prisma.driveFolder.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          scopeEntityType: 'PROJECT',
+          scopeEntityId: 'project-a',
+        }),
       }),
     );
   });

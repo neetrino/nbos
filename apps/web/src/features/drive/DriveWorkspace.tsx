@@ -5,6 +5,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ChangeEvent,
 } from 'react';
@@ -85,6 +86,7 @@ import {
 import { toFileSizeNumber } from './drive-format';
 import { collectFileAssetIdsInFolderSubtree } from './drive-folder-selection-expand';
 import { resolveDriveEntityFolderScope } from './drive-entity-folder-scope';
+import { folderListingMatchesBrowseContext } from './drive-folder-listing-match';
 import { DRIVE_ZIP_UI_MAX_FILES } from './drive-zip-ui-limits';
 import { DriveProjectHubNav } from './DriveProjectHubNav';
 import {
@@ -143,6 +145,7 @@ export function DriveWorkspace() {
   const [fileSort, setFileSort] = useState<DriveFileSortKey>('updated');
   const [libraryPlacePickerOpen, setLibraryPlacePickerOpen] = useState(false);
   const [folderListing, setFolderListing] = useState<DriveFolderListing | null>(null);
+  const folderListingRequestId = useRef(0);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [folderTrail, setFolderTrail] = useState<DriveFolder[]>([]);
   const [folderFilePicker, setFolderFilePicker] = useState<FolderFilePickerState | null>(null);
@@ -674,6 +677,8 @@ export function DriveWorkspace() {
   }, [browseSystemLibraryUploads, selectedLibrary.key]);
 
   const loadFolders = useCallback(async () => {
+    const requestId = ++folderListingRequestId.current;
+
     if (browseEntityScopedFolders && libraryEntityFolderScope) {
       try {
         const listing = await driveApi.listFolder({
@@ -681,16 +686,19 @@ export function DriveWorkspace() {
           scopeEntityId: libraryEntityFolderScope.scopeEntityId,
           parentId: activeFolderId,
         });
+        if (requestId !== folderListingRequestId.current) return;
         setFolderListing(listing);
         if (listing.rootStorageFolderId) {
           setRootStorageFolderId(listing.rootStorageFolderId);
         }
       } catch (err) {
+        if (requestId !== folderListingRequestId.current) return;
         toast.error(err instanceof Error ? err.message : 'Failed to load record folders');
       }
       return;
     }
     if (!driveStorageSpace) {
+      if (requestId !== folderListingRequestId.current) return;
       setFolderListing(null);
       setRootStorageFolderId(null);
       setActiveFolderId(null);
@@ -698,14 +706,17 @@ export function DriveWorkspace() {
       return;
     }
     if (!browseDriveFolders) {
+      if (requestId !== folderListingRequestId.current) return;
       setFolderListing(null);
       try {
         const anchor = await driveApi.listFolder({
           space: driveStorageSpace,
           parentId: null,
         });
+        if (requestId !== folderListingRequestId.current) return;
         setRootStorageFolderId(anchor.rootStorageFolderId ?? null);
       } catch (err) {
+        if (requestId !== folderListingRequestId.current) return;
         toast.error(err instanceof Error ? err.message : 'Failed to load Drive root');
         setRootStorageFolderId(null);
       }
@@ -716,11 +727,13 @@ export function DriveWorkspace() {
         space: driveStorageSpace,
         parentId: activeFolderId,
       });
+      if (requestId !== folderListingRequestId.current) return;
       setFolderListing(listing);
       if (listing.rootStorageFolderId) {
         setRootStorageFolderId(listing.rootStorageFolderId);
       }
     } catch (err) {
+      if (requestId !== folderListingRequestId.current) return;
       toast.error(err instanceof Error ? err.message : 'Failed to load Drive folder');
     }
   }, [
@@ -729,6 +742,17 @@ export function DriveWorkspace() {
     browseEntityScopedFolders,
     driveStorageSpace,
     libraryEntityFolderScope,
+  ]);
+
+  useEffect(() => {
+    folderListingRequestId.current += 1;
+    setFolderListing(null);
+    setProjectShellFiles([]);
+  }, [
+    libraryEntityFolderScope?.scopeEntityType,
+    libraryEntityFolderScope?.scopeEntityId,
+    driveStorageSpace,
+    browseEntityScopedFolders,
   ]);
 
   useEffect(() => {
@@ -814,6 +838,27 @@ export function DriveWorkspace() {
     selectedLibrary.title,
   ]);
 
+  const scopedFolderListing = useMemo(
+    () =>
+      folderListingMatchesBrowseContext(folderListing, libraryEntityFolderScope, driveStorageSpace)
+        ? folderListing
+        : null,
+    [driveStorageSpace, folderListing, libraryEntityFolderScope],
+  );
+
+  const libraryFilterContext = useMemo(
+    () => ({
+      spaceKey: selectedSpace.key,
+      entityLink: systemLibraryLink
+        ? {
+            entityType: systemLibraryLink.entityType,
+            entityId: systemLibraryLink.entityId,
+          }
+        : undefined,
+    }),
+    [selectedSpace.key, systemLibraryLink],
+  );
+
   const files = useMemo(() => {
     if (browseSystemLibraryEntityRoot) {
       return [];
@@ -821,25 +866,28 @@ export function DriveWorkspace() {
     if (projectHubFileBrowse) {
       return rawFiles;
     }
-    if (folderListing && browseFolderPlacements) {
-      if (atProjectFolderRoot && projectShellFiles.length > 0) {
-        return mergeFileAssetsById(projectShellFiles, folderListing.files);
+    if (browseFolderPlacements) {
+      if (!scopedFolderListing) {
+        return [];
       }
-      return folderListing.files;
+      if (atProjectFolderRoot && projectShellFiles.length > 0) {
+        return mergeFileAssetsById(projectShellFiles, scopedFolderListing.files);
+      }
+      return scopedFolderListing.files;
     }
     return rawFiles.filter((file) =>
-      fileMatchesLibrary(file, selectedLibrary, { spaceKey: selectedSpace.key }),
+      fileMatchesLibrary(file, selectedLibrary, libraryFilterContext),
     );
   }, [
     atProjectFolderRoot,
     browseFolderPlacements,
     browseSystemLibraryEntityRoot,
-    folderListing,
+    libraryFilterContext,
     projectHubFileBrowse,
     projectShellFiles,
     rawFiles,
+    scopedFolderListing,
     selectedLibrary,
-    selectedSpace.key,
   ]);
   const sortedFiles = useMemo(() => {
     const list = [...files];
@@ -857,8 +905,8 @@ export function DriveWorkspace() {
 
   const visibleFolderIdsForBulk = useMemo(() => {
     if (!browseFolderPlacements) return [];
-    return (folderListing?.folders ?? []).map((f) => f.id);
-  }, [browseFolderPlacements, folderListing?.folders]);
+    return (scopedFolderListing?.folders ?? []).map((f) => f.id);
+  }, [browseFolderPlacements, scopedFolderListing?.folders]);
 
   const allVisibleBulkItemsSelected = useMemo(() => {
     const filesAll = sortedFiles.every((f) => selectedIds.includes(f.id));
@@ -872,10 +920,10 @@ export function DriveWorkspace() {
     (sortedFiles.length > 0 || visibleFolderIdsForBulk.length > 0) && !allVisibleBulkItemsSelected;
 
   const stats = useMemo(() => buildDriveStats(files), [files]);
-  const libraryCounts = useMemo(
-    () => buildLibraryCounts(rawFiles, selectedSpace.key),
-    [rawFiles, selectedSpace.key],
-  );
+  const libraryCounts = useMemo(() => {
+    const countSource = browseFolderPlacements ? files : rawFiles;
+    return buildLibraryCounts(countSource, selectedSpace.key);
+  }, [browseFolderPlacements, files, rawFiles, selectedSpace.key]);
 
   const handlePurgeFailed = useCallback(async () => {
     setPurgeBusy(true);
@@ -1701,7 +1749,7 @@ export function DriveWorkspace() {
           ) : (
             <DriveFileSurface
               files={sortedFiles}
-              folders={browseFolderPlacements ? (folderListing?.folders ?? []) : []}
+              folders={browseFolderPlacements ? (scopedFolderListing?.folders ?? []) : []}
               loading={loading}
               viewMode={viewMode}
               selectedId={selected?.id ?? null}

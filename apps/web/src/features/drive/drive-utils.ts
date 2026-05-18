@@ -16,7 +16,20 @@ export function getInitialDriveSpace(): DriveSpaceOption {
 export type FileMatchesLibraryContext = {
   /** When `shared`, refines the `shared` library row (active vs archive split). */
   spaceKey?: string;
+  /** When set, entity libraries only match files linked to this record (not any link of that type). */
+  entityLink?: { entityType: string; entityId: string };
 };
+
+function fileHasActiveEntityLink(file: FileAsset, entityType: string, entityId: string): boolean {
+  const normalizedType = entityType.trim().toUpperCase();
+  const normalizedId = entityId.trim();
+  return file.links.some(
+    (link) =>
+      link.entityType.toUpperCase() === normalizedType &&
+      link.entityId === normalizedId &&
+      link.unlinkedAt == null,
+  );
+}
 
 export function fileMatchesLibrary(
   file: FileAsset,
@@ -28,6 +41,17 @@ export function fileMatchesLibrary(
     return file.status !== 'ARCHIVED';
   }
   if (library.status) return file.status === library.status;
+
+  const entityLink = ctx?.entityLink;
+  if (
+    entityLink &&
+    library.entityTypes?.some(
+      (entityType) => entityType.toUpperCase() === entityLink.entityType.trim().toUpperCase(),
+    )
+  ) {
+    return fileHasActiveEntityLink(file, entityLink.entityType, entityLink.entityId);
+  }
+
   const linkTypes = file.links.map((link) => link.entityType);
   const hasModule = library.sourceModules?.includes((file.sourceModule ?? '').toUpperCase());
   const hasEntity = library.entityTypes?.some((entityType) => linkTypes.includes(entityType));
