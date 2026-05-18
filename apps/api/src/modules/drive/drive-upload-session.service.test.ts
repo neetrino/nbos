@@ -55,6 +55,7 @@ describe('DriveUploadSessionService', () => {
       code: 'P1',
       name: 'Site',
     });
+    prisma.project.findFirst.mockResolvedValue({ id: 'p1' });
     prisma.task.findUnique.mockResolvedValue({ code: 'T1' });
     service = new DriveUploadSessionService(
       prisma as never,
@@ -202,6 +203,46 @@ describe('DriveUploadSessionService', () => {
           contentType: 'application/pdf',
           entityType: 'TASK',
           entityId: 'task-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).rejects.toThrow('Drive context not found');
+  });
+
+  it('allows project upload session for scoped project participant', async () => {
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'doc.pdf',
+          contentType: 'application/pdf',
+          entityType: 'PROJECT',
+          entityId: 'p1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).resolves.toHaveProperty('uploadUrl');
+
+    expect(prisma.project.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: 'p1',
+        }),
+      }),
+    );
+  });
+
+  it('rejects project upload session when user is outside project delivery and sales graph', async () => {
+    prisma.project.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'doc.pdf',
+          contentType: 'application/pdf',
+          entityType: 'PROJECT',
+          entityId: 'p1',
         },
         'user-1',
         { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },

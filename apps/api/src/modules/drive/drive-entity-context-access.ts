@@ -208,6 +208,56 @@ async function assertEntityScopedByEmployees(
   }
 }
 
+async function assertProjectScopedAccessible(
+  prisma: InstanceType<typeof PrismaClient>,
+  entityId: string,
+  access: DriveEntityContextAccess,
+) {
+  const scope = normalizeDriveScope(access.driveScope);
+  await assertEntityExistsByType(prisma, 'PROJECT', entityId);
+  if (scope === SCOPE_ALL) return;
+
+  const scopedEmployeeIds = [...(await loadScopedEmployeeIds(prisma, access))];
+  const row = await prisma.project.findFirst({
+    where: {
+      id: entityId,
+      OR: [
+        {
+          products: {
+            some: {
+              OR: [
+                { pmId: { in: scopedEmployeeIds } },
+                { developerId: { in: scopedEmployeeIds } },
+                { designerId: { in: scopedEmployeeIds } },
+                { technicalSpecialistId: { in: scopedEmployeeIds } },
+                { qaLeadId: { in: scopedEmployeeIds } },
+              ],
+            },
+          },
+        },
+        { extensions: { some: { assignedTo: { in: scopedEmployeeIds } } } },
+        {
+          orders: {
+            some: {
+              deal: {
+                OR: [
+                  { sellerId: { in: scopedEmployeeIds } },
+                  { sellerAssistantId: { in: scopedEmployeeIds } },
+                  { pmId: { in: scopedEmployeeIds } },
+                ],
+              },
+            },
+          },
+        },
+      ],
+    },
+    select: { id: true },
+  });
+  if (!row) {
+    throw new NotFoundException('Drive context not found.');
+  }
+}
+
 async function assertAccessibleLinkedFileExists(
   prisma: InstanceType<typeof PrismaClient>,
   entityType: string,
@@ -259,11 +309,16 @@ export async function assertDriveEntityContextAccessible(
     return;
   }
 
+  if (entityType === 'PROJECT') {
+    await assertProjectScopedAccessible(prisma, entityId, access);
+    return;
+  }
+
   await assertEntityExistsByType(prisma, entityType, entityId);
 
   if (
     normalizeDriveScope(access.driveScope) !== SCOPE_ALL &&
-    (entityType === 'PROJECT' || entityType === 'WORK_SPACE' || entityType === 'WORKSPACE')
+    (entityType === 'WORK_SPACE' || entityType === 'WORKSPACE')
   ) {
     await assertAccessibleLinkedFileExists(prisma, entityType, entityId, access);
   }

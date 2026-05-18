@@ -112,6 +112,7 @@
 - общий file access filter now blocks `PERSONAL` / `RESTRICTED` / sensitive confidentiality files for non-owner, non-uploader, non-granted viewers;
 - folder list/add/move/copy/remove now require file-level access, not only folder access;
 - upload session create and complete re-check `entityType` / `entityId` before writing `FileAsset` / `FileLink`;
+- `PROJECT` context access no longer depends on pre-existing linked files; direct project delivery/sales membership is checked first;
 - archive/restore/trash audit actor is always `CurrentUser.id`;
 - batch archive/restore audit writes only for реально изменённых файлов.
 

@@ -29,6 +29,7 @@ Can access file =
 - folder placement сам по себе не даёт доступ к файлу, если file-level access не проходит;
 - actor для archive/restore/trash audit всегда берётся с сервера (`CurrentUser.id`);
 - полный canonical resolver для всех entity graphs, confidentiality edge cases и advanced grants остаётся отдельным Phase 2.
+- `PROJECT` уже не опирается на наличие старого linked file: Drive проверяет direct project participation через delivery/sales graph проекта.
 
 ---
 
