@@ -20,6 +20,19 @@
 
 Это уже ближе к канону, но **Libraries navigation, export jobs, cleanup dashboard, богатый preview** остаются в backlog §3 / §5.
 
+### 1.0. Architecture fix (2026-05-18)
+
+Зафиксировано в [`08-Drive-Navigation-Project-Hub-and-Folders.md`](./08-Drive-Navigation-Project-Hub-and-Folders.md):
+
+| Topic           | Target                                    | Current gap                                                                  |
+| --------------- | ----------------------------------------- | ---------------------------------------------------------------------------- |
+| Three UI spaces | System Library / Company / Personal       | Company/Personal folder tree shipped; Library entity **flat file list** only |
+| Scoped folders  | `DEAL`, `PROJECT`, `TASK`, … per entity   | `DriveFolder` only `COMPANY`/`PERSONAL`; no `scopeEntityType`                |
+| Project hub     | Virtual sections + PROJECT tree           | Not implemented                                                              |
+| R2 layout       | `nbos/tenants/{organizationId}/files/...` | Transitional `Drive/uploads/{sessionId}/...`                                 |
+
+`DriveFolder` / `DriveFolderItem` for Company/Personal: **shipped** (update §3.1 row when next editing that table).
+
 ### 1.1. Что важно не потерять
 
 Текущая реализация всё равно полезна как technical spike:
@@ -49,18 +62,18 @@
 
 ### 3.1. Database / Prisma
 
-| Gap                         | Status    | Needed                                                          |
-| --------------------------- | --------- | --------------------------------------------------------------- |
-| `FileAsset` model           | `DONE`    | Central file metadata, status, visibility, purpose              |
-| `FileVersion` model         | `DONE`    | Version metadata with storage key and checksum                  |
-| `FileLink` model            | `DONE`    | Links to Deal/Product/Invoice/Task/Work Space/etc.              |
-| `FilePermission` model      | `MISSING` | Explicit grants and restrictions                                |
-| `DriveFolder` model         | `MISSING` | User-created folders for Company Drive and Personal Drive       |
-| `FolderPlacement` model     | `MISSING` | File/folder placement inside user-created folders               |
-| `FileAuditEvent` model      | `PARTIAL` | File-specific creation/archive audit events exist               |
-| `ExportJob` model           | `MISSING` | ZIP/backup/export lifecycle                                     |
-| `CleanupCandidate` model    | `MISSING` | Cleanup review queue                                            |
-| File relations on core data | `MISSING` | Employee uploaded files, Project/Product/Deal/Task linked files |
+| Gap                         | Status    | Needed                                                                                                                     |
+| --------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `FileAsset` model           | `DONE`    | Central file metadata, status, visibility, purpose                                                                         |
+| `FileVersion` model         | `DONE`    | Version metadata with storage key and checksum                                                                             |
+| `FileLink` model            | `DONE`    | Links to Deal/Product/Invoice/Task/Work Space/etc.                                                                         |
+| `FilePermission` model      | `MISSING` | Explicit grants and restrictions                                                                                           |
+| `DriveFolder` model         | `PARTIAL` | Company/Personal trees shipped; **scoped** `scopeEntityType`/`scopeEntityId` for Library entities **MISSING** (see doc 08) |
+| `FolderPlacement` model     | `DONE`    | `DriveFolderItem` for file/folder placement in Company/Personal                                                            |
+| `FileAuditEvent` model      | `PARTIAL` | File-specific creation/archive audit events exist                                                                          |
+| `ExportJob` model           | `MISSING` | ZIP/backup/export lifecycle                                                                                                |
+| `CleanupCandidate` model    | `MISSING` | Cleanup review queue                                                                                                       |
+| File relations on core data | `MISSING` | Employee uploaded files, Project/Product/Deal/Task linked files                                                            |
 
 ### 3.2. Backend API
 

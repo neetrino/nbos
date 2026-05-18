@@ -18,85 +18,107 @@ But physical folder should not be used as permission source or business status s
 
 ## 2. Recommended R2 Layout
 
+### 2.1. Bucket and organization prefix
+
+NBOS uses **one platform bucket** (or environment-specific bucket). Inside it, paths are partitioned by **organization (tenant)**, not by product brand name in the slug.
+
+Use a **stable organization id** (UUID), not a renameable company slug, in the prefix:
+
 ```text
-nbos/
-  company-neetrino/
-    files/
-      crm/
-        deals/
-          deal-{dealCode}-{slug}/
-            offers/
-            screenshots/
-            contracts/
-            briefs/
-
-      projects/
-        project-{projectCode}-{slug}/
-          _project/
-            commercial/
-            handoff/
-            finance/
-          product-{productCode}-{slug}/
-            approved-offers/
-            handoff/
-            design/
-            development/
-            qa/
-            delivery/
-            support/
-            workspace/
-          extension-{extensionCode}-{slug}/
-            approved-offers/
-            scope/
-            development/
-            qa/
-            delivery/
-
-      clients/
-        company-{companyId}-{slug}/
-          legal/
-          commercial/
-          finance/
-        contact-{contactId}-{slug}/
-          personal-context/
-
-      finance/
-        invoices/
-        payments/
-        expenses/
-        payroll/
-        partner-payouts/
-
-      partners/
-        partner-{partnerId}-{slug}/
-          agreements/
-          payouts/
-          shared/
-
-      tasks/
-        task-{taskCode}/
-
-      workspaces/
-        workspace-{workspaceId}-{slug}/
-          backlog/
-          sprints/
-          artifacts/
-
-      support/
-        ticket-{ticketCode}/
-
-      company-library/
-        templates/
-        sop/
-        brand/
-        training/
-        shared/
-
-    _archive/
-    _trash/
-    _exports/
-    _manifests/
+{bucket}/
+  nbos/
+    tenants/
+      {organizationId}/
+        files/
+        _archive/
+        _trash/
+        _exports/
+        _manifests/
 ```
+
+- `{organizationId}` — tenant scope for isolation, backup, export, and future multi-tenant IAM.
+- Example in older drafts (`company-neetrino`) was illustrative only; production keys must use **`tenants/{organizationId}`**.
+
+`DriveFolder` trees in PostgreSQL **must not** be mirrored 1:1 into R2 paths (rename/move in UI would break object keys). R2 layout follows **storage home** at file creation (module + entity + purpose), see §4.
+
+### 2.2. Under `files/` (by business context)
+
+```text
+nbos/tenants/{organizationId}/files/
+  crm/
+    deals/
+      deal-{dealCode}-{slug}/
+        offers/
+        screenshots/
+        contracts/
+        briefs/
+
+  projects/
+    project-{projectCode}-{slug}/
+      _project/
+        commercial/
+        handoff/
+        finance/
+      product-{productCode}-{slug}/
+        approved-offers/
+        handoff/
+        design/
+        development/
+        qa/
+        delivery/
+        support/
+        workspace/
+      extension-{extensionCode}-{slug}/
+        approved-offers/
+        scope/
+        development/
+        qa/
+        delivery/
+
+  clients/
+    company-{companyId}-{slug}/
+      legal/
+      commercial/
+      finance/
+    contact-{contactId}-{slug}/
+      personal-context/
+
+  finance/
+    invoices/
+    payments/
+    expenses/
+    payroll/
+    partner-payouts/
+
+  partners/
+    partner-{partnerId}-{slug}/
+      agreements/
+      payouts/
+      shared/
+
+  tasks/
+    task-{taskCode}/
+
+  workspaces/
+    workspace-{workspaceId}-{slug}/
+      backlog/
+      sprints/
+      artifacts/
+
+  support/
+    ticket-{ticketCode}/
+
+  company-library/
+    templates/
+    sop/
+    brand/
+    training/
+    shared/
+```
+
+### 2.3. Implementation note (current code)
+
+Until storage-home builder ships, new uploads may use a transitional key such as `Drive/uploads/{sessionId}/{fileName}` (see `apps/api/src/modules/drive/drive-upload-path.ts`). Completing upload still writes `FileAsset.storageKey`; business visibility uses `FileLink` and `DriveFolderItem`, not R2 path. New work should move **new** files toward `nbos/tenants/{organizationId}/files/...` without requiring immediate rewrite of all legacy keys.
 
 ---
 
@@ -137,7 +159,7 @@ Offer uploaded in CRM:
 
 ```text
 storage_home:
-crm/deals/deal-123-marco-am/offers/2026-04-25__offer-sent__f_1__v1.pdf
+nbos/tenants/{organizationId}/files/crm/deals/deal-123-marco-am/offers/2026-04-25__offer-sent__f_1__v1.pdf
 ```
 
 After Deal Won, NBOS adds links to Product and Client, but does not copy the file.

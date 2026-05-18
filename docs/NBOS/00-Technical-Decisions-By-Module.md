@@ -99,13 +99,17 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### Drive
 
-| Area      | Decision                                                                   |
-| --------- | -------------------------------------------------------------------------- |
-| Storage   | Use Cloudflare R2 as the object store.                                     |
-| Ownership | Drive owns file metadata and storage references.                           |
-| Linking   | Modules link Drive file assets instead of storing independent file models. |
-| Exports   | Reports, snapshots and large exports write files through Drive.            |
-| Truth     | Bucket paths are not business truth; DB metadata and links are.            |
+| Area      | Decision                                                                                                                                               |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Storage   | Use Cloudflare R2 as the object store.                                                                                                                 |
+| Ownership | Drive owns file metadata and storage references.                                                                                                       |
+| Linking   | Modules link Drive file assets instead of storing independent file models.                                                                             |
+| Exports   | Reports, snapshots and large exports write files through Drive.                                                                                        |
+| Truth     | Bucket paths are not business truth; DB metadata and links are.                                                                                        |
+| R2 prefix | `nbos/tenants/{organizationId}/files/...` per org; stable org id, not marketing slug.                                                                  |
+| UI spaces | Three: System Library Drive, Company Drive, Personal Drive (+ Shared view).                                                                            |
+| Folders   | Company/Personal: `DriveFolder` tree; Library: **scoped** trees per entity (`DEAL`, `PROJECT`, …) + Project hub virtual sections — see `11-Drive/08-`. |
+| Lifecycle | Files often start on `DEAL`; `Deal Won` adds `FileLink` to PROJECT/PRODUCT/CLIENT without copying the object.                                          |
 
 ### Credentials
 

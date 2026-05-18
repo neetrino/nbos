@@ -53,11 +53,17 @@ Drive может хранить документы этих модулей, но
 ## 3. Три рабочих пространства Drive
 
 Drive должен ощущаться как полноценный рабочий файловый модуль, а не только как
-вложения в карточках. Внутри одного Drive-модуля есть три пространства.
+вложения в карточках. Внутри одного Drive-модуля есть **три пространства** (вкладки UI):
 
-### 3.1. System Libraries / Системные библиотеки
+1. **System Library Drive** — бизнес-библиотеки (Deals, Projects, Products, …);
+2. **Company Drive** — свободное общее дерево компании;
+3. **Personal Drive** — личное дерево сотрудника.
 
-Это автоматическая структура NBOS:
+Плюс view **Shared with me**. Детальная навигация, scoped-папки и Project hub: [`08-Drive-Navigation-Project-Hub-and-Folders.md`](./08-Drive-Navigation-Project-Hub-and-Folders.md).
+
+### 3.1. System Library Drive / Системные библиотеки
+
+Это автоматическая структура NBOS (входы внутри вкладки Library):
 
 - Deals Library;
 - Project Library;
@@ -68,12 +74,11 @@ Drive должен ощущаться как полноценный рабочи
 - Partner Library;
 - Task / Work Space Files;
 - Support Files;
-- Company Shared Library;
-- Personal Library.
+- All Files (глобальный фильтр).
 
-Системные библиотеки строятся по `FileAsset` + `FileLink` + permissions. Их нельзя
-удалять, переименовывать или перемещать как обычные пользовательские папки, потому что
-они являются частью бизнес-модели платформы.
+Системные библиотеки строятся по `FileAsset` + `FileLink` + permissions. На корне библиотеки — **виртуальная сетка сущностей** (Deal, Project, …); внутри сущности — **scoped folder tree** (целевая модель) и/или список файлов по линкам. Пункты Library **не** вкладывают Deals внутрь Projects в одно дерево.
+
+**Company Shared Library** в смысле templates/SOP — зона **Company Drive** (`company-library` в R2), не отдельная вкладка Library.
 
 ### 3.2. Company Drive / Свободный общий Drive компании
 

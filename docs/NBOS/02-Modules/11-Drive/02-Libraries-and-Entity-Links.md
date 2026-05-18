@@ -64,6 +64,8 @@ CRM не должен хранить файлы отдельно от Drive.
 
 Project Library показывает все файлы, относящиеся к бизнесу / бренду клиента.
 
+Навигация, scoped-папки (`PROJECT` / `DEAL` / …), Project hub и отличие от Company/Personal Drive: [`08-Drive-Navigation-Project-Hub-and-Folders.md`](./08-Drive-Navigation-Project-Hub-and-Folders.md).
+
 Project Library не должна смешивать всё в одну кучу. Минимальные секции:
 
 - Commercial;
