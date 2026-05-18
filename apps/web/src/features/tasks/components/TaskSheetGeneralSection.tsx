@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { Calendar, ClipboardList, Flag, User } from 'lucide-react';
+import { Calendar, ClipboardList, CircleDot, Flag, User } from 'lucide-react';
 import { InlineField } from '@/components/shared';
 import { SearchField } from '@/components/shared/SearchField';
-import { TASK_PRIORITIES } from '../constants/tasks';
+import { TASK_PRIORITIES, TASK_STATUSES } from '../constants/tasks';
 import type { TaskGeneralDraft } from '../task-general-form-state';
 import { TASK_SHEET_SECTION_SURFACE_CLASS } from './task-sheet-classes';
 
@@ -31,6 +31,16 @@ export function TaskSheetGeneralSection({
           icon={<ClipboardList size={13} />}
           disabled={saving}
           onValueChange={(value) => onPatchDraft({ title: value })}
+        />
+        <InlineField
+          variant="controlled"
+          label="Status"
+          value={draft.status}
+          type="select"
+          icon={<CircleDot size={13} />}
+          options={TASK_STATUSES.map((item) => ({ value: item.value, label: item.label }))}
+          disabled={saving}
+          onValueChange={(value) => onPatchDraft({ status: value })}
         />
         <InlineField
           variant="controlled"

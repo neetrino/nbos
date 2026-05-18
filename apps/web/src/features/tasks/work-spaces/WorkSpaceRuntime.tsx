@@ -93,7 +93,14 @@ export function WorkSpaceRuntime({
     buildMyPlanColumns,
     buildDeadlineColumns,
     viewTasks,
-  } = useWorkspaceRuntimeBoard(tasks, setTasks, creatorId, workspaceViewFilters, controlledBoard);
+  } = useWorkspaceRuntimeBoard(
+    tasks,
+    setTasks,
+    creatorId,
+    workspaceViewFilters,
+    controlledBoard,
+    workspace.scrumEnabled,
+  );
 
   const [localSelectedTaskId, setLocalSelectedTaskId] = useState<string | null>(null);
   const [localSheetOpen, setLocalSheetOpen] = useState(false);

@@ -20,6 +20,7 @@ import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
 
 import { taskInvolvesEmployee } from '@/features/tasks/utils/task-involves-employee';
 import { filterTasksForWorkspaceView } from './workspace-task-view-filter';
+import { filterTasksForScrumDailyExecution } from './workspace-scrum-daily-filter';
 
 export type WorkspaceBoardView = 'deadline' | 'my-plan' | 'kanban' | 'list';
 
@@ -44,6 +45,7 @@ export function useWorkspaceRuntimeBoard(
   myPlanOwnerId: string | null,
   viewFilters: WorkspaceViewFilters = DEFAULT_WORKSPACE_VIEW_FILTERS,
   controlledBoard?: WorkspaceBoardControlledState | null,
+  scrumEnabled = false,
 ) {
   const [internalBoardView, setInternalBoardView] = useState<WorkspaceBoardView>('kanban');
   const boardView = controlledBoard?.boardView ?? internalBoardView;
@@ -70,10 +72,14 @@ export function useWorkspaceRuntimeBoard(
 
   const myPlanStagesForView = myPlanOwnerId ? myPlanStages : [];
 
-  const viewTasks = useMemo(
-    () => filterTasksForWorkspaceView(tasks, viewFilters.search, viewFilters.filterValues),
-    [tasks, viewFilters.search, viewFilters.filterValues],
-  );
+  const viewTasks = useMemo(() => {
+    const filtered = filterTasksForWorkspaceView(
+      tasks,
+      viewFilters.search,
+      viewFilters.filterValues,
+    );
+    return filterTasksForScrumDailyExecution(filtered, { scrumEnabled, boardView });
+  }, [tasks, viewFilters.search, viewFilters.filterValues, scrumEnabled, boardView]);
 
   const myPlanBoardTasks = useMemo(() => {
     if (boardView !== 'my-plan') return viewTasks;

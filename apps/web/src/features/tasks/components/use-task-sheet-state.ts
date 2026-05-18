@@ -111,11 +111,22 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     setSaving(true);
     setGeneralError(null);
     try {
-      const updated = await tasksApi.update(task.id, patch);
-      setTask(updated);
-      const nextDraft = createTaskGeneralDraft(updated);
-      setGeneralDraft(nextDraft);
-      setGeneralSnap(nextDraft);
+      const statusTarget = typeof patch.status === 'string' ? patch.status : undefined;
+      const fieldPatch = { ...patch };
+      delete fieldPatch.status;
+
+      let updated: Task = task;
+      if (Object.keys(fieldPatch).length > 0) {
+        updated = await tasksApi.update(task.id, fieldPatch);
+      }
+
+      if (statusTarget === 'COMPLETED' && generalSnap.status !== 'COMPLETED') {
+        updated = await tasksApi.complete(task.id);
+      } else if (statusTarget && statusTarget !== generalSnap.status) {
+        updated = await tasksApi.update(task.id, { status: statusTarget });
+      }
+
+      hydrateTask(updated);
       setCompletionBlockers([]);
       onUpdate?.(updated);
       return true;
@@ -123,11 +134,14 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
       const message = getApiErrorMessage(caught, 'Task could not be updated.');
       setGeneralError(message);
       toast.error(message);
+      if (patch.status === 'COMPLETED') {
+        setCompletionBlockers(parseTaskCompletionBlockers(caught));
+      }
       return false;
     } finally {
       setSaving(false);
     }
-  }, [generalDraft, generalSnap, onUpdate, task]);
+  }, [generalDraft, generalSnap, hydrateTask, onUpdate, task]);
 
   const handleGeneralCancel = useCallback(() => {
     setGeneralError(null);

@@ -1,8 +1,10 @@
 import type { Task } from '@/lib/api/tasks';
+import { normalizeTaskStatusForDraft } from './utils/task-status-draft';
 
 export interface TaskGeneralDraft {
   title: string;
   description: string | null;
+  status: string;
   priority: string;
   startDate: string;
   dueDate: string;
@@ -14,6 +16,7 @@ export function createTaskGeneralDraft(task: Task): TaskGeneralDraft {
   return {
     title: task.title,
     description: task.description,
+    status: normalizeTaskStatusForDraft(task.status),
     priority: task.priority,
     startDate: formatDateInput(task.startDate),
     dueDate: formatDateInput(task.dueDate),
@@ -32,6 +35,7 @@ export function buildTaskGeneralPatch(
   if ((draft.description ?? '') !== (snap.description ?? '')) {
     patch.description = draft.description?.trim() ? draft.description.trim() : null;
   }
+  if (draft.status !== snap.status) patch.status = draft.status;
   if (draft.priority !== snap.priority) patch.priority = draft.priority;
   if (draft.startDate !== snap.startDate) patch.startDate = draft.startDate || null;
   if (draft.dueDate !== snap.dueDate) patch.dueDate = draft.dueDate || null;
