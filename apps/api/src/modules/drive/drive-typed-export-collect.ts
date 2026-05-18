@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from '@nbos/database';
+import type { FilePurposeEnum, Prisma, PrismaClient } from '@nbos/database';
 import type { DriveEntityContextAccess } from './drive-access.types';
 import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
 import { DRIVE_ZIP_EXPORT_MAX_FILES } from './drive-zip-export.constants';
@@ -6,7 +6,7 @@ import { DRIVE_ZIP_EXPORT_MAX_FILES } from './drive-zip-export.constants';
 export type DriveExportLinkTarget = { entityType: string; entityId: string };
 
 export interface DriveExportCollectOptions {
-  purposes?: readonly string[];
+  purposes?: readonly FilePurposeEnum[];
   includeArchived?: boolean;
 }
 

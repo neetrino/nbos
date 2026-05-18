@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type FilePurposeEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { buildProjectTaskScopeWhere } from '../tasks/task-project-list-filter.ops';
 import type { DriveEntityContextAccess } from './drive-access.types';
 import { assertDriveEntityContextAccessible } from './drive-entity-context-access';
 import {
@@ -118,7 +119,7 @@ export class DriveTypedExportResolver {
         const projectId = requireParam(params.projectId, 'projectId');
         await assertDriveEntityContextAccessible(this.prisma, 'PROJECT', projectId, access);
         const tasks = await this.prisma.task.findMany({
-          where: { projectId },
+          where: buildProjectTaskScopeWhere(projectId),
           select: { id: true },
         });
         const targets = tasks.map((row) => ({ entityType: 'TASK', entityId: row.id }));
@@ -160,7 +161,7 @@ export class DriveTypedExportResolver {
   private async purposeScopedExport(
     params: DriveZipExportParams,
     access: DriveEntityContextAccess,
-    purposes: string[],
+    purposes: readonly FilePurposeEnum[],
   ): Promise<{ fileIds: string[] }> {
     const targets = await this.resolveOfferScopeTargets(params, access);
     const fileIds = await collectAccessibleExportFileIds(this.prisma, targets, access, {
@@ -207,7 +208,10 @@ export class DriveTypedExportResolver {
         where: { projectId },
         select: { id: true, extensions: { select: { id: true } } },
       }),
-      this.prisma.task.findMany({ where: { projectId }, select: { id: true } }),
+      this.prisma.task.findMany({
+        where: buildProjectTaskScopeWhere(projectId),
+        select: { id: true },
+      }),
       this.prisma.invoice.findMany({ where: { projectId }, select: { id: true } }),
     ]);
     const extensionIds = products.flatMap((product) =>
