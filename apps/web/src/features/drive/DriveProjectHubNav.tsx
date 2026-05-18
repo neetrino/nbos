@@ -18,14 +18,10 @@ type DriveProjectHubNavProps = {
 type HubTab = {
   section: DriveProjectHubSection;
   label: string;
-  count?: number;
 };
 
-function buildTabs(summary: ProjectDriveHubSummary | null): HubTab[] {
+function buildTabs(): HubTab[] {
   return [
-    { section: 'folders', label: 'Folders' },
-    { section: 'projectFiles', label: 'Project files', count: summary?.projectFileCount },
-    { section: 'all', label: 'All project files', count: summary?.allProjectLinkedCount },
     { section: 'deals', label: 'Deals' },
     { section: 'products', label: 'Products' },
     { section: 'tasks', label: 'Tasks' },
@@ -43,19 +39,24 @@ function focusRows(section: DriveProjectHubSection, summary: ProjectDriveHubSumm
 }
 
 export function DriveProjectHubNav({ summary, view, onViewChange }: DriveProjectHubNavProps) {
-  const tabs = buildTabs(summary);
+  const tabs = buildTabs();
   const rows = focusRows(view.section, summary);
   const showFocus = projectHubSectionNeedsFocus(view.section);
+  const foldersActive = view.section === 'folders';
 
   return (
     <div className="space-y-2" role="navigation" aria-label="Project library sections">
       <div className="flex flex-wrap gap-1.5">
+        <HubTabButton
+          active={foldersActive}
+          label="Folders"
+          onClick={() => onViewChange({ section: 'folders' })}
+        />
         {tabs.map((tab) => (
           <HubTabButton
             key={tab.section}
             active={view.section === tab.section}
             label={tab.label}
-            count={tab.count}
             onClick={() =>
               onViewChange({
                 section: tab.section,

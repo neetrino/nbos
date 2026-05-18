@@ -8,8 +8,6 @@ export type ProjectDriveHubSummary = {
   projectId: string;
   projectCode: string;
   projectName: string;
-  projectFileCount: number;
-  allProjectLinkedCount: number;
   deals: ProjectHubEntityRow[];
   products: ProjectHubEntityRow[];
   tasks: ProjectHubEntityRow[];

@@ -77,7 +77,7 @@ Project Library не должна смешивать всё в одну кучу
 - Client Documents;
 - Archive.
 
-`Project files` — только файлы уровня Project shell, связанные с `PROJECT` и не связанные с отдельными Deal / Product / Task / Finance / Client сущностями. Это не общий fallback для файлов без папки.
+Project shell files (только `FileLink(PROJECT)`, без Deal/Product/Task/Finance/Client links) показываются на **корне Folders** внутри Project Library, не отдельной вкладкой.
 
 Project Library нужна CEO, PM, Seller и Finance как общий вход.
 

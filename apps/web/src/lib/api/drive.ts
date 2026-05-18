@@ -148,8 +148,6 @@ export const driveApi = {
     projectId: string;
     projectCode: string;
     projectName: string;
-    projectFileCount: number;
-    allProjectLinkedCount: number;
     deals: { id: string; label: string; fileCount: number }[];
     products: { id: string; label: string; fileCount: number }[];
     tasks: { id: string; label: string; fileCount: number }[];

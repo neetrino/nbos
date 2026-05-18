@@ -62,6 +62,7 @@ import {
   fileMatchesLibrary,
   getInitialDriveSpace,
   getInitialViewMode,
+  mergeFileAssetsById,
 } from './drive-utils';
 import {
   DriveCreateFolderDialog,
@@ -168,6 +169,7 @@ export function DriveWorkspace() {
     DRIVE_PROJECT_HUB_DEFAULT_VIEW,
   );
   const [projectHubSummary, setProjectHubSummary] = useState<ProjectDriveHubSummary | null>(null);
+  const [projectShellFiles, setProjectShellFiles] = useState<FileAsset[]>([]);
 
   useLayoutEffect(() => {
     if (driveOpenFileId) {
@@ -458,8 +460,13 @@ export function DriveWorkspace() {
 
   const browseEntityScopedFolders = Boolean(libraryEntityFolderScope);
   const browseFoldersInView = browseDriveFolders || browseEntityScopedFolders;
-  const browseFoldersForFileSurface =
+  const browseFolderPlacements =
     browseFoldersInView && (!isProjectLibraryHub || projectHubView.section === 'folders');
+  const atProjectFolderRoot =
+    isProjectLibraryHub &&
+    libraryEntityFolderScope?.scopeEntityType === 'PROJECT' &&
+    activeFolderId === null &&
+    folderTrail.length === 0;
 
   const browseSystemLibraryUploads = useMemo(() => {
     if (selectedSpace.key !== 'system') return false;
@@ -551,6 +558,12 @@ export function DriveWorkspace() {
         search: search || undefined,
         ...(sharedDriveSpace ? { sharedWithMe: true } : {}),
       };
+      if (browseFolderPlacements) {
+        setRawFiles([]);
+        setSelectedIds([]);
+        setSelected(null);
+        return;
+      }
       const scopedToLibraryEntity =
         browseSystemLibraryUploads && systemLibraryLink && !projectHubFileBrowse
           ? {
@@ -558,13 +571,10 @@ export function DriveWorkspace() {
               entityId: systemLibraryLink.entityId,
             }
           : {};
+      const projectId = libraryEntityFolderScope?.scopeEntityId ?? systemLibraryLink?.entityId;
       const projectHubParams =
-        projectHubFileBrowse && libraryEntityFolderScope
-          ? resolveProjectHubFileListParams(
-              libraryEntityFolderScope.scopeEntityId,
-              projectHubView,
-              listBase,
-            )
+        projectHubFileBrowse && projectId
+          ? resolveProjectHubFileListParams(projectId, projectHubView, listBase)
           : {};
       const list = await driveApi.listFileAssets({
         ...listBase,
@@ -586,6 +596,7 @@ export function DriveWorkspace() {
       setLoading(false);
     }
   }, [
+    browseFolderPlacements,
     browseSystemLibraryUploads,
     driveOpenFileId,
     effectiveStatus,
@@ -598,6 +609,29 @@ export function DriveWorkspace() {
     selectedSpace.key,
     systemLibraryLink,
   ]);
+
+  const loadProjectShellFiles = useCallback(async () => {
+    if (!atProjectFolderRoot || !libraryEntityFolderScope) {
+      setProjectShellFiles([]);
+      return;
+    }
+    try {
+      const list = await driveApi.listFileAssets({
+        status: effectiveStatus,
+        purpose: purpose === ALL_PURPOSES ? undefined : purpose,
+        search: search || undefined,
+        projectHubProjectFiles: true,
+        projectId: libraryEntityFolderScope.scopeEntityId,
+      });
+      setProjectShellFiles(list);
+    } catch {
+      setProjectShellFiles([]);
+    }
+  }, [atProjectFolderRoot, effectiveStatus, libraryEntityFolderScope, purpose, search]);
+
+  useEffect(() => {
+    void loadProjectShellFiles();
+  }, [loadProjectShellFiles]);
 
   useEffect(() => {
     void load();
@@ -762,17 +796,22 @@ export function DriveWorkspace() {
     if (projectHubFileBrowse) {
       return rawFiles;
     }
-    if (folderListing && browseFoldersForFileSurface) {
+    if (folderListing && browseFolderPlacements) {
+      if (atProjectFolderRoot && projectShellFiles.length > 0) {
+        return mergeFileAssetsById(projectShellFiles, folderListing.files);
+      }
       return folderListing.files;
     }
     return rawFiles.filter((file) =>
       fileMatchesLibrary(file, selectedLibrary, { spaceKey: selectedSpace.key }),
     );
   }, [
-    browseFoldersForFileSurface,
+    atProjectFolderRoot,
+    browseFolderPlacements,
     browseSystemLibraryEntityRoot,
     folderListing,
     projectHubFileBrowse,
+    projectShellFiles,
     rawFiles,
     selectedLibrary,
     selectedSpace.key,
@@ -792,9 +831,9 @@ export function DriveWorkspace() {
   }, [files, fileSort]);
 
   const visibleFolderIdsForBulk = useMemo(() => {
-    if (!browseFoldersForFileSurface) return [];
+    if (!browseFolderPlacements) return [];
     return (folderListing?.folders ?? []).map((f) => f.id);
-  }, [browseFoldersForFileSurface, folderListing?.folders]);
+  }, [browseFolderPlacements, folderListing?.folders]);
 
   const allVisibleBulkItemsSelected = useMemo(() => {
     const filesAll = sortedFiles.every((f) => selectedIds.includes(f.id));
@@ -882,24 +921,24 @@ export function DriveWorkspace() {
   );
 
   const fileDragConfig = useMemo(() => {
-    if (!browseFoldersForFileSurface || !placementFolderId) return undefined;
+    if (!browseFolderPlacements || !placementFolderId) return undefined;
     return {
       sourceFolderId: placementFolderId,
       resolveDragFileIds: (file: FileAsset) =>
         selectedIds.length > 0 && selectedIds.includes(file.id) ? [...selectedIds] : [file.id],
     };
-  }, [browseFoldersForFileSurface, placementFolderId, selectedIds]);
+  }, [browseFolderPlacements, placementFolderId, selectedIds]);
 
   const folderFileDropConfig = useMemo(
     () =>
-      browseFoldersForFileSurface && placementFolderId
+      browseFolderPlacements && placementFolderId
         ? {
             sourceFolderId: placementFolderId,
             onMoveFilesToFolder: handleDragMoveFilesToFolder,
             busy,
           }
         : undefined,
-    [browseFoldersForFileSurface, busy, handleDragMoveFilesToFolder, placementFolderId],
+    [browseFolderPlacements, busy, handleDragMoveFilesToFolder, placementFolderId],
   );
 
   useEffect(() => {
@@ -1650,7 +1689,7 @@ export function DriveWorkspace() {
           ) : (
             <DriveFileSurface
               files={sortedFiles}
-              folders={browseFoldersForFileSurface ? (folderListing?.folders ?? []) : []}
+              folders={browseFolderPlacements ? (folderListing?.folders ?? []) : []}
               loading={loading}
               viewMode={viewMode}
               selectedId={selected?.id ?? null}
@@ -1658,13 +1697,13 @@ export function DriveWorkspace() {
               checkedFolderIds={selectedFolderIds}
               onSelect={setSelected}
               onToggleChecked={toggleChecked}
-              onToggleFolderChecked={browseFoldersForFileSurface ? toggleFolderChecked : undefined}
+              onToggleFolderChecked={browseFolderPlacements ? toggleFolderChecked : undefined}
               onOpenFolder={openFolder}
               onRenameFolder={
-                browseFoldersForFileSurface ? (folder) => setRenameFolderTarget(folder) : undefined
+                browseFolderPlacements ? (folder) => setRenameFolderTarget(folder) : undefined
               }
               onDeleteFolder={
-                browseFoldersForFileSurface ? (folder) => setDeleteFolderTarget(folder) : undefined
+                browseFolderPlacements ? (folder) => setDeleteFolderTarget(folder) : undefined
               }
               fileMenu={{
                 onOpenDetails: onPreview,
@@ -1672,7 +1711,7 @@ export function DriveWorkspace() {
                 onMoveFile,
                 onArchive,
                 onRestore,
-                onRemoveFromFolder: browseFoldersForFileSurface ? onRemoveFromFolder : undefined,
+                onRemoveFromFolder: browseFolderPlacements ? onRemoveFromFolder : undefined,
                 busy,
               }}
               fileDrag={fileDragConfig}

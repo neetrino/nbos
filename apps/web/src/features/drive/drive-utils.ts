@@ -36,6 +36,17 @@ export function fileMatchesLibrary(
   return Boolean(hasModule || hasEntity || hasPurpose || hasVisibility);
 }
 
+/** Merges file lists by id; earlier entries win. */
+export function mergeFileAssetsById(...lists: readonly FileAsset[][]): FileAsset[] {
+  const map = new Map<string, FileAsset>();
+  for (const list of lists) {
+    for (const file of list) {
+      if (!map.has(file.id)) map.set(file.id, file);
+    }
+  }
+  return [...map.values()];
+}
+
 export function buildDriveStats(files: FileAsset[]): DriveStats {
   return files.reduce<DriveStats>(
     (stats, file) => ({

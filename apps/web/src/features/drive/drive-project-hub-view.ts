@@ -1,11 +1,4 @@
-export type DriveProjectHubSection =
-  | 'folders'
-  | 'projectFiles'
-  | 'all'
-  | 'deals'
-  | 'products'
-  | 'tasks'
-  | 'finance';
+export type DriveProjectHubSection = 'folders' | 'deals' | 'products' | 'tasks' | 'finance';
 
 export type DriveProjectHubView = {
   section: DriveProjectHubSection;
@@ -21,8 +14,6 @@ export type ProjectDriveHubSummary = {
   projectId: string;
   projectCode: string;
   projectName: string;
-  projectFileCount: number;
-  allProjectLinkedCount: number;
   deals: ProjectHubEntityRow[];
   products: ProjectHubEntityRow[];
   tasks: ProjectHubEntityRow[];
@@ -51,19 +42,11 @@ export function resolveProjectHubFileListParams(
 ): {
   entityType?: string;
   entityId?: string;
-  projectHubProjectFiles?: boolean;
-  projectId?: string;
   status?: string;
   purpose?: string;
   search?: string;
   sharedWithMe?: boolean;
 } {
-  if (view.section === 'projectFiles') {
-    return { ...base, projectHubProjectFiles: true, projectId };
-  }
-  if (view.section === 'all') {
-    return { ...base, entityType: 'PROJECT', entityId: projectId };
-  }
   if (view.section === 'deals' && view.focusEntityId) {
     return { ...base, entityType: 'DEAL', entityId: view.focusEntityId };
   }
