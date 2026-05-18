@@ -170,7 +170,7 @@ export class DriveController {
   @Get('project-hub/:projectId')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({
-    summary: 'Project Library hub section counts (deals, products, unsorted, …)',
+    summary: 'Project Library hub section counts (project files, deals, products, …)',
   })
   async getProjectDriveHubSummary(
     @CurrentUser() user: CurrentUserPayload,
@@ -194,9 +194,10 @@ export class DriveController {
   @ApiQuery({ name: 'sourceModule', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({
-    name: 'projectHubUnsorted',
+    name: 'projectHubProjectFiles',
     required: false,
-    description: 'When true with projectId, list PROJECT-linked files not in project folders.',
+    description:
+      'When true with projectId, list files linked only to the Project shell, not child contexts.',
   })
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({
@@ -214,7 +215,7 @@ export class DriveController {
     @Query('status') status?: string,
     @Query('sourceModule') sourceModule?: string,
     @Query('search') search?: string,
-    @Query('projectHubUnsorted') projectHubUnsorted?: string,
+    @Query('projectHubProjectFiles') projectHubProjectFiles?: string,
     @Query('projectId') projectId?: string,
     @Query('sharedWithMe') sharedWithMe?: string,
   ) {
@@ -226,7 +227,7 @@ export class DriveController {
         status,
         sourceModule,
         search,
-        projectHubUnsorted: projectHubUnsorted === 'true',
+        projectHubProjectFiles: projectHubProjectFiles === 'true',
         projectId: projectId?.trim() || undefined,
         sharedWithMe: sharedWithMe === 'true',
       },

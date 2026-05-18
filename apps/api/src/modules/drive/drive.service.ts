@@ -774,8 +774,11 @@ export class DriveService {
     if (params.status) clauses.push({ status: params.status as FileAssetStatusEnum });
     if (params.purpose) clauses.push({ purpose: params.purpose as FilePurposeEnum });
     if (params.sourceModule) clauses.push({ sourceModule: params.sourceModule });
-    if (params.projectHubUnsorted && params.projectId) {
-      clauses.push(await this.projectHub.buildUnsortedWhere(params.projectId));
+    if (params.projectHubProjectFiles && !params.projectId) {
+      throw new BadRequestException('projectId is required for Project files.');
+    }
+    if (params.projectHubProjectFiles && params.projectId) {
+      clauses.push(await this.projectHub.buildProjectLevelWhere(params.projectId));
     } else if (params.entityType && params.entityId) {
       clauses.push({
         links: {

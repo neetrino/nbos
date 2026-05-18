@@ -148,7 +148,7 @@ export const driveApi = {
     projectId: string;
     projectCode: string;
     projectName: string;
-    unsortedCount: number;
+    projectFileCount: number;
     allProjectLinkedCount: number;
     deals: { id: string; label: string; fileCount: number }[];
     products: { id: string; label: string; fileCount: number }[];
@@ -167,7 +167,7 @@ export const driveApi = {
     sourceModule?: string;
     search?: string;
     sharedWithMe?: boolean;
-    projectHubUnsorted?: boolean;
+    projectHubProjectFiles?: boolean;
     projectId?: string;
   }): Promise<FileAsset[]> {
     const resp = await api.get<FileAsset[]>('/api/drive/files', { params });

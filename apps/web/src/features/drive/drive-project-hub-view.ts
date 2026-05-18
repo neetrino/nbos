@@ -1,6 +1,6 @@
 export type DriveProjectHubSection =
   | 'folders'
-  | 'unsorted'
+  | 'projectFiles'
   | 'all'
   | 'deals'
   | 'products'
@@ -21,7 +21,7 @@ export type ProjectDriveHubSummary = {
   projectId: string;
   projectCode: string;
   projectName: string;
-  unsortedCount: number;
+  projectFileCount: number;
   allProjectLinkedCount: number;
   deals: ProjectHubEntityRow[];
   products: ProjectHubEntityRow[];
@@ -51,15 +51,15 @@ export function resolveProjectHubFileListParams(
 ): {
   entityType?: string;
   entityId?: string;
-  projectHubUnsorted?: boolean;
+  projectHubProjectFiles?: boolean;
   projectId?: string;
   status?: string;
   purpose?: string;
   search?: string;
   sharedWithMe?: boolean;
 } {
-  if (view.section === 'unsorted') {
-    return { ...base, projectHubUnsorted: true, projectId };
+  if (view.section === 'projectFiles') {
+    return { ...base, projectHubProjectFiles: true, projectId };
   }
   if (view.section === 'all') {
     return { ...base, entityType: 'PROJECT', entityId: projectId };

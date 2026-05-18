@@ -50,7 +50,7 @@ function makeNotificationsMock() {
 function makeProjectHubMock() {
   return {
     getSummary: vi.fn(),
-    buildUnsortedWhere: vi.fn().mockResolvedValue({}),
+    buildProjectLevelWhere: vi.fn().mockResolvedValue({}),
   };
 }
 
@@ -290,6 +290,13 @@ describe('DriveService', () => {
           }),
         }),
       );
+    });
+
+    it('requires projectId for Project files filter', async () => {
+      await expect(service.listFileAssets({ projectHubProjectFiles: true })).rejects.toThrow(
+        'projectId is required for Project files.',
+      );
+      expect(prisma.fileAsset.findMany).not.toHaveBeenCalled();
     });
 
     it('applies OWN drive scope to File Assets list', async () => {

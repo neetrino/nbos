@@ -24,7 +24,7 @@ type HubTab = {
 function buildTabs(summary: ProjectDriveHubSummary | null): HubTab[] {
   return [
     { section: 'folders', label: 'Folders' },
-    { section: 'unsorted', label: 'Unsorted', count: summary?.unsortedCount },
+    { section: 'projectFiles', label: 'Project files', count: summary?.projectFileCount },
     { section: 'all', label: 'All project files', count: summary?.allProjectLinkedCount },
     { section: 'deals', label: 'Deals' },
     { section: 'products', label: 'Products' },
