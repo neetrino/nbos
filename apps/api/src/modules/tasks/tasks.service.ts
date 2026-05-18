@@ -14,6 +14,8 @@ import { taskFindAllPaginated } from './task-find-all-paginated.op';
 import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
 import { attachTaskLinkDisplayNames } from './task-link-display-names.op';
 import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
+import { NotificationService } from '../notifications/notification.service';
+import { notifyTaskReviewRequested } from './task-review-notify.op';
 
 interface CreateTaskDto {
   title: string;
@@ -77,7 +79,10 @@ interface TaskQueryParams {
 
 @Injectable()
 export class TasksService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+  ) {}
 
   async findAll(params: TaskQueryParams) {
     const result = await taskFindAllPaginated(this.prisma, params, {
@@ -222,6 +227,13 @@ export class TasksService {
       include: TASK_DETAIL_INCLUDE,
     });
     await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    await notifyTaskReviewRequested(this.notifications, {
+      taskId: updated.id,
+      taskCode: updated.code,
+      taskTitle: updated.title,
+      reviewerId: updated.reviewerId,
+      assigneeId: updated.assigneeId,
+    }).catch(() => undefined);
     return updated;
   }
 

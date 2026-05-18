@@ -1,12 +1,23 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AutoTasksService } from './auto-tasks.service';
+import { AUTOMATION_RULES_CATALOG } from './automation-rules.catalog';
+import { TASK_BLUEPRINTS_BY_PRODUCT_TYPE } from './task-blueprints.constants';
 
 @ApiTags('Automation')
 @ApiBearerAuth()
 @Controller('automation')
 export class AutoTasksController {
   constructor(private readonly autoTasksService: AutoTasksService) {}
+
+  @Get('rules-catalog')
+  @ApiOperation({ summary: 'List automation rules and blueprint product types (read-only)' })
+  getRulesCatalog() {
+    return {
+      automationRules: AUTOMATION_RULES_CATALOG,
+      blueprintProductTypes: Object.keys(TASK_BLUEPRINTS_BY_PRODUCT_TYPE),
+    };
+  }
 
   @Post('generate-tasks')
   @HttpCode(HttpStatus.OK)

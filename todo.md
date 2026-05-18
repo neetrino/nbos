@@ -1,16 +1,16 @@
 # NBOS Tasks — backlog
 
-Канон: [01](docs/NBOS/02-Modules/05-Tasks/01-Task-System-Overview.md) · [02](docs/NBOS/02-Modules/05-Tasks/02-Work-Spaces-and-Views.md)
+Канон: [01](docs/NBOS/02-Modules/05-Tasks/01-Task-System-Overview.md) · [06-Support](docs/NBOS/02-Modules/06-Support/01-Support-Overview.md)
 
-Phase 4 + backlog slice **2026-05-18** (review API, planning tab, legacy attach, recurring list, blueprints split).
+Phase 4 + backlog slices **2026-05-18** закрыты (review, planning, recurring create, automation catalog).
 
-- [ ] **Sprint entity UI** — named sprints / closed sprints (сейчас planning columns по `planning_status`)
-- [ ] **Recurring create dialog** — полный UI создания шаблона (list page есть)
-- [ ] **Review notifications** — уведомления reviewer при submit
-- [ ] **Automation rules catalog** — event rules отдельно от blueprints в UI/docs
+- [ ] **Sprint entity UI** — named `Sprint` model + closed sprint history (сейчас `planning_status` columns)
 
 ---
 
-## Следующий модуль
+## Support (следующий модуль)
 
-- [ ] **Support**
+- [ ] **Ticket detail timeline** — richer activity / linked tasks в sheet
+- [ ] **Coverage → Finance/Maintenance** automation
+- [ ] **External messenger** link на тикет
+- [ ] **Enum cleanup** — legacy `REOPENED` в Prisma (отдельная миграция)

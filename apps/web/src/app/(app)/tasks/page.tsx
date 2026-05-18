@@ -54,6 +54,9 @@ export default function TasksPage() {
           <Link href="/tasks/recurring" className={buttonVariants({ variant: 'outline' })}>
             Recurring
           </Link>
+          <Link href="/tasks/automation" className={buttonVariants({ variant: 'outline' })}>
+            Automation
+          </Link>
           <TasksPageSettingsDialog
             exportDisabled={loading || !stats}
             onExportScopeStatsCsv={handleExportScopeStatsCsv}

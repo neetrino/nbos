@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TasksService } from './tasks.service';
 import { TASK_INCLUDE } from './task-response-includes';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
@@ -10,7 +10,8 @@ describe('TasksService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new TasksService(prisma as never);
+    const notifications = { create: vi.fn().mockResolvedValue({ id: 'n1' }) };
+    service = new TasksService(prisma as never, notifications as never);
   });
 
   describe('findAll', () => {

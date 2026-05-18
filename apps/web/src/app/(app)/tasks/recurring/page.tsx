@@ -7,12 +7,14 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { EmptyState, ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
 import { recurringTasksApi, type RecurringTaskTemplate } from '@/lib/api/recurring-tasks';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { CreateRecurringTaskDialog } from '@/features/tasks/components/CreateRecurringTaskDialog';
 
 export default function RecurringTasksPage() {
   const { creatorId, creatorReady } = useTaskCreatorId();
   const [templates, setTemplates] = useState<RecurringTaskTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const fetchTemplates = useCallback(async () => {
     if (!creatorId) {
@@ -46,7 +48,18 @@ export default function RecurringTasksPage() {
         <Button disabled={!creatorId} onClick={() => void fetchTemplates()}>
           Refresh
         </Button>
+        <Button disabled={!creatorId} onClick={() => setCreateOpen(true)}>
+          <Plus size={16} />
+          New template
+        </Button>
       </PageHeader>
+
+      <CreateRecurringTaskDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        creatorId={creatorId ?? ''}
+        onCreated={(row) => setTemplates((prev) => [row, ...prev])}
+      />
 
       {loading ? (
         <LoadingState />
@@ -56,7 +69,13 @@ export default function RecurringTasksPage() {
         <EmptyState
           icon={Plus}
           title="No recurring templates"
-          description="Create templates via API or seed data. UI create dialog is next slice."
+          description="Create a recurring template to spawn tasks on a schedule."
+          action={
+            <Button disabled={!creatorId} onClick={() => setCreateOpen(true)}>
+              <Plus size={16} />
+              New template
+            </Button>
+          }
         />
       ) : (
         <ul className="divide-border border-border divide-y rounded-lg border">
