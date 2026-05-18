@@ -22,8 +22,10 @@ import {
 } from '@/components/ui/select';
 import {
   driveApi,
+  type DriveCleanupCandidateCategory,
   type DriveFolder,
   type DriveFolderListing,
+  type DriveZipExportJobSummary,
   type FileAsset,
 } from '@/lib/api/drive';
 import { projectsApi } from '@/lib/api/projects';
@@ -101,6 +103,8 @@ import {
   resolveDriveActionCapabilities,
 } from './drive-action-capabilities';
 import { DRIVE_ZIP_UI_MAX_FILES } from './drive-zip-ui-limits';
+import { runDriveZipExportJob } from './drive-zip-export-run';
+import { buildDriveTypedExportActions, type DriveTypedExportAction } from './drive-export-ui';
 import { DriveProjectHubNav } from './DriveProjectHubNav';
 import {
   DRIVE_PROJECT_HUB_DEFAULT_VIEW,
@@ -111,9 +115,6 @@ import {
   type DriveProjectHubView,
   type ProjectDriveHubSummary,
 } from './drive-project-hub-view';
-
-const DRIVE_ZIP_EXPORT_POLL_INTERVAL_MS = 900;
-const DRIVE_ZIP_EXPORT_POLL_MAX_ATTEMPTS = 180;
 
 type FolderFilePickerState = { mode: 'move' | 'copy'; file: FileAsset };
 
@@ -153,6 +154,8 @@ export function DriveWorkspace() {
     expiredPendingUploadSessions: number;
   } | null>(null);
   const [purgeBusy, setPurgeBusy] = useState(false);
+  const [exportJobs, setExportJobs] = useState<DriveZipExportJobSummary[]>([]);
+  const [cleanupCategories, setCleanupCategories] = useState<DriveCleanupCandidateCategory[]>([]);
   const [linkAggregates, setLinkAggregates] = useState<
     { entityType: string; entityId: string; count: number }[]
   >([]);
@@ -947,16 +950,30 @@ export function DriveWorkspace() {
     window.localStorage.setItem(DRIVE_FILE_SORT_STORAGE_KEY, fileSort);
   }, [fileSort]);
 
+  const refreshInsightsOperations = useCallback(async () => {
+    const [summary, jobs, cleanup] = await Promise.all([
+      driveApi.getDriveCleanupSummary(),
+      driveApi.listDriveZipExportJobs(),
+      driveApi.listDriveCleanupCandidates(),
+    ]);
+    setMaintenanceSummary(summary);
+    setExportJobs(jobs);
+    setCleanupCategories(cleanup.categories);
+  }, []);
+
   useEffect(() => {
     if (!insightsOpen) return;
     let cancelled = false;
-    void driveApi.getDriveCleanupSummary().then((s) => {
-      if (!cancelled) setMaintenanceSummary(s);
+    void refreshInsightsOperations().catch(() => {
+      if (!cancelled) {
+        setExportJobs([]);
+        setCleanupCategories([]);
+      }
     });
     return () => {
       cancelled = true;
     };
-  }, [insightsOpen]);
+  }, [insightsOpen, refreshInsightsOperations]);
 
   useEffect(() => {
     if (!insightsOpen || !systemLibraryLink) {
@@ -1124,14 +1141,13 @@ export function DriveWorkspace() {
     try {
       const r = await driveApi.purgeDriveCleanup('failed');
       toast.success(r.deleted === 0 ? 'Nothing to purge' : `Removed ${r.deleted} failed sessions`);
-      const s = await driveApi.getDriveCleanupSummary();
-      setMaintenanceSummary(s);
+      await refreshInsightsOperations();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Purge failed');
     } finally {
       setPurgeBusy(false);
     }
-  }, []);
+  }, [refreshInsightsOperations]);
 
   const handlePurgeExpired = useCallback(async () => {
     setPurgeBusy(true);
@@ -1140,14 +1156,91 @@ export function DriveWorkspace() {
       toast.success(
         r.deleted === 0 ? 'Nothing to purge' : `Removed ${r.deleted} expired pending sessions`,
       );
-      const s = await driveApi.getDriveCleanupSummary();
-      setMaintenanceSummary(s);
+      await refreshInsightsOperations();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Purge failed');
     } finally {
       setPurgeBusy(false);
     }
+  }, [refreshInsightsOperations]);
+
+  const typedExportActions = useMemo(
+    () =>
+      buildDriveTypedExportActions({
+        projectHubSummary,
+        projectHubView,
+        libraryEntityScope: libraryEntityFolderScope,
+      }),
+    [libraryEntityFolderScope, projectHubSummary, projectHubView],
+  );
+
+  const handleDownloadExport = useCallback(async (fileAssetId: string) => {
+    try {
+      const { url } = await driveApi.getFileAssetPreviewUrl(fileAssetId);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not open export');
+    }
   }, []);
+
+  const handleCancelExport = useCallback(
+    async (jobId: string) => {
+      setBusy(true);
+      try {
+        await driveApi.cancelDriveZipExport(jobId);
+        toast.success('Export cancelled');
+        await refreshInsightsOperations();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Could not cancel export');
+      } finally {
+        setBusy(false);
+      }
+    },
+    [refreshInsightsOperations],
+  );
+
+  const handleTypedExport = useCallback(
+    async (action: DriveTypedExportAction) => {
+      setBusy(true);
+      try {
+        await runDriveZipExportJob({
+          exportKind: action.exportKind,
+          exportParams: action.exportParams,
+        });
+        toast.success('ZIP download started');
+        await refreshInsightsOperations();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Could not start export');
+      } finally {
+        setBusy(false);
+      }
+    },
+    [refreshInsightsOperations],
+  );
+
+  const insightsOperationsProp = useMemo(() => {
+    if (!insightsOpen) return null;
+    return {
+      busy,
+      typedExportActions,
+      exportJobs,
+      cleanupCategories,
+      onTypedExport: handleTypedExport,
+      onCancelExport: handleCancelExport,
+      onDownloadExport: handleDownloadExport,
+      onRefresh: () => void refreshInsightsOperations(),
+    };
+  }, [
+    busy,
+    cleanupCategories,
+    exportJobs,
+    handleCancelExport,
+    handleDownloadExport,
+    handleTypedExport,
+    insightsOpen,
+    refreshInsightsOperations,
+    typedExportActions,
+  ]);
 
   const maintenanceCleanupProp = useMemo(() => {
     if (!insightsOpen || !maintenanceSummary) return null;
@@ -1552,25 +1645,9 @@ export function DriveWorkspace() {
         );
         return;
       }
-      const job = await driveApi.createDriveZipExport(merged);
-      toast.message('ZIP export queued', {
-        description: 'The download opens automatically when the archive is ready.',
-      });
-      for (let attempt = 0; attempt < DRIVE_ZIP_EXPORT_POLL_MAX_ATTEMPTS; attempt++) {
-        await new Promise((r) => setTimeout(r, DRIVE_ZIP_EXPORT_POLL_INTERVAL_MS));
-        const row = await driveApi.getDriveZipExportJob(job.id);
-        if (row.status === 'COMPLETED' && row.fileAsset?.id) {
-          const { url } = await driveApi.getFileAssetPreviewUrl(row.fileAsset.id);
-          window.open(url, '_blank', 'noopener,noreferrer');
-          toast.success('ZIP download started');
-          return;
-        }
-        if (row.status === 'FAILED') {
-          toast.error(row.errorMessage ?? 'ZIP export failed');
-          return;
-        }
-      }
-      toast.error('ZIP export is taking longer than expected. Try again in a minute.');
+      await runDriveZipExportJob({ fileIds: merged });
+      toast.success('ZIP download started');
+      if (insightsOpen) await refreshInsightsOperations();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not start ZIP export');
     } finally {
@@ -1924,6 +2001,7 @@ export function DriveWorkspace() {
         loading={loading}
         maintenanceCleanup={maintenanceCleanupProp}
         libraryLinkAggregates={insightsOpen ? linkAggregates : []}
+        insightsOperations={insightsOperationsProp}
         lifecycleView={lifecycleView}
       />
 

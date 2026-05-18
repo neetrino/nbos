@@ -30,7 +30,7 @@
 
 ## Следующий срез
 
-- UI: export by type, cleanup dashboard, cancel export.
+- UI: cleanup confirmed actions; export jobs polling while insights closed.
 - Upload widget на карточках CRM / Product / Task.
 - Полная UI-матрица Share/Move/Copy.
 - Rich preview.

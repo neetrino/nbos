@@ -17,6 +17,9 @@ import { DriveToolbar } from './DriveToolbar';
 import { DriveViewModeSwitch } from './DriveViewModeSwitch';
 import { formatFileSize } from './drive-format';
 import type { DriveStats } from './drive-types';
+import { DriveInsightsOperations } from './DriveInsightsOperations';
+import type { DriveCleanupCandidateCategory, DriveZipExportJobSummary } from '@/lib/api/drive';
+import type { DriveTypedExportAction } from './drive-export-ui';
 
 const TAB_SCROLL =
   'min-w-0 max-w-[min(100%,20rem)] shrink-0 overflow-x-auto sm:max-w-[min(100%,26rem)] md:max-w-[min(100%,32rem)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
@@ -35,6 +38,7 @@ export function DriveHero({
   onToggleInsights,
   maintenanceCleanup,
   libraryLinkAggregates,
+  insightsOperations,
   lifecycleView = 'browse',
 }: {
   stats: DriveStats;
@@ -56,6 +60,16 @@ export function DriveHero({
     onPurgeExpired: () => void;
   } | null;
   libraryLinkAggregates?: { entityType: string; entityId: string; count: number }[];
+  insightsOperations?: {
+    busy: boolean;
+    typedExportActions: DriveTypedExportAction[];
+    exportJobs: DriveZipExportJobSummary[];
+    cleanupCategories: DriveCleanupCandidateCategory[];
+    onTypedExport: (action: DriveTypedExportAction) => void;
+    onCancelExport: (jobId: string) => void;
+    onDownloadExport: (fileAssetId: string) => void;
+    onRefresh: () => void;
+  } | null;
   lifecycleView?: DriveLifecycleView;
 }) {
   return (
@@ -112,6 +126,9 @@ export function DriveHero({
           linkAggregates={libraryLinkAggregates ?? []}
         />
       )}
+      {insightsOpen && insightsOperations ? (
+        <DriveInsightsOperations {...insightsOperations} />
+      ) : null}
     </section>
   );
 }

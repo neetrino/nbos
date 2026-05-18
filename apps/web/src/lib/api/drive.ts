@@ -1,20 +1,5 @@
 import { api } from '../api';
 
-export interface DriveFileEntry {
-  key: string;
-  name: string;
-  size: number;
-  lastModified: string | undefined;
-  isFolder: boolean;
-}
-
-export interface DriveFolderNode {
-  name: string;
-  path: string;
-  children: DriveFolderNode[];
-  files: DriveFileEntry[];
-}
-
 export interface FileAsset {
   id: string;
   displayName: string;
@@ -92,17 +77,48 @@ export type DriveZipExportJobStatus =
   | 'FAILED'
   | 'CANCELLED';
 
+export type DriveZipExportKind =
+  | 'drive.selection_zip'
+  | 'drive.project_zip'
+  | 'drive.product_zip'
+  | 'drive.client_zip'
+  | 'drive.finance_zip'
+  | 'drive.task_attachments_zip';
+
+export interface CreateDriveZipExportInput {
+  fileIds?: string[];
+  exportKind?: DriveZipExportKind;
+  exportParams?: Record<string, string>;
+}
+
 export interface DriveZipExportJobSummary {
   id: string;
   status: DriveZipExportJobStatus;
   requestedById?: string;
   fileIds: unknown;
+  accessSnapshot?: { exportKind?: string; exportParams?: Record<string, string> };
   errorMessage: string | null;
   queuedAt: string;
   startedAt: string | null;
   completedAt: string | null;
   failedAt: string | null;
   fileAsset: { id: string; displayName: string; mimeType: string | null } | null;
+}
+
+export interface DriveCleanupCandidateItem {
+  id: string;
+  kind: string;
+  label: string;
+  detail?: string;
+  sizeBytes?: string | null;
+  createdAt?: string;
+}
+
+export interface DriveCleanupCandidateCategory {
+  kind: string;
+  label: string;
+  count: number;
+  preview: DriveCleanupCandidateItem[];
 }
 
 export interface DriveFolder {
@@ -491,46 +507,6 @@ export const driveApi = {
     return resp.data;
   },
 
-  async listFiles(projectId: string, prefix?: string): Promise<DriveFileEntry[]> {
-    const resp = await api.get<DriveFileEntry[]>('/api/drive/' + encodeURIComponent(projectId), {
-      params: prefix ? { prefix } : undefined,
-    });
-    return resp.data;
-  },
-
-  async getStructure(projectId: string): Promise<DriveFolderNode> {
-    const resp = await api.get<DriveFolderNode>(
-      '/api/drive/' + encodeURIComponent(projectId) + '/structure',
-    );
-    return resp.data;
-  },
-
-  async getUploadUrl(
-    projectId: string,
-    fileName: string,
-    contentType: string,
-  ): Promise<{ uploadUrl: string; key: string; publicUrl: string }> {
-    const resp = await api.post<{ uploadUrl: string; key: string; publicUrl: string }>(
-      '/api/drive/' + encodeURIComponent(projectId) + '/upload-url',
-      { fileName, contentType },
-    );
-    return resp.data;
-  },
-
-  async getDownloadUrl(projectId: string, filePath: string): Promise<{ downloadUrl: string }> {
-    const resp = await api.get<{ downloadUrl: string }>(
-      '/api/drive/' + encodeURIComponent(projectId) + '/download-url',
-      { params: { path: filePath } },
-    );
-    return resp.data;
-  },
-
-  async deleteFile(projectId: string, filePath: string): Promise<void> {
-    await api.delete('/api/drive/' + encodeURIComponent(projectId), {
-      params: { path: filePath },
-    });
-  },
-
   async addFileToFolder(folderId: string, fileAssetId: string): Promise<unknown> {
     const resp = await api.post('/api/drive/folders/' + encodeURIComponent(folderId) + '/files', {
       fileAssetId,
@@ -553,8 +529,26 @@ export const driveApi = {
     return resp.data;
   },
 
-  async createDriveZipExport(fileIds: string[]): Promise<DriveZipExportJobSummary> {
-    const resp = await api.post<DriveZipExportJobSummary>('/api/drive/zip-exports', { fileIds });
+  async createDriveZipExport(
+    input: CreateDriveZipExportInput | string[],
+  ): Promise<DriveZipExportJobSummary> {
+    const body = Array.isArray(input) ? { fileIds: input } : input;
+    const resp = await api.post<DriveZipExportJobSummary>('/api/drive/zip-exports', body);
+    return resp.data;
+  },
+
+  async cancelDriveZipExport(jobId: string): Promise<DriveZipExportJobSummary> {
+    const resp = await api.post<DriveZipExportJobSummary>(
+      '/api/drive/zip-exports/' + encodeURIComponent(jobId) + '/cancel',
+      {},
+    );
+    return resp.data;
+  },
+
+  async listDriveCleanupCandidates(): Promise<{ categories: DriveCleanupCandidateCategory[] }> {
+    const resp = await api.get<{ categories: DriveCleanupCandidateCategory[] }>(
+      '/api/drive/cleanup/candidates',
+    );
     return resp.data;
   },
 
