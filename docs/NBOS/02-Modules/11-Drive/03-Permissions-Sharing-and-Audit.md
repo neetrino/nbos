@@ -30,6 +30,7 @@ Can access file =
 - actor для archive/restore/trash audit всегда берётся с сервера (`CurrentUser.id`);
 - полный canonical resolver для всех entity graphs, confidentiality edge cases и advanced grants остаётся отдельным Phase 2.
 - `PROJECT` уже не опирается на наличие старого linked file: Drive проверяет direct project participation через delivery/sales graph проекта.
+- `WORK_SPACE` уже не опирается на наличие старого linked file: Drive проверяет direct workspace participation через связанные product / extension / project delivery graphs.
 
 ---
 

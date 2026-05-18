@@ -6,7 +6,6 @@ import {
   resolveDocumentsReadContext,
 } from '../documents/documents-access-read';
 import type { DriveEntityContextAccess } from './drive-access.types';
-import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
 import { requireText } from './drive-metadata';
 
 const SCOPE_ALL = 'ALL';
@@ -258,17 +257,73 @@ async function assertProjectScopedAccessible(
   }
 }
 
-async function assertAccessibleLinkedFileExists(
+async function assertWorkspaceScopedAccessible(
   prisma: InstanceType<typeof PrismaClient>,
-  entityType: string,
   entityId: string,
   access: DriveEntityContextAccess,
 ) {
-  const row = await prisma.fileAsset.findFirst({
+  const scope = normalizeDriveScope(access.driveScope);
+  await assertEntityExistsByType(prisma, 'WORKSPACE', entityId);
+  if (scope === SCOPE_ALL) return;
+
+  const scopedEmployeeIds = [...(await loadScopedEmployeeIds(prisma, access))];
+  const row = await prisma.workSpace.findFirst({
     where: {
-      deletedAt: null,
-      links: { some: { entityType, entityId, unlinkedAt: null } },
-      ...(await buildDriveAssetAccessWhere(prisma, access)),
+      id: entityId,
+      OR: [
+        {
+          product: {
+            OR: [
+              { pmId: { in: scopedEmployeeIds } },
+              { developerId: { in: scopedEmployeeIds } },
+              { designerId: { in: scopedEmployeeIds } },
+              { technicalSpecialistId: { in: scopedEmployeeIds } },
+              { qaLeadId: { in: scopedEmployeeIds } },
+            ],
+          },
+        },
+        {
+          extension: {
+            OR: [
+              { assignedTo: { in: scopedEmployeeIds } },
+              { closedById: { in: scopedEmployeeIds } },
+            ],
+          },
+        },
+        {
+          project: {
+            OR: [
+              {
+                products: {
+                  some: {
+                    OR: [
+                      { pmId: { in: scopedEmployeeIds } },
+                      { developerId: { in: scopedEmployeeIds } },
+                      { designerId: { in: scopedEmployeeIds } },
+                      { technicalSpecialistId: { in: scopedEmployeeIds } },
+                      { qaLeadId: { in: scopedEmployeeIds } },
+                    ],
+                  },
+                },
+              },
+              { extensions: { some: { assignedTo: { in: scopedEmployeeIds } } } },
+              {
+                orders: {
+                  some: {
+                    deal: {
+                      OR: [
+                        { sellerId: { in: scopedEmployeeIds } },
+                        { sellerAssistantId: { in: scopedEmployeeIds } },
+                        { pmId: { in: scopedEmployeeIds } },
+                      ],
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ],
     },
     select: { id: true },
   });
@@ -314,12 +369,10 @@ export async function assertDriveEntityContextAccessible(
     return;
   }
 
-  await assertEntityExistsByType(prisma, entityType, entityId);
-
-  if (
-    normalizeDriveScope(access.driveScope) !== SCOPE_ALL &&
-    (entityType === 'WORK_SPACE' || entityType === 'WORKSPACE')
-  ) {
-    await assertAccessibleLinkedFileExists(prisma, entityType, entityId, access);
+  if (entityType === 'WORK_SPACE' || entityType === 'WORKSPACE') {
+    await assertWorkspaceScopedAccessible(prisma, entityId, access);
+    return;
   }
+
+  await assertEntityExistsByType(prisma, entityType, entityId);
 }
