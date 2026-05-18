@@ -18,6 +18,7 @@ import {
   DashboardLoadingSkeleton,
 } from './components/DashboardControlCenterView';
 import { loadDashboardControlData } from './dashboard-control-data';
+import { subscribeDashboardNoteCreated } from './dashboard-note-sync';
 import {
   PINNED_ACTIONS,
   partitionMiniMetrics,
@@ -117,6 +118,15 @@ function useDashboardControlCenter() {
   useEffect(() => {
     void fetchDashboard();
   }, [fetchDashboard]);
+
+  useEffect(() => {
+    return subscribeDashboardNoteCreated((note) => {
+      setNotes((current) => {
+        if (current.some((existing) => existing.id === note.id)) return current;
+        return [note, ...current];
+      });
+    });
+  }, []);
 
   return {
     actions,
