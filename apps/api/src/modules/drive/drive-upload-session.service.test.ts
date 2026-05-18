@@ -56,6 +56,16 @@ describe('DriveUploadSessionService', () => {
       name: 'Site',
     });
     prisma.project.findFirst.mockResolvedValue({ id: 'p1' });
+    prisma.clientServiceRecord.findUnique.mockResolvedValue({ projectId: 'p1' });
+    prisma.company.findUnique.mockResolvedValue({ id: 'comp-1', name: 'Acme' });
+    prisma.company.findFirst.mockResolvedValue({ id: 'comp-1' });
+    prisma.contact.findUnique.mockResolvedValue({ id: 'contact-1' });
+    prisma.contact.findFirst.mockResolvedValue({ id: 'contact-1' });
+    prisma.partner.findUnique.mockResolvedValue({ id: 'partner-1' });
+    prisma.partner.findFirst.mockResolvedValue({ id: 'partner-1' });
+    prisma.invoice.findUnique.mockResolvedValue({ projectId: 'p1' });
+    prisma.payment.findUnique.mockResolvedValue({ invoice: { projectId: 'p1' } });
+    prisma.expense.findUnique.mockResolvedValue({ projectId: 'p1', expensePlan: null });
     prisma.workSpace.findUnique.mockResolvedValue({ id: 'ws-1', name: 'Delivery' });
     prisma.workSpace.findFirst.mockResolvedValue({ id: 'ws-1' });
     prisma.task.findUnique.mockResolvedValue({ code: 'T1' });
@@ -285,6 +295,182 @@ describe('DriveUploadSessionService', () => {
           contentType: 'application/pdf',
           entityType: 'WORK_SPACE',
           entityId: 'ws-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).rejects.toThrow('Drive context not found');
+  });
+
+  it('allows invoice upload session for scoped project participant', async () => {
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'invoice.pdf',
+          contentType: 'application/pdf',
+          entityType: 'INVOICE',
+          entityId: 'inv-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).resolves.toHaveProperty('uploadUrl');
+  });
+
+  it('rejects invoice upload session when underlying project graph is inaccessible', async () => {
+    prisma.project.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'invoice.pdf',
+          contentType: 'application/pdf',
+          entityType: 'INVOICE',
+          entityId: 'inv-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).rejects.toThrow('Drive context not found');
+  });
+
+  it('allows payment upload session through invoice project graph', async () => {
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'payment.pdf',
+          contentType: 'application/pdf',
+          entityType: 'PAYMENT',
+          entityId: 'pay-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).resolves.toHaveProperty('uploadUrl');
+  });
+
+  it('allows expense upload session through direct project graph', async () => {
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'expense.pdf',
+          contentType: 'application/pdf',
+          entityType: 'EXPENSE',
+          entityId: 'exp-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).resolves.toHaveProperty('uploadUrl');
+  });
+
+  it('rejects expense upload session without an accessible project anchor', async () => {
+    prisma.expense.findUnique.mockResolvedValueOnce({
+      projectId: null,
+      expensePlan: { projectId: null },
+    });
+
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'expense.pdf',
+          contentType: 'application/pdf',
+          entityType: 'EXPENSE',
+          entityId: 'exp-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).rejects.toThrow('Drive context not found');
+  });
+
+  it('allows client service record upload session through project graph', async () => {
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'service.pdf',
+          contentType: 'application/pdf',
+          entityType: 'CLIENT_SERVICE_RECORD',
+          entityId: 'csr-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).resolves.toHaveProperty('uploadUrl');
+  });
+
+  it('allows company upload session through related project or deal graph', async () => {
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'company.pdf',
+          contentType: 'application/pdf',
+          entityType: 'COMPANY',
+          entityId: 'comp-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).resolves.toHaveProperty('uploadUrl');
+  });
+
+  it('rejects company upload session when company graph is inaccessible', async () => {
+    prisma.company.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'company.pdf',
+          contentType: 'application/pdf',
+          entityType: 'COMPANY',
+          entityId: 'comp-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).rejects.toThrow('Drive context not found');
+  });
+
+  it('allows contact upload session through related delivery graph', async () => {
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'contact.pdf',
+          contentType: 'application/pdf',
+          entityType: 'CONTACT',
+          entityId: 'contact-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).resolves.toHaveProperty('uploadUrl');
+  });
+
+  it('allows partner upload session through related partner business graph', async () => {
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'partner.pdf',
+          contentType: 'application/pdf',
+          entityType: 'PARTNER',
+          entityId: 'partner-1',
+        },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).resolves.toHaveProperty('uploadUrl');
+  });
+
+  it('rejects partner upload session when partner graph is inaccessible', async () => {
+    prisma.partner.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      service.createUploadSession(
+        {
+          fileName: 'partner.pdf',
+          contentType: 'application/pdf',
+          entityType: 'PARTNER',
+          entityId: 'partner-1',
         },
         'user-1',
         { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },

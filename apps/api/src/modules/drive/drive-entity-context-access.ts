@@ -46,6 +46,62 @@ function assertScopedEmployeeMatch(
   throw new NotFoundException('Drive context not found.');
 }
 
+function projectDeliveryGraphWhere(scopedEmployeeIds: string[]) {
+  return {
+    OR: [
+      {
+        products: {
+          some: {
+            OR: [
+              { pmId: { in: scopedEmployeeIds } },
+              { developerId: { in: scopedEmployeeIds } },
+              { designerId: { in: scopedEmployeeIds } },
+              { technicalSpecialistId: { in: scopedEmployeeIds } },
+              { qaLeadId: { in: scopedEmployeeIds } },
+            ],
+          },
+        },
+      },
+      { extensions: { some: { assignedTo: { in: scopedEmployeeIds } } } },
+      {
+        orders: {
+          some: {
+            deal: {
+              OR: [
+                { sellerId: { in: scopedEmployeeIds } },
+                { sellerAssistantId: { in: scopedEmployeeIds } },
+                { pmId: { in: scopedEmployeeIds } },
+              ],
+            },
+          },
+        },
+      },
+    ],
+  };
+}
+
+function productDeliveryGraphWhere(scopedEmployeeIds: string[]) {
+  return {
+    OR: [
+      { pmId: { in: scopedEmployeeIds } },
+      { developerId: { in: scopedEmployeeIds } },
+      { designerId: { in: scopedEmployeeIds } },
+      { technicalSpecialistId: { in: scopedEmployeeIds } },
+      { qaLeadId: { in: scopedEmployeeIds } },
+    ],
+  };
+}
+
+function dealDeliveryGraphWhere(scopedEmployeeIds: string[]) {
+  return {
+    OR: [
+      { sellerId: { in: scopedEmployeeIds } },
+      { sellerAssistantId: { in: scopedEmployeeIds } },
+      { pmId: { in: scopedEmployeeIds } },
+    ],
+  };
+}
+
 async function assertDocumentReadable(
   prisma: InstanceType<typeof PrismaClient>,
   entityId: string,
@@ -88,6 +144,7 @@ async function assertEntityExistsByType(
 ) {
   const loaders: Record<string, () => Promise<unknown>> = {
     CHECKLIST_TEMPLATE: () => prisma.checklistTemplate.findUnique({ where: { id: entityId } }),
+    CLIENT_SERVICE_RECORD: () => prisma.clientServiceRecord.findUnique({ where: { id: entityId } }),
     COMPANY: () => prisma.company.findUnique({ where: { id: entityId } }),
     CONTACT: () => prisma.contact.findUnique({ where: { id: entityId } }),
     DOCUMENT: () => prisma.document.findUnique({ where: { id: entityId } }),
@@ -220,35 +277,7 @@ async function assertProjectScopedAccessible(
   const row = await prisma.project.findFirst({
     where: {
       id: entityId,
-      OR: [
-        {
-          products: {
-            some: {
-              OR: [
-                { pmId: { in: scopedEmployeeIds } },
-                { developerId: { in: scopedEmployeeIds } },
-                { designerId: { in: scopedEmployeeIds } },
-                { technicalSpecialistId: { in: scopedEmployeeIds } },
-                { qaLeadId: { in: scopedEmployeeIds } },
-              ],
-            },
-          },
-        },
-        { extensions: { some: { assignedTo: { in: scopedEmployeeIds } } } },
-        {
-          orders: {
-            some: {
-              deal: {
-                OR: [
-                  { sellerId: { in: scopedEmployeeIds } },
-                  { sellerAssistantId: { in: scopedEmployeeIds } },
-                  { pmId: { in: scopedEmployeeIds } },
-                ],
-              },
-            },
-          },
-        },
-      ],
+      ...projectDeliveryGraphWhere(scopedEmployeeIds),
     },
     select: { id: true },
   });
@@ -272,15 +301,7 @@ async function assertWorkspaceScopedAccessible(
       id: entityId,
       OR: [
         {
-          product: {
-            OR: [
-              { pmId: { in: scopedEmployeeIds } },
-              { developerId: { in: scopedEmployeeIds } },
-              { designerId: { in: scopedEmployeeIds } },
-              { technicalSpecialistId: { in: scopedEmployeeIds } },
-              { qaLeadId: { in: scopedEmployeeIds } },
-            ],
-          },
+          product: productDeliveryGraphWhere(scopedEmployeeIds),
         },
         {
           extension: {
@@ -291,37 +312,7 @@ async function assertWorkspaceScopedAccessible(
           },
         },
         {
-          project: {
-            OR: [
-              {
-                products: {
-                  some: {
-                    OR: [
-                      { pmId: { in: scopedEmployeeIds } },
-                      { developerId: { in: scopedEmployeeIds } },
-                      { designerId: { in: scopedEmployeeIds } },
-                      { technicalSpecialistId: { in: scopedEmployeeIds } },
-                      { qaLeadId: { in: scopedEmployeeIds } },
-                    ],
-                  },
-                },
-              },
-              { extensions: { some: { assignedTo: { in: scopedEmployeeIds } } } },
-              {
-                orders: {
-                  some: {
-                    deal: {
-                      OR: [
-                        { sellerId: { in: scopedEmployeeIds } },
-                        { sellerAssistantId: { in: scopedEmployeeIds } },
-                        { pmId: { in: scopedEmployeeIds } },
-                      ],
-                    },
-                  },
-                },
-              },
-            ],
-          },
+          project: projectDeliveryGraphWhere(scopedEmployeeIds),
         },
       ],
     },
@@ -330,6 +321,156 @@ async function assertWorkspaceScopedAccessible(
   if (!row) {
     throw new NotFoundException('Drive context not found.');
   }
+}
+
+async function assertInvoiceScopedAccessible(
+  prisma: InstanceType<typeof PrismaClient>,
+  entityId: string,
+  access: DriveEntityContextAccess,
+) {
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: entityId },
+    select: { projectId: true },
+  });
+  if (!invoice?.projectId) {
+    throw new NotFoundException('Drive context not found.');
+  }
+  await assertProjectScopedAccessible(prisma, invoice.projectId, access);
+}
+
+async function assertPaymentScopedAccessible(
+  prisma: InstanceType<typeof PrismaClient>,
+  entityId: string,
+  access: DriveEntityContextAccess,
+) {
+  const payment = await prisma.payment.findUnique({
+    where: { id: entityId },
+    select: {
+      invoice: {
+        select: { projectId: true },
+      },
+    },
+  });
+  const projectId = payment?.invoice?.projectId;
+  if (!projectId) {
+    throw new NotFoundException('Drive context not found.');
+  }
+  await assertProjectScopedAccessible(prisma, projectId, access);
+}
+
+async function assertClientServiceRecordScopedAccessible(
+  prisma: InstanceType<typeof PrismaClient>,
+  entityId: string,
+  access: DriveEntityContextAccess,
+) {
+  const record = await prisma.clientServiceRecord.findUnique({
+    where: { id: entityId },
+    select: { projectId: true },
+  });
+  if (!record?.projectId) {
+    throw new NotFoundException('Drive context not found.');
+  }
+  await assertProjectScopedAccessible(prisma, record.projectId, access);
+}
+
+async function assertCompanyScopedAccessible(
+  prisma: InstanceType<typeof PrismaClient>,
+  entityId: string,
+  access: DriveEntityContextAccess,
+) {
+  const scope = normalizeDriveScope(access.driveScope);
+  await assertEntityExistsByType(prisma, 'COMPANY', entityId);
+  if (scope === SCOPE_ALL) return;
+
+  const scopedEmployeeIds = [...(await loadScopedEmployeeIds(prisma, access))];
+  const row = await prisma.company.findFirst({
+    where: {
+      id: entityId,
+      OR: [
+        { projects: { some: projectDeliveryGraphWhere(scopedEmployeeIds) } },
+        { deals: { some: dealDeliveryGraphWhere(scopedEmployeeIds) } },
+      ],
+    },
+    select: { id: true },
+  });
+  if (!row) {
+    throw new NotFoundException('Drive context not found.');
+  }
+}
+
+async function assertContactScopedAccessible(
+  prisma: InstanceType<typeof PrismaClient>,
+  entityId: string,
+  access: DriveEntityContextAccess,
+) {
+  const scope = normalizeDriveScope(access.driveScope);
+  await assertEntityExistsByType(prisma, 'CONTACT', entityId);
+  if (scope === SCOPE_ALL) return;
+
+  const scopedEmployeeIds = [...(await loadScopedEmployeeIds(prisma, access))];
+  const row = await prisma.contact.findFirst({
+    where: {
+      id: entityId,
+      OR: [
+        { projects: { some: projectDeliveryGraphWhere(scopedEmployeeIds) } },
+        { deals: { some: dealDeliveryGraphWhere(scopedEmployeeIds) } },
+        { leads: { some: { assignedTo: { in: scopedEmployeeIds } } } },
+        { tickets: { some: { assignedTo: { in: scopedEmployeeIds } } } },
+      ],
+    },
+    select: { id: true },
+  });
+  if (!row) {
+    throw new NotFoundException('Drive context not found.');
+  }
+}
+
+async function assertPartnerScopedAccessible(
+  prisma: InstanceType<typeof PrismaClient>,
+  entityId: string,
+  access: DriveEntityContextAccess,
+) {
+  const scope = normalizeDriveScope(access.driveScope);
+  await assertEntityExistsByType(prisma, 'PARTNER', entityId);
+  if (scope === SCOPE_ALL) return;
+
+  const scopedEmployeeIds = [...(await loadScopedEmployeeIds(prisma, access))];
+  const row = await prisma.partner.findFirst({
+    where: {
+      id: entityId,
+      OR: [
+        { dealsAsSource: { some: dealDeliveryGraphWhere(scopedEmployeeIds) } },
+        { orders: { some: { project: projectDeliveryGraphWhere(scopedEmployeeIds) } } },
+        { subscriptions: { some: { project: projectDeliveryGraphWhere(scopedEmployeeIds) } } },
+        { partnerAccruals: { some: { project: projectDeliveryGraphWhere(scopedEmployeeIds) } } },
+      ],
+    },
+    select: { id: true },
+  });
+  if (!row) {
+    throw new NotFoundException('Drive context not found.');
+  }
+}
+
+async function assertExpenseScopedAccessible(
+  prisma: InstanceType<typeof PrismaClient>,
+  entityId: string,
+  access: DriveEntityContextAccess,
+) {
+  const expense = await prisma.expense.findUnique({
+    where: { id: entityId },
+    select: {
+      projectId: true,
+      expensePlan: {
+        select: { projectId: true },
+      },
+    },
+  });
+  const projectId = expense?.projectId ?? expense?.expensePlan?.projectId ?? null;
+  if (!projectId) {
+    throw new NotFoundException('Drive context not found.');
+  }
+  await assertProjectScopedAccessible(prisma, projectId, access);
 }
 
 /**
@@ -371,6 +512,41 @@ export async function assertDriveEntityContextAccessible(
 
   if (entityType === 'WORK_SPACE' || entityType === 'WORKSPACE') {
     await assertWorkspaceScopedAccessible(prisma, entityId, access);
+    return;
+  }
+
+  if (entityType === 'INVOICE') {
+    await assertInvoiceScopedAccessible(prisma, entityId, access);
+    return;
+  }
+
+  if (entityType === 'PAYMENT') {
+    await assertPaymentScopedAccessible(prisma, entityId, access);
+    return;
+  }
+
+  if (entityType === 'EXPENSE') {
+    await assertExpenseScopedAccessible(prisma, entityId, access);
+    return;
+  }
+
+  if (entityType === 'CLIENT_SERVICE_RECORD') {
+    await assertClientServiceRecordScopedAccessible(prisma, entityId, access);
+    return;
+  }
+
+  if (entityType === 'COMPANY') {
+    await assertCompanyScopedAccessible(prisma, entityId, access);
+    return;
+  }
+
+  if (entityType === 'CONTACT') {
+    await assertContactScopedAccessible(prisma, entityId, access);
+    return;
+  }
+
+  if (entityType === 'PARTNER') {
+    await assertPartnerScopedAccessible(prisma, entityId, access);
     return;
   }
 

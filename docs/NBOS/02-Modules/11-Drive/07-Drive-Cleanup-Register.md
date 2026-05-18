@@ -114,6 +114,8 @@
 - upload session create and complete re-check `entityType` / `entityId` before writing `FileAsset` / `FileLink`;
 - `PROJECT` context access no longer depends on pre-existing linked files; direct project delivery/sales membership is checked first;
 - `WORK_SPACE` context access no longer depends on pre-existing linked files; direct workspace delivery graph membership is checked first;
+- `INVOICE` / `PAYMENT` / `EXPENSE` contexts now require an accessible project anchor instead of passing on entity existence alone;
+- `COMPANY` / `CONTACT` / `PARTNER` / `CLIENT_SERVICE_RECORD` scoped access now resolves through related project/deal/partner graphs instead of entity existence alone;
 - archive/restore/trash audit actor is always `CurrentUser.id`;
 - batch archive/restore audit writes only for реально изменённых файлов.
 
