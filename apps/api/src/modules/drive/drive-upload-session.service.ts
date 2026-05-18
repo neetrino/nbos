@@ -7,6 +7,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PrismaClient, type Prisma } from '@nbos/database';
@@ -24,8 +25,10 @@ import {
   UPLOAD_SESSION_PRESIGN_EXPIRY_SECONDS,
   UPLOAD_SESSION_TTL_MS,
 } from './drive-upload.constants';
-import { buildSessionUploadStorageKey } from './drive-upload-path';
 import { buildFileAssetCreateInputForCompletedSession } from './drive-upload-complete';
+import { readTenantOrganizationId } from './drive-tenant';
+import { resolveStorageHomeContextWithPurpose } from './drive-storage-home-resolver';
+import { buildStorageHomeKeyFromParams } from './drive-storage-home-path';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
@@ -39,6 +42,7 @@ export class DriveUploadSessionService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly r2: DriveR2Client,
     private readonly folders: DriveFolderService,
+    private readonly config: ConfigService,
   ) {}
 
   async listDriveLibrary(contextType: string | undefined, contextId: string | undefined) {
@@ -59,16 +63,32 @@ export class DriveUploadSessionService {
     }
 
     const sessionId = randomUUID();
-    const storageKey = buildSessionUploadStorageKey(sessionId, fileName);
+    const fileAssetId = randomUUID();
+    const entityType = dto.entityType?.trim() ?? 'DRIVE_FOLDER';
+    const entityId = dto.entityId?.trim() ?? dto.folderId ?? sessionId;
+    const purpose = pickPurpose(dto.purpose);
     const displayName = (dto.displayName?.trim() || fileName).slice(0, 500);
+    const orgId = readTenantOrganizationId(this.config);
+    const contextPath = await resolveStorageHomeContextWithPurpose(
+      this.prisma,
+      entityType,
+      entityId,
+      purpose,
+    );
+    const storageKey = buildStorageHomeKeyFromParams(orgId, contextPath, {
+      displayName,
+      fileAssetId,
+      purpose,
+    });
     const expiresAt = new Date(Date.now() + UPLOAD_SESSION_TTL_MS);
 
     const session = await this.prisma.fileUploadSession.create({
       data: {
         id: sessionId,
+        fileAssetId,
         storageKey,
-        entityType: dto.entityType?.trim() ?? 'DRIVE_FOLDER',
-        entityId: dto.entityId?.trim() ?? dto.folderId ?? sessionId,
+        entityType,
+        entityId,
         folderId: dto.folderId?.trim(),
         displayName,
         originalName: fileName,

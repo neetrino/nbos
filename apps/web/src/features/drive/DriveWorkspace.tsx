@@ -1094,6 +1094,28 @@ export function DriveWorkspace() {
     }
   }, []);
 
+  const handleResetTestData = useCallback(async () => {
+    const ok = window.confirm(
+      'Delete ALL Drive files, folders, and R2 objects (Drive/ and nbos/)? This cannot be undone.',
+    );
+    if (!ok) return;
+    setPurgeBusy(true);
+    try {
+      const r = await driveApi.resetDriveTestData();
+      const dbFiles = r.database.fileAssets ?? 0;
+      toast.success(
+        `Reset complete: ${dbFiles} file assets removed, ${r.r2.drivePrefixDeleted + r.r2.nbosPrefixDeleted} R2 objects deleted`,
+      );
+      const s = await driveApi.getDriveCleanupSummary();
+      setMaintenanceSummary(s);
+      void load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Reset failed');
+    } finally {
+      setPurgeBusy(false);
+    }
+  }, [load]);
+
   const maintenanceCleanupProp = useMemo(() => {
     if (!insightsOpen || !maintenanceSummary) return null;
     return {
@@ -1102,8 +1124,16 @@ export function DriveWorkspace() {
       purgeBusy,
       onPurgeFailed: () => void handlePurgeFailed(),
       onPurgeExpired: () => void handlePurgeExpired(),
+      onResetTestData: () => void handleResetTestData(),
     };
-  }, [handlePurgeExpired, handlePurgeFailed, insightsOpen, maintenanceSummary, purgeBusy]);
+  }, [
+    handlePurgeExpired,
+    handlePurgeFailed,
+    handleResetTestData,
+    insightsOpen,
+    maintenanceSummary,
+    purgeBusy,
+  ]);
 
   const handleDragMoveFilesToFolder = useCallback(
     async (fileIds: string[], targetFolderId: string) => {

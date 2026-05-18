@@ -536,6 +536,14 @@ export const driveApi = {
     return resp.data;
   },
 
+  async resetDriveTestData(): Promise<{
+    database: Record<string, number>;
+    r2: { drivePrefixDeleted: number; nbosPrefixDeleted: number };
+  }> {
+    const resp = await api.post('/api/drive/cleanup/reset-test-data');
+    return resp.data;
+  },
+
   async createDriveZipExport(fileIds: string[]): Promise<DriveZipExportJobSummary> {
     const resp = await api.post<DriveZipExportJobSummary>('/api/drive/zip-exports', { fileIds });
     return resp.data;

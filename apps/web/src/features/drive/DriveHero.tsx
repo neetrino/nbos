@@ -52,6 +52,7 @@ export function DriveHero({
     purgeBusy: boolean;
     onPurgeFailed: () => void;
     onPurgeExpired: () => void;
+    onResetTestData?: () => void;
   } | null;
   libraryLinkAggregates?: { entityType: string; entityId: string; count: number }[];
 }) {
@@ -169,6 +170,7 @@ function DriveInsights({
     purgeBusy: boolean;
     onPurgeFailed: () => void;
     onPurgeExpired: () => void;
+    onResetTestData?: () => void;
   } | null;
   linkAggregates: { entityType: string; entityId: string; count: number }[];
 }) {
@@ -232,6 +234,19 @@ function DriveInsights({
               <Eraser className="size-3.5" aria-hidden />
               Purge expired
             </Button>
+            {maintenance.onResetTestData ? (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="gap-1"
+                disabled={maintenance.purgeBusy}
+                onClick={() => maintenance.onResetTestData?.()}
+              >
+                <Eraser className="size-3.5" aria-hidden />
+                Reset all test data
+              </Button>
+            ) : null}
           </div>
         </div>
       ) : null}

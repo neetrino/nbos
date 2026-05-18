@@ -54,6 +54,13 @@ function makeProjectHubMock() {
   };
 }
 
+function makeConfigMock() {
+  return {
+    get: (key: string) =>
+      key === 'NBOS_TENANT_ORGANIZATION_ID' ? '00000000-0000-4000-8000-000000000001' : undefined,
+  };
+}
+
 describe('DriveService', () => {
   describe('with R2 configured', () => {
     let service: DriveService;
@@ -67,6 +74,7 @@ describe('DriveService', () => {
         makeR2Mock() as never,
         makeNotificationsMock() as never,
         makeProjectHubMock() as never,
+        makeConfigMock() as never,
       );
     });
 
@@ -416,6 +424,7 @@ describe('DriveService', () => {
         makeUnavailableR2() as never,
         makeNotificationsMock() as never,
         makeProjectHubMock() as never,
+        makeConfigMock() as never,
       );
       await expect(service.listFiles('p1')).rejects.toThrow(NotFoundException);
     });

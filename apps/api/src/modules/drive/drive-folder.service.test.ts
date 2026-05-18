@@ -5,10 +5,18 @@ import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma'
 
 const mockSend = vi.fn();
 
+const TEST_ORG_ID = '00000000-0000-4000-8000-000000000001';
+
 function makeR2Mock() {
   return {
     ensureS3: () => ({ send: mockSend }) as never,
     bucket: 'test-bucket',
+  };
+}
+
+function makeConfigMock() {
+  return {
+    get: (key: string) => (key === 'NBOS_TENANT_ORGANIZATION_ID' ? TEST_ORG_ID : undefined),
   };
 }
 
@@ -19,13 +27,19 @@ describe('DriveFolderService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     prisma = createMockPrisma();
-    service = new DriveFolderService(prisma as never, makeR2Mock() as never);
     prisma.driveFolder.findUnique.mockResolvedValue({
       id: 'folder-1',
       space: 'COMPANY',
       ownerId: null,
       deletedAt: null,
+      scopeEntityType: null,
+      scopeEntityId: null,
     });
+    service = new DriveFolderService(
+      prisma as never,
+      makeR2Mock() as never,
+      makeConfigMock() as never,
+    );
   });
 
   it('removes only the folder placement', async () => {
@@ -54,6 +68,14 @@ describe('DriveFolderService', () => {
   });
 
   it('copies into a new independent FileAsset', async () => {
+    prisma.driveFolder.findUnique.mockResolvedValue({
+      id: 'folder-2',
+      space: 'COMPANY',
+      ownerId: null,
+      deletedAt: null,
+      scopeEntityType: null,
+      scopeEntityId: null,
+    });
     prisma.fileAsset.findUnique.mockResolvedValue({
       id: 'file-1',
       displayName: 'Contract.pdf',

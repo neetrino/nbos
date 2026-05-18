@@ -106,6 +106,7 @@ export interface CompleteFileVersionDto {
 
 /** Snapshot of `FileUploadSession` fields needed to materialize a File Asset after R2 upload. */
 export interface FileUploadSessionCompleteRow {
+  fileAssetId?: string | null;
   displayName: string;
   originalName: string | null;
   mimeType: string | null;

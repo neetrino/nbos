@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable, NotFoundException, Logger, Inject, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ListObjectsV2Command,
   DeleteObjectCommand,
@@ -52,7 +53,8 @@ import { notifyDriveFileGrantRecipient } from './drive-grant-notify.ops';
 import { NotificationService } from '../notifications/notification.service';
 import { assertFilePreviewableForDocument } from '../documents/documents-assertions';
 import type { DocumentsReadAccess } from '../documents/documents-access-read';
-import { buildSessionUploadStorageKey } from './drive-upload-path';
+import { readTenantOrganizationId } from './drive-tenant';
+import { buildVersionStagingKey, versionStagingPrefix } from './drive-storage-home-path';
 import {
   buildDriveAssetAccessWhere,
   buildSharedWithMeWhereClause,
@@ -60,7 +62,6 @@ import {
 import { DriveProjectHubService } from './drive-project-hub.service';
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 3600;
-const VERSION_UPLOAD_PREFIX = `${R2_DRIVE_PREFIX}uploads/versions`;
 
 export interface DriveEntityAccess {
   employeeId: string;
@@ -77,6 +78,7 @@ export class DriveService {
     private readonly r2: DriveR2Client,
     private readonly notifications: NotificationService,
     private readonly projectHub: DriveProjectHubService,
+    private readonly config: ConfigService,
   ) {}
 
   async listFiles(projectId: string, prefix?: string): Promise<FileEntry[]> {
@@ -310,11 +312,9 @@ export class DriveService {
     }
     const fileName = requireText(data.fileName, 'fileName');
     const contentType = requireText(data.contentType, 'contentType');
+    const orgId = readTenantOrganizationId(this.config);
     const uploadId = randomUUID();
-    const storageKey = buildSessionUploadStorageKey(uploadId, fileName).replace(
-      `${R2_DRIVE_PREFIX}uploads/`,
-      `${VERSION_UPLOAD_PREFIX}/${id}/`,
-    );
+    const storageKey = buildVersionStagingKey(orgId, id, uploadId, fileName);
     const command = new PutObjectCommand({
       Bucket: this.r2.bucket,
       Key: storageKey,
@@ -333,7 +333,8 @@ export class DriveService {
     access?: DriveEntityAccess,
   ) {
     const storageKey = requireText(data.storageKey, 'storageKey');
-    if (!storageKey.startsWith(`${VERSION_UPLOAD_PREFIX}/${id}/`)) {
+    const stagingPrefix = versionStagingPrefix(readTenantOrganizationId(this.config), id);
+    if (!storageKey.startsWith(stagingPrefix)) {
       throw new BadRequestException('storageKey does not belong to this file version upload.');
     }
     await this.getFileAsset(id, access);

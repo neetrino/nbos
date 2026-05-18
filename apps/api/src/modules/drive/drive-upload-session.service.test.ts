@@ -21,6 +21,14 @@ vi.mock('@aws-sdk/s3-request-presigner', () => ({
 import { DriveUploadSessionService } from './drive-upload-session.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
+const TEST_ORG_ID = '00000000-0000-4000-8000-000000000001';
+
+function makeConfigMock() {
+  return {
+    get: (key: string) => (key === 'NBOS_TENANT_ORGANIZATION_ID' ? TEST_ORG_ID : undefined),
+  };
+}
+
 function makeR2Mock() {
   return {
     ensureS3: () => ({ send: mockSend }) as never,
@@ -42,10 +50,16 @@ describe('DriveUploadSessionService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     prisma = createMockPrisma();
+    prisma.project.findUnique.mockResolvedValue({
+      code: 'P1',
+      name: 'Site',
+    });
+    prisma.task.findUnique.mockResolvedValue({ code: 'T1' });
     service = new DriveUploadSessionService(
       prisma as never,
       makeR2Mock() as never,
       makeFolderMock() as never,
+      makeConfigMock() as never,
     );
   });
 
@@ -82,10 +96,10 @@ describe('DriveUploadSessionService', () => {
     );
   });
 
-  it('creates upload session with key under Drive/uploads/', async () => {
+  it('creates upload session with storage home key under nbos/tenants/', async () => {
     prisma.fileUploadSession.create.mockResolvedValue({
       id: 'sess-1',
-      storageKey: 'Drive/uploads/sess-1/doc.pdf',
+      storageKey: `nbos/tenants/${TEST_ORG_ID}/files/projects/project-P1-site/_project/files/x.pdf`,
       expiresAt: new Date(Date.now() + 3_600_000),
     });
 
@@ -100,8 +114,15 @@ describe('DriveUploadSessionService', () => {
     );
 
     expect(result.uploadUrl).toBe('https://presigned-url.example.com');
-    expect(result.storageKey).toMatch(/^Drive\/uploads\//);
-    expect(prisma.fileUploadSession.create).toHaveBeenCalled();
+    expect(result.storageKey).toMatch(new RegExp(`^nbos/tenants/${TEST_ORG_ID}/files/`));
+    expect(prisma.fileUploadSession.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          fileAssetId: expect.any(String),
+          storageKey: expect.stringMatching(/^nbos\/tenants\//),
+        }),
+      }),
+    );
   });
 
   it('completes upload session after HeadObject succeeds', async () => {
@@ -109,7 +130,8 @@ describe('DriveUploadSessionService', () => {
     const sessionRow = {
       id: 'sess-1',
       status: 'PENDING',
-      storageKey: 'Drive/uploads/sess-1/doc.pdf',
+      storageKey: `nbos/tenants/${TEST_ORG_ID}/files/tasks/task-T1/attachments/x.pdf`,
+      fileAssetId: 'fa-pre',
       entityType: 'TASK',
       entityId: 't1',
       displayName: 'doc.pdf',
@@ -121,7 +143,6 @@ describe('DriveUploadSessionService', () => {
       confidentiality: 'CONFIDENTIAL',
       linkType: 'TASK_ATTACHMENT',
       createdById: 'user-1',
-      fileAssetId: null,
       expiresAt: future,
       failedReason: null,
       createdAt: new Date(),

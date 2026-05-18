@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
-import { PrismaClient, type DriveSpaceEnum } from '@nbos/database';
+import { PrismaClient, type DriveSpaceEnum, type FilePurposeEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import type {
   CreateDriveFolderDto,
@@ -17,7 +18,9 @@ import {
 import { jsonSafeForHttp } from './drive-json-safe';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
 import { DriveR2Client } from './drive-r2.client';
-import { buildSessionUploadStorageKey } from './drive-upload-path';
+import { readTenantOrganizationId } from './drive-tenant';
+import { resolveStorageHomeContextPath } from './drive-storage-home-resolver';
+import { buildStorageHomeKeyFromParams } from './drive-storage-home-path';
 
 const ROOT_PARENT_TOKEN = 'root';
 
@@ -26,6 +29,7 @@ export class DriveFolderService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly r2: DriveR2Client,
+    private readonly config: ConfigService,
   ) {}
 
   async listFolder(params: DriveFolderQueryParams, userId: string) {
@@ -299,7 +303,12 @@ export class DriveFolderService {
     const source = await this.prisma.fileAsset.findUnique({ where: { id: fileAssetId } });
     if (!source || source.deletedAt)
       throw new NotFoundException(`File asset ${fileAssetId} not found`);
-    const storageKey = await this.copyStorageObject(source.storageKey, source.displayName);
+    const storageKey = await this.copyStorageObject(
+      source.storageKey,
+      source.displayName,
+      targetFolderId,
+      source.purpose,
+    );
     const copied = await this.prisma.fileAsset.create({
       data: {
         displayName: `${source.displayName} copy`,
@@ -372,9 +381,25 @@ export class DriveFolderService {
     }
   }
 
-  private async copyStorageObject(sourceKey: string | null, displayName: string) {
+  private async copyStorageObject(
+    sourceKey: string | null,
+    displayName: string,
+    targetFolderId: string,
+    purpose: FilePurposeEnum | null,
+  ) {
     if (!sourceKey) return null;
-    const targetKey = buildSessionUploadStorageKey(randomUUID(), displayName);
+    const fileAssetId = randomUUID();
+    const orgId = readTenantOrganizationId(this.config);
+    const contextPath = await resolveStorageHomeContextPath(
+      this.prisma,
+      'DRIVE_FOLDER',
+      targetFolderId,
+    );
+    const targetKey = buildStorageHomeKeyFromParams(orgId, `${contextPath}/copies`, {
+      displayName,
+      fileAssetId,
+      purpose: purpose ?? null,
+    });
     await this.r2.ensureS3().send(
       new CopyObjectCommand({
         Bucket: this.r2.bucket,
