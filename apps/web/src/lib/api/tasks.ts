@@ -31,6 +31,16 @@ export interface TaskOrderRef {
   code: string;
 }
 
+export interface TaskSprintRef {
+  id: string;
+  name: string;
+  status: 'PLANNING' | 'ACTIVE' | 'CLOSED';
+  goal?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  closedAt?: string | null;
+}
+
 export interface Task {
   id: string;
   code: string;
@@ -38,6 +48,8 @@ export interface Task {
   description: string | null;
   status: string;
   priority: string;
+  sprintId?: string | null;
+  sprint?: TaskSprintRef | null;
   startDate: string | null;
   dueDate: string | null;
   completedAt: string | null;
@@ -206,6 +218,7 @@ export const tasksApi = {
     observers?: string[];
     priority?: string;
     workspaceId?: string;
+    sprintId?: string | null;
     planningStatus?: string;
     completionRules?: TaskCompletionRule[];
     startDate?: string;

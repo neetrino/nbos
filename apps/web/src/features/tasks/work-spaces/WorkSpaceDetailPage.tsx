@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getWorkspaceBoardViewSegments } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
+import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { EditWorkSpaceDialog } from './EditWorkSpaceDialog';
 import { WorkSpaceDetailSettingsDialog } from './WorkSpaceDetailSettingsDialog';
 import { WorkSpaceRuntime } from './WorkSpaceRuntime';
@@ -29,6 +30,7 @@ export function WorkSpaceDetailPage() {
   const { creatorId, creatorReady } = useTaskCreatorId();
   const [workspace, setWorkspace] = useState<WorkSpace | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [sprints, setSprints] = useState<WorkSpaceSprint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -42,12 +44,14 @@ export function WorkSpaceDetailPage() {
     if (!params.id) return;
     setLoading(true);
     try {
-      const [workspaceData, taskData] = await Promise.all([
+      const [workspaceData, taskData, sprintData] = await Promise.all([
         tasksApi.getWorkSpaceById(params.id),
         tasksApi.getAll({ workspaceId: params.id, pageSize: 100 }),
+        workSpaceSprintsApi.list(params.id).catch(() => [] as WorkSpaceSprint[]),
       ]);
       setWorkspace(workspaceData);
       setTasks(taskData.items);
+      setSprints(workspaceData.scrumEnabled ? sprintData : []);
       setError(null);
     } catch {
       setError('Work Space could not be loaded. Check the link and try again.');
@@ -147,6 +151,8 @@ export function WorkSpaceDetailPage() {
         workspace={workspace}
         tasks={tasks}
         setTasks={setTasks}
+        sprints={sprints}
+        setSprints={setSprints}
         mode="standalone"
         defaultTaskLink={defaultLink ?? undefined}
         hideInlineBoardToolbar

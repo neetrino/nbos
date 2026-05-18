@@ -10,6 +10,17 @@ export const TASK_INCLUDE = {
     select: { id: true, code: true, title: true, status: true, assigneeId: true },
     orderBy: { createdAt: 'asc' as const },
   },
+  sprint: {
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      goal: true,
+      startDate: true,
+      endDate: true,
+      closedAt: true,
+    },
+  },
   _count: { select: { subtasks: true, checklists: true } },
 } satisfies Prisma.TaskInclude;
 

@@ -134,13 +134,23 @@
 
 Пример:
 
-- задача может быть `Open`, но лежать в `Backlog`
-- задача может быть `Open`, но быть уже включённой в будущий спринт
-- задача может быть `In Progress` и находиться в `Active Sprint`
+- задача может быть `Open`, но лежать в `Backlog` (`sprint_id = null`)
+- задача может быть `Open`, но быть уже в planning sprint (`Sprint.status = Planning`)
+- задача может быть `In Progress` и находиться в active sprint (`Sprint.status = Active`)
 
 Именно поэтому backlog нельзя использовать как основной статус задачи.
 
-Planning-логика описана отдельно в `Work Space`.
+### 6.1. Sprint entity
+
+В scrum-enabled `Work Space` sprint membership хранится через **`Sprint` + `Task.sprint_id`**, а не только через planning enum на задаче.
+
+| Сущность              | Роль                                                  |
+| --------------------- | ----------------------------------------------------- |
+| `Sprint`              | Итерация с lifecycle Planning / Active / Closed       |
+| `Task.sprint_id`      | Принадлежность задачи к спринту или backlog (`null`)  |
+| `Task.planningStatus` | Derived / compatibility layer для фильтров и миграции |
+
+Planning-логика и Scrum UI описаны в `02-Work-Spaces-and-Views.md`.
 
 ## 7. Derived flags
 

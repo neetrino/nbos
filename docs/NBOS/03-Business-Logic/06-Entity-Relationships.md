@@ -94,15 +94,16 @@ Lead → Deal → Order → Invoice → Payment → Bonus
 ### Цепочка 2: Contact-to-Task
 
 ```
-Contact → Project → Product → Sprint → Task
+Contact → Project → Product → Work Space → Sprint → Task
 ```
 
-| Переход           | Описание                                                  |
-| ----------------- | --------------------------------------------------------- |
-| Contact → Project | Контакт — владелец проекта (один контакт, много проектов) |
-| Project → Product | Проект содержит продукты (Website, App и т.д.)            |
-| Product → Sprint  | Продукт содержит спринты (Scrum)                          |
-| Sprint → Task     | Спринт содержит задачи                                    |
+| Переход              | Описание                                                     |
+| -------------------- | ------------------------------------------------------------ |
+| Contact → Project    | Контакт — владелец проекта (один контакт, много проектов)    |
+| Project → Product    | Проект содержит продукты (Website, App и т.д.)               |
+| Product → Work Space | Продукт имеет connected Work Space (1:1)                     |
+| Work Space → Sprint  | Scrum-спринты живут внутри Work Space, не напрямую в Product |
+| Sprint → Task        | Задача опционально привязана к спринту (`sprint_id`)         |
 
 ### Цепочка 3: Subscription Billing
 

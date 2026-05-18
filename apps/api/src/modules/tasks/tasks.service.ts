@@ -16,6 +16,7 @@ import { attachTaskLinkDisplayNames } from './task-link-display-names.op';
 import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 import { NotificationService } from '../notifications/notification.service';
 import { notifyTaskReviewRequested } from './task-review-notify.op';
+import { resolveTaskSprintAssignment } from './task-sprint-assign.op';
 
 interface CreateTaskDto {
   title: string;
@@ -26,6 +27,7 @@ interface CreateTaskDto {
   observers?: string[];
   priority?: string;
   workspaceId?: string;
+  sprintId?: string | null;
   planningStatus?: string;
   completionRules?: unknown;
   startDate?: string;
@@ -47,6 +49,7 @@ interface UpdateTaskDto {
   myPlanStageId?: string | null;
   myPlanSortOrder?: number;
   workspaceId?: string | null;
+  sprintId?: string | null;
   planningStatus?: string;
   workspaceSortOrder?: number;
   completionRules?: unknown;
@@ -126,7 +129,11 @@ export class TasksService {
     const assigneeId = data.assigneeId?.trim() || undefined;
     const parentId = data.parentId?.trim() || undefined;
     const priority = this.normalizeCreatePriority(data.priority);
-    const planningStatus = this.normalizeCreatePlanningStatus(data.planningStatus);
+    const sprintAssignment = await resolveTaskSprintAssignment(this.prisma, {
+      workspaceId,
+      sprintId: data.sprintId,
+      planningStatus: data.planningStatus,
+    });
     const startDate = this.parseOptionalIsoDate('startDate', data.startDate);
     const dueDate = this.parseOptionalIsoDate('dueDate', data.dueDate);
     const linkRows = this.dedupeTaskLinks(data.links);
@@ -143,7 +150,8 @@ export class TasksService {
         observers: data.observers ?? [],
         priority,
         workspaceId,
-        ...(planningStatus !== undefined && { planningStatus }),
+        sprintId: sprintAssignment.sprintId,
+        planningStatus: sprintAssignment.planningStatus,
         ...(data.completionRules !== undefined && {
           completionRules: this.parseCompletionRules(data.completionRules),
         }),
@@ -168,7 +176,16 @@ export class TasksService {
   }
 
   async update(id: string, data: UpdateTaskDto) {
-    await this.findById(id);
+    const existing = await this.findById(id);
+    const sprintAssignment =
+      data.sprintId !== undefined || data.planningStatus !== undefined
+        ? await resolveTaskSprintAssignment(this.prisma, {
+            workspaceId: data.workspaceId ?? existing.workspaceId,
+            sprintId: data.sprintId,
+            planningStatus: data.planningStatus,
+          })
+        : null;
+
     const task = await this.prisma.task.update({
       where: { id },
       data: {
@@ -190,9 +207,14 @@ export class TasksService {
         ...(data.myPlanStageId !== undefined && { myPlanStageId: data.myPlanStageId }),
         ...(data.myPlanSortOrder !== undefined && { myPlanSortOrder: data.myPlanSortOrder }),
         ...(data.workspaceId !== undefined && { workspaceId: data.workspaceId }),
-        ...(data.planningStatus !== undefined && {
-          planningStatus: data.planningStatus as Prisma.TaskUpdateInput['planningStatus'],
+        ...(sprintAssignment && {
+          sprintId: sprintAssignment.sprintId,
+          planningStatus: sprintAssignment.planningStatus,
         }),
+        ...(data.planningStatus !== undefined &&
+          !sprintAssignment && {
+            planningStatus: data.planningStatus as Prisma.TaskUpdateInput['planningStatus'],
+          }),
         ...(data.workspaceSortOrder !== undefined && {
           workspaceSortOrder: data.workspaceSortOrder,
         }),

@@ -22,13 +22,18 @@ import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
 import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
+import type { WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
 import { WorkspaceRuntimeFilterBar } from './workspace-runtime-filter-bar';
+import { WorkspaceScrumPlanner } from './workspace-scrum-planner/WorkspaceScrumPlanner';
+import { getActiveSprintId } from './workspace-scrum-groups';
 
 export type WorkSpaceRuntimeProps = {
   workspace: WorkSpace;
   tasks: Task[];
   setTasks: Dispatch<SetStateAction<Task[]>>;
+  sprints?: WorkSpaceSprint[];
+  setSprints?: Dispatch<SetStateAction<WorkSpaceSprint[]>>;
   mode: 'standalone' | 'embedded';
   defaultTaskLink?: { entityType: string; entityId: string };
   /** When false, board view tabs + New Task live in the page header (standalone). */
@@ -47,6 +52,8 @@ export function WorkSpaceRuntime({
   workspace,
   tasks,
   setTasks,
+  sprints = [],
+  setSprints,
   mode,
   defaultTaskLink,
   hideInlineBoardToolbar = false,
@@ -102,6 +109,7 @@ export function WorkSpaceRuntime({
     workspaceViewFilters,
     controlledBoard,
     workspace.scrumEnabled,
+    getActiveSprintId(sprints),
   );
 
   const [localSelectedTaskId, setLocalSelectedTaskId] = useState<string | null>(null);
@@ -251,6 +259,20 @@ export function WorkSpaceRuntime({
             emptyMessage="No tasks"
           />
         </div>
+      );
+    }
+
+    if (boardView === 'planning' && workspace.scrumEnabled && setSprints) {
+      return (
+        <WorkspaceScrumPlanner
+          workspaceId={workspace.id}
+          tasks={tasks}
+          sprints={sprints}
+          setTasks={setTasks}
+          setSprints={setSprints}
+          onOpenTask={handleTaskClick}
+          onAddBacklogTask={openQuickCreate}
+        />
       );
     }
 

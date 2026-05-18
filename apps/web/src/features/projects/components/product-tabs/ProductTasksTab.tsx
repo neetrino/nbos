@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getWorkspaceBoardViewSegments } from '@/features/tasks/tasks-board-view-segments';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
+import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { WorkSpaceRuntime } from '@/features/tasks/work-spaces/WorkSpaceRuntime';
 import { buildDefaultTaskLink } from '@/features/tasks/work-spaces/work-space-utils';
 import type { WorkspaceBoardView } from '@/features/tasks/work-spaces/use-workspace-runtime-board';
@@ -21,6 +22,7 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
   const { creatorId, creatorReady } = useTaskCreatorId();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [workspace, setWorkspace] = useState<WorkSpace | null>(null);
+  const [sprints, setSprints] = useState<WorkSpaceSprint[]>([]);
   const [loading, setLoading] = useState(true);
   const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
   const openQuickCreateRef = useRef<(() => void) | null>(null);
@@ -37,9 +39,15 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
       ]);
       setWorkspace(productWorkspace);
       setTasks(mergeTasks(workspaceTasks.items, linkedTasks));
+      if (productWorkspace.scrumEnabled) {
+        setSprints(await workSpaceSprintsApi.list(productWorkspace.id));
+      } else {
+        setSprints([]);
+      }
     } catch {
       setWorkspace(null);
       setTasks([]);
+      setSprints([]);
     } finally {
       setLoading(false);
     }
@@ -110,6 +118,8 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
         workspace={workspace}
         tasks={tasks}
         setTasks={setTasks}
+        sprints={sprints}
+        setSprints={setSprints}
         mode="embedded"
         defaultTaskLink={defaultLink ?? undefined}
         hideInlineBoardToolbar

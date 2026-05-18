@@ -48,6 +48,7 @@ export function useWorkspaceRuntimeBoard(
   viewFilters: WorkspaceViewFilters = DEFAULT_WORKSPACE_VIEW_FILTERS,
   controlledBoard?: WorkspaceBoardControlledState | null,
   scrumEnabled = false,
+  activeSprintId: string | null = null,
 ) {
   const [internalBoardView, setInternalBoardView] = useState<WorkspaceBoardView>('kanban');
   const boardView = controlledBoard?.boardView ?? internalBoardView;
@@ -80,8 +81,19 @@ export function useWorkspaceRuntimeBoard(
       viewFilters.search,
       viewFilters.filterValues,
     );
-    return filterTasksForScrumDailyExecution(filtered, { scrumEnabled, boardView });
-  }, [tasks, viewFilters.search, viewFilters.filterValues, scrumEnabled, boardView]);
+    return filterTasksForScrumDailyExecution(filtered, {
+      scrumEnabled,
+      boardView,
+      activeSprintId,
+    });
+  }, [
+    tasks,
+    viewFilters.search,
+    viewFilters.filterValues,
+    scrumEnabled,
+    boardView,
+    activeSprintId,
+  ]);
 
   const myPlanBoardTasks = useMemo(() => {
     if (boardView !== 'my-plan') return viewTasks;

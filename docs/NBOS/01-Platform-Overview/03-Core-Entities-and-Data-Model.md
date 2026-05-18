@@ -1009,7 +1009,7 @@ Contact (человек)
 | reviewer_id           | FK → Employee   | Кто принимает review/completion, если применимо           |
 | workflow_status       | Enum            | Open, In Progress, Review, Completed, Deferred, Cancelled |
 | priority              | Enum            | Critical, High, Normal, Low                               |
-| sprint_id             | FK → Sprint     | Спринт (опционально, если workspace scrum-enabled)        |
+| sprint_id             | FK → Sprint     | Спринт (null = backlog; иначе membership + history)       |
 | due_date              | Date            | Дедлайн                                                   |
 | description           | Text            | Описание                                                  |
 | completion_rules_json | JSON            | Условия, без которых задачу нельзя завершить              |

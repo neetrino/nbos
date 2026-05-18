@@ -59,6 +59,20 @@ describe('filterTasksForScrumDailyExecution', () => {
     expect(filtered[0]?.planningStatus).toBe('ACTIVE_SPRINT');
   });
 
+  it('filters by active sprint id when provided', () => {
+    const withSprint = [
+      { ...task('ACTIVE_SPRINT'), id: 'a', sprintId: 's-active' },
+      { ...task('ACTIVE_SPRINT'), id: 'b', sprintId: 's-other' },
+    ];
+    const filtered = filterTasksForScrumDailyExecution(withSprint, {
+      scrumEnabled: true,
+      boardView: 'kanban',
+      activeSprintId: 's-active',
+    });
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0]?.id).toBe('a');
+  });
+
   it('does not filter deadline or my-plan views', () => {
     expect(
       filterTasksForScrumDailyExecution(tasks, { scrumEnabled: true, boardView: 'deadline' }),

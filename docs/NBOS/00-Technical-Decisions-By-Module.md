@@ -89,13 +89,16 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### Projects Hub, Tasks And Support
 
-| Area            | Decision                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------ |
-| Delivery source | Product and Extension lifecycle are the delivery source of truth.                                      |
-| Gates           | Lifecycle gates live in backend services.                                                              |
-| Realtime        | Use Socket.io only for live updates such as status/comment/task changes.                               |
-| SLA             | Use scheduler/BullMQ for SLA timers and reminders.                                                     |
-| Support links   | Support may link to tasks or extension requests, but must not break when those modules are incomplete. |
+| Area             | Decision                                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------ |
+| Delivery source  | Product and Extension lifecycle are the delivery source of truth.                                      |
+| Gates            | Lifecycle gates live in backend services.                                                              |
+| Realtime         | Use Socket.io only for live updates such as status/comment/task changes.                               |
+| SLA              | Use scheduler/BullMQ for SLA timers and reminders.                                                     |
+| Support links    | Support may link to tasks or extension requests, but must not break when those modules are incomplete. |
+| Scrum sprints    | First-class `Sprint` under `WorkSpace`; `Task.sprint_id` is membership source of truth.                |
+| Scrum UI         | Planning tab: wide backlog left, sprint blocks right; execution board = active sprint tasks only.      |
+| Sprint invariant | At most one `ACTIVE` sprint per scrum-enabled workspace.                                               |
 
 ### Drive
 

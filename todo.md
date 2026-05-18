@@ -4,8 +4,6 @@
 
 Phase 4 + backlog slices **2026-05-18** закрыты (review, planning, recurring create, automation catalog).
 
-- [ ] **Sprint entity UI** — named `Sprint` model + closed sprint history (сейчас `planning_status` columns)
-
 ---
 
 ## Support (следующий модуль)

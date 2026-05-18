@@ -9,10 +9,17 @@ const SCRUM_PLANNING_EXCLUDED_FROM_DAILY = new Set(['BACKLOG', 'FUTURE_SPRINT'])
  */
 export function filterTasksForScrumDailyExecution(
   tasks: Task[],
-  options: { scrumEnabled: boolean; boardView: TasksListBoardView },
+  options: {
+    scrumEnabled: boolean;
+    boardView: TasksListBoardView;
+    activeSprintId?: string | null;
+  },
 ): Task[] {
   if (!options.scrumEnabled) return tasks;
   if (options.boardView !== 'kanban' && options.boardView !== 'list') return tasks;
+  if (options.activeSprintId) {
+    return tasks.filter((task) => task.sprintId === options.activeSprintId);
+  }
   return tasks.filter((task) => task.planningStatus === 'ACTIVE_SPRINT');
 }
 
