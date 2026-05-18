@@ -20,7 +20,6 @@ import { DriveUploadSessionService } from './drive-upload-session.service';
 import { DriveFolderService } from './drive-folder.service';
 import { DriveZipExportService } from './drive-zip-export.service';
 import { DriveProjectHubService } from './drive-project-hub.service';
-import { DriveTestDataResetService } from './drive-test-data-reset.service';
 import { CreateDriveZipExportBodyDto } from './create-drive-zip-export.dto';
 import type {
   CompleteUploadSessionDto,
@@ -47,7 +46,6 @@ export class DriveController {
     private readonly driveFolders: DriveFolderService,
     private readonly driveZipExports: DriveZipExportService,
     private readonly driveProjectHub: DriveProjectHubService,
-    private readonly driveReset: DriveTestDataResetService,
   ) {}
 
   @Get('folders')
@@ -293,15 +291,6 @@ export class DriveController {
   @ApiOperation({ summary: 'Delete failed or expired pending upload session rows' })
   async purgeDriveUploadSessions(@Param('kind') kind: string) {
     return this.driveService.purgeDriveUploadSessions(kind);
-  }
-
-  @Post('cleanup/reset-test-data')
-  @RequirePermission('DRIVE', 'DELETE')
-  @ApiOperation({
-    summary: 'Wipe all Drive file assets, folders, and R2 Drive/ + nbos/ prefixes (dev/test)',
-  })
-  async resetDriveTestData() {
-    return this.driveReset.resetAll();
   }
 
   @Get('zip-exports')

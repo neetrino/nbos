@@ -9,7 +9,6 @@ import { DriveExportZipQueueService } from './drive-export-zip-queue.service';
 import { DriveExportZipWorker } from './drive-export-zip.worker';
 import { DriveProjectHubService } from './drive-project-hub.service';
 import { DriveDealWonLinksService } from './drive-deal-won-links.service';
-import { DriveTestDataResetService } from './drive-test-data-reset.service';
 import { NotificationModule } from '../notifications/notification.module';
 import { AuditModule } from '../audit/audit.module';
 
@@ -26,7 +25,6 @@ import { AuditModule } from '../audit/audit.module';
     DriveExportZipWorker,
     DriveProjectHubService,
     DriveDealWonLinksService,
-    DriveTestDataResetService,
   ],
   exports: [DriveService, DriveUploadSessionService, DriveDealWonLinksService],
 })

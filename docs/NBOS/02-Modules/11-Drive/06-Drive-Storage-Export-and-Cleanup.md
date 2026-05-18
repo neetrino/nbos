@@ -118,7 +118,7 @@ nbos/tenants/{organizationId}/files/
 
 ### 2.3. Implementation note (current code)
 
-New uploads use **storage home** keys built in `apps/api/src/modules/drive/drive-storage-home-*.ts` (`nbos/tenants/{organizationId}/files/{context}/...` with canon filenames). Set `NBOS_TENANT_ORGANIZATION_ID` in the API environment. Legacy `Drive/uploads/...` objects may remain until purged; business visibility still uses `FileLink` and `DriveFolderItem`, not R2 path. Dev/test full wipe: `POST /api/drive/cleanup/reset-test-data` when `NBOS_DRIVE_ALLOW_STORAGE_RESET` allows it.
+New uploads use **storage home** keys built in `apps/api/src/modules/drive/drive-storage-home-*.ts` (`nbos/tenants/{organizationId}/files/{context}/...` with canon filenames). Set `NBOS_TENANT_ORGANIZATION_ID` in the API environment. Legacy `Drive/uploads/...` objects may remain until purged manually; business visibility still uses `FileLink` and `DriveFolderItem`, not R2 path.
 
 ---
 
