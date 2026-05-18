@@ -28,7 +28,7 @@ const CARD_CONTROL_HOVER =
 
 export type DriveFileCardMenuHandlers = {
   onOpenDetails: (file: FileAsset) => void;
-  onArchive: (file: FileAsset) => void;
+  onArchive?: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onCopyFile?: (file: FileAsset) => void;
   onMoveFile?: (file: FileAsset) => void;
@@ -336,6 +336,7 @@ function FileCardActionsMenu({
   align: 'end' | 'start';
 }) {
   const archived = file.status === 'ARCHIVED';
+  const inTrash = file.status === 'DELETED';
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -359,7 +360,13 @@ function FileCardActionsMenu({
         )}
       />
       <DropdownMenuContent align={align} className="min-w-44" onClick={(e) => e.stopPropagation()}>
-        <FileCardActionsMenuItems file={file} handlers={handlers} busy={busy} archived={archived} />
+        <FileCardActionsMenuItems
+          file={file}
+          handlers={handlers}
+          busy={busy}
+          archived={archived}
+          inTrash={inTrash}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -370,11 +377,13 @@ function FileCardActionsMenuItems({
   handlers,
   busy,
   archived,
+  inTrash,
 }: {
   file: FileAsset;
   handlers: DriveFileCardMenuHandlers;
   busy: boolean;
   archived: boolean;
+  inTrash: boolean;
 }) {
   return (
     <>
@@ -413,14 +422,18 @@ function FileCardActionsMenuItems({
           Unlink from record
         </DropdownMenuItem>
       ) : null}
-      <DropdownMenuItem
-        disabled={busy}
-        variant={archived ? 'default' : 'destructive'}
-        onClick={() => (archived ? handlers.onRestore(file) : handlers.onArchive(file))}
-      >
-        <Archive className="size-4" />
-        {archived ? 'Restore' : 'Archive'}
-      </DropdownMenuItem>
+      {inTrash || archived || handlers.onArchive ? (
+        <DropdownMenuItem
+          disabled={busy}
+          variant={inTrash || archived ? 'default' : 'destructive'}
+          onClick={() =>
+            inTrash || archived ? handlers.onRestore(file) : handlers.onArchive?.(file)
+          }
+        >
+          <Archive className="size-4" />
+          {inTrash || archived ? 'Restore' : 'Archive'}
+        </DropdownMenuItem>
+      ) : null}
     </>
   );
 }

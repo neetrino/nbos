@@ -206,6 +206,11 @@ export class DriveController {
     description:
       'When true, list files shared with the viewer (not originated as sole owner/uploader).',
   })
+  @ApiQuery({
+    name: 'trash',
+    required: false,
+    description: 'When true, list soft-deleted files in Trash.',
+  })
   async listFileAssets(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
@@ -218,6 +223,7 @@ export class DriveController {
     @Query('projectHubProjectFiles') projectHubProjectFiles?: string,
     @Query('projectId') projectId?: string,
     @Query('sharedWithMe') sharedWithMe?: string,
+    @Query('trash') trash?: string,
   ) {
     return this.driveService.listFileAssets(
       {
@@ -230,6 +236,7 @@ export class DriveController {
         projectHubProjectFiles: projectHubProjectFiles === 'true',
         projectId: projectId?.trim() || undefined,
         sharedWithMe: sharedWithMe === 'true',
+        trash: trash === 'true',
       },
       {
         employeeId: user.id,
@@ -356,10 +363,24 @@ export class DriveController {
     );
   }
 
+  @Get('lifecycle-counts')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Counts for Archive and Trash lifecycle views' })
+  async getLifecycleCounts(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+  ) {
+    return this.driveService.getLifecycleCounts({
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
   @Post('files/:id/permanent-delete')
   @RequirePermission('DRIVE', 'DELETE')
   @ApiOperation({
-    summary: 'Permanently delete an archived file (requires no active business links)',
+    summary: 'Move an archived file to Trash (soft delete; requires no active business links)',
   })
   async permanentlyDeleteFileAsset(
     @CurrentUser() user: CurrentUserPayload,
@@ -611,6 +632,52 @@ export class DriveController {
     @Body() body: { ids: string[]; actorId?: string },
   ) {
     return this.driveService.restoreFileAssets(body.ids ?? [], body.actorId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/:id/restore-from-trash')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Restore a Trash file back to Active' })
+  async restoreTrashFileAsset(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Body() body: { actorId?: string },
+  ) {
+    return this.driveService.restoreTrashFileAsset(id, body.actorId ?? user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/restore-trash-batch')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Restore multiple Trash files back to Active' })
+  async restoreTrashFileAssets(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: { ids: string[]; actorId?: string },
+  ) {
+    return this.driveService.restoreTrashFileAssets(body.ids ?? [], body.actorId ?? user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/move-to-trash-batch')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Move multiple archived files to Trash' })
+  async moveFileAssetsToTrash(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: { ids: string[] },
+  ) {
+    return this.driveService.moveFileAssetsToTrash(body.ids ?? [], user.id, {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,

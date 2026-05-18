@@ -225,7 +225,7 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
     title: 'Company Drive',
     segmentLabel: 'Company',
     icon: Building2,
-    libraryKeys: ['company', 'archive'],
+    libraryKeys: ['company'],
     defaultLibraryKey: 'company',
   },
   {
@@ -233,7 +233,7 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
     title: 'Personal',
     segmentLabel: 'Personal',
     icon: CircleUserRound,
-    libraryKeys: ['personal', 'archive'],
+    libraryKeys: ['personal'],
     defaultLibraryKey: 'personal',
   },
   {
@@ -241,7 +241,7 @@ export const DRIVE_SPACES: DriveSpaceOption[] = [
     title: 'Shared with me',
     segmentLabel: 'Shared',
     icon: Share2,
-    libraryKeys: ['shared', 'archive'],
+    libraryKeys: ['shared'],
     defaultLibraryKey: 'shared',
   },
 ];

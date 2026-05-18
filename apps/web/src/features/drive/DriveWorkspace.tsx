@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -45,6 +46,12 @@ import { DriveDetailPanel } from './DriveDetailPanel';
 import { DriveFileSurface } from './DriveFileSurface';
 import { DriveHero } from './DriveHero';
 import { DriveLibraries } from './DriveLibraries';
+import { DriveLifecycleNav } from './DriveLifecycleNav';
+import {
+  DRIVE_LIFECYCLE_HINTS,
+  DRIVE_LIFECYCLE_TITLES,
+  type DriveLifecycleView,
+} from './drive-lifecycle';
 import { DriveLibraryVirtualFolderGrid } from './DriveLibraryVirtualFolderGrid';
 import { getDriveClientUploadDisplayName } from './drive-client-upload-display-name';
 import { buildDriveLibraryUploadSessionFields } from './drive-library-upload-defaults';
@@ -183,6 +190,10 @@ export function DriveWorkspace() {
   const [projectHubSummary, setProjectHubSummary] = useState<ProjectDriveHubSummary | null>(null);
   const [projectShellFiles, setProjectShellFiles] = useState<FileAsset[]>([]);
   const [entityRootLinkedFiles, setEntityRootLinkedFiles] = useState<FileAsset[]>([]);
+  const [lifecycleView, setLifecycleView] = useState<DriveLifecycleView>('browse');
+  const [lifecycleCounts, setLifecycleCounts] = useState({ archived: 0, trash: 0 });
+
+  const inLifecycleView = lifecycleView !== 'browse';
 
   useLayoutEffect(() => {
     if (driveOpenFileId) {
@@ -504,19 +515,26 @@ export function DriveWorkspace() {
     };
   }, [driveDeepLinkFinanceProjectId, selectedLibrary.key, selectedSpace.key]);
 
-  const effectiveStatus = selectedLibrary.status ?? status;
+  const effectiveStatus =
+    lifecycleView === 'archive'
+      ? 'ARCHIVED'
+      : lifecycleView === 'trash'
+        ? 'DELETED'
+        : (selectedLibrary.status ?? status);
 
   const driveStorageSpace = useMemo((): 'COMPANY' | 'PERSONAL' | null => {
+    if (inLifecycleView) return null;
     if (selectedSpace.key === 'company') return 'COMPANY';
     if (selectedSpace.key === 'personal') return 'PERSONAL';
     return null;
-  }, [selectedSpace.key]);
+  }, [inLifecycleView, selectedSpace.key]);
 
   const browseDriveFolders = useMemo(
     () =>
+      !inLifecycleView &&
       Boolean(driveStorageSpace) &&
       (selectedLibrary.key === 'company' || selectedLibrary.key === 'personal'),
-    [driveStorageSpace, selectedLibrary.key],
+    [driveStorageSpace, inLifecycleView, selectedLibrary.key],
   );
 
   const libraryEntityFolderScope = useMemo(() => {
@@ -547,13 +565,9 @@ export function DriveWorkspace() {
     folderTrail.length === 0;
 
   const browseSystemLibraryUploads = useMemo(() => {
-    if (selectedSpace.key !== 'system') return false;
-    return (
-      selectedLibrary.key !== 'all' &&
-      selectedLibrary.key !== 'archive' &&
-      Boolean(selectedLibrary.entityTypes?.length)
-    );
-  }, [selectedLibrary.entityTypes, selectedLibrary.key, selectedSpace.key]);
+    if (inLifecycleView || selectedSpace.key !== 'system') return false;
+    return selectedLibrary.key !== 'all' && Boolean(selectedLibrary.entityTypes?.length);
+  }, [inLifecycleView, selectedLibrary.entityTypes, selectedLibrary.key, selectedSpace.key]);
 
   const libraryPinnedEntityRows = useMemo((): DriveLibraryEntityRow[] | undefined => {
     const pinned: DriveLibraryEntityRow[] = [];
@@ -654,6 +668,19 @@ export function DriveWorkspace() {
     return new Set([placementFolderId]);
   }, [placementFolderId]);
 
+  const loadLifecycleCounts = useCallback(async () => {
+    try {
+      const counts = await driveApi.getDriveLifecycleCounts();
+      setLifecycleCounts(counts);
+    } catch {
+      setLifecycleCounts({ archived: 0, trash: 0 });
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadLifecycleCounts();
+  }, [loadLifecycleCounts]);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -662,6 +689,21 @@ export function DriveWorkspace() {
         setRawFiles([]);
         setSelectedIds([]);
         setSelected(null);
+        return;
+      }
+      if (inLifecycleView) {
+        const list = await driveApi.listFileAssets({
+          ...(lifecycleView === 'trash' ? { trash: true } : { status: 'ARCHIVED' }),
+          purpose: purpose === ALL_PURPOSES ? undefined : purpose,
+          search: search || undefined,
+        });
+        setRawFiles(list);
+        setSelectedIds((current) => current.filter((id) => list.some((file) => file.id === id)));
+        setSelected((current) => {
+          const preferredId = driveOpenFileId || current?.id;
+          if (!preferredId) return null;
+          return list.find((file) => file.id === preferredId) ?? null;
+        });
         return;
       }
       const sharedDriveSpace = selectedSpace.key === 'shared';
@@ -713,7 +755,9 @@ export function DriveWorkspace() {
     browseSystemLibraryUploads,
     driveOpenFileId,
     effectiveStatus,
+    inLifecycleView,
     libraryEntityFolderScope,
+    lifecycleView,
     projectHubAwaitingFocus,
     projectHubFileBrowse,
     projectHubSummary,
@@ -962,11 +1006,16 @@ export function DriveWorkspace() {
       return projectHubSummary.projectName;
     }
 
+    if (lifecycleView === 'archive' || lifecycleView === 'trash') {
+      return DRIVE_LIFECYCLE_TITLES[lifecycleView];
+    }
+
     return selectedLibrary.title;
   }, [
     activeLibraryEntityLabel,
     folderTrail,
     isProjectLibraryHub,
+    lifecycleView,
     projectHubFileBrowse,
     projectHubSummary,
     projectHubView,
@@ -995,6 +1044,9 @@ export function DriveWorkspace() {
   );
 
   const files = useMemo(() => {
+    if (inLifecycleView) {
+      return rawFiles;
+    }
     if (browseSystemLibraryEntityRoot) {
       return [];
     }
@@ -1022,6 +1074,7 @@ export function DriveWorkspace() {
     browseFolderPlacements,
     browseSystemLibraryEntityRoot,
     entityRootLinkedFiles,
+    inLifecycleView,
     libraryFilterContext,
     projectHubFileBrowse,
     projectShellFiles,
@@ -1253,7 +1306,32 @@ export function DriveWorkspace() {
   }
 
   async function onRestore(file: FileAsset) {
+    if (lifecycleView === 'trash') {
+      await mutateFile(() => driveApi.restoreTrashFileAsset(file.id), 'File restored');
+      return;
+    }
     await mutateFile(() => driveApi.restoreFileAsset(file.id), 'File restored');
+  }
+
+  async function onMoveToTrash(file: FileAsset) {
+    const linkCount = file.links.filter((link) => link.unlinkedAt == null).length;
+    const msg =
+      linkCount > 0
+        ? `This file has ${linkCount} active business link(s). Remove links first, or the server will reject the move. Move to Trash anyway?`
+        : 'Move this file to Trash? You can restore it from Trash later.';
+    if (!window.confirm(msg)) return;
+    setBusy(true);
+    try {
+      await driveApi.permanentlyDeleteFileAsset(file.id);
+      toast.success('File moved to Trash');
+      setSelected(null);
+      await load();
+      await loadLifecycleCounts();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Move to Trash failed');
+    } finally {
+      setBusy(false);
+    }
   }
 
   function onMoveFile(file: FileAsset) {
@@ -1349,7 +1427,44 @@ export function DriveWorkspace() {
   async function onBulkRestore() {
     const ids = await resolveBulkFileAssetIds();
     if (ids.length === 0) return;
+    if (lifecycleView === 'trash') {
+      await mutateFiles(
+        async () => driveApi.restoreTrashFileAssets(ids),
+        'Selected files restored',
+      );
+      return;
+    }
     await mutateFiles(async () => driveApi.restoreFileAssets(ids), 'Selected files restored');
+  }
+
+  async function onBulkMoveToTrash() {
+    const ids = await resolveBulkFileAssetIds();
+    if (ids.length === 0) return;
+    if (
+      !window.confirm(
+        ids.length === 1
+          ? 'Move the selected file to Trash?'
+          : `Move ${ids.length} selected files to Trash?`,
+      )
+    ) {
+      return;
+    }
+    await mutateFiles(
+      async () => driveApi.moveFileAssetsToTrash(ids),
+      'Selected files moved to Trash',
+    );
+  }
+
+  function handleLifecycleViewChange(view: DriveLifecycleView) {
+    setLifecycleView(view);
+    setSelectedIds([]);
+    setSelectedFolderIds([]);
+    setSystemLibraryLink(null);
+    setSelected(null);
+    setActiveFolderId(null);
+    setFolderTrail([]);
+    if (view === 'browse') return;
+    goToDriveRoot();
   }
 
   async function mutateFileAllowThrow(action: () => Promise<FileAsset>, success: string) {
@@ -1528,6 +1643,7 @@ export function DriveWorkspace() {
       toast.success(success);
       await load();
       await loadFolders();
+      await loadLifecycleCounts();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Drive action failed');
     } finally {
@@ -1544,6 +1660,7 @@ export function DriveWorkspace() {
       toast.success(success);
       await load();
       await loadFolders();
+      await loadLifecycleCounts();
       if (atEntityScopedFolderRoot) {
         await loadEntityRootLinkedFiles();
       }
@@ -1791,6 +1908,7 @@ export function DriveWorkspace() {
           const library = DRIVE_LIBRARIES.find((item) => item.key === space.defaultLibraryKey);
           setSelectedSpace(space);
           setSelectedLibrary(library ?? DEFAULT_DRIVE_LIBRARY);
+          setLifecycleView('browse');
           setSelectedIds([]);
           setSelectedFolderIds([]);
           setSystemLibraryLink(null);
@@ -1813,61 +1931,72 @@ export function DriveWorkspace() {
 
       <div className="grid gap-4 xl:grid-cols-[260px_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-3">
-          <DriveLibraries
-            space={selectedSpace}
-            selected={selectedLibrary}
-            counts={libraryCounts}
-            atStorageLibraryRoot={atStorageLibraryRoot}
-            onSelect={(library) => {
-              setSelectedLibrary(library);
-              setSelectedIds([]);
-              setSelectedFolderIds([]);
-              setSystemLibraryLink(null);
-              if (library.key === 'company' || library.key === 'personal') {
-                goToDriveRoot();
+          <div className={cn(inLifecycleView && 'pointer-events-none opacity-50')}>
+            <DriveLibraries
+              space={selectedSpace}
+              selected={selectedLibrary}
+              counts={libraryCounts}
+              atStorageLibraryRoot={atStorageLibraryRoot}
+              onSelect={(library) => {
+                setLifecycleView('browse');
+                setSelectedLibrary(library);
+                setSelectedIds([]);
+                setSelectedFolderIds([]);
+                setSystemLibraryLink(null);
+                if (library.key === 'company' || library.key === 'personal') {
+                  goToDriveRoot();
+                }
+              }}
+              sidebarCreateMenu={
+                !inLifecycleView ? (
+                  <DriveSidebarCreateMenu
+                    busy={busy}
+                    menuMode={sidebarCreateMenuConfig.menuMode}
+                    entityContextReady={sidebarCreateMenuConfig.entityContextReady}
+                    entityScopedFolders={sidebarCreateMenuConfig.entityScopedFolders}
+                    onNewFolder={openCreateFolderDialog}
+                    onFilesSelected={(event) => void onFolderUpload(event)}
+                    onFolderUpload={(event) => void onFolderUpload(event)}
+                  />
+                ) : undefined
               }
-            }}
-            sidebarCreateMenu={
-              <DriveSidebarCreateMenu
-                busy={busy}
-                menuMode={sidebarCreateMenuConfig.menuMode}
-                entityContextReady={sidebarCreateMenuConfig.entityContextReady}
-                entityScopedFolders={sidebarCreateMenuConfig.entityScopedFolders}
-                onNewFolder={openCreateFolderDialog}
-                onFilesSelected={(event) => void onFolderUpload(event)}
-                onFolderUpload={(event) => void onFolderUpload(event)}
-              />
-            }
-            folderTreeSlot={
-              browseDriveFolders && driveStorageSpace
-                ? {
-                    forLibraryKey: driveStorageSpace === 'COMPANY' ? 'company' : 'personal',
-                    children: (
-                      <DriveSpaceFolderTree
-                        key={folderTreeVersion}
-                        space={driveStorageSpace}
-                        activeFolderId={activeFolderId}
-                        folderFileDrop={folderFileDropConfig}
-                        onSelectFolderPath={navigateFolderPath}
-                      />
-                    ),
-                  }
-                : browseEntityScopedFolders && libraryEntityFolderScope
+              folderTreeSlot={
+                !inLifecycleView && browseDriveFolders && driveStorageSpace
                   ? {
-                      forLibraryKey: selectedLibrary.key,
+                      forLibraryKey: driveStorageSpace === 'COMPANY' ? 'company' : 'personal',
                       children: (
                         <DriveSpaceFolderTree
-                          key={`${folderTreeVersion}-${libraryEntityFolderScope.scopeEntityId}`}
-                          space="COMPANY"
-                          entityScope={libraryEntityFolderScope}
+                          key={folderTreeVersion}
+                          space={driveStorageSpace}
                           activeFolderId={activeFolderId}
                           folderFileDrop={folderFileDropConfig}
                           onSelectFolderPath={navigateFolderPath}
                         />
                       ),
                     }
-                  : undefined
-            }
+                  : !inLifecycleView && browseEntityScopedFolders && libraryEntityFolderScope
+                    ? {
+                        forLibraryKey: selectedLibrary.key,
+                        children: (
+                          <DriveSpaceFolderTree
+                            key={`${folderTreeVersion}-${libraryEntityFolderScope.scopeEntityId}`}
+                            space="COMPANY"
+                            entityScope={libraryEntityFolderScope}
+                            activeFolderId={activeFolderId}
+                            folderFileDrop={folderFileDropConfig}
+                            onSelectFolderPath={navigateFolderPath}
+                          />
+                        ),
+                      }
+                    : undefined
+              }
+            />
+          </div>
+          <DriveLifecycleNav
+            view={lifecycleView}
+            archiveCount={lifecycleCounts.archived}
+            trashCount={lifecycleCounts.trash}
+            onViewChange={handleLifecycleViewChange}
           />
         </div>
 
@@ -1877,32 +2006,45 @@ export function DriveWorkspace() {
               count={selectedIds.length + selectedFolderIds.length}
               selectedFileCount={selectedIds.length}
               selectedFolderCount={selectedFolderIds.length}
-              archived={effectiveStatus === 'ARCHIVED'}
+              archived={lifecycleView === 'archive'}
+              trashView={lifecycleView === 'trash'}
               busy={busy}
               showSelectAll={canSelectAllInView}
               onSelectAll={selectAllVisibleInDrive}
               onArchive={() => void onBulkArchive()}
               onRestore={() => void onBulkRestore()}
+              onMoveToTrash={
+                lifecycleView === 'archive' ? () => void onBulkMoveToTrash() : undefined
+              }
               onClear={() => {
                 setSelectedIds([]);
                 setSelectedFolderIds([]);
               }}
-              showLibraryBulkActions={driveActionCapabilities.canPlaceInCompanyFolder}
+              showLibraryBulkActions={
+                !inLifecycleView && driveActionCapabilities.canPlaceInCompanyFolder
+              }
               onPlaceInCompanyFolder={() => setLibraryPlacePickerOpen(true)}
               onUnlinkFromRecord={
                 driveActionCapabilities.canUnlinkFromRecord && selectedIds.length > 0
                   ? () => void onBulkUnlinkFromRecord()
                   : undefined
               }
-              onZipExport={() => void handleZipExportForSelection()}
+              onZipExport={!inLifecycleView ? () => void handleZipExportForSelection() : undefined}
             />
           )}
 
           {!browseSystemLibraryEntityRoot ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-foreground min-w-0 flex-1 truncate text-lg font-semibold tracking-tight">
-                {currentBrowseTitle}
-              </h2>
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <h2 className="text-foreground truncate text-lg font-semibold tracking-tight">
+                  {currentBrowseTitle}
+                </h2>
+                {inLifecycleView ? (
+                  <p className="text-muted-foreground text-sm">
+                    {DRIVE_LIFECYCLE_HINTS[lifecycleView]}
+                  </p>
+                ) : null}
+              </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2">
                 <span className="text-muted-foreground text-xs font-medium">Sort</span>
                 <Select
@@ -1928,7 +2070,7 @@ export function DriveWorkspace() {
             </div>
           ) : null}
 
-          {isProjectLibraryHub && systemLibraryLink ? (
+          {!inLifecycleView && isProjectLibraryHub && systemLibraryLink ? (
             <DriveProjectHubNav
               summary={projectHubSummary}
               view={projectHubView}
@@ -1984,16 +2126,24 @@ export function DriveWorkspace() {
               }
               fileMenu={{
                 onOpenDetails: onPreview,
-                onArchive,
+                onArchive: inLifecycleView ? undefined : onArchive,
                 onRestore,
-                onCopyFile: driveActionCapabilities.canCopyIntoFolderTree ? onCopyFile : undefined,
-                onMoveFile: driveActionCapabilities.canMovePlacementInTree ? onMoveFile : undefined,
-                onRemoveFromFolder: driveActionCapabilities.canRemoveFromFolder
-                  ? onRemoveFromFolder
-                  : undefined,
-                onUnlinkFromRecord: driveActionCapabilities.canUnlinkFromRecord
-                  ? (f) => void onUnlinkFromRecord(f)
-                  : undefined,
+                onCopyFile:
+                  !inLifecycleView && driveActionCapabilities.canCopyIntoFolderTree
+                    ? onCopyFile
+                    : undefined,
+                onMoveFile:
+                  !inLifecycleView && driveActionCapabilities.canMovePlacementInTree
+                    ? onMoveFile
+                    : undefined,
+                onRemoveFromFolder:
+                  !inLifecycleView && driveActionCapabilities.canRemoveFromFolder
+                    ? onRemoveFromFolder
+                    : undefined,
+                onUnlinkFromRecord:
+                  !inLifecycleView && driveActionCapabilities.canUnlinkFromRecord
+                    ? (f) => void onUnlinkFromRecord(f)
+                    : undefined,
                 busy,
               }}
               fileDrag={fileDragConfig}
@@ -2011,22 +2161,22 @@ export function DriveWorkspace() {
           onRestore={(file) => void onRestore(file)}
           onPreview={(file) => void onPreview(file)}
           onCopyFile={
-            driveActionCapabilities.canCopyIntoFolderTree
+            !inLifecycleView && driveActionCapabilities.canCopyIntoFolderTree
               ? (file) => void onCopyFile(file)
               : undefined
           }
           onMoveFile={
-            driveActionCapabilities.canMovePlacementInTree
+            !inLifecycleView && driveActionCapabilities.canMovePlacementInTree
               ? (file) => void onMoveFile(file)
               : undefined
           }
           onRemoveFromFolder={
-            driveActionCapabilities.canRemoveFromFolder
+            !inLifecycleView && driveActionCapabilities.canRemoveFromFolder
               ? (file) => void onRemoveFromFolder(file)
               : undefined
           }
           onUnlinkFromRecord={
-            driveActionCapabilities.canUnlinkFromRecord
+            !inLifecycleView && driveActionCapabilities.canUnlinkFromRecord
               ? (file) => void onUnlinkFromRecord(file)
               : undefined
           }
@@ -2034,6 +2184,7 @@ export function DriveWorkspace() {
           onFileDetailRefresh={() => void load()}
           onPermanentDeleteSuccess={() => {
             void load();
+            void loadLifecycleCounts();
             setSelected(null);
           }}
         />

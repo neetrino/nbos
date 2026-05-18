@@ -68,6 +68,8 @@ export interface FileAssetQueryParams {
   search?: string;
   /** When true, exclude files the viewer owns as sole uploader (NBOS Shared with me). */
   sharedWithMe?: boolean;
+  /** When true, list soft-deleted files (Trash) instead of active library files. */
+  trash?: boolean;
   /** Project hub: files linked only to PROJECT shell, not Deal/Product/Task/etc. */
   projectHubProjectFiles?: boolean;
   projectId?: string;

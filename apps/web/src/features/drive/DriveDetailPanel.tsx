@@ -134,42 +134,46 @@ function DriveFileRailTrailing({
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
   onPermanentDeleteSuccess?: () => void;
 }) {
-  const archiveLabel = file.status === 'ARCHIVED' ? 'Restore file' : 'Archive file';
-  const archiveHint = file.status === 'ARCHIVED' ? 'Restore' : 'Archive';
+  const isArchived = file.status === 'ARCHIVED';
+  const isTrash = file.status === 'DELETED';
+  const archiveLabel = isTrash || isArchived ? 'Restore file' : 'Archive file';
+  const archiveHint = isTrash || isArchived ? 'Restore' : 'Archive';
 
-  async function handlePermanentDelete() {
-    const linkCount = file.links.length;
+  async function handleMoveToTrash() {
+    const linkCount = file.links.filter((link) => link.unlinkedAt == null).length;
     const msg =
       linkCount > 0
-        ? `This file has ${linkCount} active business link(s). Remove links first, or the server will reject delete. Permanently delete anyway?`
-        : 'Permanently delete this archived file? This cannot be undone.';
+        ? `This file has ${linkCount} active business link(s). Remove links first, or the server will reject the move. Move to Trash anyway?`
+        : 'Move this file to Trash? You can restore it from Trash later.';
     if (!window.confirm(msg)) return;
     try {
       await driveApi.permanentlyDeleteFileAsset(file.id);
-      toast.success('File permanently deleted');
+      toast.success('File moved to Trash');
       onPermanentDeleteSuccess?.();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Permanent delete failed');
+      toast.error(err instanceof Error ? err.message : 'Move to Trash failed');
     }
   }
 
   return (
     <>
-      <RailVersionUpload file={file} busy={busy} onVersionUpload={onVersionUpload} />
+      {!isTrash ? (
+        <RailVersionUpload file={file} busy={busy} onVersionUpload={onVersionUpload} />
+      ) : null}
       <RailTrailButton
         ariaLabel={archiveLabel}
         hint={archiveHint}
         disabled={busy}
-        onClick={() => (file.status === 'ARCHIVED' ? onRestore(file) : onArchive(file))}
+        onClick={() => (isTrash || isArchived ? onRestore(file) : onArchive(file))}
       >
         <Archive className="size-4" aria-hidden />
       </RailTrailButton>
-      {file.status === 'ARCHIVED' ? (
+      {isArchived ? (
         <RailTrailButton
-          ariaLabel="Delete forever"
-          hint="Delete forever"
+          ariaLabel="Move to Trash"
+          hint="Move to Trash"
           disabled={busy}
-          onClick={() => void handlePermanentDelete()}
+          onClick={() => void handleMoveToTrash()}
         >
           <Trash2 className="size-4" aria-hidden />
         </RailTrailButton>

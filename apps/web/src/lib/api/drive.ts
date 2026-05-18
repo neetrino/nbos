@@ -173,6 +173,7 @@ export const driveApi = {
     sharedWithMe?: boolean;
     projectHubProjectFiles?: boolean;
     projectId?: string;
+    trash?: boolean;
   }): Promise<FileAsset[]> {
     const resp = await api.get<FileAsset[]>('/api/drive/files', { params });
     return resp.data;
@@ -563,6 +564,33 @@ export const driveApi = {
     const resp = await api.post<FileAsset>(
       '/api/drive/files/' + encodeURIComponent(id) + '/permanent-delete',
     );
+    return resp.data;
+  },
+
+  async getDriveLifecycleCounts(): Promise<{ archived: number; trash: number }> {
+    const resp = await api.get<{ archived: number; trash: number }>('/api/drive/lifecycle-counts');
+    return resp.data;
+  },
+
+  async restoreTrashFileAsset(id: string): Promise<FileAsset> {
+    const resp = await api.post<FileAsset>(
+      '/api/drive/files/' + encodeURIComponent(id) + '/restore-from-trash',
+      {},
+    );
+    return resp.data;
+  },
+
+  async restoreTrashFileAssets(ids: string[]): Promise<{ updated: FileAsset[] }> {
+    const resp = await api.post<{ updated: FileAsset[] }>('/api/drive/files/restore-trash-batch', {
+      ids,
+    });
+    return resp.data;
+  },
+
+  async moveFileAssetsToTrash(ids: string[]): Promise<{ updated: FileAsset[] }> {
+    const resp = await api.post<{ updated: FileAsset[] }>('/api/drive/files/move-to-trash-batch', {
+      ids,
+    });
     return resp.data;
   },
 };
