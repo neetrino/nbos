@@ -14,10 +14,7 @@
 ## Осталось
 
 1. ~~**TASK / WORKSPACE Library UX:** deep link, pinned rows, entity root files merge, Work Space → Drive entry.~~
-2. **Library actions UX:** чекбоксы/кнопки для файлов и ручных папок в Library, с чётким разделением:
-   - `DriveFolderItem` actions: place/move/remove from folder, rename/delete только ручных scoped folders;
-   - `FileLink` actions: link/unlink from entity, share/grants, archive;
-   - виртуальные секции Project hub (Deals, Products, Finance, Tasks, Project files, Client/Company) не являются папками и не получают folder actions.
+2. ~~**Library actions UX:** folder vs FileLink actions; scoped move/copy picker; unlink from record; hub virtual без folder actions.~~
 3. **R2 storage home:** новые файлы должны уходить в `nbos/tenants/{organizationId}/files/...`; текущий transitional path ещё `Drive/uploads/{sessionId}/...`.
 4. **Project hub refinements:** добавить Client / Company section и Extension section, если нужно вывести их отдельно от Project files / Products.
 5. **Docs cleanup after implementation:** сверить `07-Drive-Cleanup-Register.md` с фактически реализованными Drive-слайсами.

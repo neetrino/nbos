@@ -6,6 +6,7 @@ import {
   Copy,
   File,
   FolderInput,
+  Link2Off,
   Loader2,
   Trash2,
   Upload,
@@ -40,6 +41,7 @@ export function DriveDetailPanel({
   onCopyFile,
   onMoveFile,
   onRemoveFromFolder,
+  onUnlinkFromRecord,
   onVersionUpload,
   onFileDetailRefresh,
   onPermanentDeleteSuccess,
@@ -51,9 +53,10 @@ export function DriveDetailPanel({
   onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
   onPreview: (file: FileAsset) => void;
-  onCopyFile: (file: FileAsset) => void;
-  onMoveFile: (file: FileAsset) => void;
-  onRemoveFromFolder: (file: FileAsset) => void;
+  onCopyFile?: (file: FileAsset) => void;
+  onMoveFile?: (file: FileAsset) => void;
+  onRemoveFromFolder?: (file: FileAsset) => void;
+  onUnlinkFromRecord?: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
   /** Refetch file list / detail after grants or similar mutations. */
   onFileDetailRefresh?: () => void;
@@ -81,6 +84,7 @@ export function DriveDetailPanel({
                   onCopyFile={onCopyFile}
                   onMoveFile={onMoveFile}
                   onRemoveFromFolder={onRemoveFromFolder}
+                  onUnlinkFromRecord={onUnlinkFromRecord}
                   onVersionUpload={onVersionUpload}
                   onPermanentDeleteSuccess={onPermanentDeleteSuccess}
                 />
@@ -115,6 +119,7 @@ function DriveFileRailTrailing({
   onCopyFile,
   onMoveFile,
   onRemoveFromFolder,
+  onUnlinkFromRecord,
   onVersionUpload,
   onPermanentDeleteSuccess,
 }: {
@@ -122,9 +127,10 @@ function DriveFileRailTrailing({
   busy: boolean;
   onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
-  onCopyFile: (file: FileAsset) => void;
-  onMoveFile: (file: FileAsset) => void;
-  onRemoveFromFolder: (file: FileAsset) => void;
+  onCopyFile?: (file: FileAsset) => void;
+  onMoveFile?: (file: FileAsset) => void;
+  onRemoveFromFolder?: (file: FileAsset) => void;
+  onUnlinkFromRecord?: (file: FileAsset) => void;
   onVersionUpload: (file: FileAsset, event: ChangeEvent<HTMLInputElement>) => void;
   onPermanentDeleteSuccess?: () => void;
 }) {
@@ -168,30 +174,46 @@ function DriveFileRailTrailing({
           <Trash2 className="size-4" aria-hidden />
         </RailTrailButton>
       ) : null}
-      <RailTrailButton
-        ariaLabel="Copy file"
-        hint="Copy"
-        disabled={busy}
-        onClick={() => onCopyFile(file)}
-      >
-        <Copy className="size-4" aria-hidden />
-      </RailTrailButton>
-      <RailTrailButton
-        ariaLabel="Move file"
-        hint="Move"
-        disabled={busy}
-        onClick={() => onMoveFile(file)}
-      >
-        <FolderInput className="size-4" aria-hidden />
-      </RailTrailButton>
-      <RailTrailButton
-        ariaLabel="Remove from folder"
-        hint="Remove"
-        disabled={busy}
-        onClick={() => onRemoveFromFolder(file)}
-      >
-        <File className="size-4" aria-hidden />
-      </RailTrailButton>
+      {onCopyFile ? (
+        <RailTrailButton
+          ariaLabel="Copy file"
+          hint="Copy"
+          disabled={busy}
+          onClick={() => onCopyFile(file)}
+        >
+          <Copy className="size-4" aria-hidden />
+        </RailTrailButton>
+      ) : null}
+      {onMoveFile ? (
+        <RailTrailButton
+          ariaLabel="Move file in folder tree"
+          hint="Move"
+          disabled={busy}
+          onClick={() => onMoveFile(file)}
+        >
+          <FolderInput className="size-4" aria-hidden />
+        </RailTrailButton>
+      ) : null}
+      {onRemoveFromFolder ? (
+        <RailTrailButton
+          ariaLabel="Remove from folder"
+          hint="Remove"
+          disabled={busy}
+          onClick={() => onRemoveFromFolder(file)}
+        >
+          <File className="size-4" aria-hidden />
+        </RailTrailButton>
+      ) : null}
+      {onUnlinkFromRecord ? (
+        <RailTrailButton
+          ariaLabel="Unlink from record"
+          hint="Unlink"
+          disabled={busy}
+          onClick={() => onUnlinkFromRecord(file)}
+        >
+          <Link2Off className="size-4" aria-hidden />
+        </RailTrailButton>
+      ) : null}
     </>
   );
 }

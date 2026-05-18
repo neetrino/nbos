@@ -14,12 +14,14 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { driveApi, type DriveFolder } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
+import type { DriveEntityFolderScope } from './drive-entity-folder-scope';
 import { buildFolderTree, type FolderTreeNode } from './drive-folder-tree';
 
 export function DriveFolderPickerDialog({
   open,
   onOpenChange,
   space,
+  entityScope,
   title,
   description,
   confirmLabel,
@@ -30,6 +32,8 @@ export function DriveFolderPickerDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   space: 'COMPANY' | 'PERSONAL';
+  /** When set, lists folders for a Library entity scoped tree (space is COMPANY). */
+  entityScope?: DriveEntityFolderScope | null;
   title: string;
   description: string;
   confirmLabel: string;
@@ -50,14 +54,20 @@ export function DriveFolderPickerDialog({
     setLoading(true);
     setLoadError(null);
     try {
-      const res = await driveApi.listFolderTree({ space });
+      const res = entityScope
+        ? await driveApi.listFolderTree({
+            space: 'COMPANY',
+            scopeEntityType: entityScope.scopeEntityType,
+            scopeEntityId: entityScope.scopeEntityId,
+          })
+        : await driveApi.listFolderTree({ space });
       setFolders(res.folders);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'Failed to load folders');
     } finally {
       setLoading(false);
     }
-  }, [space]);
+  }, [entityScope, space]);
 
   useEffect(() => {
     if (!open) return;

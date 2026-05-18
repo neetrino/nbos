@@ -1,4 +1,4 @@
-import { Archive, ListChecks, Package } from 'lucide-react';
+import { Archive, Link2Off, ListChecks, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function BulkActionBar({
@@ -14,6 +14,7 @@ export function BulkActionBar({
   onSelectAll,
   showLibraryBulkActions,
   onPlaceInCompanyFolder,
+  onUnlinkFromRecord,
   onZipExport,
 }: {
   count: number;
@@ -29,6 +30,7 @@ export function BulkActionBar({
   onSelectAll?: () => void;
   showLibraryBulkActions?: boolean;
   onPlaceInCompanyFolder?: () => void;
+  onUnlinkFromRecord?: () => void;
   onZipExport?: () => void;
 }) {
   const fileCount = selectedFileCount ?? count;
@@ -58,6 +60,17 @@ export function BulkActionBar({
             >
               Place in Company folder…
             </Button>
+            {onUnlinkFromRecord ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy}
+                onClick={() => onUnlinkFromRecord()}
+              >
+                <Link2Off />
+                Unlink from record
+              </Button>
+            ) : null}
           </>
         ) : null}
         {onZipExport ? (

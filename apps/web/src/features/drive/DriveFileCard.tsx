@@ -1,6 +1,6 @@
 'use client';
 
-import { Archive, Copy, FolderInput, MoreHorizontal, PanelRightOpen } from 'lucide-react';
+import { Archive, Copy, FolderInput, Link2Off, MoreHorizontal, PanelRightOpen } from 'lucide-react';
 import type { FileAsset } from '@/lib/api/drive';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,11 +28,12 @@ const CARD_CONTROL_HOVER =
 
 export type DriveFileCardMenuHandlers = {
   onOpenDetails: (file: FileAsset) => void;
-  onCopyFile: (file: FileAsset) => void;
-  onMoveFile: (file: FileAsset) => void;
   onArchive: (file: FileAsset) => void;
   onRestore: (file: FileAsset) => void;
+  onCopyFile?: (file: FileAsset) => void;
+  onMoveFile?: (file: FileAsset) => void;
   onRemoveFromFolder?: (file: FileAsset) => void;
+  onUnlinkFromRecord?: (file: FileAsset) => void;
   busy?: boolean;
 };
 
@@ -381,15 +382,19 @@ function FileCardActionsMenuItems({
         <PanelRightOpen className="size-4" />
         Open details
       </DropdownMenuItem>
-      <DropdownMenuItem disabled={busy} onClick={() => handlers.onCopyFile(file)}>
-        <Copy className="size-4" />
-        Copy…
-      </DropdownMenuItem>
-      <DropdownMenuItem disabled={busy} onClick={() => handlers.onMoveFile(file)}>
-        <FolderInput className="size-4" />
-        Move…
-      </DropdownMenuItem>
-      {handlers.onRemoveFromFolder && (
+      {handlers.onCopyFile ? (
+        <DropdownMenuItem disabled={busy} onClick={() => handlers.onCopyFile?.(file)}>
+          <Copy className="size-4" />
+          Copy…
+        </DropdownMenuItem>
+      ) : null}
+      {handlers.onMoveFile ? (
+        <DropdownMenuItem disabled={busy} onClick={() => handlers.onMoveFile?.(file)}>
+          <FolderInput className="size-4" />
+          Move in folder tree…
+        </DropdownMenuItem>
+      ) : null}
+      {handlers.onRemoveFromFolder ? (
         <DropdownMenuItem
           disabled={busy}
           variant="destructive"
@@ -397,7 +402,17 @@ function FileCardActionsMenuItems({
         >
           Remove from folder
         </DropdownMenuItem>
-      )}
+      ) : null}
+      {handlers.onUnlinkFromRecord ? (
+        <DropdownMenuItem
+          disabled={busy}
+          variant="destructive"
+          onClick={() => handlers.onUnlinkFromRecord?.(file)}
+        >
+          <Link2Off className="size-4" />
+          Unlink from record
+        </DropdownMenuItem>
+      ) : null}
       <DropdownMenuItem
         disabled={busy}
         variant={archived ? 'default' : 'destructive'}

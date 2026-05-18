@@ -88,6 +88,10 @@ import { toFileSizeNumber } from './drive-format';
 import { collectFileAssetIdsInFolderSubtree } from './drive-folder-selection-expand';
 import { resolveDriveEntityFolderScope } from './drive-entity-folder-scope';
 import { folderListingMatchesBrowseContext } from './drive-folder-listing-match';
+import {
+  findLibraryRecordFileLink,
+  resolveDriveActionCapabilities,
+} from './drive-action-capabilities';
 import { DRIVE_ZIP_UI_MAX_FILES } from './drive-zip-ui-limits';
 import { DriveProjectHubNav } from './DriveProjectHubNav';
 import {
@@ -590,6 +594,32 @@ export function DriveWorkspace() {
     [activeFolderId, rootStorageFolderId],
   );
 
+  const driveActionCapabilities = useMemo(
+    () =>
+      resolveDriveActionCapabilities({
+        browseFolderPlacements,
+        projectHubFileBrowse,
+        browseSystemLibraryUploads,
+        systemLibraryLink,
+        libraryEntityFolderScope,
+        projectHubView,
+        selectedSpaceKey: selectedSpace.key,
+        placementFolderId,
+        driveStorageSpace,
+      }),
+    [
+      browseFolderPlacements,
+      browseSystemLibraryUploads,
+      driveStorageSpace,
+      libraryEntityFolderScope,
+      placementFolderId,
+      projectHubFileBrowse,
+      projectHubView,
+      selectedSpace.key,
+      systemLibraryLink,
+    ],
+  );
+
   const sidebarCreateMenuConfig = useMemo(() => {
     if (browseDriveFolders && driveStorageSpace) {
       return {
@@ -1013,9 +1043,9 @@ export function DriveWorkspace() {
   }, [files, fileSort]);
 
   const visibleFolderIdsForBulk = useMemo(() => {
-    if (!browseFolderPlacements) return [];
+    if (!driveActionCapabilities.showFolderBulkSelection) return [];
     return (scopedFolderListing?.folders ?? []).map((f) => f.id);
-  }, [browseFolderPlacements, scopedFolderListing?.folders]);
+  }, [driveActionCapabilities.showFolderBulkSelection, scopedFolderListing?.folders]);
 
   const allVisibleBulkItemsSelected = useMemo(() => {
     const filesAll = sortedFiles.every((f) => selectedIds.includes(f.id));
@@ -1103,24 +1133,29 @@ export function DriveWorkspace() {
   );
 
   const fileDragConfig = useMemo(() => {
-    if (!browseFolderPlacements || !placementFolderId) return undefined;
+    if (!driveActionCapabilities.showFolderFileDragDrop || !placementFolderId) return undefined;
     return {
       sourceFolderId: placementFolderId,
       resolveDragFileIds: (file: FileAsset) =>
         selectedIds.length > 0 && selectedIds.includes(file.id) ? [...selectedIds] : [file.id],
     };
-  }, [browseFolderPlacements, placementFolderId, selectedIds]);
+  }, [driveActionCapabilities.showFolderFileDragDrop, placementFolderId, selectedIds]);
 
   const folderFileDropConfig = useMemo(
     () =>
-      browseFolderPlacements && placementFolderId
+      driveActionCapabilities.showFolderFileDragDrop && placementFolderId
         ? {
             sourceFolderId: placementFolderId,
             onMoveFilesToFolder: handleDragMoveFilesToFolder,
             busy,
           }
         : undefined,
-    [browseFolderPlacements, busy, handleDragMoveFilesToFolder, placementFolderId],
+    [
+      driveActionCapabilities.showFolderFileDragDrop,
+      busy,
+      handleDragMoveFilesToFolder,
+      placementFolderId,
+    ],
   );
 
   useEffect(() => {
@@ -1221,20 +1256,75 @@ export function DriveWorkspace() {
   }
 
   function onMoveFile(file: FileAsset) {
-    if (!placementFolderId) {
-      toast.error('Could not resolve the folder for this file.');
+    if (!driveActionCapabilities.canMovePlacementInTree || !placementFolderId) {
+      toast.error('Open a folder in this record to move file placements.');
       return;
     }
-    if (!driveStorageSpace) return;
     setFolderFilePicker({ mode: 'move', file });
   }
 
   function onCopyFile(file: FileAsset) {
-    if (!driveStorageSpace) {
-      toast.error('Open Company or Personal Drive to copy into a folder.');
+    if (!driveActionCapabilities.canCopyIntoFolderTree) {
+      toast.error('Folder copy is not available in this view.');
       return;
     }
     setFolderFilePicker({ mode: 'copy', file });
+  }
+
+  async function onUnlinkFromRecord(file: FileAsset) {
+    const record = driveActionCapabilities.libraryRecordLink;
+    if (!record) return;
+    const link = findLibraryRecordFileLink(file, record);
+    if (!link) {
+      toast.error('This file is not linked to the current record.');
+      return;
+    }
+    if (!window.confirm('Unlink this file from the current record? The file stays in Drive.')) {
+      return;
+    }
+    await mutateFiles(() => driveApi.unlinkFileAsset(file.id, link.id), 'Unlinked from record');
+    if (driveActionCapabilities.isVirtualFileBrowse) {
+      setSelected(null);
+    }
+  }
+
+  async function onBulkUnlinkFromRecord() {
+    const record = driveActionCapabilities.libraryRecordLink;
+    if (!record) return;
+    const ids = await resolveBulkFileAssetIds();
+    if (ids.length === 0) return;
+    if (
+      !window.confirm(
+        ids.length === 1
+          ? 'Unlink the selected file from this record?'
+          : `Unlink ${ids.length} selected files from this record?`,
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    try {
+      let unlinked = 0;
+      for (const id of ids) {
+        const file = files.find((item) => item.id === id);
+        if (!file) continue;
+        const link = findLibraryRecordFileLink(file, record);
+        if (!link) continue;
+        await driveApi.unlinkFileAsset(id, link.id);
+        unlinked += 1;
+      }
+      toast.success(
+        unlinked === 0 ? 'No files were linked to this record' : `Unlinked ${unlinked} file(s)`,
+      );
+      setSelectedIds([]);
+      setSelectedFolderIds([]);
+      await load();
+      await loadEntityRootLinkedFiles();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Unlink failed');
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function onRemoveFromFolder(file: FileAsset) {
@@ -1453,6 +1543,9 @@ export function DriveWorkspace() {
       toast.success(success);
       await load();
       await loadFolders();
+      if (atEntityScopedFolderRoot) {
+        await loadEntityRootLinkedFiles();
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Drive action failed');
     } finally {
@@ -1793,10 +1886,13 @@ export function DriveWorkspace() {
                 setSelectedIds([]);
                 setSelectedFolderIds([]);
               }}
-              showLibraryBulkActions={Boolean(
-                browseSystemLibraryUploads && systemLibraryLink && selectedSpace.key === 'system',
-              )}
+              showLibraryBulkActions={driveActionCapabilities.canPlaceInCompanyFolder}
               onPlaceInCompanyFolder={() => setLibraryPlacePickerOpen(true)}
+              onUnlinkFromRecord={
+                driveActionCapabilities.canUnlinkFromRecord && selectedIds.length > 0
+                  ? () => void onBulkUnlinkFromRecord()
+                  : undefined
+              }
               onZipExport={() => void handleZipExportForSelection()}
             />
           )}
@@ -1859,7 +1955,11 @@ export function DriveWorkspace() {
           ) : (
             <DriveFileSurface
               files={sortedFiles}
-              folders={browseFolderPlacements ? (scopedFolderListing?.folders ?? []) : []}
+              folders={
+                driveActionCapabilities.showFolderRowActions
+                  ? (scopedFolderListing?.folders ?? [])
+                  : []
+              }
               loading={loading}
               viewMode={viewMode}
               selectedId={selected?.id ?? null}
@@ -1867,21 +1967,32 @@ export function DriveWorkspace() {
               checkedFolderIds={selectedFolderIds}
               onSelect={setSelected}
               onToggleChecked={toggleChecked}
-              onToggleFolderChecked={browseFolderPlacements ? toggleFolderChecked : undefined}
+              onToggleFolderChecked={
+                driveActionCapabilities.showFolderBulkSelection ? toggleFolderChecked : undefined
+              }
               onOpenFolder={openFolder}
               onRenameFolder={
-                browseFolderPlacements ? (folder) => setRenameFolderTarget(folder) : undefined
+                driveActionCapabilities.showFolderRowActions
+                  ? (folder) => setRenameFolderTarget(folder)
+                  : undefined
               }
               onDeleteFolder={
-                browseFolderPlacements ? (folder) => setDeleteFolderTarget(folder) : undefined
+                driveActionCapabilities.showFolderRowActions
+                  ? (folder) => setDeleteFolderTarget(folder)
+                  : undefined
               }
               fileMenu={{
                 onOpenDetails: onPreview,
-                onCopyFile,
-                onMoveFile,
                 onArchive,
                 onRestore,
-                onRemoveFromFolder: browseFolderPlacements ? onRemoveFromFolder : undefined,
+                onCopyFile: driveActionCapabilities.canCopyIntoFolderTree ? onCopyFile : undefined,
+                onMoveFile: driveActionCapabilities.canMovePlacementInTree ? onMoveFile : undefined,
+                onRemoveFromFolder: driveActionCapabilities.canRemoveFromFolder
+                  ? onRemoveFromFolder
+                  : undefined,
+                onUnlinkFromRecord: driveActionCapabilities.canUnlinkFromRecord
+                  ? (f) => void onUnlinkFromRecord(f)
+                  : undefined,
                 busy,
               }}
               fileDrag={fileDragConfig}
@@ -1898,9 +2009,26 @@ export function DriveWorkspace() {
           onArchive={(file) => void onArchive(file)}
           onRestore={(file) => void onRestore(file)}
           onPreview={(file) => void onPreview(file)}
-          onCopyFile={(file) => void onCopyFile(file)}
-          onMoveFile={(file) => void onMoveFile(file)}
-          onRemoveFromFolder={(file) => void onRemoveFromFolder(file)}
+          onCopyFile={
+            driveActionCapabilities.canCopyIntoFolderTree
+              ? (file) => void onCopyFile(file)
+              : undefined
+          }
+          onMoveFile={
+            driveActionCapabilities.canMovePlacementInTree
+              ? (file) => void onMoveFile(file)
+              : undefined
+          }
+          onRemoveFromFolder={
+            driveActionCapabilities.canRemoveFromFolder
+              ? (file) => void onRemoveFromFolder(file)
+              : undefined
+          }
+          onUnlinkFromRecord={
+            driveActionCapabilities.canUnlinkFromRecord
+              ? (file) => void onUnlinkFromRecord(file)
+              : undefined
+          }
           onVersionUpload={(file, event) => void onVersionUpload(file, event)}
           onFileDetailRefresh={() => void load()}
           onPermanentDeleteSuccess={() => {
@@ -1920,13 +2048,18 @@ export function DriveWorkspace() {
         onConfirm={(targetFolderId) => void handleLibraryPlaceConfirm(targetFolderId)}
       />
 
-      {driveStorageSpace && (
+      {(driveStorageSpace || libraryEntityFolderScope) && (
         <DriveFolderPickerDialog
           open={Boolean(folderFilePicker)}
           onOpenChange={(next) => {
             if (!next) setFolderFilePicker(null);
           }}
-          space={driveStorageSpace}
+          space={driveStorageSpace ?? 'COMPANY'}
+          entityScope={
+            folderFilePicker && libraryEntityFolderScope && !driveStorageSpace
+              ? libraryEntityFolderScope
+              : null
+          }
           title={folderFilePicker?.mode === 'move' ? 'Move file' : 'Copy file'}
           description={
             folderFilePicker?.mode === 'move'
