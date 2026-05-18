@@ -29,8 +29,8 @@ import type { DriveFolder, FileAsset } from '@/lib/api/drive';
 import { useWorkSpaceDriveBrowser } from './use-work-space-drive-browser';
 
 /** Matches `SheetContent` width and `floatingRailAnchorClassName`. */
-const WORKSPACE_DRIVE_SHEET_WIDTH_CLASS = 'sm:data-[side=right]:w-[min(92vw,26rem)]';
-const WORKSPACE_DRIVE_RAIL_ANCHOR_CLASS = 'sm:right-[min(92vw,26rem)]';
+const WORKSPACE_DRIVE_SHEET_WIDTH_CLASS = 'sm:data-[side=right]:w-[min(92vw,52rem)]';
+const WORKSPACE_DRIVE_RAIL_ANCHOR_CLASS = 'sm:right-[min(92vw,52rem)]';
 
 export function WorkSpaceDriveSheet({
   open,
