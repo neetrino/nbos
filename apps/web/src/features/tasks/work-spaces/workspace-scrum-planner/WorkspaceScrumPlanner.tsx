@@ -12,7 +12,7 @@ import { WorkspaceScrumTaskRow } from './WorkspaceScrumTaskRow';
 import { useScrumDropTarget } from './use-scrum-drop-target';
 import { CreateWorkSpaceSprintDialog } from './CreateWorkSpaceSprintDialog';
 import { CloseWorkSpaceSprintDialog } from './CloseWorkSpaceSprintDialog';
-
+import { WorkspaceScrumBacklogQuickAdd } from './WorkspaceScrumBacklogQuickAdd';
 export function WorkspaceScrumPlanner({
   workspaceId,
   tasks,
@@ -21,6 +21,9 @@ export function WorkspaceScrumPlanner({
   setSprints,
   onOpenTask,
   onAddBacklogTask,
+  onBacklogTaskCreated,
+  creatorId,
+  creatorReady,
 }: {
   workspaceId: string;
   tasks: Task[];
@@ -29,6 +32,9 @@ export function WorkspaceScrumPlanner({
   setSprints: Dispatch<SetStateAction<WorkSpaceSprint[]>>;
   onOpenTask: (task: Task) => void;
   onAddBacklogTask: () => void;
+  onBacklogTaskCreated: (task: Task) => void;
+  creatorId: string | null;
+  creatorReady: boolean;
 }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [closeSprint, setCloseSprint] = useState<WorkSpaceSprint | null>(null);
@@ -88,23 +94,29 @@ export function WorkspaceScrumPlanner({
   return (
     <div className="flex min-h-0 flex-1 gap-4">
       <section
-        className="border-border bg-card/40 flex min-h-[420px] w-[min(100%,420px)] shrink-0 flex-col rounded-xl border p-3"
+        className="border-border bg-card/40 flex min-h-[420px] w-[min(100%,605px)] shrink-0 flex-col rounded-xl border p-3"
         {...backlogDrop}
       >
-        <header className="mb-3 flex items-center justify-between gap-2">
+        <header className="mb-2 flex items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-semibold">Backlog</h3>
             <p className="text-muted-foreground text-xs">Tasks: {grouped.backlog.length}</p>
           </div>
           <Button type="button" size="sm" variant="outline" onClick={onAddBacklogTask}>
             <Plus className="size-4" aria-hidden />
-            Task
+            More fields
           </Button>
         </header>
+        <WorkspaceScrumBacklogQuickAdd
+          workspaceId={workspaceId}
+          creatorId={creatorId}
+          creatorReady={creatorReady}
+          onCreated={onBacklogTaskCreated}
+        />
         <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
           {grouped.backlog.length === 0 ? (
             <p className="text-muted-foreground border-border rounded-lg border border-dashed p-4 text-center text-xs">
-              Create a task in the backlog or drag tasks here.
+              Type a title above and press Enter, or drag tasks here.
             </p>
           ) : (
             grouped.backlog.map((task) => (

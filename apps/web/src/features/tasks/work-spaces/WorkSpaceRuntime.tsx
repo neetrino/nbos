@@ -272,6 +272,9 @@ export function WorkSpaceRuntime({
           setSprints={setSprints}
           onOpenTask={handleTaskClick}
           onAddBacklogTask={openQuickCreate}
+          onBacklogTaskCreated={handleTaskCreated}
+          creatorId={creatorId}
+          creatorReady={creatorReady}
         />
       );
     }
