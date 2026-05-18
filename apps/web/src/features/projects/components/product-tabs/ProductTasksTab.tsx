@@ -12,6 +12,7 @@ import { tasksApi, type Task, type WorkSpace } from '@/lib/api/tasks';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { WorkSpaceRuntime } from '@/features/tasks/work-spaces/WorkSpaceRuntime';
 import { WorkSpaceAreaSegmented } from '@/features/tasks/work-spaces/WorkSpaceAreaSegmented';
+import { WorkSpaceScrumPlanningEnable } from '@/features/tasks/work-spaces/WorkSpaceScrumPlanningEnable';
 import { buildDefaultTaskLink } from '@/features/tasks/work-spaces/work-space-utils';
 import type { WorkspaceBoardView } from '@/features/tasks/work-spaces/use-workspace-runtime-board';
 import type { WorkspaceArea } from '@/features/tasks/work-spaces/workspace-area';
@@ -99,6 +100,9 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
           <StatusBadge label={`${legacyTaskCount} legacy linked`} variant="amber" />
         ) : null}
         <WorkSpaceAreaSegmented value={workspaceArea} onValueChange={setWorkspaceArea} />
+        {isPlanningArea ? (
+          <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={handleWorkspaceUpdate} />
+        ) : null}
         <Link
           href={`/work-spaces/${workspace.id}`}
           className={buttonVariants({ variant: 'outline', size: 'sm' })}
@@ -149,7 +153,6 @@ export function ProductTasksTab({ productId }: ProductTasksTabProps) {
         boardView={boardView}
         setBoardView={setBoardView}
         workspaceArea={workspaceArea}
-        onWorkspaceUpdated={handleWorkspaceUpdate}
         quickCreateRef={openQuickCreateRef}
       />
     </div>

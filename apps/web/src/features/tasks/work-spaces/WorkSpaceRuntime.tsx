@@ -27,7 +27,6 @@ import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspa
 import { WorkspaceRuntimeFilterBar } from './workspace-runtime-filter-bar';
 import { WorkspaceScrumPlanner } from './workspace-scrum-planner/WorkspaceScrumPlanner';
 import { getActiveSprintId } from './workspace-scrum-groups';
-import { WorkSpaceScrumPlanningEnable } from './WorkSpaceScrumPlanningEnable';
 import type { WorkspaceArea } from './workspace-area';
 import { WORKSPACE_AREA_PLANNING } from './workspace-area';
 
@@ -50,7 +49,6 @@ export type WorkSpaceRuntimeProps = {
    */
   syncTaskSheetToUrl?: boolean;
   workspaceArea?: WorkspaceArea;
-  onWorkspaceUpdated?: (workspace: WorkSpace) => void | Promise<void>;
 };
 
 export function WorkSpaceRuntime({
@@ -67,7 +65,6 @@ export function WorkSpaceRuntime({
   quickCreateRef,
   syncTaskSheetToUrl = false,
   workspaceArea = 'active',
-  onWorkspaceUpdated,
 }: WorkSpaceRuntimeProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -302,16 +299,8 @@ export function WorkSpaceRuntime({
     hasActiveTaskViewQuery && tasks.length > 0 && viewTasks.length === 0 && !isPlanningArea;
   const showWorkspaceBoard = isPlanningArea || isStructuredBoardView || viewTasks.length > 0;
 
-  const handleScrumPlanningUpdated = useCallback(
-    async (updated: WorkSpace) => {
-      await onWorkspaceUpdated?.(updated);
-    },
-    [onWorkspaceUpdated],
-  );
-
   const renderPlanningArea = () => (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={handleScrumPlanningUpdated} />
       {workspace.scrumEnabled && setSprints ? (
         <WorkspaceScrumPlanner
           workspaceId={workspace.id}
@@ -327,7 +316,7 @@ export function WorkSpaceRuntime({
         />
       ) : (
         <p className="text-muted-foreground border-border rounded-xl border border-dashed px-4 py-10 text-center text-sm">
-          Turn on Scrum planning above to manage backlog and sprints here.
+          Turn on Scrum planning in the header to manage backlog and sprints here.
         </p>
       )}
     </div>

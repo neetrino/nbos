@@ -15,6 +15,7 @@ import { EditWorkSpaceDialog } from './EditWorkSpaceDialog';
 import { WorkSpaceDetailSettingsDialog } from './WorkSpaceDetailSettingsDialog';
 import { WorkSpaceRuntime } from './WorkSpaceRuntime';
 import { WorkSpaceAreaSegmented } from './WorkSpaceAreaSegmented';
+import { WorkSpaceScrumPlanningEnable } from './WorkSpaceScrumPlanningEnable';
 import {
   buildWorkSpaceContextHref,
   buildDefaultTaskLink,
@@ -127,6 +128,9 @@ export function WorkSpaceDetailPage() {
               Context <ArrowUpRight size={14} />
             </Link>
           )}
+          {isPlanningArea ? (
+            <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={handleWorkspaceUpdate} />
+          ) : null}
           <Button
             type="button"
             variant="outline"
@@ -191,7 +195,6 @@ export function WorkSpaceDetailPage() {
         boardView={boardView}
         setBoardView={setBoardView}
         workspaceArea={workspaceArea}
-        onWorkspaceUpdated={handleWorkspaceUpdate}
         quickCreateRef={openQuickCreateRef}
         syncTaskSheetToUrl
       />
