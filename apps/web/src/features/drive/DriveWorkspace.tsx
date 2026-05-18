@@ -50,6 +50,7 @@ import { DriveLifecycleNav } from './DriveLifecycleNav';
 import {
   DRIVE_LIFECYCLE_HINTS,
   DRIVE_LIFECYCLE_TITLES,
+  filterFilesForLifecycleView,
   type DriveLifecycleView,
 } from './drive-lifecycle';
 import { DriveLibraryVirtualFolderGrid } from './DriveLibraryVirtualFolderGrid';
@@ -1044,8 +1045,8 @@ export function DriveWorkspace() {
   );
 
   const files = useMemo(() => {
-    if (inLifecycleView) {
-      return rawFiles;
+    if (lifecycleView === 'archive' || lifecycleView === 'trash') {
+      return filterFilesForLifecycleView(rawFiles, lifecycleView);
     }
     if (browseSystemLibraryEntityRoot) {
       return [];
@@ -1074,7 +1075,7 @@ export function DriveWorkspace() {
     browseFolderPlacements,
     browseSystemLibraryEntityRoot,
     entityRootLinkedFiles,
-    inLifecycleView,
+    lifecycleView,
     libraryFilterContext,
     projectHubFileBrowse,
     projectShellFiles,
@@ -1457,12 +1458,14 @@ export function DriveWorkspace() {
 
   function handleLifecycleViewChange(view: DriveLifecycleView) {
     setLifecycleView(view);
+    setRawFiles([]);
     setSelectedIds([]);
     setSelectedFolderIds([]);
     setSystemLibraryLink(null);
     setSelected(null);
     setActiveFolderId(null);
     setFolderTrail([]);
+    setLoading(view !== 'browse');
     if (view === 'browse') return;
     goToDriveRoot();
   }
@@ -1921,6 +1924,7 @@ export function DriveWorkspace() {
         loading={loading}
         maintenanceCleanup={maintenanceCleanupProp}
         libraryLinkAggregates={insightsOpen ? linkAggregates : []}
+        lifecycleView={lifecycleView}
       />
 
       {error && (
@@ -1931,7 +1935,7 @@ export function DriveWorkspace() {
 
       <div className="grid gap-4 xl:grid-cols-[260px_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-3">
-          <div className={cn(inLifecycleView && 'pointer-events-none opacity-50')}>
+          {!inLifecycleView ? (
             <DriveLibraries
               space={selectedSpace}
               selected={selectedLibrary}
@@ -1948,20 +1952,18 @@ export function DriveWorkspace() {
                 }
               }}
               sidebarCreateMenu={
-                !inLifecycleView ? (
-                  <DriveSidebarCreateMenu
-                    busy={busy}
-                    menuMode={sidebarCreateMenuConfig.menuMode}
-                    entityContextReady={sidebarCreateMenuConfig.entityContextReady}
-                    entityScopedFolders={sidebarCreateMenuConfig.entityScopedFolders}
-                    onNewFolder={openCreateFolderDialog}
-                    onFilesSelected={(event) => void onFolderUpload(event)}
-                    onFolderUpload={(event) => void onFolderUpload(event)}
-                  />
-                ) : undefined
+                <DriveSidebarCreateMenu
+                  busy={busy}
+                  menuMode={sidebarCreateMenuConfig.menuMode}
+                  entityContextReady={sidebarCreateMenuConfig.entityContextReady}
+                  entityScopedFolders={sidebarCreateMenuConfig.entityScopedFolders}
+                  onNewFolder={openCreateFolderDialog}
+                  onFilesSelected={(event) => void onFolderUpload(event)}
+                  onFolderUpload={(event) => void onFolderUpload(event)}
+                />
               }
               folderTreeSlot={
-                !inLifecycleView && browseDriveFolders && driveStorageSpace
+                browseDriveFolders && driveStorageSpace
                   ? {
                       forLibraryKey: driveStorageSpace === 'COMPANY' ? 'company' : 'personal',
                       children: (
@@ -1974,7 +1976,7 @@ export function DriveWorkspace() {
                         />
                       ),
                     }
-                  : !inLifecycleView && browseEntityScopedFolders && libraryEntityFolderScope
+                  : browseEntityScopedFolders && libraryEntityFolderScope
                     ? {
                         forLibraryKey: selectedLibrary.key,
                         children: (
@@ -1991,7 +1993,7 @@ export function DriveWorkspace() {
                     : undefined
               }
             />
-          </div>
+          ) : null}
           <DriveLifecycleNav
             view={lifecycleView}
             archiveCount={lifecycleCounts.archived}

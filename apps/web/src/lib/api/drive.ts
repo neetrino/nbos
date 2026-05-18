@@ -175,6 +175,16 @@ export const driveApi = {
     projectId?: string;
     trash?: boolean;
   }): Promise<FileAsset[]> {
+    if (params?.trash === true) {
+      const resp = await api.get<FileAsset[]>('/api/drive/files', {
+        params: {
+          search: params.search,
+          purpose: params.purpose,
+          trash: 'true',
+        },
+      });
+      return resp.data;
+    }
     const resp = await api.get<FileAsset[]>('/api/drive/files', { params });
     return resp.data;
   },

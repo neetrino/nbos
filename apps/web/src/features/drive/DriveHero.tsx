@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { DRIVE_SPACES, type DriveSpaceOption, type DriveViewMode } from './drive-options';
+import type { DriveLifecycleView } from './drive-lifecycle';
 import { DriveToolbar } from './DriveToolbar';
 import { DriveViewModeSwitch } from './DriveViewModeSwitch';
 import { formatFileSize } from './drive-format';
@@ -34,6 +35,7 @@ export function DriveHero({
   onToggleInsights,
   maintenanceCleanup,
   libraryLinkAggregates,
+  lifecycleView = 'browse',
 }: {
   stats: DriveStats;
   loading: boolean;
@@ -54,14 +56,19 @@ export function DriveHero({
     onPurgeExpired: () => void;
   } | null;
   libraryLinkAggregates?: { entityType: string; entityId: string; count: number }[];
+  lifecycleView?: DriveLifecycleView;
 }) {
   return (
     <section className="border-border/70 bg-card/80 rounded-2xl border px-4 py-3 shadow-sm">
       <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
         <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-4">
           <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">Drive</h1>
-          <div className={TAB_SCROLL}>
-            <DriveSpaceTabs selected={selectedSpace} onSelect={onSelectSpace} />
+          <div className={cn(TAB_SCROLL, lifecycleView !== 'browse' && 'opacity-45')}>
+            <DriveSpaceTabs
+              selected={selectedSpace}
+              onSelect={onSelectSpace}
+              lifecycleActive={lifecycleView !== 'browse'}
+            />
           </div>
         </div>
         <div className="w-full min-w-0 flex-1 basis-full sm:basis-0 sm:px-1">
@@ -112,9 +119,11 @@ export function DriveHero({
 function DriveSpaceTabs({
   selected,
   onSelect,
+  lifecycleActive = false,
 }: {
   selected: DriveSpaceOption;
   onSelect: (space: DriveSpaceOption) => void;
+  lifecycleActive?: boolean;
 }) {
   return (
     <div
@@ -123,7 +132,7 @@ function DriveSpaceTabs({
       aria-label="Drive spaces"
     >
       {DRIVE_SPACES.map((space) => {
-        const active = space.key === selected.key;
+        const active = !lifecycleActive && space.key === selected.key;
         const Icon = space.icon;
         return (
           <button

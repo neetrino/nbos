@@ -236,7 +236,7 @@ export class DriveController {
         projectHubProjectFiles: projectHubProjectFiles === 'true',
         projectId: projectId?.trim() || undefined,
         sharedWithMe: sharedWithMe === 'true',
-        trash: trash === 'true',
+        trash: trash === 'true' || trash === '1',
       },
       {
         employeeId: user.id,
