@@ -6,8 +6,6 @@ enum TaskStatusEnum {
   REVIEW
   ON_HOLD
   COMPLETED
-  NEW
-  DONE
 }
 
 enum TaskPriorityEnum {
@@ -62,9 +60,12 @@ model Task {
   workspaceId        String?                @map("workspace_id")
   creatorId          String                 @map("creator_id")
   assigneeId         String?                @map("assignee_id")
+  reviewerId         String?                @map("reviewer_id")
   coAssignees        String[]               @map("co_assignees")
   observers          String[]
   status             TaskStatusEnum         @default(OPEN)
+  reviewRequestedAt  DateTime?              @map("review_requested_at")
+  reviewApprovedAt   DateTime?              @map("review_approved_at")
   planningStatus     TaskPlanningStatusEnum @default(UNPLANNED) @map("planning_status")
   priority           TaskPriorityEnum       @default(NORMAL)
   startDate          DateTime?              @map("start_date")
@@ -86,6 +87,7 @@ model Task {
   workspace  WorkSpace?      @relation(fields: [workspaceId], references: [id])
   creator    Employee        @relation("TaskCreator", fields: [creatorId], references: [id])
   assignee   Employee?       @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  reviewer   Employee?       @relation("TaskReviewer", fields: [reviewerId], references: [id])
   parent     Task?           @relation("TaskSubtasks", fields: [parentId], references: [id])
   subtasks   Task[]          @relation("TaskSubtasks")
   links      TaskLink[]
@@ -94,6 +96,7 @@ model Task {
   @@index([workspaceId])
   @@index([planningStatus])
   @@index([assigneeId])
+  @@index([reviewerId])
   @@index([creatorId])
   @@map("tasks")
 }

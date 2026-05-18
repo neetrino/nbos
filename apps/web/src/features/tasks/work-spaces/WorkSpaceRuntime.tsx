@@ -90,8 +90,10 @@ export function WorkSpaceRuntime({
     handleRenameMyPlanStage,
     handleDeleteMyPlanStage,
     buildWorkspaceKanbanColumns,
+    buildWorkspacePlanningColumns,
     buildMyPlanColumns,
     buildDeadlineColumns,
+    handlePlanningMove,
     viewTasks,
   } = useWorkspaceRuntimeBoard(
     tasks,
@@ -246,6 +248,23 @@ export function WorkSpaceRuntime({
             onAddItemInColumn={handleAddTaskInColumn}
             addButtonLabel="Quick"
             columnWidth={270}
+            emptyMessage="No tasks"
+          />
+        </div>
+      );
+    }
+
+    if (boardView === 'planning') {
+      return (
+        <div className="min-h-0 flex-1">
+          <KanbanBoard
+            columns={buildWorkspacePlanningColumns()}
+            renderCard={renderCard}
+            getItemId={(t) => t.id}
+            onMove={handlePlanningMove}
+            onAddItemInColumn={handleAddTaskInColumn}
+            addButtonLabel="Quick"
+            columnWidth={240}
             emptyMessage="No tasks"
           />
         </div>

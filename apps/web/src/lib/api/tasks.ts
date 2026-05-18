@@ -41,6 +41,8 @@ export interface Task {
   startDate: string | null;
   dueDate: string | null;
   completedAt: string | null;
+  reviewRequestedAt: string | null;
+  reviewApprovedAt: string | null;
   completionRules: TaskCompletionRule[] | null;
   parentId: string | null;
   workspaceId: string | null;
@@ -56,6 +58,7 @@ export interface Task {
   updatedAt: string;
   creator: { id: string; firstName: string; lastName: string };
   assignee: { id: string; firstName: string; lastName: string } | null;
+  reviewer?: { id: string; firstName: string; lastName: string } | null;
   parent?: { id: string; code: string; title: string } | null;
   links: TaskLink[];
   checklists: TaskChecklist[];
@@ -231,6 +234,18 @@ export const tasksApi = {
   },
   async setOnHold(id: string): Promise<Task> {
     const resp = await api.patch<Task>(`/api/tasks/${id}/on-hold`);
+    return resp.data;
+  },
+  async submitForReview(id: string, reviewerId?: string): Promise<Task> {
+    const resp = await api.patch<Task>(`/api/tasks/${id}/submit-review`, { reviewerId });
+    return resp.data;
+  },
+  async approveReview(id: string): Promise<Task> {
+    const resp = await api.patch<Task>(`/api/tasks/${id}/approve-review`);
+    return resp.data;
+  },
+  async requestReviewChanges(id: string): Promise<Task> {
+    const resp = await api.patch<Task>(`/api/tasks/${id}/request-review-changes`);
     return resp.data;
   },
   async delete(id: string): Promise<void> {

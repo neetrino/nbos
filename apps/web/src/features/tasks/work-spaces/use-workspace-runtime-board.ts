@@ -14,6 +14,8 @@ import {
   getDueDateForDeadlineColumn,
   buildWorkspaceKanbanColumns,
   buildMyPlanColumns,
+  buildWorkspacePlanningColumns,
+  resolvePlanningColumnKey,
 } from '@/features/tasks/task-board';
 import type { TaskBoardAction } from '@/features/tasks/task-board';
 import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
@@ -22,7 +24,7 @@ import { taskInvolvesEmployee } from '@/features/tasks/utils/task-involves-emplo
 import { filterTasksForWorkspaceView } from './workspace-task-view-filter';
 import { filterTasksForScrumDailyExecution } from './workspace-scrum-daily-filter';
 
-export type WorkspaceBoardView = 'deadline' | 'my-plan' | 'kanban' | 'list';
+export type WorkspaceBoardView = 'deadline' | 'my-plan' | 'kanban' | 'list' | 'planning';
 
 export type WorkspaceBoardControlledState = {
   boardView: WorkspaceBoardView;
@@ -93,6 +95,24 @@ export function useWorkspaceRuntimeBoard(
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
     },
     [setTasks],
+  );
+
+  const handlePlanningMove = useCallback(
+    async (taskId: string, _from: string, toColumn: string) => {
+      const planningStatus = resolvePlanningColumnKey(toColumn);
+      const task = tasks.find((t) => t.id === taskId);
+      if (!task || task.planningStatus === planningStatus) return;
+
+      const prevTasks = tasks;
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, planningStatus } : t)));
+
+      try {
+        await tasksApi.update(taskId, { planningStatus });
+      } catch {
+        setTasks(prevTasks);
+      }
+    },
+    [tasks, setTasks],
   );
 
   const handleKanbanMove = useCallback(
@@ -274,7 +294,9 @@ export function useWorkspaceRuntimeBoard(
     handleRenameMyPlanStage,
     handleDeleteMyPlanStage,
     buildWorkspaceKanbanColumns: () => buildWorkspaceKanbanColumns(viewTasks),
+    buildWorkspacePlanningColumns: () => buildWorkspacePlanningColumns(viewTasks),
     buildMyPlanColumns: () => buildMyPlanColumns(myPlanBoardTasks, myPlanStagesForView),
+    handlePlanningMove,
     buildDeadlineColumns,
     viewTasks,
   };

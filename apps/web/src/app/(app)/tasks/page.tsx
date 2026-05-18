@@ -51,6 +51,9 @@ export default function TasksPage() {
             <FolderKanban size={16} />
             Work Spaces
           </Link>
+          <Link href="/tasks/recurring" className={buttonVariants({ variant: 'outline' })}>
+            Recurring
+          </Link>
           <TasksPageSettingsDialog
             exportDisabled={loading || !stats}
             onExportScopeStatsCsv={handleExportScopeStatsCsv}

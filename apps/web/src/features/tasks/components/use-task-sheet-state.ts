@@ -122,6 +122,8 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
 
       if (statusTarget === 'COMPLETED' && generalSnap.status !== 'COMPLETED') {
         updated = await tasksApi.complete(task.id);
+      } else if (statusTarget === 'REVIEW' && generalSnap.status !== 'REVIEW') {
+        updated = await tasksApi.submitForReview(task.id);
       } else if (statusTarget && statusTarget !== generalSnap.status) {
         updated = await tasksApi.update(task.id, { status: statusTarget });
       }
@@ -149,7 +151,9 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
   }, [generalSnap]);
 
   const handleAction = useCallback(
-    async (action: 'start' | 'complete' | 'reopen' | 'hold') => {
+    async (
+      action: 'start' | 'complete' | 'reopen' | 'hold' | 'approveReview' | 'requestReviewChanges',
+    ) => {
       if (!task) return;
       setSaving(true);
       try {
@@ -160,7 +164,11 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
               ? await tasksApi.complete(task.id)
               : action === 'reopen'
                 ? await tasksApi.reopen(task.id)
-                : await tasksApi.setOnHold(task.id);
+                : action === 'approveReview'
+                  ? await tasksApi.approveReview(task.id)
+                  : action === 'requestReviewChanges'
+                    ? await tasksApi.requestReviewChanges(task.id)
+                    : await tasksApi.setOnHold(task.id);
         hydrateTask(updated);
         onUpdate?.(updated);
         setGeneralError(null);

@@ -48,6 +48,8 @@ interface UpdateTaskDto {
   planningStatus?: string;
   workspaceSortOrder?: number;
   completionRules?: unknown;
+  status?: string;
+  reviewerId?: string | null;
 }
 
 interface TaskQueryParams {
@@ -192,6 +194,10 @@ export class TasksService {
         ...(data.completionRules !== undefined && {
           completionRules: this.parseCompletionRules(data.completionRules),
         }),
+        ...(data.status !== undefined && {
+          status: data.status as TaskStatusEnum,
+        }),
+        ...(data.reviewerId !== undefined && { reviewerId: data.reviewerId }),
       },
       include: TASK_DETAIL_INCLUDE,
     });
@@ -199,10 +205,64 @@ export class TasksService {
     return task;
   }
 
+  /** Move task to Review (work done, awaiting approval). */
+  async submitForReview(id: string, reviewerId?: string) {
+    const task = await this.findById(id);
+    if (task.status === 'COMPLETED') {
+      throw new BadRequestException('Completed tasks cannot be submitted for review.');
+    }
+    const updated = await this.prisma.task.update({
+      where: { id },
+      data: {
+        status: 'REVIEW',
+        reviewRequestedAt: new Date(),
+        reviewApprovedAt: null,
+        ...(reviewerId !== undefined && { reviewerId: reviewerId || null }),
+      },
+      include: TASK_DETAIL_INCLUDE,
+    });
+    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    return updated;
+  }
+
+  /** Approve review so completion rules can pass. */
+  async approveReview(id: string) {
+    const task = await this.findById(id);
+    if (task.status !== 'REVIEW') {
+      throw new BadRequestException('Task is not in Review status.');
+    }
+    const updated = await this.prisma.task.update({
+      where: { id },
+      data: { reviewApprovedAt: new Date() },
+      include: TASK_DETAIL_INCLUDE,
+    });
+    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    return updated;
+  }
+
+  /** Send back to In Progress after review. */
+  async requestReviewChanges(id: string) {
+    const task = await this.findById(id);
+    if (task.status !== 'REVIEW') {
+      throw new BadRequestException('Task is not in Review status.');
+    }
+    const updated = await this.prisma.task.update({
+      where: { id },
+      data: {
+        status: 'IN_PROGRESS',
+        reviewApprovedAt: null,
+        reviewRequestedAt: null,
+      },
+      include: TASK_DETAIL_INCLUDE,
+    });
+    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    return updated;
+  }
+
   /** Начать задачу */
   async start(id: string) {
     const task = await this.findById(id);
-    if (task.status === 'COMPLETED' || task.status === 'DONE') {
+    if (task.status === 'COMPLETED') {
       throw new NotFoundException('Cannot start a completed task');
     }
     const updated = await this.prisma.task.update({

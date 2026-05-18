@@ -10,7 +10,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type TaskFooterAction = 'start' | 'complete' | 'reopen' | 'hold';
+type TaskFooterAction =
+  | 'start'
+  | 'complete'
+  | 'reopen'
+  | 'hold'
+  | 'approveReview'
+  | 'requestReviewChanges';
 
 interface TaskSheetStickyFooterProps {
   dirty: boolean;
@@ -39,6 +45,8 @@ export function TaskSheetStickyFooter({
   const canComplete = ['IN_PROGRESS', 'REVIEW'].includes(taskStatus);
   const canHold = ['IN_PROGRESS', 'REVIEW'].includes(taskStatus);
   const canReopen = ['COMPLETED', 'DONE', 'ON_HOLD'].includes(taskStatus);
+  const canApproveReview = taskStatus === 'REVIEW';
+  const canRequestReviewChanges = taskStatus === 'REVIEW';
 
   return (
     <div className="border-border/50 bg-background/95 supports-[backdrop-filter]:bg-background/85 sticky bottom-0 z-20 shrink-0 border-t px-6 py-3 backdrop-blur-sm">
@@ -96,6 +104,18 @@ export function TaskSheetStickyFooter({
               )}
             />
             <DropdownMenuContent align="start" className="min-w-[12rem]">
+              <DropdownMenuItem
+                disabled={!canApproveReview || saving}
+                onClick={() => onTaskAction('approveReview')}
+              >
+                Approve review
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!canRequestReviewChanges || saving}
+                onClick={() => onTaskAction('requestReviewChanges')}
+              >
+                Request changes
+              </DropdownMenuItem>
               <DropdownMenuItem disabled={!canHold || saving} onClick={() => onTaskAction('hold')}>
                 <Pause size={14} /> Put On Hold
               </DropdownMenuItem>

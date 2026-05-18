@@ -3,6 +3,7 @@ import { type Prisma } from '@nbos/database';
 export const TASK_INCLUDE = {
   creator: { select: { id: true, firstName: true, lastName: true } },
   assignee: { select: { id: true, firstName: true, lastName: true } },
+  reviewer: { select: { id: true, firstName: true, lastName: true } },
   links: true,
   checklists: { include: { items: { orderBy: { sortOrder: 'asc' as const } } } },
   subtasks: {

@@ -1,1 +1,1 @@
-export type TasksListBoardView = 'deadline' | 'my-plan' | 'kanban' | 'list';
+export type TasksListBoardView = 'deadline' | 'my-plan' | 'kanban' | 'list' | 'planning';

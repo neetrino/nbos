@@ -171,6 +171,24 @@ export class TasksController {
     return this.tasksService.setOnHold(id);
   }
 
+  @Patch(':id/submit-review')
+  @ApiOperation({ summary: 'Submit task for review' })
+  async submitForReview(@Param('id') id: string, @Body() body: { reviewerId?: string }) {
+    return this.tasksService.submitForReview(id, body.reviewerId);
+  }
+
+  @Patch(':id/approve-review')
+  @ApiOperation({ summary: 'Approve task review' })
+  async approveReview(@Param('id') id: string) {
+    return this.tasksService.approveReview(id);
+  }
+
+  @Patch(':id/request-review-changes')
+  @ApiOperation({ summary: 'Return task from review to in progress' })
+  async requestReviewChanges(@Param('id') id: string) {
+    return this.tasksService.requestReviewChanges(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete task' })

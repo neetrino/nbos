@@ -6,6 +6,7 @@ import {
   WORK_SPACES_LIST_MAX_PAGE_SIZE,
   WORK_SPACES_LIST_MIN_PAGE_SIZE,
 } from './work-spaces-list.constants';
+import { attachLegacyProductTasksToWorkSpace } from './task-workspace-legacy-attach.op';
 
 interface WorkSpaceQueryParams {
   projectId?: string;
@@ -148,7 +149,10 @@ export class WorkSpacesService {
       where: { productId },
       include: WORK_SPACE_INCLUDE,
     });
-    if (existing) return existing;
+    if (existing) {
+      await attachLegacyProductTasksToWorkSpace(this.prisma, existing.id, productId);
+      return existing;
+    }
 
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
@@ -156,7 +160,7 @@ export class WorkSpacesService {
     });
     if (!product) throw new NotFoundException(`Product ${productId} not found`);
 
-    return this.prisma.workSpace.create({
+    const created = await this.prisma.workSpace.create({
       data: {
         projectId: product.projectId,
         productId: product.id,
@@ -166,6 +170,8 @@ export class WorkSpacesService {
       },
       include: WORK_SPACE_INCLUDE,
     });
+    await attachLegacyProductTasksToWorkSpace(this.prisma, created.id, productId);
+    return created;
   }
 
   async ensureForExtension(extensionId: string) {

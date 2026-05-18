@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, LayoutGrid, List, User } from 'lucide-react';
+import { Clock, Kanban, LayoutGrid, List, User } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
@@ -37,3 +37,14 @@ export const TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS: TasksBoardViewSegment<TasksLis
   { value: 'kanban', label: 'Board', icon: <LayoutGrid size={14} /> },
   { value: 'list', label: 'List', icon: <List size={14} /> },
 ];
+
+/** Scrum workspaces: adds Planning tab for backlog / sprint columns. */
+export function getWorkspaceBoardViewSegments(
+  scrumEnabled: boolean,
+): TasksBoardViewSegment<TasksListBoardView>[] {
+  if (!scrumEnabled) return TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS;
+  return [
+    ...TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS,
+    { value: 'planning', label: 'Planning', icon: <Kanban size={14} /> },
+  ];
+}
