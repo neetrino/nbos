@@ -6,12 +6,15 @@ import { cn } from '@/lib/utils';
 export function DriveTileShell({
   title,
   subtitle,
+  subtitleTrailing,
   icon,
   onClick,
   className,
 }: {
   title: string;
   subtitle: string;
+  /** Shown on the right of the subtitle row (e.g. record code in Tiles view). */
+  subtitleTrailing?: string;
   icon: ReactNode;
   onClick: () => void;
   className?: string;
@@ -32,8 +35,13 @@ export function DriveTileShell({
         <span className="text-foreground line-clamp-2 text-sm leading-snug font-medium">
           {title}
         </span>
-        <span className="text-muted-foreground mt-0.5 block truncate text-[11px] tracking-wide uppercase">
-          {subtitle}
+        <span className="text-muted-foreground mt-0.5 flex min-w-0 items-center justify-between gap-2 text-[11px] tracking-wide uppercase">
+          <span className="truncate">{subtitle}</span>
+          {subtitleTrailing ? (
+            <span className="text-muted-foreground shrink-0 font-mono text-[10px] leading-none font-normal normal-case">
+              {subtitleTrailing}
+            </span>
+          ) : null}
         </span>
       </span>
     </button>

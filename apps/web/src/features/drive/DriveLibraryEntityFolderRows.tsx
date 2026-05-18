@@ -3,10 +3,7 @@
 import { Folder, FolderKanban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDriveLabel } from './drive-format';
-import {
-  driveLibraryEntityTileTitle,
-  type DriveLibraryEntityRow,
-} from './drive-library-entity-loaders';
+import type { DriveLibraryEntityRow } from './drive-library-entity-loaders';
 import { DriveTileShell } from './DriveTileShell';
 
 type DriveLibraryEntityLayout = 'cards' | 'list' | 'tiles';
@@ -31,8 +28,9 @@ export function DriveLibraryEntityCardRow({
   if (layout === 'tiles') {
     return (
       <DriveTileShell
-        title={driveLibraryEntityTileTitle(row)}
+        title={row.label}
         subtitle={typeLabel}
+        subtitleTrailing={row.code}
         icon={<FolderKanban className="size-5" aria-hidden />}
         onClick={() => onOpenRow(row)}
       />

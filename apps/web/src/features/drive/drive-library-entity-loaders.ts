@@ -20,12 +20,6 @@ export type DriveLibraryEntityRow = {
   code?: string;
 };
 
-/** Tile view: `CODE — name` when code exists; other views use `label` only. */
-export function driveLibraryEntityTileTitle(row: DriveLibraryEntityRow): string {
-  if (row.code) return `${row.code} — ${row.label}`;
-  return row.label;
-}
-
 export function buildDriveLibraryEntityRow(params: {
   id: string;
   entityType: string;
