@@ -1,30 +1,40 @@
 'use client';
 
-import { FolderKanban, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatDriveLabel } from './drive-format';
+import type { DriveViewMode } from './drive-options';
+import {
+  DriveLibraryEntityCardRow,
+  DriveLibraryEntityTableRow,
+} from './DriveLibraryEntityFolderRows';
 import type { DriveLibraryEntityRow } from './drive-library-entity-loaders';
+
+function rowMatchesSearch(row: DriveLibraryEntityRow, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return (
+    row.label.toLowerCase().includes(q) ||
+    row.entityType.toLowerCase().includes(q) ||
+    (row.code?.toLowerCase().includes(q) ?? false)
+  );
+}
 
 export function DriveLibraryVirtualFolderGrid({
   libraryTitle,
   rows,
   loading,
   searchQuery,
+  viewMode,
   onOpenRow,
 }: {
   libraryTitle: string;
   rows: DriveLibraryEntityRow[];
   loading: boolean;
   searchQuery: string;
+  viewMode: DriveViewMode;
   onOpenRow: (row: DriveLibraryEntityRow) => void;
 }) {
-  const q = searchQuery.trim().toLowerCase();
-  const visible = q
-    ? rows.filter(
-        (row) => row.label.toLowerCase().includes(q) || row.entityType.toLowerCase().includes(q),
-      )
-    : rows;
+  const visible = rows.filter((row) => rowMatchesSearch(row, searchQuery));
 
   if (loading) {
     return (
@@ -62,32 +72,54 @@ export function DriveLibraryVirtualFolderGrid({
           Open a record to see linked files and upload.
         </p>
       </div>
-      <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((row) => (
-          <li key={`${row.entityType}:${row.id}`}>
-            <Button
-              type="button"
-              variant="outline"
-              className={cn(
-                'border-border/80 bg-muted/30 hover:bg-muted/50 h-auto w-full justify-start gap-3 rounded-2xl px-3 py-3 text-left',
-              )}
-              onClick={() => onOpenRow(row)}
-            >
-              <span className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-                <FolderKanban className="size-5" aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="text-foreground line-clamp-2 text-sm leading-snug font-medium">
-                  {row.label}
-                </span>
-                <span className="text-muted-foreground mt-0.5 block truncate text-[11px] tracking-wide uppercase">
-                  {formatDriveLabel(row.entityType)}
-                </span>
-              </span>
-            </Button>
-          </li>
+      {viewMode === 'table' ? (
+        <LibraryEntityTable rows={visible} onOpenRow={onOpenRow} />
+      ) : (
+        <div
+          className={cn(
+            viewMode === 'cards'
+              ? 'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7'
+              : 'space-y-2',
+          )}
+        >
+          {visible.map((row) => (
+            <DriveLibraryEntityCardRow
+              key={`${row.entityType}:${row.id}`}
+              row={row}
+              compact={viewMode === 'list'}
+              onOpenRow={onOpenRow}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LibraryEntityTable({
+  rows,
+  onOpenRow,
+}: {
+  rows: DriveLibraryEntityRow[];
+  onOpenRow: (row: DriveLibraryEntityRow) => void;
+}) {
+  return (
+    <div className="border-border/70 bg-card/80 overflow-hidden rounded-2xl border">
+      <div className="text-muted-foreground border-border/60 grid grid-cols-[40px_minmax(220px,1fr)_130px_120px] gap-3 border-b px-4 py-2 text-xs font-medium">
+        <span />
+        <span>Name</span>
+        <span>Type</span>
+        <span>Code</span>
+      </div>
+      <div className="divide-border/60 divide-y">
+        {rows.map((row) => (
+          <DriveLibraryEntityTableRow
+            key={`${row.entityType}:${row.id}`}
+            row={row}
+            onOpenRow={onOpenRow}
+          />
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

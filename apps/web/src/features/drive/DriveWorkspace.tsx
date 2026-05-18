@@ -50,6 +50,7 @@ import { getDriveClientUploadDisplayName } from './drive-client-upload-display-n
 import { buildDriveLibraryUploadSessionFields } from './drive-library-upload-defaults';
 import type { DriveLibraryEntityRow } from './drive-library-entity-loaders';
 import {
+  buildDriveLibraryEntityRow,
   loadDriveLibraryEntityRows,
   mergeDriveLibraryEntityRows,
 } from './drive-library-entity-loaders';
@@ -299,11 +300,14 @@ export function DriveWorkspace() {
       .getById(pid)
       .then((p) => {
         if (!cancelled) {
-          setDrivePinnedProjectRow({
-            id: p.id,
-            entityType: 'PROJECT',
-            label: `${p.code} — ${p.name}`,
-          });
+          setDrivePinnedProjectRow(
+            buildDriveLibraryEntityRow({
+              id: p.id,
+              entityType: 'PROJECT',
+              code: p.code,
+              name: p.name,
+            }),
+          );
         }
       })
       .catch(() => {
@@ -331,11 +335,14 @@ export function DriveWorkspace() {
       .getById(pid)
       .then((p) => {
         if (!cancelled) {
-          setDrivePinnedProductRow({
-            id: p.id,
-            entityType: 'PRODUCT',
-            label: p.project ? `${p.name} (${p.project.code})` : p.name,
-          });
+          setDrivePinnedProductRow(
+            buildDriveLibraryEntityRow({
+              id: p.id,
+              entityType: 'PRODUCT',
+              name: p.name,
+              code: p.project?.code ?? null,
+            }),
+          );
         }
       })
       .catch(() => {
@@ -363,11 +370,14 @@ export function DriveWorkspace() {
       .getById(tid)
       .then((t) => {
         if (!cancelled) {
-          setDrivePinnedTaskRow({
-            id: t.id,
-            entityType: 'TASK',
-            label: `${t.code} — ${t.title}`,
-          });
+          setDrivePinnedTaskRow(
+            buildDriveLibraryEntityRow({
+              id: t.id,
+              entityType: 'TASK',
+              code: t.code,
+              name: t.title,
+            }),
+          );
         }
       })
       .catch(() => {
@@ -395,11 +405,14 @@ export function DriveWorkspace() {
       .getById(pid)
       .then((p) => {
         if (!cancelled) {
-          setDrivePinnedFinanceProjectRow({
-            id: p.id,
-            entityType: 'PROJECT',
-            label: `${p.code} — ${p.name}`,
-          });
+          setDrivePinnedFinanceProjectRow(
+            buildDriveLibraryEntityRow({
+              id: p.id,
+              entityType: 'PROJECT',
+              code: p.code,
+              name: p.name,
+            }),
+          );
         }
       })
       .catch(() => {
@@ -1629,6 +1642,7 @@ export function DriveWorkspace() {
               rows={mergedLibraryEntityRows}
               loading={libraryEntityFoldersLoading}
               searchQuery={search}
+              viewMode={viewMode}
               onOpenRow={(row) =>
                 setSystemLibraryLink({ entityType: row.entityType, entityId: row.id })
               }

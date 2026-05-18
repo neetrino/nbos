@@ -13,9 +13,28 @@ const LIST_PARAMS = { page: 1, pageSize: 60 } as const;
 
 export type DriveLibraryEntityRow = {
   id: string;
+  /** Primary display name (e.g. project title without code prefix). */
   label: string;
   entityType: string;
+  /** Optional record code shown as a small badge (e.g. P-2026-0005). */
+  code?: string;
 };
+
+export function buildDriveLibraryEntityRow(params: {
+  id: string;
+  entityType: string;
+  name: string;
+  code?: string | null;
+}): DriveLibraryEntityRow {
+  const label = params.name.trim() || 'Untitled';
+  const code = params.code?.trim();
+  return {
+    id: params.id,
+    entityType: params.entityType,
+    label,
+    ...(code ? { code } : {}),
+  };
+}
 
 /** Merges API rows with pinned rows (e.g. deep-linked project) without duplicates. */
 export function mergeDriveLibraryEntityRows(
@@ -50,33 +69,45 @@ export async function loadDriveLibraryEntityRows(
         dealsApi.getAll(LIST_PARAMS),
         leadsApi.getAll(LIST_PARAMS),
       ]);
-      const dealRows = deals.items.map((d) => ({
-        id: d.id,
-        label: `${d.code} — ${d.name?.trim() || 'Deal'}`,
-        entityType: 'DEAL',
-      }));
-      const leadRows = leads.items.map((l) => ({
-        id: l.id,
-        label: `${l.code} — ${l.contactName || l.name || 'Lead'}`,
-        entityType: 'LEAD',
-      }));
+      const dealRows = deals.items.map((d) =>
+        buildDriveLibraryEntityRow({
+          id: d.id,
+          entityType: 'DEAL',
+          code: d.code,
+          name: d.name?.trim() || 'Deal',
+        }),
+      );
+      const leadRows = leads.items.map((l) =>
+        buildDriveLibraryEntityRow({
+          id: l.id,
+          entityType: 'LEAD',
+          code: l.code,
+          name: l.contactName || l.name || 'Lead',
+        }),
+      );
       return [...dealRows, ...leadRows].sort((a, b) => a.label.localeCompare(b.label));
     }
     case 'projects': {
       const data = await projectsApi.getAll(LIST_PARAMS);
-      return data.items.map((p) => ({
-        id: p.id,
-        label: `${p.code} — ${p.name}`,
-        entityType: 'PROJECT',
-      }));
+      return data.items.map((p) =>
+        buildDriveLibraryEntityRow({
+          id: p.id,
+          entityType: 'PROJECT',
+          code: p.code,
+          name: p.name,
+        }),
+      );
     }
     case 'products': {
       const data = await productsApi.getAll(LIST_PARAMS);
-      return data.items.map((p) => ({
-        id: p.id,
-        label: p.project ? `${p.name} (${p.project.code})` : p.name,
-        entityType: 'PRODUCT',
-      }));
+      return data.items.map((p) =>
+        buildDriveLibraryEntityRow({
+          id: p.id,
+          entityType: 'PRODUCT',
+          name: p.name,
+          code: p.project?.code ?? null,
+        }),
+      );
     }
     case 'clients': {
       const [companies, contacts] = await Promise.all([
@@ -125,11 +156,14 @@ export async function loadDriveLibraryEntityRows(
         tasksApi.getAll(LIST_PARAMS),
         tasksApi.getWorkSpaces(LIST_PARAMS),
       ]);
-      const taskRows = taskData.items.map((t) => ({
-        id: t.id,
-        label: `${t.code} — ${t.title}`,
-        entityType: 'TASK',
-      }));
+      const taskRows = taskData.items.map((t) =>
+        buildDriveLibraryEntityRow({
+          id: t.id,
+          entityType: 'TASK',
+          code: t.code,
+          name: t.title,
+        }),
+      );
       const wsRows = wsData.items.map((w) => ({
         id: w.id,
         label: `Workspace: ${w.name}`,
@@ -139,11 +173,14 @@ export async function loadDriveLibraryEntityRows(
     }
     case 'support': {
       const data = await supportApi.getAll(LIST_PARAMS);
-      return data.items.map((t) => ({
-        id: t.id,
-        label: `${t.code} — ${t.title}`,
-        entityType: 'SUPPORT_TICKET',
-      }));
+      return data.items.map((t) =>
+        buildDriveLibraryEntityRow({
+          id: t.id,
+          entityType: 'SUPPORT_TICKET',
+          code: t.code,
+          name: t.title,
+        }),
+      );
     }
     default:
       return [];
