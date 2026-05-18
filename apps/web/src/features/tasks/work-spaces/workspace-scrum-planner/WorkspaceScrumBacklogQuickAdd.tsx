@@ -56,7 +56,7 @@ export function WorkspaceScrumBacklogQuickAdd({
   return (
     <div
       className={cn(
-        'border-border/70 bg-muted/35 mb-2 shrink-0 rounded-lg border px-3 py-1.5',
+        'border-border/70 bg-muted/35 mb-2 shrink-0 rounded-lg border px-2 py-1.5',
         'transition-[border-color,box-shadow,background-color]',
         !disabled &&
           'focus-within:border-primary/80 focus-within:bg-background focus-within:ring-primary/30 focus-within:ring-2',
@@ -70,7 +70,7 @@ export function WorkspaceScrumBacklogQuickAdd({
         disabled={disabled}
         placeholder={placeholder}
         className={cn(
-          'text-foreground caret-primary h-7 border-0 bg-transparent px-0 text-sm shadow-none',
+          'text-foreground caret-primary h-7 border-0 bg-transparent pr-1 pl-2 text-sm shadow-none',
           'placeholder:text-muted-foreground/80',
           'focus-visible:border-transparent focus-visible:ring-0',
         )}
