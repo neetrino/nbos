@@ -94,7 +94,7 @@ function validateExtensionDoneGate(extension: ExtensionForReadiness) {
 }
 
 function isClosedTask(status: string) {
-  return ['COMPLETED', 'DONE', 'ON_HOLD'].includes(status);
+  return ['COMPLETED', 'ON_HOLD'].includes(status);
 }
 
 function buildOpenOrderError(order: ExtensionForReadiness['order']): ExtensionReadinessIssue[] {

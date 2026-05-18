@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ExternalLink, FileText, Loader2 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { driveApi, type FileAsset } from '@/lib/api/drive';
-import { formatDriveLabel } from './drive-utils';
+import { formatDriveLabel } from './drive-format';
 import { cn } from '@/lib/utils';
 
 const ENTITY_DRIVE_FILES_PREVIEW_LIMIT = 8;

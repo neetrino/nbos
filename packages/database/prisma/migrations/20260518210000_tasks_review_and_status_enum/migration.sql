@@ -22,6 +22,8 @@ CREATE TYPE "TaskStatusEnum_new" AS ENUM (
   'COMPLETED'
 );
 
+ALTER TABLE "tasks" ALTER COLUMN "status" DROP DEFAULT;
+
 ALTER TABLE "tasks"
   ALTER COLUMN "status" TYPE "TaskStatusEnum_new"
   USING ("status"::text::"TaskStatusEnum_new");

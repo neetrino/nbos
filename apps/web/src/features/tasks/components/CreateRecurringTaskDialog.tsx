@@ -105,7 +105,12 @@ export function CreateRecurringTaskDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label>Frequency</Label>
-              <Select value={frequency} onValueChange={setFrequency}>
+              <Select
+                value={frequency}
+                onValueChange={(value) => {
+                  if (value) setFrequency(value);
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -141,7 +146,12 @@ export function CreateRecurringTaskDialog({
             </div>
             <div className="grid gap-2">
               <Label>Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
+              <Select
+                value={priority}
+                onValueChange={(value) => {
+                  if (value) setPriority(value);
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

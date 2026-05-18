@@ -11,10 +11,19 @@ function task(planningStatus: string): Task {
     id: 't-1',
     code: 'TASK-1',
     title: 'Test',
+    description: null,
     planningStatus,
     status: 'OPEN',
     priority: 'NORMAL',
-    creatorId: 'e-1',
+    startDate: null,
+    dueDate: null,
+    completedAt: null,
+    reviewRequestedAt: null,
+    reviewApprovedAt: null,
+    completionRules: null,
+    parentId: null,
+    workspaceId: null,
+    myPlanStageId: null,
     coAssignees: [],
     observers: [],
     subtasks: [],
@@ -22,10 +31,14 @@ function task(planningStatus: string): Task {
     links: [],
     myPlanSortOrder: 0,
     workspaceSortOrder: 0,
+    chatId: null,
     isRecurring: false,
     createdAt: '2026-05-01T00:00:00.000Z',
     updatedAt: '2026-05-01T00:00:00.000Z',
-  } as Task;
+    creator: { id: 'e-1', firstName: 'A', lastName: 'B' },
+    assignee: null,
+    _count: { subtasks: 0, checklists: 0 },
+  };
 }
 
 describe('filterTasksForScrumDailyExecution', () => {

@@ -17,12 +17,12 @@ export async function batchExtensionOpenTaskCounts(
       extensionId: { in: extensionIds },
       status: { notIn: closedTasks },
     },
-    _count: { _all: true },
+    _count: true,
   });
 
   for (const row of rows) {
     if (!row.extensionId) continue;
-    map.set(row.extensionId, row._count._all);
+    map.set(row.extensionId, row._count);
   }
 
   return map;

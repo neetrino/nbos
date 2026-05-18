@@ -1,6 +1,6 @@
 'use client';
 
-import { formatDriveLabel } from './drive-utils';
+import { formatDriveLabel } from './drive-format';
 import type { DriveLibraryOption } from './drive-options';
 
 export function DrivePurposeSelect({

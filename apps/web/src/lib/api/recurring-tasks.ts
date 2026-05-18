@@ -28,6 +28,7 @@ export const recurringTasksApi = {
     startDate: string;
     assigneeId?: string;
     interval?: number;
+    priority?: string;
   }): Promise<RecurringTaskTemplate> {
     const resp = await api.post<RecurringTaskTemplate>('/api/recurring-tasks', data);
     return resp.data;

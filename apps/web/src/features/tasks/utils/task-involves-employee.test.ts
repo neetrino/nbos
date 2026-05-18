@@ -12,6 +12,8 @@ const baseTask = {
   startDate: null,
   dueDate: null,
   completedAt: null,
+  reviewRequestedAt: null,
+  reviewApprovedAt: null,
   completionRules: null,
   parentId: null,
   workspaceId: null,

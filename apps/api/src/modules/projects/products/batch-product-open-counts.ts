@@ -21,7 +21,7 @@ export async function batchProductOpenCounts(
         productId: { in: productIds },
         status: { notIn: closedTasks },
       },
-      _count: { _all: true },
+      _count: true,
     }),
     prisma.supportTicket.groupBy({
       by: ['productId'],
@@ -29,7 +29,7 @@ export async function batchProductOpenCounts(
         productId: { in: productIds },
         status: { notIn: ['RESOLVED', 'CLOSED'] },
       },
-      _count: { _all: true },
+      _count: true,
     }),
     prisma.extension.groupBy({
       by: ['productId'],
@@ -37,24 +37,24 @@ export async function batchProductOpenCounts(
         productId: { in: productIds },
         status: { notIn: ['DONE', 'LOST'] },
       },
-      _count: { _all: true },
+      _count: true,
     }),
   ]);
 
   for (const row of taskGroups) {
     if (!row.productId) continue;
     const cur = map.get(row.productId);
-    if (cur) cur.openTasks = row._count._all;
+    if (cur) cur.openTasks = row._count;
   }
   for (const row of ticketGroups) {
     if (!row.productId) continue;
     const cur = map.get(row.productId);
-    if (cur) cur.openTickets = row._count._all;
+    if (cur) cur.openTickets = row._count;
   }
   for (const row of extGroups) {
     if (!row.productId) continue;
     const cur = map.get(row.productId);
-    if (cur) cur.openExtensions = row._count._all;
+    if (cur) cur.openExtensions = row._count;
   }
 
   return map;

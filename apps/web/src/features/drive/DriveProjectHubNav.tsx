@@ -51,7 +51,7 @@ export function DriveProjectHubNav({ summary, view, onViewChange }: DriveProject
   const showFocus = projectHubSectionNeedsFocus(view.section);
   const foldersActive = view.section === 'folders';
   const extensionRows =
-    view.section === 'products' ? productHubExtensions(summary, view.focusEntityId) : [];
+    view.section === 'products' && summary ? productHubExtensions(summary, view.focusEntityId) : [];
 
   return (
     <div className="space-y-2" role="navigation" aria-label="Project library sections">

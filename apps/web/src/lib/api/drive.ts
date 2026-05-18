@@ -83,7 +83,12 @@ export type DriveZipExportKind =
   | 'drive.product_zip'
   | 'drive.client_zip'
   | 'drive.finance_zip'
-  | 'drive.task_attachments_zip';
+  | 'drive.task_attachments_zip'
+  | 'drive.offer_zip'
+  | 'drive.meeting_zip'
+  | 'drive.call_zip'
+  | 'drive.partner_zip'
+  | 'drive.full_backup_zip';
 
 export interface CreateDriveZipExportInput {
   fileIds?: string[];

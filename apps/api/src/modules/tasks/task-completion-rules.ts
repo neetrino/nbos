@@ -111,9 +111,7 @@ function buildSubtaskBlockers(
   rule: TaskCompletionRule,
   task: TaskForCompletionRules,
 ): TaskCompletionBlocker[] {
-  const openSubtasks = task.subtasks.filter(
-    (subtask) => !['COMPLETED', 'DONE'].includes(subtask.status),
-  );
+  const openSubtasks = task.subtasks.filter((subtask) => subtask.status !== 'COMPLETED');
   if (openSubtasks.length === 0) return [];
   return [buildBlocker(rule, 'SUBTASKS_OPEN', `${openSubtasks.length} subtask(s) remain open.`)];
 }

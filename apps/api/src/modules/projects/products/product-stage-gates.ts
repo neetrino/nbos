@@ -79,7 +79,7 @@ function validateProductQaGate(product: ProductForStageGate) {
   const errors = buildOpenItemError(
     'tasks',
     product.tasks ?? [],
-    ['DONE', 'ON_HOLD', 'COMPLETED'],
+    ['ON_HOLD', 'COMPLETED'],
     'Product QA',
   );
 
@@ -97,7 +97,7 @@ function validateProductTransferGate(product: ProductForStageGate) {
   const errors = buildOpenItemError(
     'tasks',
     product.tasks ?? [],
-    ['DONE', 'ON_HOLD', 'COMPLETED'],
+    ['ON_HOLD', 'COMPLETED'],
     'Product Transfer',
   );
 
@@ -114,12 +114,7 @@ function validateProductTransferGate(product: ProductForStageGate) {
 function validateProductDoneGate(product: ProductForStageGate) {
   const errors = [
     ...buildOpenItemError('extensions', product.extensions ?? [], ['DONE', 'LOST'], 'Product Done'),
-    ...buildOpenItemError(
-      'tasks',
-      product.tasks ?? [],
-      ['DONE', 'ON_HOLD', 'COMPLETED'],
-      'Product Done',
-    ),
+    ...buildOpenItemError('tasks', product.tasks ?? [], ['ON_HOLD', 'COMPLETED'], 'Product Done'),
     ...buildOpenItemError('tickets', product.tickets ?? [], ['RESOLVED', 'CLOSED'], 'Product Done'),
     ...buildClientAcceptanceError(product),
     ...buildOpenOrderError(product.order),
