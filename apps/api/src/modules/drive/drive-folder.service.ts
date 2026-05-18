@@ -22,8 +22,9 @@ import { readTenantOrganizationId } from './drive-tenant';
 import { resolveStorageHomeContextPath } from './drive-storage-home-resolver';
 import { buildStorageHomeKeyFromParams } from './drive-storage-home-path';
 import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
-import type { DriveEntityAccess } from './drive-access.types';
+import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access.types';
 import { buildLinkCreateInput } from './drive-metadata';
+import { assertDriveFolderEntityScopeAccessible } from './drive-folder-entity-access';
 
 const ROOT_PARENT_TOKEN = 'root';
 const COPY_RESTRICTED_VISIBILITIES = new Set<string>(['PERSONAL', 'RESTRICTED']);
@@ -41,8 +42,13 @@ export class DriveFolderService {
     private readonly config: ConfigService,
   ) {}
 
-  async listFolder(params: DriveFolderQueryParams, userId: string, access?: DriveEntityAccess) {
+  async listFolder(
+    params: DriveFolderQueryParams,
+    userId: string,
+    access?: DriveEntityContextAccess,
+  ) {
     const entityScope = parseEntityScope(params);
+    await assertDriveFolderEntityScopeAccessible(this.prisma, entityScope, access);
     const space = entityScope ? 'COMPANY' : normalizeSpace(params.space);
     if (entityScope && params.space?.trim()) {
       const requested = params.space.trim().toUpperCase();
@@ -56,7 +62,7 @@ export class DriveFolderService {
     const scopeWhere = entityScopeWhere(entityScope);
     const rootStorage = await this.findOrCreateRootStorageFolder(space, userId, entityScope);
     if (parentId) {
-      await this.assertFolderAccess(parentId, space, userId, entityScope);
+      await this.assertFolderAccess(parentId, space, userId, entityScope, access);
     }
     const fileContainerId = parentId ?? rootStorage.id;
     await this.assertFolderContainerScope(fileContainerId, entityScope);
@@ -108,8 +114,10 @@ export class DriveFolderService {
     space: string,
     userId: string,
     scopeParams?: { scopeEntityType?: string; scopeEntityId?: string },
+    access?: DriveEntityContextAccess,
   ) {
     const entityScope = parseEntityScope(scopeParams ?? {});
+    await assertDriveFolderEntityScopeAccessible(this.prisma, entityScope, access);
     const normalized = entityScope ? 'COMPANY' : normalizeSpace(space);
     const ownerWhere =
       normalized === 'PERSONAL' ? { ownerId: userId } : entityScope ? { ownerId: null } : {};
@@ -133,8 +141,13 @@ export class DriveFolderService {
     });
   }
 
-  async renameFolder(folderId: string, dto: RenameDriveFolderDto, userId: string) {
-    const existing = await this.assertCanUseFolder(folderId, userId);
+  async renameFolder(
+    folderId: string,
+    dto: RenameDriveFolderDto,
+    userId: string,
+    access?: DriveEntityContextAccess,
+  ) {
+    const existing = await this.assertCanUseFolder(folderId, userId, access);
     if (this.isReservedRootStorageFolder(existing)) {
       throw new BadRequestException('The root storage folder cannot be renamed.');
     }
@@ -147,8 +160,8 @@ export class DriveFolderService {
     return jsonSafeForHttp(folder);
   }
 
-  async deleteFolder(folderId: string, userId: string) {
-    const existing = await this.assertCanUseFolder(folderId, userId);
+  async deleteFolder(folderId: string, userId: string, access?: DriveEntityContextAccess) {
+    const existing = await this.assertCanUseFolder(folderId, userId, access);
     if (this.isReservedRootStorageFolder(existing)) {
       throw new BadRequestException('The root storage folder cannot be deleted.');
     }
@@ -176,19 +189,20 @@ export class DriveFolderService {
     ]);
   }
 
-  async createFolder(dto: CreateDriveFolderDto, userId: string) {
+  async createFolder(dto: CreateDriveFolderDto, userId: string, access?: DriveEntityContextAccess) {
     const name = dto.name.trim();
     if (!name) throw new BadRequestException('Folder name is required.');
     if (name === DRIVE_ROOT_STORAGE_FOLDER_NAME) {
       throw new BadRequestException('This folder name is reserved.');
     }
     const entityScope = parseEntityScope(dto);
+    await assertDriveFolderEntityScopeAccessible(this.prisma, entityScope, access);
     const space = entityScope ? 'COMPANY' : normalizeSpace(dto.space);
     if (entityScope && dto.space?.trim() && dto.space.trim().toUpperCase() !== 'COMPANY') {
       throw new BadRequestException('Entity-scoped folders use space COMPANY only.');
     }
     const parentId = normalizeParentId(dto.parentId);
-    if (parentId) await this.assertFolderAccess(parentId, space, userId, entityScope);
+    if (parentId) await this.assertFolderAccess(parentId, space, userId, entityScope, access);
 
     const folder = await this.prisma.driveFolder.create({
       data: {
@@ -216,18 +230,29 @@ export class DriveFolderService {
     return jsonSafeForHttp(folder);
   }
 
-  async assertCanUseFolder(folderId: string, userId: string) {
+  async assertCanUseFolder(folderId: string, userId: string, access?: DriveEntityContextAccess) {
     const folder = await this.prisma.driveFolder.findUnique({ where: { id: folderId } });
     if (!folder || folder.deletedAt) throw new NotFoundException(`Folder ${folderId} not found`);
     if (folder.space === 'PERSONAL' && folder.ownerId !== userId) {
       throw new NotFoundException(`Folder ${folderId} not found`);
     }
-    // TODO: entity-scoped folder access via module RBAC (DEAL/PROJECT membership).
+    if (folder.scopeEntityType && folder.scopeEntityId) {
+      await assertDriveFolderEntityScopeAccessible(
+        this.prisma,
+        { scopeEntityType: folder.scopeEntityType, scopeEntityId: folder.scopeEntityId },
+        access,
+      );
+    }
     return folder;
   }
 
-  async placeFile(folderId: string, fileAssetId: string, userId: string) {
-    await this.assertCanUseFolder(folderId, userId);
+  async placeFile(
+    folderId: string,
+    fileAssetId: string,
+    userId: string,
+    access?: DriveEntityContextAccess,
+  ) {
+    await this.assertCanUseFolder(folderId, userId, access);
     return this.prisma.driveFolderItem.create({
       data: {
         folderId,
@@ -245,7 +270,7 @@ export class DriveFolderService {
     userId: string,
     access?: DriveEntityAccess,
   ) {
-    await this.assertCanUseFolder(folderId, userId);
+    await this.assertCanUseFolder(folderId, userId, access);
     await this.assertCanAccessFileAsset(fileAssetId, access);
     const existing = await this.prisma.driveFolderItem.findFirst({
       where: { folderId, fileAssetId, itemType: 'FILE', removedAt: null },
@@ -278,9 +303,9 @@ export class DriveFolderService {
     folderId: string,
     fileAssetId: string,
     userId: string,
-    access?: DriveEntityAccess,
+    access?: DriveEntityContextAccess,
   ) {
-    await this.assertCanUseFolder(folderId, userId);
+    await this.assertCanUseFolder(folderId, userId, access);
     await this.assertCanAccessFileAsset(fileAssetId, access);
     const placement = await this.findActiveFilePlacement(folderId, fileAssetId);
     await this.prisma.$transaction(async (tx) => {
@@ -306,8 +331,8 @@ export class DriveFolderService {
     userId: string,
     access?: DriveEntityAccess,
   ) {
-    await this.assertCanUseFolder(sourceFolderId, userId);
-    await this.assertCanUseFolder(targetFolderId, userId);
+    await this.assertCanUseFolder(sourceFolderId, userId, access);
+    await this.assertCanUseFolder(targetFolderId, userId, access);
     await this.assertCanAccessFileAsset(fileAssetId, access);
     const placement = await this.findActiveFilePlacement(sourceFolderId, fileAssetId);
     const moved = await this.prisma.$transaction(async (tx) => {
@@ -335,7 +360,7 @@ export class DriveFolderService {
     userId: string,
     access?: DriveEntityAccess,
   ) {
-    const targetFolder = await this.assertCanUseFolder(targetFolderId, userId);
+    const targetFolder = await this.assertCanUseFolder(targetFolderId, userId, access);
     const source = await this.getAccessibleFileAsset(fileAssetId, access);
     await this.assertCopyAllowed(source.id, source, targetFolder);
     const storageKey = await this.copyStorageObject(
@@ -414,6 +439,7 @@ export class DriveFolderService {
     space: DriveSpaceEnum,
     userId: string,
     entityScope: DriveFolderEntityScopeFilter | null,
+    access?: DriveEntityContextAccess,
   ) {
     const folder = await this.prisma.driveFolder.findUnique({ where: { id: folderId } });
     if (!folder || folder.deletedAt || folder.space !== space) {
@@ -424,6 +450,15 @@ export class DriveFolderService {
     }
     if (space === 'PERSONAL' && folder.ownerId !== userId) {
       throw new NotFoundException(`Folder ${folderId} not found`);
+    }
+    if (folder.scopeEntityType && folder.scopeEntityId) {
+      await assertDriveFolderEntityScopeAccessible(
+        this.prisma,
+        { scopeEntityType: folder.scopeEntityType, scopeEntityId: folder.scopeEntityId },
+        access,
+      );
+    } else {
+      await assertDriveFolderEntityScopeAccessible(this.prisma, entityScope, access);
     }
   }
 

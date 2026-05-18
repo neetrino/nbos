@@ -57,6 +57,14 @@ export class DriveUploadSessionService {
   ) {
     const entityType = resolveDriveLibraryEntityType(contextType);
     const entityId = requireText(contextId, 'contextId');
+    if (access) {
+      await assertDriveEntityContextAccessible(
+        this.prisma,
+        entityType,
+        entityId,
+        documentsAccess ? { ...access, documentsAccess } : access,
+      );
+    }
     return this.listFileAssetsByEntity(entityType, entityId, {
       ...(access ?? { employeeId: '', departmentIds: [] }),
       ...(documentsAccess ? { documentsAccess } : {}),
@@ -72,7 +80,12 @@ export class DriveUploadSessionService {
     const fileName = requireText(dto.fileName, 'fileName');
     const contentType = requireText(dto.contentType, 'contentType');
     if (dto.folderId) {
-      await this.folders.assertCanUseFolder(dto.folderId, userId);
+      const folderAccess = access
+        ? documentsAccess
+          ? { ...access, documentsAccess }
+          : access
+        : undefined;
+      await this.folders.assertCanUseFolder(dto.folderId, userId, folderAccess);
     }
     if (!dto.folderId) {
       requireText(dto.entityType, 'entityType');
@@ -169,12 +182,19 @@ export class DriveUploadSessionService {
       throw new BadRequestException('Upload session has expired.');
     }
 
-    if (!session.folderId && access) {
+    const contextAccess = access
+      ? documentsAccess
+        ? { ...access, documentsAccess }
+        : access
+      : undefined;
+    if (session.folderId && contextAccess) {
+      await this.folders.assertCanUseFolder(session.folderId, userId, contextAccess);
+    } else if (!session.folderId && contextAccess) {
       await assertDriveEntityContextAccessible(
         this.prisma,
         session.entityType,
         session.entityId,
-        documentsAccess ? { ...access, documentsAccess } : access,
+        contextAccess,
       );
     }
 

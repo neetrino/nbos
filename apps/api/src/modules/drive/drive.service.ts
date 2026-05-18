@@ -713,10 +713,13 @@ export class DriveService {
   async getLibraryContextSummary(
     entityType: string | undefined,
     entityId: string | undefined,
-    access?: DriveEntityAccess,
+    access?: DriveEntityContextAccess,
   ) {
     const et = requireText(entityType, 'entityType');
     const eid = requireText(entityId, 'entityId');
+    if (access?.employeeId) {
+      await assertDriveEntityContextAccessible(this.prisma, et, eid, access);
+    }
     const where = await this.buildFileAssetWhere({ entityType: et, entityId: eid }, access);
     const rows = await this.prisma.fileAsset.groupBy({
       by: ['purpose'],
@@ -732,10 +735,13 @@ export class DriveService {
   async getLibraryRelatedLinkAggregates(
     entityType: string | undefined,
     entityId: string | undefined,
-    access?: DriveEntityAccess,
+    access?: DriveEntityContextAccess,
   ) {
     const et = requireText(entityType, 'entityType');
     const eid = requireText(entityId, 'entityId');
+    if (access?.employeeId) {
+      await assertDriveEntityContextAccessible(this.prisma, et, eid, access);
+    }
     const fileWhere = await this.buildFileAssetWhere({ entityType: et, entityId: eid }, access);
     const rows = await this.prisma.fileLink.groupBy({
       by: ['entityType', 'entityId'],

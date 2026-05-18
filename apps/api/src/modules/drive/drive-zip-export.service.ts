@@ -12,7 +12,13 @@ import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { DriveService } from './drive.service';
-import type { DriveEntityAccess } from './drive-access.types';
+import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access.types';
+import { DriveTypedExportResolver } from './drive-typed-export-resolver';
+import {
+  normalizeDriveZipExportKind,
+  parseDriveZipExportParams,
+  type DriveZipExportParams,
+} from './drive-export-kinds';
 import { DriveExportZipQueueService } from './drive-export-zip-queue.service';
 import { R2_DRIVE_PREFIX } from './drive-storage';
 import { jsonSafeForHttp } from './drive-json-safe';
@@ -35,6 +41,8 @@ import {
 export interface DriveZipExportAccessSnapshot {
   departmentIds: string[];
   driveScope?: string | null;
+  exportKind?: string;
+  exportParams?: DriveZipExportParams;
 }
 
 function isStringArray(value: unknown): value is string[] {
@@ -55,7 +63,9 @@ function parseAccessSnapshot(raw: unknown): DriveZipExportAccessSnapshot {
     ? o.departmentIds.filter((x): x is string => typeof x === 'string')
     : [];
   const driveScope = typeof o.driveScope === 'string' ? o.driveScope : null;
-  return { departmentIds, driveScope };
+  const exportKind = typeof o.exportKind === 'string' ? o.exportKind : undefined;
+  const exportParams = parseDriveZipExportParams(o.exportParams);
+  return { departmentIds, driveScope, exportKind, exportParams };
 }
 
 function snapshotToAccess(
@@ -91,16 +101,49 @@ export class DriveZipExportService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly driveService: DriveService,
+    private readonly typedExports: DriveTypedExportResolver,
     private readonly audit: AuditService,
     private readonly queue: DriveExportZipQueueService,
   ) {}
 
-  async createZipExportJob(requestedById: string, fileIds: string[], access: DriveEntityAccess) {
-    const ids = normalizeUniqueFileIds(fileIds);
+  async createZipExportJob(
+    requestedById: string,
+    input: {
+      fileIds?: string[];
+      exportKind?: string;
+      exportParams?: unknown;
+    },
+    access: DriveEntityContextAccess,
+  ) {
+    const selectionIds = input.fileIds?.map((id) => id.trim()).filter(Boolean) ?? [];
+    if (selectionIds.length === 0 && !input.exportKind?.trim()) {
+      throw new BadRequestException('Provide fileIds or exportKind with exportParams.');
+    }
+    const exportKind = normalizeDriveZipExportKind(
+      selectionIds.length > 0 ? 'drive.selection_zip' : input.exportKind,
+    );
+    let ids: string[];
+    let exportParams: DriveZipExportParams = {};
+    if (selectionIds.length > 0) {
+      if (input.exportKind && input.exportKind !== 'drive.selection_zip') {
+        throw new BadRequestException('Provide either fileIds or exportKind, not both.');
+      }
+      ids = normalizeUniqueFileIds(selectionIds);
+    } else {
+      const resolved = await this.typedExports.resolveFileIds(
+        exportKind,
+        input.exportParams,
+        access,
+      );
+      ids = resolved.fileIds;
+      exportParams = resolved.exportParams;
+    }
     await this.assertUnderActiveJobCap(requestedById);
     const accessSnapshot: DriveZipExportAccessSnapshot = {
       departmentIds: [...access.departmentIds],
       driveScope: access.driveScope ?? null,
+      exportKind,
+      exportParams,
     };
     const job = await this.prisma.driveZipExportJob.create({
       data: {
@@ -114,7 +157,7 @@ export class DriveZipExportService {
       entityId: job.id,
       action: 'drive_zip_export.requested',
       userId: requestedById,
-      changes: { fileCount: ids.length },
+      changes: { fileCount: ids.length, exportKind },
     });
     try {
       await this.dispatchJob(job.id, requestedById);
@@ -142,6 +185,27 @@ export class DriveZipExportService {
     });
     if (!job) throw new NotFoundException('ZIP export job was not found.');
     return jsonSafeForHttp(job);
+  }
+
+  async cancelZipExportJob(jobId: string, requestedById: string) {
+    const job = await this.prisma.driveZipExportJob.findFirst({
+      where: { id: jobId, requestedById },
+    });
+    if (!job) throw new NotFoundException('ZIP export job was not found.');
+    if (job.status !== 'QUEUED') {
+      throw new BadRequestException('Only queued export jobs can be cancelled.');
+    }
+    const updated = await this.prisma.driveZipExportJob.update({
+      where: { id: jobId },
+      data: { status: 'CANCELLED', errorMessage: 'cancelled_by_user' },
+    });
+    await this.audit.log({
+      entityType: DRIVE_ZIP_EXPORT_AUDIT_ENTITY,
+      entityId: jobId,
+      action: 'drive_zip_export.cancelled',
+      userId: requestedById,
+    });
+    return jsonSafeForHttp(updated);
   }
 
   async processZipExportJob(jobId: string, actorId: string): Promise<void> {
@@ -196,10 +260,12 @@ export class DriveZipExportService {
         throw new BadRequestException('No R2-backed files could be included in the ZIP.');
       }
       const generatedAt = new Date().toISOString();
+      const snapshot = parseAccessSnapshot(job.accessSnapshot);
       const manifestPayload = buildDriveZipExportManifestPayload({
         jobId,
         requesterId: actorId,
         generatedAt,
+        exportKind: snapshot.exportKind,
         entries: manifestEntries,
       });
       const manifestJson = JSON.stringify(manifestPayload, null, 2);

@@ -317,4 +317,38 @@ describe('DriveFolderService', () => {
     );
     expect(prisma.driveFolderItem.findFirst).not.toHaveBeenCalled();
   });
+
+  it('rejects entity-scoped listFolder when project graph is inaccessible', async () => {
+    prisma.project.findUnique.mockResolvedValue({ id: 'project-a' });
+    prisma.project.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.listFolder(
+        { scopeEntityType: 'PROJECT', scopeEntityId: 'project-a', parentId: 'root' },
+        'user-1',
+        { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
+      ),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('rejects scoped folder use when entity graph is inaccessible', async () => {
+    prisma.driveFolder.findUnique.mockResolvedValue({
+      id: 'folder-scoped',
+      space: 'COMPANY',
+      ownerId: null,
+      deletedAt: null,
+      scopeEntityType: 'PROJECT',
+      scopeEntityId: 'project-a',
+    });
+    prisma.project.findUnique.mockResolvedValue({ id: 'project-a' });
+    prisma.project.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.assertCanUseFolder('folder-scoped', 'user-1', {
+        employeeId: 'user-1',
+        departmentIds: [],
+        driveScope: 'OWN',
+      }),
+    ).rejects.toThrow(NotFoundException);
+  });
 });

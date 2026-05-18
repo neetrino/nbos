@@ -20,6 +20,7 @@ import { DriveUploadSessionService } from './drive-upload-session.service';
 import { DriveFolderService } from './drive-folder.service';
 import { DriveZipExportService } from './drive-zip-export.service';
 import { DriveProjectHubService } from './drive-project-hub.service';
+import { DriveCleanupCandidatesService } from './drive-cleanup-candidates.service';
 import { CreateDriveZipExportBodyDto } from './create-drive-zip-export.dto';
 import type {
   CompleteUploadSessionDto,
@@ -46,6 +47,7 @@ export class DriveController {
     private readonly driveFolders: DriveFolderService,
     private readonly driveZipExports: DriveZipExportService,
     private readonly driveProjectHub: DriveProjectHubService,
+    private readonly driveCleanupCandidates: DriveCleanupCandidatesService,
   ) {}
 
   @Get('folders')
@@ -86,21 +88,36 @@ export class DriveController {
   @ApiQuery({ name: 'scopeEntityId', required: false })
   async listFolderTree(
     @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
     @Query('space') space?: string,
     @Query('scopeEntityType') scopeEntityType?: string,
     @Query('scopeEntityId') scopeEntityId?: string,
   ) {
-    return this.driveFolders.listFolderTree(space ?? '', user.id, {
-      scopeEntityType,
-      scopeEntityId,
-    });
+    return this.driveFolders.listFolderTree(
+      space ?? '',
+      user.id,
+      { scopeEntityType, scopeEntityId },
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+    );
   }
 
   @Post('folders')
   @RequirePermission('DRIVE', 'ADD')
   @ApiOperation({ summary: 'Create a user folder in Company or Personal Drive' })
-  async createFolder(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateDriveFolderDto) {
-    return this.driveFolders.createFolder(body, user.id);
+  async createFolder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: CreateDriveFolderDto,
+  ) {
+    return this.driveFolders.createFolder(body, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Patch('folders/:folderId')
@@ -108,18 +125,31 @@ export class DriveController {
   @ApiOperation({ summary: 'Rename a user Drive folder' })
   async renameFolder(
     @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
     @Param('folderId') folderId: string,
     @Body() body: RenameDriveFolderDto,
   ) {
-    return this.driveFolders.renameFolder(folderId, body, user.id);
+    return this.driveFolders.renameFolder(folderId, body, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Delete('folders/:folderId')
   @RequirePermission('DRIVE', 'DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft-delete an empty Drive folder' })
-  async deleteFolder(@CurrentUser() user: CurrentUserPayload, @Param('folderId') folderId: string) {
-    await this.driveFolders.deleteFolder(folderId, user.id);
+  async deleteFolder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('folderId') folderId: string,
+  ) {
+    await this.driveFolders.deleteFolder(folderId, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 
   @Post('folders/:folderId/files/:fileId/move')
@@ -288,6 +318,7 @@ export class DriveController {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,
+      documentsAccess: buildDocumentsReadAccess(user),
     });
   }
 
@@ -310,6 +341,7 @@ export class DriveController {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,
+      documentsAccess: buildDocumentsReadAccess(user),
     });
   }
 
@@ -318,6 +350,17 @@ export class DriveController {
   @ApiOperation({ summary: 'Drive maintenance counters (upload sessions)' })
   async getDriveCleanupSummary() {
     return this.driveService.getDriveCleanupSummary();
+  }
+
+  @Get('cleanup/candidates')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Review cleanup candidates (no destructive action)',
+    description:
+      'Lists orphan files, failed/expired upload sessions, duplicate checksum groups, old export artifacts, trash retention, and aged task attachments for operator review.',
+  })
+  async listDriveCleanupCandidates() {
+    return this.driveCleanupCandidates.listCandidates();
   }
 
   @Post('cleanup/purge/:kind')
@@ -346,11 +389,26 @@ export class DriveController {
     @Req() request: Request & { permissionScope?: string },
     @Body() body: CreateDriveZipExportBodyDto,
   ) {
-    return this.driveZipExports.createZipExportJob(user.id, body.fileIds, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
-      driveScope: request.permissionScope,
-    });
+    return this.driveZipExports.createZipExportJob(
+      user.id,
+      {
+        fileIds: body.fileIds,
+        exportKind: body.exportKind,
+        exportParams: body.exportParams,
+      },
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+    );
+  }
+
+  @Post('zip-exports/:id/cancel')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Cancel a queued Drive ZIP export job' })
+  async cancelDriveZipExport(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.driveZipExports.cancelZipExportJob(id, user.id);
   }
 
   @Get('zip-exports/:id')

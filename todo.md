@@ -4,20 +4,34 @@
 
 ---
 
-## Закрыто в Phase 1 hardening
+## Закрыто (Phase 1–3 backend slice)
 
-- Legacy raw-R2 HTTP routes `GET/POST/DELETE /drive/:projectId...` отключены.
-- `/drive/library` теперь проходит через общий file access filter.
-- Folder placement actions больше не обходят file-level access.
-- Upload session create/complete повторно проверяет target context.
-- Lifecycle audit actor больше не берётся из client body.
+**Phase 1 — hardening**
 
-## Следующий срез (вне закрытого Drive backlog)
+- Legacy raw-R2 HTTP routes отключены.
+- `/drive/library` + folder placements + upload session entity checks.
+- Lifecycle audit actor только с сервера.
 
-См. §9 в `[07-Drive-Cleanup-Register.md](docs/NBOS/02-Modules/11-Drive/07-Drive-Cleanup-Register.md)`:
+**Phase 2 — permissions**
 
+- Action grants (`VIEW` / `UPLOAD_VERSION` / `SHARE` / `DELETE` / `EXPORT`).
+- Grant `expiresAt`, `reason`, sensitive → только `VIEW`.
+- Copy policy + scoped `FileLink` on copy.
+- Entity-scoped folders + library read через `assertDriveEntityContextAccessible`.
+
+**Phase 3 — export/cleanup (backend)**
+
+- Typed ZIP exports: `drive.project_zip`, `drive.product_zip`, `drive.client_zip`, `drive.finance_zip`, `drive.task_attachments_zip`.
+- `POST /drive/zip-exports` принимает `exportKind` + `exportParams` или `fileIds`.
+- `POST /drive/zip-exports/:id/cancel` для `QUEUED`.
+- `GET /drive/cleanup/candidates` — review surface без destructive purge.
+
+---
+
+## Следующий срез
+
+- UI: export by type, cleanup dashboard, cancel export.
 - Upload widget на карточках CRM / Product / Task.
-- Полная матрица Share/Move/Copy (`03-Permissions-Sharing-and-Audit.md`).
-- Export catalog (типы из doc 06 §5, TTL, cancel).
-- Cleanup candidates dashboard.
+- Полная UI-матрица Share/Move/Copy.
 - Rich preview.
+- Подтверждённый cleanup action API (после review candidates).

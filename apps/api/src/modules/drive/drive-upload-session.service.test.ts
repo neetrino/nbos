@@ -69,6 +69,13 @@ describe('DriveUploadSessionService', () => {
     prisma.workSpace.findUnique.mockResolvedValue({ id: 'ws-1', name: 'Delivery' });
     prisma.workSpace.findFirst.mockResolvedValue({ id: 'ws-1' });
     prisma.task.findUnique.mockResolvedValue({ code: 'T1' });
+    prisma.supportTicket.findUnique.mockResolvedValue({ id: 'ticket-1', assignedTo: 'user-1' });
+    prisma.document.findUnique.mockResolvedValue({
+      ownerId: 'user-1',
+      createdById: 'user-1',
+      listScopeOverride: null,
+      section: { defaultListScope: 'ALL' },
+    });
     service = new DriveUploadSessionService(
       prisma as never,
       makeR2Mock() as never,
@@ -94,11 +101,20 @@ describe('DriveUploadSessionService', () => {
   });
 
   it('lists library for DOCUMENT context', async () => {
-    await service.listDriveLibrary('DOCUMENT', 'doc-uuid', {
-      employeeId: 'user-1',
-      departmentIds: [],
-      driveScope: 'ALL',
-    });
+    await service.listDriveLibrary(
+      'DOCUMENT',
+      'doc-uuid',
+      {
+        employeeId: 'user-1',
+        departmentIds: [],
+        driveScope: 'ALL',
+      },
+      {
+        employeeId: 'user-1',
+        departmentIds: [],
+        documentsViewScope: 'ALL',
+      },
+    );
 
     expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -478,7 +494,26 @@ describe('DriveUploadSessionService', () => {
     ).rejects.toThrow('Drive context not found');
   });
 
+  it('rejects library listing for inaccessible project context', async () => {
+    prisma.project.findUnique.mockResolvedValue({ id: 'p1' });
+    prisma.project.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      service.listDriveLibrary('PROJECT', 'p1', {
+        employeeId: 'user-1',
+        departmentIds: [],
+        driveScope: 'OWN',
+      }),
+    ).rejects.toThrow('Drive context not found');
+
+    expect(prisma.fileAsset.findMany).not.toHaveBeenCalled();
+  });
+
   it('rejects library listing when access scope is applied', async () => {
+    prisma.supportTicket.findUnique.mockResolvedValue({
+      id: 'ticket-1',
+      assignedTo: 'user-1',
+    });
     await service.listDriveLibrary('SUPPORT', 'ticket-1', {
       employeeId: 'user-1',
       departmentIds: ['dep-1'],

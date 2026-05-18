@@ -28,7 +28,7 @@ Can access file =
 - upload session проверяет target context и при create, и при complete;
 - folder placement сам по себе не даёт доступ к файлу, если file-level access не проходит;
 - actor для archive/restore/trash audit всегда берётся с сервера (`CurrentUser.id`);
-- полный canonical resolver для всех entity graphs, confidentiality edge cases и advanced grants остаётся отдельным Phase 2.
+- inherited access по всем `FileLink` graphs и edge-case confidentiality policies остаются backlog там, где нет явного runtime rule.
 - `PROJECT` уже не опирается на наличие старого linked file: Drive проверяет direct project participation через delivery/sales graph проекта.
 - `WORK_SPACE` уже не опирается на наличие старого linked file: Drive проверяет direct workspace participation через связанные product / extension / project delivery graphs.
 - `INVOICE`, `PAYMENT`, `EXPENSE` в Drive больше не проходят по одному existence-check: для scoped access они должны быть привязаны к доступному project graph.
