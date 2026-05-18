@@ -1,21 +1,28 @@
 'use client';
 
+import { useState } from 'react';
 import { Calendar, CheckSquare, Clock, ExternalLink, FileText } from 'lucide-react';
 import { InlineField } from '@/components/shared';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
+import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
+import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
+import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
 
 interface DealOfferContractSectionProps {
+  dealId: string;
   draft: DealGeneralDraft;
   patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   disabled?: boolean;
 }
 
 export function DealOfferContractSection({
+  dealId,
   draft,
   patchDraft,
   disabled = false,
 }: DealOfferContractSectionProps) {
+  const [filesRefreshKey, setFilesRefreshKey] = useState(0);
   return (
     <section
       id={DEAL_SHEET_SECTION.OFFER_CONTRACT}
@@ -101,6 +108,21 @@ export function DealOfferContractSection({
           icon={<FileText size={12} />}
           disabled={disabled}
           onValueChange={(v) => patchDraft({ contractFileUrl: v || null })}
+        />
+      </div>
+
+      <div className="mt-4 space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
+        <EntityDriveQuickAttach
+          entityType="DEAL"
+          entityId={dealId}
+          libraryKey="deals"
+          onUploaded={() => setFilesRefreshKey((key) => key + 1)}
+        />
+        <EntityDriveFilesPanel
+          entityType="DEAL"
+          entityId={dealId}
+          driveHref={buildDriveHrefWithDeal(dealId)}
+          refreshKey={filesRefreshKey}
         />
       </div>
     </section>

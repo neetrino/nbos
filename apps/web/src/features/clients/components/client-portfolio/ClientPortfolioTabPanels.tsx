@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -7,10 +8,13 @@ import type {
   CompanyPortfolioResponse,
   ContactPortfolioResponse,
 } from '@/lib/api/client-portfolio';
+import { PORTFOLIO_MESSENGER_HREF } from '../../constants/client-portfolio-deep-links';
+import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
+import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
 import {
-  PORTFOLIO_DRIVE_HREF,
-  PORTFOLIO_MESSENGER_HREF,
-} from '../../constants/client-portfolio-deep-links';
+  buildDriveHrefWithCompany,
+  buildDriveHrefWithContact,
+} from '@/features/drive/drive-deep-link';
 import type { ClientPortfolioTabId } from './client-portfolio-tabs';
 
 export type { ClientPortfolioTabId } from './client-portfolio-tabs';
@@ -36,6 +40,8 @@ export function ClientPortfolioTabPanels({
   variant,
   onRetry,
 }: ClientPortfolioTabPanelsProps) {
+  const [filesRefreshKey, setFilesRefreshKey] = useState(0);
+
   if (tab === 'overview') {
     const s = data.summary;
     const m = data.accessMask;
@@ -251,20 +257,23 @@ export function ClientPortfolioTabPanels({
         </p>
       );
     }
-    const scopeLabel = data.scope === 'contact' ? 'Contact' : 'Company';
     const scopeId =
       data.scope === 'contact'
         ? String((data.contact as { id?: string }).id ?? '')
         : String((data.company as { id?: string }).id ?? '');
+    const entityType = data.scope === 'contact' ? 'CONTACT' : 'COMPANY';
+    const driveHref =
+      data.scope === 'contact'
+        ? buildDriveHrefWithContact(scopeId)
+        : buildDriveHrefWithCompany(scopeId);
 
-    return (
-      <div className="space-y-4">
-        <p className="text-muted-foreground text-sm">
-          {tab === 'communication'
-            ? 'A unified timeline (Messenger, calls, notes) will appear here when the aggregation API is available.'
-            : 'Files stay in Drive; this tab will deep-link to client-scoped folders when the Drive UI exposes that filter.'}
-        </p>
-        {tab === 'communication' ? (
+    if (tab === 'communication') {
+      return (
+        <div className="space-y-4">
+          <p className="text-muted-foreground text-sm">
+            A unified timeline (Messenger, calls, notes) will appear here when the aggregation API
+            is available.
+          </p>
           <Link
             href={PORTFOLIO_MESSENGER_HREF}
             className={cn(
@@ -274,20 +283,24 @@ export function ClientPortfolioTabPanels({
           >
             Open Messenger
           </Link>
-        ) : (
-          <Link
-            href={PORTFOLIO_DRIVE_HREF}
-            className={cn(
-              buttonVariants({ variant: 'outline', size: 'sm' }),
-              'inline-flex w-fit gap-2',
-            )}
-          >
-            Open Drive
-          </Link>
-        )}
-        <p className="text-muted-foreground text-xs">
-          {scopeLabel} context ID: <span className="text-foreground font-mono">{scopeId}</span>
-        </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <EntityDriveQuickAttach
+          entityType={entityType}
+          entityId={scopeId}
+          libraryKey="clients"
+          onUploaded={() => setFilesRefreshKey((key) => key + 1)}
+        />
+        <EntityDriveFilesPanel
+          entityType={entityType}
+          entityId={scopeId}
+          driveHref={driveHref}
+          refreshKey={filesRefreshKey}
+        />
       </div>
     );
   }

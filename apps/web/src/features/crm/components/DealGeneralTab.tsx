@@ -136,7 +136,12 @@ export function DealGeneralTab({
           searchCompanies={searchCompanies}
           disabled={formDisabled}
         />
-        <DealOfferContractSection draft={draft} patchDraft={patchDraft} disabled={formDisabled} />
+        <DealOfferContractSection
+          dealId={deal.id}
+          draft={draft}
+          patchDraft={patchDraft}
+          disabled={formDisabled}
+        />
         <DealMarketingSection
           deal={deal}
           draft={draft}

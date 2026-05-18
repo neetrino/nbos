@@ -13,6 +13,7 @@ describe('DriveTypedExportResolver', () => {
     resolver = new DriveTypedExportResolver(prisma as never);
     prisma.project.findUnique.mockResolvedValue({ id: 'p1' });
     prisma.project.findFirst.mockResolvedValue({ id: 'p1' });
+    prisma.deal.findUnique.mockResolvedValue({ id: 'deal-1' });
     prisma.deal.findMany.mockResolvedValue([]);
     prisma.product.findMany.mockResolvedValue([]);
     prisma.task.findMany.mockResolvedValue([]);
@@ -42,6 +43,24 @@ describe('DriveTypedExportResolver', () => {
         { employeeId: 'user-1', departmentIds: [], driveScope: 'OWN' },
       ),
     ).rejects.toThrow('Drive context not found');
+  });
+
+  it('resolves offer export with purpose filter', async () => {
+    const result = await resolver.resolveFileIds(
+      'drive.offer_zip',
+      { dealId: 'deal-1' },
+      { employeeId: 'user-1', departmentIds: [], driveScope: 'ALL' },
+    );
+
+    expect(result.exportKind).toBe('drive.offer_zip');
+    expect(result.fileIds).toEqual(['file-1']);
+    expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          purpose: { in: expect.arrayContaining(['OFFER_DRAFT']) },
+        }),
+      }),
+    );
   });
 
   it('rejects selection_zip without explicit file ids', async () => {

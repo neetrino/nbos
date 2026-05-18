@@ -6,7 +6,12 @@ export type DriveZipExportKind =
   | 'drive.product_zip'
   | 'drive.client_zip'
   | 'drive.finance_zip'
-  | 'drive.task_attachments_zip';
+  | 'drive.task_attachments_zip'
+  | 'drive.offer_zip'
+  | 'drive.meeting_zip'
+  | 'drive.call_zip'
+  | 'drive.partner_zip'
+  | 'drive.full_backup_zip';
 
 export type DriveTypedExportAction = {
   id: string;
@@ -22,6 +27,11 @@ const EXPORT_KIND_LABELS: Record<DriveZipExportKind, string> = {
   'drive.client_zip': 'Client',
   'drive.finance_zip': 'Finance',
   'drive.task_attachments_zip': 'Task attachments',
+  'drive.offer_zip': 'Offers',
+  'drive.meeting_zip': 'Meetings',
+  'drive.call_zip': 'Calls',
+  'drive.partner_zip': 'Partner',
+  'drive.full_backup_zip': 'Full backup',
 };
 
 export function labelDriveZipExportKind(kind: string | undefined): string {
@@ -61,6 +71,30 @@ export function buildDriveTypedExportActions(ctx: {
         exportKind: 'drive.task_attachments_zip',
         exportParams: { projectId },
       },
+      {
+        id: 'offers',
+        label: 'Export offers & contracts',
+        exportKind: 'drive.offer_zip',
+        exportParams: { projectId },
+      },
+      {
+        id: 'meetings',
+        label: 'Export meeting recordings',
+        exportKind: 'drive.meeting_zip',
+        exportParams: { projectId },
+      },
+      {
+        id: 'calls',
+        label: 'Export call recordings',
+        exportKind: 'drive.call_zip',
+        exportParams: { projectId },
+      },
+      {
+        id: 'full-backup',
+        label: 'Full project backup',
+        exportKind: 'drive.full_backup_zip',
+        exportParams: { projectId },
+      },
     );
   }
 
@@ -88,12 +122,20 @@ export function buildDriveTypedExportActions(ctx: {
       });
     }
     if (row?.entityType === 'CONTACT') {
-      actions.push({
-        id: 'client-contact',
-        label: 'Export contact files',
-        exportKind: 'drive.client_zip',
-        exportParams: { contactId: row.id },
-      });
+      actions.push(
+        {
+          id: 'client-contact',
+          label: 'Export contact files',
+          exportKind: 'drive.client_zip',
+          exportParams: { contactId: row.id },
+        },
+        {
+          id: 'contact-calls',
+          label: 'Export contact calls',
+          exportKind: 'drive.call_zip',
+          exportParams: { contactId: row.id },
+        },
+      );
     }
   }
 
@@ -112,6 +154,24 @@ export function buildDriveTypedExportActions(ctx: {
       label: 'Export product library',
       exportKind: 'drive.product_zip',
       exportParams: { productId: ctx.libraryEntityScope.scopeEntityId },
+    });
+  }
+
+  if (ctx.libraryEntityScope?.scopeEntityType === 'PARTNER') {
+    actions.push({
+      id: 'partner-scope',
+      label: 'Export partner documents',
+      exportKind: 'drive.partner_zip',
+      exportParams: { partnerId: ctx.libraryEntityScope.scopeEntityId },
+    });
+  }
+
+  if (ctx.libraryEntityScope?.scopeEntityType === 'DEAL') {
+    actions.push({
+      id: 'deal-offers',
+      label: 'Export deal offers',
+      exportKind: 'drive.offer_zip',
+      exportParams: { dealId: ctx.libraryEntityScope.scopeEntityId },
     });
   }
 

@@ -11,7 +11,9 @@ import {
 } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
+import { useState } from 'react';
 import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
+import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
 import { buildDriveHrefWithFinanceProject } from '@/features/drive/drive-deep-link';
 import { cn } from '@/lib/utils';
 import {
@@ -81,6 +83,7 @@ export function FinanceTab({
   projectId,
   onAfterDriveUpload,
 }: FinanceTabProps) {
+  const [driveFilesRefreshKey, setDriveFilesRefreshKey] = useState(0);
   const totalRevenue = orders.reduce((s, o) => s + Number(o.totalAmount), 0);
   const paidInvoices = orders.flatMap((o) => o.invoices).filter((i) => i.moneyStatus === 'PAID');
   const totalPaid = paidInvoices.reduce((s, i) => s + Number(i.amount), 0);
@@ -92,20 +95,31 @@ export function FinanceTab({
   return (
     <div className="space-y-6">
       {projectId ? (
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <EntityDriveQuickAttach
-            libraryKey="finance"
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <EntityDriveQuickAttach
+              libraryKey="finance"
+              entityType="PROJECT"
+              entityId={projectId}
+              onUploaded={() => {
+                setDriveFilesRefreshKey((key) => key + 1);
+                onAfterDriveUpload?.();
+              }}
+            />
+            <Link
+              href={buildDriveHrefWithFinanceProject(projectId)}
+              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+            >
+              <HardDrive className="size-4" aria-hidden />
+              Drive files
+            </Link>
+          </div>
+          <EntityDriveFilesPanel
             entityType="PROJECT"
             entityId={projectId}
-            onUploaded={onAfterDriveUpload}
+            driveHref={buildDriveHrefWithFinanceProject(projectId)}
+            refreshKey={driveFilesRefreshKey}
           />
-          <Link
-            href={buildDriveHrefWithFinanceProject(projectId)}
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
-          >
-            <HardDrive className="size-4" aria-hidden />
-            Drive files
-          </Link>
         </div>
       ) : null}
 

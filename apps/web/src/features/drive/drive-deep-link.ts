@@ -19,6 +19,15 @@ export const DRIVE_DEEP_LINK_WORKSPACE_ID_QUERY = 'driveWorkSpaceId';
 /** Open Drive Library → Finance scoped to this project (project-linked finance files). */
 export const DRIVE_DEEP_LINK_FINANCE_PROJECT_ID_QUERY = 'driveFinanceProjectId';
 
+/** Open Drive Library → Clients with this company pre-selected. */
+export const DRIVE_DEEP_LINK_COMPANY_ID_QUERY = 'driveCompanyId';
+
+/** Open Drive Library → Clients with this contact pre-selected. */
+export const DRIVE_DEEP_LINK_CONTACT_ID_QUERY = 'driveContactId';
+
+/** Open Drive Library → Deals with this deal pre-selected. */
+export const DRIVE_DEEP_LINK_DEAL_ID_QUERY = 'driveDealId';
+
 export function buildDriveHrefOpenSharedFile(fileAssetId: string): string {
   const p = new URLSearchParams();
   p.set(DRIVE_DEEP_LINK_OPEN_FILE_ID_QUERY, fileAssetId);
@@ -52,5 +61,23 @@ export function buildDriveHrefWithWorkSpace(workSpaceId: string): string {
 export function buildDriveHrefWithFinanceProject(projectId: string): string {
   const p = new URLSearchParams();
   p.set(DRIVE_DEEP_LINK_FINANCE_PROJECT_ID_QUERY, projectId);
+  return `/drive?${p.toString()}`;
+}
+
+export function buildDriveHrefWithCompany(companyId: string): string {
+  const p = new URLSearchParams();
+  p.set(DRIVE_DEEP_LINK_COMPANY_ID_QUERY, companyId);
+  return `/drive?${p.toString()}`;
+}
+
+export function buildDriveHrefWithContact(contactId: string): string {
+  const p = new URLSearchParams();
+  p.set(DRIVE_DEEP_LINK_CONTACT_ID_QUERY, contactId);
+  return `/drive?${p.toString()}`;
+}
+
+export function buildDriveHrefWithDeal(dealId: string): string {
+  const p = new URLSearchParams();
+  p.set(DRIVE_DEEP_LINK_DEAL_ID_QUERY, dealId);
   return `/drive?${p.toString()}`;
 }

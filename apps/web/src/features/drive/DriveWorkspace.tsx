@@ -82,6 +82,9 @@ import {
 import { DriveFolderPickerDialog } from './DriveFolderPickerDialog';
 import { DriveSpaceFolderTree } from './DriveSpaceFolderTree';
 import {
+  DRIVE_DEEP_LINK_COMPANY_ID_QUERY,
+  DRIVE_DEEP_LINK_CONTACT_ID_QUERY,
+  DRIVE_DEEP_LINK_DEAL_ID_QUERY,
   DRIVE_DEEP_LINK_FINANCE_PROJECT_ID_QUERY,
   DRIVE_DEEP_LINK_OPEN_FILE_ID_QUERY,
   DRIVE_DEEP_LINK_PRODUCT_ID_QUERY,
@@ -89,6 +92,7 @@ import {
   DRIVE_DEEP_LINK_TASK_ID_QUERY,
   DRIVE_DEEP_LINK_WORKSPACE_ID_QUERY,
 } from './drive-deep-link';
+import { useDriveExportJobsPoll } from './use-drive-export-jobs-poll';
 import {
   DRIVE_FILE_SORT_STORAGE_KEY,
   parseDriveFileSortKey,
@@ -129,6 +133,9 @@ export function DriveWorkspace() {
     searchParams.get(DRIVE_DEEP_LINK_WORKSPACE_ID_QUERY)?.trim() ?? '';
   const driveDeepLinkFinanceProjectId =
     searchParams.get(DRIVE_DEEP_LINK_FINANCE_PROJECT_ID_QUERY)?.trim() ?? '';
+  const driveDeepLinkCompanyId = searchParams.get(DRIVE_DEEP_LINK_COMPANY_ID_QUERY)?.trim() ?? '';
+  const driveDeepLinkContactId = searchParams.get(DRIVE_DEEP_LINK_CONTACT_ID_QUERY)?.trim() ?? '';
+  const driveDeepLinkDealId = searchParams.get(DRIVE_DEEP_LINK_DEAL_ID_QUERY)?.trim() ?? '';
   const driveOpenFileId = searchParams.get(DRIVE_DEEP_LINK_OPEN_FILE_ID_QUERY)?.trim() ?? '';
   const [selectedSpace, setSelectedSpace] = useState<DriveSpaceOption>(getInitialDriveSpace);
   const [selectedLibrary, setSelectedLibrary] = useState<DriveLibraryOption>(() => {
@@ -293,6 +300,57 @@ export function DriveWorkspace() {
       return;
     }
 
+    if (driveDeepLinkDealId) {
+      const systemSpace = DRIVE_SPACES.find((item) => item.key === 'system');
+      const dealsLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'deals');
+      if (systemSpace) {
+        setSelectedSpace(systemSpace);
+        window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, systemSpace.key);
+      }
+      if (dealsLibrary) setSelectedLibrary(dealsLibrary);
+      setSystemLibraryLink({ entityType: 'DEAL', entityId: driveDeepLinkDealId });
+      setDrivePinnedProjectRow(null);
+      setDrivePinnedProductRow(null);
+      setDrivePinnedTaskRow(null);
+      setDrivePinnedWorkSpaceRow(null);
+      setDrivePinnedFinanceProjectRow(null);
+      return;
+    }
+
+    if (driveDeepLinkCompanyId) {
+      const systemSpace = DRIVE_SPACES.find((item) => item.key === 'system');
+      const clientsLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'clients');
+      if (systemSpace) {
+        setSelectedSpace(systemSpace);
+        window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, systemSpace.key);
+      }
+      if (clientsLibrary) setSelectedLibrary(clientsLibrary);
+      setSystemLibraryLink({ entityType: 'COMPANY', entityId: driveDeepLinkCompanyId });
+      setDrivePinnedProjectRow(null);
+      setDrivePinnedProductRow(null);
+      setDrivePinnedTaskRow(null);
+      setDrivePinnedWorkSpaceRow(null);
+      setDrivePinnedFinanceProjectRow(null);
+      return;
+    }
+
+    if (driveDeepLinkContactId) {
+      const systemSpace = DRIVE_SPACES.find((item) => item.key === 'system');
+      const clientsLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'clients');
+      if (systemSpace) {
+        setSelectedSpace(systemSpace);
+        window.localStorage.setItem(DRIVE_SPACE_STORAGE_KEY, systemSpace.key);
+      }
+      if (clientsLibrary) setSelectedLibrary(clientsLibrary);
+      setSystemLibraryLink({ entityType: 'CONTACT', entityId: driveDeepLinkContactId });
+      setDrivePinnedProjectRow(null);
+      setDrivePinnedProductRow(null);
+      setDrivePinnedTaskRow(null);
+      setDrivePinnedWorkSpaceRow(null);
+      setDrivePinnedFinanceProjectRow(null);
+      return;
+    }
+
     if (driveDeepLinkProjectId) {
       const systemSpace = DRIVE_SPACES.find((item) => item.key === 'system');
       const projectsLibrary = DRIVE_LIBRARIES.find((item) => item.key === 'projects');
@@ -339,6 +397,9 @@ export function DriveWorkspace() {
     driveDeepLinkTaskId,
     driveDeepLinkWorkSpaceId,
     driveDeepLinkFinanceProjectId,
+    driveDeepLinkCompanyId,
+    driveDeepLinkContactId,
+    driveDeepLinkDealId,
   ]);
 
   useLayoutEffect(() => {
@@ -960,6 +1021,11 @@ export function DriveWorkspace() {
     setExportJobs(jobs);
     setCleanupCategories(cleanup.categories);
   }, []);
+
+  const onExportJobsPolled = useCallback((jobs: DriveZipExportJobSummary[]) => {
+    setExportJobs(jobs);
+  }, []);
+  useDriveExportJobsPoll(onExportJobsPolled);
 
   useEffect(() => {
     if (!insightsOpen) return;

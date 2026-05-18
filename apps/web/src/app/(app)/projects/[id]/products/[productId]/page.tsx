@@ -37,6 +37,7 @@ import { ProductTechnicalTab } from '@/features/projects/components/product-tabs
 import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
+import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import { cn } from '@/lib/utils';
 
@@ -60,6 +61,7 @@ export default function ProductDetailPage() {
   const [siblingProducts, setSiblingProducts] = useState<Product[]>([]);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [driveFilesRefreshKey, setDriveFilesRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState<ProductTab>(getInitialTab(searchParams.get('tab')));
   const [projectData, setProjectData] = useState<{
     credentials: unknown[];
@@ -240,7 +242,10 @@ export default function ProductDetailPage() {
             libraryKey="products"
             entityType="PRODUCT"
             entityId={product.id}
-            onUploaded={() => void fetchProduct()}
+            onUploaded={() => {
+              setDriveFilesRefreshKey((key) => key + 1);
+              void fetchProduct();
+            }}
           />
           <Link
             href={buildDriveHrefWithProduct(product.id)}
@@ -250,6 +255,12 @@ export default function ProductDetailPage() {
             Drive files
           </Link>
         </div>
+        <EntityDriveFilesPanel
+          entityType="PRODUCT"
+          entityId={product.id}
+          driveHref={buildDriveHrefWithProduct(product.id)}
+          refreshKey={driveFilesRefreshKey}
+        />
       </div>
 
       <Tabs

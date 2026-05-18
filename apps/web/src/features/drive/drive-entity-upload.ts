@@ -13,8 +13,9 @@ export async function uploadDriveFilesToEntity(
   files: readonly File[],
   link: DriveEntityUploadLink,
   library: DriveLibraryOption,
+  options?: { purpose?: string },
 ): Promise<void> {
-  const meta = buildDriveLibraryUploadSessionFields(library);
+  const meta = buildDriveLibraryUploadSessionFields(library, options?.purpose);
   for (const file of files) {
     const contentType = file.type || FALLBACK_MIME_TYPE;
     const displayName = getDriveClientUploadDisplayName(file);

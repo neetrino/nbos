@@ -8,6 +8,11 @@ export const DRIVE_ZIP_EXPORT_KINDS = [
   'drive.client_zip',
   'drive.finance_zip',
   'drive.task_attachments_zip',
+  'drive.offer_zip',
+  'drive.meeting_zip',
+  'drive.call_zip',
+  'drive.partner_zip',
+  'drive.full_backup_zip',
 ] as const;
 
 export type DriveZipExportKind = (typeof DRIVE_ZIP_EXPORT_KINDS)[number];
@@ -30,6 +35,8 @@ export interface DriveZipExportParams {
   companyId?: string;
   contactId?: string;
   taskId?: string;
+  dealId?: string;
+  partnerId?: string;
 }
 
 export function parseDriveZipExportParams(raw: unknown): DriveZipExportParams {
@@ -43,5 +50,7 @@ export function parseDriveZipExportParams(raw: unknown): DriveZipExportParams {
     companyId: pick('companyId'),
     contactId: pick('contactId'),
     taskId: pick('taskId'),
+    dealId: pick('dealId'),
+    partnerId: pick('partnerId'),
   };
 }
