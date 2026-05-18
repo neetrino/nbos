@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { InvoicesService } from './invoices.service';
 
@@ -9,7 +9,7 @@ describe('InvoicesService create', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new InvoicesService(prisma as never);
+    service = new InvoicesService(prisma as never, { handle: vi.fn() } as never);
   });
 
   it('generates code INV-YYYY-NNNN', async () => {

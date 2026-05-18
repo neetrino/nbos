@@ -8,6 +8,7 @@ import { DriveZipExportService } from './drive-zip-export.service';
 import { DriveExportZipQueueService } from './drive-export-zip-queue.service';
 import { DriveExportZipWorker } from './drive-export-zip.worker';
 import { DriveProjectHubService } from './drive-project-hub.service';
+import { DriveDealWonLinksService } from './drive-deal-won-links.service';
 import { NotificationModule } from '../notifications/notification.module';
 import { AuditModule } from '../audit/audit.module';
 
@@ -23,7 +24,8 @@ import { AuditModule } from '../audit/audit.module';
     DriveExportZipQueueService,
     DriveExportZipWorker,
     DriveProjectHubService,
+    DriveDealWonLinksService,
   ],
-  exports: [DriveService, DriveUploadSessionService],
+  exports: [DriveService, DriveUploadSessionService, DriveDealWonLinksService],
 })
 export class DriveModule {}

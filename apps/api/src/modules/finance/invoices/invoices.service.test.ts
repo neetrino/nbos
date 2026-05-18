@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { InvoicesService } from './invoices.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -47,7 +47,12 @@ describe('InvoicesService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new InvoicesService(prisma as never);
+    service = new InvoicesService(
+      prisma as never,
+      {
+        handle: vi.fn().mockResolvedValue(undefined),
+      } as never,
+    );
   });
 
   describe('findAll', () => {
@@ -223,6 +228,13 @@ describe('InvoicesService', () => {
           { moneyStatus: 'PAID', amount: 50000 },
           { moneyStatus: 'PAID', amount: 50000 },
         ],
+      });
+      prisma.deal.findUnique.mockResolvedValue({
+        id: 'deal-1',
+        code: 'D-2026-0001',
+        type: 'PRODUCT',
+        contactId: 'contact-1',
+        orders: [],
       });
 
       await service.updateMoneyStatus('inv-1', 'PAID');

@@ -17,6 +17,8 @@ import {
 import { assertFirstInvoiceMinimums } from './invoice-first-payment-minimums';
 import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice-money-status';
 import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
+import { DealWonHandler } from '../../crm/deals/deal-won.handler';
+import { dealDetailInclude } from '../../crm/deals/deal.includes';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -50,7 +52,10 @@ interface InvoiceStatsParams {
 
 @Injectable()
 export class InvoicesService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly dealWonHandler: DealWonHandler,
+  ) {}
 
   async findAll(params: InvoiceQueryParams) {
     const {
@@ -283,10 +288,16 @@ export class InvoicesService {
     const dealAmount = Number(order.deal.amount ?? 0);
 
     if (dealAmount > 0 && paidTotal >= dealAmount) {
-      await this.prisma.deal.update({
+      const deal = await this.prisma.deal.findUnique({
         where: { id: order.deal.id },
+        include: dealDetailInclude,
+      });
+      if (!deal) return;
+      await this.prisma.deal.update({
+        where: { id: deal.id },
         data: { status: 'WON' },
       });
+      await this.dealWonHandler.handle(deal);
     }
   }
 

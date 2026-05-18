@@ -1,6 +1,8 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { DriveDealWonLinksService } from '../../drive/drive-deal-won-links.service';
+import type { DealWonDriveLinkTargets } from '../../drive/drive-deal-won-links.types';
 
 interface WonDealData {
   id: string;
@@ -44,24 +46,80 @@ interface ProductWonResult {
 export class DealWonHandler {
   private readonly logger = new Logger(DealWonHandler.name);
 
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly driveDealWonLinks: DriveDealWonLinksService,
+  ) {}
 
   async handle(deal: WonDealData) {
-    if (deal.type === 'PRODUCT') {
-      await this.handleProductWon(deal);
-    } else if (deal.type === 'EXTENSION') {
-      await this.handleExtensionWon(deal);
-    } else if (deal.type === 'MAINTENANCE') {
-      await this.handleMaintenanceWon(deal);
+    const targets = await this.resolveWonTargets(deal);
+    if (targets) {
+      await this.driveDealWonLinks.linkApprovedDealMaterials(targets);
     }
   }
 
-  private async handleProductWon(deal: WonDealData) {
+  private async resolveWonTargets(deal: WonDealData): Promise<DealWonDriveLinkTargets | null> {
+    if (deal.type === 'PRODUCT') {
+      return this.targetsAfterProductWon(deal);
+    }
+    if (deal.type === 'EXTENSION') {
+      return this.targetsAfterExtensionWon(deal);
+    }
+    if (deal.type === 'MAINTENANCE') {
+      return this.targetsAfterMaintenanceWon(deal);
+    }
+    return this.targetsFromExistingProject(deal);
+  }
+
+  private async targetsAfterProductWon(deal: WonDealData): Promise<DealWonDriveLinkTargets> {
     const result = await this.ensureProductDeliveryShell(deal);
     await this.createProductSubscriptionIfReady(deal, result.projectId);
     if (result.productId) {
       await this.createMaintenanceDealIfMissing(deal, result.projectId, result.productId);
     }
+    return this.toLinkTargets(deal, result.projectId, result.productId);
+  }
+
+  private async targetsAfterExtensionWon(
+    deal: WonDealData,
+  ): Promise<DealWonDriveLinkTargets | null> {
+    const extensionId = await this.handleExtensionWon(deal);
+    if (!extensionId) return null;
+    const product = await this.prisma.product.findUnique({
+      where: { id: deal.existingProductId! },
+      select: { id: true, projectId: true },
+    });
+    if (!product) return null;
+    return this.toLinkTargets(deal, product.projectId, product.id, extensionId);
+  }
+
+  private async targetsAfterMaintenanceWon(
+    deal: WonDealData,
+  ): Promise<DealWonDriveLinkTargets | null> {
+    return this.runMaintenanceWon(deal);
+  }
+
+  private async targetsFromExistingProject(
+    deal: WonDealData,
+  ): Promise<DealWonDriveLinkTargets | null> {
+    if (!deal.projectId) return null;
+    return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
+  }
+
+  private toLinkTargets(
+    deal: WonDealData,
+    projectId: string,
+    productId?: string | null,
+    extensionId?: string | null,
+  ): DealWonDriveLinkTargets {
+    return {
+      dealId: deal.id,
+      projectId,
+      productId: productId ?? null,
+      extensionId: extensionId ?? null,
+      companyId: deal.companyId,
+      contactId: deal.contactId,
+    };
   }
 
   private async ensureProductDeliveryShell(deal: WonDealData): Promise<ProductWonResult> {
@@ -171,17 +229,19 @@ export class DealWonHandler {
     });
   }
 
-  private async handleMaintenanceWon(deal: WonDealData) {
+  private async runMaintenanceWon(deal: WonDealData): Promise<DealWonDriveLinkTargets | null> {
     if (!deal.projectId || !deal.amount) {
       this.logger.warn(`Maintenance deal ${deal.code} won without project or amount — skipping`);
-      return;
+      return null;
     }
 
     const existing = await this.prisma.subscription.findFirst({
       where: { projectId: deal.projectId, type: 'MAINTENANCE_ONLY' },
       select: { id: true },
     });
-    if (existing) return;
+    if (existing) {
+      return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
+    }
 
     const startDate = deal.maintenanceStartAt ?? new Date();
     await this.prisma.subscription.create({
@@ -196,12 +256,13 @@ export class DealWonHandler {
         status: 'PENDING',
       },
     });
+    return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
   }
 
-  private async handleExtensionWon(deal: WonDealData) {
+  private async handleExtensionWon(deal: WonDealData): Promise<string | null> {
     if (!deal.existingProductId) {
       this.logger.warn(`Extension deal ${deal.code} won but no existingProductId — skipping`);
-      return;
+      return null;
     }
 
     const product = await this.prisma.product.findUnique({
@@ -210,7 +271,7 @@ export class DealWonHandler {
     });
     if (!product) {
       this.logger.warn(`Extension deal ${deal.code}: product ${deal.existingProductId} not found`);
-      return;
+      return null;
     }
 
     const extension = await this.prisma.extension.create({
@@ -232,6 +293,7 @@ export class DealWonHandler {
     this.logger.log(
       `Auto-created extension ${extension.id} for product ${product.id} from deal ${deal.code}`,
     );
+    return extension.id;
   }
 
   private async generateProjectCode(): Promise<string> {

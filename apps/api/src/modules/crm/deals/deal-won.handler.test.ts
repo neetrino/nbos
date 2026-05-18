@@ -1,14 +1,20 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DealWonHandler } from './deal-won.handler';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
+
+function makeDriveDealWonLinksMock() {
+  return { linkApprovedDealMaterials: vi.fn().mockResolvedValue(0) };
+}
 
 describe('DealWonHandler', () => {
   let prisma: MockPrisma;
   let handler: DealWonHandler;
+  let driveDealWonLinks: ReturnType<typeof makeDriveDealWonLinksMock>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    handler = new DealWonHandler(prisma as never);
+    driveDealWonLinks = makeDriveDealWonLinksMock();
+    handler = new DealWonHandler(prisma as never, driveDealWonLinks as never);
   });
 
   it('creates project and product for PRODUCT deal without project', async () => {
