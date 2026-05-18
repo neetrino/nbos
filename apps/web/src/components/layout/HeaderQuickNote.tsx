@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,8 @@ const QUICK_NOTE_SAVE_HINT = '↵ Enter or';
 const QUICK_NOTE_CORNER_SAVE_CLASS =
   'h-7 rounded-full border border-amber-800/30 bg-amber-900 px-2.5 text-xs font-medium text-amber-50 shadow-sm hover:bg-amber-800 disabled:border-amber-200 disabled:bg-amber-50/90 disabled:text-amber-900/30';
 
+const QUICK_NOTE_MAX_WIDTH = 'min(22rem, calc(100vw - 10rem))';
+
 export function HeaderQuickNote() {
   const [expanded, setExpanded] = useState(false);
   const [draft, setDraft] = useState('');
@@ -29,14 +31,23 @@ export function HeaderQuickNote() {
   const canSave = draft.trim().length > 0 && !saving;
   const showSave = expanded && draft.length > 0;
 
+  const openComposer = useCallback(() => {
+    setExpanded(true);
+  }, []);
+
+  const collapseComposer = useCallback(() => {
+    setExpanded(false);
+    textareaRef.current?.blur();
+  }, []);
+
   useEffect(() => {
     if (!expanded) return;
     const onPointerDown = (event: PointerEvent) => {
       if (rootRef.current?.contains(event.target as Node)) return;
-      setExpanded(false);
+      collapseComposer();
     };
     const onWindowKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') setExpanded(false);
+      if (event.key === 'Escape') collapseComposer();
     };
     document.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('keydown', onWindowKeyDown);
@@ -44,7 +55,7 @@ export function HeaderQuickNote() {
       document.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('keydown', onWindowKeyDown);
     };
-  }, [expanded]);
+  }, [collapseComposer, expanded]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -62,7 +73,7 @@ export function HeaderQuickNote() {
     try {
       const saved = await dashboardApi.createNote({ content });
       setDraft('');
-      setExpanded(false);
+      collapseComposer();
       dispatchDashboardNoteCreated(saved);
     } catch (caught) {
       toast.error(getApiErrorMessage(caught, 'Note could not be saved.'));
@@ -74,7 +85,7 @@ export function HeaderQuickNote() {
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === 'Escape') {
       event.preventDefault();
-      setExpanded(false);
+      collapseComposer();
       return;
     }
     if (event.key !== 'Enter' || event.shiftKey) return;
@@ -89,20 +100,20 @@ export function HeaderQuickNote() {
   return (
     <div
       ref={rootRef}
-      className={cn('relative hidden min-w-0 sm:block', expanded && 'z-50 min-h-9')}
+      className={cn('relative hidden h-9 shrink-0 sm:block', expanded && 'z-50')}
+      style={{ width: `${widthRem}rem`, maxWidth: QUICK_NOTE_MAX_WIDTH }}
     >
       <QuickNoteComposer
         canSave={canSave}
         draft={draft}
         expanded={expanded}
         onDraftChange={setDraft}
-        onExpand={() => setExpanded(true)}
+        onExpand={openComposer}
         onKeyDown={handleKeyDown}
         onSave={() => void saveDraft()}
         saving={saving}
         showSave={showSave}
         textareaRef={textareaRef}
-        widthRem={widthRem}
       />
     </div>
   );
@@ -119,7 +130,6 @@ function QuickNoteComposer({
   saving,
   showSave,
   textareaRef,
-  widthRem,
 }: {
   canSave: boolean;
   draft: string;
@@ -131,17 +141,16 @@ function QuickNoteComposer({
   saving: boolean;
   showSave: boolean;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
-  widthRem: number;
 }) {
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/95 shadow-sm transition-[width,box-shadow] duration-200 ease-out',
-        expanded && 'absolute top-full left-0 mt-1.5 shadow-lg ring-1 ring-amber-200/80',
+        'absolute top-0 right-0 overflow-hidden rounded-2xl border border-amber-200 bg-amber-50/95 shadow-sm transition-[width,box-shadow] duration-200 ease-out',
+        expanded && 'shadow-lg ring-1 ring-amber-200/80',
       )}
       style={{
-        width: `${widthRem}rem`,
-        maxWidth: 'min(22rem, calc(100vw - 10rem))',
+        width: '100%',
+        maxWidth: QUICK_NOTE_MAX_WIDTH,
       }}
     >
       {saving ? (
@@ -155,6 +164,7 @@ function QuickNoteComposer({
         value={draft}
         onChange={(event) => onDraftChange(event.target.value)}
         onFocus={onExpand}
+        onClick={onExpand}
         onKeyDown={onKeyDown}
         placeholder={QUICK_NOTE_PLACEHOLDER}
         rows={expanded ? 5 : 1}
