@@ -14,6 +14,7 @@ import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-
 import { EditWorkSpaceDialog } from './EditWorkSpaceDialog';
 import { WorkSpaceDetailSettingsDialog } from './WorkSpaceDetailSettingsDialog';
 import { WorkSpaceRuntime } from './WorkSpaceRuntime';
+import { WorkSpaceAreaSegmented } from './WorkSpaceAreaSegmented';
 import {
   buildWorkSpaceContextHref,
   buildDefaultTaskLink,
@@ -21,6 +22,8 @@ import {
   getWorkSpaceTypeVariant,
 } from './work-space-utils';
 import type { WorkspaceBoardView } from './use-workspace-runtime-board';
+import type { WorkspaceArea } from './workspace-area';
+import { WORKSPACE_AREA_ACTIVE, WORKSPACE_AREA_PLANNING } from './workspace-area';
 import { WorkSpaceDriveSheet } from './WorkSpaceDriveSheet';
 
 export function WorkSpaceDetailPage() {
@@ -34,10 +37,12 @@ export function WorkSpaceDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [driveOpen, setDriveOpen] = useState(false);
+  const [workspaceArea, setWorkspaceArea] = useState<WorkspaceArea>(WORKSPACE_AREA_ACTIVE);
   const [boardView, setBoardView] = useState<WorkspaceBoardView>('kanban');
   const openQuickCreateRef = useRef<(() => void) | null>(null);
 
   const newTaskDisabled = creatorReady && !creatorId;
+  const isPlanningArea = workspaceArea === WORKSPACE_AREA_PLANNING;
 
   const fetchWorkspace = useCallback(async () => {
     if (!params.id) return;
@@ -63,12 +68,28 @@ export function WorkSpaceDetailPage() {
     fetchWorkspace();
   }, [fetchWorkspace]);
 
+  useEffect(() => {
+    if (boardView === 'planning') {
+      setWorkspaceArea(WORKSPACE_AREA_PLANNING);
+      setBoardView('kanban');
+    }
+  }, [boardView]);
+
   const contextHref = workspace ? buildWorkSpaceContextHref(workspace) : null;
   const defaultLink = useMemo(() => buildDefaultTaskLink(workspace), [workspace]);
 
-  const handleWorkspaceUpdate = (updated: WorkSpace) => {
+  const handleWorkspaceUpdate = useCallback(async (updated: WorkSpace) => {
     setWorkspace(updated);
-  };
+    if (updated.scrumEnabled) {
+      const sprintData = await workSpaceSprintsApi
+        .list(updated.id)
+        .catch(() => [] as WorkSpaceSprint[]);
+      setSprints(sprintData);
+    } else {
+      setSprints([]);
+      setWorkspaceArea(WORKSPACE_AREA_ACTIVE);
+    }
+  }, []);
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState description={error} onRetry={fetchWorkspace} />;
@@ -97,6 +118,11 @@ export function WorkSpaceDetailPage() {
             Context <ArrowUpRight size={14} />
           </Link>
         )}
+        <WorkSpaceAreaSegmented
+          value={workspaceArea}
+          onValueChange={setWorkspaceArea}
+          className="min-w-0 flex-1 sm:flex-initial"
+        />
         <Button
           type="button"
           variant="outline"
@@ -116,32 +142,36 @@ export function WorkSpaceDetailPage() {
         >
           <Settings size={16} />
         </Button>
-        <Tabs
-          value={boardView}
-          onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
-        >
-          <TabsList variant="segmented">
-            {getWorkspaceBoardViewSegments(workspace.scrumEnabled).map((segment) => (
-              <TabsTrigger
-                key={segment.value}
-                value={segment.value}
-                aria-label={segment.ariaLabel}
-                className="gap-1.5 px-3 py-2"
-              >
-                {segment.icon}
-                {segment.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <Button
-          onClick={() => openQuickCreateRef.current?.()}
-          disabled={newTaskDisabled}
-          title={newTaskDisabled ? 'Employee profile required' : undefined}
-        >
-          <Plus size={16} />
-          New Task
-        </Button>
+        {!isPlanningArea ? (
+          <>
+            <Tabs
+              value={boardView}
+              onValueChange={(value) => setBoardView(value as WorkspaceBoardView)}
+            >
+              <TabsList variant="segmented">
+                {getWorkspaceBoardViewSegments(workspace.scrumEnabled).map((segment) => (
+                  <TabsTrigger
+                    key={segment.value}
+                    value={segment.value}
+                    aria-label={segment.ariaLabel}
+                    className="gap-1.5 px-3 py-2"
+                  >
+                    {segment.icon}
+                    {segment.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+            <Button
+              onClick={() => openQuickCreateRef.current?.()}
+              disabled={newTaskDisabled}
+              title={newTaskDisabled ? 'Employee profile required' : undefined}
+            >
+              <Plus size={16} />
+              New Task
+            </Button>
+          </>
+        ) : null}
       </PageHeader>
 
       <WorkSpaceRuntime
@@ -155,6 +185,8 @@ export function WorkSpaceDetailPage() {
         hideInlineBoardToolbar
         boardView={boardView}
         setBoardView={setBoardView}
+        workspaceArea={workspaceArea}
+        onWorkspaceUpdated={handleWorkspaceUpdate}
         quickCreateRef={openQuickCreateRef}
         syncTaskSheetToUrl
       />

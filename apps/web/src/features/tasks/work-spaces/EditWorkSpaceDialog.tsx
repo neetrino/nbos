@@ -11,7 +11,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { tasksApi, type WorkSpace } from '@/lib/api/tasks';
 
@@ -30,7 +29,6 @@ export function EditWorkSpaceDialog({
 }: EditWorkSpaceDialogProps) {
   const [name, setName] = useState(workspace.name);
   const [description, setDescription] = useState(workspace.description ?? '');
-  const [scrumEnabled, setScrumEnabled] = useState(workspace.scrumEnabled);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +36,6 @@ export function EditWorkSpaceDialog({
     if (!open) return;
     setName(workspace.name);
     setDescription(workspace.description ?? '');
-    setScrumEnabled(workspace.scrumEnabled);
     setError(null);
   }, [open, workspace]);
 
@@ -50,7 +47,6 @@ export function EditWorkSpaceDialog({
       const updated = await tasksApi.updateWorkSpace(workspace.id, {
         name: name.trim(),
         description: description.trim() || null,
-        scrumEnabled,
       });
       onUpdated(updated);
       onOpenChange(false);
@@ -84,15 +80,6 @@ export function EditWorkSpaceDialog({
               onChange={(event) => setDescription(event.target.value)}
               rows={3}
             />
-          </div>
-          <div className="border-border flex items-center justify-between rounded-lg border p-3">
-            <div>
-              <p className="text-sm font-medium">Scrum planning</p>
-              <p className="text-muted-foreground text-xs">
-                Show backlog and sprint planning areas.
-              </p>
-            </div>
-            <Switch checked={scrumEnabled} onCheckedChange={setScrumEnabled} />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>

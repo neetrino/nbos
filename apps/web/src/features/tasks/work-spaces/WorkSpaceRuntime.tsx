@@ -27,6 +27,9 @@ import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspa
 import { WorkspaceRuntimeFilterBar } from './workspace-runtime-filter-bar';
 import { WorkspaceScrumPlanner } from './workspace-scrum-planner/WorkspaceScrumPlanner';
 import { getActiveSprintId } from './workspace-scrum-groups';
+import { WorkSpaceScrumPlanningEnable } from './WorkSpaceScrumPlanningEnable';
+import type { WorkspaceArea } from './workspace-area';
+import { WORKSPACE_AREA_PLANNING } from './workspace-area';
 
 export type WorkSpaceRuntimeProps = {
   workspace: WorkSpace;
@@ -46,6 +49,8 @@ export type WorkSpaceRuntimeProps = {
    * Leave false for embedded hosts (e.g. product tab) so their route query is not modified.
    */
   syncTaskSheetToUrl?: boolean;
+  workspaceArea?: WorkspaceArea;
+  onWorkspaceUpdated?: (workspace: WorkSpace) => void | Promise<void>;
 };
 
 export function WorkSpaceRuntime({
@@ -61,6 +66,8 @@ export function WorkSpaceRuntime({
   setBoardView: setBoardViewProp,
   quickCreateRef,
   syncTaskSheetToUrl = false,
+  workspaceArea = 'active',
+  onWorkspaceUpdated,
 }: WorkSpaceRuntimeProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -97,10 +104,8 @@ export function WorkSpaceRuntime({
     handleRenameMyPlanStage,
     handleDeleteMyPlanStage,
     buildWorkspaceKanbanColumns,
-    buildWorkspacePlanningColumns,
     buildMyPlanColumns,
     buildDeadlineColumns,
-    handlePlanningMove,
     viewTasks,
   } = useWorkspaceRuntimeBoard(
     tasks,
@@ -110,6 +115,7 @@ export function WorkSpaceRuntime({
     controlledBoard,
     workspace.scrumEnabled,
     getActiveSprintId(sprints),
+    workspaceArea,
   );
 
   const [localSelectedTaskId, setLocalSelectedTaskId] = useState<string | null>(null);
@@ -262,40 +268,6 @@ export function WorkSpaceRuntime({
       );
     }
 
-    if (boardView === 'planning' && workspace.scrumEnabled && setSprints) {
-      return (
-        <WorkspaceScrumPlanner
-          workspaceId={workspace.id}
-          tasks={tasks}
-          sprints={sprints}
-          setTasks={setTasks}
-          setSprints={setSprints}
-          onOpenTask={handleTaskClick}
-          onAddBacklogTask={openQuickCreate}
-          onBacklogTaskCreated={handleTaskCreated}
-          creatorId={creatorId}
-          creatorReady={creatorReady}
-        />
-      );
-    }
-
-    if (boardView === 'planning') {
-      return (
-        <div className="min-h-0 flex-1">
-          <KanbanBoard
-            columns={buildWorkspacePlanningColumns()}
-            renderCard={renderCard}
-            getItemId={(t) => t.id}
-            onMove={handlePlanningMove}
-            onAddItemInColumn={handleAddTaskInColumn}
-            addButtonLabel="Quick"
-            columnWidth={240}
-            emptyMessage="No tasks"
-          />
-        </div>
-      );
-    }
-
     return (
       <div className="min-h-0 flex-1">
         <KanbanBoard
@@ -320,7 +292,46 @@ export function WorkSpaceRuntime({
     Boolean(taskSearch.trim()) ||
     Object.entries(taskFilters).some(([, v]) => Boolean(v) && v !== 'all');
 
-  const showWorkspaceBoard = tasks.length === 0 || viewTasks.length > 0;
+  const isPlanningArea = workspaceArea === WORKSPACE_AREA_PLANNING;
+  const isStructuredBoardView =
+    boardView === 'kanban' ||
+    boardView === 'deadline' ||
+    boardView === 'my-plan' ||
+    boardView === 'list';
+  const showEmptyFilterState =
+    hasActiveTaskViewQuery && tasks.length > 0 && viewTasks.length === 0 && !isPlanningArea;
+  const showWorkspaceBoard = isPlanningArea || isStructuredBoardView || viewTasks.length > 0;
+
+  const handleScrumPlanningUpdated = useCallback(
+    async (updated: WorkSpace) => {
+      await onWorkspaceUpdated?.(updated);
+    },
+    [onWorkspaceUpdated],
+  );
+
+  const renderPlanningArea = () => (
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <WorkSpaceScrumPlanningEnable workspace={workspace} onUpdated={handleScrumPlanningUpdated} />
+      {workspace.scrumEnabled && setSprints ? (
+        <WorkspaceScrumPlanner
+          workspaceId={workspace.id}
+          tasks={viewTasks}
+          sprints={sprints}
+          setTasks={setTasks}
+          setSprints={setSprints}
+          onOpenTask={handleTaskClick}
+          onAddBacklogTask={openQuickCreate}
+          onBacklogTaskCreated={handleTaskCreated}
+          creatorId={creatorId}
+          creatorReady={creatorReady}
+        />
+      ) : (
+        <p className="text-muted-foreground border-border rounded-xl border border-dashed px-4 py-10 text-center text-sm">
+          Turn on Scrum planning above to manage backlog and sprints here.
+        </p>
+      )}
+    </div>
+  );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4" data-workspace-runtime={mode}>
@@ -332,7 +343,7 @@ export function WorkSpaceRuntime({
         onClearFilters={clearTaskViewFilters}
       />
 
-      {!hideInlineBoardToolbar ? (
+      {!hideInlineBoardToolbar && !isPlanningArea ? (
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
           <Tabs
             value={boardView}
@@ -369,18 +380,16 @@ export function WorkSpaceRuntime({
         </div>
       )}
 
-      {tasks.length > 0 && viewTasks.length === 0 ? (
+      {showEmptyFilterState ? (
         <div className="border-border bg-muted/20 text-muted-foreground rounded-xl border border-dashed px-4 py-10 text-center text-sm">
           <p>No tasks match your search or filters.</p>
-          {hasActiveTaskViewQuery ? (
-            <Button className="mt-4" variant="outline" size="sm" onClick={clearTaskViewFilters}>
-              Clear search and filters
-            </Button>
-          ) : null}
+          <Button className="mt-4" variant="outline" size="sm" onClick={clearTaskViewFilters}>
+            Clear search and filters
+          </Button>
         </div>
       ) : null}
 
-      {showWorkspaceBoard ? renderBoard() : null}
+      {showWorkspaceBoard ? (isPlanningArea ? renderPlanningArea() : renderBoard()) : null}
 
       <TaskSheet
         taskId={selectedTaskId}

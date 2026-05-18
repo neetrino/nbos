@@ -73,12 +73,29 @@ describe('filterTasksForScrumDailyExecution', () => {
     expect(filtered[0]?.id).toBe('a');
   });
 
-  it('does not filter deadline or my-plan views', () => {
+  it('does not filter deadline or my-plan when only boardView is set (legacy)', () => {
     expect(
       filterTasksForScrumDailyExecution(tasks, { scrumEnabled: true, boardView: 'deadline' }),
     ).toHaveLength(4);
     expect(
       filterTasksForScrumDailyExecution(tasks, { scrumEnabled: true, boardView: 'my-plan' }),
+    ).toHaveLength(4);
+  });
+
+  it('filters all active-area views when workspaceArea is active', () => {
+    expect(
+      filterTasksForScrumDailyExecution(tasks, {
+        scrumEnabled: true,
+        boardView: 'deadline',
+        workspaceArea: 'active',
+      }),
+    ).toHaveLength(1);
+    expect(
+      filterTasksForScrumDailyExecution(tasks, {
+        scrumEnabled: true,
+        boardView: 'planning',
+        workspaceArea: 'planning',
+      }),
     ).toHaveLength(4);
   });
 });
