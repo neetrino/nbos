@@ -1,15 +1,32 @@
 'use client';
 
 import Link from 'next/link';
-import { Plus, CheckSquare, FolderKanban } from 'lucide-react';
+import { Plus, CheckSquare } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { PageHeader, FilterBar, EmptyState, ErrorState, LoadingState } from '@/components/shared';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  PageHero,
+  ViewModeSwitch,
+  IntegratedSearchFilters,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  type ViewModeOption,
+} from '@/components/shared';
 import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import { useTasksListPage } from '@/features/tasks/use-tasks-list-page';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
-import { TasksPageSettingsDialog } from '@/features/tasks/components/TasksPageSettingsDialog';
+import { TasksPageSettingsSheet } from '@/features/tasks/components/TasksPageSettingsSheet';
+import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
+
+const TASKS_VIEW_OPTIONS: ViewModeOption<TasksListBoardView>[] = TASKS_BOARD_VIEW_SEGMENTS.map(
+  (segment) => ({
+    value: segment.value,
+    label: typeof segment.label === 'string' ? segment.label : String(segment.value),
+    icon: segment.icon,
+    ariaLabel: segment.ariaLabel,
+  }),
+);
 
 export default function TasksPage() {
   const {
@@ -45,62 +62,39 @@ export default function TasksPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <div className="shrink-0">
-        <PageHeader title="Tasks" description={`${tasks.length} tasks`}>
-          <Link href="/work-spaces" className={buttonVariants({ variant: 'outline' })}>
-            <FolderKanban size={16} />
-            Work Spaces
-          </Link>
-          <Link href="/tasks/recurring" className={buttonVariants({ variant: 'outline' })}>
-            Recurring
-          </Link>
-          <Link href="/tasks/automation" className={buttonVariants({ variant: 'outline' })}>
-            Automation
-          </Link>
-          <TasksPageSettingsDialog
-            exportDisabled={loading || !stats}
-            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+      <PageHero
+        title="Tasks"
+        search={
+          <IntegratedSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by task, project, product, workspace…"
+            filters={filterConfigs}
+            filterValues={filters}
+            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+            onClearAll={() => setFilters({})}
           />
-          <Tabs
-            value={boardView}
-            onValueChange={(value) => setBoardView(value as typeof boardView)}
-          >
-            <TabsList variant="segmented">
-              {TASKS_BOARD_VIEW_SEGMENTS.map((segment) => (
-                <TabsTrigger
-                  key={segment.value}
-                  value={segment.value}
-                  aria-label={segment.ariaLabel}
-                  className="gap-1.5 px-3 py-2"
-                >
-                  {segment.icon}
-                  {segment.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          <Button
-            onClick={() => setQuickCreateOpen(true)}
-            disabled={newTaskDisabled}
-            title={newTaskDisabled ? 'Employee profile required' : undefined}
-          >
-            <Plus size={16} />
-            New Task
-          </Button>
-        </PageHeader>
-      </div>
-
-      <div className="shrink-0">
-        <FilterBar
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search by task, project, product, workspace…"
-          filters={filterConfigs}
-          filterValues={filters}
-          onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-          onClearFilters={() => setFilters({})}
-        />
-      </div>
+        }
+        viewMode={
+          <ViewModeSwitch value={boardView} onChange={setBoardView} options={TASKS_VIEW_OPTIONS} />
+        }
+        trailing={
+          <>
+            <TasksPageSettingsSheet
+              exportDisabled={loading || !stats}
+              onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            />
+            <Button
+              onClick={() => setQuickCreateOpen(true)}
+              disabled={newTaskDisabled}
+              title={newTaskDisabled ? 'Employee profile required' : undefined}
+            >
+              <Plus size={16} aria-hidden />
+              New Task
+            </Button>
+          </>
+        }
+      />
 
       {loading ? (
         <LoadingState />

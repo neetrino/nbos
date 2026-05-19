@@ -12,14 +12,37 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { FilterBar, EmptyState, ErrorState, LoadingState } from '@/components/shared';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  PageHero,
+  PageHeroTabs,
+  ViewModeSwitch,
+  IntegratedSearchFilters,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  type ViewModeOption,
+} from '@/components/shared';
 import { PROJECT_HUB_TABS } from '@/features/projects/constants/projects';
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
-import { ProjectsPageSettingsDialog } from '@/features/projects/components/ProjectsPageSettingsDialog';
+import { ProjectsPageSettingsSheet } from '@/features/projects/components/ProjectsPageSettingsSheet';
 import { projectsApi, type Project } from '@/lib/api/projects';
 
 type ViewMode = 'grid' | 'list';
+
+const PROJECT_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
+  {
+    value: 'grid',
+    label: 'Grid',
+    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Card grid view',
+  },
+  {
+    value: 'list',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
+  },
+];
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -57,46 +80,30 @@ export default function ProjectsPage() {
     router.push(`/projects/${project.id}`);
   };
 
-  const hasSearch = search.trim().length > 0;
-
   return (
     <div className="flex h-full flex-col gap-5">
-      <header>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
-            <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
-              Project Hub
-            </h1>
-            <Tabs
-              value={activeTab}
-              onValueChange={(value) => setActiveTab(value)}
-              className="min-w-0 flex-1 sm:w-auto sm:flex-initial"
-            >
-              <TabsList variant="segmented" className="w-full min-w-0 sm:w-auto">
-                {PROJECT_HUB_TABS.map((tab) => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    className="px-3 py-2.5 text-sm font-medium"
-                  >
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
-          <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
-            <ProjectsPageSettingsDialog items={projects} />
-            <Tabs value={view} onValueChange={(value) => setView(value as ViewMode)}>
-              <TabsList variant="segmented" className="shrink-0">
-                <TabsTrigger value="grid" aria-label="Card grid view" className="px-3 py-2">
-                  <LayoutGrid size={14} aria-hidden />
-                </TabsTrigger>
-                <TabsTrigger value="list" aria-label="List view" className="px-3 py-2">
-                  <List size={14} aria-hidden />
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+      <PageHero
+        title="Project Hub"
+        tabs={
+          <PageHeroTabs
+            value={activeTab}
+            onChange={setActiveTab}
+            options={[...PROJECT_HUB_TABS]}
+            ariaLabel="Project Hub filters"
+          />
+        }
+        search={
+          <IntegratedSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by project name, code, company, contact…"
+            onClearAll={() => setSearch('')}
+          />
+        }
+        viewMode={<ViewModeSwitch value={view} onChange={setView} options={PROJECT_VIEW_OPTIONS} />}
+        trailing={
+          <>
+            <ProjectsPageSettingsSheet items={projects} />
             <Button
               type="button"
               className="shrink-0 gap-2"
@@ -106,15 +113,8 @@ export default function ProjectsPage() {
               <Plus size={16} aria-hidden />
               Project
             </Button>
-          </div>
-        </div>
-      </header>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by project name, code, company, contact…"
-        onClearFilters={hasSearch ? () => setSearch('') : undefined}
+          </>
+        }
       />
 
       {loading ? (

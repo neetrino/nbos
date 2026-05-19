@@ -1,4 +1,21 @@
 export { PageHeader } from './PageHeader';
+export {
+  PageHero,
+  PageHeroTabs,
+  PageHeroSearch,
+  ViewModeSwitch,
+  type PageHeroProps,
+  type PageHeroTabOption,
+  type PageHeroTabsProps,
+  type PageHeroSearchProps,
+  type ViewModeOption,
+  type ViewModeSwitchProps,
+} from './page-hero';
+export { PageSettingsSheet, type PageSettingsSheetProps } from './PageSettingsSheet';
+export {
+  IntegratedSearchFilters,
+  type IntegratedSearchFiltersProps,
+} from './IntegratedSearchFilters';
 export { StatusBadge, type StatusVariant } from './StatusBadge';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
