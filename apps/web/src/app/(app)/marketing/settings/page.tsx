@@ -1,8 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus, RefreshCcw, SlidersHorizontal } from 'lucide-react';
-import { PageHeader, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -146,17 +152,27 @@ export default function MarketingSettingsPage() {
     }
   };
 
+  const moduleHeroSlots = useMemo(
+    () => ({
+      trailing: (
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          onClick={() => void fetchAccounts()}
+          aria-label="Refresh marketing settings"
+        >
+          <RefreshCcw size={16} aria-hidden />
+        </Button>
+      ),
+    }),
+    [],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Marketing Settings"
-        description="Channels and accounts that power CRM attribution. List.am accounts should be linked to a Finance Marketing expense plan for paid spend in dashboards (manual link per canon)."
-      >
-        <Button variant="outline" size="icon" onClick={fetchAccounts}>
-          <RefreshCcw size={16} />
-        </Button>
-      </PageHeader>
-
       <MarketingCrmWhereSettingsSection
         rows={crmWhereRows}
         draft={crmWhereDraft}

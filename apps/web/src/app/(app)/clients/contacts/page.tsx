@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Users, Phone, Mail, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
-import { ClientsDirectoryTabs } from '@/features/clients/components/ClientsDirectoryTabs';
+import {
+  useModuleHeroSlots,
+  IntegratedSearchFilters,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import { ContactSheet } from '@/features/clients/components/ContactSheet';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
 import { CONTACT_ROLES, getContactRole } from '@/features/clients/constants/clients';
@@ -129,43 +135,46 @@ export default function ContactsPage() {
     pushOpenContactToUrl(contact.id);
   };
 
-  const filterConfigs = [
-    {
-      key: 'contactType',
-      label: 'Contact Type',
-      options: CONTACT_ROLES.map((r) => ({ value: r.value, label: r.label })),
-    },
-  ];
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'contactType',
+        label: 'Contact Type',
+        options: CONTACT_ROLES.map((r) => ({ value: r.value, label: r.label })),
+      },
+    ],
+    [],
+  );
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by name, email, phone…"
+          filters={filterConfigs}
+          filterValues={filters}
+          onFilterChange={(key: string, value: string) =>
+            setFilters((prev) => ({ ...prev, [key]: value }))
+          }
+          onClearAll={() => setFilters({})}
+        />
+      ),
+      trailing: (
+        <Button onClick={() => setShowCreate(true)}>
+          <Plus size={16} aria-hidden />
+          New Contact
+        </Button>
+      ),
+    }),
+    [filterConfigs, filters, search],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <header>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
-            <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
-              Clients
-            </h1>
-            <ClientsDirectoryTabs activeTab="contacts" />
-          </div>
-          <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
-            <Button onClick={() => setShowCreate(true)}>
-              <Plus size={16} />
-              New Contact
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by name, email, phone..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
-      />
-
       {loading ? (
         <LoadingState />
       ) : error ? (

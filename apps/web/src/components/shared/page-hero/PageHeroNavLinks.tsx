@@ -12,6 +12,8 @@ export type PageHeroNavLinkItem = {
   icon?: LucideIcon;
   /** When set, active if pathname starts with this prefix (default: href). */
   matchPrefix?: string;
+  /** When true, active only on exact pathname match (e.g. module index route). */
+  exactMatch?: boolean;
 };
 
 export interface PageHeroNavLinksProps {
@@ -28,7 +30,9 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
       <nav className={PAGE_HERO_PILL_GROUP} aria-label={ariaLabel}>
         {items.map((item) => {
           const prefix = item.matchPrefix ?? item.href;
-          const active = pathname === item.href || pathname.startsWith(`${prefix}/`);
+          const active = item.exactMatch
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(`${prefix}/`);
           const Icon = item.icon;
           return (
             <Link

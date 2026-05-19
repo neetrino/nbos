@@ -16,13 +16,13 @@ One URL; tabs = **in-page state** (not navigation).
 [ModuleName] | [tab] [tab] | search | view | actions
 ```
 
-**Examples:** Drive (Library/Company/…), Project Hub (All/Active), Tasks (board views).
+**Examples:** Drive (Library/Company/…), Project Hub (All/Active), Tasks (board views), Partners, Delivery Board.
 
 **Use:** `PageHero` on the page with `PageHeroTabs` + `onChange`.
 
 ---
 
-### Pattern B — multi-route module (like CRM, Finance)
+### Pattern B — multi-route module (like CRM, Clients, Marketing)
 
 Several URLs under one module; tabs = **Links**.
 
@@ -33,7 +33,7 @@ Several URLs under one module; tabs = **Links**.
 **Layout:** `ModuleHeroSlotProvider` + `PageHeroNavLinks` in `*/layout.tsx`.  
 **Pages:** `useModuleHeroSlots({ search, viewMode, trailing })` — **no duplicate page title** in hero.
 
-**Examples:** CRM (`/crm/layout.tsx`), next: Finance.
+**Examples:** CRM, Clients, Marketing. **Finance — deferred** (return later).
 
 | Component                | Role                                            |
 | ------------------------ | ----------------------------------------------- |
@@ -79,30 +79,33 @@ Several URLs under one module; tabs = **Links**.
 
 - [x] `crm/layout.tsx` — `CRM` + Dashboard / Leads / Deals in PageHero
 - [x] Remove old `border-b` tab strip
-- [x] `/crm/leads`, `/crm/deals` — `useModuleHeroSlots` (no page title in hero)
+- [x] `/crm/leads`, `/crm/deals` — `useModuleHeroSlots`
 - [x] `/crm/dashboard` — export in trailing slot
 
 ### Workspaces (Pattern A)
 
 - [x] Work Spaces — PageHero + Settings
 
-### Clients (Pattern A or B — TBD)
+### Clients (Pattern B)
 
-- [ ] companies + contacts — PageHero
+- [x] `clients/layout.tsx` — Contacts / Companies nav
+- [x] `clients/contacts`, `clients/companies` — `useModuleHeroSlots`
 
 ---
 
 ## Phase 3 — Delivery Board (Pattern A + secondaryTabs)
 
-- [ ] Active → PageHero + kind tabs
-- [ ] Closed → minimal filters only
-- [ ] Integrated search/filters; Settings
+- [x] `DeliveryBoardPageHero` — Active/Closed + kind tabs + closed minimal filters
+- [x] Removed duplicate header + `DeliveryBoardClosedFiltersBar` from closed tab body
+- [ ] Visual QA + Settings sheet (if needed)
 
 ---
 
-## Phase 4 — Finance (Pattern B — same as CRM)
+## Phase 4 — Finance (Pattern B) — **DEFERRED**
 
-- [ ] `finance/layout.tsx` → `Finance` + `PageHeroNavLinks` (scrollable tabs)
+> Skip until other modules are done; then same as CRM (`finance/layout.tsx` + `useModuleHeroSlots`).
+
+- [ ] `finance/layout.tsx` → `Finance` + `PageHeroNavLinks`
 - [ ] Each list page → `useModuleHeroSlots`; remove `*PageHeader.tsx`
 - [ ] Export / period → Settings sheet
 
@@ -110,16 +113,19 @@ Several URLs under one module; tabs = **Links**.
 
 ## Phase 5 — Remaining modules
 
-- [ ] Partners, Marketing layout (Pattern B if multi-route)
+- [x] Partners — Pattern A (`PageHero` + Settings sheet)
+- [x] Marketing — Pattern B (`marketing/layout.tsx`, board/dashboard/settings/attribution)
 - [ ] Team, Mail, Documents, Support, Reports
 - [ ] Calendar, Dashboard — title-only or Pattern A
+- [ ] My Company sub-pages, Settings, Credentials
 
 ---
 
 ## Phase 6 — Cleanup
 
-- [ ] Remove unused `*PageHeader.tsx`, old `*SettingsDialog.tsx`
+- [ ] Remove unused `*PageHeader.tsx`, old `*SettingsDialog.tsx` (Partners, Tasks, Projects)
 - [ ] Remove `FilterBar` on migrated pages
+- [ ] Remove `ClientsDirectoryTabs` if unused
 - [ ] Visual QA: mobile wrap, module nav scroll, settings sheet a11y
 - [ ] Update `docs/IMPLEMENTATION_PROGRESS.md`
 
@@ -128,7 +134,7 @@ Several URLs under one module; tabs = **Links**.
 ## Design rules
 
 1. **One hero card** — module name + tabs + search + view + primary CTA + settings
-2. **Pattern B:** module name only in layout; never repeat "Lead Pipeline" next to "Leads" tab
+2. **Pattern B:** module name only in layout; never repeat page title next to tab
 3. **Filters in search** — chips; panel on empty-field focus; hide panel while typing
 4. **Settings sheet** — rare actions (export, links), not dialog
 5. **Primary CTA** visible (+ Lead, + Deal, + Project, …)

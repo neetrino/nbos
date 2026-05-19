@@ -163,7 +163,7 @@ export function IntegratedSearchFilters({
           )}
         >
           <IntegratedSearchFilterPanel
-            filters={filters}
+            filters={filters ?? []}
             filterValues={draftFilters}
             onFilterChange={(key, value) => setDraftFilters((prev) => ({ ...prev, [key]: value }))}
             onApply={handleApply}

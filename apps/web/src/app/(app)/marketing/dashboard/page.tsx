@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AreaChart, AlertTriangle, CheckCircle2, RefreshCcw } from 'lucide-react';
-import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { marketingApi, type MarketingDashboardSummary } from '@/lib/api/marketing';
 import { MarketingDashboardPeriodBar } from '@/features/marketing/components/MarketingDashboardPeriodBar';
@@ -48,17 +48,27 @@ export default function MarketingDashboardPage() {
     void fetchDashboard();
   }, [fetchDashboard]);
 
+  const moduleHeroSlots = useMemo(
+    () => ({
+      trailing: (
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          onClick={() => void fetchDashboard()}
+          aria-label="Refresh dashboard"
+        >
+          <RefreshCcw size={16} aria-hidden />
+        </Button>
+      ),
+    }),
+    [fetchDashboard],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Marketing Dashboard"
-        description="Operational marketing snapshot with honest missing-data warnings."
-      >
-        <Button variant="outline" size="icon" onClick={() => void fetchDashboard()}>
-          <RefreshCcw size={16} />
-        </Button>
-      </PageHeader>
-
       <MarketingDashboardPeriodBar
         preset={periodPreset}
         onPresetChange={setPeriodPreset}
