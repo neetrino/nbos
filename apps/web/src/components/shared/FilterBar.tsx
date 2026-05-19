@@ -35,6 +35,19 @@ export interface FilterConfig {
   options: FilterOption[];
   /** When false, no “All …” option; value falls back to the first option if unset. */
   includeAllOption?: boolean;
+  /** Baseline value when unset; also used to hide filter chips (e.g. board default “Active”). */
+  defaultOptionValue?: string;
+}
+
+/** Current select value for a filter field. */
+export function resolveFilterSelectValue(
+  filter: FilterConfig,
+  filterValues: Record<string, string>,
+): string {
+  if (filter.includeAllOption !== false) {
+    return filterValues[filter.key] || 'all';
+  }
+  return filterValues[filter.key] ?? filter.defaultOptionValue ?? filter.options[0]?.value ?? '';
 }
 
 export interface FilterBarProps {
@@ -57,9 +70,10 @@ function filterBarHasActiveQuery(
   if (search.trim().length > 0) return true;
   return (
     filters?.some((f) => {
-      if (f.includeAllOption === false) return false;
-      const v = filterValues[f.key];
-      return Boolean(v) && v !== 'all';
+      const value = resolveFilterSelectValue(f, filterValues);
+      const baseline =
+        f.includeAllOption !== false ? 'all' : (f.defaultOptionValue ?? f.options[0]?.value ?? '');
+      return value !== baseline;
     }) ?? false
   );
 }
@@ -112,10 +126,8 @@ function FilterBarFilterSelect({
   onFilterChange,
 }: FilterBarFilterSelectProps) {
   const showAll = filter.includeAllOption !== false;
-  const fallback = filter.options[0]?.value ?? '';
-  const value = showAll
-    ? filterValues[filter.key] || 'all'
-    : (filterValues[filter.key] ?? fallback);
+  const value = resolveFilterSelectValue(filter, filterValues);
+  const baseline = showAll ? 'all' : (filter.defaultOptionValue ?? filter.options[0]?.value ?? '');
 
   const items = useMemo(
     () => [
@@ -131,7 +143,7 @@ function FilterBarFilterSelect({
     return row?.label ?? filter.label;
   };
 
-  const isNarrowingFilter = showAll ? value !== 'all' : value !== fallback;
+  const isNarrowingFilter = value !== baseline;
 
   return (
     <Select value={value} onValueChange={(v) => onFilterChange?.(filter.key, v as string)}>

@@ -1,16 +1,17 @@
 /** Board list scope: active pipeline vs closed outcomes vs everything. */
 export type BoardLifecycleScope = 'ACTIVE' | 'CLOSED' | 'ALL';
 
+/** Default board view (active pipeline only) — not stored as a filter until user changes scope. */
+export const DEFAULT_BOARD_LIFECYCLE_SCOPE: BoardLifecycleScope = 'ACTIVE';
+
 export const BOARD_LIFECYCLE_SCOPE_OPTIONS: Array<{
   value: BoardLifecycleScope;
   label: string;
 }> = [
+  { value: 'ALL', label: 'All statuses' },
   { value: 'ACTIVE', label: 'Active' },
   { value: 'CLOSED', label: 'Closed' },
-  { value: 'ALL', label: 'All' },
 ];
-
-export const DEFAULT_BOARD_LIFECYCLE_SCOPE: BoardLifecycleScope = 'ACTIVE';
 
 export interface BoardStageDefinition {
   key: string;
@@ -44,7 +45,12 @@ export function matchesBoardLifecycleScope(
   return keys.includes(status);
 }
 
+/**
+ * Maps filter UI value to board scope.
+ * Unset / Active → active pipeline only; All statuses → every stage; Closed → terminal stages only.
+ */
 export function resolveBoardLifecycleScope(value: string | undefined): BoardLifecycleScope {
-  if (value === 'CLOSED' || value === 'ALL') return value;
+  if (value === 'ALL') return 'ALL';
+  if (value === 'CLOSED') return 'CLOSED';
   return DEFAULT_BOARD_LIFECYCLE_SCOPE;
 }

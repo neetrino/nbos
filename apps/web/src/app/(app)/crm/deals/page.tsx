@@ -465,9 +465,7 @@ export default function DealsPipelinePage() {
     requestStatusChange(itemId, toColumn);
   };
 
-  const boardScope = resolveBoardLifecycleScope(
-    filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
-  );
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
 
   const displayDeals = useMemo(() => {
     return deals.filter((deal) => {
@@ -495,6 +493,8 @@ export default function DealsPipelinePage() {
       {
         key: 'boardScope',
         label: 'Status',
+        includeAllOption: false,
+        defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
         options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
           value: option.value,
           label: option.label,
@@ -527,7 +527,13 @@ export default function DealsPipelinePage() {
             ...filters,
           }}
           onFilterChange={(key: string, value: string) =>
-            setFilters((prev) => ({ ...prev, [key]: value }))
+            setFilters((prev) => {
+              if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+                const { boardScope: _, ...rest } = prev;
+                return rest;
+              }
+              return { ...prev, [key]: value };
+            })
           }
           onClearAll={() => setFilters({})}
         />

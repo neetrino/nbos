@@ -5,14 +5,13 @@ import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { FilterConfig } from './FilterBar';
+import { resolveFilterSelectValue, type FilterConfig } from './FilterBar';
 import {
   buildActiveFilterChips,
   IntegratedSearchFilterChips,
 } from './integrated-search-filters/integrated-search-filter-chips';
 import { IntegratedSearchFilterPanel } from './integrated-search-filters/integrated-search-filter-panel';
 import { LIST_SEARCH_INPUT_PROPS } from './list-search-input-props';
-
 const EMPTY_FILTER_VALUES: Record<string, string> = {};
 
 function areFilterValuesEqual(
@@ -85,8 +84,7 @@ export function IntegratedSearchFilters({
   const handleRemoveChip = (key: string) => {
     const filter = filters?.find((f) => f.key === key);
     if (!filter || !onFilterChange) return;
-    const showAll = filter.includeAllOption !== false;
-    onFilterChange(key, showAll ? 'all' : (filter.options[0]?.value ?? ''));
+    onFilterChange(key, resolveFilterSelectValue(filter, {}));
   };
 
   const handleApply = () => {
@@ -106,7 +104,7 @@ export function IntegratedSearchFilters({
   const handleReset = () => {
     const cleared: Record<string, string> = {};
     filters?.forEach((f) => {
-      cleared[f.key] = f.includeAllOption !== false ? 'all' : (f.options[0]?.value ?? '');
+      cleared[f.key] = resolveFilterSelectValue(f, {});
     });
     setDraftFilters(cleared);
     onClearAll?.();

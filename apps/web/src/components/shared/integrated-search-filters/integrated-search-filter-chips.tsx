@@ -2,7 +2,7 @@
 
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { FilterConfig } from '../FilterBar';
+import { resolveFilterSelectValue, type FilterConfig } from '../FilterBar';
 
 export type ActiveFilterChip = {
   key: string;
@@ -15,13 +15,12 @@ export function buildActiveFilterChips(
 ): ActiveFilterChip[] {
   if (!filters?.length) return [];
   return filters.flatMap((filter) => {
-    const showAll = filter.includeAllOption !== false;
-    const fallback = filter.options[0]?.value ?? '';
-    const raw = showAll
-      ? filterValues[filter.key] || 'all'
-      : (filterValues[filter.key] ?? fallback);
-    if (showAll && raw === 'all') return [];
-    if (!showAll && raw === fallback) return [];
+    const raw = resolveFilterSelectValue(filter, filterValues);
+    const baseline =
+      filter.includeAllOption !== false
+        ? 'all'
+        : (filter.defaultOptionValue ?? filter.options[0]?.value ?? '');
+    if (raw === baseline) return [];
     const option = filter.options.find((o) => o.value === raw);
     const valueLabel = option?.label ?? raw;
     return [{ key: filter.key, label: `${filter.label}: ${valueLabel}` }];

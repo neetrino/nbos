@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { FilterConfig } from '../FilterBar';
+import { resolveFilterSelectValue, type FilterConfig } from '../FilterBar';
 
 interface IntegratedSearchFilterPanelProps {
   filters: FilterConfig[];
@@ -59,10 +59,7 @@ function FilterField({
   onFilterChange: (key: string, value: string) => void;
 }) {
   const showAll = filter.includeAllOption !== false;
-  const fallback = filter.options[0]?.value ?? '';
-  const value = showAll
-    ? filterValues[filter.key] || 'all'
-    : (filterValues[filter.key] ?? fallback);
+  const value = resolveFilterSelectValue(filter, filterValues);
   const items = [
     ...(showAll ? [{ value: 'all' as const, label: `All ${filter.label}` }] : []),
     ...filter.options.map((opt) => ({ value: opt.value, label: opt.label })),
