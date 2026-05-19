@@ -2,14 +2,21 @@ export { PageHeader } from './PageHeader';
 export {
   PageHero,
   PageHeroTabs,
+  PageHeroNavLinks,
   PageHeroSearch,
   ViewModeSwitch,
+  ModuleHeroSlotProvider,
+  useModuleHeroSlots,
   type PageHeroProps,
   type PageHeroTabOption,
   type PageHeroTabsProps,
+  type PageHeroNavLinkItem,
+  type PageHeroNavLinksProps,
   type PageHeroSearchProps,
   type ViewModeOption,
   type ViewModeSwitchProps,
+  type ModuleHeroSlots,
+  type ModuleHeroSlotProviderProps,
 } from './page-hero';
 export { PageSettingsSheet, type PageSettingsSheetProps } from './PageSettingsSheet';
 export {

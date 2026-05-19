@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  PageHero,
+  useModuleHeroSlots,
   ViewModeSwitch,
   IntegratedSearchFilters,
   KanbanBoard,
@@ -444,43 +444,52 @@ export default function LeadsPipelinePage() {
     items: leads.filter((l) => l.status === stage.key),
   }));
 
-  const filterConfigs = [
-    {
-      key: 'source',
-      label: 'Source',
-      options: LEAD_SOURCES.map((s) => ({ value: s.value, label: s.label })),
-    },
-    {
-      key: 'status',
-      label: 'Stage',
-      options: LEAD_STAGES.map((s) => ({ value: s.key, label: s.label })),
-    },
-  ];
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'source',
+        label: 'Source',
+        options: LEAD_SOURCES.map((s) => ({ value: s.value, label: s.label })),
+      },
+      {
+        key: 'status',
+        label: 'Stage',
+        options: LEAD_STAGES.map((s) => ({ value: s.key, label: s.label })),
+      },
+    ],
+    [],
+  );
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search leads by name, email, phone…"
+          filters={filterConfigs}
+          filterValues={filters}
+          onFilterChange={(key: string, value: string) =>
+            setFilters((prev) => ({ ...prev, [key]: value }))
+          }
+          onClearAll={() => setFilters({})}
+        />
+      ),
+      viewMode: <ViewModeSwitch value={view} onChange={setView} options={LEAD_VIEW_OPTIONS} />,
+      trailing: (
+        <Button onClick={() => setShowCreate(true)}>
+          <Plus size={16} aria-hidden />
+          New Lead
+        </Button>
+      ),
+    }),
+    [filterConfigs, filters, search, view],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHero
-        title="Lead Pipeline"
-        search={
-          <IntegratedSearchFilters
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search leads by name, email, phone…"
-            filters={filterConfigs}
-            filterValues={filters}
-            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-            onClearAll={() => setFilters({})}
-          />
-        }
-        viewMode={<ViewModeSwitch value={view} onChange={setView} options={LEAD_VIEW_OPTIONS} />}
-        trailing={
-          <Button onClick={() => setShowCreate(true)}>
-            <Plus size={16} aria-hidden />
-            New Lead
-          </Button>
-        }
-      />
-
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (

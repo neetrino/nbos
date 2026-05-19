@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, LayoutGrid, List, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  PageHero,
+  useModuleHeroSlots,
   ViewModeSwitch,
   IntegratedSearchFilters,
   KanbanBoard,
@@ -461,43 +461,52 @@ export default function DealsPipelinePage() {
     items: deals.filter((d) => d.status === stage.key),
   }));
 
-  const filterConfigs = [
-    {
-      key: 'type',
-      label: 'Type',
-      options: DEAL_TYPES.map((t) => ({ value: t.value, label: t.label })),
-    },
-    {
-      key: 'status',
-      label: 'Stage',
-      options: DEAL_STAGES.map((s) => ({ value: s.key, label: s.label })),
-    },
-  ];
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'type',
+        label: 'Type',
+        options: DEAL_TYPES.map((t) => ({ value: t.value, label: t.label })),
+      },
+      {
+        key: 'status',
+        label: 'Stage',
+        options: DEAL_STAGES.map((s) => ({ value: s.key, label: s.label })),
+      },
+    ],
+    [],
+  );
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search deals by code, name, contact, company, orders, marketing…"
+          filters={filterConfigs}
+          filterValues={filters}
+          onFilterChange={(key: string, value: string) =>
+            setFilters((prev) => ({ ...prev, [key]: value }))
+          }
+          onClearAll={() => setFilters({})}
+        />
+      ),
+      viewMode: <ViewModeSwitch value={view} onChange={setView} options={DEAL_VIEW_OPTIONS} />,
+      trailing: (
+        <Button onClick={() => setShowCreate(true)}>
+          <Plus size={16} aria-hidden />
+          New Deal
+        </Button>
+      ),
+    }),
+    [filterConfigs, filters, search, view],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHero
-        title="Deal Pipeline"
-        search={
-          <IntegratedSearchFilters
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search deals by code, name, contact, company, orders, marketing…"
-            filters={filterConfigs}
-            filterValues={filters}
-            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-            onClearAll={() => setFilters({})}
-          />
-        }
-        viewMode={<ViewModeSwitch value={view} onChange={setView} options={DEAL_VIEW_OPTIONS} />}
-        trailing={
-          <Button onClick={() => setShowCreate(true)}>
-            <Plus size={16} aria-hidden />
-            New Deal
-          </Button>
-        }
-      />
-
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (
