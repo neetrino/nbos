@@ -64,3 +64,7 @@ export {
   ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
   type EntitySheetFloatingRailProps,
 } from './entity-sheet-floating-rail';
+export {
+  QuickCreateTaskDialog,
+  type QuickCreateTaskDialogProps,
+} from './quick-create-task/QuickCreateTaskDialog';

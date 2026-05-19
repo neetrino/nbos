@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, FileText, TrendingUp } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { CheckSquare, ExternalLink, FileText, TrendingUp } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { QuickCreateTaskDialog } from '@/components/shared';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import {
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
@@ -12,9 +14,8 @@ import { cn } from '@/lib/utils';
 import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
 import type { Deal } from '@/lib/api/deals';
 import { invoicesApi, ordersApi } from '@/lib/api/finance';
-import { tasksApi } from '@/lib/api/tasks';
 import { formatAmount } from '../constants/dealPipeline';
-import { DisabledInvoiceAction, InvoiceAction, TaskAction } from './DealActionControls';
+import { DisabledInvoiceAction, InvoiceAction } from './DealActionControls';
 import { computeFinance } from './deal-general-tab.helpers';
 
 const FINANCE_PANEL_SURFACE_CLASS =
@@ -48,10 +49,13 @@ export function DealFinanceActionsPanel({
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [invoiceAmount, setInvoiceAmount] = useState('');
   const [creatingInvoice, setCreatingInvoice] = useState(false);
-  const [showTaskForm, setShowTaskForm] = useState(false);
-  const [taskTitle, setTaskTitle] = useState('');
-  const [creatingTask, setCreatingTask] = useState(false);
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const finance = computeFinance(deal);
+  const defaultLinks = useMemo(
+    () => (projectId ? getTaskLinks(deal.id, projectId) : undefined),
+    [deal.id, projectId],
+  );
 
   const handleCreateInvoice = async () => {
     const amount = Number(invoiceAmount);
@@ -88,26 +92,6 @@ export function DealFinanceActionsPanel({
       taxStatus,
     });
     return order.id;
-  };
-
-  const handleCreateTask = async () => {
-    const title = taskTitle.trim();
-    if (!title || !projectId || !deal.seller?.id) return;
-    setCreatingTask(true);
-    try {
-      await tasksApi.create({
-        title,
-        creatorId: deal.seller.id,
-        description: `Deal: ${deal.code} — ${deal.name ?? ''}`.trim(),
-        links: getTaskLinks(deal.id, projectId),
-      });
-      setShowTaskForm(false);
-      setTaskTitle('');
-      onOpenTaskTab?.();
-      onRefresh?.();
-    } finally {
-      setCreatingTask(false);
-    }
   };
 
   return (
@@ -166,16 +150,19 @@ export function DealFinanceActionsPanel({
             <DisabledInvoiceAction />
           )}
 
-          {projectId && deal.seller && (
-            <TaskAction
-              showForm={showTaskForm}
-              taskTitle={taskTitle}
-              creatingTask={creatingTask}
-              setTaskTitle={setTaskTitle}
-              setShowTaskForm={setShowTaskForm}
-              handleCreateTask={handleCreateTask}
-            />
-          )}
+          {projectId ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-center gap-1.5 border-sky-300 text-sky-700 hover:bg-sky-50 dark:border-sky-700 dark:text-sky-400 dark:hover:bg-sky-950/30"
+              disabled={creatorReady && !creatorId}
+              title={creatorReady && !creatorId ? 'Employee profile required' : undefined}
+              onClick={() => setQuickCreateOpen(true)}
+            >
+              <CheckSquare size={14} />
+              Create Task
+            </Button>
+          ) : null}
 
           <Link
             href={buildDriveHrefWithDeal(deal.id)}
@@ -186,6 +173,18 @@ export function DealFinanceActionsPanel({
           </Link>
         </div>
       </section>
+
+      <QuickCreateTaskDialog
+        open={quickCreateOpen}
+        onOpenChange={setQuickCreateOpen}
+        creatorId={creatorId ?? ''}
+        creatorReady={creatorReady}
+        defaultLinks={defaultLinks}
+        onCreated={() => {
+          onOpenTaskTab?.();
+          onRefresh?.();
+        }}
+      />
     </>
   );
 }
