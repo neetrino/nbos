@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ChevronLeft, SlidersHorizontal } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import type { SidebarModuleKey } from '@nbos/shared/constants';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
@@ -13,6 +12,8 @@ import { getVisibleNavModules } from '@/lib/navigation/nav-visibility';
 import { useSidebarNavigation } from '@/lib/navigation/use-sidebar-navigation';
 import { SidebarNavList } from './SidebarNavList';
 import { SidebarNavigationCustomizeSheet } from './SidebarNavigationCustomizeSheet';
+import { SidebarSettingsMenu } from './SidebarSettingsMenu';
+import { SIDEBAR_NAV_LIST_CLASS } from './sidebar-layout-constants';
 
 type SidebarProps = {
   collapsed: boolean;
@@ -45,8 +46,8 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
     [layout.primary, layout.hidden],
   );
 
-  const handleMove = (key: SidebarModuleKey, direction: 'up' | 'down') => {
-    navigation.moveModule(visibleKeys, key, direction);
+  const handleReorder = (primaryKeys: SidebarModuleKey[]) => {
+    navigation.reorderPrimaryModules(visibleKeys, primaryKeys);
   };
 
   return (
@@ -56,27 +57,9 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
         collapsed ? 'w-[68px]' : 'w-[260px]',
       )}
     >
-      <div className="border-sidebar-border flex h-16 items-center justify-between border-b px-4">
-        {!collapsed && (
-          <Link href="/dashboard" className="flex items-center">
-            <img
-              src="/logo/logo.svg"
-              alt="NBOS"
-              width={144}
-              height={24}
-              fetchPriority="high"
-              className="h-6 w-auto"
-            />
-          </Link>
-        )}
-        {collapsed && (
-          <div className="mx-auto flex h-8 w-8 items-center justify-center">
-            <Image src="/logo/icon.png" alt="NBOS" width={32} height={32} className="h-8 w-8" />
-          </div>
-        )}
-      </div>
+      <SidebarHeader collapsed={collapsed} onCollapsedChange={onCollapsedChange} />
 
-      <nav className="flex-1 overflow-y-auto px-3 py-3">
+      <nav className={cn('flex-1 overflow-y-auto', SIDEBAR_NAV_LIST_CLASS)}>
         <SidebarNavList
           collapsed={collapsed}
           primaryItems={layout.primary}
@@ -87,28 +70,8 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
         />
       </nav>
 
-      <div className="border-sidebar-border space-y-1 border-t p-3">
-        {!collapsed && (
-          <button
-            type="button"
-            onClick={() => setCustomizeOpen(true)}
-            className="text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors"
-          >
-            <SlidersHorizontal size={18} />
-            <span>Customize menu</span>
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={() => onCollapsedChange(!collapsed)}
-          className="text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex w-full items-center justify-center rounded-lg px-3 py-2 text-sm transition-colors"
-        >
-          <ChevronLeft
-            size={18}
-            className={cn('transition-transform', collapsed && 'rotate-180')}
-          />
-          {!collapsed && <span className="ml-2">Collapse</span>}
-        </button>
+      <div className="border-sidebar-border border-t p-2">
+        <SidebarSettingsMenu collapsed={collapsed} onCustomizeMenu={() => setCustomizeOpen(true)} />
       </div>
 
       <SidebarNavigationCustomizeSheet
@@ -118,12 +81,50 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
         hiddenItems={layout.hidden}
         personalLinks={navigation.sidebarLinks}
         isSaving={navigation.isSaving}
-        onMove={handleMove}
+        onReorder={handleReorder}
         onHide={navigation.hideModule}
         onRestore={navigation.restoreModule}
         onCreateLink={navigation.createPersonalLink}
         onDeleteLink={navigation.deletePersonalLink}
       />
     </aside>
+  );
+}
+
+function SidebarHeader({
+  collapsed,
+  onCollapsedChange,
+}: {
+  collapsed: boolean;
+  onCollapsedChange: (collapsed: boolean) => void;
+}) {
+  return (
+    <div
+      className={cn(
+        'border-sidebar-border flex h-14 shrink-0 items-center border-b px-3',
+        collapsed ? 'justify-center' : 'gap-2',
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => onCollapsedChange(!collapsed)}
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        className="text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors"
+      >
+        <Menu size={20} />
+      </button>
+      {!collapsed && (
+        <Link href="/dashboard" className="flex min-w-0 flex-1 items-center">
+          <img
+            src="/logo/logo.svg"
+            alt="NBOS"
+            width={144}
+            height={24}
+            fetchPriority="high"
+            className="h-6 w-auto max-w-full"
+          />
+        </Link>
+      )}
+    </div>
   );
 }

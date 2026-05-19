@@ -61,18 +61,15 @@ export function useSidebarNavigation() {
     }
   }, []);
 
-  const moveModule = useCallback(
-    (visibleKeys: SidebarModuleKey[], key: SidebarModuleKey, direction: 'up' | 'down') => {
+  const reorderPrimaryModules = useCallback(
+    (visibleKeys: SidebarModuleKey[], primaryKeys: SidebarModuleKey[]) => {
       setState((current) => {
-        const order = resolveSidebarModuleOrder(current.sidebarModuleOrder, visibleKeys);
-        const index = order.indexOf(key);
-        if (index < 0) return current;
-        const target = direction === 'up' ? index - 1 : index + 1;
-        if (target < 0 || target >= order.length) return current;
-        const next = [...order];
-        const [item] = next.splice(index, 1);
-        if (!item) return current;
-        next.splice(target, 0, item);
+        const hiddenSet = new Set(current.hiddenSidebarModules);
+        const hiddenTail = resolveSidebarModuleOrder(
+          current.sidebarModuleOrder,
+          visibleKeys,
+        ).filter((key) => hiddenSet.has(key));
+        const next = [...primaryKeys, ...hiddenTail];
         void persistNavigation(next, current.hiddenSidebarModules);
         return { ...current, sidebarModuleOrder: next };
       });
@@ -128,7 +125,7 @@ export function useSidebarNavigation() {
   return {
     ...state,
     sidebarLinks,
-    moveModule,
+    reorderPrimaryModules,
     hideModule,
     restoreModule,
     createPersonalLink,

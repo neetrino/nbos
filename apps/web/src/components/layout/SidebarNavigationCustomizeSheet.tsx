@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Eye, EyeOff, Link2, Trash2 } from 'lucide-react';
-import { SIDEBAR_MODULE_KEYS_NON_HIDABLE, type SidebarModuleKey } from '@nbos/shared/constants';
+import { ChevronRight, Eye, Link2, Trash2 } from 'lucide-react';
+import type { SidebarModuleKey } from '@nbos/shared/constants';
 import type { NavModuleDefinition } from '@/lib/navigation/nav-config';
 import type { DashboardPersonalLink } from '@/lib/api/dashboard';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
+import { SidebarCustomizeSortableList } from './SidebarCustomizeSortableList';
 
 interface SidebarNavigationCustomizeSheetProps {
   open: boolean;
@@ -22,7 +24,7 @@ interface SidebarNavigationCustomizeSheetProps {
   hiddenItems: NavModuleDefinition[];
   personalLinks: DashboardPersonalLink[];
   isSaving: boolean;
-  onMove: (key: SidebarModuleKey, direction: 'up' | 'down') => void;
+  onReorder: (keys: SidebarModuleKey[]) => void;
   onHide: (key: SidebarModuleKey) => void;
   onRestore: (key: SidebarModuleKey) => void;
   onCreateLink: (label: string, url: string) => Promise<void>;
@@ -36,12 +38,14 @@ export function SidebarNavigationCustomizeSheet({
   hiddenItems,
   personalLinks,
   isSaving,
-  onMove,
+  onReorder,
   onHide,
   onRestore,
   onCreateLink,
   onDeleteLink,
 }: SidebarNavigationCustomizeSheetProps) {
+  const [linksOpen, setLinksOpen] = useState(false);
+  const [hiddenOpen, setHiddenOpen] = useState(hiddenItems.length > 0);
   const [linkLabel, setLinkLabel] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [linkSaving, setLinkSaving] = useState(false);
@@ -53,6 +57,7 @@ export function SidebarNavigationCustomizeSheet({
       await onCreateLink(linkLabel.trim(), linkUrl.trim());
       setLinkLabel('');
       setLinkUrl('');
+      setLinksOpen(true);
     } finally {
       setLinkSaving(false);
     }
@@ -60,116 +65,99 @@ export function SidebarNavigationCustomizeSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-full max-w-md overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Customize sidebar</SheetTitle>
+      <SheetContent side="left" className="flex w-full max-w-md flex-col gap-0 p-0">
+        <SheetHeader className="border-border border-b px-5 py-4 text-left">
+          <SheetTitle>Left menu</SheetTitle>
           <SheetDescription>
-            Reorder modules, hide rarely used items, and add personal links. Changes apply only to
-            your account.
+            Drag modules to reorder. Hidden items stay available under More in the sidebar.
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
+        <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
           <section>
-            <h3 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
-              Visible modules
-            </h3>
-            <ul className="space-y-2">
-              {primaryItems.map((item, index) => (
-                <ModuleCustomizeRow
-                  key={item.key}
-                  label={item.label}
-                  canMoveUp={index > 0}
-                  canMoveDown={index < primaryItems.length - 1}
-                  canHide={!SIDEBAR_MODULE_KEYS_NON_HIDABLE.includes(item.key)}
-                  isSaving={isSaving}
-                  onMoveUp={() => onMove(item.key, 'up')}
-                  onMoveDown={() => onMove(item.key, 'down')}
-                  onHide={() => onHide(item.key)}
-                />
-              ))}
-            </ul>
+            <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
+              Shown in menu
+            </p>
+            <SidebarCustomizeSortableList
+              items={primaryItems}
+              isSaving={isSaving}
+              onReorder={onReorder}
+              onHide={onHide}
+            />
           </section>
 
           {hiddenItems.length > 0 && (
             <section>
-              <h3 className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
-                Hidden (More)
-              </h3>
-              <ul className="space-y-2">
-                {hiddenItems.map((item) => (
-                  <li
-                    key={item.key}
-                    className="border-border/60 flex items-center justify-between gap-2 rounded-lg border px-3 py-2"
-                  >
-                    <span className="text-sm">{item.label}</span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={isSaving}
-                      onClick={() => onRestore(item.key)}
+              <button
+                type="button"
+                onClick={() => setHiddenOpen((value) => !value)}
+                className="text-foreground hover:bg-muted/60 flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm font-medium"
+              >
+                <span>Hidden ({hiddenItems.length})</span>
+                <ChevronRight
+                  size={16}
+                  className={cn('transition-transform', hiddenOpen && 'rotate-90')}
+                />
+              </button>
+              {hiddenOpen && (
+                <ul className="mt-1 space-y-1.5">
+                  {hiddenItems.map((item) => (
+                    <li
+                      key={item.key}
+                      className="bg-muted/30 flex items-center justify-between gap-2 rounded-lg px-3 py-2"
                     >
-                      <Eye size={14} className="mr-1" />
-                      Show
-                    </Button>
-                  </li>
-                ))}
-              </ul>
+                      <span className="text-sm">{item.label}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={isSaving}
+                        onClick={() => onRestore(item.key)}
+                      >
+                        <Eye size={14} className="mr-1" />
+                        Show
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           )}
 
-          <section>
-            <h3 className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-semibold tracking-wide uppercase">
-              <Link2 size={14} />
-              My Links
-            </h3>
-            {personalLinks.length > 0 && (
-              <ul className="mb-3 space-y-2">
-                {personalLinks.map((link) => (
-                  <li
-                    key={link.id}
-                    className="border-border/60 flex items-center justify-between gap-2 rounded-lg border px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{link.label}</p>
-                      <p className="text-muted-foreground truncate text-xs">{link.url}</p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={`Remove ${link.label}`}
-                      onClick={() => void onDeleteLink(link.id)}
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </li>
-                ))}
-              </ul>
+          <section className="border-border border-t pt-4">
+            <button
+              type="button"
+              onClick={() => setLinksOpen((value) => !value)}
+              className="text-foreground hover:bg-muted/60 flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm font-medium"
+            >
+              <span className="flex items-center gap-2">
+                <Link2 size={16} className="text-muted-foreground" />
+                My Links
+                {personalLinks.length > 0 ? (
+                  <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+                    {personalLinks.length}
+                  </span>
+                ) : null}
+              </span>
+              <ChevronRight
+                size={16}
+                className={cn('transition-transform', linksOpen && 'rotate-90')}
+              />
+            </button>
+
+            {linksOpen && (
+              <MyLinksPanel
+                personalLinks={personalLinks}
+                linkLabel={linkLabel}
+                linkUrl={linkUrl}
+                linkSaving={linkSaving}
+                isSaving={isSaving}
+                onDeleteLink={onDeleteLink}
+                onLinkLabelChange={setLinkLabel}
+                onLinkUrlChange={setLinkUrl}
+                onCreateLink={handleCreateLink}
+              />
             )}
-            <div className="space-y-2">
-              <Input
-                value={linkLabel}
-                onChange={(event) => setLinkLabel(event.target.value)}
-                placeholder="Link title"
-                maxLength={60}
-              />
-              <Input
-                value={linkUrl}
-                onChange={(event) => setLinkUrl(event.target.value)}
-                placeholder="/path or https://..."
-                maxLength={500}
-              />
-              <Button
-                type="button"
-                size="sm"
-                disabled={linkSaving || isSaving || !linkLabel.trim() || !linkUrl.trim()}
-                onClick={() => void handleCreateLink()}
-              >
-                Add link
-              </Button>
-            </div>
           </section>
         </div>
       </SheetContent>
@@ -177,62 +165,75 @@ export function SidebarNavigationCustomizeSheet({
   );
 }
 
-function ModuleCustomizeRow({
-  label,
-  canMoveUp,
-  canMoveDown,
-  canHide,
+function MyLinksPanel({
+  personalLinks,
+  linkLabel,
+  linkUrl,
+  linkSaving,
   isSaving,
-  onMoveUp,
-  onMoveDown,
-  onHide,
+  onDeleteLink,
+  onLinkLabelChange,
+  onLinkUrlChange,
+  onCreateLink,
 }: {
-  label: string;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
-  canHide: boolean;
+  personalLinks: DashboardPersonalLink[];
+  linkLabel: string;
+  linkUrl: string;
+  linkSaving: boolean;
   isSaving: boolean;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  onHide: () => void;
+  onDeleteLink: (id: string) => Promise<void>;
+  onLinkLabelChange: (value: string) => void;
+  onLinkUrlChange: (value: string) => void;
+  onCreateLink: () => Promise<void>;
 }) {
   return (
-    <li className="border-border/60 flex items-center justify-between gap-2 rounded-lg border px-3 py-2">
-      <span className="text-sm">{label}</span>
-      <div className="flex items-center gap-1">
+    <div className="mt-2 space-y-3 pl-1">
+      {personalLinks.length > 0 && (
+        <ul className="max-h-36 space-y-1 overflow-y-auto">
+          {personalLinks.map((link) => (
+            <li
+              key={link.id}
+              className="bg-muted/20 flex items-center justify-between gap-2 rounded-md px-2 py-1.5"
+            >
+              <span className="truncate text-sm">{link.label}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Remove ${link.label}`}
+                onClick={() => void onDeleteLink(link.id)}
+              >
+                <Trash2 size={14} />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="grid gap-2">
+        <Input
+          value={linkLabel}
+          onChange={(event) => onLinkLabelChange(event.target.value)}
+          placeholder="Title"
+          maxLength={60}
+          className="h-9"
+        />
+        <Input
+          value={linkUrl}
+          onChange={(event) => onLinkUrlChange(event.target.value)}
+          placeholder="URL or /path"
+          maxLength={500}
+          className="h-9"
+        />
         <Button
           type="button"
-          variant="ghost"
-          size="icon-sm"
-          disabled={!canMoveUp || isSaving}
-          aria-label="Move up"
-          onClick={onMoveUp}
+          size="sm"
+          className="w-full"
+          disabled={linkSaving || isSaving || !linkLabel.trim() || !linkUrl.trim()}
+          onClick={() => void onCreateLink()}
         >
-          <ChevronUp size={16} />
+          Add link
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          disabled={!canMoveDown || isSaving}
-          aria-label="Move down"
-          onClick={onMoveDown}
-        >
-          <ChevronDown size={16} />
-        </Button>
-        {canHide && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            disabled={isSaving}
-            aria-label="Hide from sidebar"
-            onClick={onHide}
-          >
-            <EyeOff size={16} />
-          </Button>
-        )}
       </div>
-    </li>
+    </div>
   );
 }
