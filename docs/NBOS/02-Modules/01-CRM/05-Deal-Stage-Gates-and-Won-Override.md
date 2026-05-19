@@ -196,6 +196,8 @@ For privileged users on `Deal Won` blockers:
 
 This is the canonical business matrix for current implementation planning.
 
+> **2026-05:** CRM Kanban uses **five** active deal stages (`START_CONVERSATION` … `DEPOSIT_AND_CONTRACT`). Legacy stages `MEETING` and `CAN_WE_DO_IT` are removed; meeting outcomes and internal feasibility are captured in notes, Calendar, and Drive file purposes (`OFFER_*`, `CONTRACT`) before `SEND_OFFER`.
+
 ## Stage 1 - Start a Conversation
 
 ### Common required fields
@@ -241,51 +243,13 @@ This is the canonical business matrix for current implementation planning.
 - maintenance scope is required
 - service period or servicing model is required when known
 
-## Stage 3 - Meeting
-
-### Common required fields
-
-- meeting date
-- meeting result / note
-- clarified requirements
-
-### Notes
-
-- If the business process allows skipping an actual meeting for warm clients, the system should still require a recorded outcome note before advancing further.
-
-## Stage 4 - Can We Do It?
-
-### Common required fields
-
-- delivery approach / technical profile when applicable
-- preliminary timeline estimate
-- preliminary commercial estimate
-- internal feasibility confirmation
-
-### Type-specific
-
-`PRODUCT`
-
-- product category
-- product type
-
-`EXTENSION`
-
-- extension feasibility note
-- linked product is strongly preferred; if not available yet, linked project is minimum
-
-`MAINTENANCE`
-
-- maintenance service model
-- expected recurring amount or pricing logic
-
-## Stage 5 - Send Offer
+## Stage 3 - Send Offer
 
 ### Common required fields
 
 - final or near-final amount
 - payment type
-- offer sent date
+- at least one offer file in Drive (`OFFER_DRAFT` / `OFFER_SENT` / `OFFER_APPROVED`) or legacy offer URL
 
 ### Offer requirement
 
@@ -321,8 +285,7 @@ At least one must exist:
 
 ### Common required fields
 
-- offer exists
-- offer sent date
+- offer exists (Drive file or legacy URL)
 - response deadline or next follow-up date
 
 ### Notes

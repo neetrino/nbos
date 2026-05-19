@@ -52,7 +52,7 @@
 
 Линейная ветка успеха (рабочие стадии 1–7):
 
-`Start a Conversation` → `Discuss What Is Needed` → `Meeting` → `Can We Do It?` → `Send Offer` → `Get Answer` → `Deposit & Contract`
+`Start a Conversation` → `Discuss What Is Needed` → `Send Offer` → `Get Answer` → `Deposit & Contract`
 
 | Из                   | В                     | Условие (кратко)                                                                                                                                  |
 | -------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |

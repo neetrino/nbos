@@ -36,15 +36,15 @@ Goal: bring Lead and Deal board cards + sheets to the same modern cockpit standa
 
 ## 0. Canon / docs alignment first
 
-- [ ] Update CRM canon before code: `docs/NBOS/05-UI-Specifications/02-CRM-Pages.md`, `02-Lead-Pipeline.md`, `03-Deal-Pipeline.md`, `04-Offers-and-Handoff.md`, `05-Deal-Stage-Gates-and-Won-Override.md`, `01-Lead-to-Cash-Process.md`.
-- [ ] Resolve Deal stage model: remove `Meeting` and `Can We Do It?` from docs, enums, API gates, UI constants, tests, and any migration/backfill plan.
+- [x] Update CRM canon (partial): `02-CRM-Pages.md`, `03-Deal-Pipeline.md`, `05-Deal-Stage-Gates`, transition matrix; remaining: `04-Offers-and-Handoff.md`, `01-Lead-to-Cash-Process.md`.
+- [x] Resolve Deal stage model in code: enums, migration, API gates, UI constants, tests; docs updated for 5-stage funnel.
 - [ ] Resolve Deal Type visuals: keep one source of truth for Product / Extension / Maintenance / Outsource colors across CRM board, Delivery, and docs.
 - [ ] Add a short UI decision note for shared sheet sections: Lead/Deal sheets must use the same visual block language as Delivery sheets.
 
 ## 1. Lead / Deal sheet visual redesign
 
-- [ ] Audit current CRM sheets: `LeadSheet`, `DealSheet`, `LeadGeneralTab`, `DealGeneralTab`, and all CRM section components.
-- [ ] Convert CRM sections to a shared detail-sheet section style (`DetailSheetSection` / `detail-sheet-classes`) instead of many custom gradient blocks.
+- [x] Audit current CRM sheets (initial pass).
+- [x] Convert CRM sections to `DetailSheetSection` (Lead General/Marketing; Deal Marketing, Contact, Info, Notes, Source Lead, Offer/Contract).
 - [ ] Rebuild field grouping to match Delivery cockpit density: overview, customer/contact, team, marketing attribution, commercial, offer/files, notes, actions.
 - [ ] Keep General tab as draft + Save/Cancel, one save per form, no per-field autosave.
 - [ ] Make labels, spacing, borders, empty states, required-state hints, and blocker messages consistent with Delivery.
@@ -59,8 +59,8 @@ Decision proposal:
 
 Rules:
 
-- [ ] For `From = Marketing`, show `Where` from Marketing CRM Where options.
-- [ ] For `From = Marketing`, require `Which one` only for channels that need measurable attribution to an account/activity/campaign. Current hardcoded channels are `LIST_AM`, `GOOGLE_ADS`, `META_ADS`; replace this with configurable metadata on Marketing Where options.
+- [x] For `From = Marketing`, show `Where` from Marketing CRM Where options.
+- [x] For `From = Marketing`, require `Which one` only for `LIST_AM`, `GOOGLE_ADS`, `META_ADS` (shared constant).
 - [ ] For `From = Marketing` + organic/generic/manual channels, keep `Which one` optional or hidden unless a real Marketing Account / Activity exists.
 - [ ] For `From = Sales`, show `Where` from Sales channels; no `Which one` by default.
 - [ ] For `From = Partner`, replace generic `Which one` with required `Which Partner?`.
@@ -70,7 +70,7 @@ Rules:
 
 ## 3. Seller selection
 
-- [ ] Add / fix Seller picker in Lead sheet General tab.
+- [x] Add / fix Seller picker in Lead sheet General tab.
 - [ ] Verify Deal Seller and Seller Assistant picker UX; keep both editable where role rules allow it.
 - [ ] Ensure create dialogs, transition popup editors, and sheets use the same employee search component.
 - [ ] Add required-field blockers when Seller is missing before meaningful movement.
@@ -86,26 +86,24 @@ Professional approach:
 
 Global reusable plan:
 
-- [ ] Design shared board lifecycle metadata: status key, label, group (`active` / `closed`), terminal flag, color, drop-zone behavior.
-- [ ] Create reusable board status scope control: `Active` / `Closed` / `All`, default `Active`.
-- [ ] Create reusable terminal drop-zone bar shown only while dragging active cards.
+- [x] Design shared board lifecycle metadata (`board-lifecycle.ts`).
+- [x] Create reusable board status scope control: `Active` / `Closed` / `All`, default `Active`.
+- [x] Create reusable terminal drop-zone bar shown only while dragging active cards.
 - [ ] CRM Lead statuses: active = `NEW`, `ON_HOLD`, `DIDNT_GET_THROUGH`, `CONTACT_ESTABLISHED`, `MQL`; closed = `SPAM`, `FROZEN`, `SQL`.
 - [ ] CRM Deal statuses after stage cleanup: active = `START_CONVERSATION`, `DISCUSS_NEEDS`, `SEND_OFFER`, `GET_ANSWER`, `DEPOSIT_AND_CONTRACT`; closed = `FAILED`, `WON`.
 - [ ] Delivery statuses: keep active lifecycle board separate from `Done` / `Cancelled` closed view, but align filter/drop-zone UX with the shared pattern.
 - [ ] Finance/support/task boards: document which statuses are active vs closed before changing UI; do not guess module-specific terminal semantics.
-- [ ] Replace CRM always-visible terminal columns with the shared scope filter and drag terminal zones.
+- [x] Replace CRM always-visible terminal columns with the shared scope filter and drag terminal zones (Leads + Deals pages).
 - [ ] Add tests for active/closed filtering and drag-to-terminal transitions.
 
 ## 5. Deal stage cleanup
 
-- [ ] Remove `MEETING` and `CAN_WE_DO_IT` from web constants.
-- [ ] Remove them from shared `DEAL_STAGE_GATE_ORDER`.
-- [ ] Update API stage gate logic and tests.
-- [ ] Update Prisma enum / migration/backfill strategy if DB enum contains those statuses.
-- [ ] Decide migration mapping for existing records:
-  - `MEETING` -> `DISCUSS_NEEDS`
-  - `CAN_WE_DO_IT` -> `SEND_OFFER`
-- [ ] Update docs and funnel text so the active Deal pipeline has 5 working stages.
+- [x] Remove `MEETING` and `CAN_WE_DO_IT` from web constants.
+- [x] Remove them from shared `DEAL_STAGE_GATE_ORDER`.
+- [x] Update API stage gate logic and tests.
+- [x] Prisma enum + migration `20260519120000_remove_deal_meeting_stages`.
+- [x] Migration mapping: `MEETING` -> `DISCUSS_NEEDS`, `CAN_WE_DO_IT` -> `SEND_OFFER`.
+- [x] Docs: 5 active Deal stages in pipeline + UI spec.
 
 ## 6. Required fields by stage
 
@@ -131,8 +129,8 @@ Deal proposal after removing two stages:
 
 Implementation tasks:
 
-- [ ] Create dedicated Lead stage gate service instead of only attribution checks.
-- [ ] Update Deal stage gate service to new stage order and simplified offer rules.
+- [x] Create dedicated Lead stage gate service (`lead-stage-gate.ts`).
+- [x] Update Deal stage gate: 5-stage order, Drive offer/contract files, FAILED notes.
 - [ ] Transition popup must show only missing fields and jump to the right sheet section.
 - [ ] Block moving forward when marketing block is required but incomplete.
 
@@ -165,14 +163,12 @@ Goal: one reusable attachment block for CRM, Delivery, Tasks, Support, Documents
 
 UX requirements:
 
-- [ ] Tile/grid view like Drive file cards, matching the provided file tile reference.
-- [ ] Upload/attach multiple files.
+- [x] Tile/grid view via `EntityAttachmentBlock` + `DriveFileCard`.
+- [x] Upload/attach multiple files (`EntityDriveQuickAttach`).
 - [ ] Attach external link as a file asset when needed.
 - [ ] Purpose selector per file or per upload context.
 - [ ] File card actions: preview/open, details, replace/version if supported, detach, delete/archive.
-- [ ] On detach, ask:
-  - `Detach from this record, keep in Drive`
-  - `Delete/archive file from Drive completely`
+- [x] On detach, ask: detach-only vs archive (Dialog).
 - [ ] Respect permissions, confidentiality, and audit log.
 - [ ] Reuse `DriveTileShell`, `DriveFileCard`, `EntityDriveQuickAttach`, Drive API, and add missing entity-level detach/delete UX.
 - [ ] Replace CRM `EntityDriveFilesPanel` list preview with this shared attachment block.
@@ -181,14 +177,14 @@ UX requirements:
 
 ## 9. Deal Actions block
 
-- [ ] Move `Open Drive` from Offer/Contract area into Deal `Actions`.
+- [x] Move `Open Drive` from Offer/Contract area into Deal `Actions`.
 - [ ] Keep Offer block focused on attached offer files only.
 - [ ] Deal Actions should include: create invoice, create task, open Drive, and later approved workflow actions.
 
 ## 10. Board card polish after model changes
 
-- [ ] Lead board card: contact name as primary title, phone/email, source/channel icon, created date, Seller avatar, attention badge.
-- [ ] Deal board card: contact/company, amount, payment type, deadline/maintenance start date, Seller avatar, Deal Type visual, linked project/product where relevant.
+- [x] Lead board card: contact, phone/email, source/channel, created date, Seller avatar, overdue badge.
+- [x] Deal board card: contact/company, amount, type visual, deadline, seller, channel.
 - [ ] Ensure closed cards have compact read-only presentation in Closed view.
 
 ## Suggested implementation order

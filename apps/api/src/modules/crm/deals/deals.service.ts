@@ -311,8 +311,11 @@ export class DealsService {
       current = await this.findById(id);
     }
 
-    const linkedOfferAssetCount = await this.countLinkedOfferAssets(id);
-    validateDealStageGate({ ...current, linkedOfferAssetCount }, status);
+    const [linkedOfferAssetCount, linkedContractAssetCount] = await Promise.all([
+      this.countLinkedDealAssets(id, ['OFFER_DRAFT', 'OFFER_SENT', 'OFFER_APPROVED']),
+      this.countLinkedDealAssets(id, ['CONTRACT']),
+    ]);
+    validateDealStageGate({ ...current, linkedOfferAssetCount, linkedContractAssetCount }, status);
     if (status === 'WON') {
       validateDealWonGate(current, override);
     }
@@ -410,7 +413,10 @@ export class DealsService {
     };
   }
 
-  private async countLinkedOfferAssets(dealId: string): Promise<number> {
+  private async countLinkedDealAssets(
+    dealId: string,
+    purposes: Array<'OFFER_DRAFT' | 'OFFER_SENT' | 'OFFER_APPROVED' | 'CONTRACT'>,
+  ): Promise<number> {
     return this.prisma.fileLink.count({
       where: {
         entityType: 'DEAL',
@@ -419,7 +425,7 @@ export class DealsService {
         fileAsset: {
           deletedAt: null,
           archivedAt: null,
-          purpose: { in: ['OFFER_DRAFT', 'OFFER_SENT', 'OFFER_APPROVED'] },
+          purpose: { in: purposes },
         },
       },
     });

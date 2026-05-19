@@ -34,8 +34,27 @@ describe('validateDealStageGate', () => {
     expect(() => validateDealStageGate(baseDeal, 'DISCUSS_NEEDS')).not.toThrow();
   });
 
-  it('always allows FAILED', () => {
-    expect(() => validateDealStageGate(baseDeal, 'FAILED')).not.toThrow();
+  it('requires lost reason in notes for FAILED', () => {
+    expect(() => validateDealStageGate(baseDeal, 'FAILED')).toThrow(BadRequestException);
+    expect(() => validateDealStageGate({ ...baseDeal, notes: 'Budget' }, 'FAILED')).not.toThrow();
+  });
+
+  it('accepts linked Drive contract files at DEPOSIT_AND_CONTRACT', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerLink: 'https://example.com/offer',
+      responseDueAt: new Date(),
+      companyId: 'company-1',
+      pmId: 'pm-1',
+      deadline: new Date(),
+      linkedContractAssetCount: 1,
+      orders: [{ invoices: [{ id: 'invoice-1' }] }],
+    };
+    expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).not.toThrow();
   });
 
   it('requires attribution before meaningful deal movement', () => {

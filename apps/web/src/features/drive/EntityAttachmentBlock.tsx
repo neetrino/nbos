@@ -24,6 +24,10 @@ interface EntityAttachmentBlockProps {
   entityType: string;
   entityId: string;
   libraryKey?: DriveLibraryKey;
+  /** When set, only files with this Drive purpose are listed. */
+  purpose?: string;
+  /** When set, only files matching any of these purposes are listed (client-side filter). */
+  purposes?: readonly string[];
   emptyHint?: string;
 }
 
@@ -31,6 +35,8 @@ export function EntityAttachmentBlock({
   entityType,
   entityId,
   libraryKey = 'deals',
+  purpose,
+  purposes,
   emptyHint = 'Attach offer documents, contracts, or proofs.',
 }: EntityAttachmentBlockProps) {
   const [files, setFiles] = useState<FileAsset[]>([]);
@@ -41,14 +47,17 @@ export function EntityAttachmentBlock({
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const rows = await driveApi.listFileAssets({ entityType, entityId });
-      setFiles(rows.slice(0, ENTITY_ATTACHMENT_TILE_LIMIT));
+      const rows = await driveApi.listFileAssets({ entityType, entityId, purpose });
+      const filtered = purposes?.length
+        ? rows.filter((row) => row.purpose && purposes.includes(row.purpose))
+        : rows;
+      setFiles(filtered.slice(0, ENTITY_ATTACHMENT_TILE_LIMIT));
     } catch {
       setFiles([]);
     } finally {
       setLoading(false);
     }
-  }, [entityId, entityType]);
+  }, [entityId, entityType, purpose, purposes]);
 
   useEffect(() => {
     void load();

@@ -21,6 +21,8 @@ interface DealForValidation {
   contractSignedAt: Date | null;
   contractFileUrl: string | null;
   linkedOfferAssetCount?: number;
+  linkedContractAssetCount?: number;
+  notes?: string | null;
   orders?: Array<{ invoices?: unknown[] }>;
   source: string | null;
   sourceDetail: string | null;
@@ -45,7 +47,19 @@ function hasNonBlankValue(value: string | null | undefined): boolean {
  * Выбрасывает BadRequestException со списком отсутствующих полей.
  */
 export function validateDealStageGate(deal: DealForValidation, targetStatus: string) {
-  if (targetStatus === 'FAILED') return;
+  if (targetStatus === 'FAILED') {
+    if (!hasNonBlankValue(deal.notes)) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'STAGE_GATE_VALIDATION',
+        message: 'Cannot move to FAILED: missing required fields',
+        errors: [
+          { field: 'notes', message: 'Lost reason is required when marking a deal as Failed' },
+        ],
+      });
+    }
+    return;
+  }
 
   const targetIdx = DEAL_STAGE_GATE_ORDER.indexOf(
     targetStatus as (typeof DEAL_STAGE_GATE_ORDER)[number],
@@ -62,7 +76,11 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
     hasNonBlankValue(deal.offerFileUrl) ||
     hasNonBlankValue(deal.offerScreenshotUrl),
   );
-  const hasContractProof = Boolean(deal.contractSignedAt || hasNonBlankValue(deal.contractFileUrl));
+  const hasContractProof = Boolean(
+    deal.contractSignedAt ||
+    hasNonBlankValue(deal.contractFileUrl) ||
+    (deal.linkedContractAssetCount ?? 0) > 0,
+  );
   const hasInvoice = deal.orders?.some((order) => (order.invoices?.length ?? 0) > 0) ?? false;
 
   const reachesStage = (stage: string) =>
@@ -131,7 +149,8 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
     if (deal.paymentType === 'CLASSIC' && !hasContractProof) {
       errors.push({
         field: 'contractProof',
-        message: 'Signed contract date or contract file URL is required at DEPOSIT_AND_CONTRACT',
+        message:
+          'Signed contract date, contract file in Drive, or legacy contract URL is required at DEPOSIT_AND_CONTRACT',
       });
     }
     if (deal.paymentType === 'CLASSIC' && !hasInvoice) {
