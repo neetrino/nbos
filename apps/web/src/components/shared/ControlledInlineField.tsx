@@ -90,9 +90,13 @@ export function ControlledInlineField({
       {type === 'select' && options ? (
         <div className={FIELD_SHELL_CLASS}>
           <Select
-            value={str || undefined}
+            value={str}
             onValueChange={(v) => {
-              if (typeof v === 'string' && v !== '') onValueChange(v);
+              if (v == null || v === '') {
+                onValueChange('');
+                return;
+              }
+              onValueChange(v);
             }}
             disabled={disabled}
           >
