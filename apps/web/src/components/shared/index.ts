@@ -41,14 +41,21 @@ export {
 export {
   DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS,
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS,
+  DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
   DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
+  DETAIL_SHEET_PANEL_DIVIDER_CLASS,
   DETAIL_SHEET_PERSON_AVATAR_CLASS,
+  DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
 } from './detail-sheet-classes';
 export { DetailSheetSection, type DetailSheetSectionProps } from './DetailSheetSection';
+export {
+  DetailSheetCollapsibleSection,
+  type DetailSheetCollapsibleSectionProps,
+} from './DetailSheetCollapsibleSection';
 export { SheetFileAttachments, type SheetFileAttachmentsProps } from './SheetFileAttachments';
 export {
   EntitySheetFloatingRail,

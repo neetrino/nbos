@@ -2,20 +2,14 @@
 
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { SheetFileAttachments } from '@/components/shared/SheetFileAttachments';
 import { driveApi, type FileAsset } from '@/lib/api/drive';
 import { DRIVE_LIBRARIES, type DriveLibraryKey } from './drive-options';
 import type { DriveFileCardMenuHandlers } from './DriveFileCard';
-import { findEntityFileLink } from './entity-attachment-utils';
+import {
+  archiveAndUnlinkFileFromEntityRecord,
+  unlinkFileFromEntityRecord,
+} from './entity-attachment-record-actions';
 import { useOptimisticEntityFileUpload } from './use-optimistic-entity-file-upload';
 
 const ENTITY_ATTACHMENT_TILE_LIMIT = 12;
@@ -48,7 +42,6 @@ export function EntityAttachmentBlock({
   const library = resolveLibrary(libraryKey);
   const uploadPurpose = purpose ?? library.purposes?.[0] ?? 'OTHER';
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
-  const [detachTarget, setDetachTarget] = useState<FileAsset | null>(null);
 
   const listFiles = useCallback(async () => {
     const rows = await driveApi.listFileAssets({ entityType, entityId, purpose });
@@ -65,32 +58,24 @@ export function EntityAttachmentBlock({
     listFiles,
   });
 
-  const handleDetachOnly = async () => {
-    if (!detachTarget) return;
-    const link = findEntityFileLink(detachTarget, entityType, entityId);
-    if (!link) {
-      toast.error('File is not linked to this record.');
-      setDetachTarget(null);
-      return;
-    }
-    setBusyFileId(detachTarget.id);
+  const runUnlink = async (file: FileAsset) => {
+    setBusyFileId(file.id);
     try {
-      await driveApi.unlinkFileAsset(detachTarget.id, link.id);
-      toast.success('File detached from record');
-      setDetachTarget(null);
+      await unlinkFileFromEntityRecord(file, entityType, entityId);
+      toast.success('Unlinked — file stays in Drive');
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not detach file');
+      toast.error(err instanceof Error ? err.message : 'Could not unlink file');
     } finally {
       setBusyFileId(null);
     }
   };
 
-  const handleArchive = async (file: FileAsset) => {
+  const runArchive = async (file: FileAsset) => {
     setBusyFileId(file.id);
     try {
-      await driveApi.archiveFileAsset(file.id);
-      toast.success('File archived in Drive');
+      await archiveAndUnlinkFileFromEntityRecord(file, entityType, entityId);
+      toast.success('File archived and unlinked from record');
       await refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not archive file');
@@ -105,60 +90,23 @@ export function EntityAttachmentBlock({
       const url = file.externalUrl;
       if (url) window.open(url, '_blank', 'noopener,noreferrer');
     },
-    onUnlinkFromRecord: () => setDetachTarget(file),
-    onArchive: (target) => void handleArchive(target),
+    onUnlinkFromRecord: () => void runUnlink(file),
+    onArchive: (target) => void runArchive(target),
     onRestore: () => undefined,
   });
 
   return (
-    <>
-      <SheetFileAttachments
-        files={files}
-        pendingUploads={pending}
-        loading={loading}
-        uploadBarLabel={emptyHint}
-        onUpload={uploadFiles}
-        onOpenFile={(file) => {
-          const url = file.externalUrl;
-          if (url) window.open(url, '_blank', 'noopener,noreferrer');
-        }}
-        fileMenu={fileMenu}
-      />
-
-      <Dialog
-        open={Boolean(detachTarget)}
-        onOpenChange={(open: boolean) => {
-          if (!open) setDetachTarget(null);
-        }}
-      >
-        <DialogContent className="sm:max-w-md" showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>Remove file from record?</DialogTitle>
-            <DialogDescription>
-              Choose whether to keep the file in Drive or archive it completely.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => setDetachTarget(null)}>
-              Cancel
-            </Button>
-            <Button type="button" variant="secondary" onClick={() => void handleDetachOnly()}>
-              Detach, keep in Drive
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => {
-                if (!detachTarget) return;
-                void handleArchive(detachTarget);
-                setDetachTarget(null);
-              }}
-            >
-              Archive file
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+    <SheetFileAttachments
+      files={files}
+      pendingUploads={pending}
+      loading={loading}
+      uploadBarLabel={emptyHint}
+      onUpload={uploadFiles}
+      onOpenFile={(file) => {
+        const url = file.externalUrl;
+        if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      }}
+      fileMenu={fileMenu}
+    />
   );
 }

@@ -210,7 +210,7 @@ function DriveFileRailTrailing({
       ) : null}
       {onUnlinkFromRecord ? (
         <RailTrailButton
-          ariaLabel="Unlink from record"
+          ariaLabel="Unlink"
           hint="Unlink"
           disabled={busy}
           onClick={() => onUnlinkFromRecord(file)}

@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { DealContactTeamSection } from './DealContactTeamSection';
 import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
 import { DealHandoffPanel } from './DealHandoffPanel';
-import { DealInfoCommercialSection, DealInfoPrimarySection } from './DealInfoSection';
+import { DealCombinedInfoSection } from './DealCombinedInfoSection';
 import { DealMarketingSection } from './DealMarketingSection';
 import { DealNotesSection } from './DealNotesSection';
 import { DealOfferContractSection } from './DealOfferContractSection';
@@ -135,51 +135,46 @@ export function DealGeneralTab({
 
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,52rem)_minmax(0,1fr)_auto] xl:items-start xl:gap-6">
-      <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS, 'max-w-[52rem] min-w-0')}>
-        <DealInfoPrimarySection
+      <div className="flex max-w-[52rem] min-w-0 flex-col gap-4">
+        <DealCombinedInfoSection
           draft={draft}
           patchDraft={patchDraft}
           filteredProductTypeOptions={filteredProductTypeOptions}
-          searchProducts={searchProducts}
-          disabled={formDisabled}
-          sectionClassName={SECTION_STRETCH}
-        />
-        <DealInfoCommercialSection
-          draft={draft}
-          patchDraft={patchDraft}
           searchProjects={searchProjects}
+          searchProducts={searchProducts}
           searchCompanies={searchCompanies}
           disabled={formDisabled}
-          sectionClassName={SECTION_STRETCH}
         />
         <DealOfferContractSection dealId={deal.id} />
-        <DealContactTeamSection
-          deal={deal}
-          draft={draft}
-          patchDraft={patchDraft}
-          searchContacts={searchContacts}
-          searchEmployees={searchEmployees}
-          disabled={formDisabled}
-          sectionClassName={SECTION_STRETCH}
-        />
-        <DealMarketingSection
-          deal={deal}
-          draft={draft}
-          patchDraft={patchDraft}
-          searchAttributionOptions={searchAttributionOptions}
-          searchPartners={searchPartners}
-          searchContacts={searchContacts}
-          onRefresh={onRefresh}
-          disabled={formDisabled}
-          sectionClassName={SECTION_STRETCH}
-        />
-        <DealNotesSection
-          draft={draft}
-          patchDraft={patchDraft}
-          disabled={formDisabled}
-          sectionClassName={SECTION_STRETCH}
-        />
-        <DealSourceLeadSection deal={deal} className="sm:col-span-2" />
+        <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS)}>
+          <DealContactTeamSection
+            deal={deal}
+            draft={draft}
+            patchDraft={patchDraft}
+            searchContacts={searchContacts}
+            searchEmployees={searchEmployees}
+            disabled={formDisabled}
+            sectionClassName={SECTION_STRETCH}
+          />
+          <DealMarketingSection
+            deal={deal}
+            draft={draft}
+            patchDraft={patchDraft}
+            searchAttributionOptions={searchAttributionOptions}
+            searchPartners={searchPartners}
+            searchContacts={searchContacts}
+            onRefresh={onRefresh}
+            disabled={formDisabled}
+            sectionClassName={SECTION_STRETCH}
+          />
+          <DealNotesSection
+            draft={draft}
+            patchDraft={patchDraft}
+            disabled={formDisabled}
+            sectionClassName={SECTION_STRETCH}
+          />
+          <DealSourceLeadSection deal={deal} className="sm:col-span-2" />
+        </div>
       </div>
 
       <div aria-hidden className="hidden min-h-0 xl:block" />

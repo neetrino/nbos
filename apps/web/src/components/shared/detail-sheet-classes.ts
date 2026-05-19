@@ -18,6 +18,18 @@ export const DETAIL_SHEET_SECTION_SURFACE_CLASS =
 export const DETAIL_SHEET_SECTION_TITLE_CLASS =
   'text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase';
 
+/** Sub-label inside a merged multi-column section. */
+export const DETAIL_SHEET_SUBSECTION_LABEL_CLASS =
+  'text-muted-foreground mb-3 text-[11px] font-semibold tracking-widest uppercase';
+
+/** Vertical divider between columns inside one section card. */
+export const DETAIL_SHEET_COLUMN_DIVIDER_CLASS =
+  'border-stone-100 sm:border-l sm:pl-5 dark:border-stone-800';
+
+/** Horizontal divider between stacked panels inside one section card. */
+export const DETAIL_SHEET_PANEL_DIVIDER_CLASS =
+  'border-t border-stone-100 pt-5 dark:border-stone-800';
+
 /** Two columns of section cards; each row stretches to the taller sibling. */
 export const DETAIL_SHEET_PAIRED_COLUMNS_CLASS =
   'grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-stretch sm:gap-5';

@@ -122,7 +122,7 @@ function BulkActionBarActions({
                 onClick={() => onUnlinkFromRecord()}
               >
                 <Link2Off />
-                Unlink from record
+                Unlink
               </Button>
             ) : null}
           </>

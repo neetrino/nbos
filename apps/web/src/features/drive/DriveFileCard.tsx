@@ -491,7 +491,7 @@ function FileCardActionsMenuItems({
           onClick={() => handlers.onUnlinkFromRecord?.(file)}
         >
           <Link2Off className="size-4" />
-          Unlink from record
+          Unlink
         </DropdownMenuItem>
       ) : null}
       {inTrash || archived || handlers.onArchive ? (
