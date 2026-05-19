@@ -127,7 +127,7 @@ export function DealFilesBlock({ dealId, purpose, emptyHint }: DealFilesBlockPro
   const zoneBusy = uploading || loading;
 
   return (
-    <motion className="space-y-3">
+    <div className="space-y-3">
       <div
         role="button"
         tabIndex={0}
@@ -239,6 +239,6 @@ export function DealFilesBlock({ dealId, purpose, emptyHint }: DealFilesBlockPro
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </motion>
+    </div>
   );
 }

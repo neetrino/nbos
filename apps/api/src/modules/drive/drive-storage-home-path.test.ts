@@ -17,12 +17,12 @@ describe('drive storage home paths', () => {
   it('builds canon filename with date, purpose, id and version', () => {
     const name = buildStorageHomeFileName({
       uploadedAt: new Date('2026-05-18T12:00:00.000Z'),
-      purpose: 'OFFER_APPROVED',
+      purpose: 'OFFER',
       displayName: 'Marco Offer.pdf',
       fileAssetId: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
       versionNumber: 1,
     });
-    expect(name).toMatch(/^2026-05-18__offer-approved__/);
+    expect(name).toMatch(/^2026-05-18__offer__/);
     expect(name).toMatch(/__v1\.pdf$/);
   });
 

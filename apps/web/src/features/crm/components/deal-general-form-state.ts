@@ -19,7 +19,6 @@ export interface DealGeneralDraft {
   companyId: string | null;
   companyPickLabel: string | null;
   offerSentAt: string | null;
-  responseDueAt: string | null;
   offerLink: string | null;
   offerFileUrl: string | null;
   offerScreenshotUrl: string | null;
@@ -67,7 +66,6 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     companyId: deal.companyId ?? null,
     companyPickLabel: deal.company?.name ?? null,
     offerSentAt: toDateInputValue(deal.offerSentAt),
-    responseDueAt: toDateInputValue(deal.responseDueAt),
     offerLink: deal.offerLink,
     offerFileUrl: deal.offerFileUrl,
     offerScreenshotUrl: deal.offerScreenshotUrl,
@@ -129,9 +127,6 @@ export function buildDealGeneralPatch(
 
   if (dateOrNull(draft.offerSentAt) !== dateOrNull(snap.offerSentAt)) {
     out.offerSentAt = dateOrNull(draft.offerSentAt);
-  }
-  if (dateOrNull(draft.responseDueAt) !== dateOrNull(snap.responseDueAt)) {
-    out.responseDueAt = dateOrNull(draft.responseDueAt);
   }
   if (draft.offerLink !== snap.offerLink) out.offerLink = draft.offerLink;
   if (draft.offerFileUrl !== snap.offerFileUrl) out.offerFileUrl = draft.offerFileUrl;

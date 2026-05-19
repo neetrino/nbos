@@ -17,7 +17,6 @@ interface DealForValidation {
   offerLink: string | null;
   offerFileUrl: string | null;
   offerScreenshotUrl: string | null;
-  responseDueAt: Date | null;
   contractSignedAt: Date | null;
   contractFileUrl: string | null;
   linkedOfferAssetCount?: number;
@@ -127,15 +126,6 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
           message: 'Partner referral terms must be synced before SEND_OFFER',
         });
       }
-    }
-  }
-
-  if (reachesStage('GET_ANSWER')) {
-    if (!deal.responseDueAt) {
-      errors.push({
-        field: 'responseDueAt',
-        message: 'Response deadline is required at GET_ANSWER',
-      });
     }
   }
 

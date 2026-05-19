@@ -34,7 +34,6 @@ interface FormState {
   offerLink: string;
   offerFileUrl: string;
   offerScreenshotUrl: string;
-  responseDueAt: string;
   contractSignedAt: string;
   contractFileUrl: string;
   source: string;
@@ -136,27 +135,14 @@ export function DealTransitionInlineEditor({
         </div>
       )}
 
-      {(errorFields.has('offerSentAt') || errorFields.has('responseDueAt')) && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {errorFields.has('offerSentAt') && (
-            <Field label="Offer sent date" invalid={touched.has('offerSentAt')}>
-              <Input
-                type="date"
-                value={form.offerSentAt}
-                onChange={(event) => updateField('offerSentAt', event.target.value)}
-              />
-            </Field>
-          )}
-          {errorFields.has('responseDueAt') && (
-            <Field label="Response due date" invalid={touched.has('responseDueAt')}>
-              <Input
-                type="date"
-                value={form.responseDueAt}
-                onChange={(event) => updateField('responseDueAt', event.target.value)}
-              />
-            </Field>
-          )}
-        </div>
+      {errorFields.has('offerSentAt') && (
+        <Field label="Offer sent date" invalid={touched.has('offerSentAt')}>
+          <Input
+            type="date"
+            value={form.offerSentAt}
+            onChange={(event) => updateField('offerSentAt', event.target.value)}
+          />
+        </Field>
       )}
 
       {errorFields.has('offerProof') && (
@@ -463,7 +449,6 @@ function getInitialForm(deal: Deal): FormState {
     offerLink: deal.offerLink ?? '',
     offerFileUrl: deal.offerFileUrl ?? '',
     offerScreenshotUrl: deal.offerScreenshotUrl ?? '',
-    responseDueAt: toDateInputValue(deal.responseDueAt),
     contractSignedAt: toDateInputValue(deal.contractSignedAt),
     contractFileUrl: deal.contractFileUrl ?? '',
     source: deal.source ?? '',
@@ -513,7 +498,6 @@ function getMissingFields(form: FormState, errorFields: Set<string>): string[] {
   if (errorFields.has('productCategory') && !form.productCategory) missing.push('productCategory');
   if (errorFields.has('productType') && !form.productType) missing.push('productType');
   if (errorFields.has('offerSentAt') && !form.offerSentAt) missing.push('offerSentAt');
-  if (errorFields.has('responseDueAt') && !form.responseDueAt) missing.push('responseDueAt');
   if (errorFields.has('offerProof')) {
     const hasOfferProof =
       Boolean(form.offerLink.trim()) ||
@@ -550,7 +534,6 @@ function buildChangedPayload(deal: Deal, form: FormState): Partial<Deal> {
   assignString(payload, 'offerLink', deal.offerLink, form.offerLink);
   assignString(payload, 'offerFileUrl', deal.offerFileUrl, form.offerFileUrl);
   assignString(payload, 'offerScreenshotUrl', deal.offerScreenshotUrl, form.offerScreenshotUrl);
-  assignString(payload, 'responseDueAt', deal.responseDueAt, form.responseDueAt);
   assignString(payload, 'contractSignedAt', deal.contractSignedAt, form.contractSignedAt);
   assignString(payload, 'contractFileUrl', deal.contractFileUrl, form.contractFileUrl);
   assignString(payload, 'source', deal.source, form.source);

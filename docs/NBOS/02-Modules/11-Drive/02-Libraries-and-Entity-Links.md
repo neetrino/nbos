@@ -48,10 +48,7 @@ CRM не должен хранить файлы отдельно от Drive.
 
 Типы файлов:
 
-- `OFFER_DRAFT`;
-- `OFFER_SENT`;
-- `OFFER_APPROVED`;
-- `MESSENGER_PROOF`;
+- `OFFER`;
 - `CONTRACT`;
 - `CLIENT_BRIEF`;
 - `COMMERCIAL_NOTE`.

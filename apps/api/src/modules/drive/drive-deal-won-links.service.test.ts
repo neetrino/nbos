@@ -11,9 +11,9 @@ describe('DriveDealWonLinksService', () => {
     service = new DriveDealWonLinksService(prisma as never);
   });
 
-  it('creates PROJECT and CONTACT links for OFFER_APPROVED deal files', async () => {
+  it('creates PROJECT and CONTACT links for OFFER deal files', async () => {
     prisma.fileLink.findMany.mockResolvedValueOnce([{ fileAssetId: 'file-1' }]);
-    prisma.fileAsset.findFirst.mockResolvedValueOnce({ purpose: 'OFFER_APPROVED' });
+    prisma.fileAsset.findFirst.mockResolvedValueOnce({ purpose: 'OFFER' });
     prisma.fileLink.findFirst.mockResolvedValue(null);
     prisma.fileLink.create.mockResolvedValue({ id: 'link-1' });
 

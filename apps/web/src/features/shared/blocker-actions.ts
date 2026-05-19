@@ -57,14 +57,7 @@ const CRM_ACTION_RULES = [
     key: 'contract',
     label: 'Go to contract',
     target: 'details',
-    fields: [
-      'responseDueAt',
-      'companyId',
-      'contractProof',
-      'pmId',
-      'deadline',
-      'existingProductId',
-    ],
+    fields: ['companyId', 'contractProof', 'pmId', 'deadline', 'existingProductId'],
   },
   {
     key: 'finance',

@@ -17,7 +17,6 @@ const baseDeal = {
   offerLink: null as string | null,
   offerFileUrl: null as string | null,
   offerScreenshotUrl: null as string | null,
-  responseDueAt: null as Date | null,
   contractSignedAt: null as Date | null,
   contractFileUrl: null as string | null,
   orders: [] as Array<{ invoices: unknown[] }>,
@@ -47,7 +46,6 @@ describe('validateDealStageGate', () => {
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
       companyId: 'company-1',
       pmId: 'pm-1',
       deadline: new Date(),
@@ -116,17 +114,16 @@ describe('validateDealStageGate', () => {
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
   });
 
-  it('requires response deadline at GET_ANSWER', () => {
+  it('allows GET_ANSWER without response due date', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
-      offerSentAt: new Date(),
-      offerFileUrl: 'https://example.com/offer.pdf',
+      offerLink: 'https://example.com/offer.pdf',
     };
-    expect(() => validateDealStageGate(deal, 'GET_ANSWER')).toThrow(BadRequestException);
+    expect(() => validateDealStageGate(deal, 'GET_ANSWER')).not.toThrow();
   });
 
   it('requires pmId + deadline for PRODUCT at DEPOSIT_AND_CONTRACT', () => {
@@ -138,7 +135,6 @@ describe('validateDealStageGate', () => {
       productType: 'COMPANY_WEBSITE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
     };
     expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).toThrow(BadRequestException);
 
@@ -162,7 +158,6 @@ describe('validateDealStageGate', () => {
       productType: 'COMPANY_WEBSITE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
       companyId: 'company-1',
       pmId: 'pm-1',
       deadline: new Date(),
@@ -179,7 +174,6 @@ describe('validateDealStageGate', () => {
       productType: 'COMPANY_WEBSITE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
       companyId: 'company-1',
       pmId: 'pm-1',
       deadline: new Date(),
@@ -198,7 +192,6 @@ describe('validateDealStageGate', () => {
       taxStatus: 'TAX_FREE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
       contractFileUrl: 'https://example.com/contract.pdf',
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
@@ -232,7 +225,6 @@ describe('validateDealStageGate', () => {
       deadline: new Date(),
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
       contractSignedAt: new Date(),
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };

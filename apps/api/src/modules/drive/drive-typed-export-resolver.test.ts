@@ -57,7 +57,7 @@ describe('DriveTypedExportResolver', () => {
     expect(prisma.fileAsset.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          purpose: { in: expect.arrayContaining(['OFFER_DRAFT']) },
+          purpose: { in: expect.arrayContaining(['OFFER']) },
         }),
       }),
     );

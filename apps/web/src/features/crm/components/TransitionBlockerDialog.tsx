@@ -265,7 +265,6 @@ function formatFieldLabel(field: string): string {
     productType: 'Product type',
     offerSentAt: 'Offer sent date',
     offerProof: 'Offer attachment / proof',
-    responseDueAt: 'Response due date',
     companyId: 'Company',
     contractProof: 'Contract proof',
     pmId: 'Project manager',

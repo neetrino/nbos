@@ -2,10 +2,7 @@ import type { FilePurposeEnum } from '@nbos/database';
 
 /** File purposes included in typed ZIP exports (doc 06 §5). */
 export const DRIVE_EXPORT_OFFER_PURPOSES = [
-  'OFFER_DRAFT',
-  'OFFER_SENT',
-  'OFFER_APPROVED',
-  'MESSENGER_PROOF',
+  'OFFER',
   'CONTRACT',
 ] as const satisfies readonly FilePurposeEnum[];
 

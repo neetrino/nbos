@@ -249,7 +249,7 @@ This is the canonical business matrix for current implementation planning.
 
 - final or near-final amount
 - payment type
-- at least one offer file in Drive (`OFFER_DRAFT` / `OFFER_SENT` / `OFFER_APPROVED`) or legacy offer URL
+- at least one offer file in Drive (`OFFER` purpose) or legacy offer URL
 
 ### Offer requirement
 

@@ -1,10 +1,7 @@
 import type { FilePurposeEnum } from '@nbos/database';
 
 const PURPOSE_SUBFOLDER: Partial<Record<FilePurposeEnum, string>> = {
-  OFFER_DRAFT: 'offers',
-  OFFER_SENT: 'offers',
-  OFFER_APPROVED: 'offers',
-  MESSENGER_PROOF: 'screenshots',
+  OFFER: 'offers',
   CONTRACT: 'contracts',
   HANDOFF_DOCUMENT: 'handoff',
   DESIGN_ASSET: 'design',

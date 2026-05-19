@@ -81,7 +81,6 @@ export interface Deal {
   offerLink: string | null;
   offerFileUrl: string | null;
   offerScreenshotUrl: string | null;
-  responseDueAt: string | null;
   contractSignedAt: string | null;
   contractFileUrl: string | null;
   maintenanceStartAt: string | null;
@@ -184,7 +183,6 @@ export const dealsApi = {
     offerLink?: string;
     offerFileUrl?: string;
     offerScreenshotUrl?: string;
-    responseDueAt?: string;
     contractSignedAt?: string;
     contractFileUrl?: string;
     maintenanceStartAt?: string;

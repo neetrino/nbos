@@ -152,13 +152,7 @@ export function DealGeneralTab({
           disabled={formDisabled}
           sectionClassName={SECTION_STRETCH}
         />
-        <DealOfferContractSection
-          dealId={deal.id}
-          draft={draft}
-          patchDraft={patchDraft}
-          disabled={formDisabled}
-          sectionClassName={SECTION_STRETCH}
-        />
+        <DealOfferContractSection dealId={deal.id} />
         <DealContactTeamSection
           deal={deal}
           draft={draft}

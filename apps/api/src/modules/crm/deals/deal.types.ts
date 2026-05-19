@@ -26,7 +26,6 @@ export interface CreateDealDto {
   offerLink?: string | null;
   offerFileUrl?: string | null;
   offerScreenshotUrl?: string | null;
-  responseDueAt?: string | null;
   contractSignedAt?: string | null;
   contractFileUrl?: string | null;
   maintenanceStartAt?: string | null;

@@ -231,7 +231,7 @@ describe('DriveService', () => {
         storageKey: 'Drive/projects/p1/offer.pdf',
         mimeType: 'application/pdf',
         sizeBytes: 123,
-        purpose: 'OFFER_APPROVED',
+        purpose: 'OFFER',
         createdById: 'employee-1',
         link: {
           entityType: 'DEAL',
@@ -246,7 +246,7 @@ describe('DriveService', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             fileType: 'DOCUMENT',
-            purpose: 'OFFER_APPROVED',
+            purpose: 'OFFER',
             versions: {
               create: expect.objectContaining({
                 versionNumber: 1,

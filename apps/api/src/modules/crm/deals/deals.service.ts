@@ -156,7 +156,6 @@ export class DealsService {
         offerLink: data.offerLink,
         offerFileUrl: data.offerFileUrl,
         offerScreenshotUrl: data.offerScreenshotUrl,
-        responseDueAt: data.responseDueAt ? new Date(data.responseDueAt) : undefined,
         contractSignedAt: data.contractSignedAt ? new Date(data.contractSignedAt) : undefined,
         contractFileUrl: data.contractFileUrl,
         maintenanceStartAt: data.maintenanceStartAt ? new Date(data.maintenanceStartAt) : undefined,
@@ -270,9 +269,6 @@ export class DealsService {
         ...(data.offerScreenshotUrl !== undefined && {
           offerScreenshotUrl: data.offerScreenshotUrl,
         }),
-        ...(data.responseDueAt !== undefined && {
-          responseDueAt: data.responseDueAt ? new Date(data.responseDueAt) : null,
-        }),
         ...(data.contractSignedAt !== undefined && {
           contractSignedAt: data.contractSignedAt ? new Date(data.contractSignedAt) : null,
         }),
@@ -312,7 +308,7 @@ export class DealsService {
     }
 
     const [linkedOfferAssetCount, linkedContractAssetCount] = await Promise.all([
-      this.countLinkedDealAssets(id, ['OFFER_DRAFT', 'OFFER_SENT', 'OFFER_APPROVED']),
+      this.countLinkedDealAssets(id, ['OFFER']),
       this.countLinkedDealAssets(id, ['CONTRACT']),
     ]);
     validateDealStageGate({ ...current, linkedOfferAssetCount, linkedContractAssetCount }, status);
@@ -415,7 +411,7 @@ export class DealsService {
 
   private async countLinkedDealAssets(
     dealId: string,
-    purposes: Array<'OFFER_DRAFT' | 'OFFER_SENT' | 'OFFER_APPROVED' | 'CONTRACT'>,
+    purposes: Array<'OFFER' | 'CONTRACT'>,
   ): Promise<number> {
     return this.prisma.fileLink.count({
       where: {

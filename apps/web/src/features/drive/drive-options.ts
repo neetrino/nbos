@@ -62,10 +62,7 @@ export interface DriveSpaceOption {
 export const STATUS_FILTERS: DriveStatusFilter[] = ['ACTIVE', 'APPROVED', 'ARCHIVED'];
 
 export const PURPOSE_OPTIONS = [
-  'OFFER_DRAFT',
-  'OFFER_SENT',
-  'OFFER_APPROVED',
-  'MESSENGER_PROOF',
+  'OFFER',
   'CONTRACT',
   'HANDOFF_DOCUMENT',
   'DESIGN_ASSET',
@@ -98,7 +95,7 @@ export const DRIVE_LIBRARIES: DriveLibraryOption[] = [
     icon: BriefcaseBusiness,
     sourceModules: ['CRM', 'DEALS'],
     entityTypes: ['DEAL', 'LEAD'],
-    purposes: ['OFFER_DRAFT', 'OFFER_SENT', 'OFFER_APPROVED', 'MESSENGER_PROOF', 'CONTRACT'],
+    purposes: ['OFFER', 'CONTRACT'],
   },
   {
     key: 'projects',
