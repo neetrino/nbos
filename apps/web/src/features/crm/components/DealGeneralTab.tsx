@@ -12,6 +12,7 @@ import { systemListsApi } from '@/lib/api/systemLists';
 import { employeesApi } from '@/lib/api/employees';
 import {
   DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
+  DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
 } from '@/components/shared';
 import { cn } from '@/lib/utils';
@@ -154,7 +155,7 @@ export function DealGeneralTab({
             searchContacts={searchContacts}
             searchEmployees={searchEmployees}
             disabled={formDisabled}
-            sectionClassName={SECTION_STRETCH}
+            sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
           />
           <DealMarketingSection
             deal={deal}
@@ -165,15 +166,15 @@ export function DealGeneralTab({
             searchContacts={searchContacts}
             onRefresh={onRefresh}
             disabled={formDisabled}
-            sectionClassName={SECTION_STRETCH}
+            sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
           />
           <DealNotesSection
             draft={draft}
             patchDraft={patchDraft}
             disabled={formDisabled}
-            sectionClassName={SECTION_STRETCH}
+            sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
           />
-          <DealSourceLeadSection deal={deal} className="sm:col-span-2" />
+          <DealSourceLeadSection deal={deal} className={DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS} />
         </div>
       </div>
 

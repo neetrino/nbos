@@ -37,6 +37,9 @@ export const DETAIL_SHEET_PAIRED_COLUMNS_CLASS =
 /** Stretch a section card to the full height of its grid row. */
 export const DETAIL_SHEET_SECTION_STRETCH_CLASS = 'flex h-full min-h-0 flex-col';
 
+/** Span both columns in {@link DETAIL_SHEET_PAIRED_COLUMNS_CLASS} (full row width). */
+export const DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS = 'sm:col-span-2';
+
 /** Body inside a stretched section — stacks fields and absorbs extra row height. */
 export const DETAIL_SHEET_SECTION_BODY_CLASS = 'flex flex-1 flex-col space-y-4';
 
