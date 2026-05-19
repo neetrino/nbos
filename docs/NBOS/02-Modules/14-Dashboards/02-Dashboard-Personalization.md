@@ -82,6 +82,15 @@ Personal link может вести на:
 
 ## Widget personalization
 
+Dashboard widgets должны использовать общий page-level widget foundation там, где это подходит:
+
+```text
+Common Widget System:
+  docs/NBOS/05-UI-Specifications/08-Common-Widget-System.md
+```
+
+Dashboard остаётся персональным Control Center. `Common Widget System` даёт только reusable shell/layout behavior.
+
 Виджеты можно:
 
 - показать;
@@ -90,6 +99,8 @@ Personal link может вести на:
 - закрепить;
 - заменить на другой виджет;
 - свернуть в compact mode.
+
+Phone widget editing не входит в MVP. Dashboard customization рассчитан на desktop и, где это удобно, tablet screens.
 
 ## User preferences model
 

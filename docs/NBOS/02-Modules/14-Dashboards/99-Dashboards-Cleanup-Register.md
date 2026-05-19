@@ -139,6 +139,8 @@ Future platform registry still needed:
 - feature flag;
 - default roles.
 
+Shared widget shell/layout behavior должен следовать `05-UI-Specifications/08-Common-Widget-System.md`. Dashboard владеет Control Center behavior; common widget system владеет reusable desktop/tablet widget infrastructure.
+
 ### C1a. Personal links are not available as pinned actions
 
 Статус: `PARTIAL DONE` (2026-04-30)
@@ -217,7 +219,7 @@ Dashboard не должен падать, если один модуль нед�
 5. ~~Add PersonalLink support inside Dashboard pinned actions.~~ Done P0 (2026-04-30): model, API and dashboard rendering.
 6. ~~Add Priority Feed MVP.~~ Done P0 (2026-04-30): support/tasks/invoices signals.
 7. ~~Convert current KPI cards into optional widgets.~~ Done P0 (2026-04-30): lightweight mini analytics, no heavy charts.
-8. Add Widget Library registry.
+8. Add Widget Library registry aligned with `05-UI-Specifications/08-Common-Widget-System.md`.
 9. ~~Add module projections.~~ Partial P0 (2026-04-30): central lightweight Dashboard projection endpoint.
 10. Add Analytics/Reports separation.
 11. Add announcements/confirmations.
@@ -231,4 +233,5 @@ Dashboard не должен падать, если один модуль нед�
 - scheduled reports;
 - advanced cohort analysis;
 - real-time websocket for every widget;
+- phone widget editing;
 - drag-and-drop dashboard grid if it delays MVP too much.
