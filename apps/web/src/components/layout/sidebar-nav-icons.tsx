@@ -18,8 +18,8 @@ import {
   FileText,
   Mail,
   KeyRound,
-  Settings,
   Megaphone,
+  Shield,
 } from 'lucide-react';
 
 const SIDEBAR_NAV_ICONS: Record<SidebarModuleKey, ReactNode> = {
@@ -42,7 +42,7 @@ const SIDEBAR_NAV_ICONS: Record<SidebarModuleKey, ReactNode> = {
   mail: <Mail size={20} />,
   credentials: <KeyRound size={20} />,
   reports: <BarChart3 size={20} />,
-  settings: <Settings size={20} />,
+  settings: <Shield size={20} />,
 };
 
 export function getSidebarNavIcon(key: SidebarModuleKey): ReactNode {

@@ -265,7 +265,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
   },
   {
     key: 'settings',
-    label: 'Settings / Admin',
+    label: 'Platform Admin',
     href: '/settings',
     children: [
       { label: 'General', href: '/settings', permission: { module: 'COMPANY', action: 'EDIT' } },
