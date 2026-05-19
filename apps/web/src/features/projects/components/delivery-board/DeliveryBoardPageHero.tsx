@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 import { LayoutGrid, LayoutList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,10 +10,19 @@ import {
   ViewModeSwitch,
   type ViewModeOption,
 } from '@/components/shared';
-import { DeliveryBoardKindSegmented } from './DeliveryBoardKindSegmented';
 import type { DeliveryBoardKindFilter } from './project-delivery-board-model';
 import type { DeliveryBoardClosedFiltersInput } from './delivery-board-closed-filters';
 import type { ClosedFilterOptions } from './delivery-board-closed-filters';
+import type {
+  ActiveFilterOptions,
+  DeliveryBoardActiveFiltersInput,
+} from './delivery-board-active-filters';
+import { DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS } from './delivery-board-active-filters';
+import {
+  activeFiltersToHeroValues,
+  patchActiveFiltersFromHero,
+  useDeliveryBoardActiveHeroFilterConfigs,
+} from './use-delivery-board-active-hero-filters';
 import {
   closedFiltersToHeroValues,
   patchClosedFiltersFromHero,
@@ -40,11 +49,28 @@ const CLOSED_VIEW_OPTIONS: ViewModeOption<'LIST' | 'BOARD'>[] = [
   },
 ];
 
+const DEFAULT_CLOSED_FILTERS: DeliveryBoardClosedFiltersInput = {
+  search: '',
+  projectId: '',
+  companyId: '',
+  ownerId: '',
+  productLineKey: '',
+  closedFrom: '',
+  closedTo: '',
+  deadlineResult: 'ALL',
+  result: 'ALL',
+};
+
 export interface DeliveryBoardPageHeroProps {
   pipelineTab: 'active' | 'closed';
   onPipelineTabChange: (tab: 'active' | 'closed') => void;
   kindFilter: DeliveryBoardKindFilter;
   onKindFilterChange: (kind: DeliveryBoardKindFilter) => void;
+  activeFilters: DeliveryBoardActiveFiltersInput;
+  onActiveFiltersChange: (next: DeliveryBoardActiveFiltersInput) => void;
+  activeFilterOptions: ActiveFilterOptions;
+  activeFilteredCount: number;
+  activeTotalCount: number;
   closedFilters: DeliveryBoardClosedFiltersInput;
   onClosedFiltersChange: (next: DeliveryBoardClosedFiltersInput) => void;
   closedFilterOptions: ClosedFilterOptions;
@@ -59,6 +85,11 @@ export function DeliveryBoardPageHero({
   onPipelineTabChange,
   kindFilter,
   onKindFilterChange,
+  activeFilters,
+  onActiveFiltersChange,
+  activeFilterOptions,
+  activeFilteredCount,
+  activeTotalCount,
   closedFilters,
   onClosedFiltersChange,
   closedFilterOptions,
@@ -67,36 +98,43 @@ export function DeliveryBoardPageHero({
   projectFilterId,
   onClearProjectFilter,
 }: DeliveryBoardPageHeroProps) {
+  const activeHeroFilterConfigs = useDeliveryBoardActiveHeroFilterConfigs(activeFilterOptions);
   const closedHeroFilterConfigs = useDeliveryBoardClosedHeroFilterConfigs(closedFilterOptions);
 
-  const closedSearch = useMemo(
-    () => (
-      <IntegratedSearchFilters
-        search={closedFilters.search}
-        onSearchChange={(value) => onClosedFiltersChange({ ...closedFilters, search: value })}
-        searchPlaceholder="Search closed items…"
-        filters={closedHeroFilterConfigs}
-        filterValues={closedFiltersToHeroValues(closedFilters)}
-        onFilterChange={(key, value) =>
-          onClosedFiltersChange(patchClosedFiltersFromHero(closedFilters, key, value))
-        }
-        onClearAll={() =>
-          onClosedFiltersChange({
-            search: '',
-            projectId: '',
-            companyId: '',
-            ownerId: '',
-            productLineKey: '',
-            closedFrom: '',
-            closedTo: '',
-            deadlineResult: 'ALL',
-            result: 'ALL',
-          })
-        }
-      />
-    ),
-    [closedFilters, closedHeroFilterConfigs, onClosedFiltersChange],
+  const handleHeroFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (pipelineTab === 'active') {
+        const next = patchActiveFiltersFromHero(kindFilter, activeFilters, key, value);
+        onKindFilterChange(next.kindFilter);
+        onActiveFiltersChange(next.filters);
+        return;
+      }
+      const next = patchClosedFiltersFromHero(kindFilter, closedFilters, key, value);
+      onKindFilterChange(next.kindFilter);
+      onClosedFiltersChange(next.filters);
+    },
+    [
+      activeFilters,
+      closedFilters,
+      kindFilter,
+      onActiveFiltersChange,
+      onClosedFiltersChange,
+      onKindFilterChange,
+      pipelineTab,
+    ],
   );
+
+  const handleClearAll = useCallback(() => {
+    onKindFilterChange('ALL');
+    if (pipelineTab === 'active') {
+      onActiveFiltersChange({ ...DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS });
+      return;
+    }
+    onClosedFiltersChange({ ...DEFAULT_CLOSED_FILTERS });
+  }, [onActiveFiltersChange, onClosedFiltersChange, onKindFilterChange, pipelineTab]);
+
+  const countLabel =
+    pipelineTab === 'active' ? `${activeFilteredCount} of ${activeTotalCount} cards` : null;
 
   return (
     <PageHero
@@ -109,10 +147,29 @@ export function DeliveryBoardPageHero({
           ariaLabel="Delivery pipeline"
         />
       }
-      secondaryTabs={
-        <DeliveryBoardKindSegmented value={kindFilter} onValueChange={onKindFilterChange} />
+      search={
+        pipelineTab === 'active' ? (
+          <IntegratedSearchFilters
+            search={activeFilters.search}
+            onSearchChange={(value) => onActiveFiltersChange({ ...activeFilters, search: value })}
+            searchPlaceholder="Search by name, project, or code…"
+            filters={activeHeroFilterConfigs}
+            filterValues={activeFiltersToHeroValues(kindFilter, activeFilters)}
+            onFilterChange={handleHeroFilterChange}
+            onClearAll={handleClearAll}
+          />
+        ) : (
+          <IntegratedSearchFilters
+            search={closedFilters.search}
+            onSearchChange={(value) => onClosedFiltersChange({ ...closedFilters, search: value })}
+            searchPlaceholder="Search closed items…"
+            filters={closedHeroFilterConfigs}
+            filterValues={closedFiltersToHeroValues(kindFilter, closedFilters)}
+            onFilterChange={handleHeroFilterChange}
+            onClearAll={handleClearAll}
+          />
+        )
       }
-      search={pipelineTab === 'closed' ? closedSearch : undefined}
       viewMode={
         pipelineTab === 'closed' ? (
           <ViewModeSwitch
@@ -123,17 +180,22 @@ export function DeliveryBoardPageHero({
         ) : undefined
       }
       trailing={
-        projectFilterId ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-            onClick={onClearProjectFilter}
-          >
-            Clear project filter
-          </Button>
-        ) : null
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {countLabel ? (
+            <span className="text-muted-foreground text-xs tabular-nums">{countLabel}</span>
+          ) : null}
+          {projectFilterId ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={onClearProjectFilter}
+            >
+              Clear project filter
+            </Button>
+          ) : null}
+        </div>
       }
     />
   );

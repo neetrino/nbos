@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
 
 const SEARCH_PLACEHOLDER = 'Search by name or filename…';
 
@@ -23,10 +24,12 @@ export function DriveToolbar({
         aria-hidden
       />
       <Input
+        {...LIST_SEARCH_INPUT_PROPS}
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder={SEARCH_PLACEHOLDER}
         aria-label={SEARCH_PLACEHOLDER}
+        role="searchbox"
         className={cn(
           variant === 'header' ? 'pl-11' : 'pl-9',
           variant === 'header' &&

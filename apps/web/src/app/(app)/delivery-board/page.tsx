@@ -11,7 +11,11 @@ import {
   buildClosedFilterOptions,
   type DeliveryBoardClosedFiltersInput,
 } from '@/features/projects/components/delivery-board/delivery-board-closed-filters';
-import { DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS } from '@/features/projects/components/delivery-board/delivery-board-active-filters';
+import {
+  applyDeliveryBoardActiveFilters,
+  buildActiveFilterOptions,
+  DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS,
+} from '@/features/projects/components/delivery-board/delivery-board-active-filters';
 import { DeliveryBoardClosedTable } from '@/features/projects/components/delivery-board/DeliveryBoardClosedTable';
 import { DeliveryItemDetailSheet } from '@/features/projects/components/delivery-board/DeliveryItemDetailSheet';
 import { mergeDeliveryBoardItems } from '@/features/projects/components/delivery-board/delivery-board-item-adapters';
@@ -21,6 +25,8 @@ import {
 } from '@/features/projects/components/delivery-board/delivery-board-list-fetch';
 import {
   countDeliveryAggregates,
+  filterBoardItems,
+  getActiveBoardItems,
   getItemId,
   getItemKey,
   getItemLifecycle,
@@ -125,6 +131,21 @@ export default function DeliveryBoardPage() {
 
   const summaryCounts = useMemo(() => countDeliveryAggregates(scopedItems), [scopedItems]);
 
+  const activeItemsBase = useMemo(() => {
+    const boardItems = filterBoardItems(scopedItems, kindFilter, 'ACTIVE');
+    return getActiveBoardItems(boardItems);
+  }, [scopedItems, kindFilter]);
+
+  const activeFilterOptions = useMemo(
+    () => buildActiveFilterOptions(activeItemsBase),
+    [activeItemsBase],
+  );
+
+  const activeFilteredCount = useMemo(
+    () => applyDeliveryBoardActiveFilters(activeItemsBase, activePipelineFilters).length,
+    [activeItemsBase, activePipelineFilters],
+  );
+
   const closedBaseItems = useMemo(() => {
     let closed = scopedItems.filter((item) => Boolean(getItemLifecycle(item)?.isTerminal));
     if (kindFilter === 'PRODUCT') {
@@ -179,6 +200,11 @@ export default function DeliveryBoardPage() {
             onPipelineTabChange={setPipelineTab}
             kindFilter={kindFilter}
             onKindFilterChange={setKindFilter}
+            activeFilters={activePipelineFilters}
+            onActiveFiltersChange={setActivePipelineFilters}
+            activeFilterOptions={activeFilterOptions}
+            activeFilteredCount={activeFilteredCount}
+            activeTotalCount={activeItemsBase.length}
             closedFilters={closedFilters}
             onClosedFiltersChange={setClosedFilters}
             closedFilterOptions={closedFilterOptions}
@@ -208,10 +234,6 @@ export default function DeliveryBoardPage() {
                 kindFilter={kindFilter}
                 onKindFilterChange={setKindFilter}
                 activePipelineFilters={activePipelineFilters}
-                onActivePipelineFiltersChange={setActivePipelineFilters}
-                onClearActivePipelineFilters={() =>
-                  setActivePipelineFilters({ ...DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS })
-                }
               />
             </TabsContent>
             <TabsContent value="closed" className="mt-4 space-y-4">

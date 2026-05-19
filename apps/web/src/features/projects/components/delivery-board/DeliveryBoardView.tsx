@@ -4,10 +4,8 @@ import { useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { DeliveryLifecycleActionDialog } from '../DeliveryLifecycleActionDialog';
 import { DeliveryBoardClosedBoard } from './DeliveryBoardClosedBoard';
-import { DeliveryBoardActiveFiltersToolbar } from './DeliveryBoardActiveFiltersToolbar';
 import {
   applyDeliveryBoardActiveFilters,
-  buildActiveFilterOptions,
   type DeliveryBoardActiveFiltersInput,
 } from './delivery-board-active-filters';
 import { DeliveryBoardStageGateDialog } from './DeliveryBoardStageGateDialog';
@@ -47,10 +45,8 @@ export interface DeliveryBoardViewProps {
   /** Controlled kind filter; use with `onKindFilterChange` when `showBoardHeader` is false. */
   kindFilter?: DeliveryBoardKindFilter;
   onKindFilterChange?: (filter: DeliveryBoardKindFilter) => void;
-  /** When set with handlers, shows search + filters above the active kanban (global board). */
+  /** When set, applies search/owner/status filters to the active kanban (hero owns the UI). */
   activePipelineFilters?: DeliveryBoardActiveFiltersInput;
-  onActivePipelineFiltersChange?: (next: DeliveryBoardActiveFiltersInput) => void;
-  onClearActivePipelineFilters?: () => void;
 }
 
 export function DeliveryBoardView({
@@ -65,8 +61,6 @@ export function DeliveryBoardView({
   kindFilter: kindFilterProp,
   onKindFilterChange: onKindFilterChangeProp,
   activePipelineFilters,
-  onActivePipelineFiltersChange,
-  onClearActivePipelineFilters,
 }: DeliveryBoardViewProps) {
   const [internalKind, setInternalKind] = useState<DeliveryBoardKindFilter>('ALL');
   const isKindControlled = kindFilterProp !== undefined && onKindFilterChangeProp !== undefined;
@@ -92,21 +86,12 @@ export function DeliveryBoardView({
   const isClosedMode = effectiveStatus === 'CLOSED';
   const boardItems = filterBoardItems(items, kindFilter, effectiveStatus);
   const activeItemsBase = useMemo(() => getActiveBoardItems(boardItems), [boardItems]);
-  const activeFilterOptions = useMemo(
-    () => buildActiveFilterOptions(activeItemsBase),
-    [activeItemsBase],
-  );
-  const enableActivePipelineToolbar =
-    Boolean(activePipelineFilters) &&
-    Boolean(onActivePipelineFiltersChange) &&
-    Boolean(onClearActivePipelineFilters) &&
-    lockedStatusFilter === 'ACTIVE' &&
-    !isClosedMode;
-
   const activeItemsForKanban = useMemo(() => {
-    if (!enableActivePipelineToolbar || !activePipelineFilters) return activeItemsBase;
+    if (!activePipelineFilters || lockedStatusFilter !== 'ACTIVE' || isClosedMode) {
+      return activeItemsBase;
+    }
     return applyDeliveryBoardActiveFilters(activeItemsBase, activePipelineFilters);
-  }, [enableActivePipelineToolbar, activePipelineFilters, activeItemsBase]);
+  }, [activePipelineFilters, activeItemsBase, isClosedMode, lockedStatusFilter]);
 
   const closedItems = getClosedBoardItems(boardItems);
   const aggregateCounts = countDeliveryAggregates(items);
@@ -136,21 +121,6 @@ export function DeliveryBoardView({
         </div>
       ) : null}
       <div className="flex min-h-0 min-w-0 flex-1 basis-0 flex-col gap-0">
-        {enableActivePipelineToolbar &&
-        activePipelineFilters &&
-        onActivePipelineFiltersChange &&
-        onClearActivePipelineFilters ? (
-          <div className="shrink-0 pb-3">
-            <DeliveryBoardActiveFiltersToolbar
-              value={activePipelineFilters}
-              onChange={onActivePipelineFiltersChange}
-              options={activeFilterOptions}
-              filteredCount={activeItemsForKanban.length}
-              totalCount={activeItemsBase.length}
-              onClear={onClearActivePipelineFilters}
-            />
-          </div>
-        ) : null}
         <div
           className={cn(
             'flex min-h-0 min-w-0 flex-1 basis-0 flex-col',

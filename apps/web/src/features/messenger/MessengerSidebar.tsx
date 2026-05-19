@@ -1,4 +1,5 @@
 import { Hash, Search } from 'lucide-react';
+import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
 import type { MessengerSearchResultRow } from '@/lib/api/messenger';
 import type { MessengerActiveView } from './messenger-active-view';
 import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from './messenger-sidebar.constants';
@@ -59,10 +60,12 @@ export function MessengerSidebar({
         <div className="relative">
           <Search size={15} className="absolute top-1/2 left-2.5 -translate-y-1/2 text-black/30" />
           <input
+            {...LIST_SEARCH_INPUT_PROPS}
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search..."
+            role="searchbox"
             className="w-full rounded-lg border border-black/[0.08] bg-[#F5F5F0] py-1.5 pr-3 pl-8 text-sm text-black placeholder:text-black/35 focus:ring-2 focus:ring-[#E5A84B]/30 focus:outline-none"
           />
         </div>

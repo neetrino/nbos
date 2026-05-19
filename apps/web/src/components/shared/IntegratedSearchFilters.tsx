@@ -11,6 +11,7 @@ import {
   IntegratedSearchFilterChips,
 } from './integrated-search-filters/integrated-search-filter-chips';
 import { IntegratedSearchFilterPanel } from './integrated-search-filters/integrated-search-filter-panel';
+import { LIST_SEARCH_INPUT_PROPS } from './list-search-input-props';
 
 export interface IntegratedSearchFiltersProps {
   search: string;
@@ -127,12 +128,14 @@ export function IntegratedSearchFilters({
             aria-hidden
           />
           <Input
+            {...LIST_SEARCH_INPUT_PROPS}
             value={search}
             onChange={(event) => handleSearchChange(event.target.value)}
             onFocus={openPanel}
             onClick={openPanel}
             placeholder={searchPlaceholder}
             aria-label={searchPlaceholder}
+            role="searchbox"
             aria-expanded={hasFilters ? panelOpen : undefined}
             aria-controls={hasFilters ? 'integrated-search-filter-panel' : undefined}
             className="h-9 border-0 bg-transparent pl-8 shadow-none focus-visible:ring-0"

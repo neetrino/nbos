@@ -6,6 +6,7 @@ import { Mail, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
 import {
   mailApi,
   type MailAccountHealthSummaryRow,
@@ -264,12 +265,13 @@ export default function MailInboxPage() {
             <CardHeader className="space-y-3 pb-2">
               <CardTitle className="text-base">Threads</CardTitle>
               <Input
-                type="search"
+                {...LIST_SEARCH_INPUT_PROPS}
                 placeholder="Search by subject…"
                 value={threadSearchDraft}
                 onChange={(e) => setThreadSearchDraft(e.target.value)}
                 className="max-w-md"
                 aria-label="Search threads by subject"
+                role="searchbox"
               />
             </CardHeader>
             <CardContent>

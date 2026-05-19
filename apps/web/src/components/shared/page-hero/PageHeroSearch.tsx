@@ -3,6 +3,7 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { LIST_SEARCH_INPUT_PROPS } from '../list-search-input-props';
 
 export interface PageHeroSearchProps {
   value: string;
@@ -24,10 +25,12 @@ export function PageHeroSearch({
         aria-hidden
       />
       <Input
+        {...LIST_SEARCH_INPUT_PROPS}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
+        role="searchbox"
         className="bg-muted/50 border-border/60 h-11 rounded-2xl pl-11 text-base shadow-none md:text-base"
       />
     </div>

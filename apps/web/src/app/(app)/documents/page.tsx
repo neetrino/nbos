@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
@@ -85,11 +86,13 @@ export default function DocumentsHomePage() {
           Search
         </label>
         <Input
+          {...LIST_SEARCH_INPUT_PROPS}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search title, body, section, tags…"
           className="max-w-xl"
           aria-label="Search documents"
+          role="searchbox"
         />
       </div>
 

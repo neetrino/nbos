@@ -93,10 +93,12 @@ Several URLs under one module; tabs = **Links**.
 
 ---
 
-## Phase 3 — Delivery Board (Pattern A + secondaryTabs)
+## Phase 3 — Delivery Board (Pattern A)
 
-- [x] `DeliveryBoardPageHero` — Active/Closed + kind tabs + closed minimal filters
-- [x] Removed duplicate header + `DeliveryBoardClosedFiltersBar` from closed tab body
+- [x] `DeliveryBoardPageHero` — Active/Closed tabs; search + filters in hero (`IntegratedSearchFilters`)
+- [x] Active: Type (All/Products/Extensions) + Owner + Status in filter panel; default Type = All
+- [x] Closed: Type + Project + Result in filter panel
+- [x] Removed second-row `DeliveryBoardActiveFiltersToolbar` and kind segmented under hero
 - [ ] Visual QA + Settings sheet (if needed)
 
 ---

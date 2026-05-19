@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import type { ReportDefinition, SavedReportView } from '@/lib/api/reports';
 import { reportsApi } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
 import { buildReportFilters, savedViewToFilters, type ReportFilterState } from '../report-filters';
 
 type PeriodPreset = 'THIS_MONTH' | 'THIS_QUARTER' | 'THIS_YEAR';
@@ -168,9 +169,11 @@ function SearchInput({
     <div className="relative">
       <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
       <Input
+        {...LIST_SEARCH_INPUT_PROPS}
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder="Search reports..."
+        role="searchbox"
         className="bg-background/80 pl-9"
       />
     </div>

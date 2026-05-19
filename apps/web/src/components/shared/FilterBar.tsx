@@ -22,6 +22,7 @@ import {
   FILTER_BAR_SEARCH_ACTIVE,
   FILTER_BAR_TOOLBAR_SURFACE,
 } from './filter-bar-constants';
+import { LIST_SEARCH_INPUT_PROPS } from './list-search-input-props';
 
 export interface FilterOption {
   value: string;
@@ -90,9 +91,11 @@ function FilterBarSearchField({
         )}
       />
       <Input
+        {...LIST_SEARCH_INPUT_PROPS}
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder={searchPlaceholder}
+        role="searchbox"
         className={cn(
           'w-full pl-10',
           FILTER_BAR_CONTROL_PILL,
