@@ -26,7 +26,7 @@
 
 ### Tier 3 — Hard (last — design first)
 
-- [ ] **Support** `/support` — stats row, kanban/list, FilterBar → hero
+- [x] **Support** `/support` — split monolith, PageHero + IntegratedSearchFilters (stats removed)
 - [ ] **Finance** — Pattern B layout + all list pages
 
 ---

@@ -1,0 +1,19 @@
+import { LayoutGrid, List } from 'lucide-react';
+import type { ViewModeOption } from '@/components/shared';
+
+export type SupportPageViewMode = 'kanban' | 'list';
+
+export const SUPPORT_PAGE_VIEW_OPTIONS: ViewModeOption<SupportPageViewMode>[] = [
+  {
+    value: 'kanban',
+    label: 'Board',
+    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Board view',
+  },
+  {
+    value: 'list',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
+  },
+];
