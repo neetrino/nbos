@@ -185,6 +185,12 @@ describe('LeadsService', () => {
     it('updates status', async () => {
       prisma.lead.findUnique.mockResolvedValue({
         id: '1',
+        status: 'CONTACT_ESTABLISHED',
+        contactName: 'Jane Doe',
+        phone: '+37400000000',
+        email: null,
+        assignedTo: 'emp-1',
+        notes: 'Qualified',
         source: 'SALES',
         sourceDetail: 'COLD_CALL',
         sourcePartnerId: null,
@@ -201,6 +207,12 @@ describe('LeadsService', () => {
     it('blocks meaningful movement without attribution', async () => {
       prisma.lead.findUnique.mockResolvedValue({
         id: '1',
+        status: 'CONTACT_ESTABLISHED',
+        contactName: 'Jane Doe',
+        phone: '+37400000000',
+        email: null,
+        assignedTo: 'emp-1',
+        notes: 'Reached out',
         source: 'MARKETING',
         sourceDetail: null,
         sourcePartnerId: null,
@@ -216,6 +228,11 @@ describe('LeadsService', () => {
       prisma.lead.findUnique.mockResolvedValue({
         id: '1',
         status: 'SPAM',
+        contactName: 'Jane Doe',
+        phone: '+37400000000',
+        email: null,
+        assignedTo: null,
+        notes: 'Spam duplicate',
         source: 'PARTNER',
         sourceDetail: null,
         sourcePartnerId: null,
@@ -274,6 +291,11 @@ describe('LeadsService', () => {
       prisma.lead.findUnique.mockResolvedValue({
         id: '1',
         status: 'NEW',
+        contactName: 'Jane Doe',
+        phone: '+37400000000',
+        email: null,
+        assignedTo: null,
+        notes: null,
         source: null,
         sourceDetail: null,
         sourcePartnerId: null,

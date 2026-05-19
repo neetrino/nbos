@@ -311,7 +311,8 @@ export class DealsService {
       current = await this.findById(id);
     }
 
-    validateDealStageGate(current, status);
+    const linkedOfferAssetCount = await this.countLinkedOfferAssets(id);
+    validateDealStageGate({ ...current, linkedOfferAssetCount }, status);
     if (status === 'WON') {
       validateDealWonGate(current, override);
     }
@@ -407,6 +408,21 @@ export class DealsService {
       type: deal.type as PartnerReferralTermsDealSnapshot['type'],
       paymentType: deal.paymentType as PartnerReferralTermsDealSnapshot['paymentType'],
     };
+  }
+
+  private async countLinkedOfferAssets(dealId: string): Promise<number> {
+    return this.prisma.fileLink.count({
+      where: {
+        entityType: 'DEAL',
+        entityId: dealId,
+        unlinkedAt: null,
+        fileAsset: {
+          deletedAt: null,
+          archivedAt: null,
+          purpose: { in: ['OFFER_DRAFT', 'OFFER_SENT', 'OFFER_APPROVED'] },
+        },
+      },
+    });
   }
 
   private appendOverrideNote(notes: string | null, reason: string): string {

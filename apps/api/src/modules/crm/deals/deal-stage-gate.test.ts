@@ -50,15 +50,26 @@ describe('validateDealStageGate', () => {
     expect(() => validateDealStageGate(withFinance, 'SEND_OFFER')).toThrow(BadRequestException);
   });
 
-  it('requires productCategory, productType, sent date, and proof for PRODUCT at SEND_OFFER', () => {
+  it('requires productCategory, productType, and offer proof for PRODUCT at SEND_OFFER', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
-      offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
+    };
+    expect(() => validateDealStageGate(deal, 'SEND_OFFER')).not.toThrow();
+  });
+
+  it('accepts linked Drive offer files at SEND_OFFER', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      linkedOfferAssetCount: 1,
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).not.toThrow();
   });
@@ -70,7 +81,6 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
-      offerSentAt: new Date(),
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
   });
@@ -82,7 +92,6 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
-      offerSentAt: new Date(),
       offerFileUrl: '   ',
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);

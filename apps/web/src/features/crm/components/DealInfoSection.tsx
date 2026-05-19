@@ -12,7 +12,7 @@ import {
   Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { InlineField, SearchField } from '@/components/shared';
+import { DetailSheetSection, InlineField, SearchField } from '@/components/shared';
 import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
 import type { SearchLoader } from './deal-general-tab.types';
 import type { DealGeneralDraft } from './deal-general-form-state';
@@ -41,14 +41,7 @@ export function DealInfoSection({
   const isExtension = draft.type === 'EXTENSION';
 
   return (
-    <section
-      id={DEAL_SHEET_SECTION.INFO}
-      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent"
-    >
-      <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
-        <Tag size={12} />
-        Deal Info
-      </h4>
+    <DetailSheetSection id={DEAL_SHEET_SECTION.INFO} title="Deal Info" icon={<Tag size={12} />}>
       <div className="grid grid-cols-2 gap-x-8 gap-y-4">
         <InlineField
           variant="controlled"
@@ -252,6 +245,6 @@ export function DealInfoSection({
           />
         )}
       </div>
-    </section>
+    </DetailSheetSection>
   );
 }

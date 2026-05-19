@@ -22,6 +22,16 @@ export const DEAL_STAGE_GATE_ORDER = [
   'WON',
 ] as const;
 
+/** Lead statuses in pipeline order (excludes SPAM; matches lead stage gate). */
+export const LEAD_STAGE_GATE_ORDER = [
+  'NEW',
+  'ON_HOLD',
+  'DIDNT_GET_THROUGH',
+  'CONTACT_ESTABLISHED',
+  'MQL',
+  'SQL',
+] as const;
+
 export type DealStageGateKey = (typeof DEAL_STAGE_GATE_ORDER)[number];
 
 export function requiresMarketingWhichOneSelection(

@@ -1,12 +1,9 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import {
-  assertAttributionUpdateAllowed,
-  type AttributionForValidation,
-  validateAttributionGate,
-} from '../attribution-gate';
+import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
+import { validateLeadStageGate } from './lead-stage-gate';
 
 const ACTIVE_LEAD_STATUSES = new Set([
   'NEW',
@@ -196,6 +193,10 @@ export class LeadsService {
       );
     }
     const nextStatus = data.status ?? existing.status;
+    if (data.status && data.status !== existing.status) {
+      this.assertStatusTransitionAllowed(existing.status, data.status);
+      validateLeadStageGate(mergeLeadForStageGate(existing, data), data.status);
+    }
     const attributionLocked = this.requiresAttribution(nextStatus);
     const attributionPatch = buildLeadAttributionPatch(data);
     assertAttributionUpdateAllowed({
@@ -247,9 +248,7 @@ export class LeadsService {
   async updateStatus(id: string, status: string) {
     const lead = await this.findById(id);
     this.assertStatusTransitionAllowed(lead.status, status);
-    if (this.requiresAttribution(status)) {
-      validateAttributionGate(lead, 'Lead', status);
-    }
+    validateLeadStageGate(lead, status);
     return this.update(id, { status });
   }
 
@@ -332,6 +331,43 @@ function pickLeadAttribution(lead: {
     sourceContactId: lead.sourceContactId,
     marketingAccountId: lead.marketingAccountId,
     marketingActivityId: lead.marketingActivityId,
+  };
+}
+
+function mergeLeadForStageGate(
+  existing: {
+    contactName: string;
+    phone: string | null;
+    email: string | null;
+    assignedTo: string | null;
+    notes: string | null;
+    source: string | null;
+    sourceDetail: string | null;
+    sourcePartnerId: string | null;
+    sourceContactId: string | null;
+    marketingAccountId: string | null;
+    marketingActivityId: string | null;
+  },
+  data: UpdateLeadDto,
+) {
+  return {
+    contactName: data.contactName ?? existing.contactName,
+    phone: data.phone !== undefined ? data.phone : existing.phone,
+    email: data.email !== undefined ? data.email : existing.email,
+    assignedTo: data.assignedTo !== undefined ? data.assignedTo : existing.assignedTo,
+    notes: data.notes !== undefined ? data.notes : existing.notes,
+    source: data.source !== undefined ? data.source : existing.source,
+    sourceDetail: data.sourceDetail !== undefined ? data.sourceDetail : existing.sourceDetail,
+    sourcePartnerId:
+      data.sourcePartnerId !== undefined ? data.sourcePartnerId : existing.sourcePartnerId,
+    sourceContactId:
+      data.sourceContactId !== undefined ? data.sourceContactId : existing.sourceContactId,
+    marketingAccountId:
+      data.marketingAccountId !== undefined ? data.marketingAccountId : existing.marketingAccountId,
+    marketingActivityId:
+      data.marketingActivityId !== undefined
+        ? data.marketingActivityId
+        : existing.marketingActivityId,
   };
 }
 

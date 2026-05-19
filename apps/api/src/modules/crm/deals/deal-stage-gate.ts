@@ -20,6 +20,7 @@ interface DealForValidation {
   responseDueAt: Date | null;
   contractSignedAt: Date | null;
   contractFileUrl: string | null;
+  linkedOfferAssetCount?: number;
   orders?: Array<{ invoices?: unknown[] }>;
   source: string | null;
   sourceDetail: string | null;
@@ -56,6 +57,7 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
   const isProductLike = deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE';
   const isExtension = deal.type === 'EXTENSION';
   const hasOfferProof = Boolean(
+    (deal.linkedOfferAssetCount ?? 0) > 0 ||
     hasNonBlankValue(deal.offerLink) ||
     hasNonBlankValue(deal.offerFileUrl) ||
     hasNonBlankValue(deal.offerScreenshotUrl),
@@ -89,16 +91,10 @@ export function validateDealStageGate(deal: DealForValidation, targetStatus: str
         message: 'Product type is required for PRODUCT/OUTSOURCE deals at SEND_OFFER',
       });
     }
-    if (!deal.offerSentAt) {
-      errors.push({
-        field: 'offerSentAt',
-        message: 'Offer sent date is required at SEND_OFFER',
-      });
-    }
     if (!hasOfferProof) {
       errors.push({
         field: 'offerProof',
-        message: 'Offer link, file URL, or screenshot URL is required at SEND_OFFER',
+        message: 'At least one offer file (Drive) or legacy offer URL is required at SEND_OFFER',
       });
     }
     if (deal.source === 'PARTNER') {
