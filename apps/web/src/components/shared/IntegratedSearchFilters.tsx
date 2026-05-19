@@ -1,10 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import type { FilterConfig } from './FilterBar';
 import {
@@ -34,8 +33,10 @@ export function IntegratedSearchFilters({
   onClearAll,
   className,
 }: IntegratedSearchFiltersProps) {
-  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState(filterValues);
+  const hasFilters = Boolean(filters?.length);
 
   const chips = useMemo(
     () => buildActiveFilterChips(filters, filterValues),
@@ -43,10 +44,29 @@ export function IntegratedSearchFilters({
   );
   const hasQuery = search.trim().length > 0 || chips.length > 0;
 
-  const handleOpenChange = (next: boolean) => {
-    if (next) setDraftFilters(filterValues);
-    setOpen(next);
-  };
+  useEffect(() => {
+    if (!panelOpen) setDraftFilters(filterValues);
+  }, [filterValues, panelOpen]);
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (containerRef.current?.contains(target)) return;
+      if (target.closest('[data-slot="select-content"]')) return;
+      setPanelOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setPanelOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [panelOpen]);
 
   const handleRemoveChip = (key: string) => {
     const filter = filters?.find((f) => f.key === key);
@@ -57,7 +77,7 @@ export function IntegratedSearchFilters({
 
   const handleApply = () => {
     if (!onFilterChange || !filters) {
-      setOpen(false);
+      setPanelOpen(false);
       return;
     }
     for (const filter of filters) {
@@ -66,7 +86,7 @@ export function IntegratedSearchFilters({
         onFilterChange(filter.key, next);
       }
     }
-    setOpen(false);
+    setPanelOpen(false);
   };
 
   const handleReset = () => {
@@ -77,40 +97,41 @@ export function IntegratedSearchFilters({
     setDraftFilters(cleared);
     onClearAll?.();
     onSearchChange('');
-    setOpen(false);
+    setPanelOpen(false);
+  };
+
+  const openPanel = () => {
+    if (!hasFilters) return;
+    setDraftFilters(filterValues);
+    setPanelOpen(true);
   };
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
+    <div ref={containerRef} className={cn('relative min-w-0', className)}>
       <div
         className={cn(
           'bg-muted/50 border-border/60 flex min-h-11 min-w-0 items-center gap-2 rounded-2xl border px-2 shadow-none',
           hasQuery && 'ring-primary/30 ring-2',
-          className,
+          panelOpen && hasFilters && 'ring-primary/20 ring-2',
         )}
       >
         <IntegratedSearchFilterChips chips={chips} onRemove={handleRemoveChip} />
-        <PopoverTrigger
-          nativeButton={false}
-          render={(props) => (
-            <div {...props} className="relative min-w-0 flex-1">
-              <Search
-                className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2"
-                aria-hidden
-              />
-              <Input
-                value={search}
-                onChange={(event) => onSearchChange(event.target.value)}
-                onFocus={() => {
-                  if (filters?.length) setOpen(true);
-                }}
-                placeholder={searchPlaceholder}
-                aria-label={searchPlaceholder}
-                className="h-9 border-0 bg-transparent pl-8 shadow-none focus-visible:ring-0"
-              />
-            </div>
-          )}
-        />
+        <div className="relative min-w-0 flex-1">
+          <Search
+            className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2"
+            aria-hidden
+          />
+          <Input
+            value={search}
+            onChange={(event) => onSearchChange(event.target.value)}
+            onFocus={openPanel}
+            placeholder={searchPlaceholder}
+            aria-label={searchPlaceholder}
+            aria-expanded={hasFilters ? panelOpen : undefined}
+            aria-controls={hasFilters ? 'integrated-search-filter-panel' : undefined}
+            className="h-9 border-0 bg-transparent pl-8 shadow-none focus-visible:ring-0"
+          />
+        </div>
         {hasQuery ? (
           <Button
             type="button"
@@ -124,8 +145,17 @@ export function IntegratedSearchFilters({
           </Button>
         ) : null}
       </div>
-      {filters?.length ? (
-        <PopoverContent className="w-[min(100vw-2rem,28rem)] p-4" align="start">
+
+      {hasFilters && panelOpen ? (
+        <div
+          id="integrated-search-filter-panel"
+          role="dialog"
+          aria-label="Search filters"
+          className={cn(
+            'bg-popover/95 text-popover-foreground border-border/60',
+            'ring-border/40 absolute top-[calc(100%+0.5rem)] right-0 left-0 z-50 rounded-xl border p-4 shadow-xl ring-1',
+          )}
+        >
           <IntegratedSearchFilterPanel
             filters={filters}
             filterValues={draftFilters}
@@ -133,8 +163,8 @@ export function IntegratedSearchFilters({
             onApply={handleApply}
             onReset={handleReset}
           />
-        </PopoverContent>
+        </div>
       ) : null}
-    </Popover>
+    </div>
   );
 }
