@@ -41,8 +41,8 @@
 
 ## Phase 2 — CRM & workspaces
 
-- [ ] `/crm/leads` — PageHero + integrated search/filters; + Lead primary; Settings for exports
-- [ ] `/crm/deals` — same
+- [x] `/crm/leads` — PageHero + integrated search/filters; + Lead primary; Settings for exports
+- [x] `/crm/deals` — same
 - [ ] `/work-spaces` — PageHero; Settings for directory options
 - [ ] `/clients` companies + contacts — PageHero
 

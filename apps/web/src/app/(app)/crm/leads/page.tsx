@@ -5,13 +5,15 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  PageHeader,
-  FilterBar,
+  PageHero,
+  ViewModeSwitch,
+  IntegratedSearchFilters,
   KanbanBoard,
   EmptyState,
   ErrorState,
   LoadingState,
   type KanbanColumn,
+  type ViewModeOption,
 } from '@/components/shared';
 import { LeadCard } from '@/features/crm/components/LeadCard';
 import { LeadSheet, type LeadSheetBlockerNavigation } from '@/features/crm/components/LeadSheet';
@@ -54,6 +56,21 @@ import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
+
+const LEAD_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
+  {
+    value: 'kanban',
+    label: 'Board',
+    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Kanban board view',
+  },
+  {
+    value: 'list',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
+  },
+];
 
 interface PendingLeadTransition {
   id: string;
@@ -427,9 +444,6 @@ export default function LeadsPipelinePage() {
     items: leads.filter((l) => l.status === stage.key),
   }));
 
-  const totalCount = leads.length;
-  const activeCount = leads.filter((l) => !['SPAM', 'SQL'].includes(l.status)).length;
-
   const filterConfigs = [
     {
       key: 'source',
@@ -445,47 +459,27 @@ export default function LeadsPipelinePage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <div className="shrink-0">
-        <PageHeader
-          title="Lead Pipeline"
-          description={`${totalCount} leads total · ${activeCount} active`}
-        >
-          <div className="border-border flex rounded-lg border">
-            <Button
-              variant={view === 'kanban' ? 'secondary' : 'ghost'}
-              size="icon-sm"
-              onClick={() => setView('kanban')}
-              className="rounded-r-none"
-            >
-              <LayoutGrid size={14} />
-            </Button>
-            <Button
-              variant={view === 'list' ? 'secondary' : 'ghost'}
-              size="icon-sm"
-              onClick={() => setView('list')}
-              className="rounded-l-none"
-            >
-              <List size={14} />
-            </Button>
-          </div>
+      <PageHero
+        title="Lead Pipeline"
+        search={
+          <IntegratedSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search leads by name, email, phone…"
+            filters={filterConfigs}
+            filterValues={filters}
+            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+            onClearAll={() => setFilters({})}
+          />
+        }
+        viewMode={<ViewModeSwitch value={view} onChange={setView} options={LEAD_VIEW_OPTIONS} />}
+        trailing={
           <Button onClick={() => setShowCreate(true)}>
-            <Plus size={16} />
+            <Plus size={16} aria-hidden />
             New Lead
           </Button>
-        </PageHeader>
-      </div>
-
-      <div className="shrink-0">
-        <FilterBar
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search leads by name, email, phone..."
-          filters={filterConfigs}
-          filterValues={filters}
-          onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-          onClearFilters={() => setFilters({})}
-        />
-      </div>
+        }
+      />
 
       {loading ? (
         <LoadingState variant="cards" count={3} />

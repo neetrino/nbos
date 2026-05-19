@@ -5,14 +5,16 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, LayoutGrid, List, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  PageHeader,
-  FilterBar,
+  PageHero,
+  ViewModeSwitch,
+  IntegratedSearchFilters,
   KanbanBoard,
   EmptyState,
   ErrorState,
   LoadingState,
   StatusBadge,
   type KanbanColumn,
+  type ViewModeOption,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
 import { DealSheet, type DealSheetBlockerNavigation } from '@/features/crm/components/DealSheet';
@@ -55,6 +57,21 @@ import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
+
+const DEAL_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
+  {
+    value: 'kanban',
+    label: 'Board',
+    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Kanban board view',
+  },
+  {
+    value: 'list',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
+  },
+];
 
 interface PendingDealTransition {
   id: string;
@@ -444,9 +461,6 @@ export default function DealsPipelinePage() {
     items: deals.filter((d) => d.status === stage.key),
   }));
 
-  const totalCount = deals.length;
-  const activeCount = deals.filter((d) => d.status !== 'FAILED' && d.status !== 'WON').length;
-
   const filterConfigs = [
     {
       key: 'type',
@@ -462,47 +476,27 @@ export default function DealsPipelinePage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <div className="shrink-0">
-        <PageHeader
-          title="Deal Pipeline"
-          description={`${totalCount} deals · ${activeCount} active`}
-        >
-          <div className="border-border flex rounded-lg border">
-            <Button
-              variant={view === 'kanban' ? 'secondary' : 'ghost'}
-              size="icon-sm"
-              onClick={() => setView('kanban')}
-              className="rounded-r-none"
-            >
-              <LayoutGrid size={14} />
-            </Button>
-            <Button
-              variant={view === 'list' ? 'secondary' : 'ghost'}
-              size="icon-sm"
-              onClick={() => setView('list')}
-              className="rounded-l-none"
-            >
-              <List size={14} />
-            </Button>
-          </div>
+      <PageHero
+        title="Deal Pipeline"
+        search={
+          <IntegratedSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search deals by code, name, contact, company, orders, marketing…"
+            filters={filterConfigs}
+            filterValues={filters}
+            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+            onClearAll={() => setFilters({})}
+          />
+        }
+        viewMode={<ViewModeSwitch value={view} onChange={setView} options={DEAL_VIEW_OPTIONS} />}
+        trailing={
           <Button onClick={() => setShowCreate(true)}>
-            <Plus size={16} />
+            <Plus size={16} aria-hidden />
             New Deal
           </Button>
-        </PageHeader>
-      </div>
-
-      <div className="shrink-0">
-        <FilterBar
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search deals by code, name, contact, company, orders, marketing…"
-          filters={filterConfigs}
-          filterValues={filters}
-          onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-          onClearFilters={() => setFilters({})}
-        />
-      </div>
+        }
+      />
 
       {loading ? (
         <LoadingState variant="cards" count={3} />
