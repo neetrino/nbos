@@ -1,6 +1,6 @@
 'use client';
 
-import { User, Building2, Calendar, MoreHorizontal, Link2, Puzzle } from 'lucide-react';
+import { Building2, Calendar, MoreHorizontal, Link2, Puzzle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import { StatusBadge } from '@/components/shared';
 import { formatAmount, AMD_CURRENCY_SYMBOL } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
+import { getDealCardMetaLabel, getDealDisplayTitle } from '../utils/crm-entity-display';
 
 interface DealCardProps {
   deal: Deal;
@@ -22,9 +23,8 @@ interface DealCardProps {
 
 export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
   const typeVisual = getDealTypePresentation(deal.type);
-  const contactName = deal.contact
-    ? `${deal.contact.firstName} ${deal.contact.lastName}`.trim()
-    : null;
+  const title = getDealDisplayTitle(deal);
+  const metaLabel = getDealCardMetaLabel(deal);
   const deadlineOverdue =
     deal.deadline && deal.status !== 'WON' && deal.status !== 'FAILED'
       ? new Date(deal.deadline).getTime() < Date.now()
@@ -37,23 +37,22 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
       onClick={() => onClick(deal)}
     >
       <div className="flex items-start gap-2">
-        <div
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${typeVisual.iconWrapClassName}`}
+        <span
+          className={`rounded-lg p-1.5 ${typeVisual.iconWrapClassName}`}
+          title={typeVisual.label}
         >
           <TypeIcon size={14} aria-hidden />
-        </div>
+        </span>
         <div className="min-w-0 flex-1">
-          <p className="text-muted-foreground text-[10px] font-medium uppercase">{deal.code}</p>
-          <h4 className="text-foreground mt-0.5 truncate text-sm leading-snug font-semibold">
-            {contactName ?? deal.name ?? deal.code}
-          </h4>
-          {deal.company?.name ? (
+          <p className="truncate text-sm leading-snug font-semibold">{title}</p>
+          {metaLabel ? (
+            <p className="text-muted-foreground mt-0.5 truncate text-xs">{metaLabel}</p>
+          ) : null}
+          {deal.company?.name && metaLabel !== deal.company.name ? (
             <p className="text-muted-foreground mt-0.5 flex items-center gap-1 truncate text-xs">
               <Building2 size={10} className="shrink-0" />
               {deal.company.name}
             </p>
-          ) : deal.name && contactName ? (
-            <p className="text-muted-foreground mt-0.5 truncate text-xs">{deal.name}</p>
           ) : null}
         </div>
         <DealCardMenu deal={deal} onClick={onClick} onStatusChange={onStatusChange} />

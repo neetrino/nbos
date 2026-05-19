@@ -22,6 +22,9 @@ import {
   isDealGeneralDirty,
   type DealGeneralDraft,
 } from './deal-general-form-state';
+import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
+import { getDealDisplayTitle } from '../utils/crm-entity-display';
+import { getDealTypePresentation } from '@/lib/deal-type-visual';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -156,7 +159,9 @@ export function DealSheet({
 
   if (!deal) return null;
 
-  const headerTitle = generalDraft?.name?.trim() || deal.name?.trim() || deal.code;
+  const typeVisual = getDealTypePresentation(deal.type);
+  const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(deal);
+  const TypeIcon = typeVisual.Icon;
 
   const startEditing = () => {
     setNameValue(generalDraft?.name ?? deal.name ?? '');
@@ -195,45 +200,32 @@ export function DealSheet({
         }
         className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[75vw]"
       >
-        {/* ── Header ── */}
-        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
-          <div className="flex items-start gap-2">
-            <div className="min-w-0 flex-1">
-              {editingName ? (
-                <input
-                  ref={nameInputRef}
-                  value={nameValue}
-                  onChange={(e) => setNameValue(e.target.value)}
-                  onBlur={commitNameToDraft}
-                  onKeyDown={handleNameKeyDown}
-                  placeholder="Deal name..."
-                  className="border-primary text-foreground placeholder:text-muted-foreground/70 w-full border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
-                />
-              ) : (
-                <h2
-                  onClick={startEditing}
-                  className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-                  title="Click to edit deal name"
-                >
-                  {headerTitle}
-                </h2>
-              )}
-              <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
-                {deal.code}
-              </p>
-            </div>
-            {onDelete ? (
-              <div className="pt-0.5">
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(deal.id)}>
-                    <Trash2 />
-                    Delete
-                  </DropdownMenuItem>
-                </DetailSheetSettingsMenu>
-              </div>
-            ) : null}
-          </div>
-        </div>
+        <CrmSheetEntityHeader
+          title={headerTitle}
+          entityLabel={typeVisual.label}
+          EntityIcon={TypeIcon}
+          headerIconClassName={typeVisual.headerIconClassName}
+          headerBadgeClassName={typeVisual.headerBadgeClassName}
+          editing={editingName}
+          nameValue={nameValue}
+          onNameValueChange={setNameValue}
+          onCommitName={commitNameToDraft}
+          onNameKeyDown={handleNameKeyDown}
+          nameInputRef={nameInputRef}
+          namePlaceholder="Deal name..."
+          titleEditHint="Click to edit deal name"
+          onStartEditing={startEditing}
+          actions={
+            onDelete ? (
+              <DetailSheetSettingsMenu>
+                <DropdownMenuItem variant="destructive" onClick={() => onDelete(deal.id)}>
+                  <Trash2 />
+                  Delete
+                </DropdownMenuItem>
+              </DetailSheetSettingsMenu>
+            ) : null
+          }
+        />
 
         {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
         <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">

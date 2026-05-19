@@ -14,6 +14,8 @@ import { StatusBadge } from '@/components/shared';
 import { getLeadSource } from '../constants/leadPipeline';
 import { formatMarketingChannelLabel } from '../utils/formatMarketingChannel';
 import type { Lead } from '@/lib/api/leads';
+import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
+import { getLeadCardMetaLabel, getLeadDisplayTitle } from '../utils/crm-entity-display';
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 const CLOCK_REFRESH_MS = 60 * 1000;
@@ -51,6 +53,10 @@ interface LeadCardProps {
 }
 
 export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: LeadCardProps) {
+  const leadVisual = LEAD_ENTITY_VISUAL;
+  const title = getLeadDisplayTitle(lead);
+  const metaLabel = getLeadCardMetaLabel(lead);
+  const LeadIcon = leadVisual.Icon;
   const source = getLeadSource(lead.source);
   const channelLabel = formatMarketingChannelLabel(lead);
   const currentTime = useSyncExternalStore(
@@ -64,19 +70,20 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
 
   return (
     <div
-      className="group border-border bg-card hover:border-primary/25 cursor-pointer rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
+      className={`group cursor-pointer rounded-xl border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${leadVisual.cardShellClassName}`}
       onClick={() => onClick(lead)}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start gap-2">
+        <span
+          className={`rounded-lg p-1.5 ${leadVisual.iconWrapClassName}`}
+          title={leadVisual.label}
+        >
+          <LeadIcon size={14} aria-hidden />
+        </span>
         <div className="min-w-0 flex-1">
-          <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-            {lead.code}
-          </p>
-          <h4 className="text-foreground mt-0.5 truncate text-sm font-semibold">
-            {lead.contactName || lead.name || lead.code}
-          </h4>
-          {lead.name && lead.contactName ? (
-            <p className="text-muted-foreground mt-0.5 truncate text-xs">{lead.name}</p>
+          <p className="truncate text-sm leading-snug font-semibold">{title}</p>
+          {metaLabel ? (
+            <p className="text-muted-foreground mt-0.5 truncate text-xs">{metaLabel}</p>
           ) : null}
         </div>
         <LeadCardMenu

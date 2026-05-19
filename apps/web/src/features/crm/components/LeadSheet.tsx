@@ -23,6 +23,9 @@ import {
   isLeadGeneralDirty,
   type LeadGeneralDraft,
 } from './lead-general-form-state';
+import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
+import { getLeadDisplayTitle } from '../utils/crm-entity-display';
+import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -143,7 +146,9 @@ export function LeadSheet({
 
   const currentStage = LEAD_STAGES.find((s) => s.key === lead.status);
   const isTerminal = currentStage ? 'terminal' in currentStage : false;
-  const headerTitle = generalDraft?.name?.trim() || lead.name?.trim() || lead.code;
+  const leadVisual = LEAD_ENTITY_VISUAL;
+  const headerTitle = generalDraft?.name?.trim() || getLeadDisplayTitle(lead);
+  const LeadIcon = leadVisual.Icon;
 
   const startEditingName = () => {
     setNameValue(generalDraft?.name ?? lead.name ?? '');
@@ -182,34 +187,23 @@ export function LeadSheet({
         }
         className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:data-[side=right]:w-[75vw]"
       >
-        {/* ── Header ── */}
-        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
-          <div className="flex flex-wrap items-start gap-2">
-            <div className="min-w-0 flex-1">
-              {editingName ? (
-                <input
-                  ref={nameInputRef}
-                  value={nameValue}
-                  onChange={(e) => setNameValue(e.target.value)}
-                  onBlur={commitNameToDraft}
-                  onKeyDown={handleNameKeyDown}
-                  placeholder="Inquiry title (product / service)…"
-                  className="border-primary text-foreground placeholder:text-muted-foreground/70 w-full border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
-                />
-              ) : (
-                <h2
-                  onClick={startEditingName}
-                  className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-                  title="Click to edit inquiry title (product / service)"
-                >
-                  {headerTitle}
-                </h2>
-              )}
-              <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
-                {lead.code}
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 pt-0.5">
+        <CrmSheetEntityHeader
+          title={headerTitle}
+          entityLabel={leadVisual.label}
+          EntityIcon={LeadIcon}
+          headerIconClassName={leadVisual.headerIconClassName}
+          headerBadgeClassName={leadVisual.headerBadgeClassName}
+          editing={editingName}
+          nameValue={nameValue}
+          onNameValueChange={setNameValue}
+          onCommitName={commitNameToDraft}
+          onNameKeyDown={handleNameKeyDown}
+          nameInputRef={nameInputRef}
+          namePlaceholder="Inquiry title (product / service)…"
+          titleEditHint="Click to edit inquiry title (product / service)"
+          onStartEditing={startEditingName}
+          actions={
+            <>
               {!isTerminal && lead.status === 'MQL' && onConvertToDeal ? (
                 <Button type="button" size="sm" onClick={() => onConvertToDeal(lead)}>
                   <ArrowRight size={14} className="mr-1" />
@@ -217,18 +211,16 @@ export function LeadSheet({
                 </Button>
               ) : null}
               {onDelete ? (
-                <div className="pt-0.5">
-                  <DetailSheetSettingsMenu>
-                    <DropdownMenuItem variant="destructive" onClick={() => onDelete(lead.id)}>
-                      <Trash2 />
-                      Delete
-                    </DropdownMenuItem>
-                  </DetailSheetSettingsMenu>
-                </div>
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(lead.id)}>
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
               ) : null}
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {/* ── Pipeline Stages ── */}
         <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
