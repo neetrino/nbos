@@ -18,6 +18,7 @@ import {
   DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS,
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
 } from './detail-sheet-classes';
+import { resolveSelectOptionLabel } from './select-option-label';
 
 type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link' | 'date';
 
@@ -133,7 +134,11 @@ function InlineFieldUncontrolled({
     }
   };
 
-  const displayStr = value != null && value !== '' ? String(value) : null;
+  const rawDisplayStr = value != null && value !== '' ? String(value) : null;
+  const displayStr =
+    rawDisplayStr && type === 'select' && options
+      ? resolveSelectOptionLabel(rawDisplayStr, options)
+      : rawDisplayStr;
 
   return (
     <div className={cn('group relative', className)}>
@@ -167,7 +172,11 @@ function InlineFieldUncontrolled({
                 }}
               >
                 <SelectTrigger className="h-8 w-full text-sm">
-                  <SelectValue placeholder={placeholder ?? 'Select...'} />
+                  <SelectValue placeholder={placeholder ?? 'Select...'}>
+                    {(selected: string | null) =>
+                      selected ? resolveSelectOptionLabel(selected, options) : null
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {options.map((opt) => (

@@ -16,6 +16,7 @@ import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
 } from './detail-sheet-classes';
+import { resolveSelectOptionLabel } from './select-option-label';
 
 type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link' | 'date';
 
@@ -101,7 +102,11 @@ export function ControlledInlineField({
             disabled={disabled}
           >
             <SelectTrigger className={cn(INNER_CONTROL_CLASS, showClear && 'pr-1')}>
-              <SelectValue placeholder={placeholder ?? 'Select...'} />
+              <SelectValue placeholder={placeholder ?? 'Select...'}>
+                {(selected: string | null) =>
+                  selected ? resolveSelectOptionLabel(selected, options) : null
+                }
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {options.map((opt) => (
