@@ -13,8 +13,16 @@ export function KanbanDropPlaceholder({
   className?: string;
   heightPx?: number | null;
 }) {
-  const minHeight = heightPx && heightPx > 0 ? heightPx : KANBAN_DROP_PLACEHOLDER_MIN_HEIGHT_PX;
-  const style: CSSProperties = { minHeight };
+  const measured = typeof heightPx === 'number' && heightPx > 0;
+  const style: CSSProperties = measured
+    ? { height: heightPx, minHeight: heightPx }
+    : { minHeight: KANBAN_DROP_PLACEHOLDER_MIN_HEIGHT_PX };
 
-  return <div className={cn(KANBAN_DROP_PLACEHOLDER_CLASS, className)} style={style} aria-hidden />;
+  return (
+    <div
+      className={cn(KANBAN_DROP_PLACEHOLDER_CLASS, measured && '!min-h-0', className)}
+      style={style}
+      aria-hidden
+    />
+  );
 }

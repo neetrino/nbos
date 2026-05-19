@@ -24,6 +24,10 @@ import {
   KANBAN_COLUMN_LIST_DATA_ATTR,
 } from '@/components/shared/kanban/kanban-insert-index';
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban-column-surface';
+import {
+  findKanbanCardRowByItemId,
+  measureKanbanCardRowHeight,
+} from '@/components/shared/kanban/kanban-drag-metrics';
 import { useKanbanPointerInsert } from '@/components/shared/kanban/use-kanban-pointer-insert';
 import { cn } from '@/lib/utils';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
@@ -114,8 +118,8 @@ export function DeliveryKanbanBoard({
       if (!key) return;
       const item = itemByKey.get(key);
       if (item) setActiveItem(item);
-      const height = event.active.rect.current.initial?.height;
-      setDragCardHeightPx(height && height > 0 ? Math.round(height) : null);
+      const row = findKanbanCardRowByItemId(key);
+      setDragCardHeightPx(row ? measureKanbanCardRowHeight(row) : null);
     },
     [itemByKey],
   );

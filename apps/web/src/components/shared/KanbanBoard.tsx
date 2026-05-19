@@ -10,6 +10,7 @@ import {
   KanbanInsertPlaceholderAfterList,
   KanbanInsertPlaceholderBeforeItem,
 } from './kanban/KanbanColumnInsertPlaceholder';
+import { measureKanbanCardRowHeight } from './kanban/kanban-drag-metrics';
 import {
   findKanbanColumnList,
   KANBAN_CARD_ROW_DATA_ATTR,
@@ -133,8 +134,7 @@ export function KanbanBoard<T>({
   /* ── Drag handlers ── */
   const handleDragStart = useCallback(
     (id: string, col: string, event: React.DragEvent<HTMLDivElement>) => {
-      const height = Math.round(event.currentTarget.getBoundingClientRect().height);
-      setDragCardHeightPx(height > 0 ? height : null);
+      setDragCardHeightPx(measureKanbanCardRowHeight(event.currentTarget));
       setDragItem({ id, fromColumn: col });
       setTerminalDropTarget(null);
     },
