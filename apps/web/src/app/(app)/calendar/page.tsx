@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PageHero, PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
 import { calendarApi, type CalendarEventProjection, type CalendarLayer } from '@/lib/api/calendar';
 import { Button } from '@/components/ui/button';
 import { CreateMeetingCalendarDialog } from './calendar-create-meeting-dialog';
@@ -13,11 +14,11 @@ import {
 } from './calendar-ui-constants';
 import { CalendarEmptyState, DayCell, EventCard, WEEKDAYS } from './calendar-view-parts';
 
-const LAYERS: Array<{ key: CalendarLayer; label: string }> = [
-  { key: 'ALL', label: 'All' },
-  { key: 'MEETINGS', label: 'Meetings' },
-  { key: 'DELIVERY_DEADLINES', label: 'Delivery Deadlines' },
-  { key: 'PERSONAL', label: 'Personal' },
+const CALENDAR_LAYER_OPTIONS: PageHeroTabOption<CalendarLayer>[] = [
+  { value: 'ALL', label: 'All' },
+  { value: 'MEETINGS', label: 'Meetings' },
+  { value: 'DELIVERY_DEADLINES', label: 'Deadlines' },
+  { value: 'PERSONAL', label: 'Personal' },
 ];
 
 function monthRange(date: Date): { from: Date; to: Date } {
@@ -144,38 +145,37 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-foreground text-2xl font-semibold">Calendar</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Meetings, delivery deadlines and personal events only.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {LAYERS.map((item) => (
-            <button
-              key={item.key}
+      <PageHero
+        title="Calendar"
+        tabs={
+          <PageHeroTabs
+            value={layer}
+            onChange={persistLayer}
+            options={CALENDAR_LAYER_OPTIONS}
+            ariaLabel="Calendar layers"
+          />
+        }
+        trailing={
+          <>
+            <Button
               type="button"
-              onClick={() => persistLayer(item.key)}
-              className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                layer === item.key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-              }`}
+              variant="secondary"
+              size="sm"
+              onClick={() => setMeetingOpen(true)}
             >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
+              New meeting
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => setPersonalOpen(true)}>
+              Personal event
+            </Button>
+          </>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        Meetings, delivery deadlines and personal events only.
+      </p>
 
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button type="button" variant="secondary" size="sm" onClick={() => setMeetingOpen(true)}>
-          New meeting
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => setPersonalOpen(true)}>
-          Personal event
-        </Button>
         <button
           type="button"
           onClick={goToToday}

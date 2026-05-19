@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { EmptyState, ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, PageHero, StatusBadge } from '@/components/shared';
 import {
   getTicketCoverage,
   getTicketPriority,
@@ -65,14 +65,17 @@ export default function SupportChangeControlPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader
+      <PageHero
         title="Support Change Control"
-        description="Dedicated queue for CHANGE_REQUEST tickets and Extension Deal conversion."
-      >
-        <Link href="/support" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
-          Back to Support
-        </Link>
-      </PageHeader>
+        trailing={
+          <Link href="/support" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
+            Back to Support
+          </Link>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        Dedicated queue for CHANGE_REQUEST tickets and Extension Deal conversion.
+      </p>
 
       {loading ? (
         <LoadingState />

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { CircleDollarSign, ShieldCheck, Users } from 'lucide-react';
-import { PageHeader, StatusBadge } from '@/components/shared';
+import { PageHero, StatusBadge } from '@/components/shared';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { bonusesApi, type SalesBonusPolicyRow } from '@/lib/api/bonus';
 
@@ -43,10 +43,11 @@ export default function CompensationPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Compensation"
-        description="Compensation profiles runtime view: base salary coverage, active sales bonus policies, and links to payroll controls."
-      />
+      <PageHero title="Compensation" />
+      <p className="text-muted-foreground text-sm">
+        Compensation profiles runtime view: base salary coverage, active sales bonus policies, and
+        links to payroll controls.
+      </p>
 
       <div className="grid gap-3 md:grid-cols-3">
         <div className="border-border bg-card rounded-2xl border p-4">

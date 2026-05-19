@@ -9,7 +9,7 @@ import {
   SlidersHorizontal,
   ToggleLeft,
 } from 'lucide-react';
-import { PageHeader } from '@/components/shared';
+import { PageHero } from '@/components/shared';
 
 const SETTINGS_SECTIONS = [
   {
@@ -59,10 +59,11 @@ const SETTINGS_SECTIONS = [
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Settings / Admin"
-        description="System administration for platform configuration, technical permissions, integrations, security, feature flags, and audit."
-      />
+      <PageHero title="Settings / Admin" />
+      <p className="text-muted-foreground text-sm">
+        System administration for platform configuration, technical permissions, integrations,
+        security, feature flags, and audit.
+      </p>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {SETTINGS_SECTIONS.map((section) => {

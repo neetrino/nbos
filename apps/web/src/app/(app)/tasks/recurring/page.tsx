@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, PageHero, StatusBadge } from '@/components/shared';
 import { recurringTasksApi, type RecurringTaskTemplate } from '@/lib/api/recurring-tasks';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { CreateRecurringTaskDialog } from '@/features/tasks/components/CreateRecurringTaskDialog';
@@ -41,18 +41,24 @@ export default function RecurringTasksPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Recurring tasks" description="Scheduled task templates">
-        <Link href="/tasks" className={buttonVariants({ variant: 'outline' })}>
-          Back to Tasks
-        </Link>
-        <Button disabled={!creatorId} onClick={() => void fetchTemplates()}>
-          Refresh
-        </Button>
-        <Button disabled={!creatorId} onClick={() => setCreateOpen(true)}>
-          <Plus size={16} />
-          New template
-        </Button>
-      </PageHeader>
+      <PageHero
+        title="Recurring tasks"
+        trailing={
+          <>
+            <Link href="/tasks" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+              Back to Tasks
+            </Link>
+            <Button type="button" disabled={!creatorId} onClick={() => void fetchTemplates()}>
+              Refresh
+            </Button>
+            <Button type="button" disabled={!creatorId} onClick={() => setCreateOpen(true)}>
+              <Plus size={16} aria-hidden />
+              New template
+            </Button>
+          </>
+        }
+      />
+      <p className="text-muted-foreground text-sm">Scheduled task templates</p>
 
       <CreateRecurringTaskDialog
         open={createOpen}

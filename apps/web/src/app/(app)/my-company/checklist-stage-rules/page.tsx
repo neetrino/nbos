@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { ClipboardList, Loader2, Route } from 'lucide-react';
-import { PageHeader, StatusBadge } from '@/components/shared';
+import { PageHero, StatusBadge } from '@/components/shared';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -67,17 +67,21 @@ export default function ChecklistStageRulesPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 pb-10">
-      <PageHeader
+      <PageHero
         title="Delivery checklist stage rules"
-        description="When a product or extension enters a stage, matching rules create checklist instances from the published template snapshot."
-      >
-        <Link
-          href="/my-company/checklist-templates"
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-        >
-          Checklist templates
-        </Link>
-      </PageHeader>
+        trailing={
+          <Link
+            href="/my-company/checklist-templates"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+          >
+            Checklist templates
+          </Link>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        When a product or extension enters a stage, matching rules create checklist instances from
+        the published template snapshot.
+      </p>
 
       <NewStageRuleFormCard templates={templates} onCreated={load} />
 

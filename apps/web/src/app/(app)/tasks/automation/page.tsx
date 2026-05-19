@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { buttonVariants } from '@/components/ui/button';
-import { ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
+import { ErrorState, LoadingState, PageHero, StatusBadge } from '@/components/shared';
 import { automationApi, type AutomationRulesCatalog } from '@/lib/api/automation';
 
 export default function TasksAutomationPage() {
@@ -30,14 +30,17 @@ export default function TasksAutomationPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader
+      <PageHero
         title="Automation & blueprints"
-        description="Event-triggered rules (code) vs product launch task packs (blueprints)"
-      >
-        <Link href="/tasks" className={buttonVariants({ variant: 'outline' })}>
-          Back to Tasks
-        </Link>
-      </PageHeader>
+        trailing={
+          <Link href="/tasks" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+            Back to Tasks
+          </Link>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        Event-triggered rules (code) vs product launch task packs (blueprints)
+      </p>
 
       {loading ? (
         <LoadingState />

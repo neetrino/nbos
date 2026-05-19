@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Check, SlidersHorizontal } from 'lucide-react';
-import { PageHeader } from '@/components/shared';
+import { PageHero } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type {
@@ -148,16 +148,24 @@ function DashboardHeader({
   onToggleEdit: () => void;
 }) {
   return (
-    <PageHeader title="Dashboard">
-      <Button variant={editMode ? 'default' : 'secondary'} size="sm" onClick={onToggleEdit}>
-        {editMode ? (
-          <Check className="h-3.5 w-3.5" />
-        ) : (
-          <SlidersHorizontal className="h-3.5 w-3.5" />
-        )}
-        {editMode ? 'Done' : 'Edit layout'}
-      </Button>
-    </PageHeader>
+    <PageHero
+      title="Dashboard"
+      trailing={
+        <Button
+          type="button"
+          variant={editMode ? 'default' : 'secondary'}
+          size="sm"
+          onClick={onToggleEdit}
+        >
+          {editMode ? (
+            <Check className="h-3.5 w-3.5" aria-hidden />
+          ) : (
+            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
+          )}
+          {editMode ? 'Done' : 'Edit layout'}
+        </Button>
+      }
+    />
   );
 }
 

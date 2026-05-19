@@ -5,7 +5,7 @@ import { Shield, Plus, Save, Users } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, PageHero } from '@/components/shared';
 import {
   Select,
   SelectContent,
@@ -237,17 +237,20 @@ export default function RolesPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader
+      <PageHero
         title="Roles"
-        description="RBAC Admin Panel — manage roles and their permissions."
-      >
-        <PermissionGate module="COMPANY" action="ADD">
-          <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
-            <Plus size={16} />
-            Create Role
-          </Button>
-        </PermissionGate>
-      </PageHeader>
+        trailing={
+          <PermissionGate module="COMPANY" action="ADD">
+            <Button type="button" size="sm" onClick={() => setCreateDialogOpen(true)}>
+              <Plus size={16} aria-hidden />
+              Create Role
+            </Button>
+          </PermissionGate>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        RBAC Admin Panel — manage roles and their permissions.
+      </p>
 
       <div className="border-border bg-card flex flex-col gap-4 rounded-xl border p-4">
         <h3 className="text-foreground flex items-center gap-2 text-sm font-medium">

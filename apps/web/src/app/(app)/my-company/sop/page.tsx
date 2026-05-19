@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ClipboardList, BookOpenText, RefreshCw } from 'lucide-react';
-import { PageHeader, StatusBadge } from '@/components/shared';
+import { PageHero, StatusBadge } from '@/components/shared';
+import { Button } from '@/components/ui/button';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 
 const SOP_REVIEW_DUE_DAYS = 30;
@@ -44,19 +45,19 @@ export default function SopPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHero
         title="SOP & Templates"
-        description="Operational SOP runtime library linked with Documents: review queue, section coverage, and process ownership references."
-      >
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="border-border bg-background hover:bg-muted inline-flex items-center gap-1 rounded-lg border px-3 py-2 text-sm"
-        >
-          <RefreshCw size={14} />
-          Refresh
-        </button>
-      </PageHeader>
+        trailing={
+          <Button type="button" variant="outline" size="sm" onClick={() => void load()}>
+            <RefreshCw size={14} aria-hidden />
+            Refresh
+          </Button>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        Operational SOP runtime library linked with Documents: review queue, section coverage, and
+        process ownership references.
+      </p>
 
       <div className="grid gap-3 md:grid-cols-3">
         <div className="border-border bg-card rounded-2xl border p-4">

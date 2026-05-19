@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { PageHeader, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { PageHero, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
 
 const LIST_KEY_LABELS: Record<string, string> = {
@@ -137,22 +137,27 @@ export function SystemListsPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader
+      <PageHero
         title="System Lists"
-        description="Product Type labels and display order. Codes are managed by the system and cannot be changed."
-      >
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            fetchKeys();
-            fetchOptions();
-          }}
-        >
-          <RefreshCcw size={16} />
-          Refresh
-        </Button>
-      </PageHeader>
+        trailing={
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              fetchKeys();
+              fetchOptions();
+            }}
+          >
+            <RefreshCcw size={16} aria-hidden />
+            Refresh
+          </Button>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        Product Type labels and display order. Codes are managed by the system and cannot be
+        changed.
+      </p>
 
       <div className="border-border bg-card flex flex-col gap-4 rounded-xl border p-4">
         <div className="flex flex-wrap items-center gap-3">
