@@ -33,7 +33,15 @@ export interface DashboardPreferenceProjection {
   visibleWidgets: string[];
   hiddenWidgets: string[];
   compactWidgets: string[];
+  sidebarModuleOrder: string[];
+  hiddenSidebarModules: string[];
   defaultDashboardMode: string;
+}
+
+export interface NavigationShellProjection {
+  sidebarModuleOrder: string[];
+  hiddenSidebarModules: string[];
+  personalLinks: DashboardPersonalLinkProjection[];
 }
 
 export interface DashboardPersonalLinkProjection {

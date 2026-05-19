@@ -186,28 +186,23 @@ Runtime now includes this sidebar structure and safe routes/placeholders. Full M
 
 ### C2. Personal Navigation preferences are missing
 
-Статус: `MISSING CODE / MISSING UI`
+Статус: `DONE (2026-05-19)`
 
-Нужно добавить возможность:
+Реализовано:
 
-- reorder sidebar top-level modules;
+- reorder sidebar top-level modules (Customize menu sheet);
 - hide modules into More / Hidden;
 - restore hidden modules;
-- save preferences per user.
+- save preferences per user (`dashboard_preferences.sidebar_module_order`, `hidden_sidebar_modules`);
+- API: `GET/PATCH /api/me/navigation` (auth-only, без DASHBOARDS permission).
 
 ### C3. My Links are missing
 
-Статус: `MISSING CODE / MISSING UI`
+Статус: `PARTIAL UI (2026-05-19)`
 
-Нужно добавить personal links:
+Реализовано в sidebar customize sheet + рендер секции **My Links** (модель `PersonalLink` уже была).
 
-- internal NBOS URL;
-- external URL;
-- title;
-- icon/color;
-- open in new tab;
-- show in sidebar;
-- show in dashboard.
+Остаток: icon/color picker, admin policy для external links.
 
 ### C4. Dashboard and sidebar do not share personal links
 

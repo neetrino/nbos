@@ -35,6 +35,8 @@ export interface DashboardPreferenceProjection {
   visibleWidgets: string[];
   hiddenWidgets: string[];
   compactWidgets: string[];
+  sidebarModuleOrder: string[];
+  hiddenSidebarModules: string[];
   defaultDashboardMode: string;
 }
 
@@ -61,6 +63,8 @@ export interface UpdateDashboardPreferencePayload {
   visibleWidgets?: string[];
   hiddenWidgets?: string[];
   compactWidgets?: string[];
+  sidebarModuleOrder?: string[];
+  hiddenSidebarModules?: string[];
 }
 
 export interface CreatePersonalLinkPayload {

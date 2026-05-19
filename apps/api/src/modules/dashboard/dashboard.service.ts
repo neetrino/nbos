@@ -8,6 +8,7 @@ import type {
   DashboardPersonalLinkProjection,
   DashboardPreferenceProjection,
   DashboardPriorityProjection,
+  NavigationShellProjection,
 } from './dashboard.types';
 import {
   DASHBOARD_PINNED_ACTION_KEYS,
@@ -20,6 +21,8 @@ import type { CreateDashboardNoteDto } from './dto/create-dashboard-note.dto';
 import type { CreatePersonalLinkDto } from './dto/create-personal-link.dto';
 import type { UpdateDashboardNoteDto } from './dto/update-dashboard-note.dto';
 import type { UpdateDashboardPreferenceDto } from './dto/update-dashboard-preference.dto';
+import type { UpdateNavigationPreferenceDto } from './dto/update-navigation-preference.dto';
+import { sanitizeHiddenSidebarModules, sanitizeSidebarModuleOrder } from './sidebar-navigation';
 
 const PERSONAL_LINK_LIMIT = 12;
 const PERSONAL_LINK_PLACEMENTS = ['SIDEBAR', 'DASHBOARD_PINNED_ACTIONS'] as const;
@@ -66,9 +69,46 @@ export class DashboardService {
         visibleWidgets: sanitizeWidgets(data.visibleWidgets ?? current.visibleWidgets),
         hiddenWidgets: sanitizeWidgets(data.hiddenWidgets ?? current.hiddenWidgets),
         compactWidgets: sanitizeWidgets(data.compactWidgets ?? current.compactWidgets),
+        sidebarModuleOrder: sanitizeSidebarModuleOrder(
+          data.sidebarModuleOrder ?? current.sidebarModuleOrder,
+        ),
+        hiddenSidebarModules: sanitizeHiddenSidebarModules(
+          data.hiddenSidebarModules ?? current.hiddenSidebarModules,
+        ),
       },
     });
     return toPreferenceProjection(saved);
+  }
+
+  async getNavigationShell(employeeId: string): Promise<NavigationShellProjection> {
+    const [preference, personalLinks] = await Promise.all([
+      this.getOrCreatePreference(employeeId),
+      this.listPersonalLinks(employeeId),
+    ]);
+    return {
+      sidebarModuleOrder: preference.sidebarModuleOrder,
+      hiddenSidebarModules: preference.hiddenSidebarModules,
+      personalLinks,
+    };
+  }
+
+  async updateNavigationPreference(
+    employeeId: string,
+    data: UpdateNavigationPreferenceDto,
+  ): Promise<NavigationShellProjection> {
+    const current = await this.getOrCreatePreference(employeeId);
+    await this.prisma.dashboardPreference.update({
+      where: { employeeId },
+      data: {
+        sidebarModuleOrder: sanitizeSidebarModuleOrder(
+          data.sidebarModuleOrder ?? current.sidebarModuleOrder,
+        ),
+        hiddenSidebarModules: sanitizeHiddenSidebarModules(
+          data.hiddenSidebarModules ?? current.hiddenSidebarModules,
+        ),
+      },
+    });
+    return this.getNavigationShell(employeeId);
   }
 
   async createPersonalLink(
@@ -264,6 +304,8 @@ function defaultPreferenceData(role: string | null): DashboardPreferenceProjecti
     visibleWidgets: [...DASHBOARD_WIDGET_KEYS],
     hiddenWidgets: [],
     compactWidgets: [],
+    sidebarModuleOrder: [],
+    hiddenSidebarModules: [],
     defaultDashboardMode: 'control_center',
   };
 }
@@ -379,6 +421,8 @@ function toPreferenceProjection(model: DashboardPreferenceModel): DashboardPrefe
     visibleWidgets: sanitizeWidgets(model.visibleWidgets),
     hiddenWidgets: sanitizeWidgets(model.hiddenWidgets),
     compactWidgets: sanitizeWidgets(model.compactWidgets),
+    sidebarModuleOrder: sanitizeSidebarModuleOrder(model.sidebarModuleOrder),
+    hiddenSidebarModules: sanitizeHiddenSidebarModules(model.hiddenSidebarModules),
     defaultDashboardMode: model.defaultDashboardMode,
   };
 }

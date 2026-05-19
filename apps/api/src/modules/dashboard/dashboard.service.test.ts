@@ -110,6 +110,36 @@ describe('DashboardService', () => {
     expect(prisma.personalLink.create).not.toHaveBeenCalled();
   });
 
+  it('returns navigation shell with sidebar preferences', async () => {
+    const prisma = createMockPrisma();
+    prisma.employee.findUnique.mockResolvedValueOnce({
+      id: 'employee-1',
+      role: { slug: 'seller', name: 'Seller' },
+    });
+    prisma.dashboardPreference.upsert.mockResolvedValueOnce({
+      id: 'pref-1',
+      employeeId: 'employee-1',
+      pinnedActionOrder: [],
+      hiddenPinnedActions: [],
+      visibleWidgets: [],
+      hiddenWidgets: [],
+      compactWidgets: [],
+      sidebarModuleOrder: ['crm', 'tasks'],
+      hiddenSidebarModules: ['mail'],
+      defaultDashboardMode: 'control_center',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    prisma.personalLink.findMany.mockResolvedValueOnce([]);
+    const service = new DashboardService(prisma as unknown as InstanceType<typeof PrismaClient>);
+
+    const shell = await service.getNavigationShell('employee-1');
+
+    expect(shell.sidebarModuleOrder).toEqual(['crm', 'tasks']);
+    expect(shell.hiddenSidebarModules).toEqual(['mail']);
+    expect(shell.personalLinks).toEqual([]);
+  });
+
   it('deletes only current owner personal links', async () => {
     const prisma = createMockPrisma();
     const service = new DashboardService(prisma as unknown as InstanceType<typeof PrismaClient>);

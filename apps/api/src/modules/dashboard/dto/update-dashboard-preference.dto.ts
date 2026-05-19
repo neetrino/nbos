@@ -5,6 +5,7 @@ import {
   DASHBOARD_WIDGET_KEYS,
   DASHBOARD_WIDGET_MAX_COUNT,
 } from '../dashboard.constants';
+import { SIDEBAR_MODULE_KEYS, SIDEBAR_MODULE_MAX_COUNT } from '../sidebar-navigation';
 
 export class UpdateDashboardPreferenceDto {
   @IsOptional()
@@ -36,4 +37,16 @@ export class UpdateDashboardPreferenceDto {
   @ArrayMaxSize(DASHBOARD_WIDGET_MAX_COUNT)
   @IsIn(DASHBOARD_WIDGET_KEYS, { each: true })
   compactWidgets?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(SIDEBAR_MODULE_MAX_COUNT)
+  @IsIn(SIDEBAR_MODULE_KEYS, { each: true })
+  sidebarModuleOrder?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(SIDEBAR_MODULE_MAX_COUNT)
+  @IsIn(SIDEBAR_MODULE_KEYS, { each: true })
+  hiddenSidebarModules?: string[];
 }

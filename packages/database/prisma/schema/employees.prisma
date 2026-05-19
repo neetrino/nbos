@@ -105,6 +105,8 @@ model DashboardPreference {
   visibleWidgets       String[] @map("visible_widgets")
   hiddenWidgets        String[] @map("hidden_widgets")
   compactWidgets       String[] @map("compact_widgets")
+  sidebarModuleOrder   String[] @default([]) @map("sidebar_module_order")
+  hiddenSidebarModules String[] @default([]) @map("hidden_sidebar_modules")
   defaultDashboardMode String   @default("control_center") @map("default_dashboard_mode")
   updatedAt            DateTime @updatedAt @map("updated_at")
   createdAt            DateTime @default(now()) @map("created_at")
