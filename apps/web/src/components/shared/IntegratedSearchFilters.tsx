@@ -101,9 +101,14 @@ export function IntegratedSearchFilters({
   };
 
   const openPanel = () => {
-    if (!hasFilters) return;
+    if (!hasFilters || search.trim().length > 0) return;
     setDraftFilters(filterValues);
     setPanelOpen(true);
+  };
+
+  const handleSearchChange = (value: string) => {
+    onSearchChange(value);
+    if (value.length > 0) setPanelOpen(false);
   };
 
   return (
@@ -123,8 +128,9 @@ export function IntegratedSearchFilters({
           />
           <Input
             value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
+            onChange={(event) => handleSearchChange(event.target.value)}
             onFocus={openPanel}
+            onClick={openPanel}
             placeholder={searchPlaceholder}
             aria-label={searchPlaceholder}
             aria-expanded={hasFilters ? panelOpen : undefined}
