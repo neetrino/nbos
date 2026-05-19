@@ -13,6 +13,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban-column-surface';
 import { cn } from '@/lib/utils';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
@@ -141,7 +142,7 @@ export function DeliveryKanbanBoard({
             'sm:items-stretch',
           )}
         >
-          {columns.map((col) => (
+          {columns.map((col, colIdx) => (
             <div
               key={col.stage}
               className={cn(
@@ -149,7 +150,12 @@ export function DeliveryKanbanBoard({
                 'lg:max-w-none lg:min-w-[288px] lg:flex-1 lg:basis-0',
               )}
             >
-              <KanbanStageColumn stage={col.stage} title={col.label} count={col.items.length}>
+              <KanbanStageColumn
+                stage={col.stage}
+                title={col.label}
+                count={col.items.length}
+                showLeftRule={colIdx > 0}
+              >
                 {col.items.map((item) => (
                   <KanbanDraggableCard
                     key={getItemKey(item)}
@@ -224,11 +230,13 @@ function KanbanStageColumn({
   stage,
   title,
   count,
+  showLeftRule,
   children,
 }: {
   stage: DeliveryActiveStage;
   title: string;
   count: number;
+  showLeftRule: boolean;
   children: ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: deliveryKanbanColId(stage) });
@@ -245,11 +253,12 @@ function KanbanStageColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        'flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-xl',
+        'relative flex h-full min-h-0 min-w-0 flex-1 flex-col',
         DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS,
         isOver && DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS,
       )}
     >
+      {showLeftRule ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}
       {/* Colored header pill — same pattern as KanbanColumnHeader */}
       <div
         className="mb-3 flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5"

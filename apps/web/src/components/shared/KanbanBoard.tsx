@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Plus, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { KanbanColorPicker } from './kanban/KanbanColorPicker';
 import { KanbanColumnHeader } from './kanban/KanbanColumnHeader';
+import { KANBAN_COLUMN_LEFT_RULE_CLASS } from './kanban/kanban-column-surface';
 import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
 import {
   SCROLL_SPEED,
@@ -282,7 +283,7 @@ export function KanbanBoard<T>({
               {/* Column */}
               <div
                 className={cn(
-                  'mx-2 flex h-full flex-shrink-0 flex-col rounded-xl transition-colors duration-200',
+                  'relative mx-2 flex h-full flex-shrink-0 flex-col transition-colors duration-200',
                   dropTarget === column.key && 'bg-accent/10 ring-accent/20 ring-2 ring-inset',
                 )}
                 style={{ width: columnWidth }}
@@ -290,6 +291,7 @@ export function KanbanBoard<T>({
                 onDragLeave={handleDragLeave}
                 onDrop={() => handleDrop(column.key)}
               >
+                {idx > 0 ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}
                 <div className="group/header mb-3 shrink-0 space-y-2">
                   <KanbanColumnHeader
                     column={column}
