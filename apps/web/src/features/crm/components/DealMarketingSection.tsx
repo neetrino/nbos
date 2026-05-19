@@ -51,6 +51,7 @@ export function DealMarketingSection({
     draft.source === 'MARKETING' &&
     Boolean(draft.sourceDetail) &&
     requiresMarketingWhichOneSelection(draft.source, draft.sourceDetail);
+  const rowFieldCount = countMarketingRowFields(draft, showMarketingWhichOne);
 
   return (
     <DetailSheetSection
@@ -60,116 +61,155 @@ export function DealMarketingSection({
       className={sectionClassName}
     >
       <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-        <InlineField
-          variant="controlled"
-          label="From"
-          value={draft.source ?? ''}
-          type="select"
-          options={LEAD_SOURCES.map((source) => ({ value: source.value, label: source.label }))}
-          placeholder="Select source..."
-          icon={<Megaphone size={12} />}
-          disabled={disabled || attributionLocked}
-          clearable={!attributionLocked}
-          onValueChange={(value) =>
-            patchDraft({
-              source: value || null,
-              sourceDetail: null,
-              sourcePartnerId: null,
-              sourceContactId: null,
-              marketingAccountId: null,
-              marketingActivityId: null,
-              marketingPickLabel: null,
-              partnerPickLabel: null,
-              clientPickLabel: null,
-            })
-          }
-        />
+        <div className={marketingFieldsRowGridClass(rowFieldCount)}>
+          <div className="min-w-0">
+            <InlineField
+              variant="controlled"
+              label="From"
+              value={draft.source ?? ''}
+              type="select"
+              options={LEAD_SOURCES.map((source) => ({ value: source.value, label: source.label }))}
+              placeholder="Select source..."
+              icon={<Megaphone size={12} />}
+              disabled={disabled || attributionLocked}
+              clearable={!attributionLocked}
+              onValueChange={(value) =>
+                patchDraft({
+                  source: value || null,
+                  sourceDetail: null,
+                  sourcePartnerId: null,
+                  sourceContactId: null,
+                  marketingAccountId: null,
+                  marketingActivityId: null,
+                  marketingPickLabel: null,
+                  partnerPickLabel: null,
+                  clientPickLabel: null,
+                })
+              }
+            />
+          </div>
 
-        {(draft.source === 'SALES' || draft.source === 'MARKETING') && (
-          <InlineField
-            variant="controlled"
-            label="Where?"
-            value={draft.sourceDetail ?? ''}
-            type="select"
-            options={whereOptions}
-            placeholder="Select channel..."
-            icon={<ExternalLink size={12} />}
-            disabled={disabled || attributionLocked}
-            clearable={!attributionLocked}
-            onValueChange={(value) =>
-              patchDraft({
-                sourceDetail: value || null,
-                marketingAccountId: null,
-                marketingActivityId: null,
-                marketingPickLabel: null,
-              })
-            }
-          />
-        )}
+          {(draft.source === 'SALES' || draft.source === 'MARKETING') && (
+            <div className="min-w-0">
+              <InlineField
+                variant="controlled"
+                label="Where?"
+                value={draft.sourceDetail ?? ''}
+                type="select"
+                options={whereOptions}
+                placeholder="Select channel..."
+                icon={<ExternalLink size={12} />}
+                disabled={disabled || attributionLocked}
+                clearable={!attributionLocked}
+                onValueChange={(value) =>
+                  patchDraft({
+                    sourceDetail: value || null,
+                    marketingAccountId: null,
+                    marketingActivityId: null,
+                    marketingPickLabel: null,
+                  })
+                }
+              />
+            </div>
+          )}
 
-        {showMarketingWhichOne ? (
-          <SearchField
-            selectionMode="stage"
-            label="Which one?"
-            value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
-            displayValue={
-              draft.marketingPickLabel ? (
-                <span className="text-foreground text-sm font-medium">
-                  {draft.marketingPickLabel}
-                </span>
-              ) : undefined
-            }
-            placeholder="Search accounts or activities..."
-            icon={<ExternalLink size={12} />}
-            disabled={disabled || attributionLocked}
-            onSearch={searchAttributionOptions}
-            onStageSelect={(value, label) => {
-              const [type, id] = value.split(':');
-              patchDraft({
-                marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
-                marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
-                marketingPickLabel: label,
-              });
-            }}
-            onClear={
-              attributionLocked || disabled
-                ? undefined
-                : () =>
-                    patchDraft({
-                      marketingAccountId: null,
-                      marketingActivityId: null,
-                      marketingPickLabel: null,
-                    })
-            }
-          />
-        ) : null}
+          {showMarketingWhichOne ? (
+            <div className="min-w-0">
+              <SearchField
+                selectionMode="stage"
+                label="Which one?"
+                value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
+                displayValue={
+                  draft.marketingPickLabel ? (
+                    <span className="text-foreground text-sm font-medium">
+                      {draft.marketingPickLabel}
+                    </span>
+                  ) : undefined
+                }
+                placeholder="Search accounts or activities..."
+                icon={<ExternalLink size={12} />}
+                disabled={disabled || attributionLocked}
+                onSearch={searchAttributionOptions}
+                onStageSelect={(value, label) => {
+                  const [type, id] = value.split(':');
+                  patchDraft({
+                    marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
+                    marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
+                    marketingPickLabel: label,
+                  });
+                }}
+                onClear={
+                  attributionLocked || disabled
+                    ? undefined
+                    : () =>
+                        patchDraft({
+                          marketingAccountId: null,
+                          marketingActivityId: null,
+                          marketingPickLabel: null,
+                        })
+                }
+              />
+            </div>
+          ) : null}
 
-        {draft.source === 'PARTNER' && (
-          <SearchField
-            selectionMode="stage"
-            label="Which Partner?"
-            value={draft.sourcePartnerId}
-            displayValue={
-              draft.partnerPickLabel ? (
-                <span className="text-foreground text-sm font-medium">
-                  {draft.partnerPickLabel}
-                </span>
-              ) : undefined
-            }
-            placeholder="Search partners..."
-            icon={<Building2 size={12} />}
-            disabled={disabled || attributionLocked}
-            onSearch={searchPartners}
-            onStageSelect={(value, label) =>
-              patchDraft({ sourcePartnerId: value, partnerPickLabel: label })
-            }
-            onClear={
-              attributionLocked || disabled
-                ? undefined
-                : () => patchDraft({ sourcePartnerId: null, partnerPickLabel: null })
-            }
-          />
-        )}
+          {draft.source === 'PARTNER' && (
+            <div className="min-w-0">
+              <SearchField
+                selectionMode="stage"
+                label="Which Partner?"
+                value={draft.sourcePartnerId}
+                displayValue={
+                  draft.partnerPickLabel ? (
+                    <span className="text-foreground text-sm font-medium">
+                      {draft.partnerPickLabel}
+                    </span>
+                  ) : undefined
+                }
+                placeholder="Search partners..."
+                icon={<Building2 size={12} />}
+                disabled={disabled || attributionLocked}
+                onSearch={searchPartners}
+                onStageSelect={(value, label) =>
+                  patchDraft({ sourcePartnerId: value, partnerPickLabel: label })
+                }
+                onClear={
+                  attributionLocked || disabled
+                    ? undefined
+                    : () => patchDraft({ sourcePartnerId: null, partnerPickLabel: null })
+                }
+              />
+            </div>
+          )}
+
+          {draft.source === 'CLIENT' && (
+            <div className="min-w-0">
+              <SearchField
+                selectionMode="stage"
+                label="Which Client?"
+                value={draft.sourceContactId}
+                displayValue={
+                  draft.clientPickLabel ? (
+                    <span className="text-foreground text-sm font-medium">
+                      {draft.clientPickLabel}
+                    </span>
+                  ) : undefined
+                }
+                placeholder="Search contacts..."
+                icon={<User size={12} />}
+                disabled={disabled || attributionLocked}
+                onSearch={searchContacts}
+                onStageSelect={(value, label) =>
+                  patchDraft({ sourceContactId: value, clientPickLabel: label })
+                }
+                onClear={
+                  attributionLocked || disabled
+                    ? undefined
+                    : () => patchDraft({ sourceContactId: null, clientPickLabel: null })
+                }
+              />
+            </div>
+          )}
+        </div>
 
         {draft.source === 'PARTNER' && draft.sourcePartnerId ? (
           <DealPartnerReferralTermsSection
@@ -178,34 +218,24 @@ export function DealMarketingSection({
             onTermsUpdated={onRefresh}
           />
         ) : null}
-
-        {draft.source === 'CLIENT' && (
-          <SearchField
-            selectionMode="stage"
-            label="Which Client?"
-            value={draft.sourceContactId}
-            displayValue={
-              draft.clientPickLabel ? (
-                <span className="text-foreground text-sm font-medium">{draft.clientPickLabel}</span>
-              ) : undefined
-            }
-            placeholder="Search contacts..."
-            icon={<User size={12} />}
-            disabled={disabled || attributionLocked}
-            onSearch={searchContacts}
-            onStageSelect={(value, label) =>
-              patchDraft({ sourceContactId: value, clientPickLabel: label })
-            }
-            onClear={
-              attributionLocked || disabled
-                ? undefined
-                : () => patchDraft({ sourceContactId: null, clientPickLabel: null })
-            }
-          />
-        )}
       </div>
     </DetailSheetSection>
   );
+}
+
+function countMarketingRowFields(draft: DealGeneralDraft, showMarketingWhichOne: boolean): number {
+  let count = 1;
+  if (draft.source === 'SALES' || draft.source === 'MARKETING') count += 1;
+  if (showMarketingWhichOne) count += 1;
+  if (draft.source === 'PARTNER') count += 1;
+  if (draft.source === 'CLIENT') count += 1;
+  return count;
+}
+
+function marketingFieldsRowGridClass(count: number): string {
+  if (count >= 3) return 'grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-4';
+  if (count === 2) return 'grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4';
+  return 'grid grid-cols-1 gap-4';
 }
 
 function getWhereOptions(

@@ -146,6 +146,7 @@ export function DealGeneralTab({
           searchCompanies={searchCompanies}
           disabled={formDisabled}
         />
+        <DealNotesSection draft={draft} patchDraft={patchDraft} disabled={formDisabled} />
         <DealOfferContractSection dealId={deal.id} />
         <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS)}>
           <DealContactTeamSection
@@ -165,12 +166,6 @@ export function DealGeneralTab({
             searchPartners={searchPartners}
             searchContacts={searchContacts}
             onRefresh={onRefresh}
-            disabled={formDisabled}
-            sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
-          />
-          <DealNotesSection
-            draft={draft}
-            patchDraft={patchDraft}
             disabled={formDisabled}
             sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
           />
