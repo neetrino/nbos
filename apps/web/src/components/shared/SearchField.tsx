@@ -288,7 +288,7 @@ export function SearchField(props: SearchFieldProps) {
                   ))}
               </div>
               <div className="flex items-center gap-1">
-                {onClear && hasValue && (
+                {onClear && hasValue ? (
                   <button
                     type="button"
                     onMouseDown={(event) => {
@@ -300,16 +300,13 @@ export function SearchField(props: SearchFieldProps) {
                       handleClear();
                     }}
                     disabled={saving}
-                    className="text-muted-foreground/0 hover:bg-destructive/10 hover:text-destructive group-hover:text-muted-foreground/60 flex size-7 items-center justify-center rounded-md transition-colors"
+                    className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
                     aria-label={`Clear ${label}`}
                   >
                     <X size={16} />
                   </button>
-                )}
-                <Pencil
-                  size={16}
-                  className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
-                />
+                ) : null}
+                <Pencil size={16} className="text-muted-foreground/70 shrink-0" aria-hidden />
               </div>
             </div>
           </div>

@@ -78,7 +78,7 @@ export function LeadGeneralMarketingSection({
 
   return (
     <DetailSheetSection id={sectionId} title="Marketing" icon={<Megaphone size={12} />}>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="space-y-4">
         <InlineField
           variant="controlled"
           label="From"

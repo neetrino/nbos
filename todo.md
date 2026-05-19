@@ -1,200 +1,76 @@
-# PageHero migration — remaining
+# NBOS — активные задачи
 
-**Status:** `[ ]` todo · `[x]` done
-
----
-
-## Finance (Pattern B + list pages)
-
-Shared `app/(app)/finance/layout.tsx` hero with tabs; child routes use hero slots. Replace `*PageHeader` + `FilterBar` with `PageHero` + `IntegratedSearchFilters`.
-
-- [ ] Finance layout: `ModuleHeroSlotProvider`, nav tabs, settings sheet
-- [ ] Orders
-- [ ] Invoices
-- [ ] Payments
-- [ ] Subscriptions
-- [ ] Expenses (+ expense plans if in scope)
-- [ ] Wallet
-- [ ] Bonus pools
-- [ ] Finance reports (`/finance/reports`)
-- [ ] Client services
-- [ ] Payroll: salary board, payroll runs list
+`[ ]` открыто · `[x]` сделано (история в git)
 
 ---
 
-## Manual / optional
+## Следующий фокус: CRM (дожать MVP)
 
-- [ ] Delivery Board: visual QA in browser; optional Settings sheet in hero
+**Рекомендуемый порядок**
+
+1. **Transition popup + blockers** — при `STAGE_GATE_VALIDATION` показывать только недостающие поля, кнопки «перейти в секцию» sheet (marketing / offer / team / notes). Частично есть: `TransitionBlockerDialog`, `blocker-actions`, scroll в `LeadSheet` / `DealSheet`.
+2. **Stage gates (пробелы)** — Lead: `MQL`/`SQL` (service type, budget/timeline в notes до появления полей в схеме). Deal: `START_CONVERSATION` (contact, seller, type), `DISCUSS_NEEDS` (scope/need note).
+3. **Канон** — довести `04-Offers-and-Handoff.md`, `01-Lead-to-Cash-Process.md` под 5 стадий Deal и Drive offer/contract.
+4. **Тесты доски** — active/closed filter + terminal drop (web или API integration).
+5. **Legacy offer/contract URL** — backfill в Drive external-url assets; убрать из UI/API gate зависимость от `offerLink` / `contractFileUrl` (поля в БД пока можно оставить).
+6. **Attachment block** — purpose при upload, external link, тесты detach/archive; заменить `EntityDriveFilesPanel` если ещё используется.
+7. **Полировка** — Closed view карточки компактнее; единый Deal Type visual с Delivery; UI note про `DetailSheetSection`.
 
 ---
 
-# CRM Lead / Deal modernization plan
+## CRM — открыто
 
-**Status:** `[ ]` todo · `[x]` done · Project size: C (large monorepo)
+### Переходы и валидация
 
-Goal: bring Lead and Deal board cards + sheets to the same modern cockpit standard as Delivery cards, reduce CRM field clutter, and extract reusable patterns for active/closed board stages and entity file attachments.
+- [ ] Transition popup: только missing fields + jump в секцию sheet (Lead/Deal).
+- [ ] Marketing gate в UI согласован с API (блокер до заполнения From/Where/Which one).
+- [ ] Lead gate: MQL/SQL — service type + budget/timeline (notes или новые поля).
+- [ ] Deal gate: `START_CONVERSATION`, `DISCUSS_NEEDS` (seller, type, scope note).
 
-## 0. Canon / docs alignment first
+### Документация
 
-- [x] Update CRM canon (partial): `02-CRM-Pages.md`, `03-Deal-Pipeline.md`, `05-Deal-Stage-Gates`, transition matrix; remaining: `04-Offers-and-Handoff.md`, `01-Lead-to-Cash-Process.md`.
-- [x] Resolve Deal stage model in code: enums, migration, API gates, UI constants, tests; docs updated for 5-stage funnel.
-- [ ] Resolve Deal Type visuals: keep one source of truth for Product / Extension / Maintenance / Outsource colors across CRM board, Delivery, and docs.
-- [ ] Add a short UI decision note for shared sheet sections: Lead/Deal sheets must use the same visual block language as Delivery sheets.
+- [ ] `docs/NBOS/02-Modules/01-CRM/04-Offers-and-Handoff.md` — Drive files, без Meeting/Can We Do It.
+- [ ] `docs/NBOS/03-Business-Logic/01-Lead-to-Cash-Process.md` — 5 стадий Deal.
 
-## 1. Lead / Deal sheet visual redesign
+### Доски
 
-- [x] Audit current CRM sheets (initial pass).
-- [x] Convert CRM sections to `DetailSheetSection` (Lead General/Marketing; Deal Marketing, Contact, Info, Notes, Source Lead, Offer/Contract).
-- [ ] Rebuild field grouping to match Delivery cockpit density: overview, customer/contact, team, marketing attribution, commercial, offer/files, notes, actions.
-- [ ] Keep General tab as draft + Save/Cancel, one save per form, no per-field autosave.
-- [ ] Make labels, spacing, borders, empty states, required-state hints, and blocker messages consistent with Delivery.
+- [ ] Тесты: `boardScope` Active/Closed/All + terminal drop zones (Leads/Deals).
+- [ ] Closed view: компактные read-only карточки.
 
-## 2. Marketing block decision: From / Where / Which one
+### Sheet / UX
 
-Decision proposal:
+- [ ] Группировка полей как у Delivery (overview → contact → team → marketing → commercial → files → notes).
+- [ ] Empty states и required-hints единообразно с Delivery.
+- [ ] Deal Seller + Seller Assistant: проверить UX и роли.
+- [ ] Create dialogs / transition editors — один `SearchField` для employees.
+- [ ] Deal Type colors — один source of truth с Delivery + короткая UI note в docs.
 
-- `From` = top-level source: `Marketing`, `Sales`, `Partner`, `Client`.
-- `Where` = channel inside selected source.
-- `Which one` = exact linked entity only when attribution must point to a real record.
+### Drive / Offer–Contract
 
-Rules:
+- [ ] Purpose selector при attach/upload.
+- [ ] Attach external URL как file asset.
+- [ ] Backfill legacy `offerLink` / `contractFileUrl` → Drive.
+- [ ] Заменить `EntityDriveFilesPanel` на `EntityAttachmentBlock` (если остались вхождения).
+- [ ] Тесты: attach, detach, archive, purpose filter.
 
-- [x] For `From = Marketing`, show `Where` from Marketing CRM Where options.
-- [x] For `From = Marketing`, require `Which one` only for `LIST_AM`, `GOOGLE_ADS`, `META_ADS` (shared constant).
-- [ ] For `From = Marketing` + organic/generic/manual channels, keep `Which one` optional or hidden unless a real Marketing Account / Activity exists.
-- [ ] For `From = Sales`, show `Where` from Sales channels; no `Which one` by default.
-- [ ] For `From = Partner`, replace generic `Which one` with required `Which Partner?`.
-- [ ] For `From = Client`, replace generic `Which one` with required `Which Client?`.
-- [ ] Apply the same rules and UI to both Lead and Deal.
-- [ ] Update API attribution gate so Lead and Deal use one shared rule source.
+### Паттерн досок (вне CRM)
 
-## 3. Seller selection
+- [ ] Delivery: Active/Closed + terminal drops (как CRM).
+- [ ] Finance / Support / Tasks: задокументировать active vs closed перед UI.
 
-- [x] Add / fix Seller picker in Lead sheet General tab.
-- [ ] Verify Deal Seller and Seller Assistant picker UX; keep both editable where role rules allow it.
-- [ ] Ensure create dialogs, transition popup editors, and sheets use the same employee search component.
-- [ ] Add required-field blockers when Seller is missing before meaningful movement.
+---
 
-## 4. Global active / closed board pattern
+## Finance — PageHero (отдельный трек)
 
-Professional approach:
+Shared `app/(app)/finance/layout.tsx` + hero slots; заменить `*PageHeader` + `FilterBar`.
 
-- Default board view should be `Active`.
-- Add status scope filter: `Active`, `Closed`, `All`.
-- Terminal statuses should not live as equal always-visible columns on the active board.
-- During drag, show bottom terminal drop zones ("planks") for closed outcomes.
+- [ ] Finance layout: tabs, settings sheet
+- [ ] Orders, Invoices, Payments, Subscriptions, Expenses
+- [ ] Wallet, Bonus pools, Reports, Client services
+- [ ] Payroll: salary board, payroll runs
 
-Global reusable plan:
+---
 
-- [x] Design shared board lifecycle metadata (`board-lifecycle.ts`).
-- [x] Create reusable board status scope control: `Active` / `Closed` / `All`, default `Active`.
-- [x] Create reusable terminal drop-zone bar shown only while dragging active cards.
-- [ ] CRM Lead statuses: active = `NEW`, `ON_HOLD`, `DIDNT_GET_THROUGH`, `CONTACT_ESTABLISHED`, `MQL`; closed = `SPAM`, `FROZEN`, `SQL`.
-- [ ] CRM Deal statuses after stage cleanup: active = `START_CONVERSATION`, `DISCUSS_NEEDS`, `SEND_OFFER`, `GET_ANSWER`, `DEPOSIT_AND_CONTRACT`; closed = `FAILED`, `WON`.
-- [ ] Delivery statuses: keep active lifecycle board separate from `Done` / `Cancelled` closed view, but align filter/drop-zone UX with the shared pattern.
-- [ ] Finance/support/task boards: document which statuses are active vs closed before changing UI; do not guess module-specific terminal semantics.
-- [x] Replace CRM always-visible terminal columns with the shared scope filter and drag terminal zones (Leads + Deals pages).
-- [ ] Add tests for active/closed filtering and drag-to-terminal transitions.
+## Опционально
 
-## 5. Deal stage cleanup
-
-- [x] Remove `MEETING` and `CAN_WE_DO_IT` from web constants.
-- [x] Remove them from shared `DEAL_STAGE_GATE_ORDER`.
-- [x] Update API stage gate logic and tests.
-- [x] Prisma enum + migration `20260519120000_remove_deal_meeting_stages`.
-- [x] Migration mapping: `MEETING` -> `DISCUSS_NEEDS`, `CAN_WE_DO_IT` -> `SEND_OFFER`.
-- [x] Docs: 5 active Deal stages in pipeline + UI spec.
-
-## 6. Required fields by stage
-
-Lead proposal:
-
-- `New`: contact name, phone or email.
-- `On Hold`: same as `New`; marketing block still optional.
-- `Didn't Get Through`: marketing block, Seller, contact attempt note.
-- `Contact Established`: marketing block, Seller, conversation/result note, interest/service type.
-- `MQL / SQL conversion`: contact name, phone or email, marketing block, Seller, service type, rough budget or budget note, rough timeline or timeline note.
-- `SPAM`: spam reason.
-- `Frozen`: frozen reason and return/check date.
-
-Deal proposal after removing two stages:
-
-- `Start a Conversation`: contact, Seller, Deal Type.
-- `Discuss What Is Needed`: marketing block, company if known, service/product type, need/scope note, rough budget/timeline.
-- `Send Offer`: amount, payment type, product category/type for Product/Outsource, linked project/product for Extension/Maintenance, at least one Offer file.
-- `Get Answer`: response due date or follow-up date.
-- `Deposit & Contract`: final amount, payment type, tax status, company if tax deal, deadline / maintenance start date, invoice requirement by Deal Type/payment rules.
-- `Failed`: lost reason and optional comment.
-- `Won`: existing Deal Won rules: paid first invoice for Product/Extension/Outsource unless approved override; Maintenance follows its documented exception.
-
-Implementation tasks:
-
-- [x] Create dedicated Lead stage gate service (`lead-stage-gate.ts`).
-- [x] Update Deal stage gate: 5-stage order, Drive offer/contract files, FAILED notes.
-- [ ] Transition popup must show only missing fields and jump to the right sheet section.
-- [ ] Block moving forward when marketing block is required but incomplete.
-
-## 7. Offer & Contract simplification
-
-Current stored Deal fields:
-
-- `offerSentAt`
-- `offerLink`
-- `offerFileUrl`
-- `offerScreenshotUrl`
-- `responseDueAt`
-- `contractSignedAt`
-- `contractFileUrl`
-
-Decision proposal:
-
-- Keep CRM MVP simple: one beautiful `Offer files` attachment block.
-- Store files as Drive File Assets linked to Deal, not as local Deal URL fields.
-- Allow many files, not only one.
-- Use file purpose, not separate fields, to distinguish `OFFER_DRAFT`, `OFFER_SENT`, `OFFER_APPROVED`, `CONTRACT`, `MESSENGER_PROOF`.
-- For stage gate, require at least one linked file with offer purpose before `Send Offer`.
-- Keep `responseDueAt` as a Deal field for follow-up workflow.
-- Move contract proof to Drive file purpose `CONTRACT`; do not keep a separate `contractFileUrl`.
-- Plan deprecation/backfill for existing URL fields: convert links into Drive external-url file assets where possible, then stop rendering old inputs.
-
-## 8. Global entity attachment block
-
-Goal: one reusable attachment block for CRM, Delivery, Tasks, Support, Documents, and any sheet that links files.
-
-UX requirements:
-
-- [x] Tile/grid view via `EntityAttachmentBlock` + `DriveFileCard`.
-- [x] Upload/attach multiple files (`EntityDriveQuickAttach`).
-- [ ] Attach external link as a file asset when needed.
-- [ ] Purpose selector per file or per upload context.
-- [ ] File card actions: preview/open, details, replace/version if supported, detach, delete/archive.
-- [x] On detach, ask: detach-only vs archive (Dialog).
-- [ ] Respect permissions, confidentiality, and audit log.
-- [ ] Reuse `DriveTileShell`, `DriveFileCard`, `EntityDriveQuickAttach`, Drive API, and add missing entity-level detach/delete UX.
-- [ ] Replace CRM `EntityDriveFilesPanel` list preview with this shared attachment block.
-- [ ] Replace Delivery file links section with this shared attachment block when Delivery needs real Drive attachments.
-- [ ] Add tests for attach, detach-only, archive/delete, and file purpose filtering.
-
-## 9. Deal Actions block
-
-- [x] Move `Open Drive` from Offer/Contract area into Deal `Actions`.
-- [ ] Keep Offer block focused on attached offer files only.
-- [ ] Deal Actions should include: create invoice, create task, open Drive, and later approved workflow actions.
-
-## 10. Board card polish after model changes
-
-- [x] Lead board card: contact, phone/email, source/channel, created date, Seller avatar, overdue badge.
-- [x] Deal board card: contact/company, amount, type visual, deadline, seller, channel.
-- [ ] Ensure closed cards have compact read-only presentation in Closed view.
-
-## Suggested implementation order
-
-1. Docs/canon update and stage cleanup decision.
-2. Shared board active/closed pattern.
-3. CRM stage cleanup + gates.
-4. Marketing block unification.
-5. Seller picker and required fields.
-6. Shared attachment block.
-7. Offer/Contract simplification.
-8. Lead/Deal sheet visual redesign.
-9. Deal Actions cleanup and board card polish.
+- [ ] Delivery Board: visual QA в браузере; Settings в hero

@@ -36,6 +36,12 @@ export interface ControlledInlineFieldProps {
   disabled?: boolean;
 }
 
+const FIELD_SHELL_CLASS =
+  'border-border/60 bg-muted/20 flex w-full min-h-10 items-center gap-1 rounded-xl border px-3 py-1.5 shadow-sm shadow-black/[0.04] transition-[border-color,background-color]';
+
+const INNER_CONTROL_CLASS =
+  'h-8 min-h-8 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0';
+
 export function ControlledInlineField({
   label,
   value,
@@ -50,64 +56,69 @@ export function ControlledInlineField({
   disabled = false,
 }: ControlledInlineFieldProps) {
   const str = value != null && value !== '' ? String(value) : '';
+  const showClear = clearable && str !== '' && !disabled;
+
+  const clearButton = showClear ? (
+    <button
+      type="button"
+      onMouseDown={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onClick={() => onValueChange('')}
+      disabled={disabled}
+      className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
+      aria-label={`Clear ${label}`}
+    >
+      <X size={16} />
+    </button>
+  ) : null;
 
   return (
-    <div className={cn('group relative', className)}>
-      <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-xs font-medium">
-        {icon && <span className="text-muted-foreground/70">{icon}</span>}
+    <div className={cn('group relative', disabled && 'pointer-events-none opacity-60', className)}>
+      <div className="text-foreground/85 mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+        {icon ? <span className="text-muted-foreground/70">{icon}</span> : null}
         {label}
       </div>
 
-      <div className="flex items-start gap-1.5">
-        {type === 'select' && options ? (
-          <>
-            <Select
-              value={str || undefined}
-              onValueChange={(v) => {
-                if (typeof v === 'string' && v !== '') onValueChange(v);
-              }}
-              disabled={disabled}
-            >
-              <SelectTrigger className="h-8 w-full text-sm">
-                <SelectValue placeholder={placeholder ?? 'Select...'} />
-              </SelectTrigger>
-              <SelectContent>
-                {options.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    <span className="flex items-center gap-2">
-                      {opt.icon}
-                      {opt.label}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {clearable && str !== '' && (
-              <button
-                type="button"
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-                onClick={() => onValueChange('')}
-                disabled={disabled}
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-8 shrink-0 items-center justify-center rounded-md transition-colors"
-                aria-label={`Clear ${label}`}
-              >
-                <X size={16} />
-              </button>
-            )}
-          </>
-        ) : type === 'textarea' ? (
+      {type === 'select' && options ? (
+        <div className={FIELD_SHELL_CLASS}>
+          <Select
+            value={str || undefined}
+            onValueChange={(v) => {
+              if (typeof v === 'string' && v !== '') onValueChange(v);
+            }}
+            disabled={disabled}
+          >
+            <SelectTrigger className={cn(INNER_CONTROL_CLASS, showClear && 'pr-1')}>
+              <SelectValue placeholder={placeholder ?? 'Select...'} />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  <span className="flex items-center gap-2">
+                    {opt.icon}
+                    {opt.label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {clearButton}
+        </div>
+      ) : type === 'textarea' ? (
+        <div className={cn(FIELD_SHELL_CLASS, 'min-h-[88px] items-start py-2')}>
           <Textarea
             value={str}
             onChange={(e) => onValueChange(e.target.value)}
             rows={3}
             disabled={disabled}
-            className="min-h-[72px] text-sm"
+            className={cn(INNER_CONTROL_CLASS, 'min-h-[72px] resize-none py-1 text-sm')}
             placeholder={placeholder}
           />
-        ) : (
+        </div>
+      ) : (
+        <div className={FIELD_SHELL_CLASS}>
           <Input
             type={
               type === 'number'
@@ -121,15 +132,14 @@ export function ControlledInlineField({
             value={str}
             onChange={(e) => onValueChange(e.target.value)}
             disabled={disabled}
-            className="h-8 text-sm"
+            className={cn(INNER_CONTROL_CLASS, 'text-sm')}
             placeholder={placeholder}
           />
-        )}
-
-        {suffix && str !== '' && type !== 'textarea' && (
-          <span className="text-muted-foreground mt-1.5 shrink-0 text-xs">{suffix}</span>
-        )}
-      </div>
+          {suffix && str !== '' ? (
+            <span className="text-muted-foreground shrink-0 text-xs">{suffix}</span>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }
