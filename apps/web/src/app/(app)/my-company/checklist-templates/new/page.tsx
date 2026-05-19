@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PageHeader } from '@/components/shared';
+import { PageHero } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
 import {
   CHECKLIST_OWNER_MODULE_LABELS,
@@ -109,17 +109,21 @@ export default function NewChecklistTemplatePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 pb-10">
-      <PageHeader
+      <PageHero
         title="New checklist template"
-        description="Start with a name and classification. You’ll add checklist items next, then publish to lock the version used for new instances."
-      >
-        <Link
-          href="/my-company/checklist-templates"
-          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-        >
-          Back to list
-        </Link>
-      </PageHeader>
+        trailing={
+          <Link
+            href="/my-company/checklist-templates"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+          >
+            Back to list
+          </Link>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        Start with a name and classification. You’ll add checklist items next, then publish to lock
+        the version used for new instances.
+      </p>
 
       <Card className="border-border/80 shadow-sm shadow-black/[0.04]">
         <CardHeader className="border-border/60 border-b pb-4">

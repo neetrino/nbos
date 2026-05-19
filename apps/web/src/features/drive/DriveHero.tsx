@@ -9,8 +9,13 @@ import {
   RefreshCw,
   ShieldAlert,
 } from 'lucide-react';
+import { PageHero } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  PAGE_HERO_SURFACE,
+  PAGE_HERO_TAB_SCROLL,
+} from '@/components/shared/page-hero/page-hero-constants';
 import { DRIVE_SPACES, type DriveSpaceOption, type DriveViewMode } from './drive-options';
 import type { DriveLifecycleView } from './drive-lifecycle';
 import { DriveToolbar } from './DriveToolbar';
@@ -20,9 +25,6 @@ import type { DriveStats } from './drive-types';
 import { DriveInsightsOperations } from './DriveInsightsOperations';
 import type { DriveCleanupCandidateCategory, DriveZipExportJobSummary } from '@/lib/api/drive';
 import type { DriveTypedExportAction } from './drive-export-ui';
-
-const TAB_SCROLL =
-  'min-w-0 max-w-[min(100%,20rem)] shrink-0 overflow-x-auto sm:max-w-[min(100%,26rem)] md:max-w-[min(100%,32rem)] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 export function DriveHero({
   stats,
@@ -75,63 +77,61 @@ export function DriveHero({
   lifecycleView?: DriveLifecycleView;
 }) {
   return (
-    <section className="border-border/70 bg-card/80 rounded-2xl border px-4 py-3 shadow-sm">
-      <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
-        <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-4">
-          <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">Drive</h1>
-          <div className={cn(TAB_SCROLL, lifecycleView !== 'browse' && 'opacity-45')}>
+    <>
+      <PageHero
+        title="Drive"
+        tabs={
+          <div className={cn(PAGE_HERO_TAB_SCROLL, lifecycleView !== 'browse' && 'opacity-45')}>
             <DriveSpaceTabs
               selected={selectedSpace}
               onSelect={onSelectSpace}
               lifecycleActive={lifecycleView !== 'browse'}
             />
           </div>
-        </div>
-        <div className="w-full min-w-0 flex-1 basis-full sm:basis-0 sm:px-1">
-          <div className="mx-auto max-w-3xl">
-            <DriveToolbar search={search} onSearchChange={onSearchChange} variant="header" />
-          </div>
-        </div>
-        <div className="ml-auto flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto">
-          <DriveViewModeSwitch value={viewMode} onChange={onViewModeChange} />
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-sm"
-            onClick={onRefresh}
-            disabled={loading}
-            aria-label="Refresh"
-            title="Refresh"
-          >
-            <RefreshCw className={cn('size-4', loading && 'animate-spin')} />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon-sm"
-            onClick={onToggleInsights}
-            aria-label={insightsOpen ? 'Hide analytics' : 'Analytics'}
-            title={insightsOpen ? 'Hide analytics' : 'Analytics'}
-            className={cn(
-              insightsOpen && 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15',
-            )}
-          >
-            <BarChart3 className="size-4" />
-          </Button>
-        </div>
-      </div>
+        }
+        search={<DriveToolbar search={search} onSearchChange={onSearchChange} variant="header" />}
+        viewMode={<DriveViewModeSwitch value={viewMode} onChange={onViewModeChange} />}
+        trailing={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              onClick={onRefresh}
+              disabled={loading}
+              aria-label="Refresh"
+              title="Refresh"
+            >
+              <RefreshCw className={cn('size-4', loading && 'animate-spin')} />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              onClick={onToggleInsights}
+              aria-label={insightsOpen ? 'Hide analytics' : 'Analytics'}
+              title={insightsOpen ? 'Hide analytics' : 'Analytics'}
+              className={cn(
+                insightsOpen && 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/15',
+              )}
+            >
+              <BarChart3 className="size-4" />
+            </Button>
+          </>
+        }
+      />
 
-      {insightsOpen && (
-        <DriveInsights
-          stats={stats}
-          maintenance={maintenanceCleanup ?? null}
-          linkAggregates={libraryLinkAggregates ?? []}
-        />
-      )}
-      {insightsOpen && insightsOperations ? (
-        <DriveInsightsOperations {...insightsOperations} />
+      {insightsOpen ? (
+        <section className={cn(PAGE_HERO_SURFACE, 'space-y-2')}>
+          <DriveInsights
+            stats={stats}
+            maintenance={maintenanceCleanup ?? null}
+            linkAggregates={libraryLinkAggregates ?? []}
+          />
+          {insightsOperations ? <DriveInsightsOperations {...insightsOperations} /> : null}
+        </section>
       ) : null}
-    </section>
+    </>
   );
 }
 
@@ -201,7 +201,7 @@ function DriveInsights({
   linkAggregates: { entityType: string; entityId: string; count: number }[];
 }) {
   return (
-    <div className="border-border/60 bg-background/60 mt-3 space-y-2 rounded-2xl border p-2">
+    <div className="border-border/60 bg-background/60 space-y-2 rounded-2xl border p-2">
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
         <MiniStat
           label="Files"

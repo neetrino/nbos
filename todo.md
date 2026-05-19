@@ -16,13 +16,13 @@
 - [x] My Company: hub, KPI, SOP, compensation, sales-bonus, checklist-templates list, checklist-stage-rules
 - [x] Documents: `/documents/sections/[sectionId]`
 
-### Tier 2 — Medium (next)
+### Tier 2 — Medium `[x]` (done)
 
-- [ ] `DriveHero` → shared pieces
-- [ ] Documents: `/documents/[id]` detail
-- [ ] My Company: checklist template `new`, `[id]` (forms)
-- [ ] Delivery Board: visual QA, optional Settings sheet
-- [ ] Phase 6 cleanup
+- [x] `DriveHero` → shared `PageHero` + insights panel below
+- [x] Documents: `/documents/[id]` detail
+- [x] My Company: checklist template `new`, `[id]` (forms)
+- [x] Phase 6 cleanup (`TasksPageSettingsDialog`, `PartnersPageHeader` removed)
+- [ ] Delivery Board: visual QA in browser, optional Settings sheet (manual)
 
 ### Tier 3 — Hard (last — design first)
 
