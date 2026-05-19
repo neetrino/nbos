@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { ArrowLeft, Check } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { PageHeader, ErrorState, LoadingState } from '@/components/shared';
+import { PageHero, ErrorState, LoadingState } from '@/components/shared';
 import { MailThreadMessages } from '@/features/mail/MailThreadMessages';
 import { MailThreadReplyDraftCard } from '@/features/mail/MailThreadReplyDraftCard';
 import { mailApi, type MailThreadDetailDto } from '@/lib/api/mail';
@@ -154,7 +154,7 @@ export default function MailThreadDetailPage() {
   if (!canView) {
     return (
       <div className="flex flex-col gap-6 p-6">
-        <PageHeader title="Mail" description="Thread detail" />
+        <PageHero title="Mail" />
         <p className="text-muted-foreground text-sm">You do not have permission to view Mail.</p>
       </div>
     );
@@ -176,49 +176,53 @@ export default function MailThreadDetailPage() {
 
       {!loading && !error && detail ? (
         <>
-          <PageHeader
+          <PageHero
             title={detail.messages[0]?.subject ?? detail.thread.subjectNormalized}
-            description={`${detail.mailAccount.emailAddress} · ${detail.mailAccount.status}${
-              detail.thread.needsBusinessLink ? ' · Needs business link' : ''
-            }`}
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              {canEdit && detail.thread.hasUnread ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  disabled={markingRead || patchingNeedsLink || retryingFailedMessageId !== null}
-                  onClick={() => void markRead()}
-                >
-                  <Check size={14} /> Mark read
-                </Button>
-              ) : null}
-              {canEdit && detail.thread.needsBusinessLink ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={patchingNeedsLink || markingRead || retryingFailedMessageId !== null}
-                  onClick={() => void setNeedsBusinessLink(false)}
-                >
-                  {patchingNeedsLink ? 'Updating…' : 'Clear needs link'}
-                </Button>
-              ) : null}
-              {canEdit && !detail.thread.needsBusinessLink ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={patchingNeedsLink || markingRead || retryingFailedMessageId !== null}
-                  onClick={() => void setNeedsBusinessLink(true)}
-                >
-                  {patchingNeedsLink ? 'Updating…' : 'Flag needs link'}
-                </Button>
-              ) : null}
-            </div>
-          </PageHeader>
+            trailing={
+              <div className="flex flex-wrap items-center gap-2">
+                {canEdit && detail.thread.hasUnread ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    disabled={markingRead || patchingNeedsLink || retryingFailedMessageId !== null}
+                    onClick={() => void markRead()}
+                  >
+                    <Check size={14} aria-hidden />
+                    Mark read
+                  </Button>
+                ) : null}
+                {canEdit && detail.thread.needsBusinessLink ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={patchingNeedsLink || markingRead || retryingFailedMessageId !== null}
+                    onClick={() => void setNeedsBusinessLink(false)}
+                  >
+                    {patchingNeedsLink ? 'Updating…' : 'Clear needs link'}
+                  </Button>
+                ) : null}
+                {canEdit && !detail.thread.needsBusinessLink ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={patchingNeedsLink || markingRead || retryingFailedMessageId !== null}
+                    onClick={() => void setNeedsBusinessLink(true)}
+                  >
+                    {patchingNeedsLink ? 'Updating…' : 'Flag needs link'}
+                  </Button>
+                ) : null}
+              </div>
+            }
+          />
+          <p className="text-muted-foreground -mt-3 text-sm">
+            {detail.mailAccount.emailAddress} · {detail.mailAccount.status}
+            {detail.thread.needsBusinessLink ? ' · Needs business link' : ''}
+          </p>
+
           <MailThreadMessages
             threadId={threadId}
             messages={detail.messages}

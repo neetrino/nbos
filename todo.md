@@ -71,8 +71,8 @@
 
 - [x] **Team** — `/team`
 - [x] **Documents** — `/documents` (hub; sections / detail later)
-- [ ] **Mail** — `/mail`, thread detail
-- [ ] **Reports** — reports center chrome
+- [x] **Mail** — `/mail`, thread detail
+- [x] **Reports** — reports center chrome
 - [ ] **Support** — `/support` (custom stats row → hero)
 - [x] **Credentials** — `/credentials`
 

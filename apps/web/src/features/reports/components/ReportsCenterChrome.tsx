@@ -1,7 +1,7 @@
 'use client';
 
 import { RefreshCw } from 'lucide-react';
-import { PageHeader } from '@/components/shared';
+import { PageHero } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import type { ReportCategory } from '@/lib/api/reports';
 
@@ -24,15 +24,18 @@ const REPORT_VIEWS: Array<{ id: ReportsView; label: string; description: string 
 
 export function ReportsHeader({ view, onRefresh }: { view: ReportsView; onRefresh: () => void }) {
   return (
-    <PageHeader
-      title="Reports / Analytics"
-      description={`Professional ${viewLabel(view)} reports with lazy-loaded data and charts.`}
-    >
-      <Button type="button" variant="outline" onClick={onRefresh}>
-        <RefreshCw className="mr-2 h-4 w-4" />
-        Refresh
-      </Button>
-    </PageHeader>
+    <PageHero
+      title="Reports"
+      trailing={
+        <>
+          <span className="text-muted-foreground hidden text-xs sm:inline">{viewLabel(view)}</span>
+          <Button type="button" variant="outline" size="sm" onClick={onRefresh}>
+            <RefreshCw className="mr-2 size-4" aria-hidden />
+            Refresh
+          </Button>
+        </>
+      }
+    />
   );
 }
 
