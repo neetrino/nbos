@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/shared';
 import { getLeadSource } from '../constants/leadPipeline';
+import { formatMarketingChannelLabel } from '../utils/formatMarketingChannel';
 import type { Lead } from '@/lib/api/leads';
 
 const DAY_MS = 1000 * 60 * 60 * 24;
@@ -23,17 +24,14 @@ const clockListeners = new Set<() => void>();
 
 function subscribeToClock(onStoreChange: () => void): () => void {
   clockListeners.add(onStoreChange);
-
   if (!clockTimerId) {
     clockTimerId = window.setInterval(() => {
       currentTimeSnapshot = Date.now();
       clockListeners.forEach((listener) => listener());
     }, CLOCK_REFRESH_MS);
   }
-
   return () => {
     clockListeners.delete(onStoreChange);
-
     if (clockListeners.size === 0 && clockTimerId) {
       window.clearInterval(clockTimerId);
       clockTimerId = undefined;
@@ -54,6 +52,7 @@ interface LeadCardProps {
 
 export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: LeadCardProps) {
   const source = getLeadSource(lead.source);
+  const channelLabel = formatMarketingChannelLabel(lead);
   const currentTime = useSyncExternalStore(
     subscribeToClock,
     getCurrentTimeSnapshot,
@@ -65,86 +64,130 @@ export function LeadCard({ lead, onClick, onStatusChange, onConvertToDeal }: Lea
 
   return (
     <div
-      className="group border-border bg-card cursor-pointer rounded-xl border p-4 transition-all hover:shadow-md"
+      className="group border-border bg-card hover:border-primary/25 cursor-pointer rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
       onClick={() => onClick(lead)}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-muted-foreground text-[10px] font-medium">{lead.code}</p>
+          <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+            {lead.code}
+          </p>
           <h4 className="text-foreground mt-0.5 truncate text-sm font-semibold">
-            {lead.name || lead.code}
+            {lead.contactName || lead.name || lead.code}
           </h4>
+          {lead.name && lead.contactName ? (
+            <p className="text-muted-foreground mt-0.5 truncate text-xs">{lead.name}</p>
+          ) : null}
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={(props) => (
-              <Button
-                {...props}
-                variant="ghost"
-                size="icon-xs"
-                className="opacity-0 group-hover:opacity-100"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  props.onClick?.(e);
-                }}
-              >
-                <MoreHorizontal size={14} />
-              </Button>
-            )}
-          />
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem onClick={() => onClick(lead)}>View Details</DropdownMenuItem>
-            {lead.status === 'MQL' && (
-              <DropdownMenuItem onClick={() => onConvertToDeal?.(lead)}>
-                Convert to Deal
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
-            {lead.status !== 'SPAM' && (
-              <DropdownMenuItem onClick={() => onStatusChange(lead.id, 'SPAM')}>
-                Mark as Spam
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <LeadCardMenu
+          lead={lead}
+          onClick={onClick}
+          onStatusChange={onStatusChange}
+          onConvertToDeal={onConvertToDeal}
+        />
       </div>
 
       <div className="mt-2.5 space-y-1">
-        <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <User size={11} />
-          <span>{lead.contactName}</span>
-        </div>
-        {lead.phone && (
+        {lead.phone ? (
           <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <Phone size={11} />
-            <span>{lead.phone}</span>
+            <Phone size={11} className="shrink-0" />
+            <span className="truncate">{lead.phone}</span>
           </div>
-        )}
-        {lead.email && (
+        ) : null}
+        {lead.email ? (
           <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <Mail size={11} />
+            <Mail size={11} className="shrink-0" />
             <span className="truncate">{lead.email}</span>
           </div>
-        )}
+        ) : null}
       </div>
 
-      <div className="mt-3 flex items-center justify-between">
-        <StatusBadge label={source?.label ?? 'No source'} variant="default" />
-        <div className="flex items-center gap-2">
-          {lead.assignee && (
-            <div className="bg-accent/20 text-accent flex h-5 w-5 items-center justify-center rounded-full text-[8px] font-bold">
+      <div className="mt-3 flex items-end justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          {source ? (
+            <StatusBadge
+              label={`${source.icon} ${source.label}`}
+              variant="default"
+              className="text-[9px]"
+            />
+          ) : null}
+          {channelLabel ? (
+            <span className="text-muted-foreground truncate text-[10px]">{channelLabel}</span>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {lead.assignee ? (
+            <span
+              className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold"
+              title={`${lead.assignee.firstName} ${lead.assignee.lastName}`}
+            >
               {lead.assignee.firstName[0]}
               {lead.assignee.lastName[0]}
-            </div>
+            </span>
+          ) : (
+            <span className="text-muted-foreground flex h-6 w-6 items-center justify-center rounded-full border border-dashed">
+              <User size={10} />
+            </span>
           )}
-          {isOverdue && (
-            <div className="text-destructive flex items-center gap-1 text-[10px]">
-              <Calendar size={10} />
-              <span>{daysSinceCreation}d</span>
-            </div>
-          )}
+          <span className="text-muted-foreground flex items-center gap-0.5 text-[10px] tabular-nums">
+            <Calendar size={10} />
+            {new Date(lead.createdAt).toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+          {isOverdue ? (
+            <StatusBadge label={`${daysSinceCreation}d`} variant="red" className="text-[9px]" />
+          ) : null}
         </div>
       </div>
     </div>
+  );
+}
+
+function LeadCardMenu({
+  lead,
+  onClick,
+  onStatusChange,
+  onConvertToDeal,
+}: {
+  lead: Lead;
+  onClick: (lead: Lead) => void;
+  onStatusChange: (id: string, status: string) => void;
+  onConvertToDeal?: (lead: Lead) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={(props) => (
+          <Button
+            {...props}
+            variant="ghost"
+            size="icon-xs"
+            className="opacity-0 group-hover:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              props.onClick?.(e);
+            }}
+          >
+            <MoreHorizontal size={14} />
+          </Button>
+        )}
+      />
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={() => onClick(lead)}>View details</DropdownMenuItem>
+        {lead.status === 'MQL' ? (
+          <DropdownMenuItem onClick={() => onConvertToDeal?.(lead)}>
+            Convert to deal
+          </DropdownMenuItem>
+        ) : null}
+        <DropdownMenuSeparator />
+        {lead.status !== 'SPAM' ? (
+          <DropdownMenuItem onClick={() => onStatusChange(lead.id, 'SPAM')}>
+            Mark as spam
+          </DropdownMenuItem>
+        ) : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -9,6 +9,14 @@ export interface KanbanColumn<T> {
   readonly?: boolean;
 }
 
+export type KanbanTerminalDropTone = 'danger' | 'success' | 'neutral';
+
+export interface KanbanTerminalDropZone {
+  key: string;
+  label: string;
+  tone: KanbanTerminalDropTone;
+}
+
 export interface KanbanBoardProps<T> {
   columns: KanbanColumn<T>[];
   renderCard: (item: T, columnKey: string) => ReactNode;
@@ -23,6 +31,8 @@ export interface KanbanBoardProps<T> {
   /** "+" button at top of each column: on click open create form; label shown on hover */
   onAddItemInColumn?: (columnKey: string) => void;
   addButtonLabel?: string;
+  /** Bottom drop targets shown while dragging (closed / terminal stages). */
+  terminalDropZones?: KanbanTerminalDropZone[];
 }
 
 export const SCROLL_SPEED = 6;

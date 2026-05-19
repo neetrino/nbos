@@ -25,20 +25,6 @@ export const DEAL_STAGES: DealStage[] = [
     color: 'bg-blue-500',
   },
   {
-    key: 'MEETING',
-    label: 'Meeting',
-    shortLabel: 'Meeting',
-    variant: 'indigo',
-    color: 'bg-indigo-500',
-  },
-  {
-    key: 'CAN_WE_DO_IT',
-    label: 'Can We Do It?',
-    shortLabel: 'Can We?',
-    variant: 'purple',
-    color: 'bg-purple-500',
-  },
-  {
     key: 'SEND_OFFER',
     label: 'Send Offer',
     shortLabel: 'Offer',

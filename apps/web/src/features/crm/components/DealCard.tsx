@@ -1,6 +1,6 @@
 'use client';
 
-import { User, MoreHorizontal, Link2 } from 'lucide-react';
+import { User, Building2, Calendar, MoreHorizontal, Link2, Puzzle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,82 +22,83 @@ interface DealCardProps {
 
 export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
   const typeVisual = getDealTypePresentation(deal.type);
+  const contactName = deal.contact
+    ? `${deal.contact.firstName} ${deal.contact.lastName}`.trim()
+    : null;
+  const deadlineOverdue =
+    deal.deadline && deal.status !== 'WON' && deal.status !== 'FAILED'
+      ? new Date(deal.deadline).getTime() < Date.now()
+      : false;
+  const TypeIcon = typeVisual.Icon;
 
   return (
     <div
-      className={`group cursor-pointer rounded-xl border p-4 transition-all duration-200 hover:shadow-md ${typeVisual.cardShellClassName}`}
+      className={`group cursor-pointer rounded-xl border p-4 shadow-sm transition-all duration-200 hover:shadow-md ${typeVisual.cardShellClassName}`}
       onClick={() => onClick(deal)}
     >
-      <div className="flex w-full items-start gap-2">
-        <h4 className="text-foreground min-w-0 flex-1 truncate pr-1 text-sm leading-snug font-semibold">
-          {deal.name || deal.code}
-        </h4>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={(props) => (
-                <Button
-                  {...props}
-                  variant="ghost"
-                  size="icon-xs"
-                  className="opacity-0 group-hover:opacity-100"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    props.onClick?.(e);
-                  }}
-                >
-                  <MoreHorizontal size={14} />
-                </Button>
-              )}
-            />
-            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem onClick={() => onClick(deal)}>View Details</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-green-600"
-                onClick={() => onStatusChange(deal.id, 'WON')}
-              >
-                Mark as Won
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => onStatusChange(deal.id, 'FAILED')}
-              >
-                Mark as Failed
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+      <div className="flex items-start gap-2">
+        <div
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${typeVisual.iconWrapClassName}`}
+        >
+          <TypeIcon size={14} aria-hidden />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-muted-foreground text-[10px] font-medium uppercase">{deal.code}</p>
+          <h4 className="text-foreground mt-0.5 truncate text-sm leading-snug font-semibold">
+            {contactName ?? deal.name ?? deal.code}
+          </h4>
+          {deal.company?.name ? (
+            <p className="text-muted-foreground mt-0.5 flex items-center gap-1 truncate text-xs">
+              <Building2 size={10} className="shrink-0" />
+              {deal.company.name}
+            </p>
+          ) : deal.name && contactName ? (
+            <p className="text-muted-foreground mt-0.5 truncate text-xs">{deal.name}</p>
+          ) : null}
+        </div>
+        <DealCardMenu deal={deal} onClick={onClick} onStatusChange={onStatusChange} />
+      </div>
+
+      {deal.amount ? (
+        <p className="text-foreground mt-3 flex items-center gap-1.5 text-base font-semibold tabular-nums">
+          <span className={typeVisual.amountIconClassName} aria-hidden>
+            {AMD_CURRENCY_SYMBOL}
+          </span>
+          {formatAmount(deal.amount)}
+        </p>
+      ) : null}
+
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <StatusBadge
+          label={typeVisual.label}
+          variant={typeVisual.badgeVariant}
+          className="text-[9px]"
+        />
+        {deal.paymentType ? (
           <StatusBadge
-            label={typeVisual.label}
-            variant={typeVisual.badgeVariant}
+            label={deal.paymentType.replace(/_/g, ' ')}
+            variant="amber"
             className="text-[9px]"
           />
-        </div>
+        ) : null}
+        {deal.deadline ? (
+          <span
+            className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+              deadlineOverdue
+                ? 'bg-destructive/10 text-destructive'
+                : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            <Calendar size={10} />
+            {new Date(deal.deadline).toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+        ) : null}
       </div>
 
-      <div className="mt-2.5 space-y-1">
-        {deal.contact && (
-          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-            <User size={11} />
-            <span>
-              {deal.contact.firstName} {deal.contact.lastName}
-            </span>
-          </div>
-        )}
-        {deal.amount && (
-          <div className="text-foreground flex items-center gap-1.5 text-sm font-semibold">
-            <span
-              className={`shrink-0 text-[15px] leading-none font-semibold tabular-nums ${typeVisual.amountIconClassName}`}
-              aria-hidden
-            >
-              {AMD_CURRENCY_SYMBOL}
-            </span>
-            <span>{formatAmount(deal.amount)}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-3 flex items-center justify-between">
+      <div className="mt-3 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <div className="flex shrink-0 -space-x-1.5">
             <span
@@ -107,7 +108,7 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
               {deal.seller.firstName[0]}
               {deal.seller.lastName[0]}
             </span>
-            {deal.sellerAssistant && (
+            {deal.sellerAssistant ? (
               <span
                 className="ring-card relative flex h-7 w-7 items-center justify-center rounded-full bg-violet-50 text-[10px] font-bold text-violet-700 ring-2 dark:bg-violet-950/40 dark:text-violet-300"
                 title={`Assistant: ${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`}
@@ -115,23 +116,65 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
                 {deal.sellerAssistant.firstName[0]}
                 {deal.sellerAssistant.lastName[0]}
               </span>
-            )}
+            ) : null}
           </div>
-          {deal.lead ? (
-            <div className="text-muted-foreground flex min-w-0 items-center gap-1 text-[10px]">
+          {deal.existingProduct ? (
+            <span className="text-muted-foreground flex min-w-0 items-center gap-1 text-[10px]">
+              <Puzzle size={10} className="shrink-0" />
+              <span className="truncate">{deal.existingProduct.name}</span>
+            </span>
+          ) : deal.lead ? (
+            <span className="text-muted-foreground flex min-w-0 items-center gap-1 text-[10px]">
               <Link2 size={10} className="shrink-0" />
               <span className="truncate">{deal.lead.code}</span>
-            </div>
+            </span>
           ) : null}
         </div>
-        {deal.paymentType && (
-          <StatusBadge
-            label={deal.paymentType.replace(/_/g, ' ')}
-            variant="amber"
-            className="text-[9px]"
-          />
-        )}
       </div>
     </div>
+  );
+}
+
+function DealCardMenu({
+  deal,
+  onClick,
+  onStatusChange,
+}: {
+  deal: Deal;
+  onClick: (deal: Deal) => void;
+  onStatusChange: (id: string, status: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={(props) => (
+          <Button
+            {...props}
+            variant="ghost"
+            size="icon-xs"
+            className="opacity-0 group-hover:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              props.onClick?.(e);
+            }}
+          >
+            <MoreHorizontal size={14} />
+          </Button>
+        )}
+      />
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={() => onClick(deal)}>View details</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="text-green-600" onClick={() => onStatusChange(deal.id, 'WON')}>
+          Mark as won
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="text-destructive"
+          onClick={() => onStatusChange(deal.id, 'FAILED')}
+        >
+          Mark as failed
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

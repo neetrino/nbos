@@ -39,11 +39,11 @@ describe('DealsService', () => {
     });
 
     it('applies status and type filters', async () => {
-      await service.findAll({ status: 'MEETING', type: 'NEW_PROJECT' });
+      await service.findAll({ status: 'DISCUSS_NEEDS', type: 'NEW_PROJECT' });
       expect(prisma.deal.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: 'MEETING',
+            status: 'DISCUSS_NEEDS',
             type: 'NEW_PROJECT',
           }),
         }),
@@ -332,7 +332,7 @@ describe('DealsService', () => {
     it('rejects clearing source when deal attribution is locked', async () => {
       prisma.deal.findUnique.mockResolvedValue({
         id: '1',
-        status: 'MEETING',
+        status: 'DISCUSS_NEEDS',
         type: 'EXTENSION',
         projectId: null,
         existingProduct: null,
@@ -471,7 +471,7 @@ describe('DealsService', () => {
         ...attribution,
       });
 
-      await expect(service.updateStatus('1', 'MEETING')).rejects.toMatchObject({
+      await expect(service.updateStatus('1', 'DISCUSS_NEEDS')).rejects.toMatchObject({
         response: {
           code: 'BUSINESS_TRANSITION_UNAVAILABLE',
         },
@@ -503,14 +503,14 @@ describe('DealsService', () => {
         contractFileUrl: null,
         ...attribution,
       };
-      const after = { ...before, status: 'MEETING' };
+      const after = { ...before, status: 'DISCUSS_NEEDS' };
       prisma.deal.findUnique
         .mockResolvedValueOnce(before)
         .mockResolvedValueOnce(before)
         .mockResolvedValueOnce(after);
-      prisma.deal.update.mockResolvedValue({ id: '1', status: 'MEETING' });
-      const result = await service.updateStatus('1', 'MEETING');
-      expect(result.status).toBe('MEETING');
+      prisma.deal.update.mockResolvedValue({ id: '1', status: 'DISCUSS_NEEDS' });
+      const result = await service.updateStatus('1', 'DISCUSS_NEEDS');
+      expect(result.status).toBe('DISCUSS_NEEDS');
     });
 
     it('blocks WON when required fields missing', async () => {

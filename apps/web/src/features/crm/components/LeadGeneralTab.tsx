@@ -1,8 +1,10 @@
 'use client';
 
-import { Phone, Mail, User, Calendar, Clock, MessageSquare, Link2 } from 'lucide-react';
-import { StatusBadge, InlineField } from '@/components/shared';
+import { useCallback, type ReactNode } from 'react';
+import { Phone, Mail, User, Calendar, Clock, MessageSquare, Link2, Building2 } from 'lucide-react';
+import { DetailSheetSection, StatusBadge, InlineField, SearchField } from '@/components/shared';
 import type { Lead } from '@/lib/api/leads';
+import { employeesApi } from '@/lib/api/employees';
 import type { LeadGeneralDraft } from './lead-general-form-state';
 import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
 import { LeadGeneralMarketingSection } from './LeadGeneralMarketingSection';
@@ -26,36 +28,38 @@ export function LeadGeneralTab({
   formDisabled = false,
   sectionIds,
 }: LeadGeneralTabProps) {
+  const searchEmployees = useCallback(async (query: string) => {
+    const data = await employeesApi.getAll({ pageSize: 8, search: query || undefined });
+    return data.items.map((employee) => ({
+      value: employee.id,
+      label: `${employee.firstName} ${employee.lastName}`,
+    }));
+  }, []);
+
   return (
-    <div className="space-y-8">
-      <div id={sectionIds.contact}>
-        <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-          <User size={13} />
-          Contact Information
-        </h3>
-        <div className="grid grid-cols-2 gap-x-10 gap-y-3">
+    <div className="space-y-6">
+      <DetailSheetSection id={sectionIds.contact} title="Contact" icon={<User size={12} />}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <InlineField
             variant="controlled"
-            label="Contact Name"
+            label="Contact name"
             type="text"
             value={draft.contactName}
-            placeholder="Contact name..."
+            placeholder="Contact name…"
             icon={<User size={12} />}
             disabled={formDisabled}
             onValueChange={(v) => patchDraft({ contactName: v })}
           />
-
           <InlineField
             variant="controlled"
             label="Phone"
             type="phone"
             value={draft.phone ?? ''}
-            placeholder="+374..."
+            placeholder="+374…"
             icon={<Phone size={12} />}
             disabled={formDisabled}
             onValueChange={(v) => patchDraft({ phone: v || null })}
           />
-
           <InlineField
             variant="controlled"
             label="Email"
@@ -67,7 +71,7 @@ export function LeadGeneralTab({
             onValueChange={(v) => patchDraft({ email: v || null })}
           />
         </div>
-      </div>
+      </DetailSheetSection>
 
       <LeadGeneralMarketingSection
         lead={lead}
@@ -77,42 +81,37 @@ export function LeadGeneralTab({
         sectionId={sectionIds.marketing}
       />
 
-      <div id={sectionIds.assignment}>
-        <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-          <User size={13} />
-          Assignment
-        </h3>
-        <div className="grid grid-cols-2 gap-x-10 gap-y-3">
-          <InlineField
-            label="Assigned Seller"
-            value={lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : ''}
-            displayValue={
-              lead.assignee ? (
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
-                    {lead.assignee.firstName[0]}
-                    {lead.assignee.lastName[0]}
-                  </div>
-                  <span className="text-foreground text-sm font-medium">
-                    {lead.assignee.firstName} {lead.assignee.lastName}
-                  </span>
-                </div>
-              ) : undefined
-            }
-            editable={false}
-            icon={<User size={12} />}
-          />
-        </div>
-      </div>
+      <DetailSheetSection id={sectionIds.assignment} title="Team" icon={<Building2 size={12} />}>
+        <SearchField
+          selectionMode="stage"
+          label="Seller"
+          value={draft.assignedTo}
+          displayValue={
+            draft.sellerDisplayLabel ? (
+              <span className="text-foreground text-sm font-medium">
+                {draft.sellerDisplayLabel}
+              </span>
+            ) : undefined
+          }
+          placeholder="Search seller…"
+          icon={<User size={12} />}
+          disabled={formDisabled}
+          onSearch={searchEmployees}
+          onStageSelect={(value, label) =>
+            patchDraft({ assignedTo: value, sellerDisplayLabel: label })
+          }
+          onClear={
+            formDisabled
+              ? undefined
+              : () => patchDraft({ assignedTo: null, sellerDisplayLabel: null })
+          }
+        />
+      </DetailSheetSection>
 
       {lead.deal ? (
-        <div>
-          <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-            <Link2 size={13} />
-            Linked Deal
-          </h3>
-          <div className="border-border hover:bg-muted/50 flex items-center gap-3 rounded-xl border p-3 transition-colors">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+        <DetailSheetSection title="Linked deal" icon={<Link2 size={12} />}>
+          <div className="border-border bg-muted/20 flex items-center gap-3 rounded-xl border p-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
               <Link2 size={16} />
             </div>
             <div className="flex-1">
@@ -120,55 +119,52 @@ export function LeadGeneralTab({
               <StatusBadge label={lead.deal.status.replace(/_/g, ' ')} variant="blue" />
             </div>
           </div>
-        </div>
+        </DetailSheetSection>
       ) : null}
 
-      <div>
-        <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-          <Calendar size={13} />
-          Dates
-        </h3>
-        <div className="grid grid-cols-2 gap-x-10 gap-y-3">
+      <DetailSheetSection title="Notes & activity" icon={<MessageSquare size={12} />}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <InlineField
-            label="Created"
-            value={new Date(lead.createdAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
-            icon={<Calendar size={12} />}
-            editable={false}
+            variant="controlled"
+            label="Notes"
+            type="textarea"
+            value={draft.notes ?? ''}
+            placeholder="Conversation notes…"
+            disabled={formDisabled}
+            onValueChange={(v) => patchDraft({ notes: v || null })}
           />
-
-          <InlineField
-            label="Last Updated"
-            value={new Date(lead.updatedAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
-            icon={<Clock size={12} />}
-            editable={false}
-          />
+          <div className="space-y-3 text-sm">
+            <MetaRow
+              icon={<Calendar size={12} />}
+              label="Created"
+              value={formatDate(lead.createdAt)}
+            />
+            <MetaRow
+              icon={<Clock size={12} />}
+              label="Updated"
+              value={formatDate(lead.updatedAt)}
+            />
+          </div>
         </div>
-      </div>
-
-      <div>
-        <h3 className="text-muted-foreground mb-4 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
-          <MessageSquare size={13} />
-          Notes
-        </h3>
-        <InlineField
-          variant="controlled"
-          label=""
-          type="textarea"
-          value={draft.notes ?? ''}
-          placeholder="Add notes about this lead..."
-          icon={<MessageSquare size={12} />}
-          disabled={formDisabled}
-          onValueChange={(v) => patchDraft({ notes: v || null })}
-        />
-      </div>
+      </DetailSheetSection>
     </div>
   );
+}
+
+function MetaRow({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return (
+    <div className="text-muted-foreground flex items-center gap-2">
+      {icon}
+      <span className="font-medium">{label}</span>
+      <span className="text-foreground ml-auto tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }

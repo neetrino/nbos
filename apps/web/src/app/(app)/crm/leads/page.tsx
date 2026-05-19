@@ -25,6 +25,17 @@ import {
   type TransitionBlockerState,
 } from '@/features/crm/components/TransitionBlockerDialog';
 import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
+import {
+  BOARD_LIFECYCLE_SCOPE_OPTIONS,
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  matchesBoardLifecycleScope,
+  resolveBoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
+import {
+  buildScopedKanbanColumns,
+  buildTerminalDropZones,
+  shouldShowTerminalDropBar,
+} from '@/features/crm/hooks/buildCrmKanban';
 import { leadsApi, type Lead } from '@/lib/api/leads';
 import {
   getApiErrorMessage,
@@ -437,15 +448,41 @@ export default function LeadsPipelinePage() {
     requestStatusChange(itemId, toColumn);
   };
 
-  const kanbanColumns: KanbanColumn<Lead>[] = LEAD_STAGES.map((stage) => ({
-    key: stage.key,
-    label: stage.label,
-    color: stage.color,
-    items: leads.filter((l) => l.status === stage.key),
-  }));
+  const boardScope = resolveBoardLifecycleScope(
+    filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  );
+
+  const displayLeads = useMemo(() => {
+    return leads.filter((lead) => {
+      if (filters.status && filters.status !== 'all') {
+        return lead.status === filters.status;
+      }
+      return matchesBoardLifecycleScope(lead.status, LEAD_STAGES, boardScope);
+    });
+  }, [leads, filters.status, boardScope]);
+
+  const kanbanColumns = useMemo(
+    () =>
+      buildScopedKanbanColumns({
+        items: displayLeads,
+        stages: LEAD_STAGES,
+        scopeValue: boardScope,
+      }),
+    [displayLeads, boardScope],
+  );
+
+  const leadTerminalZones = useMemo(() => buildTerminalDropZones(LEAD_STAGES), []);
 
   const filterConfigs = useMemo(
     () => [
+      {
+        key: 'boardScope',
+        label: 'Status',
+        options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
+          value: option.value,
+          label: option.label,
+        })),
+      },
       {
         key: 'source',
         label: 'Source',
@@ -468,7 +505,10 @@ export default function LeadsPipelinePage() {
           onSearchChange={setSearch}
           searchPlaceholder="Search leads by name, email, phone…"
           filters={filterConfigs}
-          filterValues={filters}
+          filterValues={{
+            boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+            ...filters,
+          }}
           onFilterChange={(key: string, value: string) =>
             setFilters((prev) => ({ ...prev, [key]: value }))
           }
@@ -494,7 +534,7 @@ export default function LeadsPipelinePage() {
         <LoadingState variant="cards" count={3} />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchLeads} />
-      ) : leads.length === 0 ? (
+      ) : displayLeads.length === 0 ? (
         <EmptyState
           icon={Users}
           title="No leads yet"
@@ -521,6 +561,9 @@ export default function LeadsPipelinePage() {
             onMove={handleMove}
             columnWidth={270}
             emptyMessage="No leads"
+            terminalDropZones={
+              shouldShowTerminalDropBar(boardScope) ? leadTerminalZones : undefined
+            }
           />
         </div>
       ) : (
@@ -539,7 +582,7 @@ export default function LeadsPipelinePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {leads.map((lead) => {
+              {displayLeads.map((lead) => {
                 const stage = getLeadStage(lead.status);
                 const source = getLeadSource(lead.source);
                 return (

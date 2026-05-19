@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Plus, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { KanbanColorPicker } from './kanban/KanbanColorPicker';
 import { KanbanColumnHeader } from './kanban/KanbanColumnHeader';
+import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
 import {
   SCROLL_SPEED,
   EDGE_ZONE_WIDTH,
@@ -28,11 +29,13 @@ export function KanbanBoard<T>({
   onDeleteColumn,
   onAddItemInColumn,
   addButtonLabel = 'Quick',
+  terminalDropZones,
 }: KanbanBoardProps<T>) {
   const editable = !!(onAddColumn || onRenameColumn || onDeleteColumn);
 
   const [dragItem, setDragItem] = useState<{ id: string; fromColumn: string } | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const [terminalDropTarget, setTerminalDropTarget] = useState<string | null>(null);
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set());
   const prevItemsRef = useRef<Map<string, string>>(new Map());
 
@@ -111,10 +114,10 @@ export function KanbanBoard<T>({
   }, [columns, getItemId]);
 
   /* ── Drag handlers ── */
-  const handleDragStart = useCallback(
-    (id: string, col: string) => setDragItem({ id, fromColumn: col }),
-    [],
-  );
+  const handleDragStart = useCallback((id: string, col: string) => {
+    setDragItem({ id, fromColumn: col });
+    setTerminalDropTarget(null);
+  }, []);
   const handleDragOver = useCallback((e: React.DragEvent, col: string) => {
     e.preventDefault();
     setDropTarget(col);
@@ -125,6 +128,19 @@ export function KanbanBoard<T>({
       if (dragItem && dragItem.fromColumn !== col) onMove?.(dragItem.id, dragItem.fromColumn, col);
       setDragItem(null);
       setDropTarget(null);
+      setTerminalDropTarget(null);
+    },
+    [dragItem, onMove],
+  );
+
+  const handleTerminalDrop = useCallback(
+    (zoneKey: string) => {
+      if (dragItem && dragItem.fromColumn !== zoneKey) {
+        onMove?.(dragItem.id, dragItem.fromColumn, zoneKey);
+      }
+      setDragItem(null);
+      setDropTarget(null);
+      setTerminalDropTarget(null);
     },
     [dragItem, onMove],
   );
@@ -242,7 +258,13 @@ export function KanbanBoard<T>({
       {edgeZone('left', canScrollLeft)}
       {edgeZone('right', canScrollRight)}
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2">
+      <div
+        ref={scrollRef}
+        className={cn(
+          'min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2',
+          dragItem && terminalDropZones?.length && 'pb-28',
+        )}
+      >
         <div
           className="flex h-full gap-0"
           style={{ minWidth: `${(columns.length + (editable ? 1 : 0)) * (columnWidth + 16)}px` }}
@@ -346,6 +368,16 @@ export function KanbanBoard<T>({
           {columns.length === 0 && addingAfter === '__end' && addForm}
         </div>
       </div>
+
+      {dragItem && terminalDropZones && terminalDropZones.length > 0 ? (
+        <KanbanTerminalDropBar
+          zones={terminalDropZones}
+          activeZoneKey={terminalDropTarget}
+          onDragOver={setTerminalDropTarget}
+          onDragLeave={() => setTerminalDropTarget(null)}
+          onDrop={handleTerminalDrop}
+        />
+      ) : null}
     </div>
   );
 }

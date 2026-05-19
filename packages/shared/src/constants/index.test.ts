@@ -32,10 +32,10 @@ describe('Constants', () => {
     expect(LEAD_STATUSES[6]).toBe('SQL');
   });
 
-  it('DEAL_STATUSES has 9 statuses', () => {
-    expect(DEAL_STATUSES).toHaveLength(9);
+  it('DEAL_STATUSES has 7 statuses', () => {
+    expect(DEAL_STATUSES).toHaveLength(7);
     expect(DEAL_STATUSES[0]).toBe('START_CONVERSATION');
-    expect(DEAL_STATUSES[8]).toBe('WON');
+    expect(DEAL_STATUSES[6]).toBe('WON');
   });
 
   it('PRODUCT_STATUSES has 8 statuses', () => {

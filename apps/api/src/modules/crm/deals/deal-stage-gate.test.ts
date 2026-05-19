@@ -32,8 +32,6 @@ const baseDeal = {
 describe('validateDealStageGate', () => {
   it('allows early stages without validation', () => {
     expect(() => validateDealStageGate(baseDeal, 'DISCUSS_NEEDS')).not.toThrow();
-    expect(() => validateDealStageGate(baseDeal, 'MEETING')).not.toThrow();
-    expect(() => validateDealStageGate(baseDeal, 'CAN_WE_DO_IT')).not.toThrow();
   });
 
   it('always allows FAILED', () => {

@@ -1,7 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
+import { ExternalLink, FileText, TrendingUp } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
+import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
+import { cn } from '@/lib/utils';
 import type { Deal } from '@/lib/api/deals';
 import { invoicesApi, ordersApi } from '@/lib/api/finance';
 import { tasksApi } from '@/lib/api/tasks';
@@ -155,6 +159,14 @@ export function DealFinanceActionsPanel({
               handleCreateTask={handleCreateTask}
             />
           )}
+
+          <Link
+            href={buildDriveHrefWithDeal(deal.id)}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full gap-1.5')}
+          >
+            <ExternalLink className="size-4" aria-hidden />
+            Open Drive
+          </Link>
         </div>
       </section>
     </>

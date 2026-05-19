@@ -31,6 +31,17 @@ import {
   getDealStage,
   formatAmount,
 } from '@/features/crm/constants/dealPipeline';
+import {
+  BOARD_LIFECYCLE_SCOPE_OPTIONS,
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  matchesBoardLifecycleScope,
+  resolveBoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
+import {
+  buildScopedKanbanColumns,
+  buildTerminalDropZones,
+  shouldShowTerminalDropBar,
+} from '@/features/crm/hooks/buildCrmKanban';
 import { dealsApi, type Deal } from '@/lib/api/deals';
 import { getDealTypePresentation } from '@/lib/deal-type-visual';
 import {
@@ -454,15 +465,41 @@ export default function DealsPipelinePage() {
     requestStatusChange(itemId, toColumn);
   };
 
-  const kanbanColumns: KanbanColumn<Deal>[] = DEAL_STAGES.map((stage) => ({
-    key: stage.key,
-    label: stage.label,
-    color: stage.color,
-    items: deals.filter((d) => d.status === stage.key),
-  }));
+  const boardScope = resolveBoardLifecycleScope(
+    filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  );
+
+  const displayDeals = useMemo(() => {
+    return deals.filter((deal) => {
+      if (filters.status && filters.status !== 'all') {
+        return deal.status === filters.status;
+      }
+      return matchesBoardLifecycleScope(deal.status, DEAL_STAGES, boardScope);
+    });
+  }, [deals, filters.status, boardScope]);
+
+  const kanbanColumns = useMemo(
+    () =>
+      buildScopedKanbanColumns({
+        items: displayDeals,
+        stages: DEAL_STAGES,
+        scopeValue: boardScope,
+      }),
+    [displayDeals, boardScope],
+  );
+
+  const dealTerminalZones = useMemo(() => buildTerminalDropZones(DEAL_STAGES), []);
 
   const filterConfigs = useMemo(
     () => [
+      {
+        key: 'boardScope',
+        label: 'Status',
+        options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
+          value: option.value,
+          label: option.label,
+        })),
+      },
       {
         key: 'type',
         label: 'Type',
@@ -485,7 +522,10 @@ export default function DealsPipelinePage() {
           onSearchChange={setSearch}
           searchPlaceholder="Search deals by code, name, contact, company, orders, marketing…"
           filters={filterConfigs}
-          filterValues={filters}
+          filterValues={{
+            boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+            ...filters,
+          }}
           onFilterChange={(key: string, value: string) =>
             setFilters((prev) => ({ ...prev, [key]: value }))
           }
@@ -511,7 +551,7 @@ export default function DealsPipelinePage() {
         <LoadingState variant="cards" count={3} />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchDeals} />
-      ) : deals.length === 0 ? (
+      ) : displayDeals.length === 0 ? (
         <EmptyState
           icon={Handshake}
           title="No deals yet"
@@ -538,6 +578,9 @@ export default function DealsPipelinePage() {
             onMove={handleMove}
             columnWidth={270}
             emptyMessage="No deals"
+            terminalDropZones={
+              shouldShowTerminalDropBar(boardScope) ? dealTerminalZones : undefined
+            }
           />
         </div>
       ) : (
@@ -555,7 +598,7 @@ export default function DealsPipelinePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {deals.map((deal) => {
+              {displayDeals.map((deal) => {
                 const stage = getDealStage(deal.status);
                 const dealTypeVisual = getDealTypePresentation(deal.type);
                 return (

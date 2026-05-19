@@ -16,6 +16,8 @@ export interface LeadGeneralDraft {
   partnerPickLabel: string | null;
   clientPickLabel: string | null;
   notes: string | null;
+  assignedTo: string | null;
+  sellerDisplayLabel: string | null;
 }
 
 export type LeadGeneralUpdatePayload = Partial<Lead>;
@@ -38,6 +40,10 @@ export function createLeadGeneralDraft(lead: Lead): LeadGeneralDraft {
       ? `${lead.sourceContact.firstName} ${lead.sourceContact.lastName}`
       : null,
     notes: lead.notes,
+    assignedTo: lead.assignedTo,
+    sellerDisplayLabel: lead.assignee
+      ? `${lead.assignee.firstName} ${lead.assignee.lastName}`
+      : null,
   };
 }
 
@@ -72,6 +78,7 @@ export function buildLeadGeneralPatch(
     out.marketingActivityId = draft.marketingActivityId;
   }
   if (!strEq(draft.notes, snap.notes)) out.notes = draft.notes;
+  if (draft.assignedTo !== snap.assignedTo) out.assignedTo = draft.assignedTo;
 
   return out;
 }

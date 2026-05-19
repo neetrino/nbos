@@ -1,7 +1,7 @@
 'use client';
 
 import { Building2, Calendar, Clock, User } from 'lucide-react';
-import { InlineField, SearchField } from '@/components/shared';
+import { DetailSheetSection, InlineField, SearchField } from '@/components/shared';
 import type { Deal } from '@/lib/api/deals';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import type { SearchLoader } from './deal-general-tab.types';
@@ -25,15 +25,12 @@ export function DealContactTeamSection({
   disabled = false,
 }: DealContactTeamSectionProps) {
   return (
-    <section
+    <DetailSheetSection
       id={DEAL_SHEET_SECTION.CONTACT_TEAM}
-      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent"
+      title="Contact & team"
+      icon={<User size={12} />}
     >
-      <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
-        <User size={12} />
-        Contact & Team
-      </h4>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SearchField
           selectionMode="stage"
           label="Contact"
@@ -91,7 +88,7 @@ export function DealContactTeamSection({
           editable={false}
         />
       </div>
-    </section>
+    </DetailSheetSection>
   );
 }
 

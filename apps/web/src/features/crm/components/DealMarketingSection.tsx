@@ -1,10 +1,13 @@
 'use client';
 
 import { Building2, ExternalLink, Megaphone, User } from 'lucide-react';
-import { InlineField, SearchField } from '@/components/shared';
+import { DetailSheetSection, InlineField, SearchField } from '@/components/shared';
 import type { Deal } from '@/lib/api/deals';
 import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
-import { isDealAttributionLocked } from '@nbos/shared/constants';
+import {
+  isDealAttributionLocked,
+  requiresMarketingWhichOneSelection,
+} from '@nbos/shared/constants';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import type { SearchLoader } from './deal-general-tab.types';
@@ -37,17 +40,18 @@ export function DealMarketingSection({
   );
   const whereOptions = getWhereOptions(draft.source, marketingWhereOptions);
   const attributionLocked = isDealAttributionLocked(deal.status);
+  const showMarketingWhichOne =
+    draft.source === 'MARKETING' &&
+    Boolean(draft.sourceDetail) &&
+    requiresMarketingWhichOneSelection(draft.source, draft.sourceDetail);
 
   return (
-    <section
+    <DetailSheetSection
       id={DEAL_SHEET_SECTION.MARKETING}
-      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-violet-50/40 to-white p-5 dark:border-stone-800 dark:from-violet-950/10 dark:to-transparent"
+      title="Marketing"
+      icon={<Megaphone size={12} />}
     >
-      <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
-        <Megaphone size={12} />
-        Marketing
-      </h4>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <InlineField
           variant="controlled"
           label="From"
@@ -95,10 +99,10 @@ export function DealMarketingSection({
           />
         )}
 
-        {draft.source === 'MARKETING' && draft.sourceDetail && (
+        {showMarketingWhichOne ? (
           <SearchField
             selectionMode="stage"
-            label="Which one"
+            label="Which one?"
             value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
             displayValue={
               draft.marketingPickLabel ? (
@@ -130,7 +134,7 @@ export function DealMarketingSection({
                     })
             }
           />
-        )}
+        ) : null}
 
         {draft.source === 'PARTNER' && (
           <SearchField
@@ -192,7 +196,7 @@ export function DealMarketingSection({
           />
         )}
       </div>
-    </section>
+    </DetailSheetSection>
   );
 }
 
