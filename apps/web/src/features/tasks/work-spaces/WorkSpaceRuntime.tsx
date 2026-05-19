@@ -94,8 +94,11 @@ export function WorkSpaceRuntime({
     setDefaultCreateDueDate,
     handleAction,
     handleKanbanMove,
+    handleKanbanReorder,
     handleMyPlanMove,
+    handleMyPlanReorder,
     handleDeadlineMove,
+    handleDeadlineReorder,
     handleAddTaskInColumn,
     handleAddMyPlanStage,
     handleRenameMyPlanStage,
@@ -239,6 +242,7 @@ export function WorkSpaceRuntime({
             renderCard={renderCard}
             getItemId={(t) => t.id}
             onMove={handleDeadlineMove}
+            onReorderWithinColumn={handleDeadlineReorder}
             onAddItemInColumn={handleAddTaskInColumn}
             addButtonLabel="Quick"
             columnWidth={240}
@@ -256,6 +260,7 @@ export function WorkSpaceRuntime({
             renderCard={renderCard}
             getItemId={(t) => t.id}
             onMove={handleKanbanMove}
+            onReorderWithinColumn={handleKanbanReorder}
             onAddItemInColumn={handleAddTaskInColumn}
             addButtonLabel="Quick"
             columnWidth={270}
@@ -272,6 +277,7 @@ export function WorkSpaceRuntime({
           renderCard={renderCard}
           getItemId={(t) => t.id}
           onMove={handleMyPlanMove}
+          onReorderWithinColumn={handleMyPlanReorder}
           onAddColumn={handleAddMyPlanStage}
           onRenameColumn={handleRenameMyPlanStage}
           onDeleteColumn={handleDeleteMyPlanStage}

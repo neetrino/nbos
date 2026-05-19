@@ -16,6 +16,10 @@ import {
   buildMyPlanColumns,
   buildWorkspacePlanningColumns,
   resolvePlanningColumnKey,
+  reorderTasksInColumn,
+  taskMatchesDeadlineColumn,
+  taskMatchesKanbanStatusColumn,
+  taskMatchesMyPlanColumn,
 } from '@/features/tasks/task-board';
 import type { TaskBoardAction } from '@/features/tasks/task-board';
 import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
@@ -129,6 +133,39 @@ export function useWorkspaceRuntimeBoard(
       }
     },
     [tasks, setTasks],
+  );
+
+  const handleKanbanReorder = useCallback(
+    (taskId: string, columnKey: string, toIndex: number) => {
+      setTasks((prev) =>
+        reorderTasksInColumn(prev, taskId, toIndex, (task) =>
+          taskMatchesKanbanStatusColumn(task, columnKey),
+        ),
+      );
+    },
+    [setTasks],
+  );
+
+  const handleDeadlineReorder = useCallback(
+    (taskId: string, columnKey: string, toIndex: number) => {
+      setTasks((prev) =>
+        reorderTasksInColumn(prev, taskId, toIndex, (task) =>
+          taskMatchesDeadlineColumn(task, columnKey),
+        ),
+      );
+    },
+    [setTasks],
+  );
+
+  const handleMyPlanReorder = useCallback(
+    (taskId: string, columnKey: string, toIndex: number) => {
+      setTasks((prev) =>
+        reorderTasksInColumn(prev, taskId, toIndex, (task) =>
+          taskMatchesMyPlanColumn(task, columnKey),
+        ),
+      );
+    },
+    [setTasks],
   );
 
   const handleKanbanMove = useCallback(
@@ -303,8 +340,11 @@ export function useWorkspaceRuntimeBoard(
     setDefaultCreateDueDate,
     handleAction,
     handleKanbanMove,
+    handleKanbanReorder,
     handleMyPlanMove,
+    handleMyPlanReorder,
     handleDeadlineMove,
+    handleDeadlineReorder,
     handleAddTaskInColumn,
     handleAddMyPlanStage,
     handleRenameMyPlanStage,

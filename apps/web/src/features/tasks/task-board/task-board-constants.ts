@@ -21,6 +21,23 @@ export const KANBAN_STATUS_MAP: Record<string, string> = {
   Completed: 'COMPLETED',
 };
 
+export function taskMatchesKanbanStatusColumn(task: Task, columnKey: string): boolean {
+  const targetStatus = KANBAN_STATUS_MAP[columnKey] ?? columnKey.toUpperCase().replace(/ /g, '_');
+  const currentStatus = task.status === 'NEW' && targetStatus === 'OPEN' ? 'OPEN' : task.status;
+  return currentStatus === targetStatus;
+}
+
+export function taskMatchesDeadlineColumn(task: Task, columnKey: string): boolean {
+  return getDeadlineColumn(task) === columnKey;
+}
+
+export function taskMatchesMyPlanColumn(task: Task, columnKey: string): boolean {
+  if (columnKey === '__unassigned') {
+    return !task.myPlanStageId;
+  }
+  return task.myPlanStageId === columnKey;
+}
+
 export function getDeadlineColumn(task: Task): string {
   if (task.status === 'COMPLETED' || task.status === 'DONE') return 'done';
   if (!task.dueDate) return 'no-date';

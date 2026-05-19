@@ -34,6 +34,7 @@ import {
 import {
   buildScopedKanbanColumns,
   buildTerminalDropZones,
+  reorderCrmKanbanColumn,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
 import { leadsApi, type Lead } from '@/lib/api/leads';
@@ -449,6 +450,10 @@ export default function LeadsPipelinePage() {
     requestStatusChange(itemId, toColumn);
   };
 
+  const handleReorder = useCallback((itemId: string, columnKey: string, toIndex: number) => {
+    setLeads((prev) => reorderCrmKanbanColumn(prev, itemId, columnKey, toIndex));
+  }, []);
+
   const boardScope = resolveBoardLifecycleScope(filters.boardScope);
 
   const displayLeads = useMemo(() => {
@@ -566,6 +571,7 @@ export default function LeadsPipelinePage() {
             )}
             getItemId={(lead) => lead.id}
             onMove={handleMove}
+            onReorderWithinColumn={handleReorder}
             columnWidth={270}
             emptyMessage="No leads"
             terminalDropZones={

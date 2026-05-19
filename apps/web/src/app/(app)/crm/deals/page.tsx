@@ -40,6 +40,7 @@ import {
 import {
   buildScopedKanbanColumns,
   buildTerminalDropZones,
+  reorderCrmKanbanColumn,
   shouldShowTerminalDropBar,
 } from '@/features/crm/hooks/buildCrmKanban';
 import { dealsApi, type Deal } from '@/lib/api/deals';
@@ -466,6 +467,10 @@ export default function DealsPipelinePage() {
     requestStatusChange(itemId, toColumn);
   };
 
+  const handleReorder = useCallback((itemId: string, columnKey: string, toIndex: number) => {
+    setDeals((prev) => reorderCrmKanbanColumn(prev, itemId, columnKey, toIndex));
+  }, []);
+
   const boardScope = resolveBoardLifecycleScope(filters.boardScope);
 
   const displayDeals = useMemo(() => {
@@ -583,6 +588,7 @@ export default function DealsPipelinePage() {
             )}
             getItemId={(deal) => deal.id}
             onMove={handleMove}
+            onReorderWithinColumn={handleReorder}
             columnWidth={270}
             emptyMessage="No deals"
             terminalDropZones={

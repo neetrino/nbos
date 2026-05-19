@@ -1,9 +1,3 @@
-/** Drop-target styling — identical to KanbanBoard (Deal Pipeline). */
-export const DELIVERY_KANBAN_COLUMN_DROP_ACTIVE_CLASS =
-  'bg-accent/10 ring-accent/20 ring-2 ring-inset';
-
-export const DELIVERY_KANBAN_COLUMN_TRANSITION_CLASS = 'transition-colors duration-200';
-
 /** Task link `entityType` when creating a task tied to a project from the delivery board. */
 export const DELIVERY_BOARD_TASK_LINK_PROJECT_ENTITY = 'PROJECT' as const;
 

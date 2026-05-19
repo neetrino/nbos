@@ -1,3 +1,4 @@
+import { reorderItemsInColumn } from '@/components/shared/kanban/kanban-reorder';
 import type { KanbanColumn, KanbanTerminalDropZone } from '@/components/shared/kanban/kanban.types';
 import {
   getBoardStageKeys,
@@ -52,4 +53,20 @@ function terminalTone(statusKey: string): KanbanTerminalDropZone['tone'] {
 export function shouldShowTerminalDropBar(scopeValue: string | undefined): boolean {
   const scope: BoardLifecycleScope = resolveBoardLifecycleScope(scopeValue);
   return scope === 'ACTIVE';
+}
+
+/** Local kanban order within one CRM stage column (lead/deal status). */
+export function reorderCrmKanbanColumn<T extends { id: string; status: string }>(
+  items: T[],
+  itemId: string,
+  columnKey: string,
+  toIndex: number,
+): T[] {
+  return reorderItemsInColumn(
+    items,
+    itemId,
+    toIndex,
+    (item) => item.status === columnKey,
+    (item) => item.id,
+  );
 }

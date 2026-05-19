@@ -3,7 +3,11 @@ export {
   KANBAN_STATUS_MAP,
   getDeadlineColumn,
   getDueDateForDeadlineColumn,
+  taskMatchesDeadlineColumn,
+  taskMatchesKanbanStatusColumn,
+  taskMatchesMyPlanColumn,
 } from './task-board-constants';
+export { reorderTasksInColumn } from './reorder-tasks-in-column';
 export { TaskMiniCard, type TaskBoardAction } from './TaskMiniCard';
 export { WORKSPACE_KANBAN_COLUMN_DEFS, buildWorkspaceKanbanColumns } from './workspace-kanban';
 export {

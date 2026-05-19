@@ -4,7 +4,14 @@ import { createElement, useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { TASK_STATUSES, TASK_PRIORITIES } from '@/features/tasks/constants/tasks';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
-import { KANBAN_STATUS_MAP, getDueDateForDeadlineColumn } from '@/features/tasks/task-board';
+import {
+  KANBAN_STATUS_MAP,
+  getDueDateForDeadlineColumn,
+  reorderTasksInColumn,
+  taskMatchesDeadlineColumn,
+  taskMatchesKanbanStatusColumn,
+  taskMatchesMyPlanColumn,
+} from '@/features/tasks/task-board';
 import { TasksListKanbanViews } from '@/features/tasks/tasks-list-kanban-views';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 import { tasksApi, type Task, type TaskBoardStage, type TaskStats } from '@/lib/api/tasks';
@@ -153,6 +160,30 @@ export function useTasksListPage() {
     setTasks((prev) => [task, ...prev]);
   };
 
+  const handleKanbanReorder = (taskId: string, columnKey: string, toIndex: number) => {
+    setTasks((prev) =>
+      reorderTasksInColumn(prev, taskId, toIndex, (task) =>
+        taskMatchesKanbanStatusColumn(task, columnKey),
+      ),
+    );
+  };
+
+  const handleDeadlineReorder = (taskId: string, columnKey: string, toIndex: number) => {
+    setTasks((prev) =>
+      reorderTasksInColumn(prev, taskId, toIndex, (task) =>
+        taskMatchesDeadlineColumn(task, columnKey),
+      ),
+    );
+  };
+
+  const handleMyPlanReorder = (taskId: string, columnKey: string, toIndex: number) => {
+    setTasks((prev) =>
+      reorderTasksInColumn(prev, taskId, toIndex, (task) =>
+        taskMatchesMyPlanColumn(task, columnKey),
+      ),
+    );
+  };
+
   const handleKanbanMove = async (taskId: string, _from: string, toColumn: string) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
@@ -289,8 +320,11 @@ export function useTasksListPage() {
       onTaskAction: handleAction,
       onTaskClick: handleTaskClick,
       onKanbanMove: handleKanbanMove,
+      onKanbanReorder: handleKanbanReorder,
       onMyPlanMove: handleMyPlanMove,
+      onMyPlanReorder: handleMyPlanReorder,
       onDeadlineMove: handleDeadlineMove,
+      onDeadlineReorder: handleDeadlineReorder,
       onAddTaskInColumn: handleAddTaskInColumn,
       onAddMyPlanStage: handleAddMyPlanStage,
       onRenameMyPlanStage: handleRenameMyPlanStage,

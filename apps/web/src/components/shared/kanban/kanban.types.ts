@@ -21,7 +21,9 @@ export interface KanbanBoardProps<T> {
   columns: KanbanColumn<T>[];
   renderCard: (item: T, columnKey: string) => ReactNode;
   renderColumnHeader?: (column: KanbanColumn<T>) => ReactNode;
-  onMove?: (itemId: string, fromColumn: string, toColumn: string) => void;
+  onMove?: (itemId: string, fromColumn: string, toColumn: string, toIndex?: number) => void;
+  /** Same-column drop: move card to `toIndex` within `columnKey`. */
+  onReorderWithinColumn?: (itemId: string, columnKey: string, toIndex: number) => void;
   getItemId: (item: T) => string;
   columnWidth?: number;
   emptyMessage?: string;

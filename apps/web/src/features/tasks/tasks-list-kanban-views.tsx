@@ -19,8 +19,11 @@ export type TasksListKanbanViewsProps = {
   onTaskAction: (taskId: string, action: 'start' | 'complete' | 'reopen') => void;
   onTaskClick: (task: Task) => void;
   onKanbanMove: (taskId: string, from: string, toColumn: string) => void;
+  onKanbanReorder: (taskId: string, columnKey: string, toIndex: number) => void;
   onMyPlanMove: (taskId: string, from: string, toStageId: string) => void;
+  onMyPlanReorder: (taskId: string, columnKey: string, toIndex: number) => void;
   onDeadlineMove: (taskId: string, from: string, toColumnKey: string) => void;
+  onDeadlineReorder: (taskId: string, columnKey: string, toIndex: number) => void;
   onAddTaskInColumn: (columnKey: string) => void;
   onAddMyPlanStage: (title: string, color: string) => void;
   onRenameMyPlanStage: (columnKey: string, newTitle: string, newColor: string) => void;
@@ -34,8 +37,11 @@ export function TasksListKanbanViews({
   onTaskAction,
   onTaskClick,
   onKanbanMove,
+  onKanbanReorder,
   onMyPlanMove,
+  onMyPlanReorder,
   onDeadlineMove,
+  onDeadlineReorder,
   onAddTaskInColumn,
   onAddMyPlanStage,
   onRenameMyPlanStage,
@@ -70,6 +76,7 @@ export function TasksListKanbanViews({
           renderCard={renderCard}
           getItemId={(t) => t.id}
           onMove={onDeadlineMove}
+          onReorderWithinColumn={onDeadlineReorder}
           onAddItemInColumn={onAddTaskInColumn}
           addButtonLabel="Quick"
           columnWidth={240}
@@ -88,6 +95,7 @@ export function TasksListKanbanViews({
             renderCard={renderCard}
             getItemId={(t) => t.id}
             onMove={onKanbanMove}
+            onReorderWithinColumn={onKanbanReorder}
             onAddItemInColumn={onAddTaskInColumn}
             addButtonLabel="Quick"
             columnWidth={270}
@@ -105,6 +113,7 @@ export function TasksListKanbanViews({
         renderCard={renderCard}
         getItemId={(t) => t.id}
         onMove={onMyPlanMove}
+        onReorderWithinColumn={onMyPlanReorder}
         onAddColumn={onAddMyPlanStage}
         onRenameColumn={onRenameMyPlanStage}
         onDeleteColumn={onDeleteMyPlanStage}
