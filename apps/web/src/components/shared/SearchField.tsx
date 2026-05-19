@@ -4,6 +4,11 @@ import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react'
 import { Search, X, Plus, Pencil, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import {
+  DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
+  DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+} from './detail-sheet-classes';
 
 const DEFAULT_MAX_RESULTS = 5;
 
@@ -272,6 +277,7 @@ export function SearchField(props: SearchFieldProps) {
               if (!disabled) setOpen(true);
             }}
             className={cn(
+              DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
               'border-border/60 bg-muted/20 text-foreground flex-1 rounded-xl border px-3 py-2 text-sm shadow-sm shadow-black/[0.04] transition-[border-color,box-shadow,background-color]',
               disabled
                 ? 'cursor-not-allowed opacity-60'
@@ -300,13 +306,13 @@ export function SearchField(props: SearchFieldProps) {
                       handleClear();
                     }}
                     disabled={saving}
-                    className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
+                    className={DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS}
                     aria-label={`Clear ${label}`}
                   >
                     <X size={16} />
                   </button>
                 ) : null}
-                <Pencil size={16} className="text-muted-foreground/70 shrink-0" aria-hidden />
+                <Pencil size={16} className={DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS} aria-hidden />
               </div>
             </div>
           </div>

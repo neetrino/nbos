@@ -17,3 +17,23 @@ export const DETAIL_SHEET_SECTION_SURFACE_CLASS =
 /** Section heading style (uppercase micro label). */
 export const DETAIL_SHEET_SECTION_TITLE_CLASS =
   'text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase';
+
+/** Scoped group on a field shell — action icons show when hovering the control. */
+export const DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS = 'group/field';
+
+/** Fade-in for clear / edit affordances inside {@link DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS}. */
+export const DETAIL_SHEET_FIELD_ACTIONS_ON_HOVER_CLASS =
+  'opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-within/field:opacity-100';
+
+/** Clear (X) button inside picker/select shells. */
+export const DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS = [
+  'text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-md',
+  'transition-opacity hover:bg-destructive/10 hover:text-destructive focus-visible:opacity-100',
+  DETAIL_SHEET_FIELD_ACTIONS_ON_HOVER_CLASS,
+].join(' ');
+
+/** Decorative edit (pencil) hint on closed picker fields. */
+export const DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS = [
+  'text-muted-foreground/70 shrink-0',
+  DETAIL_SHEET_FIELD_ACTIONS_ON_HOVER_CLASS,
+].join(' ');

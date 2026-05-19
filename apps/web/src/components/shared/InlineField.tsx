@@ -13,6 +13,11 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { ControlledInlineField } from './ControlledInlineField';
+import {
+  DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
+  DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+} from './detail-sheet-classes';
 
 type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link' | 'date';
 
@@ -243,6 +248,7 @@ function InlineFieldUncontrolled({
         <div
           onClick={editable && onSave ? startEdit : undefined}
           className={cn(
+            DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
             'rounded-lg px-3 py-2 text-sm transition-all',
             editable && onSave
               ? 'hover:bg-accent/5 hover:border-border cursor-pointer border border-transparent'
@@ -274,16 +280,13 @@ function InlineFieldUncontrolled({
                       handleClear();
                     }}
                     disabled={saving}
-                    className="text-muted-foreground/0 hover:bg-destructive/10 hover:text-destructive group-hover:text-muted-foreground/60 flex size-7 items-center justify-center rounded-md transition-colors"
+                    className={DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS}
                     aria-label={`Clear ${label}`}
                   >
                     <X size={16} />
                   </button>
                 )}
-                <Pencil
-                  size={16}
-                  className="text-muted-foreground/0 group-hover:text-muted-foreground/60 rounded-md transition-all"
-                />
+                <Pencil size={16} className={DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS} aria-hidden />
               </div>
             )}
           </div>

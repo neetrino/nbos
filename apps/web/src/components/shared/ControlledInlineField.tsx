@@ -12,6 +12,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import {
+  DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+} from './detail-sheet-classes';
 
 type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link' | 'date';
 
@@ -36,8 +40,10 @@ export interface ControlledInlineFieldProps {
   disabled?: boolean;
 }
 
-const FIELD_SHELL_CLASS =
-  'border-border/60 bg-muted/20 flex w-full min-h-10 items-center gap-1 rounded-xl border px-3 py-1.5 shadow-sm shadow-black/[0.04] transition-[border-color,background-color]';
+const FIELD_SHELL_CLASS = cn(
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  'border-border/60 bg-muted/20 flex w-full min-h-10 items-center gap-1 rounded-xl border px-3 py-1.5 shadow-sm shadow-black/[0.04] transition-[border-color,background-color]',
+);
 
 const INNER_CONTROL_CLASS =
   'h-8 min-h-8 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0';
@@ -67,7 +73,7 @@ export function ControlledInlineField({
       }}
       onClick={() => onValueChange('')}
       disabled={disabled}
-      className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
+      className={DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS}
       aria-label={`Clear ${label}`}
     >
       <X size={16} />
