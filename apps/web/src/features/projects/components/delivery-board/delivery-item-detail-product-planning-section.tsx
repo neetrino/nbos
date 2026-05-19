@@ -2,7 +2,11 @@
 
 import { useMemo } from 'react';
 import { Calendar, Layers, Package, Sparkles, Tag } from 'lucide-react';
-import { InlineField } from '@/components/shared';
+import {
+  DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
+  DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
+  InlineField,
+} from '@/components/shared';
 import {
   PRODUCT_CATEGORIES,
   PRODUCT_TYPES,
@@ -37,68 +41,74 @@ export function ProductPlanningSection({
       <h3 className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-wider uppercase">
         Delivery plan
       </h3>
-      <div className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
-        <InlineField
-          variant="controlled"
-          label="Product name"
-          value={draft.name}
-          icon={<Package size={12} />}
-          placeholder="Name…"
-          disabled={disabled}
-          onValueChange={(v) => patchDraft({ name: v })}
-        />
-        <InlineField
-          variant="controlled"
-          label="Deadline"
-          type="date"
-          value={draft.deadline}
-          icon={<Calendar size={12} />}
-          placeholder="Pick date…"
-          clearable
-          disabled={disabled}
-          onValueChange={(v) => patchDraft({ deadline: v })}
-        />
-        <InlineField
-          variant="controlled"
-          label="Category"
-          type="select"
-          value={draft.productCategory}
-          options={PRODUCT_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
-          icon={<Layers size={12} />}
-          disabled={disabled}
-          onValueChange={(v) => {
-            if (!v) return;
-            const allowed = PRODUCT_TYPES_BY_CATEGORY[v] ?? [];
-            const nextType = allowed.includes(draft.productType)
-              ? draft.productType
-              : (allowed[0] ?? draft.productType);
-            onDraftChange({ ...draft, productCategory: v, productType: nextType });
-          }}
-        />
-        <InlineField
-          variant="controlled"
-          label="Product type"
-          type="select"
-          value={draft.productType}
-          options={typeOptions}
-          icon={<Tag size={12} />}
-          disabled={disabled}
-          onValueChange={(v) => {
-            if (v) patchDraft({ productType: v });
-          }}
-        />
-        <div className="md:col-span-2">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
+        <div className="min-w-0 space-y-3 sm:pr-5">
+          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Project</p>
           <InlineField
             variant="controlled"
-            label="Scope & working notes"
-            type="textarea"
-            value={draft.description}
-            icon={<Sparkles size={12} />}
-            placeholder="Plan, milestones, client context…"
+            label="Product name"
+            value={draft.name}
+            icon={<Package size={12} />}
+            placeholder="Name…"
             disabled={disabled}
-            onValueChange={(v) => patchDraft({ description: v })}
+            onValueChange={(v) => patchDraft({ name: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Deadline"
+            type="date"
+            value={draft.deadline}
+            icon={<Calendar size={12} />}
+            placeholder="Pick date…"
+            clearable
+            disabled={disabled}
+            onValueChange={(v) => patchDraft({ deadline: v })}
           />
         </div>
+        <div className={`min-w-0 space-y-3 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
+          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Product</p>
+          <InlineField
+            variant="controlled"
+            label="Product category"
+            type="select"
+            value={draft.productCategory}
+            options={PRODUCT_CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
+            icon={<Layers size={12} />}
+            disabled={disabled}
+            onValueChange={(v) => {
+              if (!v) return;
+              const allowed = PRODUCT_TYPES_BY_CATEGORY[v] ?? [];
+              const nextType = allowed.includes(draft.productType)
+                ? draft.productType
+                : (allowed[0] ?? draft.productType);
+              onDraftChange({ ...draft, productCategory: v, productType: nextType });
+            }}
+          />
+          <InlineField
+            variant="controlled"
+            label="Product type"
+            type="select"
+            value={draft.productType}
+            options={typeOptions}
+            icon={<Tag size={12} />}
+            disabled={disabled}
+            onValueChange={(v) => {
+              if (v) patchDraft({ productType: v });
+            }}
+          />
+        </div>
+      </div>
+      <div className="mt-3">
+        <InlineField
+          variant="controlled"
+          label="Scope & working notes"
+          type="textarea"
+          value={draft.description}
+          icon={<Sparkles size={12} />}
+          placeholder="Plan, milestones, client context…"
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ description: v })}
+        />
       </div>
     </section>
   );

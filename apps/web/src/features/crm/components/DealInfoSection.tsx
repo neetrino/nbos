@@ -28,15 +28,17 @@ interface DealInfoFieldsProps {
   disabled?: boolean;
 }
 
-export function DealInfoPrimaryFields({
+/** Left column: project, company, and commercial basics. */
+export function DealInfoProjectBillingFields({
   draft,
   patchDraft,
-  filteredProductTypeOptions,
-  searchProducts,
+  searchProjects,
+  searchCompanies,
   disabled = false,
-}: Omit<DealInfoFieldsProps, 'searchProjects' | 'searchCompanies'>) {
-  const isExtension = draft.type === 'EXTENSION';
-
+}: Pick<
+  DealInfoFieldsProps,
+  'draft' | 'patchDraft' | 'searchProjects' | 'searchCompanies' | 'disabled'
+>) {
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
       <InlineField
@@ -62,85 +64,6 @@ export function DealInfoPrimaryFields({
         onValueChange={(v) => patchDraft({ taxStatus: v })}
       />
 
-      <InlineField
-        variant="controlled"
-        label="Deal Type"
-        type="select"
-        value={draft.type}
-        options={DEAL_TYPES.map((type) => ({ value: type.value, label: type.label }))}
-        icon={<Layers size={12} />}
-        disabled={disabled}
-        onValueChange={(v) => {
-          if (v) patchDraft({ type: v });
-        }}
-      />
-
-      {draft.type === 'MAINTENANCE' && (
-        <InlineField
-          variant="controlled"
-          label="Planned Maintenance Start"
-          type="date"
-          value={draft.maintenanceStartAt ?? ''}
-          placeholder="Select start date..."
-          icon={<Calendar size={12} />}
-          disabled={disabled}
-          onValueChange={(v) => patchDraft({ maintenanceStartAt: v || null })}
-        />
-      )}
-
-      {(draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE') && draft.productCategory && (
-        <InlineField
-          variant="controlled"
-          label="Product Type"
-          type="select"
-          value={draft.productType ?? ''}
-          options={filteredProductTypeOptions}
-          placeholder="Select product type..."
-          icon={<Tag size={12} />}
-          clearable
-          disabled={disabled}
-          onValueChange={(v) => patchDraft({ productType: v || null })}
-        />
-      )}
-
-      {isExtension && (
-        <SearchField
-          selectionMode="stage"
-          label="Existing Product"
-          value={draft.existingProductId}
-          disabled={disabled}
-          displayValue={
-            draft.existingProductPickLabel ? (
-              <span className="text-foreground text-sm font-medium">
-                {draft.existingProductPickLabel}
-              </span>
-            ) : undefined
-          }
-          placeholder="Search products..."
-          icon={<Layers size={12} />}
-          onSearch={searchProducts}
-          onStageSelect={(id, label) =>
-            patchDraft({ existingProductId: id, existingProductPickLabel: label })
-          }
-          onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
-        />
-      )}
-    </div>
-  );
-}
-
-export function DealInfoCommercialFields({
-  draft,
-  patchDraft,
-  searchProjects,
-  searchCompanies,
-  disabled = false,
-}: Pick<
-  DealInfoFieldsProps,
-  'draft' | 'patchDraft' | 'searchProjects' | 'searchCompanies' | 'disabled'
->) {
-  return (
-    <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
       <InlineField
         variant="controlled"
         label="Payment Type"
@@ -209,7 +132,55 @@ export function DealInfoCommercialFields({
         }
       />
 
-      {(draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE') && (
+      {(draft.taxStatus ?? 'TAX') === 'TAX' && (
+        <SearchField
+          selectionMode="stage"
+          label="Company"
+          value={draft.companyId}
+          disabled={disabled}
+          displayValue={
+            draft.companyPickLabel ? (
+              <span className="text-foreground text-sm font-medium">{draft.companyPickLabel}</span>
+            ) : undefined
+          }
+          placeholder="Search company..."
+          icon={<Building2 size={12} />}
+          onSearch={searchCompanies}
+          onStageSelect={(id, label) => patchDraft({ companyId: id, companyPickLabel: label })}
+          onClear={() => patchDraft({ companyId: null, companyPickLabel: null })}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Right column: deal type and product taxonomy. */
+export function DealInfoDealProductFields({
+  draft,
+  patchDraft,
+  filteredProductTypeOptions,
+  searchProducts,
+  disabled = false,
+}: Omit<DealInfoFieldsProps, 'searchProjects' | 'searchCompanies'>) {
+  const isExtension = draft.type === 'EXTENSION';
+  const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
+
+  return (
+    <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+      <InlineField
+        variant="controlled"
+        label="Deal Type"
+        type="select"
+        value={draft.type}
+        options={DEAL_TYPES.map((type) => ({ value: type.value, label: type.label }))}
+        icon={<Layers size={12} />}
+        disabled={disabled}
+        onValueChange={(v) => {
+          if (v) patchDraft({ type: v });
+        }}
+      />
+
+      {isProductLike && (
         <InlineField
           variant="controlled"
           label="Product Category"
@@ -233,22 +204,54 @@ export function DealInfoCommercialFields({
         />
       )}
 
-      {(draft.taxStatus ?? 'TAX') === 'TAX' && (
+      {isProductLike && draft.productCategory && (
+        <InlineField
+          variant="controlled"
+          label="Product Type"
+          type="select"
+          value={draft.productType ?? ''}
+          options={filteredProductTypeOptions}
+          placeholder="Select product type..."
+          icon={<Tag size={12} />}
+          clearable
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ productType: v || null })}
+        />
+      )}
+
+      {draft.type === 'MAINTENANCE' && (
+        <InlineField
+          variant="controlled"
+          label="Planned Maintenance Start"
+          type="date"
+          value={draft.maintenanceStartAt ?? ''}
+          placeholder="Select start date..."
+          icon={<Calendar size={12} />}
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ maintenanceStartAt: v || null })}
+        />
+      )}
+
+      {isExtension && (
         <SearchField
           selectionMode="stage"
-          label="Company"
-          value={draft.companyId}
+          label="Existing Product"
+          value={draft.existingProductId}
           disabled={disabled}
           displayValue={
-            draft.companyPickLabel ? (
-              <span className="text-foreground text-sm font-medium">{draft.companyPickLabel}</span>
+            draft.existingProductPickLabel ? (
+              <span className="text-foreground text-sm font-medium">
+                {draft.existingProductPickLabel}
+              </span>
             ) : undefined
           }
-          placeholder="Search company..."
-          icon={<Building2 size={12} />}
-          onSearch={searchCompanies}
-          onStageSelect={(id, label) => patchDraft({ companyId: id, companyPickLabel: label })}
-          onClear={() => patchDraft({ companyId: null, companyPickLabel: null })}
+          placeholder="Search products..."
+          icon={<Layers size={12} />}
+          onSearch={searchProducts}
+          onStageSelect={(id, label) =>
+            patchDraft({ existingProductId: id, existingProductPickLabel: label })
+          }
+          onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
         />
       )}
     </div>

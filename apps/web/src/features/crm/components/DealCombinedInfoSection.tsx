@@ -11,7 +11,7 @@ import {
   DEAL_SHEET_COLLAPSE_KEY,
   useDealSheetSectionCollapse,
 } from '../hooks/use-deal-sheet-section-collapse';
-import { DealInfoCommercialFields, DealInfoPrimaryFields } from './DealInfoSection';
+import { DealInfoDealProductFields, DealInfoProjectBillingFields } from './DealInfoSection';
 import type { SearchLoader } from './deal-general-tab.types';
 import type { DealGeneralDraft } from './deal-general-form-state';
 
@@ -46,22 +46,22 @@ export function DealCombinedInfoSection({
     >
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-0">
         <div className="min-w-0 sm:pr-5">
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Deal info</p>
-          <DealInfoPrimaryFields
-            draft={draft}
-            patchDraft={patchDraft}
-            filteredProductTypeOptions={filteredProductTypeOptions}
-            searchProducts={searchProducts}
-            disabled={disabled}
-          />
-        </div>
-        <div className={`min-w-0 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Project & billing</p>
-          <DealInfoCommercialFields
+          <DealInfoProjectBillingFields
             draft={draft}
             patchDraft={patchDraft}
             searchProjects={searchProjects}
             searchCompanies={searchCompanies}
+            disabled={disabled}
+          />
+        </div>
+        <div className={`min-w-0 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
+          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Deal & product</p>
+          <DealInfoDealProductFields
+            draft={draft}
+            patchDraft={patchDraft}
+            filteredProductTypeOptions={filteredProductTypeOptions}
+            searchProducts={searchProducts}
             disabled={disabled}
           />
         </div>
