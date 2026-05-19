@@ -76,9 +76,9 @@ export function DealSheet({
   const [invoiceCreateNonce, setInvoiceCreateNonce] = useState(0);
   const [generalDraft, setGeneralDraft] = useState<DealGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<DealGeneralDraft | null>(null);
-  const [generalSaving, setGeneralSaving] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const generalDirtyRef = useRef(false);
 
   const applyBlockerIntent = useCallback((intent: DealSheetBlockerIntent) => {
     if (intent.kind === 'tab') {
@@ -104,6 +104,7 @@ export function DealSheet({
       setGeneralSnap(null);
       return;
     }
+    if (generalDirtyRef.current) return;
     const next = createDealGeneralDraft(deal);
     setGeneralDraft(next);
     setGeneralSnap(next);
@@ -115,21 +116,28 @@ export function DealSheet({
 
   const generalDirty =
     generalDraft != null && generalSnap != null && isDealGeneralDirty(generalDraft, generalSnap);
+  generalDirtyRef.current = generalDirty;
 
-  const handleGeneralSave = useCallback(async () => {
+  const handleGeneralSave = useCallback(() => {
     if (!deal || !generalDraft || !generalSnap) return;
     setGeneralError(null);
     const patch = buildDealGeneralPatch(generalSnap, generalDraft);
     if (Object.keys(patch).length === 0) return;
-    setGeneralSaving(true);
-    try {
-      await onUpdate(deal.id, patch);
-      onRefresh?.();
-    } catch (err) {
-      setGeneralError(dealGeneralSaveErrorMessage(err));
-    } finally {
-      setGeneralSaving(false);
-    }
+
+    const draftAtSave = generalDraft;
+    const snapAtSave = generalSnap;
+    setGeneralSnap({ ...draftAtSave });
+
+    void (async () => {
+      try {
+        await onUpdate(deal.id, patch);
+        onRefresh?.();
+      } catch (err) {
+        setGeneralSnap(snapAtSave);
+        setGeneralDraft(draftAtSave);
+        setGeneralError(dealGeneralSaveErrorMessage(err));
+      }
+    })();
   }, [deal, generalDraft, generalSnap, onUpdate, onRefresh]);
 
   const handleGeneralCancel = useCallback(() => {
@@ -270,7 +278,6 @@ export function DealSheet({
                 deal={deal}
                 draft={generalDraft}
                 patchDraft={patchGeneralDraft}
-                formDisabled={generalSaving}
                 onRefresh={onRefresh}
                 onOpenTaskTab={() => setActiveTab('task')}
                 onOpenDeal={onOpenDeal}
@@ -292,9 +299,9 @@ export function DealSheet({
         <DetailSheetFormFooter
           visible={activeTab === 'general' && Boolean(generalDraft)}
           dirty={generalDirty}
-          saving={generalSaving}
+          saving={false}
           errorMessage={generalError}
-          onSave={() => void handleGeneralSave()}
+          onSave={handleGeneralSave}
           onCancel={handleGeneralCancel}
         />
       </SheetContent>

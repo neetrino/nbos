@@ -45,14 +45,14 @@ export function DetailSheetFormFooter({
           </p>
         ) : null}
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button type="button" size="default" disabled={!dirty || saving} onClick={onSave}>
+          <Button type="button" size="default" disabled={!dirty} onClick={onSave}>
             {saving ? 'Saving…' : saveLabel}
           </Button>
           <Button
             type="button"
             variant="outline"
             size="default"
-            disabled={!dirty || saving}
+            disabled={!dirty}
             onClick={onCancel}
           >
             {cancelLabel}

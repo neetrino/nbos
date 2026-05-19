@@ -72,9 +72,9 @@ export function LeadSheet({
   const [nameValue, setNameValue] = useState('');
   const [generalDraft, setGeneralDraft] = useState<LeadGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<LeadGeneralDraft | null>(null);
-  const [generalSaving, setGeneralSaving] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const generalDirtyRef = useRef(false);
 
   const scrollToLeadSection = useCallback((sectionId: LeadSheetSectionId) => {
     setActiveTab('general');
@@ -89,6 +89,7 @@ export function LeadSheet({
       setGeneralSnap(null);
       return;
     }
+    if (generalDirtyRef.current) return;
     const next = createLeadGeneralDraft(lead);
     setGeneralDraft(next);
     setGeneralSnap(next);
@@ -100,21 +101,28 @@ export function LeadSheet({
 
   const generalDirty =
     generalDraft != null && generalSnap != null && isLeadGeneralDirty(generalDraft, generalSnap);
+  generalDirtyRef.current = generalDirty;
 
-  const handleGeneralSave = useCallback(async () => {
+  const handleGeneralSave = useCallback(() => {
     if (!lead || !generalDraft || !generalSnap) return;
     setGeneralError(null);
     const patch = buildLeadGeneralPatch(generalSnap, generalDraft);
     if (Object.keys(patch).length === 0) return;
-    setGeneralSaving(true);
-    try {
-      await onUpdate(lead.id, patch);
-      onRefresh?.();
-    } catch (err) {
-      setGeneralError(leadGeneralSaveErrorMessage(err));
-    } finally {
-      setGeneralSaving(false);
-    }
+
+    const draftAtSave = generalDraft;
+    const snapAtSave = generalSnap;
+    setGeneralSnap({ ...draftAtSave });
+
+    void (async () => {
+      try {
+        await onUpdate(lead.id, patch);
+        onRefresh?.();
+      } catch (err) {
+        setGeneralSnap(snapAtSave);
+        setGeneralDraft(draftAtSave);
+        setGeneralError(leadGeneralSaveErrorMessage(err));
+      }
+    })();
   }, [lead, generalDraft, generalSnap, onUpdate, onRefresh]);
 
   const handleGeneralCancel = useCallback(() => {
@@ -266,7 +274,6 @@ export function LeadSheet({
                 lead={lead}
                 draft={generalDraft}
                 patchDraft={patchGeneralDraft}
-                formDisabled={generalSaving}
                 sectionIds={{
                   contact: LEAD_SHEET_SECTION.CONTACT,
                   marketing: LEAD_SHEET_SECTION.MARKETING,
@@ -285,9 +292,9 @@ export function LeadSheet({
         <DetailSheetFormFooter
           visible={activeTab === 'general' && Boolean(generalDraft)}
           dirty={generalDirty}
-          saving={generalSaving}
+          saving={false}
           errorMessage={generalError}
-          onSave={() => void handleGeneralSave()}
+          onSave={handleGeneralSave}
           onCancel={handleGeneralCancel}
         />
       </SheetContent>

@@ -418,9 +418,10 @@ export default function LeadsPipelinePage() {
       const updated = await leadsApi.update(id, data);
       setLeads((prev) => prev.map((l) => (l.id === id ? updated : l)));
       setSelectedLead((prev) => (prev?.id === id ? updated : prev));
-    } catch {
+    } catch (err) {
       setLeads(previousLeads);
       setSelectedLead(previousSelected);
+      throw err;
     }
   };
 
