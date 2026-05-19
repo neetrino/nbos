@@ -36,7 +36,9 @@ export function TaskListTableView({
                 onClick={() => onRowClick(task)}
               >
                 <td className="px-4 py-2">
-                  <p className="font-medium">{task.title}</p>
+                  <p className="max-w-[min(24rem,50vw)] truncate font-medium" title={task.title}>
+                    {task.title}
+                  </p>
                   <p className="text-muted-foreground text-xs">{task.code}</p>
                 </td>
                 <td className="px-4 py-2">

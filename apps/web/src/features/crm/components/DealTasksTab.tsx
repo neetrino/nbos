@@ -106,21 +106,23 @@ export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
             return (
               <div
                 key={task.id}
-                className="flex items-center justify-between rounded-2xl border border-stone-100 p-4 transition-colors hover:bg-stone-50/50 dark:border-stone-800 dark:hover:bg-stone-900/30"
+                className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-stone-100 p-4 transition-colors hover:bg-stone-50/50 dark:border-stone-800 dark:hover:bg-stone-900/30"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400">
                     <CheckSquare size={18} />
                   </div>
-                  <div>
-                    <p className="text-foreground text-sm font-medium">{task.title}</p>
+                  <div className="min-w-0">
+                    <p className="text-foreground truncate text-sm font-medium" title={task.title}>
+                      {task.title}
+                    </p>
                     {statusInfo ? (
                       <StatusBadge label={statusInfo.label} variant={statusInfo.variant} />
                     ) : null}
                   </div>
                 </div>
                 {task.dueDate ? (
-                  <span className="text-muted-foreground text-xs">
+                  <span className="text-muted-foreground shrink-0 text-xs">
                     {new Date(task.dueDate).toLocaleDateString()}
                   </span>
                 ) : null}

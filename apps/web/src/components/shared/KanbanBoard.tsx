@@ -324,7 +324,7 @@ export function KanbanBoard<T>({
                           draggable
                           onDragStart={() => handleDragStart(id, column.key)}
                           className={cn(
-                            'cursor-grab transition-all duration-300 active:cursor-grabbing',
+                            'min-w-0 cursor-grab transition-all duration-300 active:cursor-grabbing',
                             dragItem?.id === id && 'scale-[0.97] opacity-50',
                             recentlyMoved.has(id) &&
                               'animate-in fade-in slide-in-from-left-3 duration-300',

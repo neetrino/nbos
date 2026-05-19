@@ -3,6 +3,7 @@
 import { CheckSquare, Flag, FolderKanban, Play, CheckCircle2, RotateCcw } from 'lucide-react';
 import { getTaskPriority } from '@/features/tasks/constants/tasks';
 import type { Task } from '@/lib/api/tasks';
+import { cn } from '@/lib/utils';
 import { getDeadlineColumn } from './task-board-constants';
 
 export type TaskBoardAction = 'start' | 'complete' | 'reopen';
@@ -27,12 +28,16 @@ export function TaskMiniCard({
 
   return (
     <div
-      className="border-border bg-card space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-md"
+      className="border-border bg-card w-full min-w-0 space-y-2 overflow-hidden rounded-xl border p-3 transition-shadow hover:shadow-md"
       onClick={() => onClick(task)}
     >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm leading-tight font-medium">{task.title}</p>
-        {priority && <Flag size={12} className={priority.color} />}
+      <div className="flex min-w-0 items-start gap-2">
+        <p className="min-w-0 flex-1 truncate text-sm leading-tight font-medium" title={task.title}>
+          {task.title}
+        </p>
+        {priority ? (
+          <Flag size={12} className={cn(priority.color, 'mt-0.5 shrink-0')} aria-hidden />
+        ) : null}
       </div>
 
       {task.links.length > 0 && (
