@@ -12,14 +12,19 @@ import {
   Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DetailSheetSection, InlineField, SearchField } from '@/components/shared';
+import {
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetSection,
+  InlineField,
+  SearchField,
+} from '@/components/shared';
 import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
 import type { SearchLoader } from './deal-general-tab.types';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 
-interface DealInfoSectionProps {
+interface DealInfoFieldsProps {
   draft: DealGeneralDraft;
   patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   filteredProductTypeOptions: Array<{ value: string; label: string }>;
@@ -27,22 +32,27 @@ interface DealInfoSectionProps {
   searchProducts: SearchLoader;
   searchCompanies: SearchLoader;
   disabled?: boolean;
+  sectionClassName?: string;
 }
 
-export function DealInfoSection({
+export function DealInfoPrimarySection({
   draft,
   patchDraft,
   filteredProductTypeOptions,
-  searchProjects,
   searchProducts,
-  searchCompanies,
   disabled = false,
-}: DealInfoSectionProps) {
+  sectionClassName,
+}: Omit<DealInfoFieldsProps, 'searchProjects' | 'searchCompanies'>) {
   const isExtension = draft.type === 'EXTENSION';
 
   return (
-    <DetailSheetSection id={DEAL_SHEET_SECTION.INFO} title="Deal Info" icon={<Tag size={12} />}>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+    <DetailSheetSection
+      id={DEAL_SHEET_SECTION.INFO}
+      title="Deal Info"
+      icon={<Tag size={12} />}
+      className={sectionClassName}
+    >
+      <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
         <InlineField
           variant="controlled"
           label="Cost"
@@ -56,19 +66,6 @@ export function DealInfoSection({
 
         <InlineField
           variant="controlled"
-          label="Payment Type"
-          type="select"
-          value={draft.paymentType ?? ''}
-          options={PAYMENT_TYPES.map((type) => ({ value: type.value, label: type.label }))}
-          placeholder="Select payment type..."
-          icon={<CreditCard size={12} />}
-          clearable
-          disabled={disabled}
-          onValueChange={(v) => patchDraft({ paymentType: v || null })}
-        />
-
-        <InlineField
-          variant="controlled"
           label="Tax Status"
           type="select"
           value={draft.taxStatus}
@@ -77,63 +74,6 @@ export function DealInfoSection({
           icon={<Receipt size={12} />}
           disabled={disabled}
           onValueChange={(v) => patchDraft({ taxStatus: v })}
-        />
-
-        <SearchField
-          selectionMode="stage"
-          label="Project"
-          value={draft.projectId}
-          disabled={disabled}
-          displayValue={
-            draft.isNewProject ? (
-              <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <Sparkles size={13} />
-                New Project
-              </span>
-            ) : draft.linkedProjectLabel ? (
-              <span className="text-foreground text-sm font-medium">
-                {draft.linkedProjectLabel}
-              </span>
-            ) : undefined
-          }
-          placeholder="Search projects..."
-          icon={<FolderKanban size={12} />}
-          onSearch={searchProjects}
-          onStageSelect={(id, label) => {
-            patchDraft({
-              projectId: id,
-              linkedProjectLabel: label,
-              isNewProject: false,
-            });
-          }}
-          onClear={() => {
-            patchDraft({
-              projectId: null,
-              linkedProjectLabel: null,
-              isNewProject: false,
-            });
-          }}
-          newBadge={
-            !draft.isNewProject ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={disabled}
-                className="shrink-0 gap-1.5 border-emerald-200 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
-                onClick={() => {
-                  patchDraft({
-                    isNewProject: true,
-                    projectId: null,
-                    linkedProjectLabel: null,
-                  });
-                }}
-              >
-                <Sparkles size={12} />
-                New Project
-              </Button>
-            ) : undefined
-          }
         />
 
         <InlineField
@@ -159,30 +99,6 @@ export function DealInfoSection({
             icon={<Calendar size={12} />}
             disabled={disabled}
             onValueChange={(v) => patchDraft({ maintenanceStartAt: v || null })}
-          />
-        )}
-
-        {(draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE') && (
-          <InlineField
-            variant="controlled"
-            label="Product Category"
-            type="select"
-            value={draft.productCategory ?? ''}
-            options={PRODUCT_CATEGORIES.map((category) => ({
-              value: category.value,
-              label: category.label,
-            }))}
-            placeholder="Select category..."
-            icon={<Layers size={12} />}
-            clearable
-            disabled={disabled}
-            onValueChange={(v) => {
-              if (!v) {
-                patchDraft({ productCategory: null, productType: null });
-                return;
-              }
-              patchDraft({ productCategory: v, productType: null });
-            }}
           />
         )}
 
@@ -221,6 +137,123 @@ export function DealInfoSection({
               patchDraft({ existingProductId: id, existingProductPickLabel: label })
             }
             onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
+          />
+        )}
+      </div>
+    </DetailSheetSection>
+  );
+}
+
+export function DealInfoCommercialSection({
+  draft,
+  patchDraft,
+  searchProjects,
+  searchCompanies,
+  disabled = false,
+  sectionClassName,
+}: Pick<
+  DealInfoFieldsProps,
+  'draft' | 'patchDraft' | 'searchProjects' | 'searchCompanies' | 'disabled' | 'sectionClassName'
+>) {
+  return (
+    <DetailSheetSection
+      id={DEAL_SHEET_SECTION.BILLING}
+      title="Project & billing"
+      icon={<CreditCard size={12} />}
+      className={sectionClassName}
+    >
+      <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+        <InlineField
+          variant="controlled"
+          label="Payment Type"
+          type="select"
+          value={draft.paymentType ?? ''}
+          options={PAYMENT_TYPES.map((type) => ({ value: type.value, label: type.label }))}
+          placeholder="Select payment type..."
+          icon={<CreditCard size={12} />}
+          clearable
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ paymentType: v || null })}
+        />
+
+        <SearchField
+          selectionMode="stage"
+          label="Project"
+          value={draft.projectId}
+          disabled={disabled}
+          displayValue={
+            draft.isNewProject ? (
+              <span className="text-foreground flex items-center gap-1.5 text-sm font-medium">
+                <Sparkles size={13} className="text-muted-foreground" />
+                New Project
+              </span>
+            ) : draft.linkedProjectLabel ? (
+              <span className="text-foreground text-sm font-medium">
+                {draft.linkedProjectLabel}
+              </span>
+            ) : undefined
+          }
+          placeholder="Search projects..."
+          icon={<FolderKanban size={12} />}
+          onSearch={searchProjects}
+          onStageSelect={(id, label) => {
+            patchDraft({
+              projectId: id,
+              linkedProjectLabel: label,
+              isNewProject: false,
+            });
+          }}
+          onClear={() => {
+            patchDraft({
+              projectId: null,
+              linkedProjectLabel: null,
+              isNewProject: false,
+            });
+          }}
+          newBadge={
+            !draft.isNewProject ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={disabled}
+                className="shrink-0 gap-1.5 text-xs"
+                onClick={() => {
+                  patchDraft({
+                    isNewProject: true,
+                    projectId: null,
+                    linkedProjectLabel: null,
+                  });
+                }}
+              >
+                <Sparkles size={12} />
+                New Project
+              </Button>
+            ) : undefined
+          }
+        />
+
+        {(draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE') && (
+          <InlineField
+            variant="controlled"
+            label="Product Category"
+            type="select"
+            value={draft.productCategory ?? ''}
+            options={PRODUCT_CATEGORIES.map((category) => ({
+              value: category.value,
+              label: category.label,
+            }))}
+            placeholder="Select category..."
+            icon={<Layers size={12} />}
+            clearable
+            disabled={disabled}
+            onValueChange={(v) => {
+              if (!v) {
+                patchDraft({ productCategory: null, productType: null });
+                return;
+              }
+              patchDraft({ productCategory: v, productType: null });
+            }}
           />
         )}
 

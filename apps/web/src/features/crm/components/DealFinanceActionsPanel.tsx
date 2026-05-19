@@ -4,8 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ExternalLink, FileText, TrendingUp } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
-import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
+import {
+  DETAIL_SHEET_SECTION_SURFACE_CLASS,
+  DETAIL_SHEET_SECTION_TITLE_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
+import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
 import type { Deal } from '@/lib/api/deals';
 import { invoicesApi, ordersApi } from '@/lib/api/finance';
 import { tasksApi } from '@/lib/api/tasks';
@@ -99,39 +103,38 @@ export function DealFinanceActionsPanel({
 
   return (
     <>
-      <section className="rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white p-4 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-transparent">
-        <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
+      <section className={DETAIL_SHEET_SECTION_SURFACE_CLASS}>
+        <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
           <TrendingUp size={12} />
           Finance
         </h4>
         <div className="space-y-2.5 text-sm">
-          <FinanceRow label="Total" value={finance.total > 0 ? formatAmount(finance.total) : '—'} />
+          <FinanceRow
+            label="Total"
+            value={finance.total > 0 ? formatAmount(finance.total) : '—'}
+            emphasize
+          />
           {finance.isFromPartner && (
             <FinanceRow
               label={`Partner ${finance.commissionPercentUsed}%`}
               value={`-${formatAmount(finance.partnerAmount)}`}
-              valueClassName="text-orange-500 dark:text-orange-400"
+              mutedValue
             />
           )}
           <FinanceRow
             label="Revenue"
             value={finance.revenue > 0 ? formatAmount(finance.revenue) : '—'}
-            valueClassName="text-sky-600 dark:text-sky-400"
           />
           <FinanceRow
             label="To Receive"
             value={formatAmount(finance.toReceive)}
-            valueClassName={
-              finance.toReceive > 0
-                ? 'text-amber-600 dark:text-amber-400'
-                : 'text-emerald-600 dark:text-emerald-400'
-            }
+            emphasize={finance.toReceive > 0}
           />
         </div>
       </section>
 
-      <section className="rounded-2xl border-2 border-stone-300 bg-stone-100/80 p-4 dark:border-stone-600 dark:bg-stone-800/50">
-        <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
+      <section className={DETAIL_SHEET_SECTION_SURFACE_CLASS}>
+        <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
           <FileText size={12} />
           Actions
         </h4>
@@ -176,16 +179,26 @@ export function DealFinanceActionsPanel({
 function FinanceRow({
   label,
   value,
-  valueClassName = 'text-emerald-600 dark:text-emerald-400',
+  mutedValue = false,
+  emphasize = false,
 }: {
   label: string;
   value: string;
-  valueClassName?: string;
+  mutedValue?: boolean;
+  emphasize?: boolean;
 }) {
   return (
     <div className="flex justify-between gap-2">
       <span className="text-muted-foreground">{label}</span>
-      <span className={`font-bold tabular-nums ${valueClassName}`}>{value}</span>
+      <span
+        className={cn(
+          'tabular-nums',
+          emphasize ? 'text-foreground font-semibold' : 'text-foreground/90 font-medium',
+          mutedValue && 'text-muted-foreground font-normal',
+        )}
+      >
+        {value}
+      </span>
     </div>
   );
 }

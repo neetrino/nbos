@@ -18,6 +18,20 @@ export const DETAIL_SHEET_SECTION_SURFACE_CLASS =
 export const DETAIL_SHEET_SECTION_TITLE_CLASS =
   'text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase';
 
+/** Two columns of section cards; each row stretches to the taller sibling. */
+export const DETAIL_SHEET_PAIRED_COLUMNS_CLASS =
+  'grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-stretch sm:gap-5';
+
+/** Stretch a section card to the full height of its grid row. */
+export const DETAIL_SHEET_SECTION_STRETCH_CLASS = 'flex h-full min-h-0 flex-col';
+
+/** Body inside a stretched section — stacks fields and absorbs extra row height. */
+export const DETAIL_SHEET_SECTION_BODY_CLASS = 'flex flex-1 flex-col space-y-4';
+
+/** Neutral avatar chip for person pickers (avoids per-role accent colors). */
+export const DETAIL_SHEET_PERSON_AVATAR_CLASS =
+  'bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-semibold uppercase';
+
 /** Scoped group on a field shell — action icons show when hovering the control. */
 export const DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS = 'group/field';
 

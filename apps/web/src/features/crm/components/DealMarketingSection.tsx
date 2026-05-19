@@ -1,7 +1,12 @@
 'use client';
 
 import { Building2, ExternalLink, Megaphone, User } from 'lucide-react';
-import { DetailSheetSection, InlineField, SearchField } from '@/components/shared';
+import {
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetSection,
+  InlineField,
+  SearchField,
+} from '@/components/shared';
 import type { Deal } from '@/lib/api/deals';
 import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import {
@@ -23,6 +28,7 @@ interface DealMarketingSectionProps {
   searchContacts: SearchLoader;
   onRefresh?: () => void;
   disabled?: boolean;
+  sectionClassName?: string;
 }
 
 export function DealMarketingSection({
@@ -34,6 +40,7 @@ export function DealMarketingSection({
   searchContacts,
   onRefresh,
   disabled = false,
+  sectionClassName,
 }: DealMarketingSectionProps) {
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
     draft.source === 'MARKETING',
@@ -50,8 +57,9 @@ export function DealMarketingSection({
       id={DEAL_SHEET_SECTION.MARKETING}
       title="Marketing"
       icon={<Megaphone size={12} />}
+      className={sectionClassName}
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
         <InlineField
           variant="controlled"
           label="From"

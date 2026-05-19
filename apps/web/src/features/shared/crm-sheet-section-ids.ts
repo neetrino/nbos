@@ -2,6 +2,7 @@
 
 export const DEAL_SHEET_SECTION = {
   INFO: 'deal-sheet-section-info',
+  BILLING: 'deal-sheet-section-billing',
   OFFER_CONTRACT: 'deal-sheet-section-offer-contract',
   MARKETING: 'deal-sheet-section-marketing',
   CONTACT_TEAM: 'deal-sheet-section-contact',

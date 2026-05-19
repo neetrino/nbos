@@ -1,7 +1,13 @@
 'use client';
 
 import { Building2, Calendar, Clock, User } from 'lucide-react';
-import { DetailSheetSection, InlineField, SearchField } from '@/components/shared';
+import {
+  DETAIL_SHEET_PERSON_AVATAR_CLASS,
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetSection,
+  InlineField,
+  SearchField,
+} from '@/components/shared';
 import type { Deal } from '@/lib/api/deals';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import type { SearchLoader } from './deal-general-tab.types';
@@ -14,6 +20,7 @@ interface DealContactTeamSectionProps {
   searchContacts: SearchLoader;
   searchEmployees: SearchLoader;
   disabled?: boolean;
+  sectionClassName?: string;
 }
 
 export function DealContactTeamSection({
@@ -23,14 +30,16 @@ export function DealContactTeamSection({
   searchContacts,
   searchEmployees,
   disabled = false,
+  sectionClassName,
 }: DealContactTeamSectionProps) {
   return (
     <DetailSheetSection
       id={DEAL_SHEET_SECTION.CONTACT_TEAM}
       title="Contact & team"
       icon={<User size={12} />}
+      className={sectionClassName}
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
         <SearchField
           selectionMode="stage"
           label="Contact"
@@ -96,7 +105,7 @@ function ContactDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft }
   if (draft.contactId && deal.contact?.id === draft.contactId) {
     return (
       <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-xs font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+        <div className={DETAIL_SHEET_PERSON_AVATAR_CLASS}>
           {deal.contact.firstName[0]}
           {deal.contact.lastName[0]}
         </div>
@@ -112,7 +121,7 @@ function ContactDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft }
     );
   }
   if (draft.contactDisplayLabel) {
-    return <LabelPersonDisplay label={draft.contactDisplayLabel} accent="blue" />;
+    return <LabelPersonDisplay label={draft.contactDisplayLabel} />;
   }
   return undefined;
 }
@@ -121,7 +130,7 @@ function SellerDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft })
   if (draft.sellerId && deal.seller?.id === draft.sellerId) {
     return (
       <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-xs font-bold text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+        <div className={DETAIL_SHEET_PERSON_AVATAR_CLASS}>
           {deal.seller.firstName[0]}
           {deal.seller.lastName[0]}
         </div>
@@ -132,7 +141,7 @@ function SellerDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft })
     );
   }
   if (draft.sellerDisplayLabel) {
-    return <LabelPersonDisplay label={draft.sellerDisplayLabel} accent="amber" />;
+    return <LabelPersonDisplay label={draft.sellerDisplayLabel} />;
   }
   return undefined;
 }
@@ -142,7 +151,7 @@ function AssistantDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft
     const assistant = deal.sellerAssistant;
     return (
       <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-50 text-xs font-bold text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
+        <div className={DETAIL_SHEET_PERSON_AVATAR_CLASS}>
           {assistant.firstName[0]}
           {assistant.lastName[0]}
         </div>
@@ -153,31 +162,15 @@ function AssistantDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft
     );
   }
   if (draft.sellerAssistantDisplayLabel) {
-    return <LabelPersonDisplay label={draft.sellerAssistantDisplayLabel} accent="violet" />;
+    return <LabelPersonDisplay label={draft.sellerAssistantDisplayLabel} />;
   }
   return undefined;
 }
 
-const ACCENT_RING: Record<'blue' | 'amber' | 'violet', string> = {
-  blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-  amber: 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-  violet: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
-};
-
-function LabelPersonDisplay({
-  label,
-  accent,
-}: {
-  label: string;
-  accent: keyof typeof ACCENT_RING;
-}) {
+function LabelPersonDisplay({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <div
-        className={`flex h-8 w-8 items-center justify-center rounded-xl text-xs font-bold ${ACCENT_RING[accent]}`}
-      >
-        {initialsFromLabel(label)}
-      </div>
+      <div className={DETAIL_SHEET_PERSON_AVATAR_CLASS}>{initialsFromLabel(label)}</div>
       <span className="text-foreground text-sm font-medium">{label}</span>
     </div>
   );

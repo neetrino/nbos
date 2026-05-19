@@ -10,10 +10,15 @@ import { productsApi } from '@/lib/api/products';
 import { projectsApi } from '@/lib/api/projects';
 import { systemListsApi } from '@/lib/api/systemLists';
 import { employeesApi } from '@/lib/api/employees';
+import {
+  DETAIL_SHEET_PAIRED_COLUMNS_CLASS,
+  DETAIL_SHEET_SECTION_STRETCH_CLASS,
+} from '@/components/shared';
+import { cn } from '@/lib/utils';
 import { DealContactTeamSection } from './DealContactTeamSection';
 import { DealFinanceActionsPanel } from './DealFinanceActionsPanel';
 import { DealHandoffPanel } from './DealHandoffPanel';
-import { DealInfoSection } from './DealInfoSection';
+import { DealInfoCommercialSection, DealInfoPrimarySection } from './DealInfoSection';
 import { DealMarketingSection } from './DealMarketingSection';
 import { DealNotesSection } from './DealNotesSection';
 import { DealOfferContractSection } from './DealOfferContractSection';
@@ -29,6 +34,8 @@ interface DealGeneralTabProps {
   onOpenTaskTab?: () => void;
   onOpenDeal?: (id: string) => void;
 }
+
+const SECTION_STRETCH = DETAIL_SHEET_SECTION_STRETCH_CLASS;
 
 export function DealGeneralTab({
   deal,
@@ -124,23 +131,42 @@ export function DealGeneralTab({
   const projectId = deal.projectId ?? firstOrder?.projectId;
   const taxStatus = deal.taxStatus ?? 'TAX';
 
+  const filteredProductTypeOptions = getFilteredProductTypeOptions(draft, productTypeOptions);
+
   return (
-    <div className="flex gap-6">
-      <div className="min-w-0 flex-1 space-y-6">
-        <DealInfoSection
+    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,52rem)_minmax(0,1fr)_auto] xl:items-start xl:gap-6">
+      <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS, 'max-w-[52rem] min-w-0')}>
+        <DealInfoPrimarySection
           draft={draft}
           patchDraft={patchDraft}
-          filteredProductTypeOptions={getFilteredProductTypeOptions(draft, productTypeOptions)}
-          searchProjects={searchProjects}
+          filteredProductTypeOptions={filteredProductTypeOptions}
           searchProducts={searchProducts}
+          disabled={formDisabled}
+          sectionClassName={SECTION_STRETCH}
+        />
+        <DealInfoCommercialSection
+          draft={draft}
+          patchDraft={patchDraft}
+          searchProjects={searchProjects}
           searchCompanies={searchCompanies}
           disabled={formDisabled}
+          sectionClassName={SECTION_STRETCH}
         />
         <DealOfferContractSection
           dealId={deal.id}
           draft={draft}
           patchDraft={patchDraft}
           disabled={formDisabled}
+          sectionClassName={SECTION_STRETCH}
+        />
+        <DealContactTeamSection
+          deal={deal}
+          draft={draft}
+          patchDraft={patchDraft}
+          searchContacts={searchContacts}
+          searchEmployees={searchEmployees}
+          disabled={formDisabled}
+          sectionClassName={SECTION_STRETCH}
         />
         <DealMarketingSection
           deal={deal}
@@ -151,20 +177,20 @@ export function DealGeneralTab({
           searchContacts={searchContacts}
           onRefresh={onRefresh}
           disabled={formDisabled}
+          sectionClassName={SECTION_STRETCH}
         />
-        <DealContactTeamSection
-          deal={deal}
+        <DealNotesSection
           draft={draft}
           patchDraft={patchDraft}
-          searchContacts={searchContacts}
-          searchEmployees={searchEmployees}
           disabled={formDisabled}
+          sectionClassName={SECTION_STRETCH}
         />
-        <DealNotesSection draft={draft} patchDraft={patchDraft} disabled={formDisabled} />
-        <DealSourceLeadSection deal={deal} />
+        <DealSourceLeadSection deal={deal} className="sm:col-span-2" />
       </div>
 
-      <div className="flex w-72 shrink-0 flex-col gap-4">
+      <div aria-hidden className="hidden min-h-0 xl:block" />
+
+      <aside className="flex w-64 shrink-0 flex-col gap-4 xl:w-72">
         <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
         <DealFinanceActionsPanel
           deal={deal}
@@ -175,7 +201,7 @@ export function DealGeneralTab({
           onRefresh={onRefresh}
           onOpenTaskTab={onOpenTaskTab}
         />
-      </div>
+      </aside>
     </div>
   );
 }
