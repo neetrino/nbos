@@ -4,23 +4,43 @@ import { useMemo, useState } from 'react';
 import { FolderKanban, LayoutGrid, List, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  PageHero,
+  PageHeroTabs,
+  ViewModeSwitch,
+  IntegratedSearchFilters,
   EmptyState,
   ErrorState,
-  FilterBar,
   type FilterConfig,
   LoadingState,
+  type ViewModeOption,
 } from '@/components/shared';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
 import { CreateStandaloneWorkSpaceDialog } from './CreateStandaloneWorkSpaceDialog';
-import { WorkSpacesSettingsDialog } from './WorkSpacesSettingsDialog';
+import { WorkSpacesSettingsSheet } from './WorkSpacesSettingsSheet';
 import { WorkSpaceCard } from './WorkSpaceCard';
 import { WorkSpaceListTable } from './WorkSpaceListTable';
 import { WORK_SPACES_PAGE_SIZE_OPTIONS } from './work-spaces-page-constants';
 import { useWorkSpacesDirectory } from './use-work-spaces-directory';
 
+type WorkSpaceView = 'grid' | 'list';
+
+const WORKSPACE_VIEW_OPTIONS: ViewModeOption<WorkSpaceView>[] = [
+  {
+    value: 'grid',
+    label: 'Grid',
+    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Card grid view',
+  },
+  {
+    value: 'list',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
+  },
+];
+
 export function WorkSpacesPage() {
   const [createOpen, setCreateOpen] = useState(false);
+  const directory = useWorkSpacesDirectory();
   const {
     tab,
     setTab,
@@ -39,7 +59,7 @@ export function WorkSpacesPage() {
     loading,
     error,
     refetch,
-  } = useWorkSpacesDirectory();
+  } = directory;
 
   const workSpaceFilterConfigs = useMemo((): FilterConfig[] => {
     const pageSizeOptions = WORK_SPACES_PAGE_SIZE_OPTIONS.map((n) => ({
@@ -49,7 +69,7 @@ export function WorkSpacesPage() {
     return [
       {
         key: 'mode',
-        label: 'modes',
+        label: 'Mode',
         options: [
           { value: 'scrum', label: 'Scrum' },
           { value: 'kanban', label: 'Kanban' },
@@ -57,74 +77,65 @@ export function WorkSpacesPage() {
       },
       {
         key: 'pageSize',
-        label: 'per page',
+        label: 'Per page',
         options: pageSizeOptions,
         includeAllOption: false,
       },
     ];
   }, []);
 
+  const tabOptions = useMemo(
+    () => [
+      {
+        value: 'standalone' as const,
+        label: `Standalone (${counts.standalone})`,
+        icon: FolderKanban,
+      },
+      { value: 'product' as const, label: `Product (${counts.product})`, icon: Package },
+    ],
+    [counts.product, counts.standalone],
+  );
+
   return (
     <div className="flex h-full flex-col gap-5">
-      <header>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5">
-            <h1 className="text-foreground shrink-0 text-2xl font-semibold tracking-tight">
-              Work Spaces
-            </h1>
-            <Tabs
-              value={tab}
-              onValueChange={(value) => setTab(value as 'standalone' | 'product')}
-              className="min-w-0 flex-1 sm:w-auto sm:flex-initial"
-            >
-              <TabsList variant="segmented" className="w-full min-w-0 sm:w-auto">
-                <TabsTrigger value="standalone" className="gap-2 px-3 py-2.5 text-sm font-medium">
-                  <FolderKanban size={14} aria-hidden />
-                  <span className="flex items-center gap-2">
-                    Standalone
-                    <span
-                      className={cn(
-                        'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums',
-                        tab === 'standalone'
-                          ? 'bg-primary-foreground/20 text-primary-foreground'
-                          : 'bg-secondary text-secondary-foreground',
-                      )}
-                    >
-                      {counts.standalone}
-                    </span>
-                  </span>
-                </TabsTrigger>
-                <TabsTrigger value="product" className="gap-2 px-3 py-2.5 text-sm font-medium">
-                  <Package size={14} aria-hidden />
-                  <span className="flex items-center gap-2">
-                    Product
-                    <span
-                      className={cn(
-                        'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums',
-                        tab === 'product'
-                          ? 'bg-primary-foreground/20 text-primary-foreground'
-                          : 'bg-secondary text-secondary-foreground',
-                      )}
-                    >
-                      {counts.product}
-                    </span>
-                  </span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-2.5 lg:w-auto lg:shrink-0">
-            <WorkSpacesSettingsDialog items={items} />
-            <Tabs value={view} onValueChange={(value) => setView(value as 'grid' | 'list')}>
-              <TabsList variant="segmented" className="shrink-0">
-                <TabsTrigger value="grid" aria-label="Card grid view" className="px-3 py-2">
-                  <LayoutGrid size={14} aria-hidden />
-                </TabsTrigger>
-                <TabsTrigger value="list" aria-label="List view" className="px-3 py-2">
-                  <List size={14} aria-hidden />
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+      <PageHero
+        title="Work Spaces"
+        tabs={
+          <PageHeroTabs
+            value={tab}
+            onChange={setTab}
+            options={tabOptions}
+            ariaLabel="Work space type"
+          />
+        }
+        search={
+          <IntegratedSearchFilters
+            search={searchInput}
+            onSearchChange={setSearchInput}
+            searchPlaceholder="Search by name, project, product…"
+            filters={workSpaceFilterConfigs}
+            filterValues={{ mode, pageSize: String(pageSize) }}
+            onFilterChange={(key, value) => {
+              if (key === 'mode') {
+                setMode(value as 'all' | 'scrum' | 'kanban');
+                return;
+              }
+              if (key === 'pageSize') {
+                setPageSize(Number(value));
+              }
+            }}
+            onClearAll={() => {
+              setMode('all');
+              setSearchInput('');
+            }}
+          />
+        }
+        viewMode={
+          <ViewModeSwitch value={view} onChange={setView} options={WORKSPACE_VIEW_OPTIONS} />
+        }
+        trailing={
+          <>
+            <WorkSpacesSettingsSheet items={items} />
             {tab === 'standalone' ? (
               <Button
                 type="button"
@@ -136,26 +147,8 @@ export function WorkSpacesPage() {
                 Space
               </Button>
             ) : null}
-          </div>
-        </div>
-      </header>
-
-      <FilterBar
-        search={searchInput}
-        onSearchChange={setSearchInput}
-        searchPlaceholder="Search by name, project, product…"
-        filters={workSpaceFilterConfigs}
-        filterValues={{ mode, pageSize: String(pageSize) }}
-        onFilterChange={(key, value) => {
-          if (key === 'mode') {
-            setMode(value as 'all' | 'scrum' | 'kanban');
-            return;
-          }
-          if (key === 'pageSize') {
-            setPageSize(Number(value));
-          }
-        }}
-        onClearFilters={mode !== 'all' ? () => setMode('all') : undefined}
+          </>
+        }
       />
 
       {loading ? (
