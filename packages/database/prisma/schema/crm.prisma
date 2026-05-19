@@ -196,7 +196,6 @@ model Deal {
   offerLink           String?              @map("offer_link")
   offerFileUrl        String?              @map("offer_file_url")
   offerScreenshotUrl  String?              @map("offer_screenshot_url")
-  responseDueAt       DateTime?            @map("response_due_at")
   contractSignedAt    DateTime?            @map("contract_signed_at")
   contractFileUrl     String?              @map("contract_file_url")
   maintenanceStartAt  DateTime?            @map("maintenance_start_at")

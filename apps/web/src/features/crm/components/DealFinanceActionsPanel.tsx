@@ -17,6 +17,15 @@ import { formatAmount } from '../constants/dealPipeline';
 import { DisabledInvoiceAction, InvoiceAction, TaskAction } from './DealActionControls';
 import { computeFinance } from './deal-general-tab.helpers';
 
+const FINANCE_PANEL_SURFACE_CLASS =
+  'rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white p-5 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-transparent';
+
+const FINANCE_VALUE_TOTAL_CLASS = 'font-bold text-emerald-600 dark:text-emerald-400';
+const FINANCE_VALUE_PARTNER_CLASS = 'font-bold text-orange-500 dark:text-orange-400';
+const FINANCE_VALUE_REVENUE_CLASS = 'font-bold text-sky-600 dark:text-sky-400';
+const FINANCE_VALUE_TO_RECEIVE_DUE_CLASS = 'font-bold text-amber-600 dark:text-amber-400';
+const FINANCE_VALUE_TO_RECEIVE_CLEAR_CLASS = 'font-bold text-emerald-600 dark:text-emerald-400';
+
 interface DealFinanceActionsPanelProps {
   deal: Deal;
   projectId: string | undefined;
@@ -103,7 +112,7 @@ export function DealFinanceActionsPanel({
 
   return (
     <>
-      <section className={DETAIL_SHEET_SECTION_SURFACE_CLASS}>
+      <section className={FINANCE_PANEL_SURFACE_CLASS}>
         <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
           <TrendingUp size={12} />
           Finance
@@ -112,23 +121,28 @@ export function DealFinanceActionsPanel({
           <FinanceRow
             label="Total"
             value={finance.total > 0 ? formatAmount(finance.total) : '—'}
-            emphasize
+            valueClassName={FINANCE_VALUE_TOTAL_CLASS}
           />
           {finance.isFromPartner && (
             <FinanceRow
               label={`Partner ${finance.commissionPercentUsed}%`}
               value={`-${formatAmount(finance.partnerAmount)}`}
-              mutedValue
+              valueClassName={FINANCE_VALUE_PARTNER_CLASS}
             />
           )}
           <FinanceRow
             label="Revenue"
             value={finance.revenue > 0 ? formatAmount(finance.revenue) : '—'}
+            valueClassName={FINANCE_VALUE_REVENUE_CLASS}
           />
           <FinanceRow
             label="To Receive"
             value={formatAmount(finance.toReceive)}
-            emphasize={finance.toReceive > 0}
+            valueClassName={
+              finance.toReceive > 0
+                ? FINANCE_VALUE_TO_RECEIVE_DUE_CLASS
+                : FINANCE_VALUE_TO_RECEIVE_CLEAR_CLASS
+            }
           />
         </div>
       </section>
@@ -179,26 +193,16 @@ export function DealFinanceActionsPanel({
 function FinanceRow({
   label,
   value,
-  mutedValue = false,
-  emphasize = false,
+  valueClassName = FINANCE_VALUE_TOTAL_CLASS,
 }: {
   label: string;
   value: string;
-  mutedValue?: boolean;
-  emphasize?: boolean;
+  valueClassName?: string;
 }) {
   return (
     <div className="flex justify-between gap-2">
       <span className="text-muted-foreground">{label}</span>
-      <span
-        className={cn(
-          'tabular-nums',
-          emphasize ? 'text-foreground font-semibold' : 'text-foreground/90 font-medium',
-          mutedValue && 'text-muted-foreground font-normal',
-        )}
-      >
-        {value}
-      </span>
+      <span className={cn('tabular-nums', valueClassName)}>{value}</span>
     </div>
   );
 }
