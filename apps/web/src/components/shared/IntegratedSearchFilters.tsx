@@ -13,6 +13,18 @@ import {
 import { IntegratedSearchFilterPanel } from './integrated-search-filters/integrated-search-filter-panel';
 import { LIST_SEARCH_INPUT_PROPS } from './list-search-input-props';
 
+const EMPTY_FILTER_VALUES: Record<string, string> = {};
+
+function areFilterValuesEqual(
+  left: Record<string, string>,
+  right: Record<string, string>,
+): boolean {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) return false;
+  return leftKeys.every((key) => left[key] === right[key]);
+}
+
 export interface IntegratedSearchFiltersProps {
   search: string;
   onSearchChange: (value: string) => void;
@@ -29,7 +41,7 @@ export function IntegratedSearchFilters({
   onSearchChange,
   searchPlaceholder = 'Search…',
   filters,
-  filterValues = {},
+  filterValues = EMPTY_FILTER_VALUES,
   onFilterChange,
   onClearAll,
   className,
@@ -46,7 +58,8 @@ export function IntegratedSearchFilters({
   const hasQuery = search.trim().length > 0 || chips.length > 0;
 
   useEffect(() => {
-    if (!panelOpen) setDraftFilters(filterValues);
+    if (panelOpen) return;
+    setDraftFilters((prev) => (areFilterValuesEqual(prev, filterValues) ? prev : filterValues));
   }, [filterValues, panelOpen]);
 
   useEffect(() => {
