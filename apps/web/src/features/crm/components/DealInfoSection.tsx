@@ -254,6 +254,19 @@ export function DealInfoDealProductFields({
           onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
         />
       )}
+
+      {draft.type !== 'MAINTENANCE' && (
+        <InlineField
+          variant="controlled"
+          label="Deadline"
+          type="date"
+          value={draft.deadline ?? ''}
+          placeholder="Select delivery deadline…"
+          icon={<Calendar size={12} />}
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ deadline: v || null })}
+        />
+      )}
     </div>
   );
 }

@@ -40,6 +40,9 @@ export interface DealGeneralDraft {
   sellerDisplayLabel: string | null;
   sellerAssistantId: string | null;
   sellerAssistantDisplayLabel: string | null;
+  pmId: string | null;
+  pmDisplayLabel: string | null;
+  deadline: string | null;
 }
 
 /** Payload allowed by PUT /deals/:id (includes ids not on Deal view model). */
@@ -91,6 +94,9 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     sellerAssistantDisplayLabel: deal.sellerAssistant
       ? `${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`
       : null,
+    pmId: deal.pmId,
+    pmDisplayLabel: deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null,
+    deadline: toDateInputValue(deal.deadline),
   };
 }
 
@@ -161,6 +167,10 @@ export function buildDealGeneralPatch(
   if (draft.sellerId !== snap.sellerId) out.sellerId = draft.sellerId;
   if (draft.sellerAssistantId !== snap.sellerAssistantId) {
     out.sellerAssistantId = draft.sellerAssistantId;
+  }
+  if (draft.pmId !== snap.pmId) out.pmId = draft.pmId;
+  if (dateOrNull(draft.deadline) !== dateOrNull(snap.deadline)) {
+    out.deadline = dateOrNull(draft.deadline);
   }
 
   return out;

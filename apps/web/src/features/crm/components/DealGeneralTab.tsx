@@ -180,7 +180,6 @@ export function DealGeneralTab({
       <div aria-hidden className="hidden min-h-0 xl:block" />
 
       <aside className="flex w-64 shrink-0 flex-col gap-4 xl:w-72">
-        <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
         <DealFinanceActionsPanel
           deal={deal}
           projectId={projectId}
@@ -190,6 +189,7 @@ export function DealGeneralTab({
           onRefresh={onRefresh}
           onOpenTaskTab={onOpenTaskTab}
         />
+        <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
       </aside>
     </div>
   );

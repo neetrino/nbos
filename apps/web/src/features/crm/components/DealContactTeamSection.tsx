@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Calendar, Clock, User } from 'lucide-react';
+import { Building2, Calendar, Clock, User, UserCog } from 'lucide-react';
 import {
   DETAIL_SHEET_PERSON_AVATAR_CLASS,
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -83,6 +83,19 @@ export function DealContactTeamSection({
           onClear={() => patchDraft({ sellerAssistantId: null, sellerAssistantDisplayLabel: null })}
         />
 
+        <SearchField
+          selectionMode="stage"
+          label="PM assigned"
+          value={draft.pmId}
+          displayValue={<PmDisplay deal={deal} draft={draft} />}
+          placeholder="Select project manager…"
+          icon={<UserCog size={12} />}
+          disabled={disabled}
+          onSearch={searchEmployees}
+          onStageSelect={(value, label) => patchDraft({ pmId: value, pmDisplayLabel: label })}
+          onClear={() => patchDraft({ pmId: null, pmDisplayLabel: null })}
+        />
+
         <InlineField
           label="Created"
           value={formatStaticDate(deal.createdAt)}
@@ -142,6 +155,26 @@ function SellerDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft })
   }
   if (draft.sellerDisplayLabel) {
     return <LabelPersonDisplay label={draft.sellerDisplayLabel} />;
+  }
+  return undefined;
+}
+
+function PmDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft }) {
+  if (draft.pmId && deal.pm?.id === draft.pmId) {
+    return (
+      <div className="flex items-center gap-2.5">
+        <div className={DETAIL_SHEET_PERSON_AVATAR_CLASS}>
+          {deal.pm.firstName[0]}
+          {deal.pm.lastName[0]}
+        </div>
+        <span className="text-foreground text-sm font-medium">
+          {deal.pm.firstName} {deal.pm.lastName}
+        </span>
+      </div>
+    );
+  }
+  if (draft.pmDisplayLabel) {
+    return <LabelPersonDisplay label={draft.pmDisplayLabel} />;
   }
   return undefined;
 }
