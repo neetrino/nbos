@@ -5,10 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FileText, FolderOpen, LayoutGrid, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
-import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
+import {
+  PageHero,
+  PageHeroSearch,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from '@/components/shared';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
@@ -68,33 +72,24 @@ export default function DocumentsHomePage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader
+      <PageHero
         title="Documents"
-        description="Company knowledge: sections, drafts, and published pages. Search matches title, description, body text, section and tag names."
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          {canAdd ? (
-            <Button size="sm" className="gap-1" onClick={() => setCreateOpen(true)}>
-              <Plus size={14} /> New document
+        search={
+          <PageHeroSearch
+            value={search}
+            onChange={setSearch}
+            placeholder="Search title, body, section, tags…"
+          />
+        }
+        trailing={
+          canAdd ? (
+            <Button type="button" size="sm" className="gap-1" onClick={() => setCreateOpen(true)}>
+              <Plus size={14} aria-hidden />
+              New document
             </Button>
-          ) : null}
-        </div>
-      </PageHeader>
-
-      <div className="grid gap-3">
-        <label className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-          Search
-        </label>
-        <Input
-          {...LIST_SEARCH_INPUT_PROPS}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search title, body, section, tags…"
-          className="max-w-xl"
-          aria-label="Search documents"
-          role="searchbox"
-        />
-      </div>
+          ) : null
+        }
+      />
 
       {loading ? <LoadingState variant="cards" /> : null}
       {error ? <ErrorState description={error} onRetry={load} /> : null}

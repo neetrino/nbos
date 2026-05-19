@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Users2, LayoutGrid, List, Mail, Phone, Calendar, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,14 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import {
-  PageHeader,
-  FilterBar,
+  PageHero,
+  IntegratedSearchFilters,
+  ViewModeSwitch,
   EmptyState,
   ErrorState,
   LoadingState,
   StatusBadge,
+  type ViewModeOption,
 } from '@/components/shared';
 import {
   EMPLOYEE_LEVELS,
@@ -34,6 +36,21 @@ import { employeesApi, rolesApi, type Employee, type RoleItem } from '@/lib/api/
 import { toast } from 'sonner';
 
 type ViewMode = 'list' | 'grid';
+
+const TEAM_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
+  {
+    value: 'grid',
+    label: 'Grid',
+    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Grid view',
+  },
+  {
+    value: 'list',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
+  },
+];
 
 export default function TeamPage() {
   const router = useRouter();
@@ -137,23 +154,26 @@ export default function TeamPage() {
 
   const activeCount = employees.filter((e) => e.status === 'ACTIVE').length;
 
-  const filterConfigs = [
-    {
-      key: 'role',
-      label: 'Role',
-      options: roles.map((r) => ({ value: r.id, label: r.name })),
-    },
-    {
-      key: 'level',
-      label: 'Level',
-      options: EMPLOYEE_LEVELS.map((l) => ({ value: l.value, label: l.label })),
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      options: EMPLOYEE_STATUSES.map((s) => ({ value: s.value, label: s.label })),
-    },
-  ];
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'role',
+        label: 'Role',
+        options: roles.map((r) => ({ value: r.id, label: r.name })),
+      },
+      {
+        key: 'level',
+        label: 'Level',
+        options: EMPLOYEE_LEVELS.map((l) => ({ value: l.value, label: l.label })),
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        options: EMPLOYEE_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+      },
+    ],
+    [roles],
+  );
 
   function fullName(emp: Employee) {
     return `${emp.firstName} ${emp.lastName}`;
@@ -185,41 +205,33 @@ export default function TeamPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Team" description={`${activeCount} active employees`}>
-        <div className="border-border flex rounded-lg border">
-          <Button
-            variant={view === 'grid' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('grid')}
-            className="rounded-r-none"
-          >
-            <LayoutGrid size={14} />
-          </Button>
-          <Button
-            variant={view === 'list' ? 'secondary' : 'ghost'}
-            size="icon-sm"
-            onClick={() => setView('list')}
-            className="rounded-l-none"
-          >
-            <List size={14} />
-          </Button>
-        </div>
-        <PermissionGate module="COMPANY" action="ADD">
-          <Button onClick={() => setInviteOpen(true)}>
-            <Plus size={16} />
-            Invite Employee
-          </Button>
-        </PermissionGate>
-      </PageHeader>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by name, email..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
+      <PageHero
+        title="Team"
+        search={
+          <IntegratedSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by name, email…"
+            filters={filterConfigs}
+            filterValues={filters}
+            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+            onClearAll={() => setFilters({})}
+          />
+        }
+        viewMode={<ViewModeSwitch value={view} onChange={setView} options={TEAM_VIEW_OPTIONS} />}
+        trailing={
+          <>
+            <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
+              {activeCount} active
+            </span>
+            <PermissionGate module="COMPANY" action="ADD">
+              <Button type="button" onClick={() => setInviteOpen(true)}>
+                <Plus size={16} aria-hidden />
+                Invite Employee
+              </Button>
+            </PermissionGate>
+          </>
+        }
       />
 
       {loading ? (

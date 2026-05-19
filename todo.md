@@ -6,127 +6,92 @@
 
 ---
 
-## Two layout patterns (decide per module)
+## Two layout patterns
 
-### Pattern A — single route (like Drive)
+### Pattern A — single route
 
-One URL; tabs = **in-page state** (not navigation).
+`PageHero` + `PageHeroTabs` / `ViewModeSwitch` + `IntegratedSearchFilters` on the page.
 
-```
-[ModuleName] | [tab] [tab] | search | view | actions
-```
+**Done:** Drive (partial), Tasks, Project Hub, Work Spaces, Partners, Delivery Board.
 
-**Examples:** Drive (Library/Company/…), Project Hub (All/Active), Tasks (board views), Partners, Delivery Board.
+### Pattern B — multi-route module
 
-**Use:** `PageHero` on the page with `PageHeroTabs` + `onChange`.
+`*/layout.tsx`: `ModuleHeroSlotProvider` + `PageHeroNavLinks`. Pages: `useModuleHeroSlots`.
 
----
-
-### Pattern B — multi-route module (like CRM, Clients, Marketing)
-
-Several URLs under one module; tabs = **Links**.
-
-```
-[ModuleName] | [Dashboard] [Leads] [Deals] | search | view | actions
-```
-
-**Layout:** `ModuleHeroSlotProvider` + `PageHeroNavLinks` in `*/layout.tsx`.  
-**Pages:** `useModuleHeroSlots({ search, viewMode, trailing })` — **no duplicate page title** in hero.
-
-**Examples:** CRM, Clients, Marketing. **Finance — deferred** (return later).
-
-| Component                | Role                                            |
-| ------------------------ | ----------------------------------------------- |
-| `ModuleHeroSlotProvider` | Layout: title + route tabs + merges child slots |
-| `PageHeroNavLinks`       | Pill tabs as `Link` (active by pathname)        |
-| `useModuleHeroSlots`     | Child page registers search/view/CTA            |
+**Done:** CRM, Clients, Marketing. **Deferred:** Finance.
 
 ---
 
 ## Phase 0 — Foundation (shared)
 
-- [x] `PageHero` — title + pill tabs + center search slot + view mode + actions
-- [x] `ViewModeSwitch` — configurable options
-- [x] `PageHeroTabs` — pill tabs (state)
-- [x] `PageHeroNavLinks` — pill tabs (routes) — **Pattern B**
-- [x] `ModuleHeroSlotProvider` + `useModuleHeroSlots` — **Pattern B**
-- [x] `PageHeroSearch` — hero search field styling
-- [x] `PageSettingsSheet` — Settings right sheet
-- [x] `IntegratedSearchFilters` — search + chips + panel (closes on type)
-- [x] Export all from `components/shared/index.ts`
+- [x] `PageHero`, `PageHeroTabs`, `PageHeroNavLinks`, `ModuleHeroSlotProvider`, `useModuleHeroSlots`
+- [x] `PageHeroSearch`, `PageSettingsSheet`, `IntegratedSearchFilters`
+- [x] `ViewModeSwitch`, exports from `components/shared`
+- [x] `LIST_SEARCH_INPUT_PROPS` — browser autofill off on list search fields
 - [x] `DriveViewModeSwitch` → shared `ViewModeSwitch`
 - [ ] `DriveHero` → compose shared pieces
 - [ ] Deprecate / remove `PageHeader` after all migrations
 
 ---
 
-## Phase 1 — Pilot pages (Pattern A)
+## Phase 1 — Pilot (Pattern A)
 
-### Tasks
-
-- [x] PageHero, Settings sheet, integrated search
+- [x] Tasks — PageHero + Settings sheet + integrated search
+- [x] Project Hub — PageHero + Settings sheet
 - [ ] Delete `TasksPageSettingsDialog.tsx`
-
-### Project Hub
-
-- [x] PageHero + integrated search + Settings sheet
 
 ---
 
 ## Phase 2 — CRM & workspaces
 
-### CRM (Pattern B) — done
-
-- [x] `crm/layout.tsx` — `CRM` + Dashboard / Leads / Deals in PageHero
-- [x] Remove old `border-b` tab strip
-- [x] `/crm/leads`, `/crm/deals` — `useModuleHeroSlots`
-- [x] `/crm/dashboard` — export in trailing slot
-
-### Workspaces (Pattern A)
-
-- [x] Work Spaces — PageHero + Settings
-
-### Clients (Pattern B)
-
-- [x] `clients/layout.tsx` — Contacts / Companies nav
-- [x] `clients/contacts`, `clients/companies` — `useModuleHeroSlots`
+- [x] CRM (layout + leads / deals / dashboard)
+- [x] Work Spaces
+- [x] Clients (layout + contacts / companies)
 
 ---
 
 ## Phase 3 — Delivery Board (Pattern A)
 
-- [x] `DeliveryBoardPageHero` — Active/Closed tabs; search + filters in hero (`IntegratedSearchFilters`)
-- [x] Active: Type (All/Products/Extensions) + Owner + Status in filter panel; default Type = All
-- [x] Closed: Type + Project + Result in filter panel
-- [x] Removed second-row `DeliveryBoardActiveFiltersToolbar` and kind segmented under hero
-- [ ] Visual QA + Settings sheet (if needed)
+- [x] Active/Closed tabs; `IntegratedSearchFilters` in hero
+- [x] Type / Owner / Status (Active); Type / Project / Result (Closed); default Type = All
+- [x] Module adapters: `delivery-board-kind-hero-filter`, `use-delivery-board-*-hero-filters`
+- [ ] Visual QA + Settings sheet (optional)
 
 ---
 
-## Phase 4 — Finance (Pattern B) — **DEFERRED**
+## Phase 4 — Finance — **DEFERRED**
 
-> Skip until other modules are done; then same as CRM (`finance/layout.tsx` + `useModuleHeroSlots`).
-
-- [ ] `finance/layout.tsx` → `Finance` + `PageHeroNavLinks`
-- [ ] Each list page → `useModuleHeroSlots`; remove `*PageHeader.tsx`
-- [ ] Export / period → Settings sheet
+- [ ] `finance/layout.tsx` + `useModuleHeroSlots`; remove `*PageHeader.tsx`
 
 ---
 
 ## Phase 5 — Remaining modules
 
-- [x] Partners — Pattern A (`PageHero` + Settings sheet)
-- [x] Marketing — Pattern B (`marketing/layout.tsx`, board/dashboard/settings/attribution)
-- [ ] Team, Mail, Documents, Support, Reports
-- [ ] Calendar, Dashboard — title-only or Pattern A
-- [ ] My Company sub-pages, Settings, Credentials
+### List pages (priority)
+
+- [x] **Team** — `/team`
+- [x] **Documents** — `/documents` (hub; sections / detail later)
+- [ ] **Mail** — `/mail`, thread detail
+- [ ] **Reports** — reports center chrome
+- [ ] **Support** — `/support` (custom stats row → hero)
+- [x] **Credentials** — `/credentials`
+
+### Other
+
+- [x] Partners
+- [x] Marketing (layout + board / dashboard / settings / attribution)
+- [ ] Calendar, Dashboard — title-only or light Pattern A
+- [ ] My Company sub-pages
+- [ ] Settings (hub, roles, departments, lists, integrations)
+- [ ] Tasks sub-routes: `/tasks/recurring`, `/tasks/automation`
+- [ ] Support: `/support/change-control`
 
 ---
 
 ## Phase 6 — Cleanup
 
-- [ ] Remove unused `*PageHeader.tsx`, old `*SettingsDialog.tsx` (Partners, Tasks, Projects)
-- [ ] Remove `FilterBar` on migrated pages
+- [ ] Remove unused `*PageHeader.tsx`, `PartnersPageHeader`, old `*SettingsDialog`
+- [ ] Remove `FilterBar` on migrated pages only
 - [ ] Remove `ClientsDirectoryTabs` if unused
 - [ ] Visual QA: mobile wrap, module nav scroll, settings sheet a11y
 - [ ] Update `docs/IMPLEMENTATION_PROGRESS.md`
@@ -135,21 +100,19 @@ Several URLs under one module; tabs = **Links**.
 
 ## Design rules
 
-1. **One hero card** — module name + tabs + search + view + primary CTA + settings
-2. **Pattern B:** module name only in layout; never repeat page title next to tab
-3. **Filters in search** — chips; panel on empty-field focus; hide panel while typing
-4. **Settings sheet** — rare actions (export, links), not dialog
-5. **Primary CTA** visible (+ Lead, + Deal, + Project, …)
+1. One hero card — title + tabs + search + view + CTA + settings
+2. Pattern B: module title only in layout; no duplicate page title in hero
+3. Filters in search — chips; panel on empty focus; hide panel while typing
+4. Settings sheet for rare actions
+5. **Shared UI + module adapters** — generic components in `components/shared`; filter config / state mapping in `features/*` when non-trivial
 
 ---
 
 ## File map
 
-| File                                   | Pattern            |
-| -------------------------------------- | ------------------ |
-| `page-hero/PageHero.tsx`               | A + B shell        |
-| `page-hero/PageHeroTabs.tsx`           | A — state tabs     |
-| `page-hero/PageHeroNavLinks.tsx`       | B — route tabs     |
-| `page-hero/ModuleHeroSlotProvider.tsx` | B — layout + slots |
-| `IntegratedSearchFilters.tsx`          | A + B search       |
-| `PageSettingsSheet.tsx`                | A + B settings     |
+| File                           | Role                                         |
+| ------------------------------ | -------------------------------------------- |
+| `page-hero/PageHero.tsx`       | Shell                                        |
+| `IntegratedSearchFilters.tsx`  | Search + filter panel                        |
+| `list-search-input-props.ts`   | Autocomplete off                             |
+| `features/*/…-hero-filters.ts` | Module-specific filter mapping (when needed) |

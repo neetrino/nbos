@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Table,
   TableHeader,
@@ -28,7 +27,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { PageHeader, FilterBar, EmptyState, StatusBadge } from '@/components/shared';
+import {
+  PageHero,
+  PageHeroTabs,
+  IntegratedSearchFilters,
+  EmptyState,
+  StatusBadge,
+  type PageHeroTabOption,
+} from '@/components/shared';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import {
   CREDENTIAL_CATEGORIES,
@@ -89,11 +95,11 @@ function credentialHealthBadge(
   return { label: 'Unknown', variant: 'default' };
 }
 
-const TAB_CONFIG: { value: CredentialTab; label: string; icon: React.ReactNode }[] = [
-  { value: 'all', label: 'All', icon: <KeyRound size={14} /> },
-  { value: 'personal', label: 'Personal', icon: <User size={14} /> },
-  { value: 'department', label: 'Department', icon: <Building2 size={14} /> },
-  { value: 'secret', label: 'Secret', icon: <Lock size={14} /> },
+const CREDENTIAL_TAB_OPTIONS: PageHeroTabOption<CredentialTab>[] = [
+  { value: 'all', label: 'All', icon: KeyRound },
+  { value: 'personal', label: 'Personal', icon: User },
+  { value: 'department', label: 'Department', icon: Building2 },
+  { value: 'secret', label: 'Secret', icon: Lock },
 ];
 
 export default function CredentialsPage() {
@@ -165,80 +171,82 @@ export default function CredentialsPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Credentials Vault" description={`${credentials.length} credentials`}>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant={vaultListScope === 'active' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setVaultListScope('active')}
-          >
-            Active
-          </Button>
-          <Button
-            type="button"
-            variant={vaultListScope === 'archived' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setVaultListScope('archived')}
-          >
-            Archived
-          </Button>
-        </div>
-        <PermissionGate module="CREDENTIALS" action="ADD">
-          <Button onClick={() => setCreateOpen(true)} disabled={vaultListScope === 'archived'}>
-            <Plus size={16} />
-            New Credential
-          </Button>
-        </PermissionGate>
-      </PageHeader>
-
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as CredentialTab)}>
-        <TabsList>
-          {TAB_CONFIG.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="flex items-center gap-1.5">
-              {tab.icon}
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <div className="mt-4">
-          <FilterBar
+      <PageHero
+        title="Credentials Vault"
+        tabs={
+          <PageHeroTabs
+            value={activeTab}
+            onChange={setActiveTab}
+            options={CREDENTIAL_TAB_OPTIONS}
+            ariaLabel="Credential scope"
+          />
+        }
+        search={
+          <IntegratedSearchFilters
             search={search}
             onSearchChange={setSearch}
-            searchPlaceholder="Search by name, provider..."
+            searchPlaceholder="Search by name, provider…"
             filters={filterConfigs}
             filterValues={filters}
             onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-            onClearFilters={() => setFilters({})}
+            onClearAll={() => setFilters({})}
           />
-        </div>
+        }
+        trailing={
+          <>
+            <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
+              {credentials.length} credentials
+            </span>
+            <Button
+              type="button"
+              variant={vaultListScope === 'active' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setVaultListScope('active')}
+            >
+              Active
+            </Button>
+            <Button
+              type="button"
+              variant={vaultListScope === 'archived' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setVaultListScope('archived')}
+            >
+              Archived
+            </Button>
+            <PermissionGate module="CREDENTIALS" action="ADD">
+              <Button
+                type="button"
+                onClick={() => setCreateOpen(true)}
+                disabled={vaultListScope === 'archived'}
+              >
+                <Plus size={16} aria-hidden />
+                New Credential
+              </Button>
+            </PermissionGate>
+          </>
+        }
+      />
 
-        {TAB_CONFIG.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value} className="mt-4">
-            <CredentialTable
-              credentials={credentials}
-              loading={loading}
-              listScope={vaultListScope}
-              visibleLogins={visibleLogins}
-              onToggleLogin={toggleLogin}
-              onCopy={copyToClipboard}
-              onCreateOpen={() => setCreateOpen(true)}
-              onOpenVault={(id) => {
-                setDetailCredentialId(id);
-                setDetailOpen(true);
-              }}
-              onOpenEdit={(id) => {
-                setEditCredentialId(id);
-                setEditOpen(true);
-              }}
-              onRequestDelete={(id, name) => setDeleteTarget({ id, name })}
-              onRequestPurge={(id, name) => setPurgeTarget({ id, name })}
-              onRestored={fetchCredentials}
-            />
-          </TabsContent>
-        ))}
-      </Tabs>
+      <CredentialTable
+        credentials={credentials}
+        loading={loading}
+        listScope={vaultListScope}
+        visibleLogins={visibleLogins}
+        onToggleLogin={toggleLogin}
+        onCopy={copyToClipboard}
+        onCreateOpen={() => setCreateOpen(true)}
+        onOpenVault={(id) => {
+          setDetailCredentialId(id);
+          setDetailOpen(true);
+        }}
+        onOpenEdit={(id) => {
+          setEditCredentialId(id);
+          setEditOpen(true);
+        }}
+        onRequestDelete={(id, name) => setDeleteTarget({ id, name })}
+        onRequestPurge={(id, name) => setPurgeTarget({ id, name })}
+        onRestored={fetchCredentials}
+      />
 
       <CreateCredentialDialog
         open={createOpen}
