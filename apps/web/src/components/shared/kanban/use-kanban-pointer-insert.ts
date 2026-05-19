@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import {
+  findKanbanColumnList,
   isPointerInsideRect,
-  KANBAN_COLUMN_LIST_DATA_ATTR,
+  KANBAN_COLUMN_DROP_ZONE_DATA_ATTR,
   resolveKanbanInsertIndex,
 } from './kanban-insert-index';
 
@@ -13,7 +14,7 @@ export interface KanbanPointerInsert {
 }
 
 /**
- * Tracks pointer Y over kanban column lists to position the drop placeholder between cards.
+ * Tracks pointer Y over kanban column drop zones (full column body, not only card stacks).
  */
 export function useKanbanPointerInsert(options: {
   active: boolean;
@@ -32,16 +33,19 @@ export function useKanbanPointerInsert(options: {
 
     const onPointerMove = (event: PointerEvent) => {
       for (const columnKey of columnKeys) {
-        const list = document.querySelector<HTMLElement>(
-          `[${KANBAN_COLUMN_LIST_DATA_ATTR}="${columnKey}"]`,
+        const dropZone = document.querySelector<HTMLElement>(
+          `[${KANBAN_COLUMN_DROP_ZONE_DATA_ATTR}="${columnKey}"]`,
         );
+        if (!dropZone) continue;
+
+        const zoneRect = dropZone.getBoundingClientRect();
+        if (!isPointerInsideRect(event.clientX, event.clientY, zoneRect)) continue;
+
+        const list = findKanbanColumnList(dropZone);
         if (!list) continue;
 
-        const rect = list.getBoundingClientRect();
-        if (!isPointerInsideRect(event.clientX, event.clientY, rect)) continue;
-
         const excludeId = columnKey === sourceColumnKey ? excludeItemId : undefined;
-        const index = resolveKanbanInsertIndex(list, event.clientY, excludeId);
+        const index = resolveKanbanInsertIndex(list, event.clientY, excludeId, dropZone);
         setDropInsert({ columnKey, index });
         return;
       }

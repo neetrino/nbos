@@ -11,7 +11,9 @@ import {
   KanbanInsertPlaceholderBeforeItem,
 } from './kanban/KanbanColumnInsertPlaceholder';
 import {
+  findKanbanColumnList,
   KANBAN_CARD_ROW_DATA_ATTR,
+  KANBAN_COLUMN_DROP_ZONE_DATA_ATTR,
   KANBAN_COLUMN_LIST_DATA_ATTR,
   resolveKanbanInsertIndex,
 } from './kanban/kanban-insert-index';
@@ -147,7 +149,7 @@ export function KanbanBoard<T>({
     setTerminalDropTarget(null);
   }, []);
 
-  const handleListDragOver = useCallback(
+  const handleColumnDragOver = useCallback(
     (event: React.DragEvent<HTMLDivElement>, col: string) => {
       event.preventDefault();
       if (!dragItem) {
@@ -155,12 +157,23 @@ export function KanbanBoard<T>({
         setDropInsert(null);
         return;
       }
+      const list = findKanbanColumnList(event.currentTarget);
+      if (!list) return;
+
       setDropTarget(col);
       const excludeId = dragItem.fromColumn === col ? dragItem.id : undefined;
-      const index = resolveKanbanInsertIndex(event.currentTarget, event.clientY, excludeId);
+      const index = resolveKanbanInsertIndex(list, event.clientY, excludeId, event.currentTarget);
       setDropInsert({ columnKey: col, index });
     },
     [dragItem],
+  );
+
+  const resolveColumnDropIndex = useCallback(
+    (col: string, columnItems: T[]): number => {
+      if (dropInsert?.columnKey === col) return dropInsert.index;
+      return columnItems.length;
+    },
+    [dropInsert],
   );
 
   const handleDrop = useCallback(
@@ -170,7 +183,7 @@ export function KanbanBoard<T>({
         return;
       }
 
-      const filteredInsert = dropInsert?.columnKey === col ? dropInsert.index : undefined;
+      const filteredInsert = resolveColumnDropIndex(col, columnItems);
 
       if (dragItem.fromColumn === col) {
         if (filteredInsert !== undefined && onReorderWithinColumn) {
@@ -189,7 +202,7 @@ export function KanbanBoard<T>({
       onMove?.(dragItem.id, dragItem.fromColumn, col, filteredInsert);
       clearDragState();
     },
-    [dragItem, dropInsert, onMove, onReorderWithinColumn, getItemId, clearDragState],
+    [dragItem, onMove, onReorderWithinColumn, getItemId, clearDragState, resolveColumnDropIndex],
   );
 
   const handleTerminalDrop = useCallback(
@@ -362,12 +375,15 @@ export function KanbanBoard<T>({
                     {renderColumnHeader?.(column)}
                   </div>
 
-                  <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                  <div
+                    className="min-h-0 flex-1 overflow-y-auto pr-1"
+                    {...{ [KANBAN_COLUMN_DROP_ZONE_DATA_ATTR]: column.key }}
+                    onDragOver={(event) => handleColumnDragOver(event, column.key)}
+                    onDrop={() => handleDrop(column.key, column.items)}
+                  >
                     <div
-                      className="space-y-3"
+                      className="flex min-h-full min-w-0 flex-col space-y-3 pb-3"
                       {...{ [KANBAN_COLUMN_LIST_DATA_ATTR]: column.key }}
-                      onDragOver={(event) => handleListDragOver(event, column.key)}
-                      onDrop={() => handleDrop(column.key, column.items)}
                     >
                       {onAddItemInColumn && (
                         <div className="group/add-btn flex justify-center">
@@ -427,6 +443,9 @@ export function KanbanBoard<T>({
                         <div className="border-border rounded-xl border border-dashed p-6 text-center">
                           <p className="text-muted-foreground text-xs">{emptyMessage}</p>
                         </div>
+                      ) : null}
+                      {showDropPreview ? (
+                        <div className="min-h-[3rem] flex-1 shrink-0" aria-hidden />
                       ) : null}
                     </div>
                   </div>

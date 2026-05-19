@@ -20,6 +20,7 @@ import {
 } from '@/components/shared/kanban/KanbanColumnInsertPlaceholder';
 import {
   KANBAN_CARD_ROW_DATA_ATTR,
+  KANBAN_COLUMN_DROP_ZONE_DATA_ATTR,
   KANBAN_COLUMN_LIST_DATA_ATTR,
 } from '@/components/shared/kanban/kanban-insert-index';
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban-column-surface';
@@ -308,8 +309,14 @@ function KanbanStageColumn({
         </span>
       </div>
 
-      <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1">
-        <div className="space-y-3 pb-3" {...{ [KANBAN_COLUMN_LIST_DATA_ATTR]: stage }}>
+      <div
+        className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1"
+        {...{ [KANBAN_COLUMN_DROP_ZONE_DATA_ATTR]: stage }}
+      >
+        <div
+          className="flex min-h-full min-w-0 flex-col space-y-3 pb-3"
+          {...{ [KANBAN_COLUMN_LIST_DATA_ATTR]: stage }}
+        >
           <KanbanColumnInsertPlaceholder
             insertIndex={dropInsertIndex}
             itemCount={count}
@@ -326,6 +333,7 @@ function KanbanStageColumn({
           {count === 0 && !isDropTarget ? (
             <p className="text-muted-foreground py-8 text-center text-xs">No cards</p>
           ) : null}
+          {isDropTarget ? <div className="min-h-[3rem] flex-1 shrink-0" aria-hidden /> : null}
         </div>
       </div>
     </div>
