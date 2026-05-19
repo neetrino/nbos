@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { formatDriveLabel, formatFileSize } from './drive-format';
+import { fileExtensionBadgeClass, fileExtensionLabel } from './drive-file-extension';
 import { DriveTileShell } from './DriveTileShell';
 import { DriveFileCardThumbnail } from './DriveFileCardThumbnail';
 import { DRIVE_FILE_DRAG_MIME, stringifyDriveFileDragPayload } from './drive-file-drag';
@@ -70,7 +71,7 @@ export function DriveFileCheckbox({
   );
 }
 
-type DriveFileCardLayout = 'grid' | 'list' | 'tiles';
+type DriveFileCardLayout = 'grid' | 'list' | 'tiles' | 'sheet';
 
 export function DriveFileCard(props: {
   file: FileAsset;
@@ -90,7 +91,63 @@ export function DriveFileCard(props: {
   if (layout === 'tiles') {
     return <DriveFileCardTileRow {...props} menuBusy={menuBusy} />;
   }
+  if (layout === 'sheet') {
+    return <DriveFileCardSheetTile {...props} menuBusy={menuBusy} />;
+  }
   return <DriveFileCardGrid {...props} menuBusy={menuBusy} />;
+}
+
+/** Compact square tile for detail sheets (Offer / Contract / entity attachments). */
+function DriveFileCardSheetTile({
+  file,
+  onSelect,
+  menu,
+  menuBusy,
+}: {
+  file: FileAsset;
+  selected: boolean;
+  checked: boolean;
+  onSelect: (file: FileAsset) => void;
+  onToggleChecked: (file: FileAsset, checked: boolean) => void;
+  menu?: DriveFileCardMenuHandlers;
+  menuBusy: boolean;
+  fileDrag?: DriveFileCardDragConfig;
+}) {
+  const showMenu = Boolean(menu);
+  const ext = fileExtensionLabel(file.displayName);
+  const badgeClass = fileExtensionBadgeClass(file.displayName);
+
+  return (
+    <div className="group relative size-full min-h-0">
+      <button
+        type="button"
+        onClick={() => onSelect(file)}
+        className="border-border/70 bg-card hover:border-primary/30 focus-visible:ring-ring flex size-full flex-col overflow-hidden rounded-2xl border shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+      >
+        <span className="relative flex min-h-0 flex-1 items-center justify-center p-2">
+          <span className="size-full overflow-hidden rounded-lg">
+            <DriveFileCardThumbnail file={file} />
+          </span>
+          <span
+            className={cn(
+              'absolute top-3 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide',
+              badgeClass,
+            )}
+          >
+            {ext}
+          </span>
+        </span>
+        <span className="text-foreground line-clamp-2 px-2 pb-2 text-left text-[11px] leading-tight font-medium">
+          {file.displayName}
+        </span>
+      </button>
+      {showMenu && menu ? (
+        <div className={cn('absolute top-1.5 right-1.5 z-10', CARD_CONTROL_HOVER)}>
+          <FileCardActionsMenu file={file} handlers={menu} busy={menuBusy} align="end" />
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function DriveFileCardTileRow({

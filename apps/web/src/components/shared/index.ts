@@ -49,6 +49,7 @@ export {
   DETAIL_SHEET_SECTION_TITLE_CLASS,
 } from './detail-sheet-classes';
 export { DetailSheetSection, type DetailSheetSectionProps } from './DetailSheetSection';
+export { SheetFileAttachments, type SheetFileAttachmentsProps } from './SheetFileAttachments';
 export {
   EntitySheetFloatingRail,
   ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,

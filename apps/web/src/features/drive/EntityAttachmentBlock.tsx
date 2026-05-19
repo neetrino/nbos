@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,11 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { SheetFileAttachments } from '@/components/shared/SheetFileAttachments';
 import { driveApi, type FileAsset } from '@/lib/api/drive';
-import { DriveFileCard } from './DriveFileCard';
-import { EntityDriveQuickAttach } from './EntityDriveQuickAttach';
-import type { DriveLibraryKey } from './drive-options';
+import { DRIVE_LIBRARIES, type DriveLibraryKey } from './drive-options';
+import type { DriveFileCardMenuHandlers } from './DriveFileCard';
 import { findEntityFileLink } from './entity-attachment-utils';
+import { useOptimisticEntityFileUpload } from './use-optimistic-entity-file-upload';
 
 const ENTITY_ATTACHMENT_TILE_LIMIT = 12;
 
@@ -24,11 +24,17 @@ interface EntityAttachmentBlockProps {
   entityType: string;
   entityId: string;
   libraryKey?: DriveLibraryKey;
-  /** When set, only files with this Drive purpose are listed. */
   purpose?: string;
-  /** When set, only files matching any of these purposes are listed (client-side filter). */
   purposes?: readonly string[];
   emptyHint?: string;
+}
+
+function resolveLibrary(key: DriveLibraryKey) {
+  const lib = DRIVE_LIBRARIES.find((item) => item.key === key);
+  if (!lib) {
+    throw new Error(`Drive library '${key}' is missing.`);
+  }
+  return lib;
 }
 
 export function EntityAttachmentBlock({
@@ -37,31 +43,27 @@ export function EntityAttachmentBlock({
   libraryKey = 'deals',
   purpose,
   purposes,
-  emptyHint = 'Attach offer documents, contracts, or proofs.',
+  emptyHint = 'You can drag a file here or click to browse',
 }: EntityAttachmentBlockProps) {
-  const [files, setFiles] = useState<FileAsset[]>([]);
-  const [loading, setLoading] = useState(true);
+  const library = resolveLibrary(libraryKey);
+  const uploadPurpose = purpose ?? library.purposes?.[0] ?? 'OTHER';
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
   const [detachTarget, setDetachTarget] = useState<FileAsset | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const rows = await driveApi.listFileAssets({ entityType, entityId, purpose });
-      const filtered = purposes?.length
-        ? rows.filter((row) => row.purpose && purposes.includes(row.purpose))
-        : rows;
-      setFiles(filtered.slice(0, ENTITY_ATTACHMENT_TILE_LIMIT));
-    } catch {
-      setFiles([]);
-    } finally {
-      setLoading(false);
-    }
+  const listFiles = useCallback(async () => {
+    const rows = await driveApi.listFileAssets({ entityType, entityId, purpose });
+    const filtered = purposes?.length
+      ? rows.filter((row) => row.purpose && purposes.includes(row.purpose))
+      : rows;
+    return filtered.slice(0, ENTITY_ATTACHMENT_TILE_LIMIT);
   }, [entityId, entityType, purpose, purposes]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const { files, pending, loading, uploadFiles, refresh } = useOptimisticEntityFileUpload({
+    link: { entityType, entityId },
+    library,
+    purpose: uploadPurpose,
+    listFiles,
+  });
 
   const handleDetachOnly = async () => {
     if (!detachTarget) return;
@@ -76,7 +78,7 @@ export function EntityAttachmentBlock({
       await driveApi.unlinkFileAsset(detachTarget.id, link.id);
       toast.success('File detached from record');
       setDetachTarget(null);
-      await load();
+      await refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not detach file');
     } finally {
@@ -89,7 +91,7 @@ export function EntityAttachmentBlock({
     try {
       await driveApi.archiveFileAsset(file.id);
       toast.success('File archived in Drive');
-      await load();
+      await refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not archive file');
     } finally {
@@ -97,52 +99,31 @@ export function EntityAttachmentBlock({
     }
   };
 
-  return (
-    <div className="space-y-4">
-      <EntityDriveQuickAttach
-        entityType={entityType}
-        entityId={entityId}
-        libraryKey={libraryKey}
-        onUploaded={() => void load()}
-      />
+  const fileMenu = (file: FileAsset): DriveFileCardMenuHandlers => ({
+    busy: busyFileId === file.id,
+    onOpenDetails: () => {
+      const url = file.externalUrl;
+      if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    },
+    onUnlinkFromRecord: () => setDetachTarget(file),
+    onArchive: (target) => void handleArchive(target),
+    onRestore: () => undefined,
+  });
 
-      {loading ? (
-        <p className="text-muted-foreground flex items-center gap-2 text-sm">
-          <Loader2 className="size-4 animate-spin" aria-hidden />
-          Loading files…
-        </p>
-      ) : files.length === 0 ? (
-        <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-8 text-center text-sm">
-          {emptyHint}
-        </p>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {files.map((file) => (
-            <DriveFileCard
-              key={file.id}
-              file={file}
-              layout="tiles"
-              selected={false}
-              checked={false}
-              onSelect={() => {
-                const url = file.externalUrl;
-                if (url) window.open(url, '_blank', 'noopener,noreferrer');
-              }}
-              onToggleChecked={() => undefined}
-              menu={{
-                busy: busyFileId === file.id,
-                onOpenDetails: () => {
-                  const url = file.externalUrl;
-                  if (url) window.open(url, '_blank', 'noopener,noreferrer');
-                },
-                onUnlinkFromRecord: () => setDetachTarget(file),
-                onArchive: (target) => void handleArchive(target),
-                onRestore: () => undefined,
-              }}
-            />
-          ))}
-        </div>
-      )}
+  return (
+    <>
+      <SheetFileAttachments
+        files={files}
+        pendingUploads={pending}
+        loading={loading}
+        uploadBarLabel={emptyHint}
+        onUpload={uploadFiles}
+        onOpenFile={(file) => {
+          const url = file.externalUrl;
+          if (url) window.open(url, '_blank', 'noopener,noreferrer');
+        }}
+        fileMenu={fileMenu}
+      />
 
       <Dialog
         open={Boolean(detachTarget)}
@@ -178,6 +159,6 @@ export function EntityAttachmentBlock({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -17,19 +17,11 @@ export function DealOfferContractSection({ dealId }: DealOfferContractSectionPro
         title="Offer"
         icon={<FileText size={12} />}
       >
-        <DealFilesBlock
-          dealId={dealId}
-          purpose="OFFER"
-          emptyHint="Commercial proposals, PDFs, or client-approved offer documents."
-        />
+        <DealFilesBlock dealId={dealId} purpose="OFFER" />
       </DetailSheetSection>
 
       <DetailSheetSection title="Contract" icon={<ScrollText size={12} />}>
-        <DealFilesBlock
-          dealId={dealId}
-          purpose="CONTRACT"
-          emptyHint="Signed contracts and amendments for this deal."
-        />
+        <DealFilesBlock dealId={dealId} purpose="CONTRACT" />
       </DetailSheetSection>
     </>
   );
