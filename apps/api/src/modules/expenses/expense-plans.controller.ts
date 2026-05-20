@@ -48,6 +48,33 @@ export class ExpensePlansController {
     });
   }
 
+  @Get('grid')
+  @ApiOperation({
+    summary: 'Expense plans calendar grid for a year (rows × months)',
+  })
+  @ApiQuery({
+    name: 'year',
+    required: false,
+    description: 'Calendar year (defaults to current UTC year)',
+  })
+  @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'search', required: false })
+  async getGrid(
+    @Query('year') year?: string,
+    @Query('projectId') projectId?: string,
+    @Query('category') category?: string,
+    @Query('search') search?: string,
+  ) {
+    const parsedYear = year ? parseInt(year, 10) : undefined;
+    return this.expensePlansService.getGrid({
+      year: Number.isFinite(parsedYear) ? parsedYear : undefined,
+      projectId,
+      category,
+      search,
+    });
+  }
+
   @Post('actions/auto-generate-due')
   @ApiOperation({
     summary:

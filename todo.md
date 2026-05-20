@@ -45,7 +45,7 @@
 
 - [x] ~~3.1 Workflow-статусы: Planned / Due Soon / Due Now / Overdue / Backlog / …~~
 - [x] ~~3.2 UI board/backlog под новые статусы (убрать `OLD`)~~
-- [ ] 3.3 Expense Plans: calendar grid (строки × месяцы)
+- [x] ~~3.3 Expense Plans: calendar grid (строки × месяцы)~~
 
 ---
 
@@ -75,4 +75,4 @@
 
 ## Сейчас в работе
 
-**Фаза 3.3** — Expense Plans calendar grid (или **2.4** subscription form)
+**Фаза 2.4** — Subscription create/edit form (frequency, notifications)

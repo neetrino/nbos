@@ -38,6 +38,38 @@ export interface CreateExpensePlanPayload {
   notes?: string | null;
 }
 
+export type ExpensePlanGridCellKind =
+  | 'NA'
+  | 'FORECAST'
+  | 'DUE'
+  | 'OPEN'
+  | 'PARTIAL'
+  | 'PAID'
+  | 'OVERDUE';
+
+export interface ExpensePlanGridCell {
+  kind: ExpensePlanGridCellKind;
+  amount: number;
+  expenseId: string | null;
+}
+
+export interface ExpensePlanGridRow {
+  planId: string;
+  planName: string;
+  amount: number;
+  frequency: string;
+  projectLabel: string | null;
+  months: ExpensePlanGridCell[];
+  annualTotal: number;
+}
+
+export interface ExpensePlanGridPayload {
+  year: number;
+  rows: ExpensePlanGridRow[];
+  monthTotals: number[];
+  grandAnnualTotal: number;
+}
+
 export interface ExpensePlanListParams {
   page?: number;
   pageSize?: number;
@@ -48,9 +80,21 @@ export interface ExpensePlanListParams {
   sortOrder?: 'asc' | 'desc';
 }
 
+export interface ExpensePlanGridParams {
+  year?: number;
+  projectId?: string;
+  category?: string;
+  search?: string;
+}
+
 export const expensePlansApi = {
   async getAll(params?: ExpensePlanListParams): Promise<ListData<ExpensePlan>> {
     const resp = await api.get<ListData<ExpensePlan>>('/api/expense-plans', { params });
+    return resp.data;
+  },
+
+  async getGrid(params?: ExpensePlanGridParams): Promise<ExpensePlanGridPayload> {
+    const resp = await api.get<ExpensePlanGridPayload>('/api/expense-plans/grid', { params });
     return resp.data;
   },
 
