@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 export interface DetailSheetTabItem {
   value: string;
   label: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
 }
 
 export interface DetailSheetTabBarProps {
@@ -41,7 +41,7 @@ export function DetailSheetTabBar({
                   : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300',
               )}
             >
-              <Icon size={16} aria-hidden />
+              {Icon ? <Icon size={16} aria-hidden /> : null}
               {tab.label}
               {isActive ? (
                 <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />

@@ -201,11 +201,13 @@ export function ClientServiceDetailSheet({
           ) : null}
         </div>
 
-        <DetailSheetTabBar
-          tabs={CLIENT_SERVICE_DETAIL_SHEET_TABS}
-          activeTab={activeTab}
-          onTabChange={(value) => setActiveTab(value as ClientServiceDetailSheetTab)}
-        />
+        {CLIENT_SERVICE_DETAIL_SHEET_TABS.length > 1 ? (
+          <DetailSheetTabBar
+            tabs={CLIENT_SERVICE_DETAIL_SHEET_TABS}
+            activeTab={activeTab}
+            onTabChange={(value) => setActiveTab(value as ClientServiceDetailSheetTab)}
+          />
+        ) : null}
 
         <ScrollArea className="min-h-0 flex-1">
           <div className="px-5 py-5">
