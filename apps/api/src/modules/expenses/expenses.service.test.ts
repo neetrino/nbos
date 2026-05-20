@@ -117,7 +117,7 @@ describe('ExpensesService', () => {
       expect(prisma.expense.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: { notIn: ['PAID', 'DELAYED'] },
+            status: { notIn: ['PAID', 'BACKLOG'] },
           }),
         }),
       );
@@ -256,7 +256,7 @@ describe('ExpensesService', () => {
         category: 'OTHER',
         frequency: 'ONE_TIME',
         dueDate: null,
-        status: 'THIS_MONTH',
+        status: 'PLANNED',
         projectId: null,
         expensePlanId: null,
         isPassThrough: false,
@@ -294,7 +294,7 @@ describe('ExpensesService', () => {
         category: 'HOSTING',
         frequency: 'ONE_TIME',
         dueDate: null,
-        status: 'THIS_MONTH',
+        status: 'PLANNED',
         projectId: null,
         expensePlanId: null,
         isPassThrough: false,
@@ -323,7 +323,7 @@ describe('ExpensesService', () => {
         category: 'TOOLS',
         frequency: 'ONE_TIME',
         dueDate: null,
-        status: 'THIS_MONTH',
+        status: 'PLANNED',
         projectId: null,
         expensePlanId: 'plan-1',
         isPassThrough: false,
@@ -405,7 +405,7 @@ describe('ExpensesService', () => {
           id: 'e1',
           name: 'Rent',
           amount: new Decimal(100),
-          status: 'UNPAID',
+          status: 'DUE_NOW',
           expensePayments: [],
           project: null,
         });
@@ -416,12 +416,12 @@ describe('ExpensesService', () => {
       expect(prisma.expense.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'e1' },
-          data: { status: 'UNPAID' },
+          data: { status: 'PLANNED' },
         }),
       );
       expect(result.paymentStatus).toBe('UNPAID');
       expect(result.paidAmount).toBe('0.00');
-      expect(result.status).toBe('UNPAID');
+      expect(result.status).toBe('DUE_NOW');
     });
   });
 
@@ -431,13 +431,13 @@ describe('ExpensesService', () => {
         .mockResolvedValueOnce({
           id: 'e1',
           amount: new Decimal(100),
-          status: 'THIS_MONTH',
+          status: 'PLANNED',
           expensePayments: [],
         })
         .mockResolvedValueOnce({
           id: 'e1',
           amount: new Decimal(100),
-          status: 'THIS_MONTH',
+          status: 'PLANNED',
           expensePayments: [
             {
               id: 'pay1',
@@ -449,7 +449,7 @@ describe('ExpensesService', () => {
           ],
         })
         .mockResolvedValueOnce({
-          status: 'THIS_MONTH',
+          status: 'PLANNED',
           partnerPayoutBatch: null,
         })
         .mockResolvedValueOnce({
@@ -459,7 +459,7 @@ describe('ExpensesService', () => {
           id: 'e1',
           name: 'X',
           amount: new Decimal(100),
-          status: 'THIS_MONTH',
+          status: 'PLANNED',
           expensePayments: [
             {
               id: 'pay1',
@@ -490,13 +490,13 @@ describe('ExpensesService', () => {
         .mockResolvedValueOnce({
           id: 'e1',
           amount: new Decimal(100),
-          status: 'UNPAID',
+          status: 'DUE_NOW',
           expensePayments: [{ amount: new Decimal(60) }],
         })
         .mockResolvedValueOnce({
           id: 'e1',
           amount: new Decimal(100),
-          status: 'UNPAID',
+          status: 'DUE_NOW',
           expensePayments: [{ amount: new Decimal(60) }, { amount: new Decimal(40) }],
         })
         .mockResolvedValueOnce({
@@ -603,7 +603,7 @@ describe('ExpensesService', () => {
           id: 'e1',
           name: 'Rent',
           amount: new Decimal(100),
-          status: 'UNPAID',
+          status: 'DUE_NOW',
           expensePayments: [paymentRow],
           project: null,
         })
@@ -628,20 +628,20 @@ describe('ExpensesService', () => {
           id: 'e1',
           name: 'Rent',
           amount: new Decimal(100),
-          status: 'UNPAID',
+          status: 'DUE_NOW',
           expensePayments: [paymentRow],
           project: null,
         })
         .mockResolvedValueOnce({
           expensePayments: [{ amount: new Decimal(80) }],
         })
+        .mockResolvedValueOnce({ status: 'DUE_NOW', dueDate: null })
         .mockResolvedValueOnce({
           id: 'e1',
-          name: 'Rent',
           amount: new Decimal(80),
-          status: 'UNPAID',
-          expensePayments: [paymentRow],
-          project: null,
+          status: 'DUE_NOW',
+          dueDate: null,
+          expensePayments: [{ amount: new Decimal(80) }],
         })
         .mockResolvedValueOnce({
           id: 'e1',
@@ -650,6 +650,8 @@ describe('ExpensesService', () => {
           status: 'PAID',
           expensePayments: [paymentRow],
           project: null,
+          salaryLine: null,
+          expensePlan: null,
         });
 
       await service.update('e1', { amount: 80 });
@@ -695,21 +697,23 @@ describe('ExpensesService', () => {
         .mockResolvedValueOnce({
           expensePayments: [{ amount: new Decimal(40) }, { amount: new Decimal(60) }],
         })
+        .mockResolvedValueOnce({ status: 'PAID', dueDate: null })
         .mockResolvedValueOnce({
           id: 'e1',
-          name: 'Rent',
           amount: new Decimal(150),
           status: 'PAID',
-          expensePayments: [pay40, pay60],
-          project: null,
+          dueDate: null,
+          expensePayments: [{ amount: new Decimal(40) }, { amount: new Decimal(60) }],
         })
         .mockResolvedValueOnce({
           id: 'e1',
           name: 'Rent',
           amount: new Decimal(150),
-          status: 'UNPAID',
+          status: 'PLANNED',
           expensePayments: [pay40, pay60],
           project: null,
+          salaryLine: null,
+          expensePlan: null,
         });
 
       await service.update('e1', { amount: 150 });
@@ -723,7 +727,7 @@ describe('ExpensesService', () => {
       expect(prisma.expense.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'e1' },
-          data: { status: 'UNPAID' },
+          data: { status: 'PLANNED' },
         }),
       );
     });
@@ -796,7 +800,7 @@ describe('ExpensesService', () => {
 
     it('applies status filter to stats scope', async () => {
       await service.getStats({
-        status: 'DELAYED',
+        status: 'BACKLOG',
         dateFrom: '2026-04-01T00:00:00.000Z',
         dateTo: '2026-04-30T23:59:59.999Z',
       });
@@ -804,7 +808,7 @@ describe('ExpensesService', () => {
       expect(prisma.expense.groupBy).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: 'DELAYED',
+            status: 'BACKLOG',
             createdAt: expect.objectContaining({
               gte: expect.any(Date),
               lte: expect.any(Date),

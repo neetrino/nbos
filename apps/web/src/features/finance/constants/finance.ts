@@ -19,13 +19,14 @@ export const INVOICE_MONEY_STAGES = [
 ] as const;
 
 export const EXPENSE_STAGES = [
-  { value: 'THIS_MONTH', label: 'This Month', variant: 'blue' as StatusVariant },
-  { value: 'PAY_NOW', label: 'Pay Now', variant: 'orange' as StatusVariant },
-  { value: 'DELAYED', label: 'Delayed', variant: 'amber' as StatusVariant },
+  { value: 'PLANNED', label: 'Planned', variant: 'blue' as StatusVariant },
+  { value: 'DUE_SOON', label: 'Due Soon', variant: 'purple' as StatusVariant },
+  { value: 'DUE_NOW', label: 'Due Now', variant: 'orange' as StatusVariant },
+  { value: 'OVERDUE', label: 'Overdue', variant: 'red' as StatusVariant },
   { value: 'ON_HOLD', label: 'On Hold', variant: 'gray' as StatusVariant },
-  { value: 'OLD', label: 'Old', variant: 'gray' as StatusVariant },
+  { value: 'BACKLOG', label: 'Backlog', variant: 'amber' as StatusVariant },
   { value: 'PAID', label: 'Paid', variant: 'green' as StatusVariant },
-  { value: 'UNPAID', label: 'Unpaid', variant: 'red' as StatusVariant },
+  { value: 'CANCELLED', label: 'Cancelled', variant: 'gray' as StatusVariant },
 ] as const;
 
 export const EXPENSE_CATEGORIES = [

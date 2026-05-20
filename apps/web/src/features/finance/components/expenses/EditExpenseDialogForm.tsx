@@ -193,7 +193,7 @@ export function EditExpenseDialogForm({
         </div>
       </div>
 
-      {form.status === 'DELAYED' ? (
+      {form.status === 'BACKLOG' ? (
         <div>
           <Label>Backlog reason</Label>
           <Select

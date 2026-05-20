@@ -63,7 +63,7 @@ export async function materializePayrollExpensesForApprovedRun(
         amount: line.totalPayable,
         frequency: 'ONE_TIME',
         dueDate: endOfPayrollMonthUtc(params.payrollMonth),
-        status: 'UNPAID',
+        status: 'DUE_NOW',
         notes: formatPayrollExpenseNotes(params.payrollRunId, line.id),
       },
     });

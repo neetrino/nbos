@@ -228,7 +228,7 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   sortBy?: ExpenseListSortField;
   sortOrder?: 'asc' | 'desc';
   /**
-   * When true and `status` is omitted: exclude `PAID` and `DELAYED` (board vs closed/backlog), per NBOS.
+   * When true and `status` is omitted: exclude `PAID` and `BACKLOG` (board vs closed/backlog), per NBOS.
    */
   activeBoard?: boolean;
 }

@@ -234,7 +234,7 @@ export class ExpensePlansService {
       amount,
       frequency: 'ONE_TIME',
       dueDate: occurrence.toISOString(),
-      status: 'THIS_MONTH',
+      status: 'PLANNED',
       projectId: plan.projectId ?? undefined,
       notes: plan.provider ? `From plan. Provider: ${plan.provider}` : 'From expense plan',
       expensePlanId: planId,

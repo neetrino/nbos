@@ -34,12 +34,13 @@ export function formatExpenseBacklogReasonLabel(value: string | null | undefined
 export const PROJECTS_PAGE_SIZE = 150;
 
 export const SCHEMA_EXPENSE_STATUSES = new Set([
-  'THIS_MONTH',
-  'PAY_NOW',
-  'DELAYED',
+  'PLANNED',
+  'DUE_SOON',
+  'DUE_NOW',
+  'OVERDUE',
   'ON_HOLD',
+  'BACKLOG',
   'PAID',
-  'UNPAID',
 ]);
 
 export function toDateInputValue(iso: string | null): string {

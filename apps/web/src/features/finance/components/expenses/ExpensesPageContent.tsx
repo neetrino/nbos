@@ -42,7 +42,7 @@ import { useExpensesScopeStatsCsvExport } from './use-expenses-scope-stats-csv-e
 import { useExpenseProjectBannerLabel } from './use-expense-project-banner-label';
 
 interface ExpensesPageContentProps {
-  /** Backlog: deferred (`DELAYED`). Closed: paid (`PAID`) off active board. Default: active board scope. */
+  /** Backlog: deferred (`BACKLOG`). Closed: paid (`PAID`) off active board. Default: active board scope. */
   pageVariant?: 'default' | 'backlog' | 'closed';
   projectIdFromUrl: string | null;
   expensePlanIdFromUrl: string | null;

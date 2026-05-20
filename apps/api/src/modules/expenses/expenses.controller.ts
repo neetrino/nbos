@@ -49,7 +49,7 @@ export class ExpensesController {
     name: 'activeBoard',
     required: false,
     description:
-      'When true and status is omitted: exclude PAID and DELAYED (NBOS Expense Board list scope).',
+      'When true and status is omitted: exclude PAID and BACKLOG (NBOS Expense Board list scope).',
   })
   async findAll(
     @Query('page') page?: string,

@@ -277,7 +277,7 @@ function ExpenseDetailPageInner() {
 
       <ExpenseDetailPaymentSection expense={expense} onExpenseUpdated={setExpense} />
 
-      {expense.status === 'DELAYED' || expense.backlogReason ? (
+      {expense.status === 'BACKLOG' || expense.backlogReason ? (
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Backlog reason</p>
           <p className="text-foreground mt-2 font-medium">

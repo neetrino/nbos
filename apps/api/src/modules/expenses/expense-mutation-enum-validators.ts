@@ -34,7 +34,7 @@ export function resolveExpenseFrequency(value: string | undefined): string {
 }
 
 export function resolveExpenseStatus(value: string | undefined): string {
-  return pickExpenseStatusFilter(value) ?? 'THIS_MONTH';
+  return pickExpenseStatusFilter(value) ?? 'PLANNED';
 }
 
 export function resolveExpenseTaxStatus(value: string | undefined | null): string {

@@ -94,7 +94,7 @@ export class ClientServiceFlowsService {
       amount,
       frequency: 'ONE_TIME',
       dueDate: body.dueDate?.trim() || service.renewalDate?.toISOString() || undefined,
-      status: 'THIS_MONTH',
+      status: 'PLANNED',
       projectId: service.projectId,
       clientServiceRecordId: service.id,
       isPassThrough: service.billingModel === 'CLIENT_PAID',

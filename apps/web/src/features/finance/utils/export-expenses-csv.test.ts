@@ -11,7 +11,7 @@ function minimalExpense(overrides: Partial<Expense>): Expense {
     amount: '100.00',
     frequency: 'ONE_TIME',
     dueDate: null,
-    status: 'THIS_MONTH',
+    status: 'PLANNED',
     projectId: null,
     isPassThrough: false,
     taxStatus: 'TAX',

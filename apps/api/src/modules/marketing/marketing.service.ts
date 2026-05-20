@@ -278,7 +278,7 @@ export class MarketingService {
       amount: activity.budget ?? 0,
       frequency: 'ONE_TIME',
       dueDate: activity.expectedPayAt ?? activity.startDate,
-      status: 'THIS_MONTH',
+      status: 'PLANNED',
       notes: `Proposed from Marketing Activity ${activity.id}. Finance owns payment status.`,
     });
   }

@@ -44,6 +44,7 @@ import {
 } from './expense-list-ledger';
 import { assertExpenseAmountCoversRecordedPayments } from './expense-amount-update-guard';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
+import { refreshExpenseWorkflowStatus, EXPENSE_BOARD_SCOPE_EXCLUDE } from './expense-workflow';
 import type {
   CreateExpenseDto,
   ExpenseQueryParams,
@@ -132,6 +133,7 @@ export class ExpensesService {
       const { salaryLine, expensePlan, ...rest } = row;
       return {
         ...rest,
+        status: refreshExpenseWorkflowStatus(rest.status, rest.dueDate),
         linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
         linkedExpensePlan: mapExpensePlanToLinkedPlan(expensePlan),
       };
@@ -161,7 +163,8 @@ export class ExpensesService {
     });
     if (!row) throw new NotFoundException(`Expense ${id} not found`);
     const { salaryLine, expensePlan, ...expense } = row;
-    const ledger = toExpenseLedgerJson(expense);
+    const presentedStatus = refreshExpenseWorkflowStatus(expense.status, expense.dueDate);
+    const ledger = toExpenseLedgerJson({ ...expense, status: presentedStatus });
     return {
       ...ledger,
       linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
@@ -201,6 +204,10 @@ export class ExpensesService {
       }
     }
 
+    const dueDate = data.dueDate ? new Date(data.dueDate) : undefined;
+    const requestedStatus = resolveExpenseStatus(data.status) as ExpenseStatusEnum;
+    const workflowStatus = refreshExpenseWorkflowStatus(requestedStatus, dueDate ?? null);
+
     const created = await this.prisma.expense.create({
       data: {
         name: data.name,
@@ -208,8 +215,8 @@ export class ExpensesService {
         category: requireExpenseCategory(data.category) as ExpenseCategoryEnum,
         amount: data.amount,
         frequency: resolveExpenseFrequency(data.frequency) as ExpenseFrequency,
-        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-        status: resolveExpenseStatus(data.status) as ExpenseStatusEnum,
+        dueDate,
+        status: workflowStatus,
         projectId: data.projectId,
         ...(data.expensePlanId ? { expensePlanId: data.expensePlanId } : {}),
         ...(data.clientServiceRecordId
@@ -277,6 +284,9 @@ export class ExpensesService {
         ...(data.notes !== undefined && { notes: data.notes }),
       },
     });
+    if (statusPatch === undefined) {
+      await this.persistRefreshedWorkflowStatus(id);
+    }
     if (data.amount !== undefined) {
       await syncExpenseStatusWithPaymentLedger(this.prisma, id);
     }
@@ -299,7 +309,7 @@ export class ExpensesService {
       : params.activeBoard === true
         ? {
             status: {
-              notIn: [ExpenseStatusEnum.PAID, ExpenseStatusEnum.DELAYED],
+              notIn: EXPENSE_BOARD_SCOPE_EXCLUDE,
             },
           }
         : {};
@@ -312,6 +322,18 @@ export class ExpensesService {
     };
 
     return fetchExpenseStatsAggregates(this.prisma, scopeWhere);
+  }
+
+  private async persistRefreshedWorkflowStatus(id: string): Promise<void> {
+    const row = await this.prisma.expense.findUnique({
+      where: { id },
+      select: { status: true, dueDate: true },
+    });
+    if (!row) return;
+    const next = refreshExpenseWorkflowStatus(row.status, row.dueDate);
+    if (next !== row.status) {
+      await this.prisma.expense.update({ where: { id }, data: { status: next } });
+    }
   }
 
   private buildExpenseListOrderBy(
@@ -333,7 +355,7 @@ export class ExpensesService {
       where.status = filters.status as ExpenseStatusEnum;
     } else if (filters.activeBoard) {
       where.status = {
-        notIn: [ExpenseStatusEnum.PAID, ExpenseStatusEnum.DELAYED],
+        notIn: EXPENSE_BOARD_SCOPE_EXCLUDE,
       };
     }
     if (filters.backlogReason) {

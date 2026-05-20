@@ -49,7 +49,7 @@ describe('FinanceSummaryService', () => {
       {
         amount: 50000,
         dueDate: daysFromToday(2),
-        status: 'PAY_NOW',
+        status: 'DUE_NOW',
         backlogReason: null,
         expensePayments: [{ amount: 15000 }],
       },

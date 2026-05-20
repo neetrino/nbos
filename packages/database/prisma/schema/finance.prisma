@@ -285,12 +285,14 @@ enum ExpenseFrequency {
 }
 
 enum ExpenseStatusEnum {
-  THIS_MONTH
-  PAY_NOW
-  DELAYED
+  PLANNED
+  DUE_SOON
+  DUE_NOW
+  OVERDUE
   ON_HOLD
+  BACKLOG
   PAID
-  UNPAID
+  CANCELLED
 }
 
 enum ExpenseBacklogReasonEnum {
@@ -333,7 +335,7 @@ model Expense {
   amount                Decimal                   @db.Decimal(12, 2)
   frequency             ExpenseFrequency          @default(ONE_TIME)
   dueDate               DateTime?                 @map("due_date")
-  status                ExpenseStatusEnum         @default(THIS_MONTH)
+  status                ExpenseStatusEnum         @default(PLANNED)
   projectId             String?                   @map("project_id")
   expensePlanId         String?                   @map("expense_plan_id")
   clientServiceRecordId String?                   @map("client_service_record_id")

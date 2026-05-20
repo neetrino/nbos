@@ -49,7 +49,7 @@ export interface ExpenseQueryParams {
   dateTo?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-  /** When true and `status` is unset: exclude PAID + DELAYED (NBOS Expense Board scope). */
+  /** When true and `status` is unset: exclude PAID + BACKLOG (NBOS Expense Board scope). */
   activeBoard?: boolean;
 }
 

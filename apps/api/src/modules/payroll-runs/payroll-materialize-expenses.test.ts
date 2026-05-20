@@ -78,7 +78,7 @@ describe('materializePayrollExpensesForApprovedRun', () => {
     expect(expenseCreate).toHaveBeenCalledTimes(1);
     expect(expenseCreate.mock.calls[0][0].data.name).toContain('2026-04');
     expect(expenseCreate.mock.calls[0][0].data.name).toContain('Ada');
-    expect(expenseCreate.mock.calls[0][0].data.status).toBe('UNPAID');
+    expect(expenseCreate.mock.calls[0][0].data.status).toBe('DUE_NOW');
     expect(salaryLineUpdate).toHaveBeenCalledWith({
       where: { id: 'line-1' },
       data: { expenseId: 'exp-1', status: 'APPROVED' },

@@ -115,7 +115,7 @@ export class FinanceSummaryService {
     const expenses = await this.prisma.expense.findMany({
       where: {
         ...(createdAt ? { createdAt } : {}),
-        status: { in: [...ACTIVE_EXPENSE_STATUSES, 'PAID', 'UNPAID'] },
+        status: { in: [...ACTIVE_EXPENSE_STATUSES, 'PAID'] },
       },
       select: {
         amount: true,

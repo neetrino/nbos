@@ -1514,7 +1514,7 @@ async function main() {
       name: 'acme.am domain renewal',
       amount: 15000,
       frequency: 'YEARLY',
-      status: 'THIS_MONTH',
+      status: 'PLANNED',
       projectId: project1.id,
       isPassThrough: true,
     },

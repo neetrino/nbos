@@ -43,8 +43,8 @@
 
 ## Фаза 3 — Expenses workflow (канон)
 
-- [ ] 3.1 Workflow-статусы: Planned / Due Soon / Due Now / Overdue / Backlog / …
-- [ ] 3.2 UI board/backlog под новые статусы (убрать `OLD`)
+- [x] ~~3.1 Workflow-статусы: Planned / Due Soon / Due Now / Overdue / Backlog / …~~
+- [x] ~~3.2 UI board/backlog под новые статусы (убрать `OLD`)~~
 - [ ] 3.3 Expense Plans: calendar grid (строки × месяцы)
 
 ---
@@ -75,4 +75,4 @@
 
 ## Сейчас в работе
 
-**Фаза 3** — Expenses workflow (канон)
+**Фаза 3.3** — Expense Plans calendar grid (или **2.4** subscription form)

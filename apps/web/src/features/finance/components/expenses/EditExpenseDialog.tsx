@@ -36,7 +36,7 @@ export function EditExpenseDialog({
     type: 'PLANNED',
     category: 'OTHER',
     frequency: 'ONE_TIME',
-    status: 'THIS_MONTH',
+    status: 'PLANNED',
     dueDate: '',
     projectId: 'none',
     isPassThrough: false,
@@ -121,7 +121,7 @@ export function EditExpenseDialog({
     setFormError(null);
     try {
       const backlogReason =
-        form.status === 'DELAYED'
+        form.status === 'BACKLOG'
           ? form.backlogReason === 'none'
             ? null
             : form.backlogReason

@@ -18,7 +18,7 @@ const sampleLine: SalaryLineRow = {
   createdAt: '2026-04-01T00:00:00.000Z',
   updatedAt: '2026-04-02T00:00:00.000Z',
   employee: { id: 'emp-1', firstName: 'Ann', lastName: 'Smith', email: 'a@x.test' },
-  expense: { id: 'exp-1', name: 'Salary Apr', amount: '950.00', status: 'THIS_MONTH' },
+  expense: { id: 'exp-1', name: 'Salary Apr', amount: '950.00', status: 'PLANNED' },
 };
 
 describe('buildPayrollSalaryLinesCsvContent', () => {

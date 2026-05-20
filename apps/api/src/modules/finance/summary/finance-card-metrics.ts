@@ -3,7 +3,14 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /** Open receivables on the Invoice Card money layer (excludes PAID, CANCELLED, ON_HOLD). */
 export const OPEN_INVOICE_MONEY_STATUSES = ['NEW', 'AWAITING_PAYMENT', 'OVERDUE'] as const;
-export const ACTIVE_EXPENSE_STATUSES = ['THIS_MONTH', 'PAY_NOW', 'DELAYED', 'ON_HOLD'] as const;
+export const ACTIVE_EXPENSE_STATUSES = [
+  'PLANNED',
+  'DUE_SOON',
+  'DUE_NOW',
+  'OVERDUE',
+  'ON_HOLD',
+  'BACKLOG',
+] as const;
 
 type OpenInvoiceMoneyStatus = (typeof OPEN_INVOICE_MONEY_STATUSES)[number];
 
@@ -56,7 +63,7 @@ export function foldExpenseCards(expenses: ExpenseCardMetricRow[]) {
   return expenses.reduce(
     (summary, expense) => {
       const remaining = getRemainingAmount(expense.amount, expense.expensePayments);
-      if (expense.status === 'PAID' || expense.status === 'UNPAID' || remaining <= 0) {
+      if (expense.status === 'PAID' || remaining <= 0) {
         return summary;
       }
 
@@ -79,7 +86,7 @@ function getExpenseDueBucket(
   today: Date,
   dueSoonEnd: Date,
 ): 'dueSoon' | 'overdue' | 'onHold' | 'backlog' | null {
-  if (expense.status === 'OLD' || Boolean(expense.backlogReason)) return 'backlog';
+  if (expense.status === 'BACKLOG' || Boolean(expense.backlogReason)) return 'backlog';
   if (expense.status === 'ON_HOLD') return 'onHold';
   if (expense.dueDate && expense.dueDate < today) return 'overdue';
   if (expense.dueDate && expense.dueDate <= dueSoonEnd) return 'dueSoon';

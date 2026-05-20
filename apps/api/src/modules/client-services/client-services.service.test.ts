@@ -133,7 +133,7 @@ describe('ClientServicesService', () => {
         {
           id: 'exp-1',
           name: 'Registrar',
-          status: 'THIS_MONTH',
+          status: 'PLANNED',
           amount: new Decimal('10'),
           type: 'PLANNED',
           category: 'DOMAIN',
