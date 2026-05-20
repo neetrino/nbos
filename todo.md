@@ -1,116 +1,46 @@
-# NBOS — Stage Gate
+# NBOS — Stage Gate + Kanban UI
 
 `[ ]` открыто · `[x]` сделано
 
-План: [`docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md`](docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md)
+План и канон: [`docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md`](docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md) · [`04-Stage-Gate-UX-and-Validation-Standard.md`](docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-and-Validation-Standard.md) · [`09-Kanban-Board-and-List-Standard.md`](docs/NBOS/05-UI-Specifications/09-Kanban-Board-and-List-Standard.md) · [`10-Entity-Detail-Sheet-Standard.md`](docs/NBOS/05-UI-Specifications/10-Entity-Detail-Sheet-Standard.md)
+
+Rollout по модулям (CRM, Delivery, Product, Finance invoices/expenses/subscriptions sheet, Support, Tasks) — **в коде и docs сделан**. Ниже только то, что ещё имеет смысл делать.
 
 ---
 
-## Сейчас в работе
+## Сейчас
 
-**Stage Gate + Kanban UI Standard** — привести все workflow/kanban доски к одному стандарту: от CRM Lead/Deal до Delivery, Product, Finance, Support и Tasks.
-
----
-
-## Фаза 0 — Уже сделано
-
-- [x] ~~CRM Deals: заменить stage-gate modal на sheet + подсветку полей~~
-- [x] ~~CRM Deals: убрать yellow banner/toasts для stage-gate blockers~~
-- [x] ~~Delivery Board: sheet + подсветка полей вместо modal~~
-- [x] ~~Документ-план: `04-Stage-Gate-UX-Standard-Plan.md`~~
-- [x] ~~UI standard draft: `05-UI-Specifications/09-Kanban-Board-and-List-Standard.md`~~
+- [ ] **Финальный audit (ручной)** — пройти workflow surfaces по чеклисту kanban + stage-gate (можно без ожидания других задач):
+  - CRM: leads, deals — Active/Closed, Board/List, blocked drag → sheet + field highlights
+  - Delivery — Active/Closed Board/List, local gate
+  - Finance — expenses active/closed, invoices scope + money-status gate, subscriptions **sheet** (grid scope не в scope audit)
+  - Support — Active/Closed, ticket sheet
+  - Tasks + Work Space — Active/Closed, `QuickCreateTaskDialog`, `TaskSheet`
+  - Зафиксировать находки в issues или коротким списком под этим пунктом
 
 ---
 
-## Фаза 1 — Канон и стандарты
+## Отложено (решим отдельно)
 
-- [x] ~~Создать канон: `docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-and-Validation-Standard.md`~~
-- [x] ~~Обновить `docs/NBOS/00-Technical-Decisions-By-Module.md`~~
-- [x] ~~Обновить `docs/NBOS/00-Implementation-Roadmap.md`~~
-- [x] ~~Финализировать `05-UI-Specifications/09-Kanban-Board-and-List-Standard.md`~~
-- [x] ~~Создать detail UI canon: `05-UI-Specifications/10-Entity-Detail-Sheet-Standard.md`~~
-- [x] ~~Обновить CRM UI spec: `05-UI-Specifications/02-CRM-Pages.md`~~
-- [x] ~~Обновить Delivery UI/canon links: `03-Project-Hub-Pages.md`, `07-Professional-Delivery-Card.md`, `07-Delivery-Board.md`~~
+- [ ] **Subscriptions: Active/Closed на coverage grid** — сейчас **не делаем** (grid-first, без kanban terminal board; нет канона terminal scope). Вернуться, когда появится продуктовое решение / canon.
 
 ---
 
-## Фаза 2 — Shared foundation
+## После появления правил в API + canon
 
-- [x] ~~Вынести product stage gates в `@nbos/shared`~~
-- [x] ~~Вынести extension stage gates в `@nbos/shared`~~
-- [x] ~~Сделать единый `StageGateError` / blocker contract~~
-- [x] ~~Сделать shared web helper для `stageGateHighlight`, field highlights и action blockers~~
-- [x] ~~API оставить final authority: Nest wrappers только превращают shared errors в `BadRequestException`~~
-- [x] ~~Добавить tests для shared product/extension gates~~
+Не блокирует audit. Паттерн уже есть (Deals, Delivery, Invoices); нужны **бизнес-правила** и structured `errors: [{ field, message }]`.
 
----
-
-## Фаза 3 — CRM к эталону
-
-- [x] ~~Deals: проверить terminal model `WON/FAILED` и зафиксировать `FAILED` как closed outcome или явно reopenable~~
-- [x] ~~Deals: привести `Active/Closed + Board/List` к UI standard, если найдены расхождения~~
-- [x] ~~Leads: добавить local/shared pre-check parity с Deals~~
-- [x] ~~Leads: привести terminal outcomes (`SQL/SPAM/Frozen`) к тому же board/list visual standard~~
-- [x] ~~Leads/Deals: убрать остатки старого `TransitionBlockerDialog`, если больше нигде не нужен~~
+- [ ] **Support tickets** — stage-gate: kanban/list move → ticket sheet + подсветка полей (сейчас в API нет stage-gate с field errors; lifecycle + sheet уже есть)
+- [ ] **Tasks** — completion/stage gate: kanban move → `TaskSheet` + rings на полях (сейчас local `TaskCompletionRulesPanel` / blockers без CRM-style field highlights; ждём API или общий completion contract)
+- [ ] **Finance expenses** — sheet field highlights, когда появятся validation rules на board/detail (invoices money-status уже с local pre-check)
 
 ---
 
-## Фаза 4 — Delivery Board к одному стандарту
+## Справка (сделано, не трогать в todo)
 
-- [x] ~~Delivery Board: добавить local pre-check как в Deals~~
-- [x] ~~Delivery Board: добавить Active List view~~
-- [x] ~~Delivery Board: заменить custom Closed Board на общий board/card renderer~~
-- [x] ~~Delivery Board: заменить custom Closed List на общий list/table renderer~~
-- [x] ~~Delivery Board: сделать `Active/Closed + Board/List` одним visual standard~~
-- [x] ~~Delivery Board: terminal outcomes (`Done/Cancelled`) показывать как closed scope, не как отдельный custom archive UI~~
-- [x] ~~Delivery Board: проверить blocked drag/terminal action — карточка не остаётся в неправильной колонке~~
+<details>
+<summary>Закрытые фазы 0–8 (архив)</summary>
 
----
+- Канон, shared gates, CRM, Delivery, Product, Finance (expenses closed, invoices scope, subscription/client-service sheets, invoice gate UX), Support/Tasks boards + detail sheets, regression tests, docs sync, удаление старых blocker modals.
 
-## Фаза 5 — Product / Project surfaces
-
-- [x] ~~Product `ProductStageGateCard`: заменить inline blocker panel на общий sheet-highlight UX~~
-- [x] ~~Product Overview: terminal actions и blockers привести к stage-gate standard~~
-- [x] ~~Project Hub links/cards: не дублировать delivery board логику, использовать standard links/views~~
-- [x] ~~Professional Delivery Card: closed state сделать read-only, но визуально той же family~~
-
----
-
-## Фаза 6 — Finance workflow boards
-
-- [x] ~~Найти все finance workflow/kanban/list surfaces~~
-- [x] ~~Для existing gates: описать module rules в finance canon (`11-Finance-Stage-Gate-and-Board-UX-Standard.md`)~~
-- [x] ~~Expense closed: `closedBoard` API + Board/List + Paid/Cancelled columns~~
-- [x] ~~Invoices: Active/Closed board scope на одной странице (Paid/Cancelled = closed)~~
-- [ ] Subscription: board/list parity (grid-first Active/Closed — отложено, grid-first без terminal board)
-- [x] ~~Subscription list: одна grid-матрица (Type/Status/Partner/мес/day на строке; company/coverage/actions → sheet)~~
-- [x] ~~Invoice detail sheet: compact detail canon (summary row, DetailSheetSection, без hero amount panel)~~
-- [x] ~~Subscription detail: sheet на list (`openSubscription`), workspace page `/finance/subscriptions/[id]`~~
-- [x] ~~Client Services: detail/edit sheet + quick create dialog~~
-- [x] ~~Finance blockers (invoices): local pre-check + sheet field highlights на kanban money-status move~~
-- [x] ~~Finance list/board cards: ExpenseKanbanCard + ExpensesTableSection на active и closed~~
-
----
-
-## Фаза 7 — Support / Tasks / Work Spaces
-
-- [x] ~~Roadmap stub: `06-Support-and-Tasks/00-Support-Tasks-Board-UX-Roadmap.md`~~
-- [x] ~~Support tickets: описать active stages и terminal outcomes в canon (`01-Support-Ticket-Board-Lifecycle.md`)~~
-- [x] ~~Support board/list: Active/Closed scope + board/list toggle~~
-- [x] ~~Support ticket detail: title-first header, badges, sheet layout по detail standard~~
-- [x] ~~Tasks / Work Spaces: terminal outcomes (COMPLETED/DONE) + board scope canon~~
-- [x] ~~Tasks board/list: Active/Closed scope на `/tasks` и Work Space runtime~~
-- [x] ~~Tasks quick create/detail: эталон `QuickCreateTaskDialog` + `TaskSheet` (см. `10-Entity-Detail-Sheet-Standard.md`)~~
-
----
-
-## Фаза 8 — Cleanup и контроль качества
-
-- [x] ~~Удалить устаревшие blocker/modal компоненты (TransitionBlockerDialog / StageGateBlockerPanel — в web нет)~~
-- [x] ~~Regression: `delivery-stage-gate-client.test.ts` (local pre-check)~~
-- [x] ~~Regression: lead + task board lifecycle + delivery local gate~~
-- [x] ~~Regression: invoice board lifecycle scope test~~
-- [x] ~~Regression: product board scope helpers (`product-board-lifecycle.test.ts`)~~
-- [x] ~~Mobile/responsive: `KanbanBoard` horizontal scroll + doc note в `09-Kanban-Board-and-List-Standard.md`~~
-- [x] ~~Docs links: plan + kanban + entity detail + finance/support roadmaps синхронизированы~~
-- [ ] Финальный audit: пройти все workflow surfaces вручную (CRM → Delivery → Finance → Support → Tasks)
+</details>
