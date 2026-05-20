@@ -105,15 +105,15 @@ apps/api — thin BadRequestException wrappers only
 
 ## Kanban / pipeline inventory (rollout after docs)
 
-| Surface                                   | Stage gates?  | Current UX                                                                     | Target                                                                                |
-| ----------------------------------------- | ------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| CRM Deals                                 | Yes           | Sheet + local shared gate ✓                                                    | Reference implementation                                                              |
-| CRM Leads                                 | Yes           | Sheet + API gate                                                               | Add local shared gate if missing                                                      |
-| Delivery Board                            | Yes           | Sheet + API only (no local gate yet); custom Closed Board/List; no Active List | + shared product/extension gate; unified `Active/Closed + Board/List` visual standard |
-| Product Overview (`ProductStageGateCard`) | Yes           | Inline blocker panel                                                           | Sheet highlights or shared card pattern                                               |
-| Finance (invoices, expenses board)        | Partial / TBD | Mixed                                                                          | Apply standard when gates defined in canon                                            |
-| Support tickets                           | TBD           | —                                                                              | Later                                                                                 |
-| Tasks board                               | TBD           | —                                                                              | Later                                                                                 |
+| Surface                                   | Stage gates? | Current UX                                                                    | Target                                                                                                                                                  |
+| ----------------------------------------- | ------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CRM Deals                                 | Yes          | Sheet + local shared gate ✓                                                   | Reference implementation                                                                                                                                |
+| CRM Leads                                 | Yes          | Sheet + local + API gate ✓                                                    | Maintain parity with Deals                                                                                                                              |
+| Delivery Board                            | Yes          | Sheet + local gate; Active/Closed Board/List ✓                                | Maintain parity; regression tests on local gate                                                                                                         |
+| Product Overview (`ProductStageGateCard`) | Yes          | Sheet field highlights + action blockers ✓                                    | Maintain parity with Delivery                                                                                                                           |
+| Finance (invoices, expenses board)        | Partial      | Invoice money-status: local pre-check + sheet highlights; expenses detail TBD | Extend structured gates per [`11-Finance-Stage-Gate-and-Board-UX-Standard.md`](../02-Modules/04-Finance/11-Finance-Stage-Gate-and-Board-UX-Standard.md) |
+| Support tickets                           | Lifecycle    | Active/Closed board scope; detail sheet ✓                                     | Stage-gate highlights when rules are added                                                                                                              |
+| Tasks board                               | Completion   | Active/Closed scope; `TaskSheet` + completion blockers panel ✓                | Wire shared gate field highlights when API rules land                                                                                                   |
 
 **Out of scope for first unification pass:** modules without documented stage gates in NBOS canon.
 

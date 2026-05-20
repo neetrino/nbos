@@ -152,21 +152,29 @@ Reference plan: `../01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md`.
 
 ## Module Alignment
 
-| Module           | Current State                                            | Target                                                         |
-| ---------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
-| CRM Deals        | Active/Closed board and list are visually consistent     | Reference visual implementation                                |
-| CRM Leads        | Same visual family as Deals                              | Keep aligned with Deals                                        |
-| Delivery Board   | Closed board/list use custom layout; Active List missing | Same board/list visual standard across Active and Closed       |
-| Product Overview | Inline stage card pattern                                | Align terminal actions and blocked transition UX with standard |
-| Finance          | Mixed workflow surfaces                                  | Adopt standard when kanban/workflow boards exist               |
-| Support          | Future / TBD                                             | Adopt standard from first implementation                       |
-| Tasks            | Existing work-space boards                               | Align card density, terminal outcomes and list parity          |
+| Module           | Current State                                     | Target                                                         |
+| ---------------- | ------------------------------------------------- | -------------------------------------------------------------- |
+| CRM Deals        | Active/Closed board and list ✓                    | Reference visual implementation                                |
+| CRM Leads        | Same visual family as Deals ✓                     | Keep aligned with Deals                                        |
+| Delivery Board   | Active/Closed Board/List via shared renderers ✓   | Keep aligned; no custom closed-only archive UI                 |
+| Product Overview | Stage-gate sheet highlights ✓                     | Keep terminal actions aligned with standard                    |
+| Finance          | Expenses + invoices Active/Closed; closed route ✓ | Subscription grid-first scope deferred                         |
+| Support          | Active/Closed on `/support` ✓                     | Stage-gate sheet highlights when rules exist                   |
+| Tasks            | Active/Closed on `/tasks` + Work Spaces ✓         | Keep `TaskMiniCard` + `TaskListTableView` as reference density |
 
 ---
 
-## Delivery Board Specific Target
+## Responsive behavior
 
-Delivery Board must move from special closed layouts to the shared model:
+Shared `KanbanBoard` uses horizontal scroll (`overflow-x-auto`) inside a `min-h-0 flex-1` column so Active/Closed boards remain usable on narrow viewports. Page shells should keep the same `flex h-full flex-col` + `min-h-0` chain (CRM, Finance, Support, Tasks, Delivery).
+
+List views use `overflow-auto` on the table wrapper. Scope toggles (`Active` / `Closed` / `All`) stay in the filter bar; on small screens they wrap with the search row rather than switching to a different layout per scope.
+
+---
+
+## Delivery Board (implemented)
+
+Delivery Board uses the shared model:
 
 ```text
 Active + Board  → Delivery kanban columns with delivery cards
@@ -174,12 +182,6 @@ Closed + Board  → Same board/card renderer, columns Done | Cancelled
 Active + List   → Same row renderer as Closed List, filtered to active lifecycle
 Closed + List   → Same row renderer, filtered to terminal lifecycle
 ```
-
-Implementation notes:
-
-- Replace the custom visual behavior of `DeliveryBoardClosedBoard` with the shared board renderer.
-- Replace separate closed-table-only row logic with one `DeliveryBoardList` / row renderer that supports active and closed scopes.
-- Keep Delivery-specific fields, but preserve the same table structure and card family across scopes.
 
 ---
 

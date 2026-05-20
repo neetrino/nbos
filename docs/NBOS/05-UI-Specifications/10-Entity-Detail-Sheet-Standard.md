@@ -220,18 +220,29 @@ Rules:
 
 ---
 
+## Reference implementation (code)
+
+| Pattern                                     | Location                                                                                   |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Quick create (compact dialog)               | `apps/web/src/components/shared/quick-create-task/QuickCreateTaskDialog.tsx`               |
+| Task detail sheet (wide operational layout) | `apps/web/src/features/tasks/components/TaskSheet.tsx`                                     |
+| Compact finance detail sheet                | `apps/web/src/features/finance/components/InvoiceSheet.tsx`, `SubscriptionDetailSheet.tsx` |
+| Deep-link query keys                        | `OPEN_*_QUERY` constants under `apps/web/src/features/*/constants/*-deep-link.ts`          |
+
+---
+
 ## Module Alignment
 
-| Module                     | Target                                                                                                          |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| CRM Leads / Deals          | Keep sheet-first pattern; reduce duplicated labels and heavy section chrome where found.                        |
-| Delivery Board             | Keep detail sheet as the operational reference; preserve compact readiness and linked-work sections.            |
-| Product / Project surfaces | Open operational objects in sheets unless the surface is a true workspace.                                      |
-| Finance Invoices           | Refactor invoice detail sheet to compact field groups; remove oversized one-value panels and duplicated labels. |
-| Finance Subscriptions      | Open subscription details in a sheet; avoid separate page when only one subscription is inspected.              |
-| Client Services            | Replace large full-form dialog with sheet for detail/edit; keep dialog only for quick create if needed.         |
-| Support Tickets            | Use sheet-first task-like layout for ticket detail.                                                             |
-| Tasks / Work Spaces        | Use the quick task dialog style as the visual reference for clean creation and compact detail.                  |
+| Module                     | Status / target                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------- |
+| CRM Leads / Deals          | Sheet-first ✓; stage-gate field highlights ✓                                                      |
+| Delivery Board             | Detail sheet + readiness sections ✓                                                               |
+| Product / Project surfaces | Sheets + stage-gate highlights on overview ✓                                                      |
+| Finance Invoices           | Compact sheet ✓; money-status gate highlights on kanban move ✓                                    |
+| Finance Subscriptions      | List sheet (`openSubscription`) + workspace page ✓                                                |
+| Client Services            | Quick create dialog + detail sheet ✓                                                              |
+| Support Tickets            | Title-first compact sheet ✓                                                                       |
+| Tasks / Work Spaces        | **Visual reference** — shared `QuickCreateTaskDialog` + `TaskSheet` on `/tasks` and Work Spaces ✓ |
 
 ---
 

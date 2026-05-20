@@ -99,7 +99,7 @@
 - [x] ~~Support ticket detail: title-first header, badges, sheet layout по detail standard~~
 - [x] ~~Tasks / Work Spaces: terminal outcomes (COMPLETED/DONE) + board scope canon~~
 - [x] ~~Tasks board/list: Active/Closed scope на `/tasks` и Work Space runtime~~
-- [ ] Tasks quick create/detail: использовать чистый task-style layout как визуальный эталон
+- [x] ~~Tasks quick create/detail: эталон `QuickCreateTaskDialog` + `TaskSheet` (см. `10-Entity-Detail-Sheet-Standard.md`)~~
 
 ---
 
@@ -110,6 +110,6 @@
 - [x] ~~Regression: lead + task board lifecycle + delivery local gate~~
 - [x] ~~Regression: invoice board lifecycle scope test~~
 - [x] ~~Regression: product board scope helpers (`product-board-lifecycle.test.ts`)~~
-- [ ] Проверить mobile/responsive для Active/Closed Board/List
-- [ ] Проверить docs links и cleanup registers
-- [ ] Финальный audit: все kanban/workflow доски используют один стандарт
+- [x] ~~Mobile/responsive: `KanbanBoard` horizontal scroll + doc note в `09-Kanban-Board-and-List-Standard.md`~~
+- [x] ~~Docs links: plan + kanban + entity detail + finance/support roadmaps синхронизированы~~
+- [ ] Финальный audit: пройти все workflow surfaces вручную (CRM → Delivery → Finance → Support → Tasks)

@@ -6,6 +6,7 @@ References:
 
 - [`../../01-Platform-Overview/04-Stage-Gate-UX-and-Validation-Standard.md`](../../01-Platform-Overview/04-Stage-Gate-UX-and-Validation-Standard.md)
 - [`../../05-UI-Specifications/09-Kanban-Board-and-List-Standard.md`](../../05-UI-Specifications/09-Kanban-Board-and-List-Standard.md)
+- Detail sheets: [`../../05-UI-Specifications/10-Entity-Detail-Sheet-Standard.md`](../../05-UI-Specifications/10-Entity-Detail-Sheet-Standard.md)
 - Inventory: [`00-Finance-Workflow-Boards-Inventory.md`](00-Finance-Workflow-Boards-Inventory.md)
 
 ---
