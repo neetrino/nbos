@@ -10,24 +10,40 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { assertSubscriptionStatus, attachSubscriptionCoverage } from './subscription-coverage';
 import { buildSubscriptionGridPayload } from './subscription-grid';
 import { assertSubscriptionStatusTransition } from './subscription-status-transitions';
+import {
+  applySubscriptionBillingPatch,
+  resolveSubscriptionBillingInput,
+} from './subscription-billing-dto';
 
 interface CreateSubscriptionDto {
   projectId: string;
   type: string;
-  amount: number;
+  baseMonthlyAmount?: number;
+  /** @deprecated Use baseMonthlyAmount */
+  amount?: number;
   billingDay: number;
+  billingFrequency?: string;
   taxStatus?: string;
-  startDate: string;
+  billingStartDate?: string;
+  /** @deprecated Use billingStartDate */
+  startDate?: string;
+  notificationsEnabled?: boolean;
   endDate?: string;
   partnerId?: string;
 }
 
 interface UpdateSubscriptionDto {
   type?: string;
+  baseMonthlyAmount?: number;
+  /** @deprecated Use baseMonthlyAmount */
   amount?: number;
   billingDay?: number;
+  billingFrequency?: string;
   taxStatus?: string;
+  billingStartDate?: string;
+  /** @deprecated Use billingStartDate */
   startDate?: string;
+  notificationsEnabled?: boolean;
   endDate?: string;
   partnerId?: string | null;
 }
@@ -72,7 +88,7 @@ export class SubscriptionsService {
     const yearEnd = new Date(year, 11, 31, 23, 59, 59, 999);
 
     const andParts: Prisma.SubscriptionWhereInput[] = [
-      { startDate: { lte: yearEnd } },
+      { billingStartDate: { lte: yearEnd } },
       { OR: [{ endDate: null }, { endDate: { gte: yearStart } }] },
     ];
 
@@ -209,16 +225,19 @@ export class SubscriptionsService {
 
   async create(data: CreateSubscriptionDto) {
     const code = await this.generateCode();
+    const billing = resolveSubscriptionBillingInput(data);
     const created = await this.prisma.subscription.create({
       data: {
         code,
         projectId: data.projectId,
         type: data.type as SubscriptionTypeEnum,
-        amount: data.amount,
+        baseMonthlyAmount: billing.baseMonthlyAmount,
+        billingFrequency: billing.billingFrequency,
         billingDay: data.billingDay,
         taxStatus:
           (data.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set']) ?? 'TAX',
-        startDate: new Date(data.startDate),
+        billingStartDate: billing.billingStartDate,
+        notificationsEnabled: billing.notificationsEnabled,
         endDate: data.endDate ? new Date(data.endDate) : undefined,
         partnerId: data.partnerId,
       },
@@ -231,13 +250,12 @@ export class SubscriptionsService {
 
     const updateData: Prisma.SubscriptionUpdateInput = {};
     if (data.type) updateData.type = data.type as SubscriptionTypeEnum;
-    if (data.amount !== undefined) updateData.amount = data.amount;
+    applySubscriptionBillingPatch(data, updateData);
     if (data.billingDay !== undefined) updateData.billingDay = data.billingDay;
     if (data.taxStatus) {
       updateData.taxStatus =
         data.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set'];
     }
-    if (data.startDate) updateData.startDate = new Date(data.startDate);
     if (data.endDate) updateData.endDate = new Date(data.endDate);
     if (data.partnerId !== undefined)
       updateData.partner = data.partnerId
@@ -262,8 +280,8 @@ export class SubscriptionsService {
     const updateData: Prisma.SubscriptionUpdateInput = {
       status: status as SubscriptionStatusEnum,
     };
-    if (status === 'ACTIVE' && !current.startDate) {
-      updateData.startDate = new Date();
+    if (status === 'ACTIVE' && !current.billingStartDate) {
+      updateData.billingStartDate = new Date();
     }
     if (status === 'CANCELLED') {
       updateData.endDate = new Date();
@@ -295,7 +313,7 @@ export class SubscriptionsService {
           ...partnerWhere,
         },
         _count: true,
-        _sum: { amount: true },
+        _sum: { baseMonthlyAmount: true },
       }),
       this.prisma.subscription.groupBy({
         by: ['type'],
@@ -304,21 +322,21 @@ export class SubscriptionsService {
           ...partnerWhere,
         },
         _count: true,
-        _sum: { amount: true },
+        _sum: { baseMonthlyAmount: true },
       }),
       this.prisma.subscription.aggregate({
         where: {
           status: 'ACTIVE',
-          startDate: { lte: snapshotDate },
+          billingStartDate: { lte: snapshotDate },
           OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
           ...partnerWhere,
         },
-        _sum: { amount: true },
+        _sum: { baseMonthlyAmount: true },
       }),
       this.prisma.subscription.count({
         where: {
           status: 'ACTIVE',
-          startDate: { lte: snapshotDate },
+          billingStartDate: { lte: snapshotDate },
           OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
           ...partnerWhere,
         },
@@ -330,7 +348,7 @@ export class SubscriptionsService {
       byStatus,
       byType,
       activeSubscriptions,
-      monthlyRevenue: totalRevenue._sum.amount,
+      monthlyRevenue: totalRevenue._sum.baseMonthlyAmount,
     };
   }
 

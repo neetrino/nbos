@@ -181,16 +181,16 @@ export class DealWonHandler {
     });
     if (existing) return;
 
-    const startDate = firstPaidInvoice.paidDate ?? new Date();
+    const billingStartDate = firstPaidInvoice.paidDate ?? new Date();
     await this.prisma.subscription.create({
       data: {
         code: await this.generateSubscriptionCode(),
         projectId,
         type: 'DEV_AND_MAINTENANCE',
-        amount: Number(deal.amount ?? firstPaidInvoice.amount),
-        billingDay: startDate.getDate(),
+        baseMonthlyAmount: Number(deal.amount ?? firstPaidInvoice.amount),
+        billingDay: billingStartDate.getDate(),
         taxStatus: (deal.taxStatus as Prisma.SubscriptionCreateInput['taxStatus']) ?? 'TAX',
-        startDate,
+        billingStartDate,
         status: 'ACTIVE',
       },
     });
@@ -243,16 +243,16 @@ export class DealWonHandler {
       return this.toLinkTargets(deal, deal.projectId, deal.existingProductId);
     }
 
-    const startDate = deal.maintenanceStartAt ?? new Date();
+    const billingStartDate = deal.maintenanceStartAt ?? new Date();
     await this.prisma.subscription.create({
       data: {
         code: await this.generateSubscriptionCode(),
         projectId: deal.projectId,
         type: 'MAINTENANCE_ONLY',
-        amount: Number(deal.amount),
-        billingDay: startDate.getDate(),
+        baseMonthlyAmount: Number(deal.amount),
+        billingDay: billingStartDate.getDate(),
         taxStatus: (deal.taxStatus as Prisma.SubscriptionCreateInput['taxStatus']) ?? 'TAX',
-        startDate,
+        billingStartDate,
         status: 'PENDING',
       },
     });

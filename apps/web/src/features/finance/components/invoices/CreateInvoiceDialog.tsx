@@ -192,7 +192,7 @@ function SubscriptionInvoiceContext({ subscription }: { subscription: Subscripti
         {subscription.company?.name ? ` · ${subscription.company.name}` : ''}
       </p>
       <p className="text-muted-foreground mt-1">
-        Monthly amount: {formatAmount(parseFloat(subscription.amount))}
+        Monthly amount: {formatAmount(parseFloat(subscription.baseMonthlyAmount))}
       </p>
     </div>
   );

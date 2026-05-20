@@ -13,8 +13,8 @@ const META: SubscriptionsScopeStatsCsvMeta = {
 
 const SAMPLE_STATS: SubscriptionStats = {
   total: 12,
-  byStatus: [{ status: 'ACTIVE', _count: 8, _sum: { amount: 400 } }],
-  byType: [{ type: 'MAINTENANCE_ONLY', _count: 5, _sum: { amount: 200 } }],
+  byStatus: [{ status: 'ACTIVE', _count: 8, _sum: { baseMonthlyAmount: 400 } }],
+  byType: [{ type: 'MAINTENANCE_ONLY', _count: 5, _sum: { baseMonthlyAmount: 200 } }],
   activeSubscriptions: 8,
   monthlyRevenue: 350.25,
 };

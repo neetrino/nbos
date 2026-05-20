@@ -29,7 +29,7 @@ export interface SubscriptionGridRowInput {
   id: string;
   status: string;
   amount: unknown;
-  startDate: Date;
+  billingStartDate: Date;
   endDate: Date | null;
   project: { id: string; name: string };
   invoices: SubscriptionGridInvoiceInput[];
@@ -78,14 +78,14 @@ function invoiceOverdue(inv: SubscriptionGridInvoiceInput, now: Date): boolean {
 }
 
 function subscriptionOverlapsMonth(
-  startDate: Date,
+  billingStartDate: Date,
   endDate: Date | null,
   year: number,
   monthIndex: number,
 ): boolean {
   const first = new Date(year, monthIndex, 1);
   const last = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
-  if (startDate > last) return false;
+  if (billingStartDate > last) return false;
   if (endDate !== null && endDate < first) return false;
   return true;
 }
@@ -153,7 +153,7 @@ function resolveMonthCell(
   monthIndex: number,
   now: Date,
 ): SubscriptionGridCell {
-  if (!subscriptionOverlapsMonth(sub.startDate, sub.endDate, year, monthIndex)) {
+  if (!subscriptionOverlapsMonth(sub.billingStartDate, sub.endDate, year, monthIndex)) {
     return { kind: 'NA', invoiceId: null };
   }
 
@@ -184,7 +184,7 @@ export function buildSubscriptionGridPayload(
   now: Date,
 ): SubscriptionGridPayload {
   const rows: SubscriptionGridRow[] = subscriptions.map((sub) => {
-    const amountMonthly = numericAmount(sub.amount);
+    const amountMonthly = numericAmount(sub.baseMonthlyAmount);
     const months: SubscriptionGridCell[] = [];
     for (let m = 0; m < 12; m++) {
       months.push(resolveMonthCell(sub, year, m, now));

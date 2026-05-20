@@ -13,6 +13,7 @@ import {
 } from '@/components/shared';
 import {
   formatAmount,
+  getSubscriptionBillingFrequency,
   getSubscriptionStatus,
   getSubscriptionType,
 } from '@/features/finance/constants/finance';
@@ -115,7 +116,7 @@ export default function SubscriptionDetailPage() {
           <div>
             <h1 className="text-foreground text-2xl font-semibold">{subscription.code}</h1>
             <p className="text-muted-foreground mt-1 text-sm">
-              Started {formatDate(subscription.startDate)}
+              Started {formatDate(subscription.billingStartDate)}
               {subscription.endDate ? ` · Ended ${formatDate(subscription.endDate)}` : ''}
             </p>
           </div>
@@ -168,7 +169,7 @@ export default function SubscriptionDetailPage() {
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Amount / month</p>
           <p className="mt-2 text-lg font-semibold tabular-nums">
-            {formatAmount(parseFloat(subscription.amount))}
+            {formatAmount(parseFloat(subscription.baseMonthlyAmount))}
           </p>
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
@@ -181,12 +182,25 @@ export default function SubscriptionDetailPage() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Billing frequency</p>
+          <p className="mt-2 font-medium">
+            {getSubscriptionBillingFrequency(subscription.billingFrequency)?.label ??
+              subscription.billingFrequency}
+          </p>
+        </div>
+        <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Billing day</p>
           <p className="mt-2 font-medium">{subscription.billingDay}</p>
         </div>
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Tax status</p>
           <p className="mt-2 font-medium">{subscription.taxStatus}</p>
+        </div>
+        <div className="border-border bg-card rounded-xl border p-4">
+          <p className="text-muted-foreground text-xs">Notifications</p>
+          <p className="mt-2 font-medium">
+            {subscription.notificationsEnabled ? 'Enabled' : 'Disabled'}
+          </p>
         </div>
       </div>
 

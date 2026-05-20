@@ -227,15 +227,23 @@ enum SubscriptionStatusEnum {
   COMPLETED
 }
 
+enum SubscriptionBillingFrequencyEnum {
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
 model Subscription {
   id         String                 @id @default(uuid())
   code       String                 @unique
   projectId  String                 @map("project_id")
   type       SubscriptionTypeEnum
-  amount     Decimal                @db.Decimal(12, 2)
+  baseMonthlyAmount Decimal                         @map("base_monthly_amount") @db.Decimal(12, 2)
+  billingFrequency  SubscriptionBillingFrequencyEnum @default(MONTHLY) @map("billing_frequency")
   billingDay Int                    @map("billing_day")
   taxStatus  TaxStatus              @default(TAX) @map("tax_status")
-  startDate  DateTime               @map("start_date")
+  billingStartDate DateTime         @map("billing_start_date")
+  notificationsEnabled Boolean      @default(true) @map("notifications_enabled")
   endDate    DateTime?              @map("end_date")
   status     SubscriptionStatusEnum @default(ACTIVE)
   partnerId  String?                @map("partner_id")

@@ -14,10 +14,10 @@ import type {
 } from './mrr-subscription-revenue.types';
 
 const MRR_NOTES = [
-  'Active MRR uses active Subscription.amount at the snapshot date.',
+  'Active MRR sums Subscription.baseMonthlyAmount for active subscriptions at the snapshot date.',
   'Paid subscription revenue uses Payment rows linked to subscription invoice cards.',
-  'New and churned MRR use subscription startDate/endDate in the selected period.',
-  'Invoice coverage_start_month / coverage_month_count is not yet in runtime schema, so monthly paid coverage is deferred.',
+  'New and churned MRR use billingStartDate/endDate in the selected period.',
+  'Yearly subscriptions bill via invoice coverage_month_count; MRR uses monthly base, not invoiced total.',
 ];
 
 @Injectable()
@@ -55,22 +55,22 @@ export class MrrSubscriptionRevenueService {
     const where = activeSubscriptionWhere(snapshotDate);
     const [activeSubscriptionCount, total, byType] = await Promise.all([
       this.prisma.subscription.count({ where }),
-      this.prisma.subscription.aggregate({ where, _sum: { amount: true } }),
+      this.prisma.subscription.aggregate({ where, _sum: { baseMonthlyAmount: true } }),
       this.prisma.subscription.groupBy({
         by: ['type'],
         where,
         _count: true,
-        _sum: { amount: true },
+        _sum: { baseMonthlyAmount: true },
       }),
     ]);
     return {
-      activeMrr: decimalString(total._sum.amount),
+      activeMrr: decimalString(total._sum.baseMonthlyAmount),
       activeSubscriptionCount,
       byType: byType
         .map((row) => ({
           type: String(row.type),
           activeSubscriptionCount: row._count,
-          activeMrr: decimalString(row._sum.amount),
+          activeMrr: decimalString(row._sum.baseMonthlyAmount),
         }))
         .sort((a, b) => a.type.localeCompare(b.type)),
     };
@@ -79,9 +79,9 @@ export class MrrSubscriptionRevenueService {
   private async getMovement(dateFilter: ReturnType<typeof buildDateFilter>) {
     const [newRows, churnedRows] = await Promise.all([
       this.prisma.subscription.aggregate({
-        ...(dateFilter ? { where: { startDate: dateFilter } } : {}),
+        ...(dateFilter ? { where: { billingStartDate: dateFilter } } : {}),
         _count: true,
-        _sum: { amount: true },
+        _sum: { baseMonthlyAmount: true },
       }),
       this.prisma.subscription.aggregate({
         where: {
@@ -89,13 +89,13 @@ export class MrrSubscriptionRevenueService {
           ...(dateFilter ? { endDate: dateFilter } : { endDate: { not: null } }),
         },
         _count: true,
-        _sum: { amount: true },
+        _sum: { baseMonthlyAmount: true },
       }),
     ]);
     return {
-      newMrr: decimalString(newRows._sum.amount),
+      newMrr: decimalString(newRows._sum.baseMonthlyAmount),
       newSubscriptionCount: newRows._count,
-      churnedMrr: decimalString(churnedRows._sum.amount),
+      churnedMrr: decimalString(churnedRows._sum.baseMonthlyAmount),
       churnedSubscriptionCount: churnedRows._count,
     };
   }
@@ -127,7 +127,7 @@ export class MrrSubscriptionRevenueService {
 function activeSubscriptionWhere(snapshotDate: Date) {
   return {
     status: 'ACTIVE' as const,
-    startDate: { lte: snapshotDate },
+    billingStartDate: { lte: snapshotDate },
     OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
   };
 }

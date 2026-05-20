@@ -16,11 +16,13 @@ export interface Subscription {
   code: string;
   projectId: string;
   type: string;
-  amount: string;
+  baseMonthlyAmount: string;
+  billingFrequency: string;
   billingDay: number;
   taxStatus: string;
   status: string;
-  startDate: string;
+  billingStartDate: string;
+  notificationsEnabled: boolean;
   endDate: string | null;
   createdAt: string;
   project: { id: string; code: string; name: string };
@@ -40,10 +42,12 @@ export interface Subscription {
 
 export interface UpdateSubscriptionPayload {
   type?: string;
-  amount?: number;
+  baseMonthlyAmount?: number;
+  billingFrequency?: string;
   billingDay?: number;
   taxStatus?: string;
-  startDate?: string;
+  billingStartDate?: string;
+  notificationsEnabled?: boolean;
   endDate?: string;
   partnerId?: string | null;
 }
@@ -104,12 +108,12 @@ export interface SubscriptionStats {
   byStatus: Array<{
     status: string;
     _count: number;
-    _sum: { amount: number | null };
+    _sum: { baseMonthlyAmount: number | null };
   }>;
   byType: Array<{
     type: string;
     _count: number;
-    _sum: { amount: number | null };
+    _sum: { baseMonthlyAmount: number | null };
   }>;
   activeSubscriptions: number;
   monthlyRevenue: number | null;

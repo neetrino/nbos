@@ -30,15 +30,14 @@
 - [x] ~~1.3 Reminders: gate по `request_sent`, backfill из `gov_invoice_id`~~
 - [x] ~~1.4 UI: блок Official Invoice в Invoice sheet + кнопки~~
 
-> Миграция: `20260520120000_invoice_official_request_block` — применить: `pnpm -w run db:migrate` (или deploy).
-
 ---
 
 ## Фаза 2 — Subscription billing model
 
-- [ ] 2.1 Prisma: `base_monthly_amount`, `billing_frequency`, `billing_start_date`, `notifications_enabled`
-- [ ] 2.2 API/UI: create/edit subscription с новыми полями
-- [ ] 2.3 Billing + MRR report на `base_monthly_amount` / coverage
+- [x] ~~2.1 Prisma: `base_monthly_amount`, `billing_frequency`, `billing_start_date`, `notifications_enabled`~~
+- [x] ~~2.2 API: create/update (legacy `amount`/`startDate` aliases), UI read на detail + таблицы~~
+- [x] ~~2.3 Billing: yearly → 12× base + coverage; MRR на `baseMonthlyAmount`~~
+- [ ] 2.4 UI: форма create/edit subscription (frequency, notifications) на list/detail
 
 ---
 
@@ -76,4 +75,4 @@
 
 ## Сейчас в работе
 
-**Фаза 2** — Subscription billing model (2.1 → 2.3)
+**Фаза 3** — Expenses workflow (канон)

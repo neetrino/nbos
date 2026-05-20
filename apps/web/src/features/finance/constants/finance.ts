@@ -48,6 +48,12 @@ export const SUBSCRIPTION_TYPES = [
   { value: 'PARTNER_SERVICE', label: 'Partner Service', variant: 'orange' as StatusVariant },
 ] as const;
 
+export const SUBSCRIPTION_BILLING_FREQUENCIES = [
+  { value: 'MONTHLY', label: 'Monthly' },
+  { value: 'YEARLY', label: 'Yearly' },
+  { value: 'CUSTOM', label: 'Custom' },
+] as const;
+
 export const SUBSCRIPTION_STATUSES = [
   { value: 'PENDING', label: 'Pending', variant: 'amber' as StatusVariant },
   { value: 'ACTIVE', label: 'Active', variant: 'green' as StatusVariant },
@@ -80,6 +86,10 @@ export function getSubscriptionType(value: string) {
 
 export function getSubscriptionStatus(value: string) {
   return SUBSCRIPTION_STATUSES.find((s) => s.value === value);
+}
+
+export function getSubscriptionBillingFrequency(value: string) {
+  return SUBSCRIPTION_BILLING_FREQUENCIES.find((f) => f.value === value);
 }
 
 export function formatAmount(amount: number, currency = 'AMD'): string {

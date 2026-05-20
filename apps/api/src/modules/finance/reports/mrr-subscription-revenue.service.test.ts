@@ -8,12 +8,12 @@ describe('MrrSubscriptionRevenueService', () => {
     const prisma = createMockPrisma();
     prisma.subscription.count.mockResolvedValue(3);
     prisma.subscription.aggregate
-      .mockResolvedValueOnce({ _sum: { amount: new Decimal(900) } })
-      .mockResolvedValueOnce({ _count: 2, _sum: { amount: new Decimal(500) } })
-      .mockResolvedValueOnce({ _count: 1, _sum: { amount: new Decimal(200) } });
+      .mockResolvedValueOnce({ _sum: { baseMonthlyAmount: new Decimal(900) } })
+      .mockResolvedValueOnce({ _count: 2, _sum: { baseMonthlyAmount: new Decimal(500) } })
+      .mockResolvedValueOnce({ _count: 1, _sum: { baseMonthlyAmount: new Decimal(200) } });
     prisma.subscription.groupBy.mockResolvedValue([
-      { type: 'MAINTENANCE_ONLY', _count: 2, _sum: { amount: new Decimal(600) } },
-      { type: 'DEV_ONLY', _count: 1, _sum: { amount: new Decimal(300) } },
+      { type: 'MAINTENANCE_ONLY', _count: 2, _sum: { baseMonthlyAmount: new Decimal(600) } },
+      { type: 'DEV_ONLY', _count: 1, _sum: { baseMonthlyAmount: new Decimal(300) } },
     ]);
     prisma.payment.count.mockResolvedValue(4);
     prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: new Decimal(700) } });

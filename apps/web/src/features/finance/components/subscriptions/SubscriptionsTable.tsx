@@ -194,14 +194,14 @@ function SubscriptionTableRow({
         </div>
       </TableCell>
       <SubscriptionTypeCell subscriptionType={subscriptionType} />
-      <SubscriptionAmountCell amount={subscription.amount} />
+      <SubscriptionAmountCell amount={subscription.baseMonthlyAmount} />
       <SubscriptionStatusCell subscriptionStatus={subscriptionStatus} />
       <TableCell className="text-muted-foreground text-xs">
         {subscription.coverage?.activeMonthCount ?? 0} months
       </TableCell>
       <SubscriptionBillingCell billingDay={subscription.billingDay} />
       <TableCell className="text-muted-foreground text-xs">
-        {new Date(subscription.startDate).toLocaleDateString()}
+        {new Date(subscription.billingStartDate).toLocaleDateString()}
       </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>
         <Link
