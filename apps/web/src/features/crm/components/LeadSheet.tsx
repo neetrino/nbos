@@ -26,7 +26,6 @@ import {
 import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
 import { getLeadDisplayTitle } from '../utils/crm-entity-display';
 import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
-import { StageGateBanner } from './DealStageGateBanner';
 import type { ApiFieldError } from '@/lib/api-errors';
 
 const TABS = [
@@ -40,8 +39,6 @@ export interface LeadSheetBlockerNavigation {
 }
 
 export interface LeadSheetStageGateHighlight {
-  targetStatus: string;
-  targetLabel: string;
   errors: ApiFieldError[];
 }
 
@@ -57,7 +54,6 @@ interface LeadSheetProps {
   blockerNavigation?: LeadSheetBlockerNavigation | null;
   onBlockerNavigationConsumed?: () => void;
   stageGateHighlight?: LeadSheetStageGateHighlight | null;
-  onClearStageGateHighlight?: () => void;
 }
 
 function leadGeneralSaveErrorMessage(err: unknown): string {
@@ -77,7 +73,6 @@ export function LeadSheet({
   blockerNavigation = null,
   onBlockerNavigationConsumed,
   stageGateHighlight = null,
-  onClearStageGateHighlight,
 }: LeadSheetProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
@@ -243,20 +238,11 @@ export function LeadSheet({
         />
 
         {/* ── Pipeline Stages ── */}
-        <div className="shrink-0 border-b border-stone-100 dark:border-stone-800">
-          <div className="px-5 py-2.5">
-            <LeadPipelineStages
-              currentStatus={lead.status}
-              onStageClick={(key) => onStatusChange(lead.id, key)}
-            />
-          </div>
-          {stageGateHighlight ? (
-            <StageGateBanner
-              targetLabel={stageGateHighlight.targetLabel}
-              errors={stageGateHighlight.errors}
-              onDismiss={onClearStageGateHighlight}
-            />
-          ) : null}
+        <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
+          <LeadPipelineStages
+            currentStatus={lead.status}
+            onStageClick={(key) => onStatusChange(lead.id, key)}
+          />
         </div>
 
         {/* ── Tabs ── */}

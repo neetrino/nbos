@@ -16,7 +16,6 @@ import { DealTasksTab } from './DealTasksTab';
 import type { Deal } from '@/lib/api/deals';
 import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import type { DealSheetBlockerIntent } from '@/features/shared/blocker-actions';
-import { StageGateBanner } from './DealStageGateBanner';
 import type { ApiFieldError } from '@/lib/api-errors';
 import {
   buildDealGeneralPatch,
@@ -42,8 +41,6 @@ export interface DealSheetBlockerNavigation {
 }
 
 export interface DealSheetStageGateHighlight {
-  targetStatus: string;
-  targetLabel: string;
   errors: ApiFieldError[];
 }
 
@@ -60,7 +57,6 @@ interface DealSheetProps {
   blockerNavigation?: DealSheetBlockerNavigation | null;
   onBlockerNavigationConsumed?: () => void;
   stageGateHighlight?: DealSheetStageGateHighlight | null;
-  onClearStageGateHighlight?: () => void;
 }
 
 function dealGeneralSaveErrorMessage(err: unknown): string {
@@ -80,7 +76,6 @@ export function DealSheet({
   blockerNavigation = null,
   onBlockerNavigationConsumed,
   stageGateHighlight = null,
-  onClearStageGateHighlight,
 }: DealSheetProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
@@ -253,21 +248,11 @@ export function DealSheet({
         />
 
         {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
-        <div className="shrink-0 border-b border-stone-100 dark:border-stone-800">
-          <div className="px-5 py-2.5">
-            <DealPipelineStages
-              currentStatus={deal.status}
-              onStageClick={(key) => onStatusChange(deal.id, key)}
-            />
-          </div>
-          {stageGateHighlight ? (
-            <StageGateBanner
-              targetLabel={stageGateHighlight.targetLabel}
-              errors={stageGateHighlight.errors}
-              onDismiss={onClearStageGateHighlight}
-              onOpenInvoice={() => setActiveTab('invoice')}
-            />
-          ) : null}
+        <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
+          <DealPipelineStages
+            currentStatus={deal.status}
+            onStageClick={(key) => onStatusChange(deal.id, key)}
+          />
         </div>
 
         {/* ── Tabs ── */}

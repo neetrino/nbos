@@ -25,8 +25,6 @@ import {
 import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import { getLocalDealStageGateErrors } from '@/features/crm/deal-stage-gate';
-import { formatDealStageGateFieldList } from '@/features/crm/deal-stage-gate-labels';
-import { splitDealStageGateErrors } from '@/features/crm/deal-stage-gate-highlight';
 import {
   DEAL_STAGES,
   DEAL_TYPES,
@@ -215,9 +213,8 @@ export default function DealsPipelinePage() {
   }, [openDealId, loading, deals, stripOpenDealFromUrl]);
 
   const showStageGateRequirements = useCallback(
-    (deal: Deal, targetStatus: string, errors: ReturnType<typeof getLocalDealStageGateErrors>) => {
-      const targetLabel = getDealStage(targetStatus)?.label ?? targetStatus;
-      setStageGateHighlight({ targetStatus, targetLabel, errors });
+    (deal: Deal, errors: ReturnType<typeof getLocalDealStageGateErrors>) => {
+      setStageGateHighlight({ errors });
       setSelectedDeal(deal);
       pushOpenDealToUrl(deal.id);
       setSheetOpen(true);
@@ -226,17 +223,6 @@ export default function DealsPipelinePage() {
       const firstAction = actions[0];
       if (firstAction) {
         pushDealBlockerNav(resolveDealSheetIntentFromBlockerAction(firstAction, errors));
-      }
-
-      const { fieldErrors } = splitDealStageGateErrors(errors);
-      if (fieldErrors.length > 0) {
-        toast.error(
-          `To move to ${targetLabel}, fill: ${formatDealStageGateFieldList(
-            fieldErrors.map((error) => error.field),
-          )}`,
-        );
-      } else {
-        toast.error(errors[0]?.message ?? `Cannot move to ${targetLabel}.`);
       }
     },
     [pushDealBlockerNav, pushOpenDealToUrl],
@@ -250,7 +236,7 @@ export default function DealsPipelinePage() {
     if (currentDeal) {
       const localErrors = getLocalDealStageGateErrors(currentDeal, status);
       if (localErrors.length > 0) {
-        showStageGateRequirements(currentDeal, status, localErrors);
+        showStageGateRequirements(currentDeal, localErrors);
         return;
       }
     }
@@ -273,7 +259,7 @@ export default function DealsPipelinePage() {
       if (isStageGateApiError(err)) {
         const blockedDeal = previousDeals.find((deal) => deal.id === id) ?? previousSelected;
         if (blockedDeal) {
-          showStageGateRequirements(blockedDeal, status, err.errors);
+          showStageGateRequirements(blockedDeal, err.errors);
           return;
         }
       }
@@ -601,7 +587,6 @@ export default function DealsPipelinePage() {
         blockerNavigation={dealBlockerNav}
         onBlockerNavigationConsumed={clearDealBlockerNav}
         stageGateHighlight={selectedDeal && stageGateHighlight ? stageGateHighlight : null}
-        onClearStageGateHighlight={() => setStageGateHighlight(null)}
       />
 
       <StageTransitionConfirmDialog

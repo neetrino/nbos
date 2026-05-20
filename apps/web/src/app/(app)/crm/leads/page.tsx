@@ -23,9 +23,6 @@ import {
 } from '@/features/crm/components/LeadSheet';
 import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
-import { StageGateBanner } from '@/features/crm/components/DealStageGateBanner';
-import { formatDealStageGateFieldList } from '@/features/crm/deal-stage-gate-labels';
-import { splitDealStageGateErrors } from '@/features/crm/deal-stage-gate-highlight';
 import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
 import {
   BOARD_LIFECYCLE_SCOPE_OPTIONS,
@@ -204,9 +201,8 @@ export default function LeadsPipelinePage() {
   };
 
   const showLeadStageGateRequirements = useCallback(
-    (lead: Lead, targetStatus: string, errors: ApiFieldError[]) => {
-      const targetLabel = getLeadStage(targetStatus)?.label ?? targetStatus;
-      setStageGateHighlight({ targetStatus, targetLabel, errors });
+    (lead: Lead, errors: ApiFieldError[]) => {
+      setStageGateHighlight({ errors });
       setSelectedLead(lead);
       pushOpenLeadToUrl(lead.id);
       leadNavTokenRef.current += 1;
@@ -215,17 +211,6 @@ export default function LeadsPipelinePage() {
         sectionId: resolveLeadSheetSectionFromErrors(errors),
       });
       setSheetOpen(true);
-
-      const { fieldErrors } = splitDealStageGateErrors(errors);
-      if (fieldErrors.length > 0) {
-        toast.error(
-          `To move to ${targetLabel}, fill: ${formatDealStageGateFieldList(
-            fieldErrors.map((error) => error.field),
-          )}`,
-        );
-      } else {
-        toast.error(errors[0]?.message ?? `Cannot move to ${targetLabel}.`);
-      }
     },
     [pushOpenLeadToUrl],
   );
@@ -239,7 +224,7 @@ export default function LeadsPipelinePage() {
     if (currentLead) {
       const localErrors = getLocalLeadTransitionErrors(currentLead, status);
       if (localErrors.length > 0) {
-        showLeadStageGateRequirements(currentLead, status, localErrors);
+        showLeadStageGateRequirements(currentLead, localErrors);
         return;
       }
     }
@@ -264,7 +249,7 @@ export default function LeadsPipelinePage() {
       if (isStageGateApiError(err)) {
         const blockedLead = previousLeads.find((lead) => lead.id === id) ?? previousSelected;
         if (blockedLead) {
-          showLeadStageGateRequirements(blockedLead, status, err.errors);
+          showLeadStageGateRequirements(blockedLead, err.errors);
           return;
         }
       }
@@ -570,7 +555,6 @@ export default function LeadsPipelinePage() {
         blockerNavigation={leadBlockerNav}
         onBlockerNavigationConsumed={clearLeadBlockerNav}
         stageGateHighlight={selectedLead && stageGateHighlight ? stageGateHighlight : null}
-        onClearStageGateHighlight={() => setStageGateHighlight(null)}
       />
 
       <StageTransitionConfirmDialog
