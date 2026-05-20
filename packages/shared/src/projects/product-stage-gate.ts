@@ -136,7 +136,7 @@ function buildUnpaidInvoiceErrors(invoices: Array<{ moneyStatus: string }>): Sta
 function buildOpenItemErrors(
   field: string,
   items: Array<{ status: string }>,
-  closedStatuses: string[],
+  closedStatuses: readonly string[],
   targetLabel: string,
 ): StageGateError[] {
   const openCount = items.filter((item) => !closedStatuses.includes(item.status)).length;

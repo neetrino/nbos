@@ -1,11 +1,15 @@
 'use client';
 
-import type { DragEvent } from 'react';
+import { useCallback, useRef, type DragEvent } from 'react';
 import { cn } from '@/lib/utils';
 import type { KanbanTerminalDropZone } from './kanban.types';
 import {
+  getTerminalDropStripEdge,
   KANBAN_TERMINAL_DROP_BAR_SHELL_CLASS,
-  terminalDropStripClass,
+  sortTerminalDropZonesForDisplay,
+  terminalDropStripVisualClass,
+  terminalDropZoneHitAreaClass,
+  type TerminalDropStripEdge,
 } from './kanban-terminal-drop-strip-classes';
 
 interface KanbanTerminalDropBarProps {
@@ -23,33 +27,56 @@ export function KanbanTerminalDropBar({
   onDragLeave,
   onDrop,
 }: KanbanTerminalDropBarProps) {
+  const barRef = useRef<HTMLDivElement>(null);
+  const orderedZones = sortTerminalDropZonesForDisplay(zones);
+  const hasActiveZone = activeZoneKey != null;
+
+  const handleBarDragLeave = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      const related = event.relatedTarget;
+      if (related instanceof Node && barRef.current?.contains(related)) return;
+      onDragLeave();
+    },
+    [onDragLeave],
+  );
+
   return (
-    <div className={KANBAN_TERMINAL_DROP_BAR_SHELL_CLASS}>
-      {zones.map((zone) => (
-        <ZoneDrop
-          key={zone.key}
-          zone={zone}
-          isActive={activeZoneKey === zone.key}
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
-        />
-      ))}
+    <div
+      ref={barRef}
+      className={KANBAN_TERMINAL_DROP_BAR_SHELL_CLASS}
+      onDragLeave={handleBarDragLeave}
+    >
+      {orderedZones.map((zone, index) => {
+        const isActive = activeZoneKey === zone.key;
+        return (
+          <ZoneDrop
+            key={zone.key}
+            zone={zone}
+            edge={getTerminalDropStripEdge(index, orderedZones.length)}
+            isActive={isActive}
+            siblingActive={hasActiveZone && !isActive}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+          />
+        );
+      })}
     </div>
   );
 }
 
 function ZoneDrop({
   zone,
+  edge,
   isActive,
+  siblingActive,
   onDragOver,
-  onDragLeave,
   onDrop,
 }: {
   zone: KanbanTerminalDropZone;
+  edge: TerminalDropStripEdge;
   isActive: boolean;
+  siblingActive: boolean;
   onDragOver: (zoneKey: string) => void;
-  onDragLeave: () => void;
   onDrop: (zoneKey: string) => void;
 }) {
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
@@ -60,11 +87,12 @@ function ZoneDrop({
   return (
     <div
       onDragOver={handleDragOver}
-      onDragLeave={onDragLeave}
       onDrop={() => onDrop(zone.key)}
-      className={cn(terminalDropStripClass(zone.tone, isActive))}
+      className={terminalDropZoneHitAreaClass(zone.tone, isActive, siblingActive)}
     >
-      {zone.label}
+      <div className={cn(terminalDropStripVisualClass(zone.tone, isActive, edge))}>
+        {zone.label}
+      </div>
     </div>
   );
 }
