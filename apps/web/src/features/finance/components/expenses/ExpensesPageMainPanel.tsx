@@ -1,8 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Plus, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, KanbanBoard, LoadingState } from '@/components/shared';
+import { buildTerminalDropZones } from '@/features/shared/kanban-terminal-drop';
+import { EXPENSE_ACTIVE_TERMINAL_DROP_STAGES } from '@/features/finance/constants/expense-board';
 import type { ExpenseListNavigationSort } from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
 import { ExpenseKanbanCard } from './ExpenseKanbanCard';
@@ -31,6 +34,7 @@ interface ExpensesPageMainPanelProps {
   listSort: ExpenseListNavigationSort;
   onRequestDelete: (expense: Expense) => void;
   onAddFirstExpense: () => void;
+  onKanbanMove?: (expenseId: string, from: string, toStatus: string) => void;
 }
 
 export function ExpensesPageMainPanel({
@@ -46,7 +50,13 @@ export function ExpensesPageMainPanel({
   listSort,
   onRequestDelete,
   onAddFirstExpense,
+  onKanbanMove,
 }: ExpensesPageMainPanelProps) {
+  const expenseTerminalDropZones = useMemo(
+    () => buildTerminalDropZones(EXPENSE_ACTIVE_TERMINAL_DROP_STAGES),
+    [],
+  );
+
   const kanbanColumns =
     kanbanScope === 'closed'
       ? buildExpenseClosedKanbanColumns(expenses)
@@ -83,6 +93,10 @@ export function ExpensesPageMainPanel({
         columns={kanbanColumns}
         columnWidth={kanbanScope === 'closed' ? 288 : undefined}
         getItemId={(e: Expense) => e.id}
+        onMove={onKanbanMove}
+        terminalDropZones={
+          kanbanScope === 'active' && onKanbanMove ? expenseTerminalDropZones : undefined
+        }
         renderCard={(expense: Expense) => (
           <ExpenseKanbanCard
             expense={expense}

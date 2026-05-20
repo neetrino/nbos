@@ -185,6 +185,28 @@ export function ExpensesPageContent({
     }
   }, [listApiParams]);
 
+  const handleExpenseKanbanMove = useCallback(
+    async (expenseId: string, _from: string, toStatus: string) => {
+      const expense = expenses.find((row) => row.id === expenseId);
+      if (!expense || expense.status === toStatus) {
+        return;
+      }
+      try {
+        await expensesApi.update(expenseId, { status: toStatus });
+        setError(null);
+        await fetchExpenses();
+      } catch (caught) {
+        setError(
+          getApiErrorMessage(
+            caught,
+            'Expense status could not be updated. Try again or use the detail sheet.',
+          ),
+        );
+      }
+    },
+    [expenses, fetchExpenses],
+  );
+
   const handleConfirmDeleteExpense = async () => {
     if (!deleteTarget) return;
     setDeleteError(null);
@@ -307,6 +329,9 @@ export function ExpensesPageContent({
           setDeleteTarget(row);
         }}
         onAddFirstExpense={() => setCreateOpen(true)}
+        onKanbanMove={
+          pageVariant === 'default' && view === 'kanban' ? handleExpenseKanbanMove : undefined
+        }
       />
 
       <ExpensesPageDialogs

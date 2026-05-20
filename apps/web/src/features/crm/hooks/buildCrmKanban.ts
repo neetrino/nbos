@@ -1,5 +1,10 @@
 import { reorderItemsInColumn } from '@/components/shared/kanban/kanban-reorder';
-import type { KanbanColumn, KanbanTerminalDropZone } from '@/components/shared/kanban/kanban.types';
+import type { KanbanColumn } from '@/components/shared/kanban/kanban.types';
+import {
+  buildTerminalDropZones as buildTerminalDropZonesShared,
+  shouldShowTerminalDropBar,
+  type TerminalDropStageSource,
+} from '@/features/shared/kanban-terminal-drop';
 import {
   getBoardStageKeys,
   resolveBoardLifecycleScope,
@@ -7,8 +12,7 @@ import {
   type BoardStageDefinition,
 } from '@/features/shared/board-lifecycle';
 
-interface StageMeta extends BoardStageDefinition {
-  label: string;
+interface StageMeta extends BoardStageDefinition, TerminalDropStageSource {
   color: string;
 }
 
@@ -34,26 +38,11 @@ export function buildScopedKanbanColumns<T extends { status: string }>({
   });
 }
 
-export function buildTerminalDropZones(stages: readonly StageMeta[]): KanbanTerminalDropZone[] {
-  return stages
-    .filter((stage) => stage.terminal)
-    .map((stage) => ({
-      key: stage.key,
-      label: stage.label,
-      tone: terminalTone(stage.key),
-    }));
+export function buildTerminalDropZones(stages: readonly StageMeta[]) {
+  return buildTerminalDropZonesShared(stages);
 }
 
-function terminalTone(statusKey: string): KanbanTerminalDropZone['tone'] {
-  if (statusKey === 'FAILED' || statusKey === 'SPAM') return 'danger';
-  if (statusKey === 'WON' || statusKey === 'SQL') return 'success';
-  return 'neutral';
-}
-
-export function shouldShowTerminalDropBar(scopeValue: string | undefined): boolean {
-  const scope: BoardLifecycleScope = resolveBoardLifecycleScope(scopeValue);
-  return scope === 'ACTIVE';
-}
+export { shouldShowTerminalDropBar };
 
 /** Local kanban order within one CRM stage column (lead/deal status). */
 export function reorderCrmKanbanColumn<T extends { id: string; status: string }>(

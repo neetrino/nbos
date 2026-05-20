@@ -1,7 +1,13 @@
 'use client';
 
+import { useMemo } from 'react';
 import { KanbanBoard } from '@/components/shared';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import {
+  buildTerminalDropZonesFromBoard,
+  shouldShowTerminalDropBar,
+} from '@/features/shared/kanban-terminal-drop';
+import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecycle';
 import {
   TaskMiniCard,
   TaskListTableView,
@@ -49,6 +55,14 @@ export function TasksListKanbanViews({
   onRenameMyPlanStage,
   onDeleteMyPlanStage,
 }: TasksListKanbanViewsProps) {
+  const taskTerminalDropZones = useMemo(
+    () =>
+      buildTerminalDropZonesFromBoard(TASK_BOARD_STAGES, {
+        COMPLETED: 'Completed',
+      }),
+    [],
+  );
+
   const renderCard = (task: Task) => (
     <TaskMiniCard task={task} onAction={onTaskAction} onClick={onTaskClick} />
   );
@@ -93,6 +107,9 @@ export function TasksListKanbanViews({
             onAddItemInColumn={onAddTaskInColumn}
             addButtonLabel="Quick"
             emptyMessage="No tasks"
+            terminalDropZones={
+              shouldShowTerminalDropBar(boardScope) ? taskTerminalDropZones : undefined
+            }
           />
         </div>
       </div>

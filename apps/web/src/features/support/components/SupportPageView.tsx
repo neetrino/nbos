@@ -13,7 +13,10 @@ import { SupportTicketsKanbanView } from '@/features/support/components/SupportT
 import { SupportTicketsListView } from '@/features/support/components/SupportTicketsListView';
 import { SupportTicketDetailSheet } from '@/features/support/components/SupportTicketDetailSheet';
 import type { SupportKanbanColumn } from '@/features/support/components/SupportTicketsKanbanView';
-import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
+import {
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
 import type { SupportPageViewMode } from '@/features/support/constants/support-page-view-options';
 import { useSupportPage } from '@/features/support/hooks/use-support-page';
 import type { SupportTicket } from '@/lib/api/support';
@@ -46,6 +49,7 @@ export function SupportPageView() {
         loading={query.loading}
         error={query.error}
         tickets={page.displayTickets}
+        boardScope={page.boardScope}
         view={query.view}
         kanbanColumns={page.kanbanColumns}
         actionId={actions.actionId}
@@ -140,6 +144,7 @@ type SupportPageBodyProps = {
   loading: boolean;
   error: string | null;
   tickets: SupportTicket[];
+  boardScope: BoardLifecycleScope;
   view: SupportPageViewMode;
   kanbanColumns: SupportKanbanColumn[];
   actionId: string | null;
@@ -155,6 +160,7 @@ function SupportPageBody({
   loading,
   error,
   tickets,
+  boardScope,
   view,
   kanbanColumns,
   actionId,
@@ -190,6 +196,7 @@ function SupportPageBody({
     return (
       <SupportTicketsKanbanView
         columns={kanbanColumns}
+        boardScope={boardScope}
         actionId={actionId}
         onMove={onKanbanMove}
         onOpenDetail={onOpenDetail}

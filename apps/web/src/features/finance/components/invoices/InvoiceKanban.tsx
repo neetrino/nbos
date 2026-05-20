@@ -1,5 +1,10 @@
+import { useMemo } from 'react';
 import { AlertTriangle, Building2, Calendar, FolderKanban } from 'lucide-react';
 import { KanbanBoard, StatusBadge, type KanbanColumn } from '@/components/shared';
+import {
+  buildTerminalDropZonesFromBoard,
+  shouldShowTerminalDropBar,
+} from '@/features/shared/kanban-terminal-drop';
 import {
   formatAmount,
   INVOICE_MONEY_STAGES,
@@ -42,12 +47,27 @@ export function InvoiceKanban({
     }),
   );
 
+  const invoiceStatusLabels = useMemo(
+    () =>
+      Object.fromEntries(INVOICE_MONEY_STAGES.map((stage) => [stage.value, stage.label])) as Record<
+        string,
+        string
+      >,
+    [],
+  );
+
+  const terminalDropZones = useMemo(
+    () => buildTerminalDropZonesFromBoard(INVOICE_MONEY_BOARD_STAGES, invoiceStatusLabels),
+    [invoiceStatusLabels],
+  );
+
   return (
     <div className="min-h-0 flex-1">
       <KanbanBoard
         columns={columns}
         getItemId={(invoice: Invoice) => invoice.id}
         onMove={onMove}
+        terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
         columnWidth={boardScope === 'CLOSED' ? 288 : 270}
         emptyMessage="No invoices"
         renderColumnHeader={(column: KanbanColumn<Invoice>) => (

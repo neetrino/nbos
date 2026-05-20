@@ -23,6 +23,11 @@ import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
 import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
 import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
 import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
+import {
+  buildTerminalDropZonesFromBoard,
+  shouldShowTerminalDropBar,
+} from '@/features/shared/kanban-terminal-drop';
+import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecycle';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import type { WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
@@ -80,6 +85,14 @@ export function WorkSpaceRuntime({
   const workspaceViewFilters = useMemo(
     () => ({ search: taskSearch, filterValues: taskFilters }),
     [taskSearch, taskFilters],
+  );
+
+  const taskTerminalDropZones = useMemo(
+    () =>
+      buildTerminalDropZonesFromBoard(TASK_BOARD_STAGES, {
+        COMPLETED: 'Completed',
+      }),
+    [],
   );
 
   const controlledBoard =
@@ -283,6 +296,9 @@ export function WorkSpaceRuntime({
             addButtonLabel="Quick"
             columnWidth={boardScope === 'CLOSED' ? 288 : 270}
             emptyMessage="No tasks"
+            terminalDropZones={
+              shouldShowTerminalDropBar(boardScope) ? taskTerminalDropZones : undefined
+            }
           />
         </div>
       );
