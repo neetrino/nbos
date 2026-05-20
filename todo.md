@@ -1,90 +1,25 @@
-# NBOS Finance — план по фазам
+# NBOS — Stage Gate
 
-`[ ]` открыто · `[x]` сделано · ~~зачёркнуто~~ = закрыто в этой итерации
+`[ ]` открыто · `[x]` сделано
 
-Источник: `docs/NBOS/02-Modules/04-Finance/10-Finance-Cleanup-Register.md`, Phase 3 roadmap.
-
----
-
-## Фаза 0 — Уже в runtime (база)
-
-- [x] ~~Invoice Card: `moneyStatus`, без legacy pipeline~~
-- [x] ~~Payments + coverage на инвойсе~~
-- [x] ~~Orders list + reconciliation~~
-- [x] ~~Subscriptions: статусы канона + Subscription Grid~~
-- [x] ~~Expense Plan / Expense / ExpensePayment / backlog~~
-- [x] ~~Payroll Run / Salary Line / Salary board~~
-- [x] ~~Product Bonus Pool / Bonus Release~~
-- [x] ~~Employee Wallet (read-only)~~
-- [x] ~~Client Service Record CRUD + связи~~
-- [x] ~~Reports v1 (6 определений)~~
-- [x] ~~Operational Journal + posting periods (база)~~
-- [x] ~~Partner accrual / payout batches~~
-
----
-
-## Фаза 1 — Official Invoice + напоминания
-
-- [x] ~~1.1 Prisma: `official_invoice_request_sent`, `official_invoice_sent_at`, `official_invoice_cancelled_at`, `notifications_enabled` на Invoice~~
-- [x] ~~1.2 API: send / cancel / send-again + запись `govInvoiceId`~~
-- [x] ~~1.3 Reminders: gate по `request_sent`, backfill из `gov_invoice_id`~~
-- [x] ~~1.4 UI: блок Official Invoice в Invoice sheet + кнопки~~
-
----
-
-## Фаза 2 — Subscription billing model
-
-- [x] ~~2.1 Prisma: `base_monthly_amount`, `billing_frequency`, `billing_start_date`, `notifications_enabled`~~
-- [x] ~~2.2 API: create/update (legacy `amount`/`startDate` aliases), UI read на detail + таблицы~~
-- [x] ~~2.3 Billing: yearly → 12× base + coverage; MRR на `baseMonthlyAmount`~~
-- [x] ~~2.4 UI: форма create/edit subscription (frequency, notifications) на list/detail~~
-
----
-
-## Фаза 3 — Expenses workflow (канон)
-
-- [x] ~~3.1 Workflow-статусы: Planned / Due Soon / Due Now / Overdue / Backlog / …~~
-- [x] ~~3.2 UI board/backlog под новые статусы (убрать `OLD`)~~
-- [x] ~~3.3 Expense Plans: calendar grid (строки × месяцы)~~
-
----
-
-## Фаза 4 — Operational Journal & периоды
-
-- [x] ~~4.1 Запрет правок в CLOSED period~~
-- [x] ~~4.2 Adjustment entries вместо silent edit~~
-- [x] ~~4.3 Полное покрытие journal sources (invoice/expense accrual)~~
-
----
-
-## Фаза 5 — Compensation Profile
-
-- [x] ~~5.1 Сущность + история ставок~~
-- [x] ~~5.2 Payroll materialize из profile, не scalar employee~~
-
----
-
-## Фаза 6 — Интеграции и хвосты
-
-- [x] ~~6.1 Domain → Client Service Record~~
-- [x] ~~6.2 Drive: вложения finance (proofs, restricted)~~
-- [x] ~~6.3 Client-paid automation (task/expense после оплаты)~~
-- [x] ~~6.4 Finance dashboard / summary доработки~~
+План: [`docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md`](docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md)
 
 ---
 
 ## Сейчас в работе
 
-**Фаза 6** закрыта (интеграции). Дальше — Stage Gate standard (см. ниже) или Phase 3 roadmap.
+**Stage Gate** — единый стандарт UX и валидации
 
 ---
 
-## Stage Gate — единый стандарт (план)
-
-Документ-план: `docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md`
+## Чеклист
 
 - [x] Delivery Board: sheet + подсветка полей (без модалки)
 - [ ] Канон: `04-Stage-Gate-UX-and-Validation-Standard.md`
+- [ ] UI standard: `05-UI-Specifications/09-Kanban-Board-and-List-Standard.md`
+- [ ] Delivery Board: привести `Active/Closed + Board/List` к одному visual standard
+- [ ] Delivery Board: добавить Active List view
+- [ ] Delivery Board: заменить custom Closed Board/List на общий renderer
 - [ ] Shared: product/extension gates в `@nbos/shared`
 - [ ] Delivery Board: локальная pre-check как в Deals
 - [ ] Leads kanban: parity с Deals

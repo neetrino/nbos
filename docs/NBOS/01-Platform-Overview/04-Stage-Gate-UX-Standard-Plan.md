@@ -39,11 +39,12 @@ Rules differ by module, entity type, product type, and target stage. The **mecha
 
 ### 3. UI specifications
 
-| File                                                    | Update                                                |
-| ------------------------------------------------------- | ----------------------------------------------------- |
-| `05-UI-Specifications/02-CRM-Pages.md`                  | Kanban drag → sheet highlight behavior                |
-| `05-UI-Specifications/03-Project-Hub-Pages.md`          | Delivery Board + Product sheet                        |
-| `05-UI-Specifications/07-Professional-Delivery-Card.md` | Detail sheet `DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS` |
+| File                                                        | Update                                                |
+| ----------------------------------------------------------- | ----------------------------------------------------- |
+| `05-UI-Specifications/02-CRM-Pages.md`                      | Kanban drag → sheet highlight behavior                |
+| `05-UI-Specifications/03-Project-Hub-Pages.md`              | Delivery Board + Product sheet                        |
+| `05-UI-Specifications/07-Professional-Delivery-Card.md`     | Detail sheet `DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS` |
+| `05-UI-Specifications/09-Kanban-Board-and-List-Standard.md` | Shared `Active/Closed + Board/List` visual standard   |
 
 ### 4. Business logic cross-links
 
@@ -104,15 +105,15 @@ apps/api — thin BadRequestException wrappers only
 
 ## Kanban / pipeline inventory (rollout after docs)
 
-| Surface                                   | Stage gates?  | Current UX                           | Target                                     |
-| ----------------------------------------- | ------------- | ------------------------------------ | ------------------------------------------ |
-| CRM Deals                                 | Yes           | Sheet + local shared gate ✓          | Reference implementation                   |
-| CRM Leads                                 | Yes           | Sheet + API gate                     | Add local shared gate if missing           |
-| Delivery Board                            | Yes           | Sheet + API only (no local gate yet) | + shared product/extension gate            |
-| Product Overview (`ProductStageGateCard`) | Yes           | Inline blocker panel                 | Sheet highlights or shared card pattern    |
-| Finance (invoices, expenses board)        | Partial / TBD | Mixed                                | Apply standard when gates defined in canon |
-| Support tickets                           | TBD           | —                                    | Later                                      |
-| Tasks board                               | TBD           | —                                    | Later                                      |
+| Surface                                   | Stage gates?  | Current UX                                                                     | Target                                                                                |
+| ----------------------------------------- | ------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| CRM Deals                                 | Yes           | Sheet + local shared gate ✓                                                    | Reference implementation                                                              |
+| CRM Leads                                 | Yes           | Sheet + API gate                                                               | Add local shared gate if missing                                                      |
+| Delivery Board                            | Yes           | Sheet + API only (no local gate yet); custom Closed Board/List; no Active List | + shared product/extension gate; unified `Active/Closed + Board/List` visual standard |
+| Product Overview (`ProductStageGateCard`) | Yes           | Inline blocker panel                                                           | Sheet highlights or shared card pattern                                               |
+| Finance (invoices, expenses board)        | Partial / TBD | Mixed                                                                          | Apply standard when gates defined in canon                                            |
+| Support tickets                           | TBD           | —                                                                              | Later                                                                                 |
+| Tasks board                               | TBD           | —                                                                              | Later                                                                                 |
 
 **Out of scope for first unification pass:** modules without documented stage gates in NBOS canon.
 
@@ -123,9 +124,10 @@ apps/api — thin BadRequestException wrappers only
 1. Approve and publish `04-Stage-Gate-UX-and-Validation-Standard.md`.
 2. Extract `product-stage-gates` / `extension-stage-gates` logic to `@nbos/shared`; API re-export.
 3. Delivery Board: `getLocalDeliveryStageGateErrors` + instant pre-check (parity with Deals).
-4. Leads: verify local gate parity.
-5. Replace `ProductStageGateCard` blocker panel with sheet-first UX.
-6. Finance / Support: per module canon when gates exist.
+4. Delivery Board: add Active List and make Active/Closed Board/List share one visual renderer family.
+5. Leads: verify local gate parity.
+6. Replace `ProductStageGateCard` blocker panel with sheet-first UX.
+7. Finance / Support: per module canon when gates exist.
 
 ---
 
@@ -136,3 +138,4 @@ apps/api — thin BadRequestException wrappers only
 - [ ] Sheet opens with red rings on required fields
 - [ ] Action blockers visible without yellow banner / toast list
 - [ ] API and client use same shared rule function for the same transition
+- [ ] Active and Closed views use the shared board/list visual standard

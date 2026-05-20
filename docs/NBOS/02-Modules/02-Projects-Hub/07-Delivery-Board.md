@@ -176,6 +176,10 @@ Active Board
   Starting | Development | QA | Transfer
 ```
 
+Active view также должен поддерживать `List` режим. `Active Board` и `Active List` используют те же фильтры и тот же набор delivery items; меняется только представление.
+
+Visual standard: см. `../../05-UI-Specifications/09-Kanban-Board-and-List-Standard.md`.
+
 Обязательные фильтры:
 
 - `All`;
@@ -206,10 +210,10 @@ Active Board
 
 Closed view должен иметь два режима отображения:
 
-| View           | Назначение                                                             |
-| -------------- | ---------------------------------------------------------------------- |
-| `Table / List` | Default. Быстрый поиск, фильтры, анализ закрытых работ, причины и даты |
-| `Board`        | Привычный визуальный режим с двумя колонками: `Done` и `Cancelled`     |
+| View           | Назначение                                                      |
+| -------------- | --------------------------------------------------------------- |
+| `Board`        | Канбан-режим с terminal outcome колонками: `Done` и `Cancelled` |
+| `Table / List` | Табличный/list режим с тем же row renderer, что у `Active List` |
 
 Closed Board layout:
 
@@ -231,6 +235,8 @@ Closed filters:
 - deadline result: on time / late.
 
 Closed view не удаляет и не урезает данные. Он меняет только способ отображения закрытых delivery items.
+
+Closed view не должен иметь отдельный custom visual language. `Closed Board` использует ту же board/card family, что и `Active Board`; `Closed List` использует тот же table/list renderer, что и `Active List`, с добавленными outcome-полями (`result`, `closed date`, `reason`), когда они доступны.
 
 ---
 
@@ -290,7 +296,7 @@ Starting
 
 ### 7.2. Closed outside card
 
-В Closed Board внешняя карточка может быть compact или normal density.
+В Closed Board внешняя карточка использует ту же visual family, что и active delivery card. Допускается compact density, но не отдельный custom design.
 
 Минимальный compact состав:
 
@@ -304,7 +310,7 @@ Starting
 - acceptance marker для `Done`;
 - cancellation reason marker для `Cancelled`.
 
-Closed outside card может быть визуально проще active card, потому что закрытые items уже не двигаются по lifecycle.
+Closed outside card может скрывать mutation actions и stage readiness controls, потому что закрытые items уже не двигаются по lifecycle.
 
 Но это правило относится только к внешней карточке. Открытая карточка должна быть полной.
 
