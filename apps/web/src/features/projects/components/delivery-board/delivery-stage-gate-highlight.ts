@@ -1,13 +1,15 @@
-import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
 import type { ApiFieldError } from '@/lib/api-errors';
-import { cn } from '@/lib/utils';
+import {
+  buildStageGateRequiredFields,
+  splitStageGateErrors,
+  stageGateFieldClass,
+  type SheetStageGateHighlight,
+} from '@/lib/stage-gate-highlight';
 import type { DeliveryDetailTabId } from './delivery-item-detail.constants';
 
-export type DeliverySheetStageGateHighlight = {
-  errors: ApiFieldError[];
-};
+export type DeliverySheetStageGateHighlight = SheetStageGateHighlight;
 
-const ACTION_BLOCKER_FIELDS = new Set([
+const DELIVERY_ACTION_BLOCKER_FIELDS = new Set([
   'tasks',
   'extensions',
   'tickets',
@@ -20,7 +22,7 @@ export function deliveryStageGateFieldClass(
   field: string,
   className?: string,
 ): string {
-  return cn(className, requiredFields.has(field) && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS);
+  return stageGateFieldClass(requiredFields, field, className);
 }
 
 export function deliveryStageGateSectionClass(
@@ -28,32 +30,23 @@ export function deliveryStageGateSectionClass(
   field: string,
   className?: string,
 ): string {
-  return deliveryStageGateFieldClass(requiredFields, field, className);
+  return stageGateFieldClass(requiredFields, field, className);
 }
 
 export function isDeliveryStageActionBlocker(field: string): boolean {
-  return ACTION_BLOCKER_FIELDS.has(field);
+  return DELIVERY_ACTION_BLOCKER_FIELDS.has(field);
 }
 
 export function splitDeliveryStageGateErrors(errors: ApiFieldError[]): {
   fieldErrors: ApiFieldError[];
   actionBlockers: ApiFieldError[];
 } {
-  const fieldErrors: ApiFieldError[] = [];
-  const actionBlockers: ApiFieldError[] = [];
-  for (const error of errors) {
-    if (isDeliveryStageActionBlocker(error.field)) {
-      actionBlockers.push(error);
-    } else {
-      fieldErrors.push(error);
-    }
-  }
-  return { fieldErrors, actionBlockers };
+  return splitStageGateErrors(errors, DELIVERY_ACTION_BLOCKER_FIELDS);
 }
 
 /** Prefer Work Space when execution items block the transition. */
 export function resolveDeliveryDetailPanelFromErrors(errors: ApiFieldError[]): DeliveryDetailTabId {
-  const fields = new Set(errors.map((error) => error.field));
+  const fields = buildStageGateRequiredFields(errors);
   if (fields.has('tasks') || fields.has('extensions') || fields.has('tickets')) {
     return 'workspace';
   }

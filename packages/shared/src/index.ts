@@ -5,6 +5,7 @@ export * from './partner-deal-finance';
 export * from './product-access-slots';
 export * from './crm/attribution-gate';
 export * from './crm/deal-stage-gate';
+export * from './crm/lead-stage-gate';
 export * from './stage-gates/types';
 export * from './projects/product-stage-gate';
 export * from './projects/extension-stage-gate';

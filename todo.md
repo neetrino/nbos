@@ -38,8 +38,8 @@
 - [x] ~~Вынести product stage gates в `@nbos/shared`~~
 - [x] ~~Вынести extension stage gates в `@nbos/shared`~~
 - [x] ~~Сделать единый `StageGateError` / blocker contract~~
-- [ ] Сделать shared web helper для `stageGateHighlight`, field highlights и action blockers
-- [ ] API оставить final authority: Nest wrappers только превращают shared errors в `BadRequestException`
+- [x] ~~Сделать shared web helper для `stageGateHighlight`, field highlights и action blockers~~
+- [x] ~~API оставить final authority: Nest wrappers только превращают shared errors в `BadRequestException`~~
 - [x] ~~Добавить tests для shared product/extension gates~~
 
 ---
@@ -48,9 +48,9 @@
 
 - [ ] Deals: проверить terminal model `WON/FAILED` и зафиксировать `FAILED` как closed outcome или явно reopenable
 - [ ] Deals: привести `Active/Closed + Board/List` к UI standard, если найдены расхождения
-- [ ] Leads: добавить local/shared pre-check parity с Deals
+- [x] ~~Leads: добавить local/shared pre-check parity с Deals~~
 - [ ] Leads: привести terminal outcomes (`SQL/SPAM/Frozen`) к тому же board/list visual standard
-- [ ] Leads/Deals: убрать остатки старого `TransitionBlockerDialog`, если больше нигде не нужен
+- [x] ~~Leads/Deals: убрать остатки старого `TransitionBlockerDialog`, если больше нигде не нужен~~
 
 ---
 
@@ -61,7 +61,7 @@
 - [x] ~~Delivery Board: заменить custom Closed Board на общий board/card renderer~~
 - [x] ~~Delivery Board: заменить custom Closed List на общий list/table renderer~~
 - [x] ~~Delivery Board: сделать `Active/Closed + Board/List` одним visual standard~~
-- [ ] Delivery Board: terminal outcomes (`Done/Cancelled`) показывать как closed scope, не как отдельный custom archive UI
+- [x] ~~Delivery Board: terminal outcomes (`Done/Cancelled`) показывать как closed scope, не как отдельный custom archive UI~~
 - [ ] Delivery Board: проверить blocked drag/terminal action — карточка не остаётся в неправильной колонке
 
 ---

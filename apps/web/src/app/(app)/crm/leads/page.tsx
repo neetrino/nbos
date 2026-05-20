@@ -56,10 +56,7 @@ import { StatusBadge } from '@/components/shared';
 import { getLeadStage, getLeadSource } from '@/features/crm/constants/leadPipeline';
 import { Users } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  isLeadAttributionLocked,
-  requiresMarketingWhichOneSelection,
-} from '@nbos/shared/constants';
+import { getLocalLeadStageGateErrors } from '@/features/crm/lead-stage-gate';
 import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 
 type ViewMode = 'kanban' | 'list';
@@ -222,7 +219,7 @@ export default function LeadsPipelinePage() {
       leadOverride ?? previousLeads.find((lead) => lead.id === id) ?? previousSelected;
 
     if (currentLead) {
-      const localErrors = getLocalLeadTransitionErrors(currentLead, status);
+      const localErrors = getLocalLeadStageGateErrors(currentLead, status);
       if (localErrors.length > 0) {
         showLeadStageGateRequirements(currentLead, localErrors);
         return;
@@ -603,59 +600,4 @@ function normalizeLeadPatch(data: Partial<Lead>): Partial<Lead> {
   if (data.marketingActivityId === null) normalized.marketingActivity = null;
 
   return normalized;
-}
-
-function getLocalLeadTransitionErrors(lead: Lead, targetStatus: string): ApiFieldError[] {
-  const errors: ApiFieldError[] = [];
-
-  if (!requiresAttribution(targetStatus)) return errors;
-
-  errors.push(...getLocalAttributionErrors(lead));
-
-  if (targetStatus === 'SQL') {
-    if (!lead.name?.trim()) {
-      errors.push({
-        field: 'name',
-        message: 'Inquiry title (product/service) is required before Lead Won / Deal',
-      });
-    }
-    if (!lead.contactName.trim()) {
-      errors.push({ field: 'contactName', message: 'Contact name is required' });
-    }
-    if (!lead.phone && !lead.email) {
-      errors.push({ field: 'contactMethod', message: 'Phone or email is required' });
-    }
-    if (!lead.assignedTo) {
-      errors.push({ field: 'assignedTo', message: 'Assigned Seller is required to create a Deal' });
-    }
-  }
-
-  return errors;
-}
-
-function getLocalAttributionErrors(lead: Lead): ApiFieldError[] {
-  if (!lead.source) return [{ field: 'source', message: 'From is required' }];
-
-  if ((lead.source === 'MARKETING' || lead.source === 'SALES') && !lead.sourceDetail) {
-    return [{ field: 'sourceDetail', message: 'Where is required for this source' }];
-  }
-  if (lead.source === 'PARTNER' && !lead.sourcePartnerId) {
-    return [{ field: 'sourcePartnerId', message: 'Partner must be selected' }];
-  }
-  if (lead.source === 'CLIENT' && !lead.sourceContactId) {
-    return [{ field: 'sourceContactId', message: 'Client/referral contact must be selected' }];
-  }
-  if (
-    requiresMarketingWhichOneSelection(lead.source, lead.sourceDetail) &&
-    !lead.marketingAccountId &&
-    !lead.marketingActivityId
-  ) {
-    return [{ field: 'whichOne', message: 'Which one is required for this marketing channel' }];
-  }
-
-  return [];
-}
-
-function requiresAttribution(status: string): boolean {
-  return isLeadAttributionLocked(status);
 }
