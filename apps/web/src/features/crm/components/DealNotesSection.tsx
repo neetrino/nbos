@@ -6,6 +6,7 @@ import { DETAIL_SHEET_SECTION_BODY_CLASS, DetailSheetSection } from '@/component
 import { DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import type { DealGeneralDraft } from './deal-general-form-state';
+import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 
 const NOTES_TEXTAREA_SHELL_CLASS = cn(
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
@@ -17,6 +18,7 @@ interface DealNotesSectionProps {
   patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   disabled?: boolean;
   sectionClassName?: string;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function DealNotesSection({
@@ -24,6 +26,7 @@ export function DealNotesSection({
   patchDraft,
   disabled = false,
   sectionClassName,
+  gateRequiredFields = new Set(),
 }: DealNotesSectionProps) {
   return (
     <DetailSheetSection
@@ -32,7 +35,12 @@ export function DealNotesSection({
       className={sectionClassName}
     >
       <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-        <div className={NOTES_TEXTAREA_SHELL_CLASS}>
+        <div
+          className={cn(
+            NOTES_TEXTAREA_SHELL_CLASS,
+            dealStageGateFieldClass(gateRequiredFields, 'notes', ''),
+          )}
+        >
           <Textarea
             value={draft.notes ?? ''}
             onChange={(e) => patchDraft({ notes: e.target.value || null })}

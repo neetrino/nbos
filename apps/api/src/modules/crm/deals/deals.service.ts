@@ -90,7 +90,7 @@ export class DealsService {
     ]);
 
     const itemsWithHandoff = await Promise.all(
-      items.map((deal) => this.attachHandoffReferences(deal)),
+      items.map(async (deal) => this.enrichDealForClient(await this.attachHandoffReferences(deal))),
     );
 
     return {
@@ -112,7 +112,7 @@ export class DealsService {
     if (!deal) {
       throw new NotFoundException(`Deal ${id} not found`);
     }
-    return this.attachHandoffReferences(deal);
+    return this.enrichDealForClient(await this.attachHandoffReferences(deal));
   }
 
   async create(data: CreateDealDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {
@@ -183,7 +183,7 @@ export class DealsService {
     if (!withTerms) {
       throw new NotFoundException(`Deal ${deal.id} not found after create`);
     }
-    return this.attachHandoffReferences(withTerms);
+    return this.enrichDealForClient(await this.attachHandoffReferences(withTerms));
   }
 
   async update(id: string, data: UpdateDealDto, meta: { actorRoleLevel?: number } = {}) {
@@ -287,7 +287,7 @@ export class DealsService {
     if (!refreshed) {
       throw new NotFoundException(`Deal ${id} not found after update`);
     }
-    return this.attachHandoffReferences(refreshed);
+    return this.enrichDealForClient(await this.attachHandoffReferences(refreshed));
   }
 
   async patchPartnerReferralTerms(dealId: string, body: PatchPartnerReferralTermsBody) {
@@ -436,6 +436,16 @@ export class DealsService {
     deal: T,
   ) {
     return attachDealHandoffReferences(this.prisma, deal);
+  }
+
+  private async enrichDealForClient<T extends { id: string }>(
+    deal: T,
+  ): Promise<T & { linkedOfferAssetCount: number; linkedContractAssetCount: number }> {
+    const [linkedOfferAssetCount, linkedContractAssetCount] = await Promise.all([
+      this.countLinkedDealAssets(deal.id, ['OFFER']),
+      this.countLinkedDealAssets(deal.id, ['CONTRACT']),
+    ]);
+    return { ...deal, linkedOfferAssetCount, linkedContractAssetCount };
   }
 }
 

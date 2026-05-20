@@ -36,9 +36,14 @@ function hasPaidInvoice(deal: Deal) {
 
 function getReadinessItems(deal: Deal): ReadinessItem[] {
   const hasOfferProof = Boolean(
-    deal.offerSentAt && (deal.offerLink || deal.offerFileUrl || deal.offerScreenshotUrl),
+    (deal.linkedOfferAssetCount ?? 0) > 0 ||
+    deal.offerLink ||
+    deal.offerFileUrl ||
+    deal.offerScreenshotUrl,
   );
-  const hasContractProof = Boolean(deal.contractSignedAt || deal.contractFileUrl);
+  const hasContractProof = Boolean(
+    (deal.linkedContractAssetCount ?? 0) > 0 || deal.contractFileUrl,
+  );
   const hasInvoice = deal.orders.some((order) => order.invoices.length > 0);
   const isClassic = deal.paymentType === 'CLASSIC';
 
@@ -59,11 +64,13 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
           ? 'Maintenance start is tracked separately'
           : 'Set delivery deadline',
     },
-    { label: 'Offer proof', ready: hasOfferProof, hint: 'Add sent date and offer link/file' },
+    { label: 'Offer file', ready: hasOfferProof, hint: 'Attach offer in Drive (Offer section)' },
     {
-      label: 'Contract proof',
+      label: 'Contract file',
       ready: !isClassic || hasContractProof,
-      hint: isClassic ? 'Attach signed contract proof' : 'Not required for subscription payment',
+      hint: isClassic
+        ? 'Attach contract in Drive (Contract section)'
+        : 'Not required for subscription',
     },
     { label: 'Invoice exists', ready: hasInvoice, hint: 'Create invoice from Actions' },
     {

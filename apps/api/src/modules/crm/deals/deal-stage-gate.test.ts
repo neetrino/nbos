@@ -143,7 +143,7 @@ describe('validateDealStageGate', () => {
       companyId: 'company-1',
       pmId: 'pm-1',
       deadline: new Date(),
-      contractSignedAt: new Date(),
+      linkedContractAssetCount: 1,
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
     expect(() => validateDealStageGate(complete, 'DEPOSIT_AND_CONTRACT')).not.toThrow();
@@ -225,7 +225,7 @@ describe('validateDealStageGate', () => {
       deadline: new Date(),
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      contractSignedAt: new Date(),
+      linkedContractAssetCount: 1,
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
     expect(() => validateDealStageGate(complete, 'WON')).not.toThrow();

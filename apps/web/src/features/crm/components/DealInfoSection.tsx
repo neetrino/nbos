@@ -17,6 +17,7 @@ import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/deal
 import type { SearchLoader } from './deal-general-tab.types';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
+import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 
 interface DealInfoFieldsProps {
   draft: DealGeneralDraft;
@@ -26,6 +27,7 @@ interface DealInfoFieldsProps {
   searchProducts: SearchLoader;
   searchCompanies: SearchLoader;
   disabled?: boolean;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 /** Left column: project, company, and commercial basics. */
@@ -35,9 +37,10 @@ export function DealInfoProjectBillingFields({
   searchProjects,
   searchCompanies,
   disabled = false,
+  gateRequiredFields = new Set(),
 }: Pick<
   DealInfoFieldsProps,
-  'draft' | 'patchDraft' | 'searchProjects' | 'searchCompanies' | 'disabled'
+  'draft' | 'patchDraft' | 'searchProjects' | 'searchCompanies' | 'disabled' | 'gateRequiredFields'
 >) {
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
@@ -49,6 +52,7 @@ export function DealInfoProjectBillingFields({
         placeholder="Enter amount..."
         icon={<DollarSign size={12} />}
         disabled={disabled}
+        className={dealStageGateFieldClass(gateRequiredFields, 'amount')}
         onValueChange={(v) => patchDraft({ amount: v === '' ? null : Number(v) })}
       />
 
@@ -74,6 +78,7 @@ export function DealInfoProjectBillingFields({
         icon={<CreditCard size={12} />}
         clearable
         disabled={disabled}
+        className={dealStageGateFieldClass(gateRequiredFields, 'paymentType')}
         onValueChange={(v) => patchDraft({ paymentType: v || null })}
       />
 
@@ -137,6 +142,7 @@ export function DealInfoProjectBillingFields({
           selectionMode="stage"
           label="Company"
           value={draft.companyId}
+          className={dealStageGateFieldClass(gateRequiredFields, 'companyId')}
           disabled={disabled}
           displayValue={
             draft.companyPickLabel ? (
@@ -161,6 +167,7 @@ export function DealInfoDealProductFields({
   filteredProductTypeOptions,
   searchProducts,
   disabled = false,
+  gateRequiredFields = new Set(),
 }: Omit<DealInfoFieldsProps, 'searchProjects' | 'searchCompanies'>) {
   const isExtension = draft.type === 'EXTENSION';
   const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
@@ -194,6 +201,7 @@ export function DealInfoDealProductFields({
           icon={<Layers size={12} />}
           clearable
           disabled={disabled}
+          className={dealStageGateFieldClass(gateRequiredFields, 'productCategory')}
           onValueChange={(v) => {
             if (!v) {
               patchDraft({ productCategory: null, productType: null });
@@ -215,6 +223,7 @@ export function DealInfoDealProductFields({
           icon={<Tag size={12} />}
           clearable
           disabled={disabled}
+          className={dealStageGateFieldClass(gateRequiredFields, 'productType')}
           onValueChange={(v) => patchDraft({ productType: v || null })}
         />
       )}
@@ -237,6 +246,7 @@ export function DealInfoDealProductFields({
           selectionMode="stage"
           label="Existing Product"
           value={draft.existingProductId}
+          className={dealStageGateFieldClass(gateRequiredFields, 'existingProductId')}
           disabled={disabled}
           displayValue={
             draft.existingProductPickLabel ? (
@@ -264,6 +274,7 @@ export function DealInfoDealProductFields({
           placeholder="Select delivery deadline…"
           icon={<Calendar size={12} />}
           disabled={disabled}
+          className={dealStageGateFieldClass(gateRequiredFields, 'deadline')}
           onValueChange={(v) => patchDraft({ deadline: v || null })}
         />
       )}

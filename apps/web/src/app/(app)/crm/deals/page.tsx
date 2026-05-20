@@ -17,14 +17,16 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
-import { DealSheet, type DealSheetBlockerNavigation } from '@/features/crm/components/DealSheet';
-import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
-import { DealTransitionInlineEditor } from '@/features/crm/components/DealTransitionInlineEditor';
-import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import {
-  TransitionBlockerDialog,
-  type TransitionBlockerState,
-} from '@/features/crm/components/TransitionBlockerDialog';
+  DealSheet,
+  type DealSheetBlockerNavigation,
+  type DealSheetStageGateHighlight,
+} from '@/features/crm/components/DealSheet';
+import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
+import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
+import { getLocalDealStageGateErrors } from '@/features/crm/deal-stage-gate';
+import { formatDealStageGateFieldList } from '@/features/crm/deal-stage-gate-labels';
+import { splitDealStageGateErrors } from '@/features/crm/deal-stage-gate-highlight';
 import {
   DEAL_STAGES,
   DEAL_TYPES,
@@ -107,13 +109,11 @@ export default function DealsPipelinePage() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [transitionBlocker, setTransitionBlocker] = useState<TransitionBlockerState<Deal> | null>(
+  const [stageGateHighlight, setStageGateHighlight] = useState<DealSheetStageGateHighlight | null>(
     null,
   );
   const [pendingTransition, setPendingTransition] = useState<PendingDealTransition | null>(null);
   const [dealBlockerNav, setDealBlockerNav] = useState<DealSheetBlockerNavigation | null>(null);
-  const [inlineSaving, setInlineSaving] = useState(false);
-  const [blockerEditorRevision, setBlockerEditorRevision] = useState(0);
   const dealNavTokenRef = useRef(0);
 
   const pushDealBlockerNav = useCallback((intent: DealSheetBlockerIntent) => {
@@ -214,9 +214,46 @@ export default function DealsPipelinePage() {
     };
   }, [openDealId, loading, deals, stripOpenDealFromUrl]);
 
+  const showStageGateRequirements = useCallback(
+    (deal: Deal, targetStatus: string, errors: ReturnType<typeof getLocalDealStageGateErrors>) => {
+      const targetLabel = getDealStage(targetStatus)?.label ?? targetStatus;
+      setStageGateHighlight({ targetStatus, targetLabel, errors });
+      setSelectedDeal(deal);
+      pushOpenDealToUrl(deal.id);
+      setSheetOpen(true);
+
+      const actions = resolveBlockerDirectActions({ context: 'crm', errors });
+      const firstAction = actions[0];
+      if (firstAction) {
+        pushDealBlockerNav(resolveDealSheetIntentFromBlockerAction(firstAction, errors));
+      }
+
+      const { fieldErrors } = splitDealStageGateErrors(errors);
+      if (fieldErrors.length > 0) {
+        toast.error(
+          `To move to ${targetLabel}, fill: ${formatDealStageGateFieldList(
+            fieldErrors.map((error) => error.field),
+          )}`,
+        );
+      } else {
+        toast.error(errors[0]?.message ?? `Cannot move to ${targetLabel}.`);
+      }
+    },
+    [pushDealBlockerNav, pushOpenDealToUrl],
+  );
+
   const handleStatusChange = async (id: string, status: string) => {
     const previousDeals = deals;
     const previousSelected = selectedDeal;
+    const currentDeal = previousDeals.find((deal) => deal.id === id) ?? previousSelected ?? null;
+
+    if (currentDeal) {
+      const localErrors = getLocalDealStageGateErrors(currentDeal, status);
+      if (localErrors.length > 0) {
+        showStageGateRequirements(currentDeal, status, localErrors);
+        return;
+      }
+    }
 
     setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)));
     if (selectedDeal?.id === id) {
@@ -227,6 +264,7 @@ export default function DealsPipelinePage() {
       const updated = await dealsApi.updateStatus(id, status);
       setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
       setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
+      setStageGateHighlight(null);
     } catch (err) {
       setDeals(previousDeals);
       if (selectedDeal?.id === id) {
@@ -235,13 +273,7 @@ export default function DealsPipelinePage() {
       if (isStageGateApiError(err)) {
         const blockedDeal = previousDeals.find((deal) => deal.id === id) ?? previousSelected;
         if (blockedDeal) {
-          setTransitionBlocker({
-            item: blockedDeal,
-            targetStatus: status,
-            targetLabel: getDealStage(status)?.label ?? status,
-            errors: err.errors,
-            message: err.message,
-          });
+          showStageGateRequirements(blockedDeal, status, err.errors);
           return;
         }
       }
@@ -291,124 +323,6 @@ export default function DealsPipelinePage() {
     await handleStatusChange(id, status);
   };
 
-  const openDealFromBlocker = useCallback(
-    (intent?: DealSheetBlockerIntent, options?: { keepBlockerDialogOpen?: boolean }) => {
-      if (!transitionBlocker) return;
-      const currentDeal =
-        deals.find((deal) => deal.id === transitionBlocker.item.id) ?? transitionBlocker.item;
-      setSelectedDeal(currentDeal);
-      pushOpenDealToUrl(currentDeal.id);
-      if (intent) {
-        pushDealBlockerNav(intent);
-      } else {
-        setDealBlockerNav(null);
-      }
-      setSheetOpen(true);
-      if (!options?.keepBlockerDialogOpen) {
-        setTransitionBlocker(null);
-      }
-    },
-    [deals, transitionBlocker, pushDealBlockerNav, pushOpenDealToUrl],
-  );
-
-  const handleOpenBlockedDeal = () => {
-    openDealFromBlocker(undefined, { keepBlockerDialogOpen: true });
-  };
-
-  const blockerActions = transitionBlocker
-    ? resolveBlockerDirectActions({ context: 'crm', errors: transitionBlocker.errors }).map(
-        (action) => ({
-          key: action.key,
-          label: action.label,
-          onClick: () => {
-            const intent = resolveDealSheetIntentFromBlockerAction(
-              action,
-              transitionBlocker.errors,
-            );
-            openDealFromBlocker(intent);
-          },
-        }),
-      )
-    : [];
-
-  const hasInvoiceOrPaymentGate = useMemo(
-    () =>
-      transitionBlocker?.errors.some((error) => {
-        const field = error.field.toLowerCase();
-        return field.includes('invoice') || field.includes('payment');
-      }) ?? false,
-    [transitionBlocker],
-  );
-
-  const handleRetryBlockedMove = async () => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-    await handleStatusChange(blocker.item.id, blocker.targetStatus);
-    setTransitionBlocker((current) => (current === blocker ? null : current));
-  };
-
-  const handleOverrideBlockedMove = async (reason: string) => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-    const updated = await dealsApi.updateStatus(blocker.item.id, blocker.targetStatus, {
-      overrideReason: reason,
-    });
-    setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
-    setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
-    setTransitionBlocker(null);
-    await fetchDeals();
-  };
-
-  const handleSaveBlockedDealOnly = async (data: Partial<Deal>) => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-
-    if (Object.keys(data).length === 0) {
-      toast.info('No changes to save.');
-      return;
-    }
-
-    setInlineSaving(true);
-    try {
-      const updated = await dealsApi.update(blocker.item.id, data);
-      setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
-      setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
-      setTransitionBlocker((current) =>
-        current && current.item.id === updated.id ? { ...current, item: updated } : current,
-      );
-      setBlockerEditorRevision((n) => n + 1);
-      toast.success('Deal saved. You can continue stage move when ready.');
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not save deal.'));
-    } finally {
-      setInlineSaving(false);
-    }
-  };
-
-  const handleSaveBlockedDealAndMove = async (data: Partial<Deal>) => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-
-    setInlineSaving(true);
-    try {
-      const updated = await dealsApi.update(blocker.item.id, data);
-      setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
-      setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
-      setTransitionBlocker((current) => (current ? { ...current, item: updated } : current));
-      await handleStatusChange(updated.id, blocker.targetStatus);
-      setTransitionBlocker(null);
-    } catch (err) {
-      if (isStageGateApiError(err)) {
-        setTransitionBlocker((current) => (current ? { ...current, errors: err.errors } : current));
-        toast.error(getApiErrorMessage(err, 'Could not save deal.'));
-        return;
-      }
-      toast.error(err instanceof Error ? err.message : 'Deal update failed.');
-    } finally {
-      setInlineSaving(false);
-    }
-  };
-
   const handleUpdate = async (id: string, data: Partial<Deal>) => {
     const previousDeals = deals;
     const previousSelected = selectedDeal;
@@ -445,6 +359,7 @@ export default function DealsPipelinePage() {
 
   const handleCardClick = (deal: Deal) => {
     clearDealBlockerNav();
+    setStageGateHighlight(null);
     pushOpenDealToUrl(deal.id);
   };
 
@@ -674,6 +589,7 @@ export default function DealsPipelinePage() {
           setSheetOpen(open);
           if (!open) {
             setSelectedDeal(null);
+            setStageGateHighlight(null);
             stripOpenDealFromUrl();
           }
         }}
@@ -684,45 +600,8 @@ export default function DealsPipelinePage() {
         onOpenDeal={handleOpenDealById}
         blockerNavigation={dealBlockerNav}
         onBlockerNavigationConsumed={clearDealBlockerNav}
-      />
-
-      <TransitionBlockerDialog
-        open={Boolean(transitionBlocker)}
-        blocker={transitionBlocker}
-        entityLabel="Deal"
-        itemLabel={transitionBlocker?.item.name ?? transitionBlocker?.item.code ?? ''}
-        onOpenChange={(open) => {
-          if (!open) setTransitionBlocker(null);
-        }}
-        onOpenDetails={handleOpenBlockedDeal}
-        onRetry={handleRetryBlockedMove}
-        directActions={blockerActions}
-        onOverride={handleOverrideBlockedMove}
-        inlineOnly
-        inlineEditor={
-          transitionBlocker ? (
-            <DealTransitionInlineEditor
-              key={`${transitionBlocker.item.id}-${transitionBlocker.targetStatus}-${blockerEditorRevision}`}
-              deal={transitionBlocker.item}
-              errors={transitionBlocker.errors}
-              saving={inlineSaving}
-              onSaveOnly={handleSaveBlockedDealOnly}
-              onSaveAndMove={handleSaveBlockedDealAndMove}
-            />
-          ) : null
-        }
-        businessActionLabel={hasInvoiceOrPaymentGate ? 'Create invoice' : undefined}
-        onBusinessAction={
-          hasInvoiceOrPaymentGate
-            ? () =>
-                openDealFromBlocker(
-                  { kind: 'invoice-tab-expand-create' },
-                  {
-                    keepBlockerDialogOpen: true,
-                  },
-                )
-            : undefined
-        }
+        stageGateHighlight={selectedDeal && stageGateHighlight ? stageGateHighlight : null}
+        onClearStageGateHighlight={() => setStageGateHighlight(null)}
       />
 
       <StageTransitionConfirmDialog

@@ -18,6 +18,9 @@ import type { DealGeneralDraft } from './deal-general-form-state';
 import type { SearchLoader } from './deal-general-tab.types';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 import { DealPartnerReferralTermsSection } from './DealPartnerReferralTermsSection';
+import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
+import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
+import { cn } from '@/lib/utils';
 
 interface DealMarketingSectionProps {
   deal: Deal;
@@ -29,6 +32,7 @@ interface DealMarketingSectionProps {
   onRefresh?: () => void;
   disabled?: boolean;
   sectionClassName?: string;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function DealMarketingSection({
@@ -41,6 +45,7 @@ export function DealMarketingSection({
   onRefresh,
   disabled = false,
   sectionClassName,
+  gateRequiredFields = new Set(),
 }: DealMarketingSectionProps) {
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
     draft.source === 'MARKETING',
@@ -73,6 +78,7 @@ export function DealMarketingSection({
               icon={<Megaphone size={12} />}
               disabled={disabled || attributionLocked}
               clearable={!attributionLocked}
+              className={dealStageGateFieldClass(gateRequiredFields, 'source')}
               onValueChange={(value) =>
                 patchDraft({
                   source: value || null,
@@ -101,6 +107,7 @@ export function DealMarketingSection({
                 icon={<ExternalLink size={12} />}
                 disabled={disabled || attributionLocked}
                 clearable={!attributionLocked}
+                className={dealStageGateFieldClass(gateRequiredFields, 'sourceDetail')}
                 onValueChange={(value) =>
                   patchDraft({
                     sourceDetail: value || null,
@@ -119,6 +126,7 @@ export function DealMarketingSection({
                 selectionMode="stage"
                 label="Which one?"
                 value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
+                className={dealStageGateFieldClass(gateRequiredFields, 'whichOne')}
                 displayValue={
                   draft.marketingPickLabel ? (
                     <span className="text-foreground text-sm font-medium">
@@ -158,6 +166,7 @@ export function DealMarketingSection({
                 selectionMode="stage"
                 label="Which Partner?"
                 value={draft.sourcePartnerId}
+                className={dealStageGateFieldClass(gateRequiredFields, 'sourcePartnerId')}
                 displayValue={
                   draft.partnerPickLabel ? (
                     <span className="text-foreground text-sm font-medium">
@@ -187,6 +196,7 @@ export function DealMarketingSection({
                 selectionMode="stage"
                 label="Which Client?"
                 value={draft.sourceContactId}
+                className={dealStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
                 displayValue={
                   draft.clientPickLabel ? (
                     <span className="text-foreground text-sm font-medium">
@@ -212,11 +222,18 @@ export function DealMarketingSection({
         </div>
 
         {draft.source === 'PARTNER' && draft.sourcePartnerId ? (
-          <DealPartnerReferralTermsSection
-            deal={deal}
-            attributionLocked={attributionLocked}
-            onTermsUpdated={onRefresh}
-          />
+          <div
+            className={cn(
+              gateRequiredFields.has('partnerReferralTerms') &&
+                DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
+            )}
+          >
+            <DealPartnerReferralTermsSection
+              deal={deal}
+              attributionLocked={attributionLocked}
+              onTermsUpdated={onRefresh}
+            />
+          </div>
         ) : null}
       </div>
     </DetailSheetSection>

@@ -12,6 +12,7 @@ import type { Deal } from '@/lib/api/deals';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import type { SearchLoader } from './deal-general-tab.types';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
+import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 
 interface DealContactTeamSectionProps {
   deal: Deal;
@@ -21,6 +22,7 @@ interface DealContactTeamSectionProps {
   searchEmployees: SearchLoader;
   disabled?: boolean;
   sectionClassName?: string;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function DealContactTeamSection({
@@ -31,6 +33,7 @@ export function DealContactTeamSection({
   searchEmployees,
   disabled = false,
   sectionClassName,
+  gateRequiredFields = new Set(),
 }: DealContactTeamSectionProps) {
   return (
     <DetailSheetSection
@@ -87,6 +90,7 @@ export function DealContactTeamSection({
           selectionMode="stage"
           label="PM assigned"
           value={draft.pmId}
+          className={dealStageGateFieldClass(gateRequiredFields, 'pmId')}
           displayValue={<PmDisplay deal={deal} draft={draft} />}
           placeholder="Select project manager…"
           icon={<UserCog size={12} />}

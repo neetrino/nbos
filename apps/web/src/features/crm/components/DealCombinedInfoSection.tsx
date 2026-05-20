@@ -23,6 +23,7 @@ interface DealCombinedInfoSectionProps {
   searchProducts: SearchLoader;
   searchCompanies: SearchLoader;
   disabled?: boolean;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function DealCombinedInfoSection({
@@ -33,6 +34,7 @@ export function DealCombinedInfoSection({
   searchProducts,
   searchCompanies,
   disabled = false,
+  gateRequiredFields = new Set(),
 }: DealCombinedInfoSectionProps) {
   const { open, onOpenChange } = useDealSheetSectionCollapse(DEAL_SHEET_COLLAPSE_KEY.DEAL_PROJECT);
 
@@ -53,6 +55,7 @@ export function DealCombinedInfoSection({
             searchProjects={searchProjects}
             searchCompanies={searchCompanies}
             disabled={disabled}
+            gateRequiredFields={gateRequiredFields}
           />
         </div>
         <div className={`min-w-0 ${DETAIL_SHEET_COLUMN_DIVIDER_CLASS}`}>
@@ -63,6 +66,7 @@ export function DealCombinedInfoSection({
             filteredProductTypeOptions={filteredProductTypeOptions}
             searchProducts={searchProducts}
             disabled={disabled}
+            gateRequiredFields={gateRequiredFields}
           />
         </div>
       </div>

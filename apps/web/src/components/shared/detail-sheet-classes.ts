@@ -37,6 +37,10 @@ export const DETAIL_SHEET_PAIRED_COLUMNS_CLASS =
 /** Stretch a section card to the full height of its grid row. */
 export const DETAIL_SHEET_SECTION_STRETCH_CLASS = 'flex h-full min-h-0 flex-col';
 
+/** Highlights a field required for the current stage transition attempt. */
+export const DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS =
+  'ring-1 ring-red-400/90 ring-offset-1 ring-offset-background rounded-xl';
+
 /** Span both columns in {@link DETAIL_SHEET_PAIRED_COLUMNS_CLASS} (full row width). */
 export const DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS = 'sm:col-span-2';
 

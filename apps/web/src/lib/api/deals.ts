@@ -83,6 +83,8 @@ export interface Deal {
   offerScreenshotUrl: string | null;
   contractSignedAt: string | null;
   contractFileUrl: string | null;
+  linkedOfferAssetCount?: number;
+  linkedContractAssetCount?: number;
   maintenanceStartAt: string | null;
   createdAt: string;
   updatedAt: string;

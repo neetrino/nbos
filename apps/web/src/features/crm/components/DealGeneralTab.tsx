@@ -24,6 +24,7 @@ import { DealMarketingSection } from './DealMarketingSection';
 import { DealNotesSection } from './DealNotesSection';
 import { DealOfferContractSection } from './DealOfferContractSection';
 import { DealSourceLeadSection } from './DealSourceLeadSection';
+import { DealLegacyFieldsPanel } from './DealLegacyFieldsPanel';
 import type { DealGeneralDraft } from './deal-general-form-state';
 
 interface DealGeneralTabProps {
@@ -34,6 +35,7 @@ interface DealGeneralTabProps {
   onRefresh?: () => void;
   onOpenTaskTab?: () => void;
   onOpenDeal?: (id: string) => void;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 const SECTION_STRETCH = DETAIL_SHEET_SECTION_STRETCH_CLASS;
@@ -46,6 +48,7 @@ export function DealGeneralTab({
   onRefresh,
   onOpenTaskTab,
   onOpenDeal,
+  gateRequiredFields = new Set(),
 }: DealGeneralTabProps) {
   const [productTypeOptions, setProductTypeOptions] = useState<
     Array<{ value: string; label: string }>
@@ -145,9 +148,16 @@ export function DealGeneralTab({
           searchProducts={searchProducts}
           searchCompanies={searchCompanies}
           disabled={formDisabled}
+          gateRequiredFields={gateRequiredFields}
         />
-        <DealNotesSection draft={draft} patchDraft={patchDraft} disabled={formDisabled} />
-        <DealOfferContractSection dealId={deal.id} />
+        <DealNotesSection
+          draft={draft}
+          patchDraft={patchDraft}
+          disabled={formDisabled}
+          gateRequiredFields={gateRequiredFields}
+        />
+        <DealOfferContractSection dealId={deal.id} gateRequiredFields={gateRequiredFields} />
+        <DealLegacyFieldsPanel deal={deal} />
         <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS)}>
           <DealContactTeamSection
             deal={deal}
@@ -156,6 +166,7 @@ export function DealGeneralTab({
             searchContacts={searchContacts}
             searchEmployees={searchEmployees}
             disabled={formDisabled}
+            gateRequiredFields={gateRequiredFields}
             sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
           />
           <DealMarketingSection
@@ -167,6 +178,7 @@ export function DealGeneralTab({
             searchContacts={searchContacts}
             onRefresh={onRefresh}
             disabled={formDisabled}
+            gateRequiredFields={gateRequiredFields}
             sectionClassName={cn(SECTION_STRETCH, DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS)}
           />
           <DealSourceLeadSection deal={deal} className={DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS} />

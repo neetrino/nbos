@@ -16,14 +16,16 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import { LeadCard } from '@/features/crm/components/LeadCard';
-import { LeadSheet, type LeadSheetBlockerNavigation } from '@/features/crm/components/LeadSheet';
+import {
+  LeadSheet,
+  type LeadSheetBlockerNavigation,
+  type LeadSheetStageGateHighlight,
+} from '@/features/crm/components/LeadSheet';
 import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
-import { LeadTransitionInlineEditor } from '@/features/crm/components/LeadTransitionInlineEditor';
-import {
-  TransitionBlockerDialog,
-  type TransitionBlockerState,
-} from '@/features/crm/components/TransitionBlockerDialog';
+import { StageGateBanner } from '@/features/crm/components/DealStageGateBanner';
+import { formatDealStageGateFieldList } from '@/features/crm/deal-stage-gate-labels';
+import { splitDealStageGateErrors } from '@/features/crm/deal-stage-gate-highlight';
 import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
 import {
   BOARD_LIFECYCLE_SCOPE_OPTIONS,
@@ -44,10 +46,7 @@ import {
   isStageGateApiError,
   type ApiFieldError,
 } from '@/lib/api-errors';
-import {
-  resolveBlockerDirectActions,
-  resolveLeadSheetSectionFromErrors,
-} from '@/features/shared/blocker-actions';
+import { resolveLeadSheetSectionFromErrors } from '@/features/shared/blocker-actions';
 import {
   Table,
   TableHeader,
@@ -106,12 +105,10 @@ export default function LeadsPipelinePage() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [transitionBlocker, setTransitionBlocker] = useState<TransitionBlockerState<Lead> | null>(
+  const [stageGateHighlight, setStageGateHighlight] = useState<LeadSheetStageGateHighlight | null>(
     null,
   );
   const [pendingTransition, setPendingTransition] = useState<PendingLeadTransition | null>(null);
-  const [inlineSaving, setInlineSaving] = useState(false);
-  const [blockerEditorRevision, setBlockerEditorRevision] = useState(0);
   const [leadBlockerNav, setLeadBlockerNav] = useState<LeadSheetBlockerNavigation | null>(null);
   const leadNavTokenRef = useRef(0);
 
@@ -206,6 +203,33 @@ export default function LeadsPipelinePage() {
     await fetchLeads();
   };
 
+  const showLeadStageGateRequirements = useCallback(
+    (lead: Lead, targetStatus: string, errors: ApiFieldError[]) => {
+      const targetLabel = getLeadStage(targetStatus)?.label ?? targetStatus;
+      setStageGateHighlight({ targetStatus, targetLabel, errors });
+      setSelectedLead(lead);
+      pushOpenLeadToUrl(lead.id);
+      leadNavTokenRef.current += 1;
+      setLeadBlockerNav({
+        token: leadNavTokenRef.current,
+        sectionId: resolveLeadSheetSectionFromErrors(errors),
+      });
+      setSheetOpen(true);
+
+      const { fieldErrors } = splitDealStageGateErrors(errors);
+      if (fieldErrors.length > 0) {
+        toast.error(
+          `To move to ${targetLabel}, fill: ${formatDealStageGateFieldList(
+            fieldErrors.map((error) => error.field),
+          )}`,
+        );
+      } else {
+        toast.error(errors[0]?.message ?? `Cannot move to ${targetLabel}.`);
+      }
+    },
+    [pushOpenLeadToUrl],
+  );
+
   const handleStatusChange = async (id: string, status: string, leadOverride?: Lead) => {
     const previousLeads = leads;
     const previousSelected = selectedLead;
@@ -215,13 +239,7 @@ export default function LeadsPipelinePage() {
     if (currentLead) {
       const localErrors = getLocalLeadTransitionErrors(currentLead, status);
       if (localErrors.length > 0) {
-        setTransitionBlocker({
-          item: currentLead,
-          targetStatus: status,
-          targetLabel: getLeadStage(status)?.label ?? status,
-          errors: localErrors,
-          message: `Lead cannot move to ${getLeadStage(status)?.label ?? status}: missing required fields`,
-        });
+        showLeadStageGateRequirements(currentLead, status, localErrors);
         return;
       }
     }
@@ -237,6 +255,7 @@ export default function LeadsPipelinePage() {
       if (selectedLead?.id === id) {
         setSelectedLead(updatedLead);
       }
+      setStageGateHighlight(null);
     } catch (err) {
       setLeads(previousLeads);
       if (selectedLead?.id === id) {
@@ -245,13 +264,7 @@ export default function LeadsPipelinePage() {
       if (isStageGateApiError(err)) {
         const blockedLead = previousLeads.find((lead) => lead.id === id) ?? previousSelected;
         if (blockedLead) {
-          setTransitionBlocker({
-            item: blockedLead,
-            targetStatus: status,
-            targetLabel: getLeadStage(status)?.label ?? status,
-            errors: err.errors,
-            message: err.message,
-          });
+          showLeadStageGateRequirements(blockedLead, status, err.errors);
           return;
         }
       }
@@ -304,107 +317,6 @@ export default function LeadsPipelinePage() {
     }
 
     await handleStatusChange(id, status);
-  };
-
-  const openLeadFromBlocker = useCallback(
-    (options?: { keepBlockerDialogOpen?: boolean }) => {
-      if (!transitionBlocker) return;
-      const currentLead =
-        leads.find((lead) => lead.id === transitionBlocker.item.id) ?? transitionBlocker.item;
-      setSelectedLead(currentLead);
-      pushOpenLeadToUrl(currentLead.id);
-      leadNavTokenRef.current += 1;
-      setLeadBlockerNav({
-        token: leadNavTokenRef.current,
-        sectionId: resolveLeadSheetSectionFromErrors(transitionBlocker.errors),
-      });
-      setSheetOpen(true);
-      if (!options?.keepBlockerDialogOpen) {
-        setTransitionBlocker(null);
-      }
-    },
-    [leads, transitionBlocker, pushOpenLeadToUrl],
-  );
-
-  const handleOpenBlockedLead = () => {
-    openLeadFromBlocker({ keepBlockerDialogOpen: true });
-  };
-
-  const blockerActions = transitionBlocker
-    ? resolveBlockerDirectActions({ context: 'crm', errors: transitionBlocker.errors }).map(
-        (action) => ({
-          key: action.key,
-          label: action.label,
-          onClick: () => openLeadFromBlocker({ keepBlockerDialogOpen: true }),
-        }),
-      )
-    : [];
-
-  const handleRetryBlockedMove = async () => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-    await handleStatusChange(blocker.item.id, blocker.targetStatus);
-    setTransitionBlocker((current) => (current === blocker ? null : current));
-  };
-
-  const handleSaveBlockedLeadOnly = async (data: Partial<Lead>) => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-
-    if (Object.keys(data).length === 0) {
-      toast.info('No changes to save.');
-      return;
-    }
-
-    setInlineSaving(true);
-    try {
-      const updated = await leadsApi.update(blocker.item.id, data);
-      setLeads((prev) => prev.map((lead) => (lead.id === updated.id ? updated : lead)));
-      setSelectedLead((prev) => (prev?.id === updated.id ? updated : prev));
-      const nextErrors = getLocalLeadTransitionErrors(updated, blocker.targetStatus);
-      setTransitionBlocker((current) =>
-        current && current.item.id === updated.id
-          ? { ...current, item: updated, errors: nextErrors }
-          : current,
-      );
-      setBlockerEditorRevision((n) => n + 1);
-      if (nextErrors.length === 0) {
-        toast.success('Lead saved. You can move the card when ready.');
-      }
-    } catch (err) {
-      if (isStageGateApiError(err)) {
-        setTransitionBlocker((current) => (current ? { ...current, errors: err.errors } : current));
-        toast.error(getApiErrorMessage(err, 'Could not save lead.'));
-        return;
-      }
-      toast.error(err instanceof Error ? err.message : 'Could not save lead.');
-    } finally {
-      setInlineSaving(false);
-    }
-  };
-
-  const handleSaveBlockedLeadAndMove = async (data: Partial<Lead>) => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-
-    setInlineSaving(true);
-    try {
-      const updated = await leadsApi.update(blocker.item.id, data);
-      setLeads((prev) => prev.map((lead) => (lead.id === updated.id ? updated : lead)));
-      setSelectedLead((prev) => (prev?.id === updated.id ? updated : prev));
-      setTransitionBlocker((current) => (current ? { ...current, item: updated } : current));
-      await handleStatusChange(updated.id, blocker.targetStatus, updated);
-      setTransitionBlocker(null);
-    } catch (err) {
-      if (isStageGateApiError(err)) {
-        setTransitionBlocker((current) => (current ? { ...current, errors: err.errors } : current));
-        toast.error(getApiErrorMessage(err, 'Could not save lead.'));
-        return;
-      }
-      toast.error(err instanceof Error ? err.message : 'Lead update failed.');
-    } finally {
-      setInlineSaving(false);
-    }
   };
 
   const handleUpdate = async (id: string, data: Partial<Lead>) => {
@@ -648,6 +560,7 @@ export default function LeadsPipelinePage() {
           setSheetOpen(open);
           if (!open) {
             setSelectedLead(null);
+            setStageGateHighlight(null);
             stripOpenLeadFromUrl();
           }
         }}
@@ -656,33 +569,8 @@ export default function LeadsPipelinePage() {
         onDelete={handleDelete}
         blockerNavigation={leadBlockerNav}
         onBlockerNavigationConsumed={clearLeadBlockerNav}
-      />
-
-      <TransitionBlockerDialog
-        open={Boolean(transitionBlocker)}
-        blocker={transitionBlocker}
-        entityLabel="Lead"
-        itemLabel={transitionBlocker?.item.name ?? transitionBlocker?.item.code ?? ''}
-        onOpenChange={(open) => {
-          if (!open) setTransitionBlocker(null);
-        }}
-        onOpenDetails={handleOpenBlockedLead}
-        onRetry={handleRetryBlockedMove}
-        directActions={blockerActions}
-        inlineOnly
-        inlineEditor={
-          transitionBlocker ? (
-            <LeadTransitionInlineEditor
-              key={`${transitionBlocker.item.id}-${transitionBlocker.targetStatus}-${blockerEditorRevision}`}
-              lead={transitionBlocker.item}
-              targetStatus={transitionBlocker.targetStatus}
-              errors={transitionBlocker.errors}
-              saving={inlineSaving}
-              onSaveOnly={handleSaveBlockedLeadOnly}
-              onSaveAndMove={handleSaveBlockedLeadAndMove}
-            />
-          ) : null
-        }
+        stageGateHighlight={selectedLead && stageGateHighlight ? stageGateHighlight : null}
+        onClearStageGateHighlight={() => setStageGateHighlight(null)}
       />
 
       <StageTransitionConfirmDialog

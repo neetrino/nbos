@@ -18,12 +18,6 @@ export interface DealGeneralDraft {
   existingProductPickLabel: string | null;
   companyId: string | null;
   companyPickLabel: string | null;
-  offerSentAt: string | null;
-  offerLink: string | null;
-  offerFileUrl: string | null;
-  offerScreenshotUrl: string | null;
-  contractSignedAt: string | null;
-  contractFileUrl: string | null;
   source: string | null;
   sourceDetail: string | null;
   sourcePartnerId: string | null;
@@ -68,12 +62,6 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     existingProductPickLabel: deal.existingProduct?.name ?? null,
     companyId: deal.companyId ?? null,
     companyPickLabel: deal.company?.name ?? null,
-    offerSentAt: toDateInputValue(deal.offerSentAt),
-    offerLink: deal.offerLink,
-    offerFileUrl: deal.offerFileUrl,
-    offerScreenshotUrl: deal.offerScreenshotUrl,
-    contractSignedAt: toDateInputValue(deal.contractSignedAt),
-    contractFileUrl: deal.contractFileUrl,
     source: deal.source,
     sourceDetail: deal.sourceDetail,
     sourcePartnerId: deal.sourcePartnerId,
@@ -130,21 +118,6 @@ export function buildDealGeneralPatch(
     out.existingProductId = draft.existingProductId;
   }
   if (draft.companyId !== snap.companyId) out.companyId = draft.companyId;
-
-  if (dateOrNull(draft.offerSentAt) !== dateOrNull(snap.offerSentAt)) {
-    out.offerSentAt = dateOrNull(draft.offerSentAt);
-  }
-  if (draft.offerLink !== snap.offerLink) out.offerLink = draft.offerLink;
-  if (draft.offerFileUrl !== snap.offerFileUrl) out.offerFileUrl = draft.offerFileUrl;
-  if (draft.offerScreenshotUrl !== snap.offerScreenshotUrl) {
-    out.offerScreenshotUrl = draft.offerScreenshotUrl;
-  }
-  if (dateOrNull(draft.contractSignedAt) !== dateOrNull(snap.contractSignedAt)) {
-    out.contractSignedAt = dateOrNull(draft.contractSignedAt);
-  }
-  if (draft.contractFileUrl !== snap.contractFileUrl) {
-    out.contractFileUrl = draft.contractFileUrl;
-  }
 
   if (draft.source !== snap.source) out.source = draft.source;
   if (draft.sourceDetail !== snap.sourceDetail) out.sourceDetail = draft.sourceDetail;
