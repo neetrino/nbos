@@ -90,6 +90,21 @@ function appendUpcomingInvoices(rows: string[], data: FinanceDashboardData): voi
   }
 }
 
+function appendExpenseBuckets(rows: string[], data: FinanceDashboardData): void {
+  for (const bucket of data.expenseBuckets) {
+    rows.push(
+      csvLine([
+        'expense_bucket',
+        bucket.key,
+        bucket.label,
+        String(bucket.count),
+        bucket.amount.toFixed(2),
+        '',
+      ]),
+    );
+  }
+}
+
 function appendPayrollRuns(rows: string[], data: FinanceDashboardData): void {
   const p = data.payrollRuns;
   rows.push(csvLine(['payroll_runs', 'runCount', String(p.runCount), '', '', '']));
@@ -108,6 +123,7 @@ export function buildFinanceDashboardCsvContent(
   rows.push(csvLine(['meta', 'period', options.period, '', '', '']));
   appendKpis(rows, data);
   appendInvoiceStatus(rows, data);
+  appendExpenseBuckets(rows, data);
   appendReconciliation(rows, data);
   appendRecentPayments(rows, data);
   appendUpcomingInvoices(rows, data);

@@ -73,6 +73,7 @@ export function foldExpenseCards(expenses: ExpenseCardMetricRow[]) {
       return summary;
     },
     {
+      dueNow: { ...seed },
       dueSoon: { ...seed },
       overdue: { ...seed },
       onHold: { ...seed },
@@ -85,9 +86,12 @@ function getExpenseDueBucket(
   expense: ExpenseCardMetricRow,
   today: Date,
   dueSoonEnd: Date,
-): 'dueSoon' | 'overdue' | 'onHold' | 'backlog' | null {
+): 'dueNow' | 'dueSoon' | 'overdue' | 'onHold' | 'backlog' | null {
   if (expense.status === 'BACKLOG' || Boolean(expense.backlogReason)) return 'backlog';
   if (expense.status === 'ON_HOLD') return 'onHold';
+  if (expense.status === 'DUE_NOW') return 'dueNow';
+  if (expense.status === 'OVERDUE') return 'overdue';
+  if (expense.status === 'DUE_SOON') return 'dueSoon';
   if (expense.dueDate && expense.dueDate < today) return 'overdue';
   if (expense.dueDate && expense.dueDate <= dueSoonEnd) return 'dueSoon';
   return null;

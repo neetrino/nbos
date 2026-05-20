@@ -12,6 +12,7 @@ import {
 } from '@/features/finance/constants/finance';
 import {
   DashboardLoadingSkeleton,
+  ExpenseCardsSnapshot,
   FinanceNotes,
   InvoiceDistribution,
   KpiCards,
@@ -94,6 +95,8 @@ export default function FinanceDashboardPage() {
       <KpiCards kpis={buildKpis(data)} />
 
       <PayrollRunsSnapshot payroll={data.payrollRuns} />
+
+      <ExpenseCardsSnapshot buckets={data.expenseBuckets} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <InvoiceDistribution items={data.invoiceStatusItems} />

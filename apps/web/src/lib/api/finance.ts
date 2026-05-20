@@ -335,6 +335,19 @@ export interface FinanceDashboardPayrollRuns {
   }>;
 }
 
+export interface FinanceDashboardMoneyBucket {
+  count: number;
+  amount: number;
+}
+
+export interface FinanceDashboardExpenseCards {
+  dueNow: FinanceDashboardMoneyBucket;
+  dueSoon: FinanceDashboardMoneyBucket;
+  overdue: FinanceDashboardMoneyBucket;
+  onHold: FinanceDashboardMoneyBucket;
+  backlog: FinanceDashboardMoneyBucket;
+}
+
 export interface FinanceDashboardSummary {
   kpis: {
     totalRevenue: number | null;
@@ -351,6 +364,7 @@ export interface FinanceDashboardSummary {
     count: number;
     amount: number | null;
   }>;
+  expenseCards: FinanceDashboardExpenseCards;
   reconciliation: {
     orderCount: number;
     orderAmount: number;

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { AlertTriangle, ArrowUpRight, CheckCircle2, Landmark } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Landmark, Receipt } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
@@ -9,6 +9,7 @@ import {
 import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
 import type {
   FinanceDashboardData,
+  FinanceDashboardExpenseBucket,
   FinanceDashboardPayrollRunsSummary,
   FinanceKpi,
   InvoiceStatusItem,
@@ -78,6 +79,53 @@ export function RecentPayments({ items }: { items: RecentPaymentItem[] }) {
           items.map((item) => <RecentPaymentRow key={item.id} item={item} />)
         )}
       </div>
+    </div>
+  );
+}
+
+export function ExpenseCardsSnapshot({ buckets }: { buckets: FinanceDashboardExpenseBucket[] }) {
+  const href = '/finance/expenses';
+  const totalRemaining = buckets.reduce((sum, bucket) => sum + bucket.amount, 0);
+
+  return (
+    <div className="border-border bg-card rounded-2xl border p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="rounded-xl bg-orange-100 p-2.5 text-orange-700">
+            <Receipt size={20} aria-hidden />
+          </div>
+          <div>
+            <h2 className="text-foreground text-lg font-semibold">Outgoing expenses</h2>
+            <p className="text-muted-foreground mt-1 max-w-xl text-sm">
+              Unpaid expense cards by workflow bucket. <span className="font-medium">Due now</span>{' '}
+              uses the explicit <span className="font-mono text-xs">DUE_NOW</span> status; other
+              lanes follow board rules and due dates in the selected period.
+            </p>
+          </div>
+        </div>
+        <Link
+          href={href}
+          className="text-muted-foreground hover:text-foreground inline-flex shrink-0 items-center gap-1 text-sm font-medium"
+        >
+          Open expense board
+          <ArrowUpRight size={14} aria-hidden />
+        </Link>
+      </div>
+      {buckets.length === 0 ? (
+        <p className="text-muted-foreground mt-5 text-sm">No open expense cards in this period.</p>
+      ) : (
+        <>
+          <p className="text-foreground mt-5 text-sm font-medium">
+            {formatAmount(totalRemaining)} remaining across{' '}
+            {buckets.reduce((sum, bucket) => sum + bucket.count, 0)} cards
+          </p>
+          <div className="mt-4 space-y-3">
+            {buckets.map((bucket) => (
+              <ExpenseBucketRow key={bucket.key} bucket={bucket} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -189,6 +237,10 @@ export function FinanceNotes() {
           Payroll run totals are workspace-wide and come from the same stats payload as the payroll
           list scope card — independent of invoice period filters.
         </p>
+        <p className="text-muted-foreground">
+          Expense buckets count unpaid remaining amounts on expense cards created in the selected
+          period (same filter as invoice KPIs).
+        </p>
       </div>
     </div>
   );
@@ -208,6 +260,20 @@ function KpiCard({ kpi }: { kpi: FinanceKpi }) {
         <p className="text-muted-foreground mt-1 text-sm">{kpi.label}</p>
       </div>
       <p className="text-muted-foreground mt-2 text-xs">{kpi.change}</p>
+    </div>
+  );
+}
+
+function ExpenseBucketRow({ bucket }: { bucket: FinanceDashboardExpenseBucket }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-foreground text-sm">{bucket.label}</span>
+      <div className="flex items-center gap-3">
+        <span className="text-muted-foreground text-sm">{bucket.count}</span>
+        <span className="text-foreground w-28 text-right text-sm font-medium">
+          {formatAmount(bucket.amount)}
+        </span>
+      </div>
     </div>
   );
 }

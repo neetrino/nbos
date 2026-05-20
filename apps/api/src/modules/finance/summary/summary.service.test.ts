@@ -54,7 +54,7 @@ describe('FinanceSummaryService', () => {
         expensePayments: [{ amount: 15000 }],
       },
     ]);
-    prisma.subscription.aggregate.mockResolvedValue({ _sum: { amount: 25000 } });
+    prisma.subscription.aggregate.mockResolvedValue({ _sum: { baseMonthlyAmount: 25000 } });
     prisma.subscription.count.mockResolvedValue(4);
     prisma.payment.findMany.mockResolvedValue([
       {
@@ -134,7 +134,8 @@ describe('FinanceSummaryService', () => {
       outstanding: { count: 2, amount: 45000 },
       overdue: { count: 1, amount: 15000 },
     });
-    expect(result.expenseCards.dueSoon).toEqual({ count: 1, amount: 35000 });
+    expect(result.expenseCards.dueNow).toEqual({ count: 1, amount: 35000 });
+    expect(result.expenseCards.dueSoon).toEqual({ count: 0, amount: 0 });
     expect(result.reconciliation).toMatchObject({
       orderCount: 1,
       orderAmount: 100000,
@@ -163,7 +164,7 @@ describe('FinanceSummaryService', () => {
     prisma.invoice.groupBy.mockResolvedValue([]);
     prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
     prisma.expense.findMany.mockResolvedValue([]);
-    prisma.subscription.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
+    prisma.subscription.aggregate.mockResolvedValue({ _sum: { baseMonthlyAmount: 0 } });
     prisma.subscription.count.mockResolvedValue(0);
     prisma.payment.findMany.mockResolvedValue([]);
     prisma.invoice.findMany.mockResolvedValue([]);

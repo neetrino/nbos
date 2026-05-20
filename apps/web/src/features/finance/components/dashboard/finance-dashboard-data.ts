@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import type { FinanceDashboardSummary } from '@/lib/api/finance';
+import type { FinanceDashboardExpenseCards, FinanceDashboardSummary } from '@/lib/api/finance';
 
 /** Payroll headline figures for Finance Overview (parsed from API decimal strings). */
 export interface FinanceDashboardPayrollRunsSummary {
@@ -9,11 +9,19 @@ export interface FinanceDashboardPayrollRunsSummary {
   totalRemaining: number;
 }
 
+export interface FinanceDashboardExpenseBucket {
+  key: keyof FinanceDashboardExpenseCards;
+  label: string;
+  count: number;
+  amount: number;
+}
+
 export interface FinanceDashboardData {
   totalRevenue: number;
   outstandingAmount: number;
   overdueAmount: number;
   monthlyRecurringRevenue: number;
+  expenseBuckets: FinanceDashboardExpenseBucket[];
   reconciliation: FinanceDashboardSummary['reconciliation'];
   invoiceStatusItems: InvoiceStatusItem[];
   recentPayments: RecentPaymentItem[];
@@ -57,6 +65,17 @@ export interface UpcomingInvoiceItem {
 
 const MS_PER_DAY = 86_400_000;
 
+const EXPENSE_BUCKET_META: Array<{
+  key: keyof FinanceDashboardExpenseCards;
+  label: string;
+}> = [
+  { key: 'dueNow', label: 'Due now' },
+  { key: 'dueSoon', label: 'Due soon (7d)' },
+  { key: 'overdue', label: 'Overdue' },
+  { key: 'onHold', label: 'On hold' },
+  { key: 'backlog', label: 'Backlog' },
+];
+
 /** Dashboard invoice donut: API `invoiceStatusItems[].status` is money layer. */
 const INVOICE_MONEY_DASHBOARD_ORDER = [
   'NEW',
@@ -86,6 +105,7 @@ export function buildFinanceDashboardData(summary: FinanceDashboardSummary): Fin
     outstandingAmount: toAmount(summary.kpis.outstandingAmount),
     overdueAmount: toAmount(summary.kpis.overdueAmount),
     monthlyRecurringRevenue: toAmount(summary.kpis.monthlyRecurringRevenue),
+    expenseBuckets: buildExpenseBuckets(summary.expenseCards),
     reconciliation: summary.reconciliation,
     invoiceStatusItems: buildInvoiceStatusItems(summary),
     recentPayments: buildRecentPayments(summary),
@@ -97,6 +117,17 @@ export function buildFinanceDashboardData(summary: FinanceDashboardSummary): Fin
       totalRemaining: toAmount(pr.totals.totalRemaining),
     },
   };
+}
+
+function buildExpenseBuckets(
+  expenseCards: FinanceDashboardExpenseCards,
+): FinanceDashboardExpenseBucket[] {
+  return EXPENSE_BUCKET_META.map(({ key, label }) => ({
+    key,
+    label,
+    count: expenseCards[key].count,
+    amount: toAmount(expenseCards[key].amount),
+  })).filter((bucket) => bucket.count > 0);
 }
 
 function buildInvoiceStatusItems(summary: FinanceDashboardSummary): InvoiceStatusItem[] {

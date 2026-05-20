@@ -363,7 +363,7 @@ Examples:
 Remaining refactor:
 
 - finish expected incoming from official invoice/payment request fields;
-- expose expense `due now` separately when the runtime model has an explicit threshold;
+- ~~expose expense `due now` separately (`DUE_NOW` workflow status bucket on dashboard summary)~~ — done in runtime;
 - replace subscription statuses and coverage fields.
 
 ---

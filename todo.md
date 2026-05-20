@@ -69,13 +69,13 @@
 - [x] ~~6.1 Domain → Client Service Record~~
 - [x] ~~6.2 Drive: вложения finance (proofs, restricted)~~
 - [x] ~~6.3 Client-paid automation (task/expense после оплаты)~~
-- [ ] 6.4 Finance dashboard / summary доработки
+- [x] ~~6.4 Finance dashboard / summary доработки~~
 
 ---
 
 ## Сейчас в работе
 
-**Фаза 6.4** — Finance dashboard / summary
+**Фаза 6** закрыта (интеграции). Дальше — Stage Gate standard (см. ниже) или Phase 3 roadmap.
 
 ---
 
