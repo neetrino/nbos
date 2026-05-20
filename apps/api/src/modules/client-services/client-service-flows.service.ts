@@ -87,6 +87,8 @@ export class ClientServiceFlowsService {
   async createExpense(serviceId: string, body: CreateClientServiceExpenseBody = {}) {
     const service = await this.loadService(serviceId);
     const amount = requirePositiveAmount(body.amount ?? Number(service.ourCost), 'Expense amount');
+    const notes = body.notes?.trim() || `From client service: ${service.name}`;
+    const status = body.status?.trim() || 'PLANNED';
     return this.expensesService.create({
       name: service.name,
       type: 'PLANNED',
@@ -94,12 +96,12 @@ export class ClientServiceFlowsService {
       amount,
       frequency: 'ONE_TIME',
       dueDate: body.dueDate?.trim() || service.renewalDate?.toISOString() || undefined,
-      status: 'PLANNED',
+      status,
       projectId: service.projectId,
       clientServiceRecordId: service.id,
       isPassThrough: service.billingModel === 'CLIENT_PAID',
       taxStatus: service.taxStatus,
-      notes: `From client service: ${service.name}`,
+      notes,
     });
   }
 

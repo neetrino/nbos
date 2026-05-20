@@ -52,6 +52,9 @@ describe('PaymentsService', () => {
   const partnerAccrualSubscription = {
     tryInboundSubscriptionAfterClientPayment: vi.fn().mockResolvedValue(undefined),
   };
+  const clientPaidInvoiceAutomation = {
+    onInvoiceFullyPaid: vi.fn().mockResolvedValue({ taskId: null, expenseId: null }),
+  };
   let notifications: NotificationService;
 
   beforeEach(() => {
@@ -61,6 +64,7 @@ describe('PaymentsService', () => {
     operationalJournal.appendCashPaymentLine.mockClear();
     partnerAccrualClassic.tryInboundClassicAfterClientPayment.mockClear();
     partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment.mockClear();
+    clientPaidInvoiceAutomation.onInvoiceFullyPaid.mockClear();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     service = new PaymentsService(
       prisma as never,
@@ -69,6 +73,7 @@ describe('PaymentsService', () => {
       operationalJournal as never,
       partnerAccrualClassic as never,
       partnerAccrualSubscription as never,
+      clientPaidInvoiceAutomation as never,
     );
   });
 

@@ -13,6 +13,8 @@ export interface CreateClientServiceExpensePlanBody {
 export interface CreateClientServiceExpenseBody {
   amount?: number;
   dueDate?: string | null;
+  status?: string;
+  notes?: string;
 }
 
 export interface CreateClientServiceTaskBody {

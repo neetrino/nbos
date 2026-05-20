@@ -10,6 +10,7 @@ import { OperationalJournalService } from '../journal/operational-journal.servic
 import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-guard';
 import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual-classic.service';
 import { PartnerAccrualSubscriptionService } from '../partner-accrual/partner-accrual-subscription.service';
+import { ClientPaidInvoiceAutomationService } from '../../client-services/client-paid-invoice-automation.service';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -39,6 +40,7 @@ export class PaymentsService {
     private readonly operationalJournal: OperationalJournalService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
     private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
+    private readonly clientPaidInvoiceAutomation: ClientPaidInvoiceAutomationService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
@@ -249,6 +251,10 @@ export class PaymentsService {
       await this.partnerAccrualSubscription.tryInboundSubscriptionAfterClientPayment({
         invoiceId: data.invoiceId,
         paymentId: created.id,
+      });
+      await this.clientPaidInvoiceAutomation.onInvoiceFullyPaid({
+        invoiceId: data.invoiceId,
+        actorEmployeeId: data.confirmedBy,
       });
     }
 
