@@ -60,6 +60,7 @@ export {
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
 } from './detail-sheet-classes';
+export { PipelineStagesBar, type PipelineStageConfig } from './PipelineStagesBar';
 export { DetailSheetSection, type DetailSheetSectionProps } from './DetailSheetSection';
 export {
   DetailSheetCollapsibleSection,

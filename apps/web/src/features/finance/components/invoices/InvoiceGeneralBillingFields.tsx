@@ -2,10 +2,13 @@
 
 import { DollarSign, Receipt } from 'lucide-react';
 import { InlineField } from '@/components/shared';
-import { TAX_STATUSES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
+import { INVOICE_TAX_STATUS_OPTIONS } from '@/features/finance/constants/finance';
 import type { InvoiceGeneralDraft } from '@/features/finance/utils/invoice-general-form-state';
 
-const TAX_SELECT_OPTIONS = TAX_STATUSES.map((row) => ({ value: row.value, label: row.label }));
+const TAX_OPTIONS = INVOICE_TAX_STATUS_OPTIONS.map((row) => ({
+  value: row.value,
+  label: row.label,
+}));
 
 interface InvoiceGeneralBillingFieldsProps {
   draft: InvoiceGeneralDraft;
@@ -31,13 +34,14 @@ export function InvoiceGeneralBillingFields({
       />
       <InlineField
         variant="controlled"
-        label="Tax status"
+        label="Tax Status"
         type="select"
         value={draft.taxStatus}
-        selectOptions={TAX_SELECT_OPTIONS}
+        options={TAX_OPTIONS}
+        placeholder="Tax / Tax Free"
         icon={<Receipt size={12} />}
         disabled={disabled}
-        onValueChange={(taxStatus) => patchDraft({ taxStatus })}
+        onValueChange={(taxStatus) => taxStatus && patchDraft({ taxStatus })}
       />
     </div>
   );

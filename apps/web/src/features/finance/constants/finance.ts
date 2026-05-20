@@ -18,6 +18,19 @@ export const INVOICE_MONEY_STAGES = [
   { value: 'CANCELLED', label: 'Cancelled', variant: 'red' as StatusVariant },
 ] as const;
 
+/** Chevron pipeline segments in invoice detail sheet (matches Deal pipeline UX). */
+export const INVOICE_PIPELINE_MONEY_STAGES = [
+  { key: 'NEW', label: 'New', shortLabel: 'New' },
+  { key: 'AWAITING_PAYMENT', label: 'Awaiting payment', shortLabel: 'Awaiting' },
+  { key: 'OVERDUE', label: 'Overdue', shortLabel: 'Overdue' },
+  { key: 'ON_HOLD', label: 'On hold', shortLabel: 'Hold' },
+] as const;
+
+export const INVOICE_TAX_STATUS_OPTIONS = [
+  { value: 'TAX', label: 'Tax' },
+  { value: 'TAX_FREE', label: 'Tax Free' },
+] as const;
+
 export const EXPENSE_STAGES = [
   { value: 'PLANNED', label: 'Planned', variant: 'blue' as StatusVariant },
   { value: 'DUE_SOON', label: 'Due Soon', variant: 'purple' as StatusVariant },
