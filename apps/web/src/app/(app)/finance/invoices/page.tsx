@@ -101,6 +101,7 @@ function InvoicesPageInner() {
         invoice={state.selectedInvoice}
         open={state.sheetOpen}
         onOpenChange={state.handleInvoiceSheetOpenChange}
+        onInvoiceUpdated={state.handleInvoiceUpdated}
         onPaymentRecorded={state.handlePaymentRecorded}
       />
       <CreateInvoiceDialog

@@ -163,6 +163,11 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     [pathname, router, searchParams],
   );
 
+  const handleInvoiceUpdated = useCallback((updated: Invoice) => {
+    setSelectedInvoice(updated);
+    setInvoices((current) => replaceInvoice(current, updated));
+  }, []);
+
   return {
     invoices,
     stats,
@@ -190,6 +195,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     handleInvoiceClick,
     handleMoneyStatusChange,
     handlePaymentRecorded,
+    handleInvoiceUpdated,
     handleInvoiceCreated: fetchInvoices,
     invoiceListExportParams,
   };

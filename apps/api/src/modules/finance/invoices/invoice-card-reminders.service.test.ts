@@ -17,9 +17,13 @@ describe('InvoiceCardRemindersService', () => {
     service = new InvoiceCardRemindersService(prisma as never);
   });
 
-  it('creates an official request job for due Tax invoices without official invoice marker', async () => {
+  it('creates an official request job for due Tax invoices without request sent', async () => {
     prisma.invoice.findMany.mockResolvedValue([
-      invoiceCandidate({ id: 'inv-1', taxStatus: 'TAX', govInvoiceId: null }),
+      invoiceCandidate({
+        id: 'inv-1',
+        taxStatus: 'TAX',
+        officialInvoiceRequestSent: false,
+      }),
     ]);
 
     const result = await service.runDueInvoiceCardReminders({ asOf: new Date('2026-05-05') });
@@ -37,9 +41,13 @@ describe('InvoiceCardRemindersService', () => {
     );
   });
 
-  it('creates a payment reminder job only after Tax official invoice marker exists', async () => {
+  it('creates a payment reminder job only after Tax official request was sent', async () => {
     prisma.invoice.findMany.mockResolvedValue([
-      invoiceCandidate({ id: 'inv-2', taxStatus: 'TAX', govInvoiceId: 'arm-123' }),
+      invoiceCandidate({
+        id: 'inv-2',
+        taxStatus: 'TAX',
+        officialInvoiceRequestSent: true,
+      }),
     ]);
 
     const result = await service.runDueInvoiceCardReminders({ asOf: new Date('2026-05-05') });
@@ -67,7 +75,8 @@ interface TestInvoiceCandidate {
   dueDate: Date;
   taxStatus: string;
   moneyStatus: string;
-  govInvoiceId: string | null;
+  officialInvoiceRequestSent: boolean;
+  notificationsEnabled: boolean;
   company: { name: string };
   clientServiceRecord: { notificationsEnabled: boolean };
 }
@@ -84,7 +93,8 @@ function baseInvoiceCandidate(): TestInvoiceCandidate {
     dueDate: new Date('2026-05-01'),
     taxStatus: 'TAX_FREE',
     moneyStatus: 'AWAITING_PAYMENT',
-    govInvoiceId: null,
+    officialInvoiceRequestSent: false,
+    notificationsEnabled: true,
     company: { name: 'ACME' },
     clientServiceRecord: { notificationsEnabled: true },
   };

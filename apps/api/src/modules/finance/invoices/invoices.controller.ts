@@ -84,6 +84,27 @@ export class InvoicesController {
     return this.invoicesService.updateMoneyStatus(id, body.moneyStatus);
   }
 
+  @Post(':id/official-request/send')
+  @ApiOperation({ summary: 'Send official invoice request to accountant (Tax)' })
+  async sendOfficialInvoiceRequest(@Param('id') id: string) {
+    return this.invoicesService.sendOfficialInvoiceRequest(id);
+  }
+
+  @Post(':id/official-request/cancel')
+  @ApiOperation({ summary: 'Cancel previous official invoice request' })
+  async cancelOfficialInvoiceRequest(@Param('id') id: string) {
+    return this.invoicesService.cancelOfficialInvoiceRequest(id);
+  }
+
+  @Patch(':id/official-request')
+  @ApiOperation({ summary: 'Record government invoice id on invoice card' })
+  async updateOfficialInvoiceGovId(
+    @Param('id') id: string,
+    @Body() body: { govInvoiceId?: string | null },
+  ) {
+    return this.invoicesService.updateOfficialInvoiceGovId(id, body.govInvoiceId ?? null);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete invoice' })

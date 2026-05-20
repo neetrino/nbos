@@ -3,6 +3,7 @@ import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from '@/components/shared';
 import { getInvoiceMoneyStage, formatAmount } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
+import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
 import { InvoicePaymentCoverageCard } from './InvoicePaymentCoverageCard';
 import { RecordPaymentForm } from './RecordPaymentForm';
 
@@ -36,7 +37,13 @@ export function InvoiceAmountPanel({ invoice }: { invoice: InvoiceSheetInvoice }
   );
 }
 
-export function InvoiceDetailsSection({ invoice }: { invoice: InvoiceSheetInvoice }) {
+export function InvoiceDetailsSection({
+  invoice,
+  onInvoiceUpdated,
+}: {
+  invoice: InvoiceSheetInvoice;
+  onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
+}) {
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
   return (
     <section className="space-y-3">
@@ -49,7 +56,12 @@ export function InvoiceDetailsSection({ invoice }: { invoice: InvoiceSheetInvoic
         <div className="text-muted-foreground">Status</div>
         <div>{money && <StatusBadge label={money.label} variant={money.variant} />}</div>
         <InvoiceTaxStatusRow taxStatus={invoice.taxStatus} />
-        <OfficialInvoiceRow invoice={invoice} />
+        <div className="text-muted-foreground">Official invoice</div>
+        {onInvoiceUpdated ? (
+          <InvoiceOfficialRequestPanel invoice={invoice} onUpdated={onInvoiceUpdated} />
+        ) : (
+          <OfficialInvoiceSummary invoice={invoice} />
+        )}
         <InvoiceDueDateRow invoice={invoice} />
         <InvoicePaidDateRow paidDate={invoice.paidDate} />
         <DateRow label="Created" date={invoice.createdAt} />
@@ -135,14 +147,22 @@ function InvoiceTaxStatusRow({ taxStatus }: { taxStatus: string }) {
   );
 }
 
-function OfficialInvoiceRow({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  if (invoice.taxStatus !== 'TAX' && !invoice.govInvoiceId) return null;
-
+function OfficialInvoiceSummary({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  if (invoice.taxStatus !== 'TAX') {
+    return <div className="text-muted-foreground text-sm">Not required (tax-free)</div>;
+  }
+  const status = invoice.officialInvoiceRequestSent
+    ? 'Request sent'
+    : invoice.officialInvoiceCancelledAt
+      ? 'Request cancelled'
+      : 'Not sent';
   return (
-    <>
-      <div className="text-muted-foreground">Official Invoice</div>
-      <div className="font-medium">{invoice.govInvoiceId ?? 'Request not recorded'}</div>
-    </>
+    <div className="space-y-0.5">
+      <div className="font-medium">{status}</div>
+      {invoice.govInvoiceId ? (
+        <div className="text-muted-foreground text-xs">Gov ID: {invoice.govInvoiceId}</div>
+      ) : null}
+    </div>
   );
 }
 

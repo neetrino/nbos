@@ -19,6 +19,11 @@ import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice
 import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
 import { DealWonHandler } from '../../crm/deals/deal-won.handler';
 import { dealDetailInclude } from '../../crm/deals/deal.includes';
+import {
+  cancelOfficialInvoiceRequest,
+  sendOfficialInvoiceRequest,
+  updateOfficialInvoiceGovId,
+} from './invoice-official-request';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -304,6 +309,21 @@ export class InvoicesService {
   async delete(id: string) {
     await this.findById(id);
     return this.prisma.invoice.delete({ where: { id } });
+  }
+
+  async sendOfficialInvoiceRequest(id: string) {
+    await sendOfficialInvoiceRequest(this.prisma, id);
+    return this.findById(id);
+  }
+
+  async cancelOfficialInvoiceRequest(id: string) {
+    await cancelOfficialInvoiceRequest(this.prisma, id);
+    return this.findById(id);
+  }
+
+  async updateOfficialInvoiceGovId(id: string, govInvoiceId: string | null) {
+    await updateOfficialInvoiceGovId(this.prisma, id, govInvoiceId);
+    return this.findById(id);
   }
 
   private assertManualMoneyStatusAllowed(

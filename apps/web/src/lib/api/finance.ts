@@ -47,6 +47,10 @@ export interface Invoice {
   dueDate: string | null;
   paidDate: string | null;
   govInvoiceId: string | null;
+  officialInvoiceRequestSent: boolean;
+  officialInvoiceSentAt: string | null;
+  officialInvoiceCancelledAt: string | null;
+  notificationsEnabled: boolean;
   description: string | null;
   createdAt: string;
   order: { id: string; code: string } | null;
@@ -397,6 +401,20 @@ export const invoicesApi = {
   async updateMoneyStatus(id: string, moneyStatus: string): Promise<Invoice> {
     const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}/money-status`, {
       moneyStatus,
+    });
+    return resp.data;
+  },
+  async sendOfficialInvoiceRequest(id: string): Promise<Invoice> {
+    const resp = await api.post<Invoice>(`/api/finance/invoices/${id}/official-request/send`);
+    return resp.data;
+  },
+  async cancelOfficialInvoiceRequest(id: string): Promise<Invoice> {
+    const resp = await api.post<Invoice>(`/api/finance/invoices/${id}/official-request/cancel`);
+    return resp.data;
+  },
+  async updateOfficialInvoiceGovId(id: string, govInvoiceId: string | null): Promise<Invoice> {
+    const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}/official-request`, {
+      govInvoiceId,
     });
     return resp.data;
   },

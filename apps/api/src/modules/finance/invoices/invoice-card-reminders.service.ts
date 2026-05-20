@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
 
 /** Money statuses eligible for invoice-card reminder jobs (replaces legacy pipeline buckets). */
 const REMINDER_ELIGIBLE_MONEY_STATUSES = ['NEW', 'AWAITING_PAYMENT', 'OVERDUE'] as const;
@@ -28,7 +29,8 @@ interface InvoiceReminderCandidate {
   dueDate: Date | null;
   taxStatus: string;
   moneyStatus: string;
-  govInvoiceId: string | null;
+  officialInvoiceRequestSent: boolean;
+  notificationsEnabled: boolean;
   company: { name: string } | null;
   clientServiceRecord: { notificationsEnabled: boolean } | null;
 }
@@ -68,6 +70,7 @@ export class InvoiceCardRemindersService {
       where: {
         moneyStatus: { in: [...REMINDER_ELIGIBLE_MONEY_STATUSES] },
         dueDate: { lte: asOf },
+        notificationsEnabled: true,
         OR: [
           { clientServiceRecordId: null },
           { clientServiceRecord: { is: { notificationsEnabled: true } } },
@@ -80,7 +83,8 @@ export class InvoiceCardRemindersService {
         dueDate: true,
         taxStatus: true,
         moneyStatus: true,
-        govInvoiceId: true,
+        officialInvoiceRequestSent: true,
+        notificationsEnabled: true,
         company: { select: { name: true } },
         clientServiceRecord: { select: { notificationsEnabled: true } },
       },
@@ -131,7 +135,7 @@ export class InvoiceCardRemindersService {
 
 function buildReminderSeeds(invoice: InvoiceReminderCandidate): ReminderJobSeed[] {
   if (invoice.moneyStatus === 'ON_HOLD') return [];
-  if (invoice.taxStatus === 'TAX' && !invoice.govInvoiceId) {
+  if (isOfficialRequestBlockingTaxReminders(invoice)) {
     return [{ type: INVOICE_CARD_REMINDER_TYPES.OFFICIAL_REQUEST_DUE, invoice }];
   }
   if (isPaymentReminderMoneyStatus(invoice.moneyStatus)) {

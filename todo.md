@@ -1,76 +1,79 @@
-# NBOS — активные задачи
+# NBOS Finance — план по фазам
 
-`[ ]` открыто · `[x]` сделано (история в git)
+`[ ]` открыто · `[x]` сделано · ~~зачёркнуто~~ = закрыто в этой итерации
 
----
-
-## Следующий фокус: CRM (дожать MVP)
-
-**Рекомендуемый порядок**
-
-1. **Transition popup + blockers** — при `STAGE_GATE_VALIDATION` показывать только недостающие поля, кнопки «перейти в секцию» sheet (marketing / offer / team / notes). Частично есть: `TransitionBlockerDialog`, `blocker-actions`, scroll в `LeadSheet` / `DealSheet`.
-2. **Stage gates (пробелы)** — Lead: `MQL`/`SQL` (service type, budget/timeline в notes до появления полей в схеме). Deal: `START_CONVERSATION` (contact, seller, type), `DISCUSS_NEEDS` (scope/need note).
-3. **Канон** — довести `04-Offers-and-Handoff.md`, `01-Lead-to-Cash-Process.md` под 5 стадий Deal и Drive offer/contract.
-4. **Тесты доски** — active/closed filter + terminal drop (web или API integration).
-5. **Legacy offer/contract URL** — backfill в Drive external-url assets; убрать из UI/API gate зависимость от `offerLink` / `contractFileUrl` (поля в БД пока можно оставить).
-6. **Attachment block** — purpose при upload, external link, тесты detach/archive; заменить `EntityDriveFilesPanel` если ещё используется.
-7. **Полировка** — Closed view карточки компактнее; единый Deal Type visual с Delivery; UI note про `DetailSheetSection`.
+Источник: `docs/NBOS/02-Modules/04-Finance/10-Finance-Cleanup-Register.md`, Phase 3 roadmap.
 
 ---
 
-## CRM — открыто
+## Фаза 0 — Уже в runtime (база)
 
-### Переходы и валидация
-
-- [ ] Transition popup: только missing fields + jump в секцию sheet (Lead/Deal).
-- [ ] Marketing gate в UI согласован с API (блокер до заполнения From/Where/Which one).
-- [ ] Lead gate: MQL/SQL — service type + budget/timeline (notes или новые поля).
-- [ ] Deal gate: `START_CONVERSATION`, `DISCUSS_NEEDS` (seller, type, scope note).
-
-### Документация
-
-- [ ] `docs/NBOS/02-Modules/01-CRM/04-Offers-and-Handoff.md` — Drive files, без Meeting/Can We Do It.
-- [ ] `docs/NBOS/03-Business-Logic/01-Lead-to-Cash-Process.md` — 5 стадий Deal.
-
-### Доски
-
-- [ ] Тесты: `boardScope` Active/Closed/All + terminal drop zones (Leads/Deals).
-- [ ] Closed view: компактные read-only карточки.
-
-### Sheet / UX
-
-- [ ] Группировка полей как у Delivery (overview → contact → team → marketing → commercial → files → notes).
-- [ ] Empty states и required-hints единообразно с Delivery.
-- [ ] Deal Seller + Seller Assistant: проверить UX и роли.
-- [ ] Create dialogs / transition editors — один `SearchField` для employees.
-- [ ] Deal Type colors — один source of truth с Delivery + короткая UI note в docs.
-
-### Drive / Offer–Contract
-
-- [ ] Purpose selector при attach/upload.
-- [ ] Attach external URL как file asset.
-- [ ] Backfill legacy `offerLink` / `contractFileUrl` → Drive.
-- [ ] Заменить `EntityDriveFilesPanel` на `EntityAttachmentBlock` (если остались вхождения).
-- [ ] Тесты: attach, detach, archive, purpose filter.
-
-### Паттерн досок (вне CRM)
-
-- [ ] Delivery: Active/Closed + terminal drops (как CRM).
-- [ ] Finance / Support / Tasks: задокументировать active vs closed перед UI.
+- [x] ~~Invoice Card: `moneyStatus`, без legacy pipeline~~
+- [x] ~~Payments + coverage на инвойсе~~
+- [x] ~~Orders list + reconciliation~~
+- [x] ~~Subscriptions: статусы канона + Subscription Grid~~
+- [x] ~~Expense Plan / Expense / ExpensePayment / backlog~~
+- [x] ~~Payroll Run / Salary Line / Salary board~~
+- [x] ~~Product Bonus Pool / Bonus Release~~
+- [x] ~~Employee Wallet (read-only)~~
+- [x] ~~Client Service Record CRUD + связи~~
+- [x] ~~Reports v1 (6 определений)~~
+- [x] ~~Operational Journal + posting periods (база)~~
+- [x] ~~Partner accrual / payout batches~~
 
 ---
 
-## Finance — PageHero (отдельный трек)
+## Фаза 1 — Official Invoice + напоминания
 
-Shared `app/(app)/finance/layout.tsx` + hero slots; заменить `*PageHeader` + `FilterBar`.
+- [x] ~~1.1 Prisma: `official_invoice_request_sent`, `official_invoice_sent_at`, `official_invoice_cancelled_at`, `notifications_enabled` на Invoice~~
+- [x] ~~1.2 API: send / cancel / send-again + запись `govInvoiceId`~~
+- [x] ~~1.3 Reminders: gate по `request_sent`, backfill из `gov_invoice_id`~~
+- [x] ~~1.4 UI: блок Official Invoice в Invoice sheet + кнопки~~
 
-- [ ] Finance layout: tabs, settings sheet
-- [ ] Orders, Invoices, Payments, Subscriptions, Expenses
-- [ ] Wallet, Bonus pools, Reports, Client services
-- [ ] Payroll: salary board, payroll runs
+> Миграция: `20260520120000_invoice_official_request_block` — применить: `pnpm -w run db:migrate` (или deploy).
 
 ---
 
-## Опционально
+## Фаза 2 — Subscription billing model
 
-- [ ] Delivery Board: visual QA в браузере; Settings в hero
+- [ ] 2.1 Prisma: `base_monthly_amount`, `billing_frequency`, `billing_start_date`, `notifications_enabled`
+- [ ] 2.2 API/UI: create/edit subscription с новыми полями
+- [ ] 2.3 Billing + MRR report на `base_monthly_amount` / coverage
+
+---
+
+## Фаза 3 — Expenses workflow (канон)
+
+- [ ] 3.1 Workflow-статусы: Planned / Due Soon / Due Now / Overdue / Backlog / …
+- [ ] 3.2 UI board/backlog под новые статусы (убрать `OLD`)
+- [ ] 3.3 Expense Plans: calendar grid (строки × месяцы)
+
+---
+
+## Фаза 4 — Operational Journal & периоды
+
+- [ ] 4.1 Запрет правок в CLOSED period
+- [ ] 4.2 Adjustment entries вместо silent edit
+- [ ] 4.3 Полное покрытие journal sources (invoice/expense accrual)
+
+---
+
+## Фаза 5 — Compensation Profile
+
+- [ ] 5.1 Сущность + история ставок
+- [ ] 5.2 Payroll materialize из profile, не scalar employee
+
+---
+
+## Фаза 6 — Интеграции и хвосты
+
+- [ ] 6.1 Domain → Client Service Record
+- [ ] 6.2 Drive: вложения finance (proofs, restricted)
+- [ ] 6.3 Client-paid automation (task/expense после оплаты)
+- [ ] 6.4 Finance dashboard / summary доработки
+
+---
+
+## Сейчас в работе
+
+**Фаза 2** — Subscription billing model (2.1 → 2.3)

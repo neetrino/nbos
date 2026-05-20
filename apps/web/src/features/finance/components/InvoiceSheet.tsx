@@ -25,6 +25,7 @@ interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
   onPaymentRecorded: (data: {
     invoiceId: string;
     amount: number;
@@ -38,6 +39,7 @@ export function InvoiceSheet({
   invoice,
   open,
   onOpenChange,
+  onInvoiceUpdated,
   onPaymentRecorded,
 }: InvoiceSheetProps) {
   if (!invoice) return null;
@@ -76,7 +78,7 @@ export function InvoiceSheet({
             </div>
 
             <div className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS)}>
-              <InvoiceDetailsSection invoice={invoice} />
+              <InvoiceDetailsSection invoice={invoice} onInvoiceUpdated={onInvoiceUpdated} />
             </div>
 
             <div className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS)}>
