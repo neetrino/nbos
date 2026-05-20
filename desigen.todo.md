@@ -26,15 +26,21 @@ Bring opened entity cards, sheets, and quick dialogs to one NBOS visual language
 
 ## Working Rule
 
-We change one surface first, then stop for visual review.
+1. **One checkpoint at a time** — implement one bullet (or one logical slice), then stop for visual review when the step says so.
+2. **After each completed checkpoint** — update this file (`[x]` / `[review]` + short note what shipped) and **create a git commit** for that slice only (do not batch unrelated surfaces).
+3. If the approved surface feels right, use it as the reference for the next surfaces. If not, adjust the standard and only then continue.
 
-If the approved surface feels right, use it as the reference for the next surfaces. If not, adjust the standard and only then continue.
+**Shared UI (reuse, do not reinvent per module):**
+
+- `PipelineStagesBar`, `DetailSheetTabBar`, `DetailSheetSection`, `DetailSheetCollapsibleSection`, `InlineField`, `DetailSheetFormFooter`, `EntitySheetFloatingRail`
+- Width tokens: `DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS` (invoice), `MEDIUM` (client service), `75VW` (deal/subscription workspace)
 
 ---
 
 ## Step 1 — Visual Reference Surface
 
-- [x] ~~**Subscription detail sheet** — Deal-style draft + InlineField + Save/Cancel footer~~
+- [x] ~~**Subscription detail sheet** — Deal-style draft + InlineField + Save/Cancel footer; list deep-link `openSubscription`~~
+- [review] **Visual approval** — confirm sheet density/labels with product owner before treating as platform reference.
 
 Why this first:
 
@@ -42,16 +48,6 @@ Why this first:
 - it has enough real fields to validate the style;
 - it can prove the rule: list/card click opens a sheet, not a separate page;
 - changes are easier to review before touching larger Finance surfaces.
-
-Planned changes:
-
-- open subscription details in a right-side sheet from the subscription surface;
-- keep create/edit flow compact;
-- remove unnecessary repeated field names where the value is self-explanatory;
-- use small muted labels only for ambiguous fields like billing day, billing frequency, project, partner, tax status;
-- use soft spacing and separators instead of many bordered cards;
-- keep status and money colors meaningful, not decorative;
-- avoid separate page unless subscription becomes a real workspace.
 
 Review target:
 
@@ -61,16 +57,12 @@ Review target:
 
 ## Step 2 — Finance Invoice Detail
 
-- [x] ~~**Invoice detail sheet** — money stages bar + Deal-style sections; inline official/payments~~
-
-Planned changes:
-
-- remove oversized one-value hero panels;
-- make amount, paid/debt/overdue state, due date, and tax state a compact summary;
-- reduce duplicated labels and repeated values;
-- group linked entities as clean compact rows/chips;
-- keep payments and proofs as operational sections, not visual noise;
-- keep color only for paid, debt, overdue, cancelled, selected actions.
+- [x] ~~**Invoice detail sheet (General / Payments / History tabs)**~~
+- [x] ~~Compact sheet width (42rem), header = code + money badge only (no duplicate amount/type/project line)~~
+- [x] ~~`PipelineStagesBar` chevron money stages (shared with Deal)~~
+- [x] ~~Editable **Amount** + **Tax Status** (select Tax / Tax Free) + `DetailSheetFormFooter`; API `PATCH /finance/invoices/:id`~~
+- [x] ~~Official invoice, linked, proofs sections; payments tab with `InlineField` record form~~
+- [review] **Visual approval** — invoice sheet after Step 2 slice.
 
 Review target:
 
@@ -80,16 +72,16 @@ Review target:
 
 ## Step 3 — Client Services
 
-- [x] ~~**Client service detail/edit sheet** — Deal-style InlineField sections, medium width, Save/Cancel footer~~
-- [ ] **Client service quick create** — keep as quick dialog only if the create flow stays short.
+- [x] ~~**Client service detail/edit sheet** — medium width (48rem), collapsible Basics/Billing/Dates, `InlineField`, proofs + connections, draft footer, floating rail + `openClientService`~~
+- [x] ~~**Client service quick create** — remains compact dialog (`ClientServiceCreateDialog`, not full detail form)~~
+- [review] **Visual approval** — client service sheet + create dialog.
 
-Planned changes:
+Planned changes (done in code; review UI):
 
 - open existing client service in a sheet;
 - separate detail/edit layout from quick create;
-- move finance links, proofs, renewals, and linked project info into compact sections;
-- avoid a large centered popup for full edit/detail;
-- keep create dialog focused on the minimum required fields if quick create remains useful.
+- finance links, proofs in compact sections;
+- avoid large centered popup for full edit/detail.
 
 Review target:
 
@@ -140,6 +132,8 @@ Review target:
 - [ ] **CRM Deal sheet cleanup** — keep existing sheet behavior but align density and labels.
 - [ ] **Delivery item sheet cleanup** — preserve readiness logic, reduce visual noise if found.
 
+Note: Deal pipeline stages now use shared `PipelineStagesBar` (Step 2 collateral).
+
 Planned changes:
 
 - do not change business logic;
@@ -166,9 +160,9 @@ Stop and ask before continuing if:
 
 ## Done When
 
-- [ ] Subscription detail sheet approved as the first visual reference.
-- [ ] Invoice detail follows the approved compact pattern.
-- [ ] Client Services no longer uses a large full-form dialog for detail/edit.
+- [review] Subscription detail sheet approved as the first visual reference.
+- [review] Invoice detail follows the approved compact pattern.
+- [x] Client Services no longer uses a large full-form dialog for detail/edit.
 - [ ] Tasks quick create/detail matches the clean task-style reference.
 - [ ] Support ticket detail uses the same sheet-first hierarchy.
 - [ ] CRM and Delivery cleanup pass completed without changing business behavior.
