@@ -97,8 +97,8 @@
 - [x] ~~Support tickets: описать active stages и terminal outcomes в canon (`01-Support-Ticket-Board-Lifecycle.md`)~~
 - [x] ~~Support board/list: Active/Closed scope + board/list toggle~~
 - [ ] Support ticket detail: sheet-first layout по `10-Entity-Detail-Sheet-Standard.md`
-- [ ] Tasks / Work Spaces: проверить completion blockers и terminal outcomes
-- [ ] Tasks board/list: привести card density, terminal states и list parity к standard
+- [x] ~~Tasks / Work Spaces: terminal outcomes (COMPLETED/DONE) + board scope canon~~
+- [x] ~~Tasks board/list: Active/Closed scope на `/tasks` и Work Space runtime~~
 - [ ] Tasks quick create/detail: использовать чистый task-style layout как визуальный эталон
 
 ---
@@ -107,7 +107,8 @@
 
 - [ ] Удалить устаревшие blocker/modal компоненты после миграции всех surfaces
 - [x] ~~Regression: `delivery-stage-gate-client.test.ts` (local pre-check)~~
-- [ ] Regression: CRM / Product / Finance boards
+- [x] ~~Regression: lead + task board lifecycle + delivery local gate~~
+- [ ] Regression: product / finance board scope helpers
 - [ ] Проверить mobile/responsive для Active/Closed Board/List
 - [ ] Проверить docs links и cleanup registers
 - [ ] Финальный audit: все kanban/workflow доски используют один стандарт

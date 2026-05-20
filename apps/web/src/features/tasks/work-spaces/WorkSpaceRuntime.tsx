@@ -20,7 +20,9 @@ import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTa
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
+import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
 import { TASKS_WORKSPACE_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
+import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import type { Task, WorkSpace } from '@/lib/api/tasks';
 import type { WorkSpaceSprint } from '@/lib/api/work-space-sprints';
 import { useWorkspaceRuntimeBoard, type WorkspaceBoardView } from './use-workspace-runtime-board';
@@ -106,6 +108,7 @@ export function WorkSpaceRuntime({
     buildWorkspaceKanbanColumns,
     buildMyPlanColumns,
     buildDeadlineColumns,
+    boardScope,
     viewTasks,
   } = useWorkspaceRuntimeBoard(
     tasks,
@@ -218,6 +221,17 @@ export function WorkSpaceRuntime({
     setTaskFilters({});
   }, []);
 
+  const handleTaskFilterChange = useCallback((key: string, value: string) => {
+    setTaskFilters((prev) => {
+      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+        const next = { ...prev };
+        delete next.boardScope;
+        return next;
+      }
+      return { ...prev, [key]: value };
+    });
+  }, []);
+
   const renderCard = useCallback(
     (task: Task) => (
       <TaskMiniCard task={task} onAction={handleCardAction} onClick={handleTaskClick} />
@@ -229,7 +243,11 @@ export function WorkSpaceRuntime({
     if (boardView === 'list') {
       return (
         <div className="min-h-0 flex-1 overflow-auto">
-          <TaskListTableView tasks={viewTasks} onRowClick={handleTaskClick} />
+          <TaskListTableView
+            tasks={viewTasks}
+            boardScope={boardScope}
+            onRowClick={handleTaskClick}
+          />
         </div>
       );
     }
@@ -263,7 +281,7 @@ export function WorkSpaceRuntime({
             onReorderWithinColumn={handleKanbanReorder}
             onAddItemInColumn={handleAddTaskInColumn}
             addButtonLabel="Quick"
-            columnWidth={270}
+            columnWidth={boardScope === 'CLOSED' ? 288 : 270}
             emptyMessage="No tasks"
           />
         </div>
@@ -333,10 +351,15 @@ export function WorkSpaceRuntime({
       <WorkspaceRuntimeFilterBar
         search={taskSearch}
         onSearchChange={setTaskSearch}
-        filterValues={taskFilters}
-        onFilterChange={(key, value) => setTaskFilters((prev) => ({ ...prev, [key]: value }))}
+        filterValues={{
+          boardScope: taskFilters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+          ...taskFilters,
+        }}
+        onFilterChange={handleTaskFilterChange}
         onClearFilters={clearTaskViewFilters}
       />
+
+      <TasksWorkflowScopeBanner scope={boardScope} />
 
       {!hideInlineBoardToolbar && !isPlanningArea ? (
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">

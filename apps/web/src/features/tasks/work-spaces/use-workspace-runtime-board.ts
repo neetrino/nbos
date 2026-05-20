@@ -8,10 +8,9 @@ import {
 } from 'react';
 import type { KanbanColumn } from '@/components/shared';
 import {
-  DEADLINE_COLUMNS_DEF,
   KANBAN_STATUS_MAP,
-  getDeadlineColumn,
   getDueDateForDeadlineColumn,
+  buildDeadlineKanbanColumns,
   buildWorkspaceKanbanColumns,
   buildMyPlanColumns,
   buildWorkspacePlanningColumns,
@@ -25,7 +24,10 @@ import type { TaskBoardAction } from '@/features/tasks/task-board';
 import { tasksApi, type Task, type TaskBoardStage } from '@/lib/api/tasks';
 
 import { taskInvolvesEmployee } from '@/features/tasks/utils/task-involves-employee';
-import { filterTasksForWorkspaceView } from './workspace-task-view-filter';
+import {
+  filterTasksForWorkspaceView,
+  resolveWorkspaceBoardScope,
+} from './workspace-task-view-filter';
 import { filterTasksForScrumDailyExecution } from './workspace-scrum-daily-filter';
 import type { WorkspaceArea } from './workspace-area';
 
@@ -320,17 +322,15 @@ export function useWorkspaceRuntimeBoard(
     [myPlanStages],
   );
 
-  const buildDeadlineColumns = useCallback((): KanbanColumn<Task>[] => {
-    return DEADLINE_COLUMNS_DEF.map((col) => ({
-      key: col.key,
-      label: col.label,
-      color: col.color,
-      hexColor: col.hexColor,
-      items: viewTasks.filter((t) => getDeadlineColumn(t) === col.key),
-    }));
-  }, [viewTasks]);
+  const boardScope = resolveWorkspaceBoardScope(viewFilters.filterValues);
+
+  const buildDeadlineColumns = useCallback(
+    (): KanbanColumn<Task>[] => buildDeadlineKanbanColumns(viewTasks, boardScope),
+    [viewTasks, boardScope],
+  );
 
   return {
+    boardScope,
     boardView,
     setBoardView,
     myPlanStages,
@@ -349,7 +349,7 @@ export function useWorkspaceRuntimeBoard(
     handleAddMyPlanStage,
     handleRenameMyPlanStage,
     handleDeleteMyPlanStage,
-    buildWorkspaceKanbanColumns: () => buildWorkspaceKanbanColumns(viewTasks),
+    buildWorkspaceKanbanColumns: () => buildWorkspaceKanbanColumns(viewTasks, boardScope),
     buildWorkspacePlanningColumns: () => buildWorkspacePlanningColumns(viewTasks),
     buildMyPlanColumns: () => buildMyPlanColumns(myPlanBoardTasks, myPlanStagesForView),
     handlePlanningMove,

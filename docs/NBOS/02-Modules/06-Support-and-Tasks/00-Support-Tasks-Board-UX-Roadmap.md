@@ -15,5 +15,6 @@ References:
 
 ## Tasks / Work Spaces
 
-- Audit completion blockers and terminal states vs `@nbos/shared` task gates.
-- Align card density and list parity with CRM/Delivery standard.
+- [x] Canon: [`02-Tasks-Board-Lifecycle.md`](02-Tasks-Board-Lifecycle.md)
+- [x] Web: Active/Closed on `/tasks` and Work Space boards
+- [ ] Completion blockers: sheet field highlights when shared gates are wired to UI
