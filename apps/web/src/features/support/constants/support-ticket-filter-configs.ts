@@ -1,5 +1,9 @@
 import type { FilterConfig } from '@/components/shared';
 import {
+  BOARD_LIFECYCLE_SCOPE_OPTIONS,
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+} from '@/features/shared/board-lifecycle';
+import {
   TICKET_CATEGORIES,
   TICKET_PRIORITIES,
   TICKET_STATUSES,
@@ -7,6 +11,16 @@ import {
 } from '@/features/support/constants/support';
 
 export const SUPPORT_TICKET_FILTER_CONFIGS: FilterConfig[] = [
+  {
+    key: 'boardScope',
+    label: 'Status',
+    includeAllOption: false,
+    defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
+    options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
+      value: option.value,
+      label: option.label,
+    })),
+  },
   {
     key: 'category',
     label: 'Category',

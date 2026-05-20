@@ -28,6 +28,7 @@
 - [x] ~~Обновить `docs/NBOS/00-Technical-Decisions-By-Module.md`~~
 - [x] ~~Обновить `docs/NBOS/00-Implementation-Roadmap.md`~~
 - [x] ~~Финализировать `05-UI-Specifications/09-Kanban-Board-and-List-Standard.md`~~
+- [x] ~~Создать detail UI canon: `05-UI-Specifications/10-Entity-Detail-Sheet-Standard.md`~~
 - [x] ~~Обновить CRM UI spec: `05-UI-Specifications/02-CRM-Pages.md`~~
 - [x] ~~Обновить Delivery UI/canon links: `03-Project-Hub-Pages.md`, `07-Professional-Delivery-Card.md`, `07-Delivery-Board.md`~~
 
@@ -80,7 +81,11 @@
 - [x] ~~Найти все finance workflow/kanban/list surfaces~~
 - [x] ~~Для existing gates: описать module rules в finance canon (`11-Finance-Stage-Gate-and-Board-UX-Standard.md`)~~
 - [x] ~~Expense closed: `closedBoard` API + Board/List + Paid/Cancelled columns~~
-- [ ] Invoice/Subscription: единый Closed scope / board parity (invoices: terminal columns on one board — задокументировано)
+- [x] ~~Invoices: Active/Closed board scope на одной странице (Paid/Cancelled = closed)~~
+- [ ] Subscription: board/list parity (grid-first)
+- [ ] Invoice detail sheet: применить compact detail canon, убрать oversized one-value panels и дублирующие labels
+- [ ] Subscription detail: открывать через sheet, separate page оставить только для workspace-сценария
+- [ ] Client Services: заменить большой edit/detail dialog на sheet; quick dialog оставить только для короткого create/action
 - [ ] Finance blockers: sheet-highlight UX при добавлении validation rules (сейчас API/detail guards)
 - [x] ~~Finance list/board cards: ExpenseKanbanCard + ExpensesTableSection на active и closed~~
 
@@ -89,10 +94,12 @@
 ## Фаза 7 — Support / Tasks / Work Spaces
 
 - [x] ~~Roadmap stub: `06-Support-and-Tasks/00-Support-Tasks-Board-UX-Roadmap.md`~~
-- [ ] Support tickets: описать active stages и terminal outcomes в canon
-- [ ] Support board/list: привести к `Active/Closed + Board/List` standard
+- [x] ~~Support tickets: описать active stages и terminal outcomes в canon (`01-Support-Ticket-Board-Lifecycle.md`)~~
+- [x] ~~Support board/list: Active/Closed scope + board/list toggle~~
+- [ ] Support ticket detail: sheet-first layout по `10-Entity-Detail-Sheet-Standard.md`
 - [ ] Tasks / Work Spaces: проверить completion blockers и terminal outcomes
 - [ ] Tasks board/list: привести card density, terminal states и list parity к standard
+- [ ] Tasks quick create/detail: использовать чистый task-style layout как визуальный эталон
 
 ---
 

@@ -8,6 +8,7 @@ import {
   writeSupportPageViewToStorage,
 } from '@/features/support/constants/support-page-view-storage';
 import type { SupportPageViewMode } from '@/features/support/constants/support-page-view-options';
+import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 
 export function useSupportTicketsQuery() {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -87,7 +88,13 @@ export function useSupportTicketsQuery() {
   }, []);
 
   const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    setFilters((prev) => {
+      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+        const { boardScope: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [key]: value };
+    });
   }, []);
 
   const clearFilters = useCallback(() => {

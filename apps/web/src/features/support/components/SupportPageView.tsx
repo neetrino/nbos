@@ -6,12 +6,14 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { SupportCreateTicketDialog } from '@/features/support/components/SupportCreateTicketDialog';
 import { SupportEscalateDialog } from '@/features/support/components/SupportEscalateDialog';
 import { SupportPageHero } from '@/features/support/components/SupportPageHero';
+import { SupportWorkflowScopeBanner } from '@/features/support/components/SupportWorkflowScopeBanner';
 import { SupportStatusDialogs } from '@/features/support/components/SupportStatusDialogs';
 import { SupportTechnicalContextDialog } from '@/features/support/components/SupportTechnicalContextDialog';
 import { SupportTicketsKanbanView } from '@/features/support/components/SupportTicketsKanbanView';
 import { SupportTicketsListView } from '@/features/support/components/SupportTicketsListView';
 import { SupportTicketDetailSheet } from '@/features/support/components/SupportTicketDetailSheet';
 import type { SupportKanbanColumn } from '@/features/support/components/SupportTicketsKanbanView';
+import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import type { SupportPageViewMode } from '@/features/support/constants/support-page-view-options';
 import { useSupportPage } from '@/features/support/hooks/use-support-page';
 import type { SupportTicket } from '@/lib/api/support';
@@ -25,7 +27,10 @@ export function SupportPageView() {
       <SupportPageHero
         search={query.search}
         onSearchChange={query.setSearch}
-        filterValues={query.filters}
+        filterValues={{
+          boardScope: query.filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+          ...query.filters,
+        }}
         onFilterChange={query.handleFilterChange}
         onClearFilters={query.clearFilters}
         view={query.view}
@@ -35,10 +40,12 @@ export function SupportPageView() {
         onNewTicket={() => createForm.setCreateOpen(true)}
       />
 
+      <SupportWorkflowScopeBanner scope={page.boardScope} />
+
       <SupportPageBody
         loading={query.loading}
         error={query.error}
-        tickets={query.tickets}
+        tickets={page.displayTickets}
         view={query.view}
         kanbanColumns={page.kanbanColumns}
         actionId={actions.actionId}

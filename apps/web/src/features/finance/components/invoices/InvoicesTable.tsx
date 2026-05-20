@@ -9,14 +9,16 @@ import {
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import { formatAmount, getInvoiceMoneyStage } from '@/features/finance/constants/finance';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoicesTableProps {
   invoices: Invoice[];
+  boardScope: BoardLifecycleScope;
   onInvoiceClick: (invoice: Invoice) => void;
 }
 
-export function InvoicesTable({ invoices, onInvoiceClick }: InvoicesTableProps) {
+export function InvoicesTable({ invoices, boardScope, onInvoiceClick }: InvoicesTableProps) {
   return (
     <div className="border-border overflow-hidden rounded-xl border">
       <Table>
@@ -26,7 +28,7 @@ export function InvoicesTable({ invoices, onInvoiceClick }: InvoicesTableProps) 
             <TableHead>Company</TableHead>
             <TableHead>Type</TableHead>
             <TableHead className="text-right">Amount</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>{boardScope === 'CLOSED' ? 'Closed' : 'Status'}</TableHead>
             <TableHead>Tax</TableHead>
             <TableHead>Due Date</TableHead>
             <TableHead>Paid Date</TableHead>

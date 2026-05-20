@@ -3,6 +3,13 @@
 import { useCallback, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { TICKET_STATUSES } from '@/features/support/constants/support';
+import { SUPPORT_TICKET_BOARD_STAGES } from '@/features/support/constants/support-board-lifecycle';
+import {
+  getBoardStageKeys,
+  matchesBoardLifecycleScope,
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { SUPPORT_TICKET_OPEN_QUERY } from '@/features/support/constants/support-ticket-open-query';
 import { useSupportScopeStatsCsvExport } from '@/features/support/use-support-scope-stats-csv-export';
@@ -65,18 +72,29 @@ export function useSupportPage() {
     [stripSupportTicketOpenFromUrl],
   );
 
-  const kanbanColumns = useMemo(
-    () =>
-      TICKET_STATUSES.map((status) => ({
-        key: status.value,
-        label: status.label,
-        color: status.color,
-        items: query.tickets.filter((ticket) => ticket.status === status.value),
-      })),
-    [query.tickets],
-  );
+  const boardScope = resolveBoardLifecycleScope(query.filters.boardScope);
+  const hasStatusFilter = Boolean(query.filters.status) && query.filters.status !== 'all';
+
+  const displayTickets = useMemo(() => {
+    if (hasStatusFilter) return query.tickets;
+    return query.tickets.filter((ticket) =>
+      matchesBoardLifecycleScope(ticket.status, SUPPORT_TICKET_BOARD_STAGES, boardScope),
+    );
+  }, [query.tickets, boardScope, hasStatusFilter]);
+
+  const kanbanColumns = useMemo(() => {
+    const visibleKeys = getBoardStageKeys(SUPPORT_TICKET_BOARD_STAGES, boardScope);
+    return TICKET_STATUSES.filter((status) => visibleKeys.includes(status.value)).map((status) => ({
+      key: status.value,
+      label: status.label,
+      color: status.color,
+      items: displayTickets.filter((ticket) => ticket.status === status.value),
+    }));
+  }, [displayTickets, boardScope]);
 
   return {
+    boardScope: boardScope as BoardLifecycleScope,
+    displayTickets,
     openTicketIdFromUrl,
     meId: me?.id ?? null,
     exportScopeStatsDisabled: query.loading || !query.stats,

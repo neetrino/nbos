@@ -1,10 +1,14 @@
 'use client';
 
-const CLOSED_EXPENSE_HINT =
-  'Showing terminal outcomes only: Paid and Cancelled. Same board and list views as the active expense board.';
+const CLOSED_SCOPE_HINTS = {
+  'expense-closed':
+    'Showing terminal outcomes only: Paid and Cancelled. Same board and list views as the active expense board.',
+  'invoice-closed':
+    'Showing terminal outcomes only: Paid and Cancelled. Same board and list views as the active invoice board.',
+} as const;
 
-export function FinanceWorkflowScopeBanner({ variant }: { variant: 'expense-closed' }) {
-  if (variant !== 'expense-closed') return null;
+export type FinanceWorkflowScopeVariant = keyof typeof CLOSED_SCOPE_HINTS;
 
-  return <p className="text-muted-foreground shrink-0 text-xs">{CLOSED_EXPENSE_HINT}</p>;
+export function FinanceWorkflowScopeBanner({ variant }: { variant: FinanceWorkflowScopeVariant }) {
+  return <p className="text-muted-foreground shrink-0 text-xs">{CLOSED_SCOPE_HINTS[variant]}</p>;
 }

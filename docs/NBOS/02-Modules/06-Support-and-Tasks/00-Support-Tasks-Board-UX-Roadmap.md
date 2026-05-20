@@ -9,9 +9,9 @@ References:
 
 ## Support tickets
 
-- Document active stages vs terminal outcomes (`Resolved`, `Cancelled`, etc.) in support canon.
-- Apply `Active/Closed + Board/List` on ticket board when lifecycle is unified.
-- Stage-gate blockers: detail sheet + field highlights.
+- [x] Canon: [`01-Support-Ticket-Board-Lifecycle.md`](01-Support-Ticket-Board-Lifecycle.md)
+- [x] Web: Active/Closed scope on `/support` (Resolved + Closed = terminal)
+- [ ] Stage-gate blockers: detail sheet + field highlights when rules are added
 
 ## Tasks / Work Spaces
 

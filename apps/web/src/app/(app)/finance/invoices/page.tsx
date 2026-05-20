@@ -1,13 +1,21 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useCallback, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { LoadingState } from '@/components/shared';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { InvoiceFilters } from '@/features/finance/components/invoices/InvoiceFilters';
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
+import { FinanceWorkflowScopeBanner } from '@/features/finance/components/FinanceWorkflowScopeBanner';
 import { InvoicesPageHeader } from '@/features/finance/components/invoices/InvoicesPageHeader';
+import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
+import {
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  matchesBoardLifecycleScope,
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
 import { InvoiceStatsCards } from '@/features/finance/components/invoices/InvoiceStatsCards';
 import { useInvoicesCsvExport } from '@/features/finance/components/invoices/use-invoices-csv-export';
 import { useInvoicesScopeStatsCsvExport } from '@/features/finance/components/invoices/use-invoices-scope-stats-csv-export';
@@ -54,10 +62,39 @@ function InvoicesPageInner() {
     router.replace(pathname);
   };
 
+  const boardScope = resolveBoardLifecycleScope(state.filters.boardScope);
+  const hasMoneyStatusFilter =
+    Boolean(state.filters.moneyStatus) && state.filters.moneyStatus !== 'all';
+
+  const displayInvoices = useMemo(() => {
+    if (hasMoneyStatusFilter) return state.invoices;
+    return state.invoices.filter((invoice) =>
+      matchesBoardLifecycleScope(invoice.moneyStatus, INVOICE_MONEY_BOARD_STAGES, boardScope),
+    );
+  }, [state.invoices, boardScope, hasMoneyStatusFilter]);
+
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      state.setFilters((prev) => {
+        if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+          const next = { ...prev };
+          delete next.boardScope;
+          return next;
+        }
+        return { ...prev, [key]: value };
+      });
+    },
+    [state.setFilters],
+  );
+
+  const handleClearFilters = useCallback(() => {
+    state.setFilters({});
+  }, [state.setFilters]);
+
   return (
     <div className="flex h-full flex-col gap-5">
       <InvoicesPageHeader
-        invoiceCount={state.invoices.length}
+        invoiceCount={displayInvoices.length}
         period={state.period}
         view={state.view}
         onPeriodChange={state.setPeriod}
@@ -79,15 +116,20 @@ function InvoicesPageInner() {
           </Button>
         </div>
       ) : null}
+      {boardScope === 'CLOSED' && !hasMoneyStatusFilter ? (
+        <FinanceWorkflowScopeBanner variant="invoice-closed" />
+      ) : null}
       <InvoiceFilters
         search={state.search}
         filters={state.filters}
         onSearchChange={state.setSearch}
-        onFilterChange={state.setFilters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
         onCreateInvoice={() => state.setCreateOpen(true)}
       />
       <InvoicesPageContent
-        invoices={state.invoices}
+        invoices={displayInvoices}
+        boardScope={boardScope as BoardLifecycleScope}
         loading={state.loading}
         error={state.error}
         mutationError={state.mutationError}

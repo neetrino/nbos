@@ -15,7 +15,7 @@ References:
 | Surface                                 | Active scope                                                                     | Terminal / off-board                                                                           | Stage-gate today                                                                                                                         |
 | --------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | **Expense Board** (`/finance/expenses`) | `PLANNED` … `ON_HOLD` columns; API `activeBoard=true` excludes `PAID`, `BACKLOG` | **Closed** route: `PAID`, `CANCELLED` (`closedBoard=true`). **Backlog** route: `BACKLOG` only. | Payment rollup + amount guards on detail; no kanban drag gates yet. Blockers → **detail sheet + field highlights** when gates are added. |
-| **Invoices**                            | `moneyStatus` columns on one board (`NEW` … `ON_HOLD`)                           | `PAID`, `CANCELLED` as terminal columns on the **same** board (no separate Closed URL yet).    | Money-status transitions; sheet-highlight UX for future validation rules.                                                                |
+| **Invoices**                            | `moneyStatus` columns on one board (`NEW` … `ON_HOLD`); default **Active** scope | `PAID`, `CANCELLED` via **Closed** filter on the same page (not a separate URL).               | Money-status transitions; sheet-highlight UX for future validation rules.                                                                |
 | **Subscriptions**                       | Grid/list-first                                                                  | Renewal/cancel outcomes in canon                                                               | TBD                                                                                                                                      |
 
 ---
@@ -25,7 +25,7 @@ References:
 - **Expenses — active:** `Board` / `List` toggle on `/finance/expenses` (default board).
 - **Expenses — closed:** `/finance/expenses/closed` uses the **same** `ExpenseKanbanCard` and `ExpensesTableSection` as active; **Board / List** toggle enabled; closed kanban columns: **Paid**, **Cancelled** (288px column width per kanban standard).
 - **Expenses — backlog:** list-only (deferred queue; not a lifecycle board).
-- **Invoices:** kanban + list on one page; terminal columns remain visible (filter by column drag / status), not a separate archive UI.
+- **Invoices:** kanban + list on one page; **Active / All statuses / Closed** scope (terminal columns only in Closed).
 
 Scope hint banner on closed expense view explains terminal-only scope (parity with CRM `CrmPipelineScopeBanner`).
 

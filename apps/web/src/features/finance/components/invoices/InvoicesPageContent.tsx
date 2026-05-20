@@ -2,12 +2,14 @@ import { Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import type { Invoice } from '@/lib/api/finance';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { InvoiceViewMode } from './invoice-page-types';
 import { InvoiceKanban } from './InvoiceKanban';
 import { InvoicesTable } from './InvoicesTable';
 
 interface InvoicesPageContentProps {
   invoices: Invoice[];
+  boardScope: BoardLifecycleScope;
   loading: boolean;
   error: string | null;
   mutationError: string | null;
@@ -20,6 +22,7 @@ interface InvoicesPageContentProps {
 
 export function InvoicesPageContent({
   invoices,
+  boardScope,
   loading,
   error,
   mutationError,
@@ -47,9 +50,18 @@ export function InvoicesPageContent({
         <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
       ) : null}
       {view === 'kanban' ? (
-        <InvoiceKanban invoices={invoices} onInvoiceClick={onInvoiceClick} onMove={onMove} />
+        <InvoiceKanban
+          invoices={invoices}
+          boardScope={boardScope}
+          onInvoiceClick={onInvoiceClick}
+          onMove={onMove}
+        />
       ) : (
-        <InvoicesTable invoices={invoices} onInvoiceClick={onInvoiceClick} />
+        <InvoicesTable
+          invoices={invoices}
+          boardScope={boardScope}
+          onInvoiceClick={onInvoiceClick}
+        />
       )}
     </div>
   );

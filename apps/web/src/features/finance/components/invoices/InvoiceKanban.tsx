@@ -6,10 +6,13 @@ import {
   INVOICE_MONEY_STAGES,
   INVOICE_TYPES,
 } from '@/features/finance/constants/finance';
+import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
+import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoiceKanbanProps {
   invoices: Invoice[];
+  boardScope: BoardLifecycleScope;
   onInvoiceClick: (invoice: Invoice) => void;
   onMove: (itemId: string, from: string, to: string) => void;
 }
@@ -24,13 +27,21 @@ const STAGE_COLORS: Record<string, string> = {
 };
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-export function InvoiceKanban({ invoices, onInvoiceClick, onMove }: InvoiceKanbanProps) {
-  const columns = INVOICE_MONEY_STAGES.map((stage) => ({
-    key: stage.value,
-    label: stage.label,
-    color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
-    items: invoices.filter((invoice) => invoice.moneyStatus === stage.value),
-  }));
+export function InvoiceKanban({
+  invoices,
+  boardScope,
+  onInvoiceClick,
+  onMove,
+}: InvoiceKanbanProps) {
+  const visibleKeys = getBoardStageKeys(INVOICE_MONEY_BOARD_STAGES, boardScope);
+  const columns = INVOICE_MONEY_STAGES.filter((stage) => visibleKeys.includes(stage.value)).map(
+    (stage) => ({
+      key: stage.value,
+      label: stage.label,
+      color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
+      items: invoices.filter((invoice) => invoice.moneyStatus === stage.value),
+    }),
+  );
 
   return (
     <div className="min-h-0 flex-1">
@@ -38,7 +49,7 @@ export function InvoiceKanban({ invoices, onInvoiceClick, onMove }: InvoiceKanba
         columns={columns}
         getItemId={(invoice: Invoice) => invoice.id}
         onMove={onMove}
-        columnWidth={270}
+        columnWidth={boardScope === 'CLOSED' ? 288 : 270}
         emptyMessage="No invoices"
         renderColumnHeader={(column: KanbanColumn<Invoice>) => (
           <InvoiceKanbanColumnTotal column={column} />
