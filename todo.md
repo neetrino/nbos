@@ -66,7 +66,7 @@
 
 ## Фаза 6 — Интеграции и хвосты
 
-- [ ] 6.1 Domain → Client Service Record
+- [x] ~~6.1 Domain → Client Service Record~~
 - [ ] 6.2 Drive: вложения finance (proofs, restricted)
 - [ ] 6.3 Client-paid automation (task/expense после оплаты)
 - [ ] 6.4 Finance dashboard / summary доработки

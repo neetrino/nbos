@@ -157,6 +157,7 @@ export interface ProjectSubscription {
 
 export interface ProjectDomain {
   id: string;
+  clientServiceRecordId: string | null;
   domainName: string;
   provider: string | null;
   purchaseDate: string | null;

@@ -319,6 +319,14 @@ export function FinanceTab({
                       ? `Expires ${new Date(dom.expiryDate).toLocaleDateString()}`
                       : 'No expiry'}
                   </p>
+                  {dom.clientServiceRecordId ? (
+                    <Link
+                      href={`/finance/client-services?open=${dom.clientServiceRecordId}`}
+                      className={cn(buttonVariants({ variant: 'link', size: 'sm' }), 'h-auto px-0')}
+                    >
+                      Client service record
+                    </Link>
+                  ) : null}
                 </div>
                 <StatusBadge
                   label={dom.status.replace(/_/g, ' ')}
