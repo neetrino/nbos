@@ -1,47 +1,159 @@
-# NBOS — Stage Gate + Kanban UI
+# Entity Detail Sheet Shell — Floating Rail Standard
 
-`[ ]` открыто · `[x]` сделано
+`[ ]` open · `[x]` done · `[review]` waiting for visual approval
 
-План и канон: [`docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md`](docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md) · [`04-Stage-Gate-UX-and-Validation-Standard.md`](docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-and-Validation-Standard.md) · [`09-Kanban-Board-and-List-Standard.md`](docs/NBOS/05-UI-Specifications/09-Kanban-Board-and-List-Standard.md) · [`10-Entity-Detail-Sheet-Standard.md`](docs/NBOS/05-UI-Specifications/10-Entity-Detail-Sheet-Standard.md)
+**Цель:** один NBOS-слой для entity detail sheets — панель + blur + floating rail без ручной сборки в каждом модуле.
 
-Rollout по модулям (CRM, Delivery, Product, Finance invoices/expenses/subscriptions sheet, Support, Tasks) — **в коде и docs сделан**. Ниже только то, что ещё имеет смысл делать.
+**Решение (согласовано):** не зашивать rail в низкоуровневый `SheetContent`, а ввести `EntityDetailSheetContent` (shell) поверх него.
 
----
+**Canon (обновить после Step 1):**
 
-## Сейчас
+- [`docs/NBOS/05-UI-Specifications/10-Entity-Detail-Sheet-Standard.md`](docs/NBOS/05-UI-Specifications/10-Entity-Detail-Sheet-Standard.md)
 
-- [x] ~~Delivery Board parity: Closed `X of Y cards`, fixed 288px columns Active/Closed, terminal drop Done/Cancelled на Active drag~~
-- [ ] **Финальный audit (ручной)** — пройти workflow surfaces по чеклисту kanban + stage-gate (можно без ожидания других задач):
-  - CRM: leads, deals — Active/Closed, Board/List, blocked drag → sheet + field highlights
-  - Delivery — Active/Closed Board/List, local gate
-  - Finance — expenses active/closed, invoices scope + money-status gate, subscriptions **sheet** (grid scope не в scope audit)
-  - Support — Active/Closed, ticket sheet
-  - Tasks + Work Space — Active/Closed, `QuickCreateTaskDialog`, `TaskSheet`
-  - Зафиксировать находки в issues или коротким списком под этим пунктом
+**Связь:** визуальный rollout — [`desigen.todo.md`](desigen.todo.md); этот файл — только инфраструктура sheet + rail.
 
 ---
 
-## Отложено (решим отдельно)
+## Стандарт поведения
 
-- [ ] **Subscriptions: Active/Closed на coverage grid** — сейчас **не делаем** (grid-first, без kanban terminal board; нет канона terminal scope). Вернуться, когда появится продуктовое решение / canon.
+| Кнопка / зона             | Правило                                                                                                               |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Close**                 | Всегда автоматически у entity detail sheet (через shell).                                                             |
+| **Copy link**             | По умолчанию да, если передан `sourcePageHref` или sheet открыт с deep-link URL (clipboard = `window.location.href`). |
+| **Open**                  | Если есть `sourcePageHref` (страница/запись в новой вкладке).                                                         |
+| **Dashboard / Workspace** | Только если передан `workspaceHref`.                                                                                  |
+| **Доп. кнопки**           | `trailingRail` — модуль решает сам (files, portfolio, checklist и т.д.).                                              |
+
+**Ширина (prop `width`):**
+
+- `wide` — 75vw + anchor `DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS` (Lead, Deal, Delivery, Subscription, Support, Company, Contact…)
+- `medium` — medium token + anchor (Client Service)
+- `compact` — 42rem + anchor (Invoice)
+
+**Не entity sheet** (оставить прямой `SheetContent`): короткие dialogs, nested child sheets без rail, спец. layout (Drive panel — отдельное решение в Step 4).
 
 ---
 
-## После появления правил в API + canon
+## Step 0 — Подготовка
 
-Не блокирует audit. Паттерн уже есть (Deals, Delivery, Invoices); нужны **бизнес-правила** и structured `errors: [{ field, message }]`.
-
-- [ ] **Support tickets** — stage-gate: kanban/list move → ticket sheet + подсветка полей (сейчас в API нет stage-gate с field errors; lifecycle + sheet уже есть)
-- [ ] **Tasks** — completion/stage gate: kanban move → `TaskSheet` + rings на полях (сейчас local `TaskCompletionRulesPanel` / blockers без CRM-style field highlights; ждём API или общий completion contract)
-- [ ] **Finance expenses** — sheet field highlights, когда появятся validation rules на board/detail (invoices money-status уже с local pre-check)
+- [ ] Прочитать `apps/web/src/components/ui/sheet.tsx` (`floatingClose`, `floatingRail`, `floatingRailVisible`, anchor).
+- [ ] Прочитать `entity-sheet-floating-rail.tsx` и `detail-sheet-classes.ts`.
+- [ ] Зафиксировать reference: `DealSheet` + `InvoiceSheet` (уже с rail) vs `ClientServiceDetailSheet` (без rail — регрессия для исправления).
 
 ---
 
-## Справка (сделано, не трогать в todo)
+## Step 1 — Shell-компонент + экспорт
 
-<details>
-<summary>Закрытые фазы 0–8 (архив)</summary>
+**Файл:** `apps/web/src/components/shared/EntityDetailSheetContent.tsx`
 
-- Канон, shared gates, CRM, Delivery, Product, Finance (expenses closed, invoices scope, subscription/client-service sheets, invoice gate UX), Support/Tasks boards + detail sheets, regression tests, docs sync, удаление старых blocker modals.
+- [ ] Создать `EntityDetailSheetContent` с props:
+  - `width: 'wide' | 'medium' | 'compact'`
+  - `open` (для `floatingRailVisible`, синхрон с анимацией)
+  - `sourcePageHref?: string` — для Open; Copy link всегда при entity sheet
+  - `workspaceHref?: string | null`
+  - `trailingRail?: ReactNode`
+  - `forceNestedBackdrop?` — проброс в `SheetContent` для nested sheets
+  - остальное — `SheetContent` props без дублирования rail-флагов
+- [ ] Внутри: `showCloseButton={false}`, `floatingClose`, `floatingRail={<EntitySheetFloatingRail … />}`, className + anchor из width map (одна map-константа, без magic strings в фичах).
+- [ ] Экспорт из `components/shared/index.ts`.
+- [ ] JSDoc: когда использовать shell vs голый `SheetContent`.
 
-</details>
+**Acceptance Step 1:**
+
+- [ ] Один модуль (например `InvoiceSheet`) переведён на shell — визуально без изменений, rail появляется синхронно с blur.
+- [ ] Commit: `feat(web): add EntityDetailSheetContent shell for entity sheets`
+
+---
+
+## Step 2 — Документация canon
+
+- [ ] В `10-Entity-Detail-Sheet-Standard.md` добавить секцию **Floating rail**:
+  - Close обязателен для entity detail sheet;
+  - Copy / Open / Workspace — по данным;
+  - `trailingRail` для модульных действий;
+  - ссылка на `EntityDetailSheetContent` + `EntitySheetFloatingRail`.
+- [ ] В `desigen.todo.md` → Working Rule: заменить ручную сборку rail на `EntityDetailSheetContent` где применимо.
+- [ ] Commit: `docs: entity detail sheet floating rail standard`
+
+---
+
+## Step 3 — Миграция entity sheets (по одному checkpoint + commit)
+
+Порядок: сначала уже правильные (быстрая проверка), потом без rail.
+
+### 3a — Уже с rail (рефактор только на shell)
+
+- [ ] `InvoiceSheet.tsx` (если не в Step 1)
+- [ ] `LeadSheet.tsx`
+- [ ] `DealSheet.tsx`
+- [ ] `SubscriptionDetailSheet.tsx`
+- [ ] `SupportTicketDetailSheet.tsx`
+- [ ] `CompanySheet.tsx`
+- [ ] `ContactSheet.tsx`
+- [ ] `TaskSheet.tsx` (проверить свой anchor class — свести к `width` map или явный override prop)
+- [ ] `DeliveryItemDetailSheet.tsx`
+- [ ] `PartnerDetailSheet.tsx` (если entity detail)
+
+**После 3a:** `[review]` — открыть Lead + Invoice + Deal, убедиться rail и blur одновременно, anchor на sm+ совпадает с шириной панели.
+
+### 3b — Без rail сегодня (добавить стандарт)
+
+- [ ] `ClientServiceDetailSheet.tsx` — `width="medium"`, `sourcePageHref` из deep-link constant
+- [ ] Остальные finance/support sheets по мере появления в `desigen.todo.md`
+
+### 3c — Спец. случаи (решение по месту)
+
+- [ ] `checklist-instance-workbench-sheet.tsx` — shell или documented exception
+- [ ] `WorkSpaceDriveSheet.tsx` — workspace layout; rail optional / custom anchor
+- [ ] `DriveDetailPanel.tsx` — не entity card pattern; оставить `SheetContent` или отдельный `DriveSheetContent`
+
+**Acceptance Step 3:**
+
+- [ ] Ни один entity detail sheet из списка 3a/3b не собирает `floatingClose` + `floatingRail` вручную.
+- [ ] Нет расхождения anchor vs width (визуально кнопки на левом краю панели).
+
+---
+
+## Step 4 — Защита от регрессий
+
+- [ ] ESLint rule или codemod-comment (опционально): в `features/**/**Sheet.tsx` запретить прямой `floatingClose` без shell — или grep в CI checklist.
+- [ ] Storybook / dev note (опционально): один пример wide + compact с rail.
+
+---
+
+## Step 5 — Done
+
+- [ ] Все целевые entity sheets на `EntityDetailSheetContent`.
+- [ ] Canon обновлён.
+- [ ] `desigen.todo.md` shared UI list включает `EntityDetailSheetContent`.
+- [ ] Product review: Close всегда; Copy/Open там где есть deep link; модульные кнопки только через `trailingRail`.
+
+---
+
+## Не в scope этого плана
+
+- Перестройка контента вкладок / полей (см. `desigen.todo.md` Steps 1–6).
+- Stage-gate логика (отдельный roadmap).
+- Полная унификация Drive / nested workbench UX.
+
+---
+
+## Быстрый чеклист для нового sheet
+
+```tsx
+<Sheet open={open} onOpenChange={onOpenChange}>
+  <EntityDetailSheetContent
+    open={open}
+    width="wide"
+    sourcePageHref={`/module/entities?open=${id}`}
+    workspaceHref={workspaceUrl}
+    trailingRail={<CustomButton />}
+  >
+    {/* header, tabs, ScrollArea, footer */}
+  </EntityDetailSheetContent>
+</Sheet>
+```
+
+- `Close` — не добавлять вручную.
+- `Copy link` / `Open` / `Dashboard` — не дублировать кастомными кнопками, если хватает props.
+- Голый `SheetContent` — только non-entity surfaces.
