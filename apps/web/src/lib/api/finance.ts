@@ -207,6 +207,8 @@ export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   status?: string;
   /** When true and `status` is omitted: same scope as `GET /expenses?activeBoard=true`. */
   activeBoard?: boolean;
+  /** When true and `status` is omitted: same scope as `GET /expenses?closedBoard=true`. */
+  closedBoard?: boolean;
 }
 
 /** Allowed `sortBy` values for `GET /expenses` (aligned with ExpensesService allowlist). */
@@ -231,6 +233,8 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
    * When true and `status` is omitted: exclude `PAID` and `BACKLOG` (board vs closed/backlog), per NBOS.
    */
   activeBoard?: boolean;
+  /** When true and `status` is omitted: only `PAID` and `CANCELLED` (closed expense route). */
+  closedBoard?: boolean;
 }
 
 /** Body for `PUT /expenses/:id` (aligned with ExpensesController). */

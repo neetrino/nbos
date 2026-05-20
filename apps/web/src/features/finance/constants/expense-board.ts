@@ -30,6 +30,30 @@ const BOARD_COLUMN_SET = new Set<string>(EXPENSE_BOARD_COLUMN_KEYS);
  * Maps an expense to an NBOS Expense Board column (`docs/NBOS/02-Modules/04-Finance/04-Expenses.md`).
  * Workflow status is canonical; `PAID` / `BACKLOG` / `CANCELLED` are off-board (Closed / Backlog).
  */
+export const EXPENSE_CLOSED_BOARD_COLUMN_KEYS = ['PAID', 'CANCELLED'] as const;
+
+export type ExpenseClosedBoardColumnKey = (typeof EXPENSE_CLOSED_BOARD_COLUMN_KEYS)[number];
+
+export const EXPENSE_CLOSED_BOARD_COLUMNS: ReadonlyArray<{
+  key: ExpenseClosedBoardColumnKey;
+  label: string;
+}> = [
+  { key: 'PAID', label: 'Paid' },
+  { key: 'CANCELLED', label: 'Cancelled' },
+];
+
+const CLOSED_COLUMN_SET = new Set<string>(EXPENSE_CLOSED_BOARD_COLUMN_KEYS);
+
+export function resolveExpenseClosedBoardColumn(
+  expense: Pick<Expense, 'status'>,
+): ExpenseClosedBoardColumnKey | null {
+  const { status } = expense;
+  if (CLOSED_COLUMN_SET.has(status)) {
+    return status as ExpenseClosedBoardColumnKey;
+  }
+  return null;
+}
+
 export function resolveExpenseBoardColumn(
   expense: Pick<Expense, 'status' | 'dueDate'>,
 ): ExpenseBoardColumnKey | null {

@@ -51,6 +51,12 @@ export class ExpensesController {
     description:
       'When true and status is omitted: exclude PAID and BACKLOG (NBOS Expense Board list scope).',
   })
+  @ApiQuery({
+    name: 'closedBoard',
+    required: false,
+    description:
+      'When true and status is omitted: only PAID and CANCELLED (NBOS Closed expenses scope).',
+  })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -67,6 +73,7 @@ export class ExpensesController {
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
     @Query('activeBoard') activeBoard?: string,
+    @Query('closedBoard') closedBoard?: string,
   ) {
     return this.expensesService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -84,6 +91,7 @@ export class ExpensesController {
       sortBy,
       sortOrder,
       activeBoard: activeBoard === 'true',
+      closedBoard: closedBoard === 'true',
     });
   }
 
@@ -105,6 +113,11 @@ export class ExpensesController {
     required: false,
     description: 'When true and status is omitted: align stats with active-board list scope.',
   })
+  @ApiQuery({
+    name: 'closedBoard',
+    required: false,
+    description: 'When true and status is omitted: align stats with closed-board list scope.',
+  })
   async getStats(
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
@@ -112,6 +125,7 @@ export class ExpensesController {
     @Query('expensePlanId') expensePlanId?: string,
     @Query('status') status?: string,
     @Query('activeBoard') activeBoard?: string,
+    @Query('closedBoard') closedBoard?: string,
   ) {
     return this.expensesService.getStats({
       dateFrom,
@@ -120,6 +134,7 @@ export class ExpensesController {
       expensePlanId,
       status,
       activeBoard: activeBoard === 'true',
+      closedBoard: closedBoard === 'true',
     });
   }
 

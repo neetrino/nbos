@@ -278,7 +278,11 @@ export default function ProductDetailPage() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-5">
-          <ProductOverviewTab product={product} onStatusChange={fetchProduct} />
+          <ProductOverviewTab
+            product={product}
+            onStatusChange={fetchProduct}
+            onNavigateTab={(tab) => setActiveTab(tab as ProductTab)}
+          />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-5">

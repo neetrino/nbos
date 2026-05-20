@@ -70,7 +70,8 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 | Area          | Decision                                                                                                       |
 | ------------- | -------------------------------------------------------------------------------------------------------------- |
-| Stage gates   | Enforce Lead/Deal gates in backend services, not only in UI.                                                   |
+| Stage gates   | Enforce Lead/Deal gates in `@nbos/shared` + backend services; web runs local pre-check before API.             |
+| Deal terminal | `WON` and `FAILED` are terminal closed outcomes; neither can be moved back via pipeline (create new Deal).     |
 | Attribution   | Marketing attribution is manual in MVP.                                                                        |
 | Finance link  | Marketing spend may link to Finance Expense, but attribution must still work when the finance link is missing. |
 | External APIs | Meta/Google Ads APIs are not MVP.                                                                              |
@@ -89,16 +90,18 @@ Any proposal to replace a core NBOS module with an open-source or SaaS product r
 
 ### Projects Hub, Tasks And Support
 
-| Area             | Decision                                                                                               |
-| ---------------- | ------------------------------------------------------------------------------------------------------ |
-| Delivery source  | Product and Extension lifecycle are the delivery source of truth.                                      |
-| Gates            | Lifecycle gates live in backend services.                                                              |
-| Realtime         | Use Socket.io only for live updates such as status/comment/task changes.                               |
-| SLA              | Use scheduler/BullMQ for SLA timers and reminders.                                                     |
-| Support links    | Support may link to tasks or extension requests, but must not break when those modules are incomplete. |
-| Scrum sprints    | First-class `Sprint` under `WorkSpace`; `Task.sprint_id` is membership source of truth.                |
-| Scrum UI         | Planning tab: wide backlog left, sprint blocks right; execution board = active sprint tasks only.      |
-| Sprint invariant | At most one `ACTIVE` sprint per scrum-enabled workspace.                                               |
+| Area             | Decision                                                                                                                                                                                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Delivery source  | Product and Extension lifecycle are the delivery source of truth.                                                                                                                               |
+| Gates            | Lifecycle gates live in `@nbos/shared` and are enforced in NestJS services (API is final authority).                                                                                            |
+| Stage-gate UX    | Blockers open the entity surface with field highlights — no duplicate modal forms for the same fields.                                                                                          |
+| Delivery Board   | `Active/Closed` + `Board/List` share one visual family; see `01-Platform-Overview/04-Stage-Gate-UX-and-Validation-Standard.md` and `05-UI-Specifications/09-Kanban-Board-and-List-Standard.md`. |
+| Realtime         | Use Socket.io only for live updates such as status/comment/task changes.                                                                                                                        |
+| SLA              | Use scheduler/BullMQ for SLA timers and reminders.                                                                                                                                              |
+| Support links    | Support may link to tasks or extension requests, but must not break when those modules are incomplete.                                                                                          |
+| Scrum sprints    | First-class `Sprint` under `WorkSpace`; `Task.sprint_id` is membership source of truth.                                                                                                         |
+| Scrum UI         | Planning tab: wide backlog left, sprint blocks right; execution board = active sprint tasks only.                                                                                               |
+| Sprint invariant | At most one `ACTIVE` sprint per scrum-enabled workspace.                                                                                                                                        |
 
 ### Drive
 

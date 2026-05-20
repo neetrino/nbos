@@ -5,14 +5,13 @@ import {
 } from './expenses-page-filter-helpers';
 
 describe('expenses-page-filter-helpers', () => {
-  it('initial closed scope is PAID', () => {
-    expect(initialExpenseFilterRecord('closed')).toEqual({ status: 'PAID' });
+  it('initial closed scope uses API closedBoard (no fixed status filter)', () => {
+    expect(initialExpenseFilterRecord('closed')).toEqual({});
   });
 
-  it('cleared closed scope preserves PAID and optional project drill-down', () => {
-    expect(clearedExpenseFilterRecord('closed', null)).toEqual({ status: 'PAID' });
+  it('cleared closed scope keeps optional project drill-down only', () => {
+    expect(clearedExpenseFilterRecord('closed', null)).toEqual({});
     expect(clearedExpenseFilterRecord('closed', 'proj-1')).toEqual({
-      status: 'PAID',
       project: 'proj-1',
     });
   });

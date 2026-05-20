@@ -491,6 +491,16 @@ Requirement items must be visually clear and colored by state, so a PM/developer
 
 По умолчанию closed opened card read-only. Reopen или change resolution, если будут нужны, должны быть отдельными permissioned actions с audit.
 
+### 8.4.1. Stage-gate blocker UX (platform standard)
+
+При блокировке перехода (drag, Move next, Complete):
+
+- не показывать отдельную modal-форму с теми же полями;
+- открыть `Delivery Item` sheet и подсветить поля на вкладке General (или Work Space для blockers по tasks/extensions/tickets);
+- local pre-check на board использует `@nbos/shared` product/extension gates; API остаётся final authority (checklist, полные relations).
+
+Канон: `../../01-Platform-Overview/04-Stage-Gate-UX-and-Validation-Standard.md`.
+
 ### 8.5. Stage Gate Timeline
 
 Главная секция opened card - `Stage Gate Timeline`.

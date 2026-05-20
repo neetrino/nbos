@@ -334,7 +334,17 @@ export function DeliveryItemDetailSheet({
               onCommitTitle={handleCommitTitle}
             />
 
-            {lifecycle?.workStatus === 'ON_HOLD' && boardMutations ? (
+            {lifecycle?.isTerminal ? (
+              <div className="border-border bg-muted/40 shrink-0 border-b px-7 py-2.5">
+                <p className="text-muted-foreground text-sm">
+                  {lifecycle.resolution === 'DONE'
+                    ? 'This delivery item is done. Details are read-only; use the board or product page for history.'
+                    : 'This delivery item is cancelled. Details are read-only; use the board for audit history.'}
+                </p>
+              </div>
+            ) : null}
+
+            {lifecycle?.workStatus === 'ON_HOLD' && boardMutations && !lifecycle?.isTerminal ? (
               <div className="border-border flex shrink-0 items-center justify-between gap-3 border-b bg-amber-50/60 px-7 py-2.5 dark:bg-amber-950/20">
                 <p className="text-muted-foreground text-sm">Delivery is paused.</p>
                 <Button
@@ -381,7 +391,7 @@ export function DeliveryItemDetailSheet({
                   onProductPlanChange={setProductPlan}
                   extensionPlan={extensionPlan}
                   onExtensionPlanChange={setExtensionPlan}
-                  planningDisabled={planningSaving}
+                  planningDisabled={planningSaving || Boolean(lifecycle?.isTerminal)}
                   gateRequiredFields={gateRequiredFields}
                   stageGateActionBlockers={stageGateActionBlockers}
                 />
@@ -409,7 +419,12 @@ export function DeliveryItemDetailSheet({
             </ScrollArea>
 
             <DetailSheetFormFooter
-              visible={panel === 'general' && !loading && Boolean(product || extension)}
+              visible={
+                panel === 'general' &&
+                !loading &&
+                Boolean(product || extension) &&
+                !lifecycle?.isTerminal
+              }
               dirty={planningDirty}
               saving={planningSaving}
               errorMessage={planningError}

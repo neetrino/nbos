@@ -52,16 +52,17 @@ describe('buildExpenseListApiParams', () => {
     expect(params.activeBoard).toBeUndefined();
   });
 
-  it('does not set activeBoard on closed variant (fixed PAID scope)', () => {
+  it('sets closedBoard on closed variant when status filter is unset', () => {
     const params = buildExpenseListApiParams({
       search: '',
-      filters: { category: 'all', status: 'PAID' },
+      filters: { category: 'all', status: 'all' },
       period: 'month',
       sortBy: 'createdAt',
       sortOrder: 'desc',
       pageVariant: 'closed',
     });
-    expect(params.status).toBe('PAID');
+    expect(params.status).toBeUndefined();
+    expect(params.closedBoard).toBe(true);
     expect(params.activeBoard).toBeUndefined();
   });
 

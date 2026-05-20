@@ -92,6 +92,12 @@ const PRODUCT_ACTION_RULES = [
     target: 'project',
     fields: ['extensions'],
   },
+  {
+    key: 'product-finance',
+    label: 'Open Finance',
+    target: 'project',
+    fields: ['order', 'finance'],
+  },
 ] as const;
 
 const EXTENSION_ACTION_RULES = [

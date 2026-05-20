@@ -44,7 +44,11 @@ import {
 } from './expense-list-ledger';
 import { assertExpenseAmountCoversRecordedPayments } from './expense-amount-update-guard';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
-import { refreshExpenseWorkflowStatus, EXPENSE_BOARD_SCOPE_EXCLUDE } from './expense-workflow';
+import {
+  refreshExpenseWorkflowStatus,
+  EXPENSE_BOARD_SCOPE_EXCLUDE,
+  EXPENSE_CLOSED_SCOPE_STATUSES,
+} from './expense-workflow';
 import { OperationalJournalService } from '../finance/journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
 import type {
@@ -81,6 +85,7 @@ export class ExpensesService {
       sortBy,
       sortOrder,
       activeBoard,
+      closedBoard,
     } = params;
 
     const page = normalizeExpenseListPage(pageIn);
@@ -106,6 +111,7 @@ export class ExpensesService {
       dateFrom,
       dateTo,
       activeBoard: activeBoard === true,
+      closedBoard: closedBoard === true,
     });
 
     const [items, total] = await Promise.all([
@@ -339,13 +345,15 @@ export class ExpensesService {
     const planWhere = planIdTrimmed ? { expensePlanId: planIdTrimmed } : {};
     const statusWhere = safeStatus
       ? { status: safeStatus as ExpenseStatusEnum }
-      : params.activeBoard === true
-        ? {
-            status: {
-              notIn: EXPENSE_BOARD_SCOPE_EXCLUDE,
-            },
-          }
-        : {};
+      : params.closedBoard === true
+        ? { status: { in: EXPENSE_CLOSED_SCOPE_STATUSES } }
+        : params.activeBoard === true
+          ? {
+              status: {
+                notIn: EXPENSE_BOARD_SCOPE_EXCLUDE,
+              },
+            }
+          : {};
 
     const scopeWhere: Prisma.ExpenseWhereInput = {
       ...projectWhere,
@@ -386,6 +394,8 @@ export class ExpensesService {
     if (filters.category) where.category = filters.category as ExpenseCategoryEnum;
     if (filters.status) {
       where.status = filters.status as ExpenseStatusEnum;
+    } else if (filters.closedBoard) {
+      where.status = { in: EXPENSE_CLOSED_SCOPE_STATUSES };
     } else if (filters.activeBoard) {
       where.status = {
         notIn: EXPENSE_BOARD_SCOPE_EXCLUDE,

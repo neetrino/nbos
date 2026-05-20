@@ -56,7 +56,9 @@ import { StatusBadge } from '@/components/shared';
 import { getLeadStage, getLeadSource } from '@/features/crm/constants/leadPipeline';
 import { Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalLeadStageGateErrors } from '@/features/crm/lead-stage-gate';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { CRM_OPEN_LEAD_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 
 type ViewMode = 'kanban' | 'list';
@@ -453,7 +455,8 @@ export default function LeadsPipelinePage() {
           }
         />
       ) : view === 'kanban' ? (
-        <div className="min-h-0 flex-1">
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
           <KanbanBoard
             columns={kanbanColumns}
             renderCard={(lead) => (
@@ -474,58 +477,69 @@ export default function LeadsPipelinePage() {
           />
         </div>
       ) : (
-        <div className="border-border min-h-0 flex-1 overflow-auto rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Lead Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Stage</TableHead>
-                <TableHead>Seller</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {displayLeads.map((lead) => {
-                const stage = getLeadStage(lead.status);
-                const source = getLeadSource(lead.source);
-                return (
-                  <TableRow
-                    key={lead.id}
-                    className="cursor-pointer"
-                    onClick={() => handleCardClick(lead)}
-                  >
-                    <TableCell className="font-medium">{lead.name || lead.code}</TableCell>
-                    <TableCell className="text-muted-foreground">{lead.contactName}</TableCell>
-                    <TableCell className="text-muted-foreground">{lead.phone ?? '—'}</TableCell>
-                    <TableCell className="text-muted-foreground">{lead.email ?? '—'}</TableCell>
-                    <TableCell>
-                      <StatusBadge label={source?.label ?? 'No source'} variant="default" />
-                    </TableCell>
-                    <TableCell>
-                      {stage && (
-                        <StatusBadge
-                          label={stage.label}
-                          variant={stage.variant}
-                          dot
-                          dotColor={stage.color}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : '—'}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(lead.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="lead" />
+          <div className="border-border min-h-0 flex-1 overflow-auto rounded-xl border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Lead Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Stage</TableHead>
+                  {boardScope === 'CLOSED' ? <TableHead>Closed</TableHead> : null}
+                  <TableHead>Seller</TableHead>
+                  <TableHead>Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {displayLeads.map((lead) => {
+                  const stage = getLeadStage(lead.status);
+                  const source = getLeadSource(lead.source);
+                  return (
+                    <TableRow
+                      key={lead.id}
+                      className="cursor-pointer"
+                      onClick={() => handleCardClick(lead)}
+                    >
+                      <TableCell className="font-medium">{lead.name || lead.code}</TableCell>
+                      <TableCell className="text-muted-foreground">{lead.contactName}</TableCell>
+                      <TableCell className="text-muted-foreground">{lead.phone ?? '—'}</TableCell>
+                      <TableCell className="text-muted-foreground">{lead.email ?? '—'}</TableCell>
+                      <TableCell>
+                        <StatusBadge label={source?.label ?? 'No source'} variant="default" />
+                      </TableCell>
+                      <TableCell>
+                        {stage && (
+                          <StatusBadge
+                            label={stage.label}
+                            variant={stage.variant}
+                            dot
+                            dotColor={stage.color}
+                          />
+                        )}
+                      </TableCell>
+                      {boardScope === 'CLOSED' ? (
+                        <TableCell className="text-muted-foreground text-xs">
+                          {new Date(lead.updatedAt).toLocaleDateString()}
+                        </TableCell>
+                      ) : null}
+                      <TableCell className="text-muted-foreground">
+                        {lead.assignee
+                          ? `${lead.assignee.firstName} ${lead.assignee.lastName}`
+                          : '—'}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(lead.createdAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 

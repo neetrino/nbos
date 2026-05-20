@@ -24,7 +24,9 @@ import {
 } from '@/features/crm/components/DealSheet';
 import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
+import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalDealStageGateErrors } from '@/features/crm/deal-stage-gate';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import {
   DEAL_STAGES,
   DEAL_TYPES,
@@ -477,7 +479,8 @@ export default function DealsPipelinePage() {
           }
         />
       ) : view === 'kanban' ? (
-        <div className="min-h-0 flex-1">
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
           <KanbanBoard
             columns={kanbanColumns}
             renderCard={(deal) => (
@@ -498,66 +501,75 @@ export default function DealsPipelinePage() {
           />
         </div>
       ) : (
-        <div className="border-border min-h-0 flex-1 overflow-auto rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Stage</TableHead>
-                <TableHead>Seller</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {displayDeals.map((deal) => {
-                const stage = getDealStage(deal.status);
-                const dealTypeVisual = getDealTypePresentation(deal.type);
-                return (
-                  <TableRow
-                    key={deal.id}
-                    className="cursor-pointer"
-                    onClick={() => handleCardClick(deal)}
-                  >
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{deal.name || deal.code}</p>
-                        <p className="text-muted-foreground text-xs">{deal.code}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : '—'}
-                    </TableCell>
-                    <TableCell className="font-semibold">{formatAmount(deal.amount)}</TableCell>
-                    <TableCell>
-                      <StatusBadge
-                        label={dealTypeVisual.label}
-                        variant={dealTypeVisual.badgeVariant}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {stage && (
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
+          <div className="border-border min-h-0 flex-1 overflow-auto rounded-xl border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Stage</TableHead>
+                  {boardScope === 'CLOSED' ? <TableHead>Closed</TableHead> : null}
+                  <TableHead>Seller</TableHead>
+                  <TableHead>Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {displayDeals.map((deal) => {
+                  const stage = getDealStage(deal.status);
+                  const dealTypeVisual = getDealTypePresentation(deal.type);
+                  return (
+                    <TableRow
+                      key={deal.id}
+                      className="cursor-pointer"
+                      onClick={() => handleCardClick(deal)}
+                    >
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{deal.name || deal.code}</p>
+                          <p className="text-muted-foreground text-xs">{deal.code}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : '—'}
+                      </TableCell>
+                      <TableCell className="font-semibold">{formatAmount(deal.amount)}</TableCell>
+                      <TableCell>
                         <StatusBadge
-                          label={stage.label}
-                          variant={stage.variant}
-                          dot
-                          dotColor={stage.color}
+                          label={dealTypeVisual.label}
+                          variant={dealTypeVisual.badgeVariant}
                         />
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : '—'}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(deal.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                      <TableCell>
+                        {stage && (
+                          <StatusBadge
+                            label={stage.label}
+                            variant={stage.variant}
+                            dot
+                            dotColor={stage.color}
+                          />
+                        )}
+                      </TableCell>
+                      {boardScope === 'CLOSED' ? (
+                        <TableCell className="text-muted-foreground text-xs">
+                          {new Date(deal.updatedAt).toLocaleDateString()}
+                        </TableCell>
+                      ) : null}
+                      <TableCell className="text-muted-foreground">
+                        {deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : '—'}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(deal.createdAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 

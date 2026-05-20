@@ -6,10 +6,15 @@ import { EmptyState, ErrorState, KanbanBoard, LoadingState } from '@/components/
 import type { ExpenseListNavigationSort } from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
 import { ExpenseKanbanCard } from './ExpenseKanbanCard';
-import { buildExpenseKanbanColumns } from './expense-kanban-columns';
+import {
+  buildExpenseClosedKanbanColumns,
+  buildExpenseKanbanColumns,
+} from './expense-kanban-columns';
 import { ExpensesTableSection } from './ExpensesTableSection';
 
 export type ExpensesViewMode = 'kanban' | 'list';
+
+export type ExpensesKanbanScope = 'active' | 'closed';
 
 interface ExpensesPageMainPanelProps {
   loading: boolean;
@@ -17,6 +22,7 @@ interface ExpensesPageMainPanelProps {
   onRetry: () => void;
   expenses: Expense[];
   view: ExpensesViewMode;
+  kanbanScope?: ExpensesKanbanScope;
   /** Detail links include `from=backlog` when opened from `/finance/expenses/backlog`. */
   fromBacklog?: boolean;
   effectiveProjectId: string | null;
@@ -33,6 +39,7 @@ export function ExpensesPageMainPanel({
   onRetry,
   expenses,
   view,
+  kanbanScope = 'active',
   fromBacklog = false,
   effectiveProjectId,
   listExpensePlanId = null,
@@ -40,7 +47,10 @@ export function ExpensesPageMainPanel({
   onRequestDelete,
   onAddFirstExpense,
 }: ExpensesPageMainPanelProps) {
-  const kanbanColumns = buildExpenseKanbanColumns(expenses);
+  const kanbanColumns =
+    kanbanScope === 'closed'
+      ? buildExpenseClosedKanbanColumns(expenses)
+      : buildExpenseKanbanColumns(expenses);
 
   if (loading) {
     return <LoadingState />;
@@ -71,6 +81,7 @@ export function ExpensesPageMainPanel({
     return (
       <KanbanBoard
         columns={kanbanColumns}
+        columnWidth={kanbanScope === 'closed' ? 288 : undefined}
         getItemId={(e: Expense) => e.id}
         renderCard={(expense: Expense) => (
           <ExpenseKanbanCard

@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useMemo, useState } from 'react';
 import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
@@ -9,15 +10,49 @@ import {
   getProductStatus,
   getProductType,
 } from '@/features/projects/constants/projects';
+import {
+  buildProductGateRequiredFields,
+  productStageGateFieldClass,
+  resolveProductTabFromGateErrors,
+  type ProductTabForGate,
+} from '@/features/projects/product-stage-gate-highlight';
+import type { SheetStageGateHighlight } from '@/lib/stage-gate-highlight';
+import type { ApiFieldError } from '@/lib/api-errors';
 import { DeliveryStageTimelineCard } from './DeliveryStageTimelineCard';
 import { ProductStageGateCard } from './ProductStageGateCard';
 
 interface ProductOverviewTabProps {
   product: FullProduct;
   onStatusChange: () => void;
+  onNavigateTab: (tab: ProductTabForGate) => void;
 }
 
-export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewTabProps) {
+export function ProductOverviewTab({
+  product,
+  onStatusChange,
+  onNavigateTab,
+}: ProductOverviewTabProps) {
+  const [stageGateHighlight, setStageGateHighlight] = useState<SheetStageGateHighlight | null>(
+    null,
+  );
+
+  const gateRequiredFields = useMemo(
+    () =>
+      stageGateHighlight
+        ? buildProductGateRequiredFields(stageGateHighlight.errors)
+        : new Set<string>(),
+    [stageGateHighlight],
+  );
+
+  const showStageGateRequirements = useCallback(
+    (errors: ApiFieldError[]) => {
+      setStageGateHighlight({ errors });
+      const tab = resolveProductTabFromGateErrors(errors);
+      if (tab !== 'overview') onNavigateTab(tab);
+    },
+    [onNavigateTab],
+  );
+
   const doneTasks = product.tasks.filter((task) => task.status === 'DONE').length;
   const doneExtensions = product.extensions.filter(
     (extension) => extension.status === 'DONE',
@@ -28,10 +63,22 @@ export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewT
       <ProductStats product={product} doneTasks={doneTasks} doneExtensions={doneExtensions} />
       <ProductDeliveryLifecycleCard product={product} />
       <div className="grid gap-6 lg:grid-cols-2">
-        <ProductDetailsCard product={product} />
-        <ProductStageGateCard product={product} onStatusChange={onStatusChange} />
+        <ProductDetailsCard product={product} gateRequiredFields={gateRequiredFields} />
+        <ProductStageGateCard
+          product={product}
+          gateRequiredFields={gateRequiredFields}
+          stageGateHighlight={stageGateHighlight}
+          onStatusChange={onStatusChange}
+          onStageGateBlocked={showStageGateRequirements}
+          onStageGateClear={() => setStageGateHighlight(null)}
+          onNavigateTab={onNavigateTab}
+        />
       </div>
-      {product.description && <ProductDescriptionCard description={product.description} />}
+      <ProductDescriptionCard
+        description={product.description}
+        gateRequiredFields={gateRequiredFields}
+        forceVisible={gateRequiredFields.has('description')}
+      />
     </div>
   );
 }
@@ -74,7 +121,13 @@ function ProductStats({
   );
 }
 
-function ProductDetailsCard({ product }: { product: FullProduct }) {
+function ProductDetailsCard({
+  product,
+  gateRequiredFields,
+}: {
+  product: FullProduct;
+  gateRequiredFields: ReadonlySet<string>;
+}) {
   const status = getProductStatus(product.status);
   const productType = getProductType(product.productType);
   const lifecycle = product.deliveryLifecycle;
@@ -101,9 +154,28 @@ function ProductDetailsCard({ product }: { product: FullProduct }) {
         {product.pm && (
           <DetailRow label="PM" value={`${product.pm.firstName} ${product.pm.lastName}`} />
         )}
-        {product.deadline && (
-          <DetailRow label="Deadline" value={new Date(product.deadline).toLocaleDateString()} />
-        )}
+        <div
+          className={productStageGateFieldClass(
+            gateRequiredFields,
+            'deadline',
+            'flex justify-between rounded-md px-1 py-0.5',
+          )}
+        >
+          <span className="text-muted-foreground">Deadline</span>
+          <span className="font-medium">
+            {product.deadline ? new Date(product.deadline).toLocaleDateString() : '—'}
+          </span>
+        </div>
+        <div
+          className={productStageGateFieldClass(
+            gateRequiredFields,
+            'order',
+            'flex justify-between rounded-md px-1 py-0.5',
+          )}
+        >
+          <span className="text-muted-foreground">Order</span>
+          <span className="font-medium">{product.order ? 'Linked' : '—'}</span>
+        </div>
         <DetailRow label="Project" value={product.project.name} />
         <DetailRow label="Created" value={new Date(product.createdAt).toLocaleDateString()} />
       </div>
@@ -162,11 +234,31 @@ function DetailRow({ label, value }: { label: string; value?: string }) {
   );
 }
 
-function ProductDescriptionCard({ description }: { description: string }) {
+function ProductDescriptionCard({
+  description,
+  gateRequiredFields,
+  forceVisible,
+}: {
+  description: string | null;
+  gateRequiredFields: ReadonlySet<string>;
+  forceVisible: boolean;
+}) {
+  if (!description && !forceVisible) return null;
+
   return (
-    <section className="bg-card border-border rounded-xl border p-5">
+    <section
+      className={productStageGateFieldClass(
+        gateRequiredFields,
+        'description',
+        'bg-card border-border rounded-xl border p-5',
+      )}
+    >
       <h3 className="mb-2 text-sm font-semibold">Description</h3>
-      <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
+      {description ? (
+        <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
+      ) : (
+        <p className="text-muted-foreground text-sm">Description is required before Creating.</p>
+      )}
     </section>
   );
 }

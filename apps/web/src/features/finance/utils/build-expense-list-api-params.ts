@@ -32,6 +32,10 @@ export function buildExpenseListApiParams(input: {
     variant === 'default' && status === undefined && !planIdTrimmed
       ? ({ activeBoard: true } as const)
       : {};
+  const closedBoard =
+    variant === 'closed' && status === undefined && !planIdTrimmed
+      ? ({ closedBoard: true } as const)
+      : {};
   return {
     search: input.search || undefined,
     category:
@@ -45,6 +49,7 @@ export function buildExpenseListApiParams(input: {
     ...projectParams,
     ...planParams,
     ...activeBoard,
+    ...closedBoard,
   };
 }
 
@@ -59,5 +64,6 @@ export function pickExpenseStatsQueryParams(
     expensePlanId: list.expensePlanId,
     status: list.status,
     activeBoard: list.activeBoard,
+    closedBoard: list.closedBoard,
   };
 }

@@ -20,6 +20,9 @@ export const EXPENSE_OFF_BOARD_STATUSES = [
 
 export const EXPENSE_BOARD_SCOPE_EXCLUDE: ExpenseStatusEnum[] = ['PAID', 'BACKLOG'];
 
+/** Closed expense route: terminal outcomes on the expense card (not backlog). */
+export const EXPENSE_CLOSED_SCOPE_STATUSES: ExpenseStatusEnum[] = ['PAID', 'CANCELLED'];
+
 export const EXPENSE_DUE_SOON_DAYS = 7;
 
 const TIME_BASED_STATUSES = new Set<ExpenseStatusEnum>([

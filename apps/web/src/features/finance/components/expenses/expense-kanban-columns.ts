@@ -1,8 +1,11 @@
 import type { Expense } from '../../../../lib/api/finance';
 import {
   EXPENSE_BOARD_COLUMNS,
+  EXPENSE_CLOSED_BOARD_COLUMNS,
   type ExpenseBoardColumnKey,
+  type ExpenseClosedBoardColumnKey,
   resolveExpenseBoardColumn,
+  resolveExpenseClosedBoardColumn,
 } from '../../constants/expense-board';
 
 const COLUMN_COLORS: Record<ExpenseBoardColumnKey, string> = {
@@ -23,5 +26,20 @@ export function buildExpenseKanbanColumns(expenses: Expense[]) {
     label: col.label,
     color: COLUMN_COLORS[col.key],
     items: expenses.filter((e) => resolveExpenseBoardColumn(e) === col.key),
+  }));
+}
+
+const CLOSED_COLUMN_COLORS: Record<ExpenseClosedBoardColumnKey, string> = {
+  PAID: 'bg-green-600',
+  CANCELLED: 'bg-red-500',
+};
+
+/** Closed expense route: terminal outcomes only (Paid / Cancelled). */
+export function buildExpenseClosedKanbanColumns(expenses: Expense[]) {
+  return EXPENSE_CLOSED_BOARD_COLUMNS.map((col) => ({
+    key: col.key,
+    label: col.label,
+    color: CLOSED_COLUMN_COLORS[col.key],
+    items: expenses.filter((e) => resolveExpenseClosedBoardColumn(e) === col.key),
   }));
 }

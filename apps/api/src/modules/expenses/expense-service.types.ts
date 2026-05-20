@@ -51,6 +51,8 @@ export interface ExpenseQueryParams {
   sortOrder?: 'asc' | 'desc';
   /** When true and `status` is unset: exclude PAID + BACKLOG (NBOS Expense Board scope). */
   activeBoard?: boolean;
+  /** When true and `status` is unset: only PAID + CANCELLED (NBOS Closed expenses scope). */
+  closedBoard?: boolean;
 }
 
 export interface ExpenseStatsParams {
@@ -64,4 +66,6 @@ export interface ExpenseStatsParams {
   status?: string;
   /** When true and `status` is unset: same scope as `findAll` with `activeBoard`. */
   activeBoard?: boolean;
+  /** When true and `status` is unset: same scope as `findAll` with `closedBoard`. */
+  closedBoard?: boolean;
 }

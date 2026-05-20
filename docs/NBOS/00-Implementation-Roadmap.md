@@ -103,7 +103,7 @@ UI should let users complete the link later.
 - module navigation and visibility;
 - CRM Lead/Deal required fields and stage gates;
 - Deal Won rules and override flow;
-- Product/Extension lifecycle gates;
+- Product/Extension lifecycle gates (`@nbos/shared` + sheet field highlights on Product/Delivery surfaces);
 - Finance Invoice/Payment/Subscription basics;
 - Expense basics;
 - Task basics;

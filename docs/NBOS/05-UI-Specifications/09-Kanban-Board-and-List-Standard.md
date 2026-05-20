@@ -111,7 +111,7 @@ Rules:
 - Closed list adds outcome-oriented fields such as `Result`, `Closed at`, `Reason`, `Closed by` when available.
 - Active list keeps operational fields such as current stage, owner, deadline, priority and blocker state.
 
-Delivery Board currently has Closed List but no Active List. The target standard requires adding Active List and making both scopes share one row/table renderer.
+Delivery Board implements Active List and Closed List via one `DeliveryBoardItemsTable` renderer. CRM Leads and Deals use the same `KanbanBoard` + list table for Active and Closed scopes (`boardScope` filter).
 
 ---
 

@@ -25,6 +25,7 @@ import {
 import { ExpensePlanDrilldownBanner } from './ExpensePlanDrilldownBanner';
 import { useExpensePlanBannerLabel } from './use-expense-plan-banner-label';
 import { ExpenseSortControls } from './ExpenseSortControls';
+import { FinanceWorkflowScopeBanner } from '../FinanceWorkflowScopeBanner';
 import { ExpensesPageHeader } from './ExpensesPageHeader';
 import { ExpenseSummaryCards } from './ExpenseSummaryCards';
 import { ExpensesPageDialogs } from './ExpensesPageDialogs';
@@ -238,7 +239,7 @@ export function ExpensesPageContent({
         onPeriodChange={setPeriod}
         view={view}
         onViewChange={setView}
-        hideViewToggle={pageVariant === 'backlog' || pageVariant === 'closed'}
+        hideViewToggle={pageVariant === 'backlog'}
         pageVariant={pageVariant}
         onExportCsv={handleExportCsv}
         exportDisabled={loading || exportCsvSubmitting}
@@ -253,6 +254,8 @@ export function ExpensesPageContent({
         loading={loading}
         variant={pageVariant === 'backlog' ? 'backlog' : 'default'}
       />
+
+      {pageVariant === 'closed' ? <FinanceWorkflowScopeBanner variant="expense-closed" /> : null}
 
       {projectIdFromUrl ? (
         <ExpenseProjectDrilldownBanner
@@ -293,7 +296,8 @@ export function ExpensesPageContent({
         error={error}
         onRetry={fetchExpenses}
         expenses={expenses}
-        view={pageVariant === 'backlog' || pageVariant === 'closed' ? 'list' : view}
+        view={pageVariant === 'backlog' ? 'list' : view}
+        kanbanScope={pageVariant === 'closed' ? 'closed' : 'active'}
         fromBacklog={pageVariant === 'backlog'}
         effectiveProjectId={effectiveProjectId ?? null}
         listExpensePlanId={expensePlanIdFromUrl?.trim() ?? null}
