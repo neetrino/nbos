@@ -105,7 +105,7 @@ function expensesByMonth(
     }
     const month = utcMonthIndexFromDate(exp.dueDate);
     const existing = map.get(month);
-    if (!existing || exp.dueDate > existing.dueDate) {
+    if (!existing?.dueDate || exp.dueDate > existing.dueDate) {
       map.set(month, exp);
     }
   }

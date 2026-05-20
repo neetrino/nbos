@@ -45,6 +45,8 @@ import {
 import { assertExpenseAmountCoversRecordedPayments } from './expense-amount-update-guard';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
 import { refreshExpenseWorkflowStatus, EXPENSE_BOARD_SCOPE_EXCLUDE } from './expense-workflow';
+import { OperationalJournalService } from '../finance/journal/operational-journal.service';
+import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
 import type {
   CreateExpenseDto,
   ExpenseQueryParams,
@@ -59,6 +61,7 @@ export class ExpensesService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
+    private readonly operationalJournal: OperationalJournalService,
   ) {}
 
   async findAll(params: ExpenseQueryParams) {
@@ -173,7 +176,10 @@ export class ExpensesService {
   }
 
   async addPayment(id: string, input: AddExpensePaymentInput) {
-    await createExpensePaymentRecord(this.prisma, id, input, { notify: this.notifications });
+    await createExpensePaymentRecord(this.prisma, id, input, {
+      notify: this.notifications,
+      journal: this.operationalJournal,
+    });
     return this.findById(id);
   }
 
@@ -184,6 +190,7 @@ export class ExpensesService {
     if (!row) {
       throw new NotFoundException(`Expense payment ${paymentId} not found`);
     }
+    await assertPostingPeriodOpenForBookedAt(this.prisma, row.paymentDate);
     await this.prisma.expensePayment.delete({ where: { id: paymentId } });
     await syncExpenseStatusWithPaymentLedger(this.prisma, expenseId);
     await syncSalaryLinePaidFromExpenseLedger(this.prisma, expenseId, this.notifications);
@@ -207,6 +214,9 @@ export class ExpensesService {
     const dueDate = data.dueDate ? new Date(data.dueDate) : undefined;
     const requestedStatus = resolveExpenseStatus(data.status) as ExpenseStatusEnum;
     const workflowStatus = refreshExpenseWorkflowStatus(requestedStatus, dueDate ?? null);
+
+    const bookedAt = dueDate ?? new Date();
+    await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
 
     const created = await this.prisma.expense.create({
       data: {
@@ -234,11 +244,26 @@ export class ExpensesService {
         notes: data.notes,
       },
     });
+
+    await this.operationalJournal.appendExpenseCardAccrualLine({
+      expenseId: created.id,
+      expenseName: created.name,
+      amount: new Decimal(created.amount).toNumber(),
+      bookedAt,
+      projectId: created.projectId,
+    });
+
     return this.findById(created.id);
   }
 
   async update(id: string, data: UpdateExpenseDto) {
-    await this.findById(id);
+    const existing = await this.prisma.expense.findUnique({
+      where: { id },
+      select: { dueDate: true },
+    });
+    if (!existing) {
+      throw new NotFoundException(`Expense ${id} not found`);
+    }
 
     const typePatch = data.type !== undefined ? requireExpenseTypeIfPresent(data.type) : undefined;
     const categoryPatch =
@@ -257,6 +282,14 @@ export class ExpensesService {
     if (data.amount !== undefined) {
       await assertExpenseAmountCoversRecordedPayments(this.prisma, id, new Decimal(data.amount));
     }
+
+    const bookedAtForGuard =
+      data.dueDate !== undefined
+        ? data.dueDate
+          ? new Date(data.dueDate)
+          : new Date()
+        : (existing.dueDate ?? new Date());
+    await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAtForGuard);
 
     await this.prisma.expense.update({
       where: { id },

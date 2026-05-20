@@ -24,6 +24,8 @@ import {
   sendOfficialInvoiceRequest,
   updateOfficialInvoiceGovId,
 } from './invoice-official-request';
+import { OperationalJournalService } from '../journal/operational-journal.service';
+import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-guard';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -60,6 +62,7 @@ export class InvoicesService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly dealWonHandler: DealWonHandler,
+    private readonly operationalJournal: OperationalJournalService,
   ) {}
 
   async findAll(params: InvoiceQueryParams) {
@@ -190,6 +193,9 @@ export class InvoicesService {
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
 
     const due = data.dueDate ? new Date(data.dueDate) : undefined;
+    const bookedAt = due ?? new Date();
+    await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
+
     const invoice = await this.prisma.invoice.create({
       data: {
         code,
@@ -210,6 +216,25 @@ export class InvoicesService {
           : {}),
       },
     });
+
+    const order = data.orderId
+      ? await this.prisma.order.findUnique({
+          where: { id: data.orderId },
+          select: { productId: true },
+        })
+      : null;
+
+    await this.operationalJournal.appendInvoiceCardAccrualLine({
+      invoiceId: invoice.id,
+      invoiceCode: invoice.code,
+      amount: data.amount,
+      bookedAt,
+      companyId: data.companyId ?? null,
+      projectId: data.projectId,
+      productId: order?.productId ?? null,
+      orderId: data.orderId ?? null,
+    });
+
     return this.findById(invoice.id);
   }
 

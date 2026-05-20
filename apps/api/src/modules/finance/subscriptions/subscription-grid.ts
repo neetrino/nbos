@@ -28,7 +28,7 @@ export interface SubscriptionGridInvoiceInput {
 export interface SubscriptionGridRowInput {
   id: string;
   status: string;
-  amount: unknown;
+  baseMonthlyAmount: unknown;
   billingStartDate: Date;
   endDate: Date | null;
   project: { id: string; name: string };

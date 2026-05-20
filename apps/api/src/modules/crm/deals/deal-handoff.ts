@@ -21,7 +21,10 @@ export async function attachDealHandoffReferences<T extends DealForHandoff>(
     handoff: {
       project: project ? { id: project.id, code: project.code, name: project.name } : null,
       product: deal.existingProduct ?? project?.products[0] ?? null,
-      subscriptions: project?.subscriptions ?? [],
+      subscriptions: (project?.subscriptions ?? []).map((s) => ({
+        ...s,
+        amount: s.baseMonthlyAmount,
+      })),
       maintenanceDeal,
     },
   };
@@ -40,8 +43,8 @@ function getProjectHandoff(prisma: PrismaInstance, projectId: string) {
         take: 1,
       },
       subscriptions: {
-        select: { id: true, code: true, type: true, status: true, amount: true },
-        orderBy: { startDate: 'desc' },
+        select: { id: true, code: true, type: true, status: true, baseMonthlyAmount: true },
+        orderBy: { billingStartDate: 'desc' },
       },
     },
   });

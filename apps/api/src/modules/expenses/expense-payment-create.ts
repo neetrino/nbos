@@ -6,6 +6,8 @@ import { syncPartnerPayoutPaidFromExpense } from '../partners/partner-payout-bat
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { sumExpensePaymentAmounts } from './expense-payment-rollup';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
+import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
+import type { OperationalJournalService } from '../finance/journal/operational-journal.service';
 
 export interface AddExpensePaymentInput {
   amount: number;
@@ -23,8 +25,11 @@ export async function createExpensePaymentRecord(
   prisma: InstanceType<typeof PrismaClient>,
   expenseId: string,
   input: AddExpensePaymentInput,
-  opts?: { notify?: WalletInAppNotifySink },
-): Promise<void> {
+  opts?: {
+    notify?: WalletInAppNotifySink;
+    journal?: OperationalJournalService;
+  },
+): Promise<string> {
   const expense = await prisma.expense.findUnique({
     where: { id: expenseId },
     include: { expensePayments: true },
@@ -48,6 +53,8 @@ export async function createExpensePaymentRecord(
     throw new BadRequestException(PAYMENT_ERRORS.dateInvalid);
   }
 
+  await assertPostingPeriodOpenForBookedAt(prisma, when);
+
   const payment = await prisma.expensePayment.create({
     data: {
       expenseId,
@@ -61,8 +68,18 @@ export async function createExpensePaymentRecord(
   await syncSalaryLinePaidFromExpenseLedger(prisma, expenseId, opts?.notify);
   await syncPartnerPayoutPaidFromExpense(prisma, expenseId);
 
+  if (opts?.journal) {
+    await opts.journal.appendExpensePaymentLine({
+      expensePaymentId: payment.id,
+      expenseName: expense.name,
+      amount: input.amount,
+      bookedAt: when,
+      projectId: expense.projectId,
+    });
+  }
+
   if (!opts?.notify) {
-    return;
+    return payment.id;
   }
 
   const salaryCtx = await prisma.expense.findUnique({
@@ -79,7 +96,7 @@ export async function createExpensePaymentRecord(
   });
   const sl = salaryCtx?.salaryLine;
   if (!sl?.payrollRun) {
-    return;
+    return payment.id;
   }
 
   await notifySalaryExpensePayment(opts.notify, {
@@ -90,4 +107,6 @@ export async function createExpensePaymentRecord(
     expenseId,
     lineStatus: sl.status,
   });
+
+  return payment.id;
 }

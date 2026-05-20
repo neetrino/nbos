@@ -74,7 +74,7 @@ export const projectDetailInclude = {
         },
       },
     },
-    orderBy: { startDate: 'desc' },
+    orderBy: { billingStartDate: 'desc' },
   },
   domains: { orderBy: { expiryDate: 'asc' } },
   expenses: { orderBy: { createdAt: 'desc' } },

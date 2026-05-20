@@ -7,6 +7,7 @@ import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-syn
 import { getLatestPaymentDate, resolveOrderStatus, sumAmounts } from '../finance-status.utils';
 import { syncInvoiceMoneyStatusFromPayments } from '../invoices/invoice-money-status';
 import { OperationalJournalService } from '../journal/operational-journal.service';
+import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-guard';
 import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual-classic.service';
 import { PartnerAccrualSubscriptionService } from '../partner-accrual/partner-accrual-subscription.service';
 
@@ -198,6 +199,7 @@ export class PaymentsService {
     }
 
     const paymentDate = new Date(data.paymentDate);
+    await assertPostingPeriodOpenForBookedAt(this.prisma, paymentDate);
     const created = await this.prisma.payment.create({
       data: {
         invoiceId: data.invoiceId,
@@ -255,6 +257,7 @@ export class PaymentsService {
 
   async delete(id: string) {
     const payment = await this.findById(id);
+    await assertPostingPeriodOpenForBookedAt(this.prisma, payment.paymentDate);
     await this.prisma.payment.delete({ where: { id } });
 
     await this.syncInvoiceStatus(payment.invoiceId);

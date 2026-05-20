@@ -17,7 +17,7 @@ export interface DeliveryLifecycleProjection {
   currentStageReadiness?: { completed: number; total: number };
 }
 
-interface DeliveryStatusCarrier {
+export interface DeliveryStatusCarrier {
   status?: string | null;
   deliveryStage?: DeliveryStage;
   deliveryWorkStatus?: DeliveryWorkStatus | null;

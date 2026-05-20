@@ -6,6 +6,7 @@ import { buildProjectIntake } from './project-intake';
 import {
   attachExtensionDeliveryLifecycle,
   attachProductDeliveryLifecycle,
+  type DeliveryStatusCarrier,
 } from './delivery-lifecycle';
 
 interface CreateProjectDto {
@@ -148,18 +149,8 @@ export class ProjectsService {
   }
 }
 
-interface ProjectDeliveryCarrier {
-  status?: string | null;
-  deliveryStage?: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER' | null;
-  deliveryWorkStatus?: 'ACTIVE' | 'ON_HOLD' | null;
-  deliveryResolution?: 'DONE' | 'CANCELLED' | null;
-  onHoldReason?: string | null;
-  onHoldUntil?: Date | string | null;
-  cancellationReason?: string | null;
-}
-
 function attachProjectDeliveryLifecycles<
-  T extends { products?: ProjectDeliveryCarrier[]; extensions?: ProjectDeliveryCarrier[] },
+  T extends { products?: Array<DeliveryStatusCarrier>; extensions?: Array<DeliveryStatusCarrier> },
 >(project: T) {
   return {
     ...project,

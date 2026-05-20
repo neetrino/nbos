@@ -76,7 +76,7 @@ export class PortfolioService {
               id: true,
               code: true,
               status: true,
-              amount: true,
+              baseMonthlyAmount: true,
               projectId: true,
               project: { select: { code: true, name: true } },
             },
@@ -153,7 +153,7 @@ export class PortfolioService {
       contact,
       subscriptions: subscriptions.map((s) => ({
         ...s,
-        amount: decimalToString(s.amount),
+        amount: decimalToString(s.baseMonthlyAmount),
       })),
       invoices: invoices.map((inv) => ({
         ...inv,
@@ -220,7 +220,7 @@ export class PortfolioService {
               id: true,
               code: true,
               status: true,
-              amount: true,
+              baseMonthlyAmount: true,
               projectId: true,
               project: { select: { code: true, name: true } },
             },
@@ -277,7 +277,7 @@ export class PortfolioService {
       company,
       subscriptions: subscriptions.map((s) => ({
         ...s,
-        amount: decimalToString(s.amount),
+        amount: decimalToString(s.baseMonthlyAmount),
       })),
       invoices: invoices.map((inv) => ({
         ...inv,

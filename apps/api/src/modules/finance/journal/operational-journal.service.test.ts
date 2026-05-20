@@ -89,6 +89,50 @@ describe('OperationalJournalService', () => {
     });
   });
 
+  it('records expense payment as cash outflow', async () => {
+    prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
+    prisma.financePostingPeriod.create.mockResolvedValue({ id: 'period-1', monthKey: '2026-05' });
+
+    await service.appendExpensePaymentLine({
+      expensePaymentId: 'ep-1',
+      expenseName: 'Hosting',
+      amount: 5000,
+      bookedAt: new Date('2026-05-12T00:00:00.000Z'),
+      projectId: 'project-1',
+    });
+
+    expect(prisma.operationalJournalEntry.upsert).toHaveBeenCalledWith({
+      where: { idempotencyKey: 'expense-payment:ep-1' },
+      update: {},
+      create: expect.objectContaining({
+        sourceType: 'EXPENSE_PAYMENT',
+        functionalAmount: -5000,
+        recognitionBasis: 'CASH',
+      }),
+    });
+  });
+
+  it('creates manual adjustment in open period', async () => {
+    prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
+    prisma.financePostingPeriod.create.mockResolvedValue({ id: 'period-1', monthKey: '2026-05' });
+    prisma.operationalJournalEntry.create.mockResolvedValue({ id: 'adj-1' });
+
+    await service.appendManualAdjustment({
+      amount: -1200,
+      bookedAt: '2026-05-15T00:00:00.000Z',
+      description: 'Correct prior month accrual',
+      recognitionBasis: 'ACCRUAL',
+    });
+
+    expect(prisma.operationalJournalEntry.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        sourceType: 'MANUAL_ADJUSTMENT',
+        functionalAmount: -1200,
+        description: 'Correct prior month accrual',
+      }),
+    });
+  });
+
   it('summarizes cash movement from active journal entries', async () => {
     prisma.operationalJournalEntry.aggregate.mockResolvedValue({
       _sum: { functionalAmount: 250000 },

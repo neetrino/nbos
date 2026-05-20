@@ -45,13 +45,20 @@ describe('InvoicesService', () => {
   let service: InvoicesService;
   let prisma: MockPrisma;
 
+  const operationalJournal = {
+    appendInvoiceCardAccrualLine: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
+    prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
+    operationalJournal.appendInvoiceCardAccrualLine.mockClear();
     service = new InvoicesService(
       prisma as never,
       {
         handle: vi.fn().mockResolvedValue(undefined),
       } as never,
+      operationalJournal as never,
     );
   });
 

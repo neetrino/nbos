@@ -70,13 +70,11 @@ describe('ProjectsService', () => {
 
       expect(result.products).toHaveLength(1);
       expect(result.extensions).toHaveLength(1);
-      expect(result.products[0].deliveryLifecycle).toMatchObject({
-        entityKind: 'PRODUCT',
-        stage: 'DEVELOPMENT',
+      expect(result.products?.[0]).toMatchObject({
+        deliveryLifecycle: { entityKind: 'PRODUCT', stage: 'DEVELOPMENT' },
       });
-      expect(result.extensions[0].deliveryLifecycle).toMatchObject({
-        entityKind: 'EXTENSION',
-        stage: 'QA',
+      expect(result.extensions?.[0]).toMatchObject({
+        deliveryLifecycle: { entityKind: 'EXTENSION', stage: 'QA' },
       });
       expect(result.intake).toMatchObject({
         hasProduct: true,

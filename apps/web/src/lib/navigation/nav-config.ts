@@ -143,6 +143,11 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         href: '/finance/reports',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
+      {
+        label: 'Journal',
+        href: '/finance/journal',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
     ],
   },
   {

@@ -51,9 +51,9 @@
 
 ## Фаза 4 — Operational Journal & периоды
 
-- [ ] 4.1 Запрет правок в CLOSED period
-- [ ] 4.2 Adjustment entries вместо silent edit
-- [ ] 4.3 Полное покрытие journal sources (invoice/expense accrual)
+- [x] ~~4.1 Запрет правок в CLOSED period~~
+- [x] ~~4.2 Adjustment entries вместо silent edit~~
+- [x] ~~4.3 Полное покрытие journal sources (invoice/expense accrual)~~
 
 ---
 
@@ -75,4 +75,4 @@
 
 ## Сейчас в работе
 
-**Фаза 4** — Operational Journal & периоды
+**Фаза 5** — Compensation Profile

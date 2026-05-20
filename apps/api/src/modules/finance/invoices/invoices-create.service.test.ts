@@ -7,9 +7,19 @@ describe('InvoicesService create', () => {
   let service: InvoicesService;
   let prisma: MockPrisma;
 
+  const operationalJournal = {
+    appendInvoiceCardAccrualLine: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new InvoicesService(prisma as never, { handle: vi.fn() } as never);
+    prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
+    operationalJournal.appendInvoiceCardAccrualLine.mockClear();
+    service = new InvoicesService(
+      prisma as never,
+      { handle: vi.fn() } as never,
+      operationalJournal as never,
+    );
   });
 
   it('generates code INV-YYYY-NNNN', async () => {

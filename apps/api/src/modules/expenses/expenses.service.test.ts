@@ -10,11 +10,18 @@ describe('ExpensesService', () => {
   let service: ExpensesService;
   let prisma: MockPrisma;
   let notifications: NotificationService;
+  const operationalJournal = {
+    appendExpenseCardAccrualLine: vi.fn().mockResolvedValue(undefined),
+    appendExpensePaymentLine: vi.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
     notifications = { create: vi.fn() } as unknown as NotificationService;
-    service = new ExpensesService(prisma as never, notifications);
+    operationalJournal.appendExpenseCardAccrualLine.mockClear();
+    operationalJournal.appendExpensePaymentLine.mockClear();
+    service = new ExpensesService(prisma as never, notifications, operationalJournal as never);
   });
 
   describe('findAll', () => {
@@ -348,7 +355,12 @@ describe('ExpensesService', () => {
 
   describe('create', () => {
     it('creates expense and returns findById shape', async () => {
-      prisma.expense.create.mockResolvedValue({ id: '1' });
+      prisma.expense.create.mockResolvedValue({
+        id: '1',
+        name: 'Hosting',
+        amount: new Decimal(20000),
+        projectId: null,
+      });
       prisma.expense.findUnique.mockResolvedValue({
         id: '1',
         name: 'Hosting',
@@ -392,6 +404,7 @@ describe('ExpensesService', () => {
         id: 'pay1',
         expenseId: 'e1',
         amount: new Decimal(10),
+        paymentDate: new Date('2026-05-05T00:00:00.000Z'),
       });
       prisma.expensePayment.delete.mockResolvedValue({ id: 'pay1' });
       prisma.expense.findUnique

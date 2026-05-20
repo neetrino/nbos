@@ -41,7 +41,7 @@ export async function assertFirstInvoiceMinimums(
   if (data.subscriptionId?.trim()) {
     const subscription = await prisma.subscription.findUnique({
       where: { id: data.subscriptionId },
-      select: { amount: true },
+      select: { baseMonthlyAmount: true },
     });
     if (!subscription) {
       throw new BadRequestException(`Subscription ${data.subscriptionId} not found`);
@@ -50,7 +50,7 @@ export async function assertFirstInvoiceMinimums(
       where: { subscriptionId: data.subscriptionId },
     });
     if (priorCount === 0) {
-      const minAmount = Number(subscription.amount);
+      const minAmount = Number(subscription.baseMonthlyAmount);
       if (data.amount < minAmount) {
         throw new BadRequestException(
           `First subscription invoice must be at least the monthly amount (${minAmount})`,
