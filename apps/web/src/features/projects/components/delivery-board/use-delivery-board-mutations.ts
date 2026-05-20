@@ -9,6 +9,11 @@ import {
   type BoardAction,
   type DeliveryActiveStage,
 } from './project-delivery-board-actions';
+import {
+  getLocalDeliveryCompleteErrors,
+  getLocalDeliveryMoveNextErrors,
+  getLocalDeliveryMoveStageErrors,
+} from './delivery-stage-gate-client';
 import { toDeliveryBoardActionError } from './project-delivery-board-stage-gate';
 import {
   getItemId,
@@ -60,12 +65,35 @@ export function useDeliveryBoardMutations(
     return NEXT_DELIVERY_STAGE[stage] ?? null;
   }, []);
 
+  const blockLocalGate = useCallback(
+    (item: DeliveryBoardItem, targetStage: DeliveryActiveStage, errors: ApiFieldError[]) => {
+      options?.onStageGateBlocked?.(item, targetStage, errors);
+    },
+    [options],
+  );
+
   const handleBoardAction = useCallback(
     async (item: DeliveryBoardItem, action: BoardAction) => {
       const itemId = getItemId(item);
       setBusyItemId(itemId);
       setActionError(null);
       const targetForGate = action === 'MOVE_NEXT' ? inferMoveNextTarget(item) : null;
+
+      if (action === 'MOVE_NEXT' && targetForGate) {
+        const localErrors = getLocalDeliveryMoveNextErrors(item);
+        if (localErrors.length > 0) {
+          blockLocalGate(item, targetForGate, localErrors);
+          return;
+        }
+      }
+      if (action === 'COMPLETE') {
+        const localErrors = getLocalDeliveryCompleteErrors(item);
+        if (localErrors.length > 0) {
+          blockLocalGate(item, 'TRANSFER', localErrors);
+          return;
+        }
+      }
+
       try {
         await runBoardAction(item, action);
         options?.onStageGateClear?.();
@@ -79,7 +107,7 @@ export function useDeliveryBoardMutations(
         setBusyItemId(null);
       }
     },
-    [inferMoveNextTarget, onRefresh, options, resolveGateFailure],
+    [blockLocalGate, inferMoveNextTarget, onRefresh, options, resolveGateFailure],
   );
 
   const advanceToDeliveryStage = useCallback(
@@ -87,6 +115,13 @@ export function useDeliveryBoardMutations(
       const itemId = getItemId(item);
       setBusyItemId(itemId);
       setActionError(null);
+
+      const localErrors = getLocalDeliveryMoveStageErrors(item, target);
+      if (localErrors.length > 0) {
+        blockLocalGate(item, target, localErrors);
+        return;
+      }
+
       try {
         await advanceDeliveryItemToStage(item, target);
         options?.onStageGateClear?.();
@@ -101,7 +136,7 @@ export function useDeliveryBoardMutations(
         setBusyItemId(null);
       }
     },
-    [onRefresh, options, resolveGateFailure],
+    [blockLocalGate, onRefresh, options, resolveGateFailure],
   );
 
   const handleCancelConfirm = useCallback(

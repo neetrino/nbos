@@ -51,6 +51,12 @@ export interface ProjectProductSummary {
   productCategory: string;
   productType: string;
   deadline: string | null;
+  description?: string | null;
+  order?: {
+    id: string;
+    status?: string;
+    invoices?: Array<{ moneyStatus: string }>;
+  } | null;
   pm: EmployeeRef | null;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   /** Present when item comes from list/global board (not embedded project bundle). */
@@ -80,6 +86,13 @@ export interface ProjectExtensionSummary {
   size: string;
   productId: string;
   projectId?: string;
+  description?: string | null;
+  assignedTo?: string | null;
+  order?: {
+    id: string;
+    status?: string | null;
+    invoices?: Array<{ moneyStatus: string }>;
+  } | null;
   assignee: EmployeeRef | null;
   product: { id: string; name: string; productType: string; status: string };
   project?: {

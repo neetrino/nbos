@@ -49,6 +49,12 @@ export interface Product {
     contact?: { id: string; firstName: string; lastName: string } | null;
   };
   pm: ProductEmployee | null;
+  order?: {
+    id: string;
+    code?: string;
+    status?: string;
+    invoices?: Array<{ moneyStatus: string }>;
+  } | null;
   _count: { extensions: number; tasks: number; tickets: number };
   checklistStageProgress?: ChecklistStageProgress | null;
 }

@@ -16,7 +16,7 @@ import {
   buildActiveFilterOptions,
   DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS,
 } from '@/features/projects/components/delivery-board/delivery-board-active-filters';
-import { DeliveryBoardClosedTable } from '@/features/projects/components/delivery-board/DeliveryBoardClosedTable';
+import { DeliveryBoardItemsTable } from '@/features/projects/components/delivery-board/DeliveryBoardItemsTable';
 import { DeliveryItemDetailSheet } from '@/features/projects/components/delivery-board/DeliveryItemDetailSheet';
 import { mergeDeliveryBoardItems } from '@/features/projects/components/delivery-board/delivery-board-item-adapters';
 import {
@@ -61,7 +61,8 @@ export default function DeliveryBoardPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pipelineTab, setPipelineTab] = useState<'active' | 'closed'>('active');
   const [kindFilter, setKindFilter] = useState<DeliveryBoardKindFilter>('ALL');
-  const [closedViewMode, setClosedViewMode] = useState<'LIST' | 'BOARD'>('LIST');
+  const [activeViewMode, setActiveViewMode] = useState<'LIST' | 'BOARD'>('BOARD');
+  const [closedViewMode, setClosedViewMode] = useState<'LIST' | 'BOARD'>('BOARD');
   const [closedFilters, setClosedFilters] =
     useState<DeliveryBoardClosedFiltersInput>(DEFAULT_CLOSED_FILTERS);
   const [activePipelineFilters, setActivePipelineFilters] = useState(() => ({
@@ -156,10 +157,12 @@ export default function DeliveryBoardPage() {
     [activeItemsBase],
   );
 
-  const activeFilteredCount = useMemo(
-    () => applyDeliveryBoardActiveFilters(activeItemsBase, activePipelineFilters).length,
+  const activeFilteredItems = useMemo(
+    () => applyDeliveryBoardActiveFilters(activeItemsBase, activePipelineFilters),
     [activeItemsBase, activePipelineFilters],
   );
+
+  const activeFilteredCount = activeFilteredItems.length;
 
   const closedBaseItems = useMemo(() => {
     let closed = scopedItems.filter((item) => Boolean(getItemLifecycle(item)?.isTerminal));
@@ -223,6 +226,8 @@ export default function DeliveryBoardPage() {
             closedFilters={closedFilters}
             onClosedFiltersChange={setClosedFilters}
             closedFilterOptions={closedFilterOptions}
+            activeViewMode={activeViewMode}
+            onActiveViewModeChange={setActiveViewMode}
             closedViewMode={closedViewMode}
             onClosedViewModeChange={setClosedViewMode}
             projectFilterId={projectFilterId}
@@ -237,35 +242,46 @@ export default function DeliveryBoardPage() {
               value="active"
               className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden"
             >
-              <DeliveryBoardView
-                items={scopedItems}
-                mutations={deliveryMutations}
-                onOpenProduct={openProduct}
-                onOpenProductTab={openProductTab}
-                lockedStatusFilter="ACTIVE"
-                summaryCounts={summaryCounts}
-                onOpenDetails={openDeliveryItemSheet}
-                showBoardHeader={false}
-                kindFilter={kindFilter}
-                onKindFilterChange={setKindFilter}
-                activePipelineFilters={activePipelineFilters}
-              />
+              {activeViewMode === 'LIST' ? (
+                <DeliveryBoardItemsTable
+                  mode="active"
+                  items={activeFilteredItems}
+                  onOpenDetails={openDeliveryItemSheet}
+                />
+              ) : (
+                <DeliveryBoardView
+                  items={scopedItems}
+                  mutations={deliveryMutations}
+                  onOpenProduct={openProduct}
+                  onOpenProductTab={openProductTab}
+                  lockedStatusFilter="ACTIVE"
+                  summaryCounts={summaryCounts}
+                  onOpenDetails={openDeliveryItemSheet}
+                  showBoardHeader={false}
+                  kindFilter={kindFilter}
+                  onKindFilterChange={setKindFilter}
+                  activePipelineFilters={activePipelineFilters}
+                />
+              )}
             </TabsContent>
-            <TabsContent value="closed" className="mt-4 space-y-4">
+            <TabsContent
+              value="closed"
+              className="mt-4 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden"
+            >
               {closedViewMode === 'LIST' ? (
-                <DeliveryBoardClosedTable
+                <DeliveryBoardItemsTable
+                  mode="closed"
                   items={closedFilteredItems}
                   onOpenDetails={openDeliveryItemSheet}
                 />
               ) : (
                 <DeliveryBoardClosedBoard
                   items={closedFilteredItems}
-                  busyItemId={null}
-                  displayMode="closedCompact"
+                  busyItemId={deliveryMutations.busyItemId}
                   onOpenProduct={openProduct}
                   onOpenProductTab={openProductTab}
-                  onBoardAction={async () => {}}
-                  onCancel={() => {}}
+                  onBoardAction={deliveryMutations.handleBoardAction}
+                  onCancel={deliveryMutations.requestCancel}
                   onOpenDetails={openDeliveryItemSheet}
                 />
               )}

@@ -34,7 +34,7 @@ const PIPELINE_TABS = [
   { value: 'closed' as const, label: 'Closed' },
 ];
 
-const CLOSED_VIEW_OPTIONS: ViewModeOption<'LIST' | 'BOARD'>[] = [
+const PIPELINE_VIEW_OPTIONS: ViewModeOption<'LIST' | 'BOARD'>[] = [
   {
     value: 'LIST',
     label: 'List',
@@ -74,6 +74,8 @@ export interface DeliveryBoardPageHeroProps {
   closedFilters: DeliveryBoardClosedFiltersInput;
   onClosedFiltersChange: (next: DeliveryBoardClosedFiltersInput) => void;
   closedFilterOptions: ClosedFilterOptions;
+  activeViewMode: 'LIST' | 'BOARD';
+  onActiveViewModeChange: (mode: 'LIST' | 'BOARD') => void;
   closedViewMode: 'LIST' | 'BOARD';
   onClosedViewModeChange: (mode: 'LIST' | 'BOARD') => void;
   projectFilterId: string | null;
@@ -93,6 +95,8 @@ export function DeliveryBoardPageHero({
   closedFilters,
   onClosedFiltersChange,
   closedFilterOptions,
+  activeViewMode,
+  onActiveViewModeChange,
   closedViewMode,
   onClosedViewModeChange,
   projectFilterId,
@@ -171,13 +175,11 @@ export function DeliveryBoardPageHero({
         )
       }
       viewMode={
-        pipelineTab === 'closed' ? (
-          <ViewModeSwitch
-            value={closedViewMode}
-            onChange={onClosedViewModeChange}
-            options={CLOSED_VIEW_OPTIONS}
-          />
-        ) : undefined
+        <ViewModeSwitch
+          value={pipelineTab === 'active' ? activeViewMode : closedViewMode}
+          onChange={pipelineTab === 'active' ? onActiveViewModeChange : onClosedViewModeChange}
+          options={PIPELINE_VIEW_OPTIONS}
+        />
       }
       trailing={
         <div className="flex shrink-0 flex-wrap items-center gap-2">

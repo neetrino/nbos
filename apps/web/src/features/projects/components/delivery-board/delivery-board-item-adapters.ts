@@ -14,6 +14,14 @@ export function productToDeliveryBoardItem(product: Product): DeliveryBoardItem 
     productCategory: product.productCategory,
     productType: product.productType,
     deadline: product.deadline,
+    description: product.description,
+    order: product.order
+      ? {
+          id: product.order.id,
+          status: product.order.status,
+          invoices: product.order.invoices,
+        }
+      : null,
     pm: product.pm,
     deliveryLifecycle: product.deliveryLifecycle,
     projectId: product.projectId,
@@ -33,6 +41,15 @@ export function extensionToDeliveryBoardItem(extension: Extension): DeliveryBoar
     status: extension.status,
     size: extension.size,
     productId: extension.productId,
+    description: extension.description,
+    assignedTo: extension.assignedTo,
+    order: extension.order
+      ? {
+          id: extension.order.id,
+          status: extension.order.status,
+          invoices: undefined,
+        }
+      : null,
     assignee: extension.assignee,
     projectId: extension.projectId,
     project: extension.project,
