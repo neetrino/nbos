@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -22,6 +23,9 @@ import {
   type InvoiceSheetInvoice,
 } from './invoices/InvoiceSheetSections';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { buildInvoiceGateRequiredFields } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import { InvoiceSheetStageGateBlockers } from '@/features/finance/components/invoices/InvoiceSheetStageGateBlockers';
 
 interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
@@ -35,6 +39,7 @@ interface InvoiceSheetProps {
     paymentMethod?: string;
     notes?: string;
   }) => Promise<void>;
+  stageGateHighlight?: InvoiceSheetStageGateHighlight | null;
 }
 
 export function InvoiceSheet({
@@ -43,8 +48,14 @@ export function InvoiceSheet({
   onOpenChange,
   onInvoiceUpdated,
   onPaymentRecorded,
+  stageGateHighlight = null,
 }: InvoiceSheetProps) {
   if (!invoice) return null;
+
+  const gateRequiredFields = useMemo(
+    () => buildInvoiceGateRequiredFields(stageGateHighlight),
+    [stageGateHighlight],
+  );
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(invoice.id)}`;
 
@@ -77,8 +88,10 @@ export function InvoiceSheet({
 
         <ScrollArea className="min-h-0 flex-1">
           <div className="space-y-5 px-7 py-5">
+            <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
+
             <div className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS)}>
-              <InvoiceMoneySummaryRow invoice={invoice} />
+              <InvoiceMoneySummaryRow invoice={invoice} gateRequiredFields={gateRequiredFields} />
             </div>
 
             <InvoiceDetailsSection invoice={invoice} onInvoiceUpdated={onInvoiceUpdated} />
@@ -98,7 +111,11 @@ export function InvoiceSheet({
 
             <Separator />
 
-            <InvoicePaymentsSection invoice={invoice} onPaymentRecorded={onPaymentRecorded} />
+            <InvoicePaymentsSection
+              invoice={invoice}
+              onPaymentRecorded={onPaymentRecorded}
+              gateRequiredFields={gateRequiredFields}
+            />
           </div>
         </ScrollArea>
       </SheetContent>

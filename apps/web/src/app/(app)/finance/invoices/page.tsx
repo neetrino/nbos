@@ -145,6 +145,7 @@ function InvoicesPageInner() {
         onOpenChange={state.handleInvoiceSheetOpenChange}
         onInvoiceUpdated={state.handleInvoiceUpdated}
         onPaymentRecorded={state.handlePaymentRecorded}
+        stageGateHighlight={state.stageGateHighlight}
       />
       <CreateInvoiceDialog
         open={state.createDialogOpen}

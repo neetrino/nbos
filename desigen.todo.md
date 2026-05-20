@@ -34,7 +34,7 @@ If the approved surface feels right, use it as the reference for the next surfac
 
 ## Step 1 — Visual Reference Surface
 
-- [ ] **Subscription detail sheet** — make this the first design checkpoint.
+- [review] **Subscription detail sheet** — first design checkpoint (ready for visual review).
 
 Why this first:
 

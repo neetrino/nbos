@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { openInvoiceWithSubscriptionHref } from '@/features/finance/constants/invoice-deep-link';
 import type {
@@ -18,6 +17,7 @@ interface SubscriptionCoverageGridProps {
   loading: boolean;
   error: string | null;
   onRetry: () => void;
+  onOpenSubscription: (subscriptionId: string) => void;
 }
 
 const GRID_YEAR_WINDOW = 3;
@@ -58,8 +58,8 @@ export function SubscriptionCoverageGrid({
   loading,
   error,
   onRetry,
+  onOpenSubscription,
 }: SubscriptionCoverageGridProps) {
-  const router = useRouter();
   const months = monthLabelsForYear(year);
   const cy = new Date().getFullYear();
   const yearOptions = Array.from(
@@ -128,7 +128,7 @@ export function SubscriptionCoverageGrid({
                 <tr key={row.subscriptionId} className="hover:bg-secondary/30">
                   <td
                     className="bg-card sticky left-0 z-10 cursor-pointer px-3 py-2 font-medium"
-                    onClick={() => router.push(`/finance/subscriptions/${row.subscriptionId}`)}
+                    onClick={() => onOpenSubscription(row.subscriptionId)}
                   >
                     <div>
                       <p>{row.projectName}</p>

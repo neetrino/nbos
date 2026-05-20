@@ -92,7 +92,6 @@ export function TasksListKanbanViews({
             onReorderWithinColumn={onKanbanReorder}
             onAddItemInColumn={onAddTaskInColumn}
             addButtonLabel="Quick"
-            columnWidth={270}
             emptyMessage="No tasks"
           />
         </div>

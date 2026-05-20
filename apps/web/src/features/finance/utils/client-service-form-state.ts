@@ -1,4 +1,4 @@
-import type { ClientServiceRecord } from '@/lib/api/client-services';
+import type { ClientServiceRecord, ClientServiceRecordPayload } from '@/lib/api/client-services';
 
 export interface ClientServiceFormState {
   projectId: string;
@@ -57,6 +57,28 @@ export function clientServiceToFormState(row: ClientServiceRecord): ClientServic
     startDate: toDateInputValue(row.startDate),
     renewalDate: toDateInputValue(row.renewalDate),
     notes: row.notes ?? '',
+  };
+}
+
+export function clientServiceFormToPayload(
+  form: ClientServiceFormState,
+): ClientServiceRecordPayload {
+  return {
+    projectId: form.projectId,
+    type: form.type,
+    name: form.name.trim(),
+    provider: form.provider.trim() || null,
+    status: form.status,
+    billingModel: form.billingModel,
+    pricingModel: form.pricingModel,
+    frequency: form.frequency,
+    ourCost: parseOptionalAmount(form.ourCost),
+    clientCharge: parseOptionalAmount(form.clientCharge),
+    taxStatus: form.taxStatus,
+    notificationsEnabled: form.notificationsEnabled,
+    startDate: form.startDate || null,
+    renewalDate: form.renewalDate || null,
+    notes: form.notes.trim() || null,
   };
 }
 

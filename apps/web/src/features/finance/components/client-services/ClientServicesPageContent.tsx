@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   CheckSquare,
   FileText,
@@ -31,7 +32,9 @@ import {
 } from '@/features/finance/constants/client-services';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { clientServicesPageTitle } from '@/features/finance/constants/finance-route-page-titles';
-import { ClientServiceDialog } from './ClientServiceDialog';
+import { OPEN_CLIENT_SERVICE_QUERY } from '@/features/finance/constants/client-service-deep-link';
+import { ClientServiceCreateDialog } from './ClientServiceCreateDialog';
+import { ClientServiceDetailSheet } from './ClientServiceDetailSheet';
 import {
   clientServicesApi,
   type ClientServiceRecord,
@@ -52,14 +55,25 @@ function money(value: string | null): string {
 }
 
 export function ClientServicesPageContent() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <ClientServicesPageInner />
+    </Suspense>
+  );
+}
+
+function ClientServicesPageInner() {
   useFinanceDocumentTitle(clientServicesPageTitle());
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
 
   const [items, setItems] = useState<ClientServiceRecord[]>([]);
   const [stats, setStats] = useState<ClientServiceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [serviceToEdit, setServiceToEdit] = useState<ClientServiceRecord | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
   const { me } = usePermission();
 
@@ -103,10 +117,32 @@ export function ClientServicesPageContent() {
     [items.length, stats],
   );
 
-  const openCreate = () => {
-    setServiceToEdit(null);
-    setDialogOpen(true);
-  };
+  const openCreate = () => setCreateOpen(true);
+
+  const openServiceDetail = useCallback(
+    (serviceId: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_CLIENT_SERVICE_QUERY, serviceId);
+      router.push(`${pathname ?? '/finance/client-services'}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handleServiceSheetOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) return;
+      const params = new URLSearchParams(searchParams.toString());
+      if (!params.has(OPEN_CLIENT_SERVICE_QUERY)) return;
+      params.delete(OPEN_CLIENT_SERVICE_QUERY);
+      const qs = params.toString();
+      router.replace(
+        qs
+          ? `${pathname ?? '/finance/client-services'}?${qs}`
+          : (pathname ?? '/finance/client-services'),
+      );
+    },
+    [pathname, router, searchParams],
+  );
 
   const handleDelete = async (service: ClientServiceRecord) => {
     if (!window.confirm(`Delete client service "${service.name}"? Linked finance records stay.`)) {
@@ -208,17 +244,13 @@ export function ClientServicesPageContent() {
             </TableHeader>
             <TableBody>
               {items.map((service) => (
-                <TableRow key={service.id}>
+                <TableRow
+                  key={service.id}
+                  className="hover:bg-muted/40 cursor-pointer"
+                  onClick={() => openServiceDetail(service.id)}
+                >
                   <TableCell>
-                    <button
-                      className="text-left font-medium hover:underline"
-                      onClick={() => {
-                        setServiceToEdit(service);
-                        setDialogOpen(true);
-                      }}
-                    >
-                      {service.name}
-                    </button>
+                    <span className="font-medium">{service.name}</span>
                     <p className="text-muted-foreground text-xs">
                       {clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)} -{' '}
                       {clientServiceOptionLabel(CLIENT_SERVICE_STATUSES, service.status)}
@@ -245,7 +277,7 @@ export function ClientServicesPageContent() {
                     {service._count.invoices} inv - {service._count.expensePlans} plans -{' '}
                     {service._count.expenses} exp
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-1">
                       {service.billingModel === 'CLIENT_PAID' ? (
                         <Button
@@ -297,10 +329,16 @@ export function ClientServicesPageContent() {
         </div>
       ) : null}
 
-      <ClientServiceDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        serviceToEdit={serviceToEdit}
+      <ClientServiceCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onSaved={() => void fetchData()}
+      />
+
+      <ClientServiceDetailSheet
+        serviceId={openServiceIdFromUrl}
+        open={Boolean(openServiceIdFromUrl)}
+        onOpenChange={handleServiceSheetOpenChange}
         onSaved={() => void fetchData()}
       />
     </div>

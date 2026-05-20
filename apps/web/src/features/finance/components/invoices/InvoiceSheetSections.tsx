@@ -8,6 +8,8 @@ import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
 import { InvoicePaymentCoverageCard } from './InvoicePaymentCoverageCard';
+import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { RecordPaymentForm } from './RecordPaymentForm';
 
 export type InvoiceSheetInvoice = Invoice;
@@ -26,13 +28,25 @@ export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice })
 }
 
 /** Compact money summary — amount lives in the sheet header; this row shows coverage hints only. */
-export function InvoiceMoneySummaryRow({ invoice }: { invoice: InvoiceSheetInvoice }) {
+export function InvoiceMoneySummaryRow({
+  invoice,
+  gateRequiredFields = new Set<string>(),
+}: {
+  invoice: InvoiceSheetInvoice;
+  gateRequiredFields?: ReadonlySet<string>;
+}) {
   const coverage = invoice.paymentCoverage;
   const outstanding = coverage?.outstandingAmount ?? parseFloat(invoice.amount);
   const isOverdue = isInvoiceOverdue(invoice);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
+    <div
+      className={invoiceStageGateSectionClass(
+        gateRequiredFields,
+        INVOICE_GATE_FIELD_PAYMENTS,
+        'grid gap-4 sm:grid-cols-3',
+      )}
+    >
       <div className="min-w-0">
         <p className="text-muted-foreground text-xs">Outstanding</p>
         <p
@@ -134,6 +148,7 @@ export function InvoiceDescriptionSection({ description }: { description: string
 export function InvoicePaymentsSection({
   invoice,
   onPaymentRecorded,
+  gateRequiredFields = new Set<string>(),
 }: {
   invoice: InvoiceSheetInvoice;
   onPaymentRecorded: (data: {
@@ -143,9 +158,13 @@ export function InvoicePaymentsSection({
     paymentMethod?: string;
     notes?: string;
   }) => Promise<void>;
+  gateRequiredFields?: ReadonlySet<string>;
 }) {
   return (
-    <DetailSheetSection title="Payments">
+    <DetailSheetSection
+      title="Payments"
+      className={invoiceStageGateSectionClass(gateRequiredFields, INVOICE_GATE_FIELD_PAYMENTS)}
+    >
       <InvoicePaymentCoverageCard invoice={invoice} />
       {invoice.payments.length > 0 ? (
         <div className="space-y-4">

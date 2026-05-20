@@ -82,11 +82,11 @@
 - [x] ~~Для existing gates: описать module rules в finance canon (`11-Finance-Stage-Gate-and-Board-UX-Standard.md`)~~
 - [x] ~~Expense closed: `closedBoard` API + Board/List + Paid/Cancelled columns~~
 - [x] ~~Invoices: Active/Closed board scope на одной странице (Paid/Cancelled = closed)~~
-- [ ] Subscription: board/list parity (grid-first)
+- [ ] Subscription: board/list parity (grid-first Active/Closed — отложено, grid-first без terminal board)
 - [x] ~~Invoice detail sheet: compact detail canon (summary row, DetailSheetSection, без hero amount panel)~~
-- [ ] Subscription detail: открывать через sheet, separate page оставить только для workspace-сценария
-- [ ] Client Services: заменить большой edit/detail dialog на sheet; quick dialog оставить только для короткого create/action
-- [ ] Finance blockers: sheet-highlight UX при добавлении validation rules (сейчас API/detail guards)
+- [x] ~~Subscription detail: sheet на list (`openSubscription`), workspace page `/finance/subscriptions/[id]`~~
+- [x] ~~Client Services: detail/edit sheet + quick create dialog~~
+- [x] ~~Finance blockers (invoices): local pre-check + sheet field highlights на kanban money-status move~~
 - [x] ~~Finance list/board cards: ExpenseKanbanCard + ExpensesTableSection на active и closed~~
 
 ---
@@ -105,11 +105,11 @@
 
 ## Фаза 8 — Cleanup и контроль качества
 
-- [ ] Удалить устаревшие blocker/modal компоненты после миграции всех surfaces
+- [x] ~~Удалить устаревшие blocker/modal компоненты (TransitionBlockerDialog / StageGateBlockerPanel — в web нет)~~
 - [x] ~~Regression: `delivery-stage-gate-client.test.ts` (local pre-check)~~
 - [x] ~~Regression: lead + task board lifecycle + delivery local gate~~
 - [x] ~~Regression: invoice board lifecycle scope test~~
-- [ ] Regression: product board scope helpers
+- [x] ~~Regression: product board scope helpers (`product-board-lifecycle.test.ts`)~~
 - [ ] Проверить mobile/responsive для Active/Closed Board/List
 - [ ] Проверить docs links и cleanup registers
 - [ ] Финальный audit: все kanban/workflow доски используют один стандарт

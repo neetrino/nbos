@@ -18,6 +18,11 @@ import { useSubscriptionsPageState } from '@/features/finance/components/subscri
 import { buildSubscriptionPageQueries } from '@/features/finance/utils/build-subscription-page-queries';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { SubscriptionFormDialog } from '@/features/finance/components/subscriptions/SubscriptionFormDialog';
+import { SubscriptionDetailSheet } from '@/features/finance/components/subscriptions/SubscriptionDetailSheet';
+import {
+  OPEN_SUBSCRIPTION_QUERY,
+  subscriptionsListWithOpenSubscriptionHref,
+} from '@/features/finance/constants/subscription-deep-link';
 import type { Subscription } from '@/lib/api/finance';
 
 function SubscriptionsPageInner() {
@@ -26,6 +31,7 @@ function SubscriptionsPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const partnerIdFromUrl = searchParams.get(PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY);
+  const openSubscriptionIdFromUrl = searchParams.get(OPEN_SUBSCRIPTION_QUERY)?.trim() || null;
 
   const page = useSubscriptionsPageState({ partnerIdFromUrl });
   const [gridYear, setGridYear] = useState(() => new Date().getFullYear());
@@ -81,11 +87,36 @@ function SubscriptionsPageInner() {
     page.setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  const openSubscriptionDetail = useCallback(
+    (subscriptionId: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_SUBSCRIPTION_QUERY, subscriptionId);
+      router.push(`${pathname ?? '/finance/subscriptions'}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handleSubscriptionSheetOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) return;
+      const params = new URLSearchParams(searchParams.toString());
+      if (!params.has(OPEN_SUBSCRIPTION_QUERY)) return;
+      params.delete(OPEN_SUBSCRIPTION_QUERY);
+      const qs = params.toString();
+      router.replace(
+        qs
+          ? `${pathname ?? '/finance/subscriptions'}?${qs}`
+          : (pathname ?? '/finance/subscriptions'),
+      );
+    },
+    [pathname, router, searchParams],
+  );
+
   const handleSubscriptionCreated = useCallback(
     (created: Subscription) => {
       void page.fetchSubscriptions();
       subscriptionGrid.retry();
-      router.push(`/finance/subscriptions/${created.id}`);
+      router.push(subscriptionsListWithOpenSubscriptionHref(created.id));
     },
     [page, router, subscriptionGrid],
   );
@@ -193,6 +224,17 @@ function SubscriptionsPageInner() {
         onCancel={page.handleCancel}
         onHold={page.handleHold}
         onPartnerLinked={page.handlePartnerLinked}
+        onOpenSubscription={openSubscriptionDetail}
+      />
+
+      <SubscriptionDetailSheet
+        subscriptionId={openSubscriptionIdFromUrl}
+        open={Boolean(openSubscriptionIdFromUrl)}
+        onOpenChange={handleSubscriptionSheetOpenChange}
+        onSubscriptionUpdated={() => {
+          void page.fetchSubscriptions();
+          subscriptionGrid.retry();
+        }}
       />
     </div>
   );

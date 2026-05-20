@@ -25,6 +25,7 @@ interface SubscriptionsPageContentProps {
   onCancel: (subscription: Subscription) => Promise<void>;
   onHold: (subscription: Subscription) => Promise<void>;
   onPartnerLinked: (subscription: Subscription) => void;
+  onOpenSubscription: (subscriptionId: string) => void;
 }
 
 export function SubscriptionsPageContent({
@@ -47,6 +48,7 @@ export function SubscriptionsPageContent({
   onCancel,
   onHold,
   onPartnerLinked,
+  onOpenSubscription,
 }: SubscriptionsPageContentProps) {
   if (loading) return <LoadingState count={4} />;
   if (error) return <ErrorState description={error} onRetry={onRetry} />;
@@ -63,6 +65,7 @@ export function SubscriptionsPageContent({
         loading={gridLoading}
         error={gridError}
         onRetry={onGridRetry}
+        onOpenSubscription={onOpenSubscription}
       />
       {subscriptions.length === 0 ? (
         <SubscriptionsEmptyState />
@@ -76,6 +79,7 @@ export function SubscriptionsPageContent({
           onCancel={onCancel}
           onHold={onHold}
           onPartnerLinked={onPartnerLinked}
+          onOpenSubscription={onOpenSubscription}
         />
       )}
     </>
