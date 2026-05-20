@@ -1,6 +1,8 @@
+import type { ReactNode } from 'react';
 import { FileText, Building2, Clock, User, FolderKanban, Shield, Repeat } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { DetailSheetSection } from '@/components/shared';
 import { StatusBadge } from '@/components/shared';
+import { DETAIL_SHEET_PAIRED_COLUMNS_CLASS } from '@/components/shared/detail-sheet-classes';
 import { getInvoiceMoneyStage, formatAmount } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
@@ -23,18 +25,41 @@ export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice })
   );
 }
 
-export function InvoiceAmountPanel({ invoice }: { invoice: InvoiceSheetInvoice }) {
+/** Compact money summary — amount lives in the sheet header; this row shows coverage hints only. */
+export function InvoiceMoneySummaryRow({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  const coverage = invoice.paymentCoverage;
+  const outstanding = coverage?.outstandingAmount ?? parseFloat(invoice.amount);
   const isOverdue = isInvoiceOverdue(invoice);
+
   return (
-    <section className="bg-secondary/50 rounded-xl p-4">
-      <div className="text-center">
-        <p className="text-muted-foreground text-xs font-medium">Amount</p>
-        <p className="text-foreground mt-1 text-3xl font-bold">
-          {formatAmount(parseFloat(invoice.amount), invoice.currency)}
+    <div className="grid gap-4 sm:grid-cols-3">
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-xs">Outstanding</p>
+        <p
+          className={`mt-1 text-sm font-semibold tabular-nums ${outstanding > 0 && isOverdue ? 'text-red-600' : ''}`}
+        >
+          {formatAmount(outstanding, invoice.currency)}
         </p>
-        {isOverdue && <p className="mt-1 text-xs font-medium text-red-500">Overdue</p>}
       </div>
-    </section>
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-xs">Paid</p>
+        <p className="mt-1 text-sm font-semibold tabular-nums">
+          {formatAmount(coverage?.paidAmount ?? 0, invoice.currency)}
+        </p>
+      </div>
+      <div className="min-w-0">
+        <p className="text-muted-foreground text-xs">Due</p>
+        <p className="mt-1 text-sm font-medium">
+          {invoice.dueDate
+            ? new Date(invoice.dueDate).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            : '—'}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -45,74 +70,65 @@ export function InvoiceDetailsSection({
   invoice: InvoiceSheetInvoice;
   onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
 }) {
-  const money = getInvoiceMoneyStage(invoice.moneyStatus);
   return (
-    <section className="space-y-3">
-      <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-        Invoice Details
-      </h4>
-      <div className="grid grid-cols-2 gap-y-3 text-sm">
-        <div className="text-muted-foreground">Type</div>
-        <div className="font-medium">{invoice.type}</div>
-        <div className="text-muted-foreground">Status</div>
-        <div>{money && <StatusBadge label={money.label} variant={money.variant} />}</div>
-        <InvoiceTaxStatusRow taxStatus={invoice.taxStatus} />
-        <div className="text-muted-foreground">Official invoice</div>
-        {onInvoiceUpdated ? (
-          <InvoiceOfficialRequestPanel invoice={invoice} onUpdated={onInvoiceUpdated} />
-        ) : (
-          <OfficialInvoiceSummary invoice={invoice} />
-        )}
-        <InvoiceDueDateRow invoice={invoice} />
-        <InvoicePaidDateRow paidDate={invoice.paidDate} />
-        <DateRow label="Created" date={invoice.createdAt} />
+    <DetailSheetSection title="Details">
+      <div className={DETAIL_SHEET_PAIRED_COLUMNS_CLASS}>
+        <div className="space-y-3 text-sm">
+          <FieldRow label="Type" value={invoice.type} />
+          <InvoiceTaxStatusRow taxStatus={invoice.taxStatus} />
+          <FieldRow
+            label="Official"
+            value={
+              onInvoiceUpdated ? (
+                <InvoiceOfficialRequestPanel invoice={invoice} onUpdated={onInvoiceUpdated} />
+              ) : (
+                <OfficialInvoiceSummary invoice={invoice} />
+              )
+            }
+          />
+        </div>
+        <div className="space-y-3 text-sm">
+          <InvoicePaidDateRow paidDate={invoice.paidDate} />
+          <DateRow label="Created" date={invoice.createdAt} />
+        </div>
       </div>
-    </section>
+    </DetailSheetSection>
   );
 }
 
 export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  const links = [
+    invoice.company ? { icon: Building2, label: 'Company', value: invoice.company.name } : null,
+    invoice.project ? { icon: FolderKanban, label: 'Project', value: invoice.project.name } : null,
+    invoice.contact
+      ? {
+          icon: User,
+          label: 'Contact',
+          value: `${invoice.contact.firstName} ${invoice.contact.lastName}`,
+        }
+      : null,
+    invoice.order ? { icon: FileText, label: 'Order', value: invoice.order.code } : null,
+    invoice.subscriptionId
+      ? { icon: Repeat, label: 'Subscription', value: invoice.subscriptionId }
+      : null,
+  ].filter((row): row is { icon: typeof FileText; label: string; value: string } => row != null);
+
+  if (links.length === 0) return null;
+
   return (
-    <section className="space-y-3">
-      <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-        Linked Entities
-      </h4>
+    <DetailSheetSection title="Linked">
       <div className="space-y-2">
-        {invoice.company && (
-          <LinkedEntity icon={Building2} label="Company" value={invoice.company.name} />
-        )}
-        {invoice.project && (
-          <LinkedEntity icon={FolderKanban} label="Project" value={invoice.project.name} />
-        )}
-        {invoice.contact && (
-          <LinkedEntity
-            icon={User}
-            label="Contact"
-            value={`${invoice.contact.firstName} ${invoice.contact.lastName}`}
-          />
-        )}
-        {invoice.order && <LinkedEntity icon={FileText} label="Order" value={invoice.order.code} />}
-        {invoice.subscriptionId && (
-          <LinkedEntity icon={Repeat} label="Subscription" value={invoice.subscriptionId} />
-        )}
+        {links.map((row) => (
+          <LinkedEntity key={`${row.label}-${row.value}`} {...row} />
+        ))}
       </div>
-    </section>
+    </DetailSheetSection>
   );
 }
 
 export function InvoiceDescriptionSection({ description }: { description: string | null }) {
   if (!description) return null;
-  return (
-    <>
-      <Separator />
-      <section className="space-y-2">
-        <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-          Description
-        </h4>
-        <p className="text-foreground text-sm">{description}</p>
-      </section>
-    </>
-  );
+  return <p className="text-foreground text-sm leading-relaxed">{description}</p>;
 }
 
 export function InvoicePaymentsSection({
@@ -129,7 +145,7 @@ export function InvoicePaymentsSection({
   }) => Promise<void>;
 }) {
   return (
-    <section className="space-y-4">
+    <DetailSheetSection title="Payments">
       <InvoicePaymentCoverageCard invoice={invoice} />
       {invoice.payments.length > 0 ? (
         <div className="space-y-4">
@@ -145,19 +161,30 @@ export function InvoicePaymentsSection({
         </div>
       ) : null}
       <RecordPaymentForm invoice={invoice} onRecordPayment={onPaymentRecorded} />
-    </section>
+    </DetailSheetSection>
+  );
+}
+
+function FieldRow({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className="text-foreground min-w-0 font-medium">{value}</span>
+    </div>
   );
 }
 
 function InvoiceTaxStatusRow({ taxStatus }: { taxStatus: string }) {
   return (
-    <>
-      <div className="text-muted-foreground">Tax Status</div>
-      <div className="flex items-center gap-1.5">
-        <Shield size={13} className="text-muted-foreground" />
-        {taxStatus === 'TAX' ? 'Tax Payer' : 'Tax-Free'}
-      </div>
-    </>
+    <FieldRow
+      label="Tax"
+      value={
+        <span className="inline-flex items-center gap-1.5">
+          <Shield size={13} className="text-muted-foreground" aria-hidden />
+          {taxStatus === 'TAX' ? 'Tax payer' : 'Tax-free'}
+        </span>
+      }
+    />
   );
 }
 
@@ -180,17 +207,6 @@ function OfficialInvoiceSummary({ invoice }: { invoice: InvoiceSheetInvoice }) {
   );
 }
 
-function InvoiceDueDateRow({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  if (!invoice.dueDate) return null;
-  return (
-    <DateRow
-      label="Due Date"
-      date={invoice.dueDate}
-      className={isInvoiceOverdue(invoice) ? 'text-red-500' : ''}
-    />
-  );
-}
-
 function InvoicePaidDateRow({ paidDate }: { paidDate: string | null }) {
   if (!paidDate) return null;
   return <DateRow label="Paid Date" date={paidDate} className="text-green-600" />;
@@ -206,17 +222,19 @@ function DateRow({
   className?: string;
 }) {
   return (
-    <>
-      <div className="text-muted-foreground">{label}</div>
-      <div className={`flex items-center gap-1.5 font-medium ${className}`}>
-        <Clock size={13} />
-        {new Date(date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        })}
-      </div>
-    </>
+    <FieldRow
+      label={label}
+      value={
+        <span className={`inline-flex items-center gap-1.5 ${className}`}>
+          <Clock size={13} className="text-muted-foreground" aria-hidden />
+          {new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })}
+        </span>
+      }
+    />
   );
 }
 
@@ -230,10 +248,10 @@ function LinkedEntity({
   value: string;
 }) {
   return (
-    <div className="border-border flex items-center gap-2 rounded-lg border p-3 text-sm">
-      <Icon size={14} className="text-muted-foreground" />
-      <span className="font-medium">{value}</span>
-      <span className="text-muted-foreground text-xs">{label}</span>
+    <div className="flex items-center gap-2 text-sm">
+      <Icon size={14} className="text-muted-foreground shrink-0" aria-hidden />
+      <span className="text-foreground min-w-0 flex-1 truncate font-medium">{value}</span>
+      <span className="text-muted-foreground shrink-0 text-xs">{label}</span>
     </div>
   );
 }

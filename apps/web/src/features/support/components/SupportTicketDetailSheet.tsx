@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Headphones } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -212,35 +211,32 @@ export function SupportTicketDetailSheet({
           className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
         >
           <div className="border-border flex h-full min-h-0 flex-col border-l">
-            <div className="border-border shrink-0 border-b px-6 py-4">
-              <div className="flex items-start gap-3">
-                <div className="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-xl">
-                  <Headphones size={20} />
+            <div className="border-border bg-background shrink-0 border-b px-7 pt-5 pb-3">
+              {loading ? (
+                <p className="text-muted-foreground text-sm">Loading…</p>
+              ) : ticket ? (
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-foreground line-clamp-2 text-xl font-bold tracking-tight">
+                      {ticket.title}
+                    </h2>
+                    <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wide">
+                      {ticket.code}
+                      <span className="mx-1.5 font-sans">·</span>
+                      {ticket.project.name}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {cat && <StatusBadge label={cat.label} variant={cat.variant} />}
+                    {pri && <StatusBadge label={pri.label} variant={pri.variant} />}
+                    {st && <StatusBadge label={st.label} variant={st.variant} />}
+                    {cov && <StatusBadge label={cov.label} variant={cov.variant} />}
+                    {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                    Support ticket
-                  </p>
-                  {loading ? (
-                    <p className="text-muted-foreground text-sm">Loading…</p>
-                  ) : ticket ? (
-                    <>
-                      <h2 className="text-foreground truncate text-lg font-semibold">
-                        {ticket.code}
-                      </h2>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {cat && <StatusBadge label={cat.label} variant={cat.variant} />}
-                        {pri && <StatusBadge label={pri.label} variant={pri.variant} />}
-                        {st && <StatusBadge label={st.label} variant={st.variant} />}
-                        {cov && <StatusBadge label={cov.label} variant={cov.variant} />}
-                        {sla && <StatusBadge label={sla.label} variant={sla.variant} />}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-muted-foreground text-sm">No ticket</p>
-                  )}
-                </div>
-              </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">No ticket</p>
+              )}
             </div>
 
             {error ? <p className="text-destructive shrink-0 px-6 py-2 text-sm">{error}</p> : null}

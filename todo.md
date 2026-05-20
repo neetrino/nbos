@@ -83,7 +83,7 @@
 - [x] ~~Expense closed: `closedBoard` API + Board/List + Paid/Cancelled columns~~
 - [x] ~~Invoices: Active/Closed board scope на одной странице (Paid/Cancelled = closed)~~
 - [ ] Subscription: board/list parity (grid-first)
-- [ ] Invoice detail sheet: применить compact detail canon, убрать oversized one-value panels и дублирующие labels
+- [x] ~~Invoice detail sheet: compact detail canon (summary row, DetailSheetSection, без hero amount panel)~~
 - [ ] Subscription detail: открывать через sheet, separate page оставить только для workspace-сценария
 - [ ] Client Services: заменить большой edit/detail dialog на sheet; quick dialog оставить только для короткого create/action
 - [ ] Finance blockers: sheet-highlight UX при добавлении validation rules (сейчас API/detail guards)
@@ -96,7 +96,7 @@
 - [x] ~~Roadmap stub: `06-Support-and-Tasks/00-Support-Tasks-Board-UX-Roadmap.md`~~
 - [x] ~~Support tickets: описать active stages и terminal outcomes в canon (`01-Support-Ticket-Board-Lifecycle.md`)~~
 - [x] ~~Support board/list: Active/Closed scope + board/list toggle~~
-- [ ] Support ticket detail: sheet-first layout по `10-Entity-Detail-Sheet-Standard.md`
+- [x] ~~Support ticket detail: title-first header, badges, sheet layout по detail standard~~
 - [x] ~~Tasks / Work Spaces: terminal outcomes (COMPLETED/DONE) + board scope canon~~
 - [x] ~~Tasks board/list: Active/Closed scope на `/tasks` и Work Space runtime~~
 - [ ] Tasks quick create/detail: использовать чистый task-style layout как визуальный эталон
@@ -108,7 +108,8 @@
 - [ ] Удалить устаревшие blocker/modal компоненты после миграции всех surfaces
 - [x] ~~Regression: `delivery-stage-gate-client.test.ts` (local pre-check)~~
 - [x] ~~Regression: lead + task board lifecycle + delivery local gate~~
-- [ ] Regression: product / finance board scope helpers
+- [x] ~~Regression: invoice board lifecycle scope test~~
+- [ ] Regression: product board scope helpers
 - [ ] Проверить mobile/responsive для Active/Closed Board/List
 - [ ] Проверить docs links и cleanup registers
 - [ ] Финальный audit: все kanban/workflow доски используют один стандарт

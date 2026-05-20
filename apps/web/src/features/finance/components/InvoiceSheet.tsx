@@ -13,14 +13,15 @@ import { cn } from '@/lib/utils';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import {
-  InvoiceAmountPanel,
   InvoiceDescriptionSection,
   InvoiceDetailsSection,
   InvoiceLinkedEntitiesSection,
+  InvoiceMoneySummaryRow,
   InvoicePaymentsSection,
   InvoiceSheetBadge,
   type InvoiceSheetInvoice,
 } from './invoices/InvoiceSheetSections';
+import { formatAmount } from '@/features/finance/constants/finance';
 
 interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
@@ -60,12 +61,14 @@ export function InvoiceSheet({
       >
         <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
                 {invoice.code}
               </h2>
-              <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
-                Invoice · {invoice.type}
+              <p className="text-muted-foreground mt-0.5 text-sm">
+                {formatAmount(parseFloat(invoice.amount), invoice.currency)}
+                <span className="mx-1.5">·</span>
+                {invoice.type}
               </p>
             </div>
             <InvoiceSheetBadge invoice={invoice} />
@@ -73,18 +76,14 @@ export function InvoiceSheet({
         </div>
 
         <ScrollArea className="min-h-0 flex-1">
-          <div className="space-y-6 px-7 py-5">
+          <div className="space-y-5 px-7 py-5">
             <div className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS)}>
-              <InvoiceAmountPanel invoice={invoice} />
+              <InvoiceMoneySummaryRow invoice={invoice} />
             </div>
 
-            <div className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS)}>
-              <InvoiceDetailsSection invoice={invoice} onInvoiceUpdated={onInvoiceUpdated} />
-            </div>
+            <InvoiceDetailsSection invoice={invoice} onInvoiceUpdated={onInvoiceUpdated} />
 
-            <div className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS)}>
-              <InvoiceLinkedEntitiesSection invoice={invoice} />
-            </div>
+            <InvoiceLinkedEntitiesSection invoice={invoice} />
 
             <InvoiceDescriptionSection description={invoice.description} />
 
@@ -99,9 +98,7 @@ export function InvoiceSheet({
 
             <Separator />
 
-            <div className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS)}>
-              <InvoicePaymentsSection invoice={invoice} onPaymentRecorded={onPaymentRecorded} />
-            </div>
+            <InvoicePaymentsSection invoice={invoice} onPaymentRecorded={onPaymentRecorded} />
           </div>
         </ScrollArea>
       </SheetContent>

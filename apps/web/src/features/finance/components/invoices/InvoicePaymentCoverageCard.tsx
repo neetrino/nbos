@@ -15,11 +15,8 @@ export function InvoicePaymentCoverageCard({ invoice }: InvoicePaymentCoverageCa
   };
 
   return (
-    <section className="space-y-3">
-      <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-        Payments
-      </h4>
-      <div className="grid grid-cols-3 gap-2">
+    <div className="space-y-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         <CoverageMetric label="Paid" value={formatAmount(coverage.paidAmount, invoice.currency)} />
         <CoverageMetric
           label="Outstanding"
@@ -28,13 +25,13 @@ export function InvoicePaymentCoverageCard({ invoice }: InvoicePaymentCoverageCa
         />
         <CoverageMetric label="Payments" value={String(coverage.paymentCount)} />
       </div>
-      {coverage.isFullyPaid && (
+      {coverage.isFullyPaid ? (
         <p className="flex items-center gap-1 text-xs font-medium text-green-600">
-          <DollarSign size={12} />
-          Invoice is fully covered by payments.
+          <DollarSign size={12} aria-hidden />
+          Fully covered by recorded payments.
         </p>
-      )}
-    </section>
+      ) : null}
+    </div>
   );
 }
 
@@ -47,13 +44,13 @@ function CoverageMetric({
   value: string;
   emphasis?: 'green' | 'amber';
 }) {
-  const color =
+  const valueClass =
     emphasis === 'green' ? 'text-green-600' : emphasis === 'amber' ? 'text-amber-600' : '';
 
   return (
-    <div className="bg-secondary/50 rounded-lg p-3 text-center">
-      <p className="text-muted-foreground text-[10px]">{label}</p>
-      <p className={`mt-1 text-sm font-bold ${color}`}>{value}</p>
+    <div className="min-w-0">
+      <p className="text-muted-foreground text-xs">{label}</p>
+      <p className={`mt-1 text-sm font-semibold tabular-nums ${valueClass}`}>{value}</p>
     </div>
   );
 }
