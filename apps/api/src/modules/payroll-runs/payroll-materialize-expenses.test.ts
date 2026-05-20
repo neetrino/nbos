@@ -18,6 +18,9 @@ describe('payroll-materialize-expenses helpers', () => {
   it('formatPayrollExpenseNotes encodes ids', () => {
     expect(formatPayrollExpenseNotes('run-1', 'line-2')).toContain('run-1');
     expect(formatPayrollExpenseNotes('run-1', 'line-2')).toContain('line-2');
+    expect(formatPayrollExpenseNotes('run-1', 'line-2', 'cp-9')).toContain(
+      'compensationProfileId=cp-9',
+    );
   });
 
   it('pickPayrollExpenseCategory prefers BONUS when only bonus', () => {

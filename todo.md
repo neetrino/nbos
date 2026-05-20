@@ -59,8 +59,8 @@
 
 ## Фаза 5 — Compensation Profile
 
-- [ ] 5.1 Сущность + история ставок
-- [ ] 5.2 Payroll materialize из profile, не scalar employee
+- [x] ~~5.1 Сущность + история ставок~~
+- [x] ~~5.2 Payroll materialize из profile, не scalar employee~~
 
 ---
 
@@ -75,4 +75,4 @@
 
 ## Сейчас в работе
 
-**Фаза 5** — Compensation Profile
+**Фаза 6** — Интеграции и хвосты

@@ -62,6 +62,8 @@ model Employee {
   payrollRunsCreated       PayrollRun[]            @relation("PayrollRunCreator")
   payrollRunsApproved      PayrollRun[]            @relation("PayrollRunApprover")
   salaryLines              SalaryLine[]
+  compensationProfiles     CompensationProfile[]
+  compensationProfilesApproved CompensationProfile[] @relation("CompensationProfileApprover")
   recurringTasksCreated    RecurringTaskTemplate[] @relation("RecurringTaskCreator")
   recurringTasksAssigned   RecurringTaskTemplate[] @relation("RecurringTaskAssignee")
   invitationsSent          Invitation[]            @relation("InvitedBy")

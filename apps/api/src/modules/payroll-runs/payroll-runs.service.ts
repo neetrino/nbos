@@ -44,6 +44,7 @@ import {
   type SalaryBoardQueryParams,
   type SalaryBoardResponseDto,
 } from './payroll-salary-board';
+import { resolveCompensationProfileForPayrollMonth } from '../compensation-profiles/resolve-active-compensation-profile';
 
 export type { PayrollRunListParams } from './payroll-run-list-queries';
 export type { PayrollRunStatsResult } from './payroll-run-list-stats';
@@ -52,7 +53,7 @@ export type { SalaryBoardQueryParams, SalaryBoardResponseDto } from './payroll-s
 
 export interface CreatePayrollRunBody {
   payrollMonth: string;
-  /** When true (default), create salary lines from active employees using `Employee.baseSalary`. */
+  /** When true (default), seed salary lines from active compensation profiles (fallback: `Employee.baseSalary`). */
   seedLines?: boolean;
 }
 
@@ -158,13 +159,17 @@ export class PayrollRunsService {
         });
 
         for (const emp of employees) {
-          const base = emp.baseSalary ?? new Decimal(0);
+          const profile = await resolveCompensationProfileForPayrollMonth(tx, emp.id, month);
+          const base = profile
+            ? new Decimal(profile.baseSalary.toString())
+            : (emp.baseSalary ?? new Decimal(0));
           const zero = new Decimal(0);
           const totalPayable = base;
           await tx.salaryLine.create({
             data: {
               payrollRunId: run.id,
               employeeId: emp.id,
+              compensationProfileId: profile?.id ?? null,
               baseSalary: base,
               bonusesTotal: zero,
               adjustmentsTotal: zero,

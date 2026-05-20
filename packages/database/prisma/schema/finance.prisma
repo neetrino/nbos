@@ -578,10 +578,11 @@ model PayrollRun {
 }
 
 model SalaryLine {
-  id               String               @id @default(uuid())
-  payrollRunId     String               @map("payroll_run_id")
-  employeeId       String               @map("employee_id")
-  baseSalary       Decimal              @default(0) @map("base_salary") @db.Decimal(12, 2)
+  id                    String               @id @default(uuid())
+  payrollRunId          String               @map("payroll_run_id")
+  employeeId            String               @map("employee_id")
+  compensationProfileId String?              @map("compensation_profile_id")
+  baseSalary            Decimal              @default(0) @map("base_salary") @db.Decimal(12, 2)
   bonusesTotal     Decimal              @default(0) @map("bonuses_total") @db.Decimal(12, 2)
   adjustmentsTotal Decimal              @default(0) @map("adjustments_total") @db.Decimal(12, 2)
   deductionsTotal  Decimal              @default(0) @map("deductions_total") @db.Decimal(12, 2)
@@ -593,9 +594,10 @@ model SalaryLine {
   createdAt        DateTime             @default(now()) @map("created_at")
   updatedAt        DateTime             @updatedAt @map("updated_at")
 
-  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
-  employee   Employee   @relation(fields: [employeeId], references: [id])
-  expense    Expense?   @relation(fields: [expenseId], references: [id])
+  payrollRun            PayrollRun             @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee              Employee               @relation(fields: [employeeId], references: [id])
+  compensationProfile   CompensationProfile?   @relation(fields: [compensationProfileId], references: [id])
+  expense               Expense?               @relation(fields: [expenseId], references: [id])
 
   @@unique([payrollRunId, employeeId])
   @@index([payrollRunId])

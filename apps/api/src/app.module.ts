@@ -15,6 +15,7 @@ import { SupportModule } from './modules/support/support.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { BonusModule } from './modules/bonus/bonus.module';
 import { PayrollRunsModule } from './modules/payroll-runs/payroll-runs.module';
+import { CompensationProfilesModule } from './modules/compensation-profiles/compensation-profiles.module';
 import { ClientServicesModule } from './modules/client-services/client-services.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
@@ -63,6 +64,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     ExpensesModule,
     BonusModule,
     PayrollRunsModule,
+    CompensationProfilesModule,
     ClientServicesModule,
     AuditModule,
     CredentialsModule,

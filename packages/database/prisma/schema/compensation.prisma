@@ -1,0 +1,35 @@
+// ─── COMPENSATION PROFILES (My Company → Finance payroll input) ───
+
+enum CompensationProfileStatusEnum {
+  DRAFT
+  REVIEW
+  ACTIVE
+  ARCHIVED
+}
+
+model CompensationProfile {
+  id              String                        @id @default(uuid())
+  employeeId      String                        @map("employee_id")
+  baseSalary      Decimal                       @map("base_salary") @db.Decimal(12, 2)
+  currency        String                        @default("AMD")
+  payoutSchedule  Json?                         @map("payout_schedule")
+  bonusPolicyId   String?                       @map("bonus_policy_id")
+  kpiPolicyId     String?                       @map("kpi_policy_id")
+  effectiveFrom   DateTime                      @map("effective_from") @db.Date
+  effectiveTo     DateTime?                     @map("effective_to") @db.Date
+  status          CompensationProfileStatusEnum @default(DRAFT)
+  source          String?
+  notes           String?
+  approvedById    String?                       @map("approved_by_id")
+  approvedAt      DateTime?                     @map("approved_at")
+  createdAt       DateTime                      @default(now()) @map("created_at")
+  updatedAt       DateTime                      @updatedAt @map("updated_at")
+
+  employee    Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  approvedBy  Employee?    @relation("CompensationProfileApprover", fields: [approvedById], references: [id])
+  salaryLines SalaryLine[]
+
+  @@index([employeeId, status])
+  @@index([employeeId, effectiveFrom])
+  @@map("compensation_profiles")
+}
