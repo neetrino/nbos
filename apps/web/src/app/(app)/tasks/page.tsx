@@ -13,7 +13,9 @@ import {
   type ViewModeOption,
 } from '@/components/shared';
 import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
+import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
 import { useTasksListPage } from '@/features/tasks/use-tasks-list-page';
+import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
 import { TasksPageSettingsSheet } from '@/features/tasks/components/TasksPageSettingsSheet';
@@ -30,14 +32,16 @@ const TASKS_VIEW_OPTIONS: ViewModeOption<TasksListBoardView>[] = TASKS_BOARD_VIE
 
 export default function TasksPage() {
   const {
-    tasks,
     stats,
     loading,
     error,
     search,
     setSearch,
+    boardScope,
+    displayTasks,
     filters,
-    setFilters,
+    handleFilterChange,
+    handleClearFilters,
     boardView,
     setBoardView,
     fetchTasks,
@@ -70,9 +74,12 @@ export default function TasksPage() {
             onSearchChange={setSearch}
             searchPlaceholder="Search by task, project, product, workspace…"
             filters={filterConfigs}
-            filterValues={filters}
-            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-            onClearAll={() => setFilters({})}
+            filterValues={{
+              boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+              ...filters,
+            }}
+            onFilterChange={handleFilterChange}
+            onClearAll={handleClearFilters}
           />
         }
         viewMode={
@@ -96,6 +103,8 @@ export default function TasksPage() {
         }
       />
 
+      <TasksWorkflowScopeBanner scope={boardScope} />
+
       {loading ? (
         <LoadingState />
       ) : error ? (
@@ -110,6 +119,12 @@ export default function TasksPage() {
               Open My Account
             </Link>
           }
+        />
+      ) : displayTasks.length === 0 ? (
+        <EmptyState
+          icon={CheckSquare}
+          title="No tasks in this view"
+          description="Try another status scope or clear filters."
         />
       ) : (
         renderBoard()

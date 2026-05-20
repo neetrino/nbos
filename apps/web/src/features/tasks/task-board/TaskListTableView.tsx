@@ -1,15 +1,18 @@
 'use client';
 
 import { StatusBadge } from '@/components/shared';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { getTaskPriority, getTaskStatus } from '@/features/tasks/constants/tasks';
 import { formatPlanningStatus } from '@/features/tasks/work-spaces/work-space-utils';
 import type { Task } from '@/lib/api/tasks';
 
 export function TaskListTableView({
   tasks,
+  boardScope = 'ALL',
   onRowClick,
 }: {
   tasks: Task[];
+  boardScope?: BoardLifecycleScope;
   onRowClick: (task: Task) => void;
 }) {
   return (
@@ -18,7 +21,9 @@ export function TaskListTableView({
         <thead className="bg-muted/50">
           <tr>
             <th className="px-4 py-2 text-left font-medium">Task</th>
-            <th className="px-4 py-2 text-left font-medium">Status</th>
+            <th className="px-4 py-2 text-left font-medium">
+              {boardScope === 'CLOSED' ? 'Closed' : 'Status'}
+            </th>
             <th className="px-4 py-2 text-left font-medium">Priority</th>
             <th className="px-4 py-2 text-left font-medium">Planning</th>
             <th className="px-4 py-2 text-left font-medium">Due</th>

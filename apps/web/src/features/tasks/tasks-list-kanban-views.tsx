@@ -1,11 +1,11 @@
 'use client';
 
 import { KanbanBoard } from '@/components/shared';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import {
-  DEADLINE_COLUMNS_DEF,
-  getDeadlineColumn,
   TaskMiniCard,
   TaskListTableView,
+  buildDeadlineKanbanColumns,
   buildMyPlanColumns,
   buildWorkspaceKanbanColumns,
 } from '@/features/tasks/task-board';
@@ -14,6 +14,7 @@ import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
 export type TasksListKanbanViewsProps = {
   boardView: TasksListBoardView;
+  boardScope: BoardLifecycleScope;
   tasks: Task[];
   myPlanStages: TaskBoardStage[];
   onTaskAction: (taskId: string, action: 'start' | 'complete' | 'reopen') => void;
@@ -32,6 +33,7 @@ export type TasksListKanbanViewsProps = {
 
 export function TasksListKanbanViews({
   boardView,
+  boardScope,
   tasks,
   myPlanStages,
   onTaskAction,
@@ -47,15 +49,6 @@ export function TasksListKanbanViews({
   onRenameMyPlanStage,
   onDeleteMyPlanStage,
 }: TasksListKanbanViewsProps) {
-  const buildDeadlineColumns = () =>
-    DEADLINE_COLUMNS_DEF.map((col) => ({
-      key: col.key,
-      label: col.label,
-      color: col.color,
-      hexColor: col.hexColor,
-      items: tasks.filter((t) => getDeadlineColumn(t) === col.key),
-    }));
-
   const renderCard = (task: Task) => (
     <TaskMiniCard task={task} onAction={onTaskAction} onClick={onTaskClick} />
   );
@@ -63,7 +56,7 @@ export function TasksListKanbanViews({
   if (boardView === 'list') {
     return (
       <div className="min-h-0 flex-1 overflow-auto">
-        <TaskListTableView tasks={tasks} onRowClick={onTaskClick} />
+        <TaskListTableView tasks={tasks} boardScope={boardScope} onRowClick={onTaskClick} />
       </div>
     );
   }
@@ -72,7 +65,7 @@ export function TasksListKanbanViews({
     return (
       <div className="min-h-0 flex-1">
         <KanbanBoard
-          columns={buildDeadlineColumns()}
+          columns={buildDeadlineKanbanColumns(tasks, boardScope)}
           renderCard={renderCard}
           getItemId={(t) => t.id}
           onMove={onDeadlineMove}
@@ -91,7 +84,8 @@ export function TasksListKanbanViews({
       <div className="flex min-h-0 flex-1 flex-col gap-4">
         <div className="min-h-0 flex-1">
           <KanbanBoard
-            columns={buildWorkspaceKanbanColumns(tasks)}
+            columns={buildWorkspaceKanbanColumns(tasks, boardScope)}
+            columnWidth={boardScope === 'CLOSED' ? 288 : 270}
             renderCard={renderCard}
             getItemId={(t) => t.id}
             onMove={onKanbanMove}

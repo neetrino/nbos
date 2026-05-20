@@ -1,8 +1,15 @@
 'use client';
 
-import { createElement, useCallback, useEffect, useState } from 'react';
+import { createElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { TASK_STATUSES, TASK_PRIORITIES } from '@/features/tasks/constants/tasks';
+import { taskMatchesTaskBoardScope } from '@/features/tasks/constants/task-board-lifecycle';
+import {
+  BOARD_LIFECYCLE_SCOPE_OPTIONS,
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
 import {
   KANBAN_STATUS_MAP,
@@ -22,8 +29,18 @@ export type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
 const FILTER_CONFIGS = [
   {
-    key: 'status',
+    key: 'boardScope',
     label: 'Status',
+    includeAllOption: false,
+    defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
+    options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
+      value: option.value,
+      label: option.label,
+    })),
+  },
+  {
+    key: 'status',
+    label: 'Stage',
     options: TASK_STATUSES.map((s) => ({ value: s.value, label: s.label })),
   },
   {
@@ -302,6 +319,29 @@ export function useTasksListPage() {
     }
   };
 
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const hasStatusFilter = Boolean(filters.status) && filters.status !== 'all';
+
+  const displayTasks = useMemo(() => {
+    if (hasStatusFilter) return tasks;
+    return tasks.filter((task) => taskMatchesTaskBoardScope(task.status, boardScope));
+  }, [tasks, boardScope, hasStatusFilter]);
+
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    setFilters((prev) => {
+      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+        const next = { ...prev };
+        delete next.boardScope;
+        return next;
+      }
+      return { ...prev, [key]: value };
+    });
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setFilters({});
+  }, []);
+
   const handleDeleteMyPlanStage = async (columnKey: string) => {
     const prev = myPlanStages;
     setMyPlanStages((s) => s.filter((st) => st.id !== columnKey));
@@ -315,7 +355,8 @@ export function useTasksListPage() {
   const renderBoard = () =>
     createElement(TasksListKanbanViews, {
       boardView,
-      tasks,
+      boardScope: boardScope as BoardLifecycleScope,
+      tasks: displayTasks,
       myPlanStages,
       onTaskAction: handleAction,
       onTaskClick: handleTaskClick,
@@ -340,8 +381,12 @@ export function useTasksListPage() {
     error,
     search,
     setSearch,
+    boardScope: boardScope as BoardLifecycleScope,
+    displayTasks,
     filters,
     setFilters,
+    handleFilterChange,
+    handleClearFilters,
     boardView,
     setBoardView,
     fetchTasks,

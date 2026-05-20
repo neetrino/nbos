@@ -1,5 +1,8 @@
 import type { KanbanColumn } from '@/components/shared';
+import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import { TASK_BOARD_STAGES } from '@/features/tasks/constants/task-board-lifecycle';
 import type { Task } from '@/lib/api/tasks';
+import { DEADLINE_COLUMNS_DEF, getDeadlineColumn } from './task-board-constants';
 
 /**
  * Primary workflow columns for task boards driven by `task.status`
@@ -25,13 +28,54 @@ export const WORKSPACE_KANBAN_COLUMN_DEFS = [
   { key: 'Completed', label: 'Completed', color: '#16A34A', hexColor: '#16A34A', sortOrder: 4 },
 ] as const;
 
-export function buildWorkspaceKanbanColumns(tasks: Task[]): KanbanColumn<Task>[] {
-  return WORKSPACE_KANBAN_COLUMN_DEFS.map((def) => ({
-    key: def.key,
-    label: def.label,
-    color: def.color,
-    hexColor: def.hexColor,
-    items: tasks.filter((t) => matchesWorkspaceColumn(t.status, def.key)),
+const KANBAN_COLUMN_BY_STAGE_KEY: Record<
+  string,
+  (typeof WORKSPACE_KANBAN_COLUMN_DEFS)[number]['key']
+> = {
+  OPEN: 'Open',
+  IN_PROGRESS: 'In Progress',
+  REVIEW: 'Review',
+  ON_HOLD: 'On hold',
+  COMPLETED: 'Completed',
+};
+
+export function buildWorkspaceKanbanColumns(
+  tasks: Task[],
+  scope: BoardLifecycleScope = 'ALL',
+): KanbanColumn<Task>[] {
+  const stageKeys = getBoardStageKeys(TASK_BOARD_STAGES, scope);
+  const visibleColumnKeys = stageKeys
+    .map((key) => KANBAN_COLUMN_BY_STAGE_KEY[key])
+    .filter((key): key is (typeof WORKSPACE_KANBAN_COLUMN_DEFS)[number]['key'] => Boolean(key));
+
+  return WORKSPACE_KANBAN_COLUMN_DEFS.filter((def) => visibleColumnKeys.includes(def.key)).map(
+    (def) => ({
+      key: def.key,
+      label: def.label,
+      color: def.color,
+      hexColor: def.hexColor,
+      items: tasks.filter((t) => matchesWorkspaceColumn(t.status, def.key)),
+    }),
+  );
+}
+
+export function buildDeadlineKanbanColumns(
+  tasks: Task[],
+  scope: BoardLifecycleScope = 'ALL',
+): KanbanColumn<Task>[] {
+  const defs =
+    scope === 'CLOSED'
+      ? DEADLINE_COLUMNS_DEF.filter((col) => col.key === 'done')
+      : scope === 'ACTIVE'
+        ? DEADLINE_COLUMNS_DEF.filter((col) => col.key !== 'done')
+        : DEADLINE_COLUMNS_DEF;
+
+  return defs.map((col) => ({
+    key: col.key,
+    label: col.label,
+    color: col.color,
+    hexColor: col.hexColor,
+    items: tasks.filter((t) => getDeadlineColumn(t) === col.key),
   }));
 }
 

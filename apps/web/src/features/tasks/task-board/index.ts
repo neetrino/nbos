@@ -9,7 +9,11 @@ export {
 } from './task-board-constants';
 export { reorderTasksInColumn } from './reorder-tasks-in-column';
 export { TaskMiniCard, type TaskBoardAction } from './TaskMiniCard';
-export { WORKSPACE_KANBAN_COLUMN_DEFS, buildWorkspaceKanbanColumns } from './workspace-kanban';
+export {
+  WORKSPACE_KANBAN_COLUMN_DEFS,
+  buildDeadlineKanbanColumns,
+  buildWorkspaceKanbanColumns,
+} from './workspace-kanban';
 export {
   WORKSPACE_PLANNING_COLUMN_DEFS,
   buildWorkspacePlanningColumns,
