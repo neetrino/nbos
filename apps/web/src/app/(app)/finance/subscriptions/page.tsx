@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState, useCallback } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { FilterBar, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,12 @@ import { useSubscriptionsScopeStatsCsvExport } from '@/features/finance/componen
 import { useSubscriptionsPageState } from '@/features/finance/components/subscriptions/useSubscriptionsPageState';
 import { buildSubscriptionPageQueries } from '@/features/finance/utils/build-subscription-page-queries';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { SubscriptionFormDialog } from '@/features/finance/components/subscriptions/SubscriptionFormDialog';
+import type { Subscription } from '@/lib/api/finance';
 
 function SubscriptionsPageInner() {
   const router = useRouter();
+  const [createOpen, setCreateOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const partnerIdFromUrl = searchParams.get(PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY);
@@ -78,6 +81,15 @@ function SubscriptionsPageInner() {
     page.setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleSubscriptionCreated = useCallback(
+    (created: Subscription) => {
+      void page.fetchSubscriptions();
+      subscriptionGrid.retry();
+      router.push(`/finance/subscriptions/${created.id}`);
+    },
+    [page, router, subscriptionGrid],
+  );
+
   const handleClearFilters = () => {
     if (partnerIdFromUrl) {
       router.replace(pathname ?? '/finance/subscriptions');
@@ -119,6 +131,7 @@ function SubscriptionsPageInner() {
         exportInProgress={exportCsvSubmitting}
         statsExportDisabled={page.loading || !page.stats}
         onExportScopeStatsCsv={handleExportScopeStatsCsv}
+        onCreateClick={() => setCreateOpen(true)}
       />
 
       <SubscriptionStatsCards subscriptions={page.subscriptions} stats={page.stats} />
@@ -152,6 +165,13 @@ function SubscriptionsPageInner() {
           dismissText="Dismiss"
         />
       ) : null}
+
+      <SubscriptionFormDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        mode="create"
+        onSaved={handleSubscriptionCreated}
+      />
 
       <SubscriptionsPageContent
         gridYear={gridYear}

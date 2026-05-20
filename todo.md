@@ -37,7 +37,7 @@
 - [x] ~~2.1 Prisma: `base_monthly_amount`, `billing_frequency`, `billing_start_date`, `notifications_enabled`~~
 - [x] ~~2.2 API: create/update (legacy `amount`/`startDate` aliases), UI read на detail + таблицы~~
 - [x] ~~2.3 Billing: yearly → 12× base + coverage; MRR на `baseMonthlyAmount`~~
-- [ ] 2.4 UI: форма create/edit subscription (frequency, notifications) на list/detail
+- [x] ~~2.4 UI: форма create/edit subscription (frequency, notifications) на list/detail~~
 
 ---
 
@@ -75,4 +75,4 @@
 
 ## Сейчас в работе
 
-**Фаза 2.4** — Subscription create/edit form (frequency, notifications)
+**Фаза 4** — Operational Journal & периоды

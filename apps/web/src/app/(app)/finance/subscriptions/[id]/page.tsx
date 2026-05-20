@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, ExternalLink, FileText, FolderKanban } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { ArrowLeft, ExternalLink, FileText, FolderKanban, Pencil } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   ErrorState,
   ListMutationErrorBanner,
@@ -23,6 +23,7 @@ import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { SubscriptionDetailActions } from '@/features/finance/components/subscriptions/SubscriptionDetailActions';
+import { SubscriptionFormDialog } from '@/features/finance/components/subscriptions/SubscriptionFormDialog';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 
@@ -41,6 +42,7 @@ export default function SubscriptionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const fetchSubscription = useCallback(async () => {
     if (!id) return;
@@ -122,6 +124,10 @@ export default function SubscriptionDetailPage() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil size={14} className="mr-1" />
+            Edit billing
+          </Button>
           <SubscriptionDetailActions
             subscription={subscription}
             onSubscriptionChange={setSubscription}
@@ -136,6 +142,17 @@ export default function SubscriptionDetailPage() {
           </Link>
         </div>
       </div>
+
+      <SubscriptionFormDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        mode="edit"
+        subscription={subscription}
+        onSaved={(updated) => {
+          setSubscription(updated);
+          setActionError(null);
+        }}
+      />
 
       {actionError ? (
         <ListMutationErrorBanner

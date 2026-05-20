@@ -17,6 +17,7 @@ interface SubscriptionsPageHeaderProps {
   exportInProgress: boolean;
   statsExportDisabled: boolean;
   onExportScopeStatsCsv: () => void;
+  onCreateClick: () => void;
 }
 
 export function SubscriptionsPageHeader({
@@ -29,6 +30,7 @@ export function SubscriptionsPageHeader({
   exportInProgress,
   statsExportDisabled,
   onExportScopeStatsCsv,
+  onCreateClick,
 }: SubscriptionsPageHeaderProps) {
   return (
     <PageHeader
@@ -75,7 +77,7 @@ export function SubscriptionsPageHeader({
           <Download size={16} aria-hidden />
         )}
       </Button>
-      <Button>
+      <Button type="button" onClick={onCreateClick}>
         <Plus size={16} />
         New Subscription
       </Button>

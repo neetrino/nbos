@@ -40,6 +40,19 @@ export interface Subscription {
   coverage?: SubscriptionCoverageSummary;
 }
 
+export interface CreateSubscriptionPayload {
+  projectId: string;
+  type: string;
+  baseMonthlyAmount: number;
+  billingDay: number;
+  billingFrequency?: string;
+  taxStatus?: string;
+  billingStartDate: string;
+  notificationsEnabled?: boolean;
+  endDate?: string;
+  partnerId?: string;
+}
+
 export interface UpdateSubscriptionPayload {
   type?: string;
   baseMonthlyAmount?: number;
@@ -128,7 +141,7 @@ export const subscriptionsApi = {
     const resp = await api.get<Subscription>(`/api/finance/subscriptions/${id}`);
     return resp.data;
   },
-  async create(data: Record<string, unknown>): Promise<Subscription> {
+  async create(data: CreateSubscriptionPayload): Promise<Subscription> {
     const resp = await api.post<Subscription>('/api/finance/subscriptions', data);
     return resp.data;
   },
