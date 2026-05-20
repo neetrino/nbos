@@ -56,12 +56,12 @@ export function InvoiceSheet({
     setActiveTab('general');
   }, [invoice?.id]);
 
-  if (!invoice) return null;
-
   const gateRequiredFields = useMemo(
     () => buildInvoiceGateRequiredFields(stageGateHighlight),
     [stageGateHighlight],
   );
+
+  if (!invoice) return null;
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(invoice.id)}`;
   const headerContext = [
