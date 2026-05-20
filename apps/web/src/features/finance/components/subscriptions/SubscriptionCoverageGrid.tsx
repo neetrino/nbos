@@ -158,14 +158,11 @@ export function SubscriptionCoverageGrid({
                 const subscription = subscriptionsById.get(row.subscriptionId);
                 const currentMonthCell = pickMonthCell(row.months, currentMonthIndex);
                 return (
-                  <tr
-                    key={row.subscriptionId}
-                    className="hover:bg-secondary/30 cursor-pointer"
-                    onClick={() => onOpenSubscription(row.subscriptionId)}
-                  >
+                  <tr key={row.subscriptionId} className="hover:bg-secondary/30">
                     <td
-                      className="bg-card sticky left-0 z-10 px-2 py-2 align-top"
+                      className="bg-card hover:bg-secondary/40 sticky left-0 z-10 cursor-pointer px-2 py-0 align-middle transition-colors"
                       style={{ minWidth: SUBSCRIPTION_LABEL_COLUMN_MIN_WIDTH }}
+                      onClick={() => onOpenSubscription(row.subscriptionId)}
                     >
                       <SubscriptionGridRowLabel
                         projectName={row.projectName}
@@ -179,8 +176,6 @@ export function SubscriptionCoverageGrid({
                         onActivate={onActivate}
                         onCancel={onCancel}
                         onHold={onHold}
-                        onOpenSubscription={onOpenSubscription}
-                        subscriptionId={row.subscriptionId}
                       />
                     </td>
                     {row.months.map((cell, idx) => (

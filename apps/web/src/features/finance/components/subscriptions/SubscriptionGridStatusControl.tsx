@@ -72,19 +72,29 @@ export function SubscriptionGridStatusControl({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            size="xs"
-            disabled={isBusy}
-            className={`h-7 shrink-0 gap-0.5 border px-2 text-[10px] font-semibold ${statusClass}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {label}
-            <ChevronDown size={12} aria-hidden />
-          </Button>
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={(triggerProps) => (
+            <Button
+              {...triggerProps}
+              type="button"
+              variant="outline"
+              size="xs"
+              disabled={isBusy}
+              className={`h-7 shrink-0 gap-0.5 border px-2 text-[10px] font-semibold ${statusClass}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerProps.onClick?.(e);
+              }}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                triggerProps.onPointerDown?.(e);
+              }}
+            >
+              {label}
+              <ChevronDown size={12} aria-hidden />
+            </Button>
+          )}
+        />
         <DropdownMenuContent
           align="end"
           className="min-w-[10rem]"

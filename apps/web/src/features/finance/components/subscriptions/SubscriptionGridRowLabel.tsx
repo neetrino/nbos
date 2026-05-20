@@ -19,8 +19,6 @@ interface SubscriptionGridRowLabelProps {
   onActivate: (subscription: Subscription) => void;
   onCancel: (subscription: Subscription) => Promise<void>;
   onHold: (subscription: Subscription) => Promise<void>;
-  onOpenSubscription: (subscriptionId: string) => void;
-  subscriptionId: string;
 }
 
 export function SubscriptionGridRowLabel({
@@ -35,8 +33,6 @@ export function SubscriptionGridRowLabel({
   onActivate,
   onCancel,
   onHold,
-  onOpenSubscription,
-  subscriptionId,
 }: SubscriptionGridRowLabelProps) {
   const typeKey = subscription?.type ?? fallbackType;
   const status = subscription?.status ?? fallbackStatus;
@@ -45,18 +41,11 @@ export function SubscriptionGridRowLabel({
   const rowAccent = subscriptionRowAccentClassName(status, typeVisual);
   const monthHint = currentMonthCell ? monthCellKindLabel(currentMonthCell.kind) : null;
 
-  const openSheet = () => onOpenSubscription(subscriptionId);
-
   return (
-    <div className={`flex items-start gap-2 border-l-4 py-1 pl-2 ${rowAccent}`}>
-      <button
-        type="button"
-        className="hover:bg-secondary/50 flex min-w-0 flex-1 flex-col gap-1 rounded-md px-1 py-0.5 text-left transition-colors"
-        onClick={(e) => {
-          e.stopPropagation();
-          openSheet();
-        }}
-      >
+    <div
+      className={`flex h-full min-h-[3.75rem] w-full items-center gap-2 border-l-4 py-2 pr-1 pl-2 ${rowAccent}`}
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p
           className="text-foreground line-clamp-2 text-sm leading-snug font-semibold"
           title={projectName}
@@ -104,17 +93,23 @@ export function SubscriptionGridRowLabel({
             </span>
           ) : null}
         </div>
-      </button>
+      </div>
       {subscription ? (
-        <SubscriptionGridStatusControl
-          subscription={subscription}
-          activatingId={activatingId}
-          cancellingId={cancellingId}
-          holdingId={holdingId}
-          onActivate={onActivate}
-          onCancel={onCancel}
-          onHold={onHold}
-        />
+        <div
+          className="flex shrink-0 items-center self-stretch py-0.5"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <SubscriptionGridStatusControl
+            subscription={subscription}
+            activatingId={activatingId}
+            cancellingId={cancellingId}
+            holdingId={holdingId}
+            onActivate={onActivate}
+            onCancel={onCancel}
+            onHold={onHold}
+          />
+        </div>
       ) : null}
     </div>
   );
