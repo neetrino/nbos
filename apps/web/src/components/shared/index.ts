@@ -35,6 +35,12 @@ export { SearchField, type SearchFieldProps } from './SearchField';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';
 export { DetailSheetFormFooter, type DetailSheetFormFooterProps } from './DetailSheetFormFooter';
 export {
+  DetailSheetTabBar,
+  type DetailSheetTabBarProps,
+  type DetailSheetTabItem,
+} from './DetailSheetTabBar';
+export { DetailSheetPlaceholderTab } from './DetailSheetPlaceholderTab';
+export {
   DetailSheetSettingsMenu,
   type DetailSheetSettingsMenuProps,
 } from './DetailSheetSettingsMenu';

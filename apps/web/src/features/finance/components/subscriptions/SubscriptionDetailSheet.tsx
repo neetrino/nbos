@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { Repeat } from 'lucide-react';
 import {
   DetailSheetFormFooter,
+  DetailSheetTabBar,
   EntitySheetFloatingRail,
   ErrorState,
   LoadingState,
@@ -31,6 +32,12 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { SubscriptionGeneralTab } from './SubscriptionGeneralTab';
+import { SubscriptionInvoicesTab } from './SubscriptionInvoicesTab';
+import { SubscriptionHistoryTab } from './SubscriptionHistoryTab';
+import {
+  SUBSCRIPTION_DETAIL_SHEET_TABS,
+  type SubscriptionDetailSheetTab,
+} from './subscription-detail-sheet-tabs';
 
 interface SubscriptionDetailSheetProps {
   subscriptionId: string | null;
@@ -54,6 +61,7 @@ export function SubscriptionDetailSheet({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<SubscriptionDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<SubscriptionGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<SubscriptionGeneralDraft | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -82,6 +90,10 @@ export function SubscriptionDetailSheet({
     if (!open || !subscriptionId) return;
     void fetchSubscription();
   }, [open, subscriptionId, fetchSubscription]);
+
+  useEffect(() => {
+    setActiveTab('general');
+  }, [subscriptionId, open]);
 
   useLayoutEffect(() => {
     if (!subscription) {
@@ -210,6 +222,12 @@ export function SubscriptionDetailSheet({
           ) : null}
         </div>
 
+        <DetailSheetTabBar
+          tabs={SUBSCRIPTION_DETAIL_SHEET_TABS}
+          activeTab={activeTab}
+          onTabChange={(value) => setActiveTab(value as SubscriptionDetailSheetTab)}
+        />
+
         <ScrollArea className="min-h-0 flex-1">
           <div className="px-7 py-5">
             {loading ? (
@@ -217,14 +235,22 @@ export function SubscriptionDetailSheet({
             ) : error ? (
               <ErrorState description={error} onRetry={() => void fetchSubscription()} />
             ) : subscription && generalDraft ? (
-              <SubscriptionGeneralTab
-                subscription={subscription}
-                draft={generalDraft}
-                patchDraft={patchGeneralDraft}
-                formDisabled={saving}
-                onSubscriptionChange={handleSubscriptionChange}
-                onActionError={setActionError}
-              />
+              <>
+                {activeTab === 'general' ? (
+                  <SubscriptionGeneralTab
+                    subscription={subscription}
+                    draft={generalDraft}
+                    patchDraft={patchGeneralDraft}
+                    formDisabled={saving}
+                    onSubscriptionChange={handleSubscriptionChange}
+                    onActionError={setActionError}
+                  />
+                ) : null}
+                {activeTab === 'invoice' ? (
+                  <SubscriptionInvoicesTab subscription={subscription} />
+                ) : null}
+                {activeTab === 'history' ? <SubscriptionHistoryTab /> : null}
+              </>
             ) : null}
             {actionError ? (
               <p className="text-destructive mt-4 text-sm" role="alert">
@@ -235,7 +261,7 @@ export function SubscriptionDetailSheet({
         </ScrollArea>
 
         <DetailSheetFormFooter
-          visible={Boolean(subscription && generalDraft)}
+          visible={activeTab === 'general' && Boolean(subscription && generalDraft)}
           dirty={generalDirty}
           saving={saving}
           errorMessage={generalError}

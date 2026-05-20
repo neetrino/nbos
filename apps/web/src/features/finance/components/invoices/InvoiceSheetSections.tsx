@@ -86,7 +86,7 @@ export function InvoiceDetailsSection({
   onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
 }) {
   return (
-    <DetailSheetSection title="Details">
+    <DetailSheetSection title="Official & dates">
       <div className={DETAIL_SHEET_PAIRED_COLUMNS_CLASS}>
         <div className="space-y-3 text-sm">
           <FieldRow
