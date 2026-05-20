@@ -416,6 +416,10 @@ export const invoicesApi = {
     const resp = await api.post<Invoice>('/api/finance/invoices', data);
     return resp.data;
   },
+  async updateGeneral(id: string, data: { amount?: number; taxStatus?: string }): Promise<Invoice> {
+    const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}`, data);
+    return resp.data;
+  },
   async updateMoneyStatus(id: string, moneyStatus: string): Promise<Invoice> {
     const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}/money-status`, {
       moneyStatus,

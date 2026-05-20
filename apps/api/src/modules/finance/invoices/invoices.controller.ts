@@ -78,6 +78,15 @@ export class InvoicesController {
     return this.invoicesService.create(body);
   }
 
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update invoice amount and/or tax status' })
+  async updateGeneral(
+    @Param('id') id: string,
+    @Body() body: { amount?: number; taxStatus?: string },
+  ) {
+    return this.invoicesService.updateGeneral(id, body);
+  }
+
   @Patch(':id/money-status')
   @ApiOperation({ summary: 'Update invoice money status (canonical card layer)' })
   async updateMoneyStatus(@Param('id') id: string, @Body() body: { moneyStatus: string }) {

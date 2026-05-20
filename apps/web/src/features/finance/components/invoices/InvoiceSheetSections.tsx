@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
 import { FileText, Building2, Clock, User, FolderKanban, Repeat } from 'lucide-react';
-import { DetailSheetSection } from '@/components/shared';
-import { StatusBadge } from '@/components/shared';
-import { DETAIL_SHEET_PAIRED_COLUMNS_CLASS } from '@/components/shared/detail-sheet-classes';
+import { DetailSheetSection, InlineField, StatusBadge } from '@/components/shared';
 import { getInvoiceMoneyStage, formatAmount } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
@@ -15,24 +13,18 @@ export type InvoiceSheetInvoice = Invoice;
 
 export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice }) {
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {money && <StatusBadge label={money.label} variant={money.variant} />}
-      <StatusBadge
-        label={invoice.taxStatus === 'TAX' ? 'Tax' : 'Tax-Free'}
-        variant={invoice.taxStatus === 'TAX' ? 'green' : 'gray'}
-      />
-    </div>
-  );
+  if (!money) return null;
+  return <StatusBadge label={money.label} variant={money.variant} />;
 }
 
-/** Compact money summary — amount lives in the sheet header; this row shows coverage hints only. */
 export function InvoiceMoneySummaryRow({
   invoice,
   gateRequiredFields = new Set<string>(),
+  billingFields = null,
 }: {
   invoice: InvoiceSheetInvoice;
   gateRequiredFields?: ReadonlySet<string>;
+  billingFields?: ReactNode;
 }) {
   const coverage = invoice.paymentCoverage;
   const outstanding = coverage?.outstandingAmount ?? parseFloat(invoice.amount);
@@ -43,42 +35,53 @@ export function InvoiceMoneySummaryRow({
       className={invoiceStageGateSectionClass(
         gateRequiredFields,
         INVOICE_GATE_FIELD_PAYMENTS,
-        'grid gap-4 sm:grid-cols-3',
+        'space-y-4',
       )}
     >
-      <div className="min-w-0">
-        <p className="text-muted-foreground text-xs">Outstanding</p>
-        <p
-          className={`mt-1 text-sm font-semibold tabular-nums ${outstanding > 0 && isOverdue ? 'text-red-600' : ''}`}
-        >
-          {formatAmount(outstanding, invoice.currency)}
-        </p>
+      {billingFields}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <MoneyMetric
+          label="Outstanding"
+          value={formatAmount(outstanding, invoice.currency)}
+          emphasize={outstanding > 0 && isOverdue}
+        />
+        <MoneyMetric
+          label="Paid"
+          value={formatAmount(coverage?.paidAmount ?? 0, invoice.currency)}
+        />
+        <MoneyMetric
+          label="Due"
+          value={invoice.dueDate ? formatShortDate(invoice.dueDate) : '—'}
+          emphasize={Boolean(isOverdue && invoice.dueDate)}
+        />
       </div>
-      <div className="min-w-0">
-        <p className="text-muted-foreground text-xs">Paid</p>
-        <p className="mt-1 text-sm font-semibold tabular-nums">
-          {formatAmount(coverage?.paidAmount ?? 0, invoice.currency)}
-        </p>
-      </div>
-      <div className="min-w-0">
-        <p className="text-muted-foreground text-xs">Due</p>
-        <p
-          className={`mt-1 text-sm font-medium ${isOverdue && invoice.dueDate ? 'text-red-600' : ''}`}
-        >
-          {invoice.dueDate
-            ? new Date(invoice.dueDate).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })
-            : '—'}
-        </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <InlineField
+          variant="controlled"
+          label="Created"
+          type="text"
+          value={formatShortDate(invoice.createdAt)}
+          icon={<Clock size={12} />}
+          disabled
+          onValueChange={() => undefined}
+        />
+        {invoice.paidDate ? (
+          <InlineField
+            variant="controlled"
+            label="Paid on"
+            type="text"
+            value={formatShortDate(invoice.paidDate)}
+            icon={<Clock size={12} />}
+            disabled
+            onValueChange={() => undefined}
+          />
+        ) : null}
       </div>
     </div>
   );
 }
 
-export function InvoiceDetailsSection({
+export function InvoiceOfficialSection({
   invoice,
   onInvoiceUpdated,
 }: {
@@ -86,25 +89,12 @@ export function InvoiceDetailsSection({
   onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
 }) {
   return (
-    <DetailSheetSection title="Official & dates">
-      <div className={DETAIL_SHEET_PAIRED_COLUMNS_CLASS}>
-        <div className="space-y-3 text-sm">
-          <FieldRow
-            label="Official"
-            value={
-              onInvoiceUpdated ? (
-                <InvoiceOfficialRequestPanel invoice={invoice} onUpdated={onInvoiceUpdated} />
-              ) : (
-                <OfficialInvoiceSummary invoice={invoice} />
-              )
-            }
-          />
-          <InvoicePaidDateRow paidDate={invoice.paidDate} />
-        </div>
-        <div className="space-y-3 text-sm">
-          <DateRow label="Created" date={invoice.createdAt} />
-        </div>
-      </div>
+    <DetailSheetSection title="Official invoice">
+      {onInvoiceUpdated ? (
+        <InvoiceOfficialRequestPanel invoice={invoice} onUpdated={onInvoiceUpdated} />
+      ) : (
+        <OfficialInvoiceReadOnly invoice={invoice} />
+      )}
     </DetailSheetSection>
   );
 }
@@ -130,7 +120,7 @@ export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceShee
 
   return (
     <DetailSheetSection title="Linked">
-      <div className="space-y-2">
+      <div className="space-y-3">
         {links.map((row) => (
           <LinkedEntity key={`${row.label}-${row.value}`} {...row} />
         ))}
@@ -141,7 +131,11 @@ export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceShee
 
 export function InvoiceDescriptionSection({ description }: { description: string | null }) {
   if (!description) return null;
-  return <p className="text-foreground text-sm leading-relaxed">{description}</p>;
+  return (
+    <DetailSheetSection title="Description">
+      <p className="text-foreground text-sm leading-relaxed">{description}</p>
+    </DetailSheetSection>
+  );
 }
 
 export function InvoicePaymentsSection({
@@ -185,62 +179,54 @@ export function InvoicePaymentsSection({
   );
 }
 
-function FieldRow({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-      <span className="text-muted-foreground text-xs">{label}</span>
-      <span className="text-foreground min-w-0 font-medium">{value}</span>
-    </div>
-  );
-}
-
-function OfficialInvoiceSummary({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  if (invoice.taxStatus !== 'TAX') {
-    return <div className="text-muted-foreground text-sm">Not required (tax-free)</div>;
-  }
-  const status = invoice.officialInvoiceRequestSent
-    ? 'Request sent'
-    : invoice.officialInvoiceCancelledAt
-      ? 'Request cancelled'
-      : 'Not sent';
-  return (
-    <div className="space-y-0.5">
-      <div className="font-medium">{status}</div>
-      {invoice.govInvoiceId ? (
-        <div className="text-muted-foreground text-xs">Gov ID: {invoice.govInvoiceId}</div>
-      ) : null}
-    </div>
-  );
-}
-
-function InvoicePaidDateRow({ paidDate }: { paidDate: string | null }) {
-  if (!paidDate) return null;
-  return <DateRow label="Paid Date" date={paidDate} className="text-green-600" />;
-}
-
-function DateRow({
+function MoneyMetric({
   label,
-  date,
-  className = '',
+  value,
+  emphasize = false,
 }: {
   label: string;
-  date: string;
-  className?: string;
+  value: string;
+  emphasize?: boolean;
 }) {
   return (
-    <FieldRow
-      label={label}
-      value={
-        <span className={`inline-flex items-center gap-1.5 ${className}`}>
-          <Clock size={13} className="text-muted-foreground" aria-hidden />
-          {new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })}
-        </span>
-      }
-    />
+    <div className="min-w-0">
+      <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+        {label}
+      </p>
+      <p
+        className={`mt-1 text-sm font-semibold tabular-nums ${emphasize ? 'text-red-600' : 'text-foreground'}`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  if (invoice.taxStatus !== 'TAX') {
+    return (
+      <p className="text-muted-foreground text-sm">
+        Tax-free invoice — accountant request is not required.
+      </p>
+    );
+  }
+  const status = invoice.officialInvoiceRequestSent
+    ? 'Sent to accountant'
+    : invoice.officialInvoiceCancelledAt
+      ? 'Cancelled'
+      : 'Not sent';
+  const variant = invoice.officialInvoiceRequestSent
+    ? 'green'
+    : invoice.officialInvoiceCancelledAt
+      ? 'amber'
+      : 'gray';
+  return (
+    <div className="space-y-2">
+      <StatusBadge label={status} variant={variant} />
+      {invoice.govInvoiceId ? (
+        <p className="text-muted-foreground font-mono text-xs">{invoice.govInvoiceId}</p>
+      ) : null}
+    </div>
   );
 }
 
@@ -254,12 +240,24 @@ function LinkedEntity({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <Icon size={14} className="text-muted-foreground shrink-0" aria-hidden />
-      <span className="text-foreground min-w-0 flex-1 truncate font-medium">{value}</span>
-      <span className="text-muted-foreground shrink-0 text-xs">{label}</span>
-    </div>
+    <InlineField
+      variant="controlled"
+      label={label}
+      type="text"
+      value={value}
+      icon={<Icon size={12} />}
+      disabled
+      onValueChange={() => undefined}
+    />
   );
+}
+
+function formatShortDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 function isInvoiceOverdue(invoice: InvoiceSheetInvoice) {

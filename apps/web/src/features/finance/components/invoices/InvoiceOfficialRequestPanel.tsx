@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { FileCheck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { InlineField, StatusBadge } from '@/components/shared';
+import { DETAIL_SHEET_SECTION_BODY_CLASS } from '@/components/shared/detail-sheet-classes';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi, type Invoice } from '@/lib/api/finance';
 
@@ -40,113 +40,125 @@ export function InvoiceOfficialRequestPanel({
 
   if (invoice.taxStatus !== 'TAX') {
     return (
-      <p className="text-muted-foreground col-span-2 text-sm">
-        Tax-free invoice — official request to accountant is not required.
+      <p className="text-muted-foreground text-sm">
+        Tax-free invoice — accountant request is not required.
       </p>
     );
   }
 
+  const status = officialRequestStatus(invoice);
+
   return (
-    <div className="space-y-3">
-      <OfficialRequestStatus invoice={invoice} />
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          size="sm"
-          disabled={busy || invoice.officialInvoiceRequestSent}
-          onClick={() =>
-            runAction(
-              () => invoicesApi.sendOfficialInvoiceRequest(invoice.id),
-              'Official invoice request marked as sent',
-            )
-          }
-        >
-          {busy ? <Loader2 className="mr-1 size-3 animate-spin" /> : null}
-          Send request
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={busy || !invoice.officialInvoiceRequestSent}
-          onClick={() =>
-            runAction(
-              () => invoicesApi.cancelOfficialInvoiceRequest(invoice.id),
-              'Previous request cancelled',
-            )
-          }
-        >
-          Cancel request
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          disabled={busy}
-          onClick={() =>
-            runAction(
-              () => invoicesApi.sendOfficialInvoiceRequest(invoice.id),
-              'Official invoice request sent again',
-            )
-          }
-        >
-          Send again
-        </Button>
+    <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+      <div className="space-y-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge label={status.label} variant={status.variant} />
+        </div>
+        {invoice.officialInvoiceRequestSent && invoice.officialInvoiceSentAt ? (
+          <p className="text-muted-foreground text-xs">
+            Sent {formatOfficialDate(invoice.officialInvoiceSentAt)}
+          </p>
+        ) : null}
+        {invoice.officialInvoiceCancelledAt && !invoice.officialInvoiceRequestSent ? (
+          <p className="text-muted-foreground text-xs">
+            Cancelled {formatOfficialDate(invoice.officialInvoiceCancelledAt)}
+          </p>
+        ) : null}
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`gov-id-${invoice.id}`} className="text-xs">
-          Government invoice ID
-        </Label>
-        <div className="flex gap-2">
-          <Input
-            id={`gov-id-${invoice.id}`}
-            value={govDraft}
-            onChange={(e) => setGovDraft(e.target.value)}
-            placeholder="After accountant creates official invoice"
-            className="h-8 text-sm"
-          />
+
+      <div className="flex flex-wrap gap-2">
+        {!invoice.officialInvoiceRequestSent ? (
           <Button
             type="button"
             size="sm"
-            variant="outline"
             disabled={busy}
             onClick={() =>
-              runAction(
-                () => invoicesApi.updateOfficialInvoiceGovId(invoice.id, govDraft.trim() || null),
-                'Government invoice ID saved',
+              void runAction(
+                () => invoicesApi.sendOfficialInvoiceRequest(invoice.id),
+                'Request sent to accountant',
               )
             }
           >
-            Save
+            {busy ? <Loader2 className="mr-1 size-3.5 animate-spin" /> : null}
+            Send to accountant
           </Button>
-        </div>
+        ) : (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={busy}
+              onClick={() =>
+                void runAction(
+                  () => invoicesApi.cancelOfficialInvoiceRequest(invoice.id),
+                  'Request cancelled',
+                )
+              }
+            >
+              Cancel request
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              disabled={busy}
+              onClick={() =>
+                void runAction(
+                  () => invoicesApi.sendOfficialInvoiceRequest(invoice.id),
+                  'Request sent again',
+                )
+              }
+            >
+              Send again
+            </Button>
+          </>
+        )}
       </div>
+
+      <InlineField
+        variant="controlled"
+        label="Government invoice ID"
+        type="text"
+        value={govDraft}
+        placeholder="ID from accountant after issue"
+        icon={<FileCheck size={12} />}
+        disabled={busy}
+        onValueChange={setGovDraft}
+      />
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        className="w-fit"
+        disabled={busy || govDraft === (invoice.govInvoiceId ?? '')}
+        onClick={() =>
+          void runAction(
+            () => invoicesApi.updateOfficialInvoiceGovId(invoice.id, govDraft.trim() || null),
+            'Government ID saved',
+          )
+        }
+      >
+        Save government ID
+      </Button>
     </div>
   );
 }
 
-function OfficialRequestStatus({ invoice }: { invoice: Invoice }) {
+function officialRequestStatus(invoice: Invoice): {
+  label: string;
+  variant: 'green' | 'amber' | 'gray';
+} {
   if (invoice.officialInvoiceRequestSent) {
-    return (
-      <p className="text-sm font-medium text-green-700 dark:text-green-400">
-        Request sent
-        {invoice.officialInvoiceSentAt
-          ? ` · ${formatShortDate(invoice.officialInvoiceSentAt)}`
-          : ''}
-      </p>
-    );
+    return { label: 'Sent to accountant', variant: 'green' };
   }
   if (invoice.officialInvoiceCancelledAt) {
-    return (
-      <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-        Request cancelled · {formatShortDate(invoice.officialInvoiceCancelledAt)}
-      </p>
-    );
+    return { label: 'Cancelled', variant: 'amber' };
   }
-  return <p className="text-muted-foreground text-sm">Request not sent yet</p>;
+  return { label: 'Not sent', variant: 'gray' };
 }
 
-function formatShortDate(iso: string) {
+function formatOfficialDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',

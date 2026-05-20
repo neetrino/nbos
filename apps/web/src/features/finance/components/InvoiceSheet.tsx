@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { FileText } from 'lucide-react';
+import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import {
+  DetailSheetFormFooter,
   DetailSheetTabBar,
   EntitySheetFloatingRail,
-  DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS,
-  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS,
+  DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS,
+  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS,
 } from '@/components/shared';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { InvoiceMoneyStagesBar } from '@/features/finance/components/invoices/InvoiceMoneyStagesBar';
@@ -21,9 +23,16 @@ import {
   type InvoiceDetailSheetTab,
 } from '@/features/finance/components/invoices/invoice-detail-sheet-tabs';
 import { InvoiceSheetBadge, type InvoiceSheetInvoice } from './invoices/InvoiceSheetSections';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { buildInvoiceGateRequiredFields } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import {
+  buildInvoiceGeneralPatch,
+  createInvoiceGeneralDraft,
+  isInvoiceGeneralDirty,
+  type InvoiceGeneralDraft,
+} from '@/features/finance/utils/invoice-general-form-state';
+import { getApiErrorMessage } from '@/lib/api-errors';
+import { invoicesApi } from '@/lib/api/finance';
 
 interface InvoiceSheetProps {
   invoice: InvoiceSheetInvoice | null;
@@ -51,10 +60,78 @@ export function InvoiceSheet({
   stageGateHighlight = null,
 }: InvoiceSheetProps) {
   const [activeTab, setActiveTab] = useState<InvoiceDetailSheetTab>('general');
+  const [generalDraft, setGeneralDraft] = useState<InvoiceGeneralDraft | null>(null);
+  const [generalSnap, setGeneralSnap] = useState<InvoiceGeneralDraft | null>(null);
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const generalDirtyRef = useRef(false);
 
   useEffect(() => {
     setActiveTab('general');
   }, [invoice?.id]);
+
+  useLayoutEffect(() => {
+    if (!invoice) {
+      setGeneralDraft(null);
+      setGeneralSnap(null);
+      return;
+    }
+    if (generalDirtyRef.current) return;
+    const next = createInvoiceGeneralDraft(invoice);
+    setGeneralDraft(next);
+    setGeneralSnap(next);
+  }, [invoice?.id, invoice?.amount, invoice?.taxStatus]);
+
+  const patchGeneralDraft = useCallback((partial: Partial<InvoiceGeneralDraft>) => {
+    setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));
+  }, []);
+
+  const generalDirty =
+    generalDraft != null && generalSnap != null && isInvoiceGeneralDirty(generalDraft, generalSnap);
+  generalDirtyRef.current = generalDirty;
+
+  const handleInvoiceChange = useCallback(
+    (updated: InvoiceSheetInvoice) => {
+      generalDirtyRef.current = false;
+      const next = createInvoiceGeneralDraft(updated);
+      setGeneralDraft(next);
+      setGeneralSnap(next);
+      onInvoiceUpdated?.(updated);
+    },
+    [onInvoiceUpdated],
+  );
+
+  const handleGeneralSave = useCallback(() => {
+    if (!invoice || !generalDraft || !generalSnap || !onInvoiceUpdated) return;
+    setGeneralError(null);
+    const patch = buildInvoiceGeneralPatch(generalSnap, generalDraft);
+    if (Object.keys(patch).length === 0) return;
+
+    const draftAtSave = generalDraft;
+    const snapAtSave = generalSnap;
+    setGeneralSnap({ ...draftAtSave });
+    setSaving(true);
+
+    void (async () => {
+      try {
+        const updated = await invoicesApi.updateGeneral(invoice.id, patch);
+        generalDirtyRef.current = false;
+        handleInvoiceChange(updated);
+        toast.success('Invoice updated');
+      } catch (caught) {
+        setGeneralSnap(snapAtSave);
+        setGeneralDraft(draftAtSave);
+        setGeneralError(getApiErrorMessage(caught, 'Could not save invoice changes.'));
+      } finally {
+        setSaving(false);
+      }
+    })();
+  }, [invoice, generalDraft, generalSnap, onInvoiceUpdated, handleInvoiceChange]);
+
+  const handleGeneralCancel = useCallback(() => {
+    setGeneralError(null);
+    if (generalSnap) setGeneralDraft({ ...generalSnap });
+  }, [generalSnap]);
 
   const gateRequiredFields = useMemo(
     () => buildInvoiceGateRequiredFields(stageGateHighlight),
@@ -64,14 +141,7 @@ export function InvoiceSheet({
   if (!invoice) return null;
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(invoice.id)}`;
-  const headerContext = [
-    formatAmount(parseFloat(invoice.amount), invoice.currency),
-    invoice.type,
-    invoice.company?.name,
-    invoice.project?.name,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const showGeneralFooter = activeTab === 'general' && generalDirty && Boolean(onInvoiceUpdated);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -80,11 +150,11 @@ export function InvoiceSheet({
         showCloseButton={false}
         floatingClose
         floatingRailVisible={open}
-        floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS}
+        floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS}
         floatingRail={<EntitySheetFloatingRail sourcePageHref={sourcePageHref} />}
-        className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
+        className={DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS}
       >
-        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+        <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
@@ -93,7 +163,6 @@ export function InvoiceSheet({
                   {invoice.code}
                 </h2>
               </div>
-              <p className="text-muted-foreground mt-0.5 text-sm">{headerContext}</p>
             </div>
             <InvoiceSheetBadge invoice={invoice} />
           </div>
@@ -115,14 +184,17 @@ export function InvoiceSheet({
         />
 
         <ScrollArea className="min-h-0 flex-1">
-          <div className="px-7 py-5">
+          <div className="px-5 py-5">
             <InvoiceSheetStageGateBlockers highlight={stageGateHighlight} />
 
             {activeTab === 'general' ? (
               <InvoiceGeneralTab
                 invoice={invoice}
                 gateRequiredFields={gateRequiredFields}
-                onInvoiceUpdated={onInvoiceUpdated}
+                draft={onInvoiceUpdated ? generalDraft : null}
+                patchDraft={patchGeneralDraft}
+                formDisabled={saving}
+                onInvoiceUpdated={onInvoiceUpdated ? handleInvoiceChange : undefined}
               />
             ) : null}
             {activeTab === 'payments' ? (
@@ -135,6 +207,15 @@ export function InvoiceSheet({
             {activeTab === 'history' ? <InvoiceHistoryTab /> : null}
           </div>
         </ScrollArea>
+
+        {showGeneralFooter ? (
+          <DetailSheetFormFooter
+            saving={saving}
+            error={generalError}
+            onSave={handleGeneralSave}
+            onCancel={handleGeneralCancel}
+          />
+        ) : null}
       </SheetContent>
     </Sheet>
   );

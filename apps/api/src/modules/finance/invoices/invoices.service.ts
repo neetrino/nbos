@@ -26,6 +26,11 @@ import {
 } from './invoice-official-request';
 import { OperationalJournalService } from '../journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-guard';
+import {
+  applyInvoiceGeneralUpdate,
+  parseUpdateInvoiceGeneralInput,
+  type UpdateInvoiceGeneralInput,
+} from './invoice-general-update';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -236,6 +241,13 @@ export class InvoicesService {
     });
 
     return this.findById(invoice.id);
+  }
+
+  /** Updates invoice amount and/or tax status on the card. */
+  async updateGeneral(id: string, body: UpdateInvoiceGeneralInput) {
+    const input = parseUpdateInvoiceGeneralInput(body);
+    await applyInvoiceGeneralUpdate(this.prisma, id, input);
+    return this.findById(id);
   }
 
   /**
