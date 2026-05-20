@@ -29,6 +29,11 @@ import {
   ACTIVE_DELIVERY_STAGES,
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
+import {
+  resolveDeliveryDetailPanelFromErrors,
+  splitDeliveryStageGateErrors,
+  type DeliverySheetStageGateHighlight,
+} from './delivery-stage-gate-highlight';
 import type { UseDeliveryBoardMutationsResult } from './use-delivery-board-mutations';
 import { mergeDeliveryDetailLifecycle } from './delivery-item-detail-merge-lifecycle';
 import type { DeliveryDetailTabId } from './delivery-item-detail.constants';
@@ -50,6 +55,7 @@ interface DeliveryItemDetailSheetProps {
   onTitleSaved: (item: DeliveryBoardItem) => void;
   /** When set (global Delivery Board), stage actions match board + server RBAC. */
   boardMutations?: UseDeliveryBoardMutationsResult;
+  stageGateHighlight?: DeliverySheetStageGateHighlight | null;
 }
 
 function isActivePipelineStage(key: DeliveryPipelineClickKey): key is DeliveryActiveStage {
@@ -68,6 +74,7 @@ export function DeliveryItemDetailSheet({
   onEntityUpdated,
   onTitleSaved,
   boardMutations,
+  stageGateHighlight = null,
 }: DeliveryItemDetailSheetProps) {
   const [product, setProduct] = useState<FullProduct | null>(null);
   const [extension, setExtension] = useState<FullExtension | null>(null);
@@ -81,9 +88,25 @@ export function DeliveryItemDetailSheet({
   const [planningSaving, setPlanningSaving] = useState(false);
   const [planningError, setPlanningError] = useState<string | null>(null);
 
+  const gateRequiredFields = useMemo(() => {
+    if (!stageGateHighlight) return new Set<string>();
+    const { fieldErrors, actionBlockers } = splitDeliveryStageGateErrors(stageGateHighlight.errors);
+    return new Set([...fieldErrors, ...actionBlockers].map((error) => error.field));
+  }, [stageGateHighlight]);
+
+  const stageGateActionBlockers = useMemo(() => {
+    if (!stageGateHighlight) return [];
+    return splitDeliveryStageGateErrors(stageGateHighlight.errors).actionBlockers;
+  }, [stageGateHighlight]);
+
   useEffect(() => {
-    if (open && item) setPanel('general');
-  }, [open, item]);
+    if (!open || !item) return;
+    if (stageGateHighlight?.errors.length) {
+      setPanel(resolveDeliveryDetailPanelFromErrors(stageGateHighlight.errors));
+      return;
+    }
+    setPanel('general');
+  }, [open, item, stageGateHighlight]);
 
   useEffect(() => {
     if (!open || !item) {
@@ -359,6 +382,8 @@ export function DeliveryItemDetailSheet({
                   extensionPlan={extensionPlan}
                   onExtensionPlanChange={setExtensionPlan}
                   planningDisabled={planningSaving}
+                  gateRequiredFields={gateRequiredFields}
+                  stageGateActionBlockers={stageGateActionBlockers}
                 />
               ) : panel !== 'general' && !loading && headerProps && item ? (
                 <DeliveryItemDetailSecondaryPanels

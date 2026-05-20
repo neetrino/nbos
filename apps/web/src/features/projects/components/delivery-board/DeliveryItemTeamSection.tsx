@@ -10,6 +10,7 @@ import type {
   ProductPlanSnapshot,
 } from './delivery-item-detail-planning-state';
 import { DeliveryTeamEmployeeChoiceDisplay } from './delivery-team-employee-display';
+import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
 
 interface DeliveryItemTeamSectionProps {
   kind: 'PRODUCT' | 'EXTENSION';
@@ -20,6 +21,7 @@ interface DeliveryItemTeamSectionProps {
   onProductPlanChange: (next: ProductPlanSnapshot) => void;
   onExtensionPlanChange: (next: ExtensionPlanSnapshot) => void;
   disabled?: boolean;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 function personName(p: ProductEmployee | null | undefined): string {
@@ -55,6 +57,7 @@ function ProductRolePicker({
   onClear,
   onSearchEmployees,
   disabled,
+  className,
 }: {
   label: string;
   employeeId: string | null;
@@ -65,9 +68,10 @@ function ProductRolePicker({
     query: string,
   ) => Promise<Array<{ value: string; label: string; subtitle?: string }>>;
   disabled?: boolean;
+  className?: string;
 }) {
   return (
-    <div>
+    <div className={className}>
       <SearchField
         selectionMode="stage"
         label={label}
@@ -95,6 +99,7 @@ export function DeliveryItemTeamSection({
   onProductPlanChange,
   onExtensionPlanChange,
   disabled = false,
+  gateRequiredFields = new Set(),
 }: DeliveryItemTeamSectionProps) {
   const searchEmployees = useEmployeeSearchLoader();
   const seller =
@@ -184,6 +189,7 @@ export function DeliveryItemTeamSection({
               onClear={() => patchExtension({ assignedTo: null, assigneeLabel: '' })}
               onSearchEmployees={searchEmployees}
               disabled={disabled}
+              className={deliveryStageGateFieldClass(gateRequiredFields, 'assignedTo')}
             />
             <SellerReadOnlyRow seller={seller} />
           </>

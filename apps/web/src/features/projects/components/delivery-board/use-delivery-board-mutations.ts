@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { isStageGateApiError } from '@/lib/api-errors';
+import { isStageGateApiError, type ApiFieldError } from '@/lib/api-errors';
 import type { DeliveryLifecycleActionPayload } from '@/features/projects/components/DeliveryLifecycleActionDialog';
 import {
   advanceDeliveryItemToStage,
@@ -9,55 +9,49 @@ import {
   type BoardAction,
   type DeliveryActiveStage,
 } from './project-delivery-board-actions';
-import {
-  toBoardStageGateBlocker,
-  toDeliveryBoardActionError,
-} from './project-delivery-board-stage-gate';
-import type { DeliveryStageGateResolution } from './delivery-stage-gate-resolution';
+import { toDeliveryBoardActionError } from './project-delivery-board-stage-gate';
 import {
   getItemId,
   getItemLifecycle,
-  getProjectId,
   NEXT_DELIVERY_STAGE,
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
+
+export interface UseDeliveryBoardMutationsOptions {
+  onStageGateBlocked?: (
+    item: DeliveryBoardItem,
+    targetStage: DeliveryActiveStage,
+    errors: ApiFieldError[],
+  ) => void;
+  onStageGateClear?: () => void;
+}
 
 export interface UseDeliveryBoardMutationsResult {
   busyItemId: string | null;
   cancelItem: DeliveryBoardItem | null;
   actionError: string | null;
-  stageGateResolution: DeliveryStageGateResolution | null;
   handleBoardAction: (item: DeliveryBoardItem, action: BoardAction) => Promise<void>;
   advanceToDeliveryStage: (item: DeliveryBoardItem, target: DeliveryActiveStage) => Promise<void>;
   requestCancel: (item: DeliveryBoardItem) => void;
   handleCancelConfirm: (payload: DeliveryLifecycleActionPayload) => Promise<void>;
-  dismissStageGate: () => void;
-  retryStageGateMove: () => Promise<void>;
   clearActionDialog: () => void;
 }
 
 export function useDeliveryBoardMutations(
   onRefresh: () => void | Promise<void>,
+  options?: UseDeliveryBoardMutationsOptions,
 ): UseDeliveryBoardMutationsResult {
   const [busyItemId, setBusyItemId] = useState<string | null>(null);
   const [cancelItem, setCancelItem] = useState<DeliveryBoardItem | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [stageGateResolution, setStageGateResolution] =
-    useState<DeliveryStageGateResolution | null>(null);
 
   const resolveGateFailure = useCallback(
     (item: DeliveryBoardItem, targetStage: DeliveryActiveStage, error: unknown) => {
       if (!isStageGateApiError(error)) return false;
-      const pid = getProjectId(item);
-      if (!pid) return false;
-      setStageGateResolution({
-        blocker: toBoardStageGateBlocker(item, pid, error),
-        item,
-        targetStage,
-      });
+      options?.onStageGateBlocked?.(item, targetStage, error.errors);
       return true;
     },
-    [],
+    [options],
   );
 
   const inferMoveNextTarget = useCallback((item: DeliveryBoardItem): DeliveryActiveStage | null => {
@@ -71,10 +65,10 @@ export function useDeliveryBoardMutations(
       const itemId = getItemId(item);
       setBusyItemId(itemId);
       setActionError(null);
-      setStageGateResolution(null);
       const targetForGate = action === 'MOVE_NEXT' ? inferMoveNextTarget(item) : null;
       try {
         await runBoardAction(item, action);
+        options?.onStageGateClear?.();
         await onRefresh();
       } catch (error) {
         if (targetForGate && resolveGateFailure(item, targetForGate, error)) {
@@ -85,7 +79,7 @@ export function useDeliveryBoardMutations(
         setBusyItemId(null);
       }
     },
-    [inferMoveNextTarget, onRefresh, resolveGateFailure],
+    [inferMoveNextTarget, onRefresh, options, resolveGateFailure],
   );
 
   const advanceToDeliveryStage = useCallback(
@@ -93,9 +87,9 @@ export function useDeliveryBoardMutations(
       const itemId = getItemId(item);
       setBusyItemId(itemId);
       setActionError(null);
-      setStageGateResolution(null);
       try {
         await advanceDeliveryItemToStage(item, target);
+        options?.onStageGateClear?.();
         await onRefresh();
       } catch (error) {
         if (!resolveGateFailure(item, target, error)) {
@@ -107,7 +101,7 @@ export function useDeliveryBoardMutations(
         setBusyItemId(null);
       }
     },
-    [onRefresh, resolveGateFailure],
+    [onRefresh, options, resolveGateFailure],
   );
 
   const handleCancelConfirm = useCallback(
@@ -116,10 +110,10 @@ export function useDeliveryBoardMutations(
       const item = cancelItem;
       setBusyItemId(getItemId(item));
       setActionError(null);
-      setStageGateResolution(null);
       try {
         await runBoardAction(item, 'CANCEL', payload);
         setCancelItem(null);
+        options?.onStageGateClear?.();
         await onRefresh();
       } catch (error) {
         setActionError(toDeliveryBoardActionError(error, 'Delivery item could not be cancelled.'));
@@ -127,36 +121,22 @@ export function useDeliveryBoardMutations(
         setBusyItemId(null);
       }
     },
-    [cancelItem, onRefresh],
+    [cancelItem, onRefresh, options],
   );
 
   const clearActionDialog = useCallback(() => {
     setCancelItem(null);
     setActionError(null);
-    setStageGateResolution(null);
   }, []);
-
-  const dismissStageGate = useCallback(() => {
-    setStageGateResolution(null);
-  }, []);
-
-  const retryStageGateMove = useCallback(async () => {
-    if (!stageGateResolution) return;
-    const { item, targetStage } = stageGateResolution;
-    await advanceToDeliveryStage(item, targetStage);
-  }, [advanceToDeliveryStage, stageGateResolution]);
 
   return {
     busyItemId,
     cancelItem,
     actionError,
-    stageGateResolution,
     handleBoardAction,
     advanceToDeliveryStage,
     requestCancel: setCancelItem,
     handleCancelConfirm,
-    dismissStageGate,
-    retryStageGateMove,
     clearActionDialog,
   };
 }

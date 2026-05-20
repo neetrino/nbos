@@ -36,6 +36,7 @@ import {
 } from '@/features/projects/components/delivery-board/project-delivery-board-model';
 import { DELIVERY_BOARD_OPEN_ITEM_QUERY } from '@/features/projects/constants/delivery-board-open-query';
 import type { ProductBoardTab } from '@/features/projects/components/delivery-board/ProjectDeliveryBoardContextLinks';
+import type { DeliverySheetStageGateHighlight } from '@/features/projects/components/delivery-board/delivery-stage-gate-highlight';
 import { useDeliveryBoardMutations } from '@/features/projects/components/delivery-board/use-delivery-board-mutations';
 
 const DEFAULT_CLOSED_FILTERS: DeliveryBoardClosedFiltersInput = {
@@ -66,6 +67,8 @@ export default function DeliveryBoardPage() {
   const [activePipelineFilters, setActivePipelineFilters] = useState(() => ({
     ...DEFAULT_DELIVERY_BOARD_ACTIVE_FILTERS,
   }));
+  const [stageGateHighlight, setStageGateHighlight] =
+    useState<DeliverySheetStageGateHighlight | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -82,8 +85,6 @@ export default function DeliveryBoardPage() {
       setLoading(false);
     }
   }, []);
-
-  const deliveryMutations = useDeliveryBoardMutations(load);
 
   const handleDetailItemRenamed = useCallback((updatedItem: DeliveryBoardItem) => {
     setItems((current) =>
@@ -107,13 +108,6 @@ export default function DeliveryBoardPage() {
     return scopedItems.find((item) => getItemKey(item) === openDeliveryItemKey) ?? null;
   }, [openDeliveryItemKey, scopedItems]);
 
-  const closeDeliveryItemSheet = useCallback(() => {
-    const p = new URLSearchParams(searchParams.toString());
-    p.delete(DELIVERY_BOARD_OPEN_ITEM_QUERY);
-    const qs = p.toString();
-    router.push(qs ? `/delivery-board?${qs}` : '/delivery-board');
-  }, [router, searchParams]);
-
   const openDeliveryItemSheet = useCallback(
     (item: DeliveryBoardItem) => {
       const p = new URLSearchParams(searchParams.toString());
@@ -122,6 +116,27 @@ export default function DeliveryBoardPage() {
     },
     [router, searchParams],
   );
+
+  const closeDeliveryItemSheet = useCallback(() => {
+    setStageGateHighlight(null);
+    const p = new URLSearchParams(searchParams.toString());
+    p.delete(DELIVERY_BOARD_OPEN_ITEM_QUERY);
+    const qs = p.toString();
+    router.push(qs ? `/delivery-board?${qs}` : '/delivery-board');
+  }, [router, searchParams]);
+
+  const showStageGateRequirements = useCallback(
+    (item: DeliveryBoardItem, errors: DeliverySheetStageGateHighlight['errors']) => {
+      setStageGateHighlight({ errors });
+      openDeliveryItemSheet(item);
+    },
+    [openDeliveryItemSheet],
+  );
+
+  const deliveryMutations = useDeliveryBoardMutations(load, {
+    onStageGateBlocked: (item, _target, errors) => showStageGateRequirements(item, errors),
+    onStageGateClear: () => setStageGateHighlight(null),
+  });
 
   useEffect(() => {
     if (loading || !openDeliveryItemKey) return;
@@ -268,6 +283,7 @@ export default function DeliveryBoardPage() {
         onEntityUpdated={load}
         onTitleSaved={handleDetailItemRenamed}
         boardMutations={deliveryMutations}
+        stageGateHighlight={detailItem && stageGateHighlight ? stageGateHighlight : null}
       />
     </div>
   );

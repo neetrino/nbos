@@ -13,15 +13,18 @@ import {
   PRODUCT_TYPES_BY_CATEGORY,
 } from '@/features/projects/constants/projects';
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
+import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
 
 export function ProductPlanningSection({
   draft,
   onDraftChange,
   disabled = false,
+  gateRequiredFields = new Set<string>(),
 }: {
   draft: ProductPlanSnapshot;
   onDraftChange: (next: ProductPlanSnapshot) => void;
   disabled?: boolean;
+  gateRequiredFields?: ReadonlySet<string>;
 }) {
   const typeOptions = useMemo(() => {
     const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
@@ -62,6 +65,7 @@ export function ProductPlanningSection({
             placeholder="Pick date…"
             clearable
             disabled={disabled}
+            className={deliveryStageGateFieldClass(gateRequiredFields, 'deadline')}
             onValueChange={(v) => patchDraft({ deadline: v })}
           />
         </div>
@@ -107,6 +111,7 @@ export function ProductPlanningSection({
           icon={<Sparkles size={12} />}
           placeholder="Plan, milestones, client context…"
           disabled={disabled}
+          className={deliveryStageGateFieldClass(gateRequiredFields, 'description')}
           onValueChange={(v) => patchDraft({ description: v })}
         />
       </div>

@@ -5,6 +5,7 @@ import { InlineField } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import { EXTENSION_SIZES, getProductType } from '@/features/projects/constants/projects';
 import type { ExtensionPlanSnapshot } from './delivery-item-detail-planning-state';
+import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
 
 function ExtensionPlanProductLine({ extension }: { extension: FullExtension }) {
   const line = extension.product.productType ?? '';
@@ -24,11 +25,13 @@ export function ExtensionPlanningSection({
   draft,
   onDraftChange,
   disabled = false,
+  gateRequiredFields = new Set<string>(),
 }: {
   extension: FullExtension;
   draft: ExtensionPlanSnapshot;
   onDraftChange: (next: ExtensionPlanSnapshot) => void;
   disabled?: boolean;
+  gateRequiredFields?: ReadonlySet<string>;
 }) {
   const patchDraft = (partial: Partial<ExtensionPlanSnapshot>) => {
     onDraftChange({ ...draft, ...partial });
@@ -73,6 +76,7 @@ export function ExtensionPlanningSection({
             icon={<Sparkles size={12} />}
             placeholder="Plan, acceptance criteria…"
             disabled={disabled}
+            className={deliveryStageGateFieldClass(gateRequiredFields, 'description')}
             onValueChange={(v) => patchDraft({ description: v })}
           />
         </div>

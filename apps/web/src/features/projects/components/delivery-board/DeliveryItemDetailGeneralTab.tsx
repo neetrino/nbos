@@ -9,10 +9,12 @@ import {
   ExtensionPlanningSection,
   ProductPlanningSection,
 } from './delivery-item-detail-general-planning-sections';
+import type { ApiFieldError } from '@/lib/api-errors';
 import type {
   ExtensionPlanSnapshot,
   ProductPlanSnapshot,
 } from './delivery-item-detail-planning-state';
+import { deliveryStageGateSectionClass } from './delivery-stage-gate-highlight';
 import { DeliveryItemStageReadinessSection } from './DeliveryItemStageReadinessSection';
 import { DeliveryStageChecklistPanel } from './DeliveryStageChecklistPanel';
 import { DeliveryItemTeamSection } from './DeliveryItemTeamSection';
@@ -38,6 +40,8 @@ interface DeliveryItemDetailGeneralTabProps {
   extensionPlan: ExtensionPlanSnapshot | null;
   onExtensionPlanChange: (next: ExtensionPlanSnapshot) => void;
   planningDisabled: boolean;
+  gateRequiredFields?: ReadonlySet<string>;
+  stageGateActionBlockers?: ApiFieldError[];
 }
 
 export function DeliveryItemDetailGeneralTab({
@@ -56,6 +60,8 @@ export function DeliveryItemDetailGeneralTab({
   extensionPlan,
   onExtensionPlanChange,
   planningDisabled,
+  gateRequiredFields = new Set(),
+  stageGateActionBlockers = [],
 }: DeliveryItemDetailGeneralTabProps) {
   const projectId =
     item.kind === 'PRODUCT'
@@ -83,17 +89,23 @@ export function DeliveryItemDetailGeneralTab({
             extension={extension}
             lifecycle={lifecycle}
             checklistProgress={checklistProgress}
+            gateRequiredFields={gateRequiredFields}
+            stageGateActionBlockers={stageGateActionBlockers}
           />
-          <DeliveryStageChecklistPanel
-            ownerEntityType={kind}
-            ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
-            lifecycle={lifecycle}
-            onChanged={onRefreshDetail}
-            floatingNav={{
-              sourcePageHref,
-              workspaceHref: workSpaceHref,
-            }}
-          />
+          <div
+            className={deliveryStageGateSectionClass(gateRequiredFields, 'checklist', 'rounded-xl')}
+          >
+            <DeliveryStageChecklistPanel
+              ownerEntityType={kind}
+              ownerEntityId={kind === 'PRODUCT' ? productId : item.extension.id}
+              lifecycle={lifecycle}
+              onChanged={onRefreshDetail}
+              floatingNav={{
+                sourcePageHref,
+                workspaceHref: workSpaceHref,
+              }}
+            />
+          </div>
           <DeliveryItemTeamSection
             kind={kind}
             product={product}
@@ -103,6 +115,7 @@ export function DeliveryItemDetailGeneralTab({
             onProductPlanChange={onProductPlanChange}
             onExtensionPlanChange={onExtensionPlanChange}
             disabled={planningDisabled}
+            gateRequiredFields={gateRequiredFields}
           />
           {kind === 'PRODUCT' && productPlan && product ? (
             <section className="border-border bg-card/40 space-y-3 rounded-xl border p-4">
@@ -132,6 +145,7 @@ export function DeliveryItemDetailGeneralTab({
               draft={productPlan}
               onDraftChange={onProductPlanChange}
               disabled={planningDisabled}
+              gateRequiredFields={gateRequiredFields}
             />
           ) : null}
           {extension && extensionPlan ? (
@@ -140,6 +154,7 @@ export function DeliveryItemDetailGeneralTab({
               draft={extensionPlan}
               onDraftChange={onExtensionPlanChange}
               disabled={planningDisabled}
+              gateRequiredFields={gateRequiredFields}
             />
           ) : null}
           <DeliveryItemCommercialSection
@@ -150,12 +165,14 @@ export function DeliveryItemDetailGeneralTab({
             projectHubHref={projectHubHref}
             sourcePageHref={sourcePageHref}
             credentialsTabHref={credentialsTabHref}
+            gateRequiredFields={gateRequiredFields}
           />
           <DeliveryItemKeyWorkLinksSection
             kind={kind}
             product={product}
             extension={extension}
             workSpaceHref={workSpaceHref}
+            gateRequiredFields={gateRequiredFields}
           />
         </div>
 

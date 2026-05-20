@@ -8,7 +8,6 @@ import {
   applyDeliveryBoardActiveFilters,
   type DeliveryBoardActiveFiltersInput,
 } from './delivery-board-active-filters';
-import { DeliveryBoardStageGateDialog } from './DeliveryBoardStageGateDialog';
 import { DeliveryKanbanBoard } from './DeliveryKanbanBoard';
 import type { ProductBoardTab } from './ProjectDeliveryBoardContextLinks';
 import { ProjectDeliveryBoardHeader } from './ProjectDeliveryBoardHeader';
@@ -73,13 +72,10 @@ export function DeliveryBoardView({
     busyItemId,
     cancelItem,
     actionError,
-    stageGateResolution,
     handleBoardAction,
     advanceToDeliveryStage,
     requestCancel,
     handleCancelConfirm,
-    dismissStageGate,
-    retryStageGateMove,
     clearActionDialog,
   } = mutations;
   const effectiveStatus = lockedStatusFilter ?? statusFilter;
@@ -151,17 +147,6 @@ export function DeliveryBoardView({
           )}
         </div>
       </div>
-      <DeliveryBoardStageGateDialog
-        resolution={stageGateResolution}
-        onOpenChange={(open) => {
-          if (!open) dismissStageGate();
-        }}
-        onRetry={retryStageGateMove}
-        onOpenDetails={(item) => {
-          onOpenDetails?.(item);
-          dismissStageGate();
-        }}
-      />
       <DeliveryLifecycleActionDialog
         action={cancelItem ? 'cancel' : null}
         entityLabel={cancelItem ? getItemLabel(cancelItem) : 'delivery item'}

@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
+import { deliveryStageGateSectionClass } from './delivery-stage-gate-highlight';
 
 const OPEN_ID = 'openId';
 
@@ -17,6 +18,7 @@ interface DeliveryItemCommercialSectionProps {
   projectHubHref: string;
   sourcePageHref: string;
   credentialsTabHref: string;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function DeliveryItemCommercialSection({
@@ -27,7 +29,12 @@ export function DeliveryItemCommercialSection({
   projectHubHref,
   sourcePageHref,
   credentialsTabHref,
+  gateRequiredFields = new Set(),
 }: DeliveryItemCommercialSectionProps) {
+  const commercialGateClass =
+    gateRequiredFields.has('order') || gateRequiredFields.has('finance')
+      ? deliveryStageGateSectionClass(gateRequiredFields, 'order', 'rounded-xl')
+      : undefined;
   const project = kind === 'PRODUCT' ? product?.project : extension?.project;
   const order = kind === 'PRODUCT' ? product?.order : extension?.order;
   const deal = order?.deal;
@@ -37,7 +44,7 @@ export function DeliveryItemCommercialSection({
   const dealHref = deal?.id ? `/crm/deals?openDealId=${encodeURIComponent(deal.id)}` : null;
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-4">
+    <section className={cn('border-border bg-card/40 rounded-xl border p-4', commercialGateClass)}>
       <h3 className="text-muted-foreground mb-3 text-[10px] font-semibold tracking-wider uppercase">
         Client & order
       </h3>

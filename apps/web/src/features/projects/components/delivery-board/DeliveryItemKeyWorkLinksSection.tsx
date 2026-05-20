@@ -6,12 +6,14 @@ import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
+import { deliveryStageGateSectionClass } from './delivery-stage-gate-highlight';
 
 interface DeliveryItemKeyWorkLinksSectionProps {
   kind: 'PRODUCT' | 'EXTENSION';
   product: FullProduct | null;
   extension: FullExtension | null;
   workSpaceHref: string;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 function ExternalLinkButton({
@@ -45,14 +47,21 @@ export function DeliveryItemKeyWorkLinksSection({
   product,
   extension,
   workSpaceHref,
+  gateRequiredFields = new Set(),
 }: DeliveryItemKeyWorkLinksSectionProps) {
+  const workLinksGateClass =
+    gateRequiredFields.has('tasks') ||
+    gateRequiredFields.has('extensions') ||
+    gateRequiredFields.has('tickets')
+      ? deliveryStageGateSectionClass(gateRequiredFields, 'tasks', 'rounded-xl')
+      : undefined;
   const profile =
     kind === 'PRODUCT'
       ? product?.technicalProfiles?.[0]
       : extension?.product?.technicalProfiles?.[0];
 
   return (
-    <section className="border-border bg-card/40 rounded-xl border p-4">
+    <section className={cn('border-border bg-card/40 rounded-xl border p-4', workLinksGateClass)}>
       <h3 className="text-muted-foreground mb-2.5 text-[10px] font-semibold tracking-wider uppercase">
         Key work links
       </h3>
