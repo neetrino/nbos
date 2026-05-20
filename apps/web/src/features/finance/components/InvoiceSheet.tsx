@@ -141,7 +141,6 @@ export function InvoiceSheet({
   if (!invoice) return null;
 
   const sourcePageHref = `/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(invoice.id)}`;
-  const showGeneralFooter = activeTab === 'general' && generalDirty && Boolean(onInvoiceUpdated);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -208,14 +207,14 @@ export function InvoiceSheet({
           </div>
         </ScrollArea>
 
-        {showGeneralFooter ? (
-          <DetailSheetFormFooter
-            saving={saving}
-            error={generalError}
-            onSave={handleGeneralSave}
-            onCancel={handleGeneralCancel}
-          />
-        ) : null}
+        <DetailSheetFormFooter
+          visible={activeTab === 'general' && Boolean(onInvoiceUpdated && invoice)}
+          dirty={generalDirty}
+          saving={saving}
+          errorMessage={generalError}
+          onSave={handleGeneralSave}
+          onCancel={handleGeneralCancel}
+        />
       </SheetContent>
     </Sheet>
   );

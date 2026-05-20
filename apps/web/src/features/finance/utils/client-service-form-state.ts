@@ -82,6 +82,13 @@ export function clientServiceFormToPayload(
   };
 }
 
+export function isClientServiceFormDirty(
+  a: ClientServiceFormState,
+  b: ClientServiceFormState,
+): boolean {
+  return JSON.stringify(a) !== JSON.stringify(b);
+}
+
 export function parseOptionalAmount(value: string): number | null {
   const trimmed = value.trim();
   if (!trimmed) return null;

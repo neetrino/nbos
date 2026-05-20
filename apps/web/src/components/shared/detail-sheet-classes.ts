@@ -17,6 +17,12 @@ export const DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS =
 /** Anchor floating rail to the left edge of a {@link DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS} sheet. */
 export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS = 'sm:right-[42rem]';
 
+/** Medium detail sheet (e.g. client service with more fields than invoice). */
+export const DETAIL_SHEET_CONTENT_WIDTH_MEDIUM_CLASS =
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[48rem]';
+
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS = 'sm:right-[48rem]';
+
 /** Block surface aligned with Deal General sections. */
 export const DETAIL_SHEET_SECTION_SURFACE_CLASS =
   'rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent';

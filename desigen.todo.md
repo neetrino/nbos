@@ -80,7 +80,7 @@ Review target:
 
 ## Step 3 — Client Services
 
-- [ ] **Client service detail/edit sheet** — replace large edit/detail dialog with sheet.
+- [x] ~~**Client service detail/edit sheet** — Deal-style InlineField sections, medium width, Save/Cancel footer~~
 - [ ] **Client service quick create** — keep as quick dialog only if the create flow stays short.
 
 Planned changes:
