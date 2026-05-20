@@ -223,6 +223,8 @@ export default function DeliveryBoardPage() {
             activeFilterOptions={activeFilterOptions}
             activeFilteredCount={activeFilteredCount}
             activeTotalCount={activeItemsBase.length}
+            closedFilteredCount={closedFilteredItems.length}
+            closedTotalCount={closedBaseItems.length}
             closedFilters={closedFilters}
             onClosedFiltersChange={setClosedFilters}
             closedFilterOptions={closedFilterOptions}

@@ -71,6 +71,8 @@ export interface DeliveryBoardPageHeroProps {
   activeFilterOptions: ActiveFilterOptions;
   activeFilteredCount: number;
   activeTotalCount: number;
+  closedFilteredCount: number;
+  closedTotalCount: number;
   closedFilters: DeliveryBoardClosedFiltersInput;
   onClosedFiltersChange: (next: DeliveryBoardClosedFiltersInput) => void;
   closedFilterOptions: ClosedFilterOptions;
@@ -92,6 +94,8 @@ export function DeliveryBoardPageHero({
   activeFilterOptions,
   activeFilteredCount,
   activeTotalCount,
+  closedFilteredCount,
+  closedTotalCount,
   closedFilters,
   onClosedFiltersChange,
   closedFilterOptions,
@@ -138,7 +142,9 @@ export function DeliveryBoardPageHero({
   }, [onActiveFiltersChange, onClosedFiltersChange, onKindFilterChange, pipelineTab]);
 
   const countLabel =
-    pipelineTab === 'active' ? `${activeFilteredCount} of ${activeTotalCount} cards` : null;
+    pipelineTab === 'active'
+      ? `${activeFilteredCount} of ${activeTotalCount} cards`
+      : `${closedFilteredCount} of ${closedTotalCount} cards`;
 
   return (
     <PageHero

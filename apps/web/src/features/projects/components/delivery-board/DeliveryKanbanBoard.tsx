@@ -1,6 +1,6 @@
 'use client';
 
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
 import {
   DndContext,
   DragOverlay,
@@ -40,9 +40,18 @@ import {
 import {
   deliveryKanbanCardId,
   deliveryKanbanColId,
+  deliveryKanbanTerminalId,
   parseDeliveryKanbanCardItemKey,
   parseDeliveryKanbanColId,
+  parseDeliveryKanbanTerminalKey,
 } from './delivery-kanban-ids';
+import {
+  DELIVERY_KANBAN_BOARD_ROW_CLASS,
+  DELIVERY_KANBAN_COLUMN_SHELL_CLASS,
+  DELIVERY_KANBAN_COLUMN_WIDTH_PX,
+} from './delivery-kanban-layout';
+import { DELIVERY_TERMINAL_DROP_ZONES } from './delivery-terminal-drop-zones';
+import { DeliveryKanbanTerminalDropBar } from './DeliveryKanbanTerminalDropBar';
 import type { BoardAction, DeliveryActiveStage } from './project-delivery-board-actions';
 import {
   ACTIVE_DELIVERY_STAGES,
@@ -80,6 +89,7 @@ export function DeliveryKanbanBoard({
 }: DeliveryKanbanBoardProps) {
   const [activeItem, setActiveItem] = useState<DeliveryBoardItem | null>(null);
   const [dragCardHeightPx, setDragCardHeightPx] = useState<number | null>(null);
+  const [terminalDropTarget, setTerminalDropTarget] = useState<string | null>(null);
   const [quickCreateProjectId, setQuickCreateProjectId] = useState<string | null>(null);
   const { creatorId, creatorReady } = useTaskCreatorId();
   const quickTaskDisabled = creatorReady && !creatorId;
@@ -124,32 +134,51 @@ export function DeliveryKanbanBoard({
     [itemByKey],
   );
 
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const overId = event.over?.id != null ? String(event.over.id) : null;
+    const terminalKey = overId ? parseDeliveryKanbanTerminalKey(overId) : null;
+    setTerminalDropTarget(terminalKey ? deliveryKanbanTerminalId(terminalKey) : null);
+  }, []);
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       setActiveItem(null);
       setDragCardHeightPx(null);
+      setTerminalDropTarget(null);
       const { active, over } = event;
       if (!over) return;
       const itemKey = parseDeliveryKanbanCardItemKey(String(active.id));
       if (!itemKey) return;
-      const targetStage = resolveDropTargetStage(String(over.id), itemByKey);
-      if (!targetStage) return;
       const item = itemByKey.get(itemKey);
       if (!item) return;
+      if (getItemLifecycle(item)?.workStatus === 'ON_HOLD') return;
+
+      const terminalKey = parseDeliveryKanbanTerminalKey(String(over.id));
+      if (terminalKey === 'DONE') {
+        void onBoardAction(item, 'COMPLETE');
+        return;
+      }
+      if (terminalKey === 'CANCELLED') {
+        onCancel(item);
+        return;
+      }
+
+      const targetStage = resolveDropTargetStage(String(over.id), itemByKey);
+      if (!targetStage) return;
       const current = getItemLifecycle(item)?.stage;
       if (!current) return;
       const curIdx = ACTIVE_DELIVERY_STAGES.indexOf(current);
       const targetIdx = ACTIVE_DELIVERY_STAGES.indexOf(targetStage);
       if (targetIdx <= curIdx) return;
-      if (getItemLifecycle(item)?.workStatus === 'ON_HOLD') return;
       onMoveToStage(item, targetStage);
     },
-    [itemByKey, onMoveToStage],
+    [itemByKey, onBoardAction, onCancel, onMoveToStage],
   );
 
   const handleDragCancel = useCallback(() => {
     setActiveItem(null);
     setDragCardHeightPx(null);
+    setTerminalDropTarget(null);
   }, []);
 
   return (
@@ -157,25 +186,19 @@ export function DeliveryKanbanBoard({
       sensors={sensors}
       collisionDetection={closestCorners}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      {/* Same height contract as shared KanbanBoard (Deal Pipeline): flex-1 + min-h-0 + column overflow-y-auto. */}
-      <div className="flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
+      <div className="relative flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
         <div
-          className={cn(
-            'flex h-full min-h-0 w-full flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap lg:flex-nowrap',
-            'sm:items-stretch',
-          )}
+          className={cn(DELIVERY_KANBAN_BOARD_ROW_CLASS, activeItem && 'pb-28')}
+          style={{
+            minWidth: `${columns.length * (DELIVERY_KANBAN_COLUMN_WIDTH_PX + 16)}px`,
+          }}
         >
           {columns.map((col, colIdx) => (
-            <div
-              key={col.stage}
-              className={cn(
-                'mx-2 flex min-h-0 min-w-[288px] flex-1 flex-col sm:max-w-[calc(50%-0.375rem)] sm:min-w-[calc(50%-0.375rem)] sm:flex-none sm:basis-[calc(50%-0.375rem)]',
-                'lg:max-w-none lg:min-w-[288px] lg:flex-1 lg:basis-0',
-              )}
-            >
+            <div key={col.stage} className={DELIVERY_KANBAN_COLUMN_SHELL_CLASS}>
               <KanbanStageColumn
                 stage={col.stage}
                 title={col.label}
@@ -225,6 +248,12 @@ export function DeliveryKanbanBoard({
             </div>
           ))}
         </div>
+        {activeItem ? (
+          <DeliveryKanbanTerminalDropBar
+            zones={DELIVERY_TERMINAL_DROP_ZONES}
+            activeZoneKey={terminalDropTarget}
+          />
+        ) : null}
       </div>
       <DragOverlay dropAnimation={null}>
         {activeItem ? (

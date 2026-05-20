@@ -10,6 +10,7 @@ Rollout по модулям (CRM, Delivery, Product, Finance invoices/expenses/s
 
 ## Сейчас
 
+- [x] ~~Delivery Board parity: Closed `X of Y cards`, fixed 288px columns Active/Closed, terminal drop Done/Cancelled на Active drag~~
 - [ ] **Финальный audit (ручной)** — пройти workflow surfaces по чеклисту kanban + stage-gate (можно без ожидания других задач):
   - CRM: leads, deals — Active/Closed, Board/List, blocked drag → sheet + field highlights
   - Delivery — Active/Closed Board/List, local gate

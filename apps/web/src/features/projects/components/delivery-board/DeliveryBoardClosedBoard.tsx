@@ -1,7 +1,10 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from '@/components/shared/kanban/kanban-column-surface';
+import {
+  DELIVERY_KANBAN_BOARD_ROW_CLASS,
+  DELIVERY_KANBAN_COLUMN_SHELL_CLASS,
+} from './delivery-kanban-layout';
 import { ProjectDeliveryBoardCard } from './ProjectDeliveryBoardCard';
 import { DELIVERY_TERMINAL_COLUMN_COLORS } from './delivery-terminal-kanban.constants';
 import type { BoardAction } from './project-delivery-board-actions';
@@ -41,12 +44,7 @@ export function DeliveryBoardClosedBoard({
 
   return (
     <div className="flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden">
-      <div
-        className={cn(
-          'flex h-full min-h-0 w-full flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap lg:flex-nowrap',
-          'sm:items-stretch',
-        )}
-      >
+      <div className={DELIVERY_KANBAN_BOARD_ROW_CLASS}>
         <TerminalColumn
           title="Done"
           hex={DELIVERY_TERMINAL_COLUMN_COLORS.DONE}
@@ -107,12 +105,7 @@ function TerminalColumn({
   const countBg = textColor === '#fff' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.12)';
 
   return (
-    <div
-      className={cn(
-        'mx-2 flex min-h-0 min-w-[288px] flex-1 flex-col sm:max-w-[calc(50%-0.375rem)] sm:min-w-[calc(50%-0.375rem)] sm:flex-none sm:basis-[calc(50%-0.375rem)]',
-        'lg:max-w-none lg:min-w-[288px] lg:flex-1 lg:basis-0',
-      )}
-    >
+    <div className={DELIVERY_KANBAN_COLUMN_SHELL_CLASS}>
       <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col">
         {showLeftRule ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}
         <div
