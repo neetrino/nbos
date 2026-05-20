@@ -1,3 +1,4 @@
+import { resolveFinanceDriveUploadDefaults } from '@nbos/shared';
 import { driveApi } from '@/lib/api/drive';
 import { FALLBACK_MIME_TYPE } from './drive-options';
 import type { DriveLibraryOption } from './drive-options';
@@ -36,6 +37,10 @@ export async function uploadOneDriveFileToEntity(
   options?: { purpose?: string },
 ): Promise<void> {
   const meta = buildDriveLibraryUploadSessionFields(library, options?.purpose);
+  const finance = resolveFinanceDriveUploadDefaults(
+    link.entityType,
+    options?.purpose ?? meta.purpose,
+  );
   const contentType = file.type || FALLBACK_MIME_TYPE;
   const displayName = getDriveClientUploadDisplayName(file);
   const session = await driveApi.createUploadSession({
@@ -44,10 +49,11 @@ export async function uploadOneDriveFileToEntity(
     displayName,
     entityType: link.entityType,
     entityId: link.entityId,
-    sourceModule: meta.sourceModule,
-    purpose: meta.purpose,
-    visibility: meta.visibility,
-    confidentiality: 'CONFIDENTIAL',
+    sourceModule: finance?.sourceModule ?? meta.sourceModule,
+    purpose: finance?.purpose ?? meta.purpose,
+    visibility: finance?.visibility ?? meta.visibility,
+    confidentiality: finance?.confidentiality ?? 'CONFIDENTIAL',
+    linkType: finance?.linkType,
   });
   const putResponse = await fetch(session.uploadUrl, {
     method: 'PUT',

@@ -25,6 +25,7 @@ import { formatExpenseBacklogReasonLabel } from '@/features/finance/components/e
 import { AddExpensePaymentDialog } from '@/features/finance/components/expenses/AddExpensePaymentDialog';
 import { DeleteExpenseDialog } from '@/features/finance/components/expenses/DeleteExpenseDialog';
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
+import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
 import { ExpensePayrollLinkBanner } from '@/features/finance/components/expenses/ExpensePayrollLinkBanner';
 import { ExpensePlanLinkBanner } from '@/features/finance/components/expenses/ExpensePlanLinkBanner';
@@ -276,6 +277,15 @@ function ExpenseDetailPageInner() {
       </div>
 
       <ExpenseDetailPaymentSection expense={expense} onExpenseUpdated={setExpense} />
+
+      <div className="border-border bg-card rounded-xl border p-4">
+        <FinanceProofAttachments
+          entityType="EXPENSE"
+          entityId={expense.id}
+          purpose="EXPENSE_PROOF"
+          title="Expense proofs"
+        />
+      </div>
 
       {expense.status === 'BACKLOG' || expense.backlogReason ? (
         <div className="border-border bg-card rounded-xl border p-4">

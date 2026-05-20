@@ -37,6 +37,7 @@ import type { DocumentsReadAccess } from '../documents/documents-access-read';
 import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access.types';
 import { assertDriveEntityContextAccessible } from './drive-entity-context-access';
 import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
+import { applyFinanceDriveUploadDefaults } from './drive-finance-upload-defaults';
 
 @Injectable()
 export class DriveUploadSessionService {
@@ -104,7 +105,14 @@ export class DriveUploadSessionService {
         documentsAccess ? { ...access, documentsAccess } : access,
       );
     }
-    const purpose = pickPurpose(dto.purpose);
+    const uploadFields = applyFinanceDriveUploadDefaults(entityType, {
+      purpose: dto.purpose,
+      sourceModule: dto.sourceModule,
+      visibility: dto.visibility,
+      confidentiality: dto.confidentiality,
+      linkType: dto.linkType,
+    });
+    const purpose = uploadFields.purpose;
     const displayName = (dto.displayName?.trim() || fileName).slice(0, 500);
     const orgId = readTenantOrganizationId(this.config);
     const contextPath = await resolveStorageHomeContextWithPurpose(
@@ -131,11 +139,11 @@ export class DriveUploadSessionService {
         displayName,
         originalName: fileName,
         mimeType: contentType,
-        purpose: pickPurpose(dto.purpose),
-        sourceModule: dto.sourceModule?.trim(),
-        visibility: pickVisibility(dto.visibility),
-        confidentiality: pickConfidentiality(dto.confidentiality),
-        linkType: pickLinkType(dto.linkType),
+        purpose,
+        sourceModule: uploadFields.sourceModule,
+        visibility: uploadFields.visibility,
+        confidentiality: uploadFields.confidentiality,
+        linkType: uploadFields.linkType,
         createdById: userId,
         expiresAt,
       },

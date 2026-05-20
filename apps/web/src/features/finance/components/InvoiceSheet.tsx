@@ -11,6 +11,7 @@ import {
 } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
+import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import {
   InvoiceAmountPanel,
   InvoiceDescriptionSection,
@@ -86,6 +87,15 @@ export function InvoiceSheet({
             </div>
 
             <InvoiceDescriptionSection description={invoice.description} />
+
+            <div className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS)}>
+              <FinanceProofAttachments
+                entityType="INVOICE"
+                entityId={invoice.id}
+                purpose="INVOICE_REQUEST_PROOF"
+                title="Invoice proofs"
+              />
+            </div>
 
             <Separator />
 

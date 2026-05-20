@@ -67,7 +67,7 @@
 ## Фаза 6 — Интеграции и хвосты
 
 - [x] ~~6.1 Domain → Client Service Record~~
-- [ ] 6.2 Drive: вложения finance (proofs, restricted)
+- [x] ~~6.2 Drive: вложения finance (proofs, restricted)~~
 - [ ] 6.3 Client-paid automation (task/expense после оплаты)
 - [ ] 6.4 Finance dashboard / summary доработки
 
@@ -75,4 +75,18 @@
 
 ## Сейчас в работе
 
-**Фаза 6** — Интеграции и хвосты
+**Фаза 6.3** — Client-paid automation
+
+---
+
+## Stage Gate — единый стандарт (план)
+
+Документ-план: `docs/NBOS/01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md`
+
+- [x] Delivery Board: sheet + подсветка полей (без модалки)
+- [ ] Канон: `04-Stage-Gate-UX-and-Validation-Standard.md`
+- [ ] Shared: product/extension gates в `@nbos/shared`
+- [ ] Delivery Board: локальная pre-check как в Deals
+- [ ] Leads kanban: parity с Deals
+- [ ] Product `ProductStageGateCard` → тот же UX
+- [ ] Finance / Support — когда есть gates в каноне

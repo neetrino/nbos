@@ -9,9 +9,10 @@ export function buildDriveLibraryUploadSessionFields(
   purpose?: string;
   visibility?: string;
 } {
+  const isFinanceLibrary = library.key === 'finance';
   return {
     sourceModule: library.sourceModules?.[0],
     purpose: purposeOverride ?? library.purposes?.[0] ?? 'OTHER',
-    visibility: library.visibility?.[0] ?? 'INTERNAL',
+    visibility: isFinanceLibrary ? 'RESTRICTED' : (library.visibility?.[0] ?? 'INTERNAL'),
   };
 }

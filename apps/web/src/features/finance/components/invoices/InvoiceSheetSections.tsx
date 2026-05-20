@@ -3,6 +3,7 @@ import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from '@/components/shared';
 import { getInvoiceMoneyStage, formatAmount } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
+import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
 import { InvoicePaymentCoverageCard } from './InvoicePaymentCoverageCard';
 import { RecordPaymentForm } from './RecordPaymentForm';
@@ -128,8 +129,21 @@ export function InvoicePaymentsSection({
   }) => Promise<void>;
 }) {
   return (
-    <section className="space-y-2">
+    <section className="space-y-4">
       <InvoicePaymentCoverageCard invoice={invoice} />
+      {invoice.payments.length > 0 ? (
+        <div className="space-y-4">
+          {invoice.payments.map((payment) => (
+            <FinanceProofAttachments
+              key={payment.id}
+              entityType="PAYMENT"
+              entityId={payment.id}
+              purpose="PAYMENT_PROOF"
+              title={`Payment proof · ${new Date(payment.paymentDate).toLocaleDateString()}`}
+            />
+          ))}
+        </div>
+      ) : null}
       <RecordPaymentForm invoice={invoice} onRecordPayment={onPaymentRecorded} />
     </section>
   );

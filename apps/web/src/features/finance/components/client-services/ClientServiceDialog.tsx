@@ -40,6 +40,7 @@ import {
 } from '@/lib/api/client-services';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { ClientServiceFinanceLinksPanel } from './ClientServiceFinanceLinksPanel';
 
 const PROJECTS_PAGE_SIZE = 100;
@@ -275,6 +276,14 @@ export function ClientServiceDialog({
             />
             Renewal notifications enabled
           </label>
+          {serviceToEdit ? (
+            <FinanceProofAttachments
+              entityType="CLIENT_SERVICE_RECORD"
+              entityId={serviceToEdit.id}
+              purpose="EXPENSE_PROOF"
+              title="Provider receipts & proofs"
+            />
+          ) : null}
           {serviceToEdit ? (
             <div className="space-y-2">
               <p className="text-sm font-medium">Connections</p>
