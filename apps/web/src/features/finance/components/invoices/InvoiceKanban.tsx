@@ -2,7 +2,6 @@ import { AlertTriangle, Building2, Calendar, FolderKanban } from 'lucide-react';
 import { KanbanBoard, StatusBadge, type KanbanColumn } from '@/components/shared';
 import {
   formatAmount,
-  getInvoiceMoneyStage,
   INVOICE_MONEY_STAGES,
   INVOICE_TYPES,
 } from '@/features/finance/constants/finance';
@@ -62,12 +61,6 @@ export function InvoiceKanban({
   );
 }
 
-function InvoiceMoneyStatusBadge({ moneyStatus }: { moneyStatus: string }) {
-  const stage = getInvoiceMoneyStage(moneyStatus);
-  if (!stage) return null;
-  return <StatusBadge label={stage.label} variant={stage.variant} />;
-}
-
 function InvoiceKanbanColumnTotal({ column }: { column: KanbanColumn<Invoice> }) {
   const columnTotal = column.items.reduce((sum, invoice) => sum + parseFloat(invoice.amount), 0);
   return (
@@ -87,16 +80,17 @@ function InvoiceKanbanCard({
 
   return (
     <div
-      className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
+      className="border-border bg-card hover:bg-muted/30 cursor-pointer space-y-1.5 rounded-xl border p-3 transition-shadow hover:shadow-sm"
       onClick={() => onInvoiceClick(invoice)}
     >
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-xs font-medium">{invoice.code}</span>
         {invoice.taxStatus === 'TAX' && <StatusBadge label="Tax" variant="green" />}
       </div>
-      <p className="text-sm font-bold">{formatAmount(parseFloat(invoice.amount))}</p>
-      {type && <StatusBadge label={type.label} variant="blue" />}
-      <InvoiceMoneyStatusBadge moneyStatus={invoice.moneyStatus} />
+      <p className="text-foreground text-sm font-bold tabular-nums">
+        {formatAmount(parseFloat(invoice.amount))}
+      </p>
+      {type ? <StatusBadge label={type.label} variant="blue" /> : null}
       {invoice.company && <InvoiceCompany name={invoice.company.name} />}
       {invoice.project && <InvoiceProject name={invoice.project.name} />}
       {invoice.dueDate && <InvoiceDueDate dueDate={invoice.dueDate} />}

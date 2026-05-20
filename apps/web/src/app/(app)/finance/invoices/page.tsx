@@ -144,6 +144,7 @@ function InvoicesPageInner() {
         open={state.sheetOpen}
         onOpenChange={state.handleInvoiceSheetOpenChange}
         onInvoiceUpdated={state.handleInvoiceUpdated}
+        onMoneyStatusChange={state.handleMoneyStatusChange}
         onPaymentRecorded={state.handlePaymentRecorded}
         stageGateHighlight={state.stageGateHighlight}
       />

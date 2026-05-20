@@ -34,7 +34,7 @@ If the approved surface feels right, use it as the reference for the next surfac
 
 ## Step 1 — Visual Reference Surface
 
-- [review] **Subscription detail sheet** — first design checkpoint (ready for visual review).
+- [x] ~~**Subscription detail sheet** — Deal-style draft + InlineField + Save/Cancel footer~~
 
 Why this first:
 
@@ -61,7 +61,7 @@ Review target:
 
 ## Step 2 — Finance Invoice Detail
 
-- [ ] **Invoice detail sheet** — align with the same compact detail style after Step 1 approval.
+- [x] ~~**Invoice detail sheet** — money stages bar + Deal-style sections; inline official/payments~~
 
 Planned changes:
 

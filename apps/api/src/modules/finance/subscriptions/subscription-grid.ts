@@ -27,6 +27,7 @@ export interface SubscriptionGridInvoiceInput {
 
 export interface SubscriptionGridRowInput {
   id: string;
+  type: string;
   status: string;
   baseMonthlyAmount: unknown;
   billingStartDate: Date;
@@ -39,6 +40,7 @@ export interface SubscriptionGridRow {
   subscriptionId: string;
   projectId: string;
   projectName: string;
+  subscriptionType: string;
   amountMonthly: number;
   subscriptionStatus: string;
   months: SubscriptionGridCell[];
@@ -197,6 +199,7 @@ export function buildSubscriptionGridPayload(
       subscriptionId: sub.id,
       projectId: sub.project.id,
       projectName: sub.project.name,
+      subscriptionType: sub.type,
       amountMonthly,
       subscriptionStatus: sub.status,
       months,

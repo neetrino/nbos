@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Repeat } from 'lucide-react';
 import {
+  DetailSheetFormFooter,
   EntitySheetFloatingRail,
   ErrorState,
   LoadingState,
@@ -11,6 +11,8 @@ import {
   DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS,
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS,
 } from '@/components/shared';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import {
   formatAmount,
   getSubscriptionStatus,
@@ -20,17 +22,26 @@ import {
   subscriptionWorkspaceHref,
   subscriptionsListWithOpenSubscriptionHref,
 } from '@/features/finance/constants/subscription-deep-link';
+import {
+  buildSubscriptionGeneralPatch,
+  createSubscriptionGeneralDraft,
+  isSubscriptionGeneralDirty,
+  type SubscriptionGeneralDraft,
+} from '@/features/finance/utils/subscription-general-form-state';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
-import { formatSubscriptionDetailDate } from './subscription-detail-format';
-import { SubscriptionDetailBody } from './SubscriptionDetailBody';
-import { SubscriptionFormDialog } from './SubscriptionFormDialog';
+import { SubscriptionGeneralTab } from './SubscriptionGeneralTab';
 
 interface SubscriptionDetailSheetProps {
   subscriptionId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubscriptionUpdated?: (subscription: Subscription) => void;
+}
+
+function subscriptionSaveErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message) return err.message;
+  return 'Could not save changes.';
 }
 
 export function SubscriptionDetailSheet({
@@ -43,7 +54,11 @@ export function SubscriptionDetailSheet({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [editOpen, setEditOpen] = useState(false);
+  const [generalDraft, setGeneralDraft] = useState<SubscriptionGeneralDraft | null>(null);
+  const [generalSnap, setGeneralSnap] = useState<SubscriptionGeneralDraft | null>(null);
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const generalDirtyRef = useRef(false);
 
   const fetchSubscription = useCallback(async () => {
     if (!subscriptionId) return;
@@ -68,11 +83,78 @@ export function SubscriptionDetailSheet({
     void fetchSubscription();
   }, [open, subscriptionId, fetchSubscription]);
 
-  const handleSubscriptionChange = (updated: Subscription) => {
-    setSubscription(updated);
-    setActionError(null);
-    onSubscriptionUpdated?.(updated);
-  };
+  useLayoutEffect(() => {
+    if (!subscription) {
+      setGeneralDraft(null);
+      setGeneralSnap(null);
+      return;
+    }
+    if (generalDirtyRef.current) return;
+    const next = createSubscriptionGeneralDraft(subscription);
+    setGeneralDraft(next);
+    setGeneralSnap(next);
+  }, [
+    subscription?.id,
+    subscription?.status,
+    subscription?.baseMonthlyAmount,
+    subscription?.billingDay,
+    subscription?.billingFrequency,
+    subscription?.partner?.id,
+  ]);
+
+  const patchGeneralDraft = useCallback((partial: Partial<SubscriptionGeneralDraft>) => {
+    setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));
+  }, []);
+
+  const generalDirty =
+    generalDraft != null &&
+    generalSnap != null &&
+    isSubscriptionGeneralDirty(generalDraft, generalSnap);
+  generalDirtyRef.current = generalDirty;
+
+  const handleSubscriptionChange = useCallback(
+    (updated: Subscription) => {
+      setSubscription(updated);
+      setActionError(null);
+      generalDirtyRef.current = false;
+      const next = createSubscriptionGeneralDraft(updated);
+      setGeneralDraft(next);
+      setGeneralSnap(next);
+      onSubscriptionUpdated?.(updated);
+    },
+    [onSubscriptionUpdated],
+  );
+
+  const handleGeneralSave = useCallback(() => {
+    if (!subscription || !generalDraft || !generalSnap) return;
+    setGeneralError(null);
+    const patch = buildSubscriptionGeneralPatch(generalSnap, generalDraft);
+    if (Object.keys(patch).length === 0) return;
+
+    const draftAtSave = generalDraft;
+    const snapAtSave = generalSnap;
+    setGeneralSnap({ ...draftAtSave });
+    setSaving(true);
+
+    void (async () => {
+      try {
+        const updated = await subscriptionsApi.update(subscription.id, patch);
+        generalDirtyRef.current = false;
+        handleSubscriptionChange(updated);
+      } catch (err) {
+        setGeneralSnap(snapAtSave);
+        setGeneralDraft(draftAtSave);
+        setGeneralError(subscriptionSaveErrorMessage(err));
+      } finally {
+        setSaving(false);
+      }
+    })();
+  }, [subscription, generalDraft, generalSnap, handleSubscriptionChange]);
+
+  const handleGeneralCancel = useCallback(() => {
+    setGeneralError(null);
+    if (generalSnap) setGeneralDraft({ ...generalSnap });
+  }, [generalSnap]);
 
   if (!subscriptionId) return null;
 
@@ -81,79 +163,86 @@ export function SubscriptionDetailSheet({
   const sourcePageHref = subscriptionsListWithOpenSubscriptionHref(subscriptionId);
 
   return (
-    <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent
-          side="right"
-          showCloseButton={false}
-          floatingClose
-          floatingRailVisible={open}
-          floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS}
-          floatingRail={
-            <EntitySheetFloatingRail
-              sourcePageHref={sourcePageHref}
-              workspaceHref={subscriptionWorkspaceHref(subscriptionId)}
-            />
-          }
-          className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
-        >
-          <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
-            {loading ? (
-              <p className="text-muted-foreground text-sm">Loading…</p>
-            ) : subscription ? (
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        floatingClose
+        floatingRailVisible={open}
+        floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS}
+        floatingRail={
+          <EntitySheetFloatingRail
+            sourcePageHref={sourcePageHref}
+            workspaceHref={subscriptionWorkspaceHref(subscriptionId)}
+          />
+        }
+        className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
+      >
+        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+          {loading ? (
+            <p className="text-muted-foreground text-sm">Loading…</p>
+          ) : subscription ? (
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                  <Repeat className="text-muted-foreground size-5 shrink-0" aria-hidden />
                   <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
                     {subscription.code}
                   </h2>
-                  <p className="text-muted-foreground mt-0.5 text-sm">
-                    {formatAmount(parseFloat(subscription.baseMonthlyAmount))}/mo
-                    <span className="mx-1.5">·</span>
-                    {subscription.project.name}
-                    <span className="mx-1.5">·</span>
-                    Started {formatSubscriptionDetailDate(subscription.billingStartDate)}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {subStatus ? (
-                    <StatusBadge label={subStatus.label} variant={subStatus.variant} />
+                  {subType ? (
+                    <span className="text-muted-foreground rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+                      {subType.label}
+                    </span>
                   ) : null}
-                  {subType ? <StatusBadge label={subType.label} variant={subType.variant} /> : null}
                 </div>
+                <p className="text-muted-foreground mt-0.5 text-sm">
+                  {formatAmount(parseFloat(subscription.baseMonthlyAmount))}/mo
+                  <span className="mx-1.5">·</span>
+                  {subscription.project.name}
+                </p>
               </div>
+              <div className="flex flex-wrap gap-1.5">
+                {subStatus ? (
+                  <StatusBadge label={subStatus.label} variant={subStatus.variant} />
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="px-7 py-5">
+            {loading ? (
+              <LoadingState count={3} />
+            ) : error ? (
+              <ErrorState description={error} onRetry={() => void fetchSubscription()} />
+            ) : subscription && generalDraft ? (
+              <SubscriptionGeneralTab
+                subscription={subscription}
+                draft={generalDraft}
+                patchDraft={patchGeneralDraft}
+                formDisabled={saving}
+                onSubscriptionChange={handleSubscriptionChange}
+                onActionError={setActionError}
+              />
+            ) : null}
+            {actionError ? (
+              <p className="text-destructive mt-4 text-sm" role="alert">
+                {actionError}
+              </p>
             ) : null}
           </div>
+        </ScrollArea>
 
-          <ScrollArea className="min-h-0 flex-1">
-            <div className="px-7 py-5">
-              {loading ? (
-                <LoadingState count={3} />
-              ) : error ? (
-                <ErrorState description={error} onRetry={() => void fetchSubscription()} />
-              ) : subscription ? (
-                <SubscriptionDetailBody
-                  subscription={subscription}
-                  onSubscriptionChange={handleSubscriptionChange}
-                  actionError={actionError}
-                  onDismissActionError={() => setActionError(null)}
-                  onActionError={setActionError}
-                  onEditBilling={() => setEditOpen(true)}
-                />
-              ) : null}
-            </div>
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
-
-      {subscription ? (
-        <SubscriptionFormDialog
-          open={editOpen}
-          onOpenChange={setEditOpen}
-          mode="edit"
-          subscription={subscription}
-          onSaved={handleSubscriptionChange}
+        <DetailSheetFormFooter
+          visible={Boolean(subscription && generalDraft)}
+          dirty={generalDirty}
+          saving={saving}
+          errorMessage={generalError}
+          onSave={handleGeneralSave}
+          onCancel={handleGeneralCancel}
         />
-      ) : null}
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }

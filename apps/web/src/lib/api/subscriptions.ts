@@ -94,6 +94,7 @@ export interface SubscriptionGridRow {
   subscriptionId: string;
   projectId: string;
   projectName: string;
+  subscriptionType: string;
   amountMonthly: number;
   subscriptionStatus: string;
   months: SubscriptionGridCell[];

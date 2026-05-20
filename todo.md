@@ -83,6 +83,7 @@
 - [x] ~~Expense closed: `closedBoard` API + Board/List + Paid/Cancelled columns~~
 - [x] ~~Invoices: Active/Closed board scope на одной странице (Paid/Cancelled = closed)~~
 - [ ] Subscription: board/list parity (grid-first Active/Closed — отложено, grid-first без terminal board)
+- [x] ~~Subscription list: одна grid-матрица (Type/Status/Partner/мес/day на строке; company/coverage/actions → sheet)~~
 - [x] ~~Invoice detail sheet: compact detail canon (summary row, DetailSheetSection, без hero amount panel)~~
 - [x] ~~Subscription detail: sheet на list (`openSubscription`), workspace page `/finance/subscriptions/[id]`~~
 - [x] ~~Client Services: detail/edit sheet + quick create dialog~~

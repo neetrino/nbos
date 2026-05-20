@@ -210,13 +210,20 @@ Rules:
 
 Entity sheets should allow fast work without turning into heavy forms.
 
+Reference implementation: **CRM Deal sheet** (`DealSheet`, `DealGeneralTab`).
+
 Rules:
 
+- Use **draft + snapshot** state in the sheet; patch fields via `patchDraft`, not per-field API calls.
+- Use **`InlineField` `variant="controlled"`** inside `DetailSheetCollapsibleSection` / `DetailSheetSection` surfaces.
+- Show **`DetailSheetFormFooter`** (Save / Cancel) when the draft is dirty; save sends one PATCH/PUT with a built diff.
+- Do not open a separate **Edit billing** dialog for fields that belong on the General tab.
 - Prefer inline editable fields or focused edit controls where possible.
 - Group edit controls near the data they change.
-- Keep destructive actions visually separate.
-- Use a quick dialog for small actions that need confirmation or a reason.
+- Keep lifecycle actions (activate, cancel, status moves) in a side panel or status bar, separate from Save/Cancel.
+- Use a quick dialog only for short create flows or confirmations.
 - Use stage-gate field highlights in the real sheet, not in a duplicate modal.
+- For workflow entities without a full update API (e.g. invoice money status), use an immediate-action status bar (like pipeline stages) instead of a draft footer.
 
 ---
 

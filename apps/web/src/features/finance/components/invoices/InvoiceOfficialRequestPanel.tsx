@@ -47,7 +47,7 @@ export function InvoiceOfficialRequestPanel({
   }
 
   return (
-    <div className="border-border col-span-2 space-y-3 rounded-lg border p-3">
+    <div className="space-y-3">
       <OfficialRequestStatus invoice={invoice} />
       <div className="flex flex-wrap gap-2">
         <Button

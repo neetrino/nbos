@@ -6,6 +6,7 @@ const NOW = new Date('2026-06-15T12:00:00.000Z');
 function baseSub(overrides: Partial<SubscriptionGridRowInput> = {}): SubscriptionGridRowInput {
   return {
     id: 'sub-1',
+    type: 'MAINTENANCE_ONLY',
     status: 'ACTIVE',
     baseMonthlyAmount: 80000,
     billingStartDate: new Date('2026-01-01'),

@@ -212,18 +212,17 @@ function SubscriptionsPageInner() {
         gridError={subscriptionGrid.error}
         onGridRetry={subscriptionGrid.retry}
         subscriptions={page.subscriptions}
-        loading={page.loading}
-        error={page.error}
+        listLoading={page.loading}
+        listError={page.error}
         mutationError={page.mutationError}
         onDismissMutationError={page.clearMutationError}
+        onListRetry={page.fetchSubscriptions}
         activatingId={page.activatingId}
         cancellingId={page.cancellingId}
         holdingId={page.holdingId}
-        onRetry={page.fetchSubscriptions}
         onActivate={page.handleActivate}
         onCancel={page.handleCancel}
         onHold={page.handleHold}
-        onPartnerLinked={page.handlePartnerLinked}
         onOpenSubscription={openSubscriptionDetail}
       />
 

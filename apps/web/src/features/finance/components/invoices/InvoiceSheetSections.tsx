@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { FileText, Building2, Clock, User, FolderKanban, Shield, Repeat } from 'lucide-react';
+import { FileText, Building2, Clock, User, FolderKanban, Repeat } from 'lucide-react';
 import { DetailSheetSection } from '@/components/shared';
 import { StatusBadge } from '@/components/shared';
 import { DETAIL_SHEET_PAIRED_COLUMNS_CLASS } from '@/components/shared/detail-sheet-classes';
@@ -7,7 +7,6 @@ import { getInvoiceMoneyStage, formatAmount } from '@/features/finance/constants
 import type { Invoice } from '@/lib/api/finance';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
-import { InvoicePaymentCoverageCard } from './InvoicePaymentCoverageCard';
 import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
 import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { RecordPaymentForm } from './RecordPaymentForm';
@@ -63,7 +62,9 @@ export function InvoiceMoneySummaryRow({
       </div>
       <div className="min-w-0">
         <p className="text-muted-foreground text-xs">Due</p>
-        <p className="mt-1 text-sm font-medium">
+        <p
+          className={`mt-1 text-sm font-medium ${isOverdue && invoice.dueDate ? 'text-red-600' : ''}`}
+        >
           {invoice.dueDate
             ? new Date(invoice.dueDate).toLocaleDateString('en-US', {
                 month: 'short',
@@ -88,8 +89,6 @@ export function InvoiceDetailsSection({
     <DetailSheetSection title="Details">
       <div className={DETAIL_SHEET_PAIRED_COLUMNS_CLASS}>
         <div className="space-y-3 text-sm">
-          <FieldRow label="Type" value={invoice.type} />
-          <InvoiceTaxStatusRow taxStatus={invoice.taxStatus} />
           <FieldRow
             label="Official"
             value={
@@ -100,9 +99,9 @@ export function InvoiceDetailsSection({
               )
             }
           />
+          <InvoicePaidDateRow paidDate={invoice.paidDate} />
         </div>
         <div className="space-y-3 text-sm">
-          <InvoicePaidDateRow paidDate={invoice.paidDate} />
           <DateRow label="Created" date={invoice.createdAt} />
         </div>
       </div>
@@ -165,7 +164,9 @@ export function InvoicePaymentsSection({
       title="Payments"
       className={invoiceStageGateSectionClass(gateRequiredFields, INVOICE_GATE_FIELD_PAYMENTS)}
     >
-      <InvoicePaymentCoverageCard invoice={invoice} />
+      {invoice.paymentCoverage?.isFullyPaid ? (
+        <p className="text-sm font-medium text-green-600">Fully paid</p>
+      ) : null}
       {invoice.payments.length > 0 ? (
         <div className="space-y-4">
           {invoice.payments.map((payment) => (
@@ -190,20 +191,6 @@ function FieldRow({ label, value }: { label: string; value: ReactNode }) {
       <span className="text-muted-foreground text-xs">{label}</span>
       <span className="text-foreground min-w-0 font-medium">{value}</span>
     </div>
-  );
-}
-
-function InvoiceTaxStatusRow({ taxStatus }: { taxStatus: string }) {
-  return (
-    <FieldRow
-      label="Tax"
-      value={
-        <span className="inline-flex items-center gap-1.5">
-          <Shield size={13} className="text-muted-foreground" aria-hidden />
-          {taxStatus === 'TAX' ? 'Tax payer' : 'Tax-free'}
-        </span>
-      }
-    />
   );
 }
 
