@@ -5,10 +5,27 @@ export interface PermissionRequirement {
   action: string;
 }
 
-export interface NavChildDefinition {
+/** Non-clickable section label inside a module submenu (e.g. Revenue under Finance). */
+export type NavChildGroupDefinition = {
+  kind: 'group';
+  label: string;
+};
+
+export type NavChildLinkDefinition = {
+  kind?: 'link';
   label: string;
   href: string;
   permission?: PermissionRequirement;
+};
+
+export type NavChildDefinition = NavChildGroupDefinition | NavChildLinkDefinition;
+
+export function isNavChildGroup(child: NavChildDefinition): child is NavChildGroupDefinition {
+  return child.kind === 'group';
+}
+
+export function isNavChildLink(child: NavChildDefinition): child is NavChildLinkDefinition {
+  return !isNavChildGroup(child);
 }
 
 export interface NavModuleDefinition {
@@ -79,9 +96,15 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
     children: [
       {
-        label: 'Dashboard',
+        label: 'Overview',
         href: '/finance/dashboard',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      { kind: 'group', label: 'Revenue' },
+      {
+        label: 'Orders',
+        href: '/finance/orders',
+        permission: { module: 'ORDERS', action: 'VIEW' },
       },
       {
         label: 'Invoices',
@@ -98,11 +121,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         href: '/finance/subscriptions',
         permission: { module: 'FINANCE_SUBSCRIPTIONS', action: 'VIEW' },
       },
-      {
-        label: 'Client services',
-        href: '/finance/client-services',
-        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
-      },
+      { kind: 'group', label: 'Expenses' },
       {
         label: 'Expense plans',
         href: '/finance/expenses/plans',
@@ -113,9 +132,15 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         href: '/finance/expenses',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
+      { kind: 'group', label: 'Payroll & bonus' },
       {
-        label: 'Bonus board',
-        href: '/bonus',
+        label: 'Payroll',
+        href: '/finance/payroll',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
+        label: 'Salary board',
+        href: '/finance/salary',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
       {
@@ -124,20 +149,17 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
       {
-        label: 'Payroll',
-        href: '/finance/payroll',
+        label: 'Bonus board',
+        href: '/bonus',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
+      { kind: 'group', label: 'Services' },
       {
-        label: 'My wallet',
-        href: '/finance/wallet',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+        label: 'Client services',
+        href: '/finance/client-services',
+        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
-      {
-        label: 'Orders',
-        href: '/finance/orders',
-        permission: { module: 'ORDERS', action: 'VIEW' },
-      },
+      { kind: 'group', label: 'Analytics' },
       {
         label: 'Reports',
         href: '/finance/reports',
@@ -146,6 +168,11 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
       {
         label: 'Journal',
         href: '/finance/journal',
+        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+      },
+      {
+        label: 'My wallet',
+        href: '/finance/wallet',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
     ],

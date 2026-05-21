@@ -27,7 +27,8 @@ const ModuleHeroSlotContext = createContext<ModuleHeroSlotContextValue | null>(n
 
 export interface ModuleHeroSlotProviderProps {
   title: string;
-  tabs: ReactNode;
+  /** Section pills (CRM-style); omit on overview routes. */
+  tabs?: ReactNode;
   children: ReactNode;
   className?: string;
 }

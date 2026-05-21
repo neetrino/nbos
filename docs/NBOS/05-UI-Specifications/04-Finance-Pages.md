@@ -11,6 +11,13 @@ Finance-модуль NBOS обеспечивает полное управлен
 - Seller — просмотр бонусной доски (только свои бонусы)
 - Остальные роли — нет доступа
 
+### 1.1. Навигация модуля (IA)
+
+- **Сайдбар:** Finance раскрывается на **зоны** (не плоский список из 14 пунктов): Overview → Revenue → Expenses → Payroll & bonus → Services → Analytics (+ My wallet).
+- **Page hero (как CRM):** одна карточка `Finance` + **3–5 pill-tabs только внутри текущей зоны** (например Revenue: Orders | Invoices | Payments | Subscriptions). Заголовки зон вроде «Revenue» **не** являются табами в контенте.
+- **Overview** (`/finance/dashboard`): без зональных табов; зональные KPI позже — в hub или в суммах колонок досок, не отдельным блоком над Kanban.
+- **Поиск / фильтры / Board|List:** в hero через `useModuleHeroSlots` (эталон — CRM Leads). Суммы по колонкам Kanban — под заголовком колонки (как Deals), не отдельная аналитическая полоса на странице.
+
 ---
 
 ## 2. Страница счетов (Invoices)

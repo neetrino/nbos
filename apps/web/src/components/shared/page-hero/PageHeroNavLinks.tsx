@@ -12,6 +12,8 @@ export type PageHeroNavLinkItem = {
   icon?: LucideIcon;
   /** When set, active if pathname starts with this prefix (default: href). */
   matchPrefix?: string;
+  /** When set, never active if pathname starts with this prefix (e.g. board vs plans under expenses). */
+  excludeMatchPrefix?: string;
   /** When true, active only on exact pathname match (e.g. module index route). */
   exactMatch?: boolean;
 };
@@ -30,9 +32,13 @@ export function PageHeroNavLinks({ items, ariaLabel, className }: PageHeroNavLin
       <nav className={PAGE_HERO_PILL_GROUP} aria-label={ariaLabel}>
         {items.map((item) => {
           const prefix = item.matchPrefix ?? item.href;
-          const active = item.exactMatch
-            ? pathname === item.href
-            : pathname === item.href || pathname.startsWith(`${prefix}/`);
+          const excluded =
+            item.excludeMatchPrefix !== undefined && pathname.startsWith(item.excludeMatchPrefix);
+          const active =
+            !excluded &&
+            (item.exactMatch
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(`${prefix}/`));
           const Icon = item.icon;
           return (
             <Link

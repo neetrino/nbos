@@ -1,4 +1,10 @@
-import type { NavModuleDefinition, PermissionRequirement } from './nav-config';
+import {
+  isNavChildGroup,
+  isNavChildLink,
+  type NavModuleDefinition,
+  type PermissionRequirement,
+} from './nav-config';
+import { pruneNavChildGroups } from './prune-nav-child-groups';
 
 export function hasNavPermission(
   permission: PermissionRequirement | undefined,
@@ -16,11 +22,16 @@ export function getVisibleNavModules(
   if (isLoading) return definitions;
 
   return definitions.reduce<NavModuleDefinition[]>((items, item) => {
-    const visibleChildren = item.children?.filter((child) =>
-      hasNavPermission(child.permission, can),
+    const visibleChildren = item.children?.filter(
+      (child) => isNavChildGroup(child) || hasNavPermission(child.permission, can),
     );
+    const prunedChildren =
+      visibleChildren && visibleChildren.length > 0
+        ? pruneNavChildGroups(visibleChildren)
+        : undefined;
     const itemAllowed = hasNavPermission(item.permission, can);
-    const hasVisibleChildren = visibleChildren !== undefined && visibleChildren.length > 0;
+    const visibleLinks = prunedChildren?.filter(isNavChildLink) ?? [];
+    const hasVisibleChildren = visibleLinks.length > 0;
     const hasChildrenWithoutOwnPermission =
       item.children !== undefined && item.permission === undefined;
 
@@ -32,7 +43,7 @@ export function getVisibleNavModules(
       return items;
     }
 
-    items.push({ ...item, children: hasVisibleChildren ? visibleChildren : undefined });
+    items.push({ ...item, children: hasVisibleChildren ? prunedChildren : undefined });
     return items;
   }, []);
 }

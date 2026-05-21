@@ -1,4 +1,4 @@
-import type { NavModuleDefinition } from './nav-config';
+import { isNavChildLink, type NavModuleDefinition } from './nav-config';
 
 export function getPathFromHref(href: string): string {
   return href.split('?')[0] ?? href;
@@ -10,5 +10,6 @@ export function isChildRouteActive(pathname: string, childHref: string): boolean
 }
 
 export function getFirstChildHref(item: NavModuleDefinition): string {
-  return item.children?.[0]?.href ?? item.href;
+  const firstLink = item.children?.find((child) => isNavChildLink(child));
+  return firstLink?.href ?? item.href;
 }

@@ -10,7 +10,11 @@ import {
   SIDEBAR_NAV_CHILD_LIST_CLASS,
   SIDEBAR_NAV_ITEM_CLASS,
 } from './sidebar-layout-constants';
-import type { NavModuleDefinition } from '@/lib/navigation/nav-config';
+import {
+  isNavChildGroup,
+  isNavChildLink,
+  type NavModuleDefinition,
+} from '@/lib/navigation/nav-config';
 import type { DashboardPersonalLink } from '@/lib/api/dashboard';
 import {
   getFirstChildHref,
@@ -45,7 +49,10 @@ export function SidebarNavList({
     primaryItems
       .concat(hiddenItems)
       .find(
-        (item) => item.children?.some((child) => isChildRouteActive(pathname, child.href)) ?? false,
+        (item) =>
+          item.children?.some(
+            (child) => isNavChildLink(child) && isChildRouteActive(pathname, child.href),
+          ) ?? false,
       )?.key ?? null;
 
   const expandedKey = manualExpanded?.pathname === pathname ? manualExpanded.key : activeSectionKey;
@@ -198,7 +205,9 @@ function ModuleNavRow({
 }) {
   const icon = getSidebarNavIcon(item.key);
   const childPathActive =
-    item.children?.some((child) => isChildRouteActive(pathname, child.href)) ?? false;
+    item.children?.some(
+      (child) => isNavChildLink(child) && isChildRouteActive(pathname, child.href),
+    ) ?? false;
   const active = childPathActive || pathname.startsWith(item.href);
   const firstChildHref = getFirstChildHref(item);
 
@@ -271,6 +280,20 @@ function ModuleNavRow({
           {expanded && (
             <ul className={SIDEBAR_NAV_CHILD_LIST_CLASS}>
               {item.children.map((child) => {
+                if (isNavChildGroup(child)) {
+                  return (
+                    <li key={`group-${child.label}`}>
+                      <span
+                        className={cn(
+                          SIDEBAR_NAV_CHILD_LINK_CLASS,
+                          'text-sidebar-muted pointer-events-none pt-2 text-xs font-semibold tracking-wide uppercase',
+                        )}
+                      >
+                        {child.label}
+                      </span>
+                    </li>
+                  );
+                }
                 const childPath = getPathFromHref(child.href);
                 const childActive = pathname === childPath || pathname.startsWith(`${childPath}/`);
                 return (
