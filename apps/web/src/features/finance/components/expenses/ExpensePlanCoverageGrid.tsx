@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type {
   ExpensePlanGridCell,
@@ -17,6 +16,7 @@ interface ExpensePlanCoverageGridProps {
   loading: boolean;
   error: string | null;
   onRetry: () => void;
+  onOpenPlan: (planId: string) => void;
 }
 
 const GRID_YEAR_WINDOW = 3;
@@ -50,7 +50,15 @@ function cellVisualClasses(kind: ExpensePlanGridCellKind): string {
   }
 }
 
-function PlanGridMonthCell({ planId, cell }: { planId: string; cell: ExpensePlanGridCell }) {
+function PlanGridMonthCell({
+  planId,
+  cell,
+  onOpenPlan,
+}: {
+  planId: string;
+  cell: ExpensePlanGridCell;
+  onOpenPlan: (planId: string) => void;
+}) {
   if (cell.kind === 'NA') {
     return <span className="text-muted-foreground">—</span>;
   }
@@ -71,13 +79,16 @@ function PlanGridMonthCell({ planId, cell }: { planId: string; cell: ExpensePlan
   }
 
   return (
-    <Link
-      href={`/finance/expenses/plans/${planId}`}
+    <button
+      type="button"
       className={`${cls} hover:opacity-90`}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpenPlan(planId);
+      }}
     >
       {label}
-    </Link>
+    </button>
   );
 }
 
@@ -88,8 +99,8 @@ export function ExpensePlanCoverageGrid({
   loading,
   error,
   onRetry,
+  onOpenPlan,
 }: ExpensePlanCoverageGridProps) {
-  const router = useRouter();
   const months = monthLabelsForYear(year);
   const cy = new Date().getFullYear();
   const yearOptions = Array.from(
@@ -158,7 +169,7 @@ export function ExpensePlanCoverageGrid({
                 <tr key={row.planId} className="hover:bg-secondary/30">
                   <td
                     className="bg-card sticky left-0 z-10 cursor-pointer px-3 py-2 font-medium"
-                    onClick={() => router.push(`/finance/expenses/plans/${row.planId}`)}
+                    onClick={() => onOpenPlan(row.planId)}
                   >
                     <div>
                       <p>{row.planName}</p>
@@ -169,7 +180,7 @@ export function ExpensePlanCoverageGrid({
                   </td>
                   {row.months.map((cell, idx) => (
                     <td key={idx} className="px-1 py-2 text-center">
-                      <PlanGridMonthCell planId={row.planId} cell={cell} />
+                      <PlanGridMonthCell planId={row.planId} cell={cell} onOpenPlan={onOpenPlan} />
                     </td>
                   ))}
                   <td className="px-3 py-2 text-right font-bold">

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import type { MarketingAccount } from '@/lib/api/marketing';
 import { Button } from '@/components/ui/button';
@@ -56,7 +57,7 @@ export function MarketingAccountExpensePlanLink({
           </Link>
           {selectedPlanId.trim() ? (
             <Link
-              href={`/finance/expenses/plans/${selectedPlanId.trim()}`}
+              href={expensePlansListWithOpenPlanHref(selectedPlanId.trim())}
               className="text-primary underline-offset-4 hover:underline"
             >
               Open selected plan

@@ -8,7 +8,12 @@ export function useExpensePlanDetail(planId: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchPlan = useCallback(async () => {
-    if (!planId) return;
+    if (!planId) {
+      setPlan(null);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {

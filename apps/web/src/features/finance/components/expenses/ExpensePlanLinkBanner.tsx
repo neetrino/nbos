@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { CalendarDays, ExternalLink } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
+import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import { cn } from '@/lib/utils';
 
 export interface ExpensePlanLinkBannerProps {
@@ -26,7 +27,7 @@ export function ExpensePlanLinkBanner({ planId, planName }: ExpensePlanLinkBanne
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <Link
-          href={`/finance/expenses/plans/${planId}`}
+          href={expensePlansListWithOpenPlanHref(planId)}
           className={cn(
             buttonVariants({ variant: 'default', size: 'sm' }),
             'inline-flex items-center gap-1',

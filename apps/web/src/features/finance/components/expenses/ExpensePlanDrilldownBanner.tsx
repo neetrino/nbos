@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ClipboardList, LayoutGrid } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import { planExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
 import { cn } from '@/lib/utils';
 
@@ -38,7 +39,7 @@ export function ExpensePlanDrilldownBanner({
           Board (filtered)
         </Link>
         <Link
-          href={`/finance/expenses/plans/${expensePlanId}`}
+          href={expensePlansListWithOpenPlanHref(expensePlanId)}
           className={cn(
             buttonVariants({ variant: 'outline', size: 'sm' }),
             'inline-flex items-center gap-1',

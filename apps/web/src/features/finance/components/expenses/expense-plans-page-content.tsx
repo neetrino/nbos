@@ -31,7 +31,9 @@ import { ExpensePlansListTable } from '@/features/finance/components/expenses/Ex
 import { buildExpensePlanIntegratedFilterConfigs } from '@/features/finance/components/expenses/build-expense-plan-integrated-filter-configs';
 import { ExpensePlansPageSettingsSheet } from '@/features/finance/components/expenses/ExpensePlansPageSettingsSheet';
 import { EXPENSE_PLANS_VIEW_OPTIONS } from '@/features/finance/components/expenses/expense-plans-view-options';
+import { ExpensePlanDetailSheet } from '@/features/finance/components/expenses/ExpensePlanDetailSheet';
 import { GenerateExpenseCardFromPlanDialog } from '@/features/finance/components/expenses/GenerateExpenseCardFromPlanDialog';
+import { OPEN_EXPENSE_PLAN_QUERY } from '@/features/finance/constants/expense-plan-deep-link';
 import { useExpensePlansCsvExport } from '@/features/finance/components/expenses/use-expense-plans-csv-export';
 import { PROJECTS_PAGE_SIZE } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -260,22 +262,6 @@ export function ExpensePlansPageContent() {
     }
   }, [refreshAll]);
 
-  const handleDelete = async (id: string, name: string) => {
-    if (
-      !window.confirm(
-        `Delete expense plan “${name}”? Linked cards keep running; plan link is cleared.`,
-      )
-    ) {
-      return;
-    }
-    try {
-      await expensePlansApi.delete(id);
-      await refreshAll();
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Could not delete expense plan.'));
-    }
-  };
-
   const handleCategoryChange = useCallback(
     (value: string) => {
       replaceListUrl((next) => {
@@ -340,6 +326,30 @@ export function ExpensePlansPageContent() {
   const showListPanel = view === 'list';
   const showGridPanel = view === 'grid';
   const showBoardPanel = view === 'board';
+
+  const openPlanIdFromUrl = searchParams.get(OPEN_EXPENSE_PLAN_QUERY)?.trim() || null;
+  const sheetOpen = Boolean(openPlanIdFromUrl);
+
+  const openExpensePlanDetail = useCallback(
+    (plan: ExpensePlan) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_EXPENSE_PLAN_QUERY, plan.id);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handlePlanSheetOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) return;
+      const params = new URLSearchParams(searchParams.toString());
+      if (!params.has(OPEN_EXPENSE_PLAN_QUERY)) return;
+      params.delete(OPEN_EXPENSE_PLAN_QUERY);
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [pathname, router, searchParams],
+  );
 
   const openGenerateDialog = useCallback((plan: ExpensePlan) => {
     setGeneratePlan(plan);
@@ -412,6 +422,10 @@ export function ExpensePlansPageContent() {
           loading={gridLoading}
           error={gridError}
           onRetry={() => void fetchGrid()}
+          onOpenPlan={(planId) => {
+            const plan = plans.find((row) => row.id === planId);
+            if (plan) openExpensePlanDetail(plan);
+          }}
         />
       ) : null}
 
@@ -440,13 +454,9 @@ export function ExpensePlansPageContent() {
             }
           />
         ) : showBoardPanel ? (
-          <ExpensePlansBoard plans={plans} onGenerate={openGenerateDialog} />
+          <ExpensePlansBoard plans={plans} onOpen={openExpensePlanDetail} />
         ) : (
-          <ExpensePlansListTable
-            plans={plans}
-            onGenerate={openGenerateDialog}
-            onDelete={handleDelete}
-          />
+          <ExpensePlansListTable plans={plans} onOpen={openExpensePlanDetail} />
         )
       ) : null}
 
@@ -466,6 +476,14 @@ export function ExpensePlansPageContent() {
           if (!next) setGeneratePlan(null);
         }}
         onGenerated={() => void refreshAll()}
+      />
+
+      <ExpensePlanDetailSheet
+        planId={openPlanIdFromUrl}
+        open={sheetOpen}
+        onOpenChange={handlePlanSheetOpenChange}
+        onPlanUpdated={() => void refreshAll()}
+        onPlanDeleted={() => void refreshAll()}
       />
     </div>
   );
