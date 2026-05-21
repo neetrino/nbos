@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isFinanceHeaderContextPath } from './finance-header-zones';
+import { isFinanceHeaderContextPath } from '@/lib/navigation/module-last-visit';
 
 describe('isFinanceHeaderContextPath', () => {
   it('matches finance and bonus routes', () => {

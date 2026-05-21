@@ -16,14 +16,15 @@ import {
   type NavModuleDefinition,
 } from '@/lib/navigation/nav-config';
 import type { DashboardPersonalLink } from '@/lib/api/dashboard';
-import { writeFinanceZoneLastHref } from '@/features/finance/constants/finance-zone-storage';
-import { FinanceSidebarZoneLink } from './FinanceSidebarZoneLink';
-import { useFinanceModuleEntryHref } from '@/features/finance/hooks/use-finance-module-entry-href';
+import { ModuleSectionNavLink } from './ModuleSectionNavLink';
+import { useModuleEntryHref } from '@/lib/navigation/hooks/use-module-entry-href';
+import { writeModuleLastVisitFromPathname } from '@/lib/navigation/module-last-visit';
 import {
   getFirstChildHref,
   getPathFromHref,
   isNavChildLinkActive,
 } from '@/lib/navigation/nav-route-utils';
+import { isRegisteredModuleKey } from '@/lib/navigation/module-last-visit';
 import { getSidebarNavIcon } from './sidebar-nav-icons';
 
 interface SidebarNavListProps {
@@ -46,7 +47,7 @@ export function SidebarNavList({
   const pathname = usePathname();
 
   useLayoutEffect(() => {
-    writeFinanceZoneLastHref(pathname);
+    writeModuleLastVisitFromPathname(pathname);
   }, [pathname]);
 
   const [manualExpanded, setManualExpanded] = useState<{ key: string; pathname: string } | null>(
@@ -59,7 +60,7 @@ export function SidebarNavList({
       .find(
         (item) =>
           item.children?.some(
-            (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child),
+            (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child, item.key),
           ) ?? false,
       )?.key ?? null;
 
@@ -212,15 +213,17 @@ function ModuleNavRow({
   muted?: boolean;
 }) {
   const icon = getSidebarNavIcon(item.key);
-  const financeEntryHref = useFinanceModuleEntryHref(pathname);
-  const moduleHref = item.key === 'finance' ? financeEntryHref : item.href;
+  const moduleEntryHref = useModuleEntryHref(item.key, item.href, pathname);
+  const moduleHref = isRegisteredModuleKey(item.key) ? moduleEntryHref : item.href;
   const childPathActive =
     item.children?.some(
-      (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child),
+      (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child, item.key),
     ) ?? false;
   const active =
     childPathActive || pathname.startsWith(item.href) || pathname.startsWith(moduleHref);
-  const firstChildHref = item.key === 'finance' ? financeEntryHref : getFirstChildHref(item);
+  const firstChildHref = isRegisteredModuleKey(item.key)
+    ? moduleEntryHref
+    : getFirstChildHref(item);
 
   if (!item.children) {
     return (
@@ -305,12 +308,14 @@ function ModuleNavRow({
                     </li>
                   );
                 }
-                if (child.financeZone) {
+                if (child.navSection && isRegisteredModuleKey(item.key)) {
                   return (
-                    <FinanceSidebarZoneLink
-                      key={child.financeZone}
-                      zone={child.financeZone}
+                    <ModuleSectionNavLink
+                      key={`${item.key}-${child.navSection}`}
+                      moduleKey={item.key}
+                      sectionId={child.navSection}
                       label={child.label}
+                      fallbackHref={child.href}
                       pathname={pathname}
                     />
                   );

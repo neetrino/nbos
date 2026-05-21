@@ -1,8 +1,10 @@
 import type { PermissionRequirement } from '@/lib/navigation/nav-config';
-import type { FinanceSidebarZoneId } from './finance-zone-storage';
+import type { FinanceSectionId } from '@/lib/navigation/module-last-visit';
+
+export type FinanceSidebarZoneId = FinanceSectionId;
 
 export type FinanceHeaderZoneDefinition = {
-  zone: FinanceSidebarZoneId;
+  zone: FinanceSectionId;
   label: string;
   permission?: PermissionRequirement;
 };
@@ -29,8 +31,3 @@ export const FINANCE_HEADER_ZONES: FinanceHeaderZoneDefinition[] = [
     permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
   },
 ];
-
-/** Routes that show Finance area tabs in the app header. */
-export function isFinanceHeaderContextPath(pathname: string): boolean {
-  return pathname.startsWith('/finance') || pathname.startsWith('/bonus');
-}

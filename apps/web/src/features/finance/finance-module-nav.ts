@@ -14,7 +14,7 @@ import {
   Users,
 } from 'lucide-react';
 import type { PageHeroNavLinkItem } from '@/components/shared/page-hero/PageHeroNavLinks';
-import { resolveFinanceZoneFromPathname } from '@/features/finance/constants/finance-zone-storage';
+import { resolveFinanceSectionId } from '@/lib/navigation/module-last-visit';
 
 const FINANCE_EXPENSE_PLANS_PREFIX = '/finance/expenses/plans';
 const FINANCE_EXPENSES_PREFIX = '/finance/expenses';
@@ -71,7 +71,7 @@ export function resolveFinanceZoneNav(pathname: string): PageHeroNavLinkItem[] |
 }
 
 function resolveFinanceZoneNavItems(pathname: string): PageHeroNavLinkItem[] | null {
-  const zone = resolveFinanceZoneFromPathname(pathname);
+  const zone = resolveFinanceSectionId(pathname);
   switch (zone) {
     case 'overview':
       return FINANCE_OVERVIEW_NAV;

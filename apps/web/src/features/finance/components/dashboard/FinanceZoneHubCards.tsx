@@ -12,9 +12,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatAmount } from '@/features/finance/constants/finance';
-import type { FinanceSidebarZoneId } from '@/features/finance/constants/finance-zone-storage';
+import type { FinanceSectionId } from '@/lib/navigation/module-last-visit';
 import { financeZoneEntryLabel } from '@/features/finance/constants/finance-zone-entry-label';
-import { useFinanceZoneHref } from '@/features/finance/hooks/use-finance-zone-href';
+import { useModuleSectionHref } from '@/lib/navigation/hooks/use-module-section-href';
+import { FINANCE_SECTION_DEFAULTS } from '@/lib/navigation/module-last-visit/finance-visit-config';
 import type { FinanceZoneHubMetrics } from './build-finance-zone-hub-metrics';
 
 type FinanceZoneHubCardsProps = {
@@ -109,7 +110,7 @@ function OverviewZoneCard({ metrics }: { metrics: FinanceZoneHubMetrics['overvie
 
 type OperationalZoneCardProps = {
   pathname: string;
-  zone: Exclude<FinanceSidebarZoneId, 'overview'>;
+  zone: Exclude<FinanceSectionId, 'overview'>;
   title: string;
   description: string;
   icon: typeof ShoppingCart;
@@ -132,7 +133,7 @@ function OperationalZoneCard({
   secondaryLabel,
   secondaryValue,
 }: OperationalZoneCardProps) {
-  const href = useFinanceZoneHref(zone, pathname);
+  const href = useModuleSectionHref('finance', zone, FINANCE_SECTION_DEFAULTS[zone], pathname);
   const entryLabel = financeZoneEntryLabel(href);
 
   return (

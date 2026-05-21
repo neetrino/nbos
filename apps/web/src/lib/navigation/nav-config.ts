@@ -1,5 +1,4 @@
 import type { SidebarModuleKey } from '@nbos/shared/constants';
-import type { FinanceSidebarZoneId } from '@/features/finance/constants/finance-zone-storage';
 
 export interface PermissionRequirement {
   module: string;
@@ -16,8 +15,8 @@ export type NavChildLinkDefinition = {
   kind?: 'link';
   label: string;
   href: string;
-  /** Finance sidebar zone entry — href resolved from last visited path in zone. */
-  financeZone?: FinanceSidebarZoneId;
+  /** Section id for modules with visit registry (href from last visited path). */
+  navSection?: string;
   permission?: PermissionRequirement;
 };
 
@@ -50,10 +49,21 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
       {
         label: 'Dashboard',
         href: '/crm/dashboard',
+        navSection: 'dashboard',
         permission: { module: 'CRM_LEADS', action: 'VIEW' },
       },
-      { label: 'Leads', href: '/crm/leads', permission: { module: 'CRM_LEADS', action: 'VIEW' } },
-      { label: 'Deals', href: '/crm/deals', permission: { module: 'CRM_DEALS', action: 'VIEW' } },
+      {
+        label: 'Leads',
+        href: '/crm/leads',
+        navSection: 'leads',
+        permission: { module: 'CRM_LEADS', action: 'VIEW' },
+      },
+      {
+        label: 'Deals',
+        href: '/crm/deals',
+        navSection: 'deals',
+        permission: { module: 'CRM_DEALS', action: 'VIEW' },
+      },
     ],
   },
   {
@@ -62,10 +72,10 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     href: '/marketing',
     permission: { module: 'CRM_LEADS', action: 'VIEW' },
     children: [
-      { label: 'Marketing Board', href: '/marketing' },
-      { label: 'Attribution Review', href: '/marketing/attribution' },
-      { label: 'Marketing Dashboard', href: '/marketing/dashboard' },
-      { label: 'Marketing Settings', href: '/marketing/settings' },
+      { label: 'Marketing Board', href: '/marketing', navSection: 'board' },
+      { label: 'Attribution Review', href: '/marketing/attribution', navSection: 'attribution' },
+      { label: 'Marketing Dashboard', href: '/marketing/dashboard', navSection: 'dashboard' },
+      { label: 'Marketing Settings', href: '/marketing/settings', navSection: 'settings' },
     ],
   },
   {
@@ -101,25 +111,25 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
       {
         label: 'Overview',
         href: '/finance/dashboard',
-        financeZone: 'overview',
+        navSection: 'overview',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
       {
         label: 'Revenue',
         href: '/finance/orders',
-        financeZone: 'revenue',
+        navSection: 'revenue',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
       {
         label: 'Expenses',
         href: '/finance/expenses',
-        financeZone: 'expenses',
+        navSection: 'expenses',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
       {
         label: 'Payroll',
         href: '/finance/payroll',
-        financeZone: 'payroll',
+        navSection: 'payroll',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
     ],
@@ -133,11 +143,13 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
       {
         label: 'Tickets',
         href: '/support',
+        navSection: 'tickets',
         permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
       },
       {
         label: 'Change Control',
         href: '/support/change-control',
+        navSection: 'change-control',
         permission: { module: 'SUPPORT_TICKETS', action: 'VIEW' },
       },
     ],
@@ -147,8 +159,8 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     label: 'Clients',
     href: '/clients',
     children: [
-      { label: 'Companies', href: '/clients/companies' },
-      { label: 'Contacts', href: '/clients/contacts' },
+      { label: 'Companies', href: '/clients/companies', navSection: 'companies' },
+      { label: 'Contacts', href: '/clients/contacts', navSection: 'contacts' },
     ],
   },
   {

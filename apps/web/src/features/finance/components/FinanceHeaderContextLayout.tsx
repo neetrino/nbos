@@ -7,15 +7,13 @@ import {
   type HeaderContextContent,
   type HeaderNavItem,
 } from '@/components/layout/header-context';
+import { FINANCE_HEADER_ZONES } from '@/features/finance/constants/finance-header-zones';
 import {
-  FINANCE_HEADER_ZONES,
   isFinanceHeaderContextPath,
-} from '@/features/finance/constants/finance-header-zones';
-import {
-  isFinanceZonePath,
-  readFinanceZoneHref,
-  writeFinanceZoneLastHref,
-} from '@/features/finance/constants/finance-zone-storage';
+  isFinanceSectionPath,
+  readFinanceSectionHref,
+  writeModuleLastVisitFromPathname,
+} from '@/lib/navigation/module-last-visit';
 import { usePermission } from '@/lib/permissions';
 
 export function FinanceHeaderContextLayout() {
@@ -23,7 +21,7 @@ export function FinanceHeaderContextLayout() {
   const { can } = usePermission();
 
   useLayoutEffect(() => {
-    writeFinanceZoneLastHref(pathname);
+    writeModuleLastVisitFromPathname(pathname);
   }, [pathname]);
 
   const content = useMemo((): HeaderContextContent | null => {
@@ -35,8 +33,8 @@ export function FinanceHeaderContextLayout() {
       (zone) => !zone.permission || can(zone.permission.action, zone.permission.module),
     ).map((zone) => ({
       label: zone.label,
-      href: readFinanceZoneHref(zone.zone),
-      isActive: (path) => isFinanceZonePath(path, zone.zone),
+      href: readFinanceSectionHref(zone.zone),
+      isActive: (path) => isFinanceSectionPath(path, zone.zone),
     }));
 
     if (items.length === 0) {

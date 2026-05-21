@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import { ModuleIndexRedirect } from '@/lib/navigation/ModuleIndexRedirect';
 
 export default function CrmPage() {
-  redirect('/crm/leads');
+  return <ModuleIndexRedirect moduleKey="crm" />;
 }
