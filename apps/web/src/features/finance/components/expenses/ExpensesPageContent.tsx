@@ -31,7 +31,12 @@ import { ExpenseSummaryCards } from './ExpenseSummaryCards';
 import { ExpensesPageDialogs } from './ExpensesPageDialogs';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
 import { buildExpenseFilterConfigs } from './expenses-filter-config';
+import {
+  readExpensesBoardViewMode,
+  writeExpensesBoardViewMode,
+} from '@/features/finance/constants/expenses-board-view';
 import { ExpensesPageMainPanel, type ExpensesViewMode } from './ExpensesPageMainPanel';
+import { ExpensePlansVsBoardBanner } from './ExpensePlansVsBoardBanner';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
 import {
   buildExpenseListApiParams,
@@ -75,7 +80,12 @@ export function ExpensesPageContent({
   const [filters, setFilters] = useState<Record<string, string>>(() =>
     initialExpenseFilterRecord(pageVariant),
   );
-  const [view, setView] = useState<ExpensesViewMode>('list');
+  const [view, setView] = useState<ExpensesViewMode>(() => readExpensesBoardViewMode());
+
+  const handleViewChange = useCallback((next: ExpensesViewMode) => {
+    setView(next);
+    writeExpensesBoardViewMode(next);
+  }, []);
   const [period, setPeriod] = useState<FinancePeriod>('month');
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
@@ -260,7 +270,7 @@ export function ExpensesPageContent({
         period={period}
         onPeriodChange={setPeriod}
         view={view}
-        onViewChange={setView}
+        onViewChange={handleViewChange}
         hideViewToggle={pageVariant === 'backlog'}
         pageVariant={pageVariant}
         onExportCsv={handleExportCsv}
@@ -278,6 +288,10 @@ export function ExpensesPageContent({
       />
 
       {pageVariant === 'closed' ? <FinanceWorkflowScopeBanner variant="expense-closed" /> : null}
+
+      {pageVariant === 'default' && !projectIdFromUrl && !expensePlanIdFromUrl?.trim() ? (
+        <ExpensePlansVsBoardBanner variant="board" />
+      ) : null}
 
       {projectIdFromUrl ? (
         <ExpenseProjectDrilldownBanner

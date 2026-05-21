@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, FileOutput, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, FileOutput, LayoutGrid, Pencil, Trash2 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { planExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
 import { cn } from '@/lib/utils';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 
@@ -36,6 +37,15 @@ export function ExpensePlanDetailHeader({
         <p className="text-muted-foreground mt-1 font-mono text-xs">{plan.id}</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
+        {plan._count.expenses > 0 ? (
+          <Link
+            href={planExpensesDrilldownHref(plan.id)}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex gap-1')}
+          >
+            <LayoutGrid size={16} />
+            Expense board
+          </Link>
+        ) : null}
         <Button type="button" variant="outline" size="sm" onClick={onEditClick}>
           <Pencil size={16} />
           Edit plan

@@ -167,14 +167,16 @@ Default view: `Calendar Grid / Календарная сетка`.
 Дополнительные виды:
 
 - `List / Список`;
-- `Board / Доска`;
+- `Board / Доска` (колонки по частоте: Monthly, Quarterly, Yearly, …);
 - `Calendar/Grid / Календарная сетка`.
+
+Web: переключатель **Grid | Board | List**; выбор сохраняется в `localStorage`.
 
 ### 4.2. Expense Board / Доска расходов
 
 **Путь:** `/finance/expenses` (Finance top tab **Expense board**; sub-nav: Active / Backlog / Closed)
 
-Default view: `Board / Доска`.
+Default view: `Board / Доска` (kanban; переключатель Board/List, выбор в `localStorage`).
 
 Колонки:
 

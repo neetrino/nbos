@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { CalendarDays, Download, LayoutGrid, List, Loader2, Plus, Wand2 } from 'lucide-react';
+import { CalendarDays, Columns3, Download, List, Loader2, Plus, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   PageHeader,
@@ -26,7 +26,9 @@ import {
 import { expensePlansListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { CreateExpensePlanDialog } from '@/features/finance/components/expenses/CreateExpensePlanDialog';
 import { ExpensePlanCoverageGrid } from '@/features/finance/components/expenses/ExpensePlanCoverageGrid';
+import { ExpensePlansBoard } from '@/features/finance/components/expenses/ExpensePlansBoard';
 import { ExpensePlansListTable } from '@/features/finance/components/expenses/ExpensePlansListTable';
+import { ExpensePlansVsBoardBanner } from '@/features/finance/components/expenses/ExpensePlansVsBoardBanner';
 import { ExpensePlansListToolbar } from '@/features/finance/components/expenses/ExpensePlansListToolbar';
 import { GenerateExpenseCardFromPlanDialog } from '@/features/finance/components/expenses/GenerateExpenseCardFromPlanDialog';
 import { useExpensePlansCsvExport } from '@/features/finance/components/expenses/use-expense-plans-csv-export';
@@ -312,19 +314,32 @@ export function ExpensePlansPageContent() {
     () =>
       EXPENSE_PLANS_VIEW_OPTIONS.map((opt) => ({
         ...opt,
-        icon: opt.value === 'grid' ? <LayoutGrid size={14} /> : <List size={14} />,
+        icon:
+          opt.value === 'grid' ? (
+            <CalendarDays size={14} />
+          ) : opt.value === 'board' ? (
+            <Columns3 size={14} />
+          ) : (
+            <List size={14} />
+          ),
       })),
     [],
   );
 
   const showListPanel = view === 'list';
   const showGridPanel = view === 'grid';
+  const showBoardPanel = view === 'board';
+
+  const openGenerateDialog = useCallback((plan: ExpensePlan) => {
+    setGeneratePlan(plan);
+    setGenerateOpen(true);
+  }, []);
 
   return (
     <div className="flex h-full flex-col gap-5">
       <PageHeader
         title="Expense plans"
-        description="Recurring or expected outgoing spend (NBOS Expense Plan). Default calendar grid by month; list view for maintenance."
+        description="Recurring or expected outgoing spend (NBOS Expense Plan). Calendar grid by default; board by frequency; list for maintenance."
       >
         <div className="flex flex-wrap items-center gap-2">
           <ViewModeSwitch
@@ -369,6 +384,8 @@ export function ExpensePlansPageContent() {
         </div>
       </PageHeader>
 
+      <ExpensePlansVsBoardBanner variant="plans" />
+
       <ExpensePlansListToolbar
         searchDraft={searchDraft}
         onSearchDraftChange={setSearchDraft}
@@ -393,7 +410,7 @@ export function ExpensePlansPageContent() {
         />
       ) : null}
 
-      {showListPanel ? (
+      {showBoardPanel || showListPanel ? (
         loading ? (
           <LoadingState count={3} />
         ) : error ? (
@@ -406,7 +423,7 @@ export function ExpensePlansPageContent() {
             }
             description={
               totalInScope === 0 && !hasActiveFilters
-                ? 'Create a plan for rent, SaaS, or other recurring spend; generate Board expenses when due.'
+                ? 'Create a plan for rent, SaaS, or other recurring spend; cards appear on the expense board when due.'
                 : 'Try clearing filters or switch to the calendar grid.'
             }
             action={
@@ -417,13 +434,12 @@ export function ExpensePlansPageContent() {
               ) : undefined
             }
           />
+        ) : showBoardPanel ? (
+          <ExpensePlansBoard plans={plans} onGenerate={openGenerateDialog} />
         ) : (
           <ExpensePlansListTable
             plans={plans}
-            onGenerate={(plan) => {
-              setGeneratePlan(plan);
-              setGenerateOpen(true);
-            }}
+            onGenerate={openGenerateDialog}
             onDelete={handleDelete}
           />
         )
