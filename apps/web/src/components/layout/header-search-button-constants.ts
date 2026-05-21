@@ -1,4 +1,5 @@
-/** Quiet pill width; expanded uses exactly double for a clear size step. */
-export const HEADER_SEARCH_PILL_WIDTH_COLLAPSED_REM = 13;
+/** Collapsed search control: icon-only square (rem). */
+export const HEADER_SEARCH_ICON_SIZE_REM = 2.25;
 
-export const HEADER_SEARCH_PILL_WIDTH_EXPANDED_REM = HEADER_SEARCH_PILL_WIDTH_COLLAPSED_REM * 2;
+/** Expanded search field width (rem). */
+export const HEADER_SEARCH_FIELD_WIDTH_REM = 20;
