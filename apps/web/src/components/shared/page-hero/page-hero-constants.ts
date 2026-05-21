@@ -3,8 +3,6 @@ import { MODULE_SHELL_SURFACE_CARD } from '@/components/shared/module-shell/modu
 /** Drive-style hero card surface. */
 export const PAGE_HERO_SURFACE = MODULE_SHELL_SURFACE_CARD;
 
-export { MODULE_SHELL_SURFACE_BRIDGED } from '@/components/shared/module-shell/module-shell-surface';
-
 /** Horizontal scroll when zone tabs exceed available width (hidden scrollbar; scroll via trackpad/drag). */
 export const PAGE_HERO_TAB_SCROLL =
   'min-w-0 max-w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';

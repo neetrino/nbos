@@ -10,6 +10,11 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import {
+  MODULE_SHELL_BRIDGE_HERO_GAP,
+  MODULE_SHELL_BRIDGE_HERO_PULL,
+} from '@/components/shared/module-shell/module-shell-surface';
+import { cn } from '@/lib/utils';
 import { PageHero } from './PageHero';
 
 export type ModuleHeroSlots = {
@@ -32,8 +37,8 @@ export interface ModuleHeroSlotProviderProps {
   /** Section pills (CRM-style); omit on overview routes. */
   tabs?: ReactNode;
   children: ReactNode;
-  /** Flat PageHero top — pairs with header zone tab bridge (Finance). */
-  attachToHeaderBridge?: boolean;
+  /** Gap under header tab connector; PageHero stays a standard rounded card (Finance). */
+  linkToHeaderTab?: boolean;
   className?: string;
 }
 
@@ -42,7 +47,7 @@ export function ModuleHeroSlotProvider({
   title,
   tabs,
   children,
-  attachToHeaderBridge = false,
+  linkToHeaderTab = false,
   className,
 }: ModuleHeroSlotProviderProps) {
   const [slots, setSlotsState] = useState<ModuleHeroSlots>(EMPTY_SLOTS);
@@ -66,15 +71,20 @@ export function ModuleHeroSlotProvider({
   return (
     <ModuleHeroSlotContext.Provider value={contextValue}>
       <div className={className ?? 'flex h-full min-h-0 flex-col gap-5'}>
-        <PageHero
-          title={title}
-          tabs={tabs}
-          search={slots.search}
-          viewMode={slots.viewMode}
-          trailing={slots.trailing}
-          secondaryTabs={slots.secondaryTabs}
-          attachToHeaderBridge={attachToHeaderBridge}
-        />
+        <div
+          className={cn(
+            linkToHeaderTab && [MODULE_SHELL_BRIDGE_HERO_PULL, MODULE_SHELL_BRIDGE_HERO_GAP],
+          )}
+        >
+          <PageHero
+            title={title}
+            tabs={tabs}
+            search={slots.search}
+            viewMode={slots.viewMode}
+            trailing={slots.trailing}
+            secondaryTabs={slots.secondaryTabs}
+          />
+        </div>
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </div>
     </ModuleHeroSlotContext.Provider>

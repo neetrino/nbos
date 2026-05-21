@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import {
-  MODULE_SHELL_SURFACE_BRIDGED,
   PAGE_HERO_SEARCH_CENTER,
   PAGE_HERO_SURFACE,
   PAGE_HERO_TAB_SCROLL,
@@ -17,8 +16,6 @@ export interface PageHeroProps {
   viewMode?: ReactNode;
   actions?: ReactNode;
   trailing?: ReactNode;
-  /** Flat top edge — connects to the active header zone tab. */
-  attachToHeaderBridge?: boolean;
   className?: string;
 }
 
@@ -30,19 +27,13 @@ export function PageHero({
   viewMode,
   actions,
   trailing,
-  attachToHeaderBridge = false,
   className,
 }: PageHeroProps) {
   const hasTrailing = Boolean(viewMode || actions || trailing);
   const hasSearch = Boolean(search);
 
   return (
-    <section
-      className={cn(
-        attachToHeaderBridge ? MODULE_SHELL_SURFACE_BRIDGED : PAGE_HERO_SURFACE,
-        className,
-      )}
-    >
+    <section className={cn(PAGE_HERO_SURFACE, className)}>
       <div
         className={cn(
           'grid min-w-0 items-center gap-3 sm:gap-4',

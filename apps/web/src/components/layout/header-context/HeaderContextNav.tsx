@@ -7,9 +7,12 @@ import type { HeaderNavItem } from './header-context-types';
 import {
   HEADER_CONTEXT_SCROLL,
   HEADER_CONTEXT_TAB_ACTIVE,
+  HEADER_CONTEXT_TAB_ACTIVE_LABEL,
+  HEADER_CONTEXT_TAB_CONNECTOR,
   HEADER_CONTEXT_TAB_INACTIVE,
   HEADER_CONTEXT_TAB_ROW,
 } from './header-context-constants';
+import { MODULE_SHELL_BRIDGE_FILL } from '@/components/shared/module-shell/module-shell-surface';
 
 function isNavItemActive(pathname: string, item: HeaderNavItem): boolean {
   if (item.isActive) {
@@ -33,7 +36,7 @@ export interface HeaderContextNavProps {
   className?: string;
 }
 
-/** Primary module zones: browser-style tabs that bridge into PageHero below. */
+/** Primary module zones: tab + white connector strip; PageHero stays a separate card below. */
 export function HeaderContextNav({ items, ariaLabel, className }: HeaderContextNavProps) {
   const pathname = usePathname();
 
@@ -46,14 +49,29 @@ export function HeaderContextNav({ items, ariaLabel, className }: HeaderContextN
       <div className={HEADER_CONTEXT_TAB_ROW}>
         {items.map((item) => {
           const active = isNavItemActive(pathname, item);
+          if (!active) {
+            return (
+              <Link
+                key={`${item.href}-${item.label}`}
+                href={item.href}
+                className={HEADER_CONTEXT_TAB_INACTIVE}
+              >
+                {item.label}
+              </Link>
+            );
+          }
           return (
             <Link
               key={`${item.href}-${item.label}`}
               href={item.href}
-              aria-current={active ? 'page' : undefined}
-              className={active ? HEADER_CONTEXT_TAB_ACTIVE : HEADER_CONTEXT_TAB_INACTIVE}
+              aria-current="page"
+              className={HEADER_CONTEXT_TAB_ACTIVE}
             >
-              {item.label}
+              <span className={HEADER_CONTEXT_TAB_ACTIVE_LABEL}>{item.label}</span>
+              <span
+                aria-hidden
+                className={cn(MODULE_SHELL_BRIDGE_FILL, HEADER_CONTEXT_TAB_CONNECTOR)}
+              />
             </Link>
           );
         })}
