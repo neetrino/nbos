@@ -1,6 +1,8 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import {
   FINANCE_ZONE_DEFAULT_HREF,
+  readFinanceLastActiveZone,
+  readFinanceModuleEntryHref,
   readFinanceZoneHref,
   resolveFinanceZoneFromPathname,
   writeFinanceZoneLastHref,
@@ -34,13 +36,24 @@ describe('finance-zone-storage', () => {
 
   it('returns default href when nothing stored', () => {
     expect(readFinanceZoneHref('revenue')).toBe(FINANCE_ZONE_DEFAULT_HREF.revenue);
+    expect(readFinanceModuleEntryHref()).toBe(FINANCE_ZONE_DEFAULT_HREF.overview);
   });
 
-  it('remembers last href per zone', () => {
+  it('remembers last href per zone and last active zone', () => {
     writeFinanceZoneLastHref('/finance/invoices');
     expect(readFinanceZoneHref('revenue')).toBe('/finance/invoices');
+    expect(readFinanceLastActiveZone()).toBe('revenue');
+    expect(readFinanceModuleEntryHref()).toBe('/finance/invoices');
+
     writeFinanceZoneLastHref('/finance/payments');
     expect(readFinanceZoneHref('revenue')).toBe('/finance/payments');
+    expect(readFinanceModuleEntryHref()).toBe('/finance/payments');
     expect(readFinanceZoneHref('expenses')).toBe(FINANCE_ZONE_DEFAULT_HREF.expenses);
+  });
+
+  it('reads legacy flat zone map', () => {
+    storage.set('nbos:finance:zone-last-href', JSON.stringify({ revenue: '/finance/invoices' }));
+    expect(readFinanceZoneHref('revenue')).toBe('/finance/invoices');
+    expect(readFinanceModuleEntryHref()).toBe('/finance/invoices');
   });
 });

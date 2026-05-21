@@ -18,6 +18,10 @@ import {
   type InvoiceListParams,
   type InvoiceStats,
 } from '@/lib/api/finance';
+import {
+  readInvoicesBoardViewMode,
+  writeInvoicesBoardViewMode,
+} from '@/features/finance/constants/invoices-board-view';
 import type { InvoiceViewMode } from './invoice-page-types';
 
 interface RecordPaymentInput {
@@ -50,7 +54,11 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [view, setView] = useState<InvoiceViewMode>('kanban');
+  const [view, setViewState] = useState<InvoiceViewMode>(() => readInvoicesBoardViewMode());
+  const setView = useCallback((next: InvoiceViewMode) => {
+    setViewState(next);
+    writeInvoicesBoardViewMode(next);
+  }, []);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [stageGateHighlight, setStageGateHighlight] =

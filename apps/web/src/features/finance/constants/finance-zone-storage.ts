@@ -9,6 +9,11 @@ export const FINANCE_ZONE_DEFAULT_HREF: Record<FinanceSidebarZoneId, string> = {
   payroll: '/finance/payroll',
 };
 
+type FinanceZoneStorageState = {
+  lastZone?: FinanceSidebarZoneId;
+  zones: Partial<Record<FinanceSidebarZoneId, string>>;
+};
+
 const FINANCE_EXPENSE_PLANS_PREFIX = '/finance/expenses/plans';
 const FINANCE_EXPENSES_PREFIX = '/finance/expenses';
 
@@ -75,39 +80,84 @@ function isHrefAllowedInZone(href: string, zone: FinanceSidebarZoneId): boolean 
   return isFinanceZonePath(path, zone);
 }
 
-function readStoredZoneHrefs(): Partial<Record<FinanceSidebarZoneId, string>> {
+function isFinanceSidebarZoneId(value: string): value is FinanceSidebarZoneId {
+  return value === 'overview' || value === 'revenue' || value === 'expenses' || value === 'payroll';
+}
+
+function readStoredState(): FinanceZoneStorageState {
   if (typeof window === 'undefined') {
-    return {};
+    return { zones: {} };
   }
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
+    if (!raw) return { zones: {} };
     const parsed: unknown = JSON.parse(raw);
-    if (parsed == null || typeof parsed !== 'object') return {};
-    return parsed as Partial<Record<FinanceSidebarZoneId, string>>;
+    if (parsed == null || typeof parsed !== 'object') return { zones: {} };
+
+    const record = parsed as Record<string, unknown>;
+    if (record.zones != null && typeof record.zones === 'object') {
+      const zones = record.zones as Partial<Record<FinanceSidebarZoneId, string>>;
+      const lastZone = record.lastZone;
+      return {
+        zones,
+        lastZone:
+          typeof lastZone === 'string' && isFinanceSidebarZoneId(lastZone) ? lastZone : undefined,
+      };
+    }
+
+    const legacyZones: Partial<Record<FinanceSidebarZoneId, string>> = {};
+    for (const key of Object.keys(record)) {
+      if (isFinanceSidebarZoneId(key) && typeof record[key] === 'string') {
+        legacyZones[key] = record[key];
+      }
+    }
+    return { zones: legacyZones };
   } catch {
-    return {};
+    return { zones: {} };
   }
 }
 
-/** Sidebar link target for a zone (last visited path or zone default). */
+function writeStoredState(state: FinanceZoneStorageState): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+/** Last active Finance zone (for parent sidebar entry). */
+export function readFinanceLastActiveZone(): FinanceSidebarZoneId {
+  const state = readStoredState();
+  if (state.lastZone) {
+    return state.lastZone;
+  }
+  const withPath = (['payroll', 'expenses', 'revenue', 'overview'] as const).find(
+    (z) => state.zones[z],
+  );
+  return withPath ?? 'overview';
+}
+
+/** Top-level Finance sidebar target: last zone + last page in that zone. */
+export function readFinanceModuleEntryHref(): string {
+  return readFinanceZoneHref(readFinanceLastActiveZone());
+}
+
+/** Zone link target (last visited path in zone or default). */
 export function readFinanceZoneHref(zone: FinanceSidebarZoneId): string {
-  const stored = readStoredZoneHrefs()[zone];
-  if (stored && isHrefAllowedInZone(stored, zone)) {
-    return stored;
+  const path = readStoredState().zones[zone];
+  if (path && isHrefAllowedInZone(path, zone)) {
+    return path;
   }
   return FINANCE_ZONE_DEFAULT_HREF[zone];
 }
 
+/** Remember pathname per zone and which zone was visited last. */
 export function writeFinanceZoneLastHref(pathname: string): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
   const zone = resolveFinanceZoneFromPathname(pathname);
   if (!zone) {
     return;
   }
-  const map = readStoredZoneHrefs();
-  map[zone] = pathname.split('?')[0] ?? pathname;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+  const state = readStoredState();
+  state.zones[zone] = pathname.split('?')[0] ?? pathname;
+  state.lastZone = zone;
+  writeStoredState(state);
 }

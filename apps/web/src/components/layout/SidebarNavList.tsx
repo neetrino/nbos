@@ -18,6 +18,7 @@ import {
 import type { DashboardPersonalLink } from '@/lib/api/dashboard';
 import { writeFinanceZoneLastHref } from '@/features/finance/constants/finance-zone-storage';
 import { FinanceSidebarZoneLink } from './FinanceSidebarZoneLink';
+import { useFinanceModuleEntryHref } from '@/features/finance/hooks/use-finance-module-entry-href';
 import {
   getFirstChildHref,
   getPathFromHref,
@@ -211,18 +212,21 @@ function ModuleNavRow({
   muted?: boolean;
 }) {
   const icon = getSidebarNavIcon(item.key);
+  const financeEntryHref = useFinanceModuleEntryHref(pathname);
+  const moduleHref = item.key === 'finance' ? financeEntryHref : item.href;
   const childPathActive =
     item.children?.some(
       (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child),
     ) ?? false;
-  const active = childPathActive || pathname.startsWith(item.href);
-  const firstChildHref = getFirstChildHref(item);
+  const active =
+    childPathActive || pathname.startsWith(item.href) || pathname.startsWith(moduleHref);
+  const firstChildHref = item.key === 'finance' ? financeEntryHref : getFirstChildHref(item);
 
   if (!item.children) {
     return (
       <li>
         <Link
-          href={item.href}
+          href={moduleHref}
           title={item.label}
           className={navLinkClass(active && !muted, collapsed, muted)}
         >
