@@ -4,6 +4,7 @@ import {
   BONUS_BOARD_TYPE_CONFIG,
 } from '@/features/finance/constants/bonus-board';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { formatMoneyDram } from '@/lib/format/money';
 import { bonusSalesAccrualHint } from '@/features/finance/utils/bonus-sales-accrual-hint';
 import type { BonusEntryListRow, BonusStatus, BonusType } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
@@ -158,6 +159,25 @@ export function BonusCard({
   );
 }
 
+function BonusColumnMoneyTotal({ bonuses }: { bonuses: BonusEntryListRow[] }) {
+  const total = sumBonusEntryAmounts(bonuses);
+
+  return (
+    <div className="flex justify-center px-1">
+      <p
+        className={cn(
+          'max-w-full rounded-full border px-3 py-1 text-center text-sm leading-tight font-semibold tabular-nums',
+          'text-foreground/85 border-white/30 bg-white/25 shadow-sm backdrop-blur-md',
+          'dark:text-foreground/90 dark:border-white/10 dark:bg-white/8',
+        )}
+        aria-label={`Column total: ${formatMoneyDram(total)}`}
+      >
+        {formatMoneyDram(total)}
+      </p>
+    </div>
+  );
+}
+
 export function BonusBoardColumns({
   filtered,
   onOpenReleases,
@@ -178,12 +198,15 @@ export function BonusBoardColumns({
       >
         {columns.map((column) => (
           <div key={column.key} className="w-[240px] flex-shrink-0">
-            <div className="mb-3 flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${column.color}`} />
-              <h3 className="text-foreground text-xs font-semibold">{column.label}</h3>
-              <span className="bg-secondary text-muted-foreground ml-auto rounded-md px-1.5 py-0.5 text-[10px] font-medium">
-                {column.bonuses.length}
-              </span>
+            <div className="mb-3 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className={`h-2 w-2 rounded-full ${column.color}`} />
+                <h3 className="text-foreground text-xs font-semibold">{column.label}</h3>
+                <span className="bg-secondary text-muted-foreground ml-auto rounded-md px-1.5 py-0.5 text-[10px] font-medium">
+                  {column.bonuses.length}
+                </span>
+              </div>
+              <BonusColumnMoneyTotal bonuses={column.bonuses} />
             </div>
             <div className="space-y-3">
               {column.bonuses.map((bonus) => (

@@ -2,7 +2,7 @@
 
 > ~~Зачёркнуто = сделано.~~ Открытые пункты — дальше по плану.
 
-**Коммиты:** `43fe17f1` (Overview hero) · `26f8ae4e` (IA + wallet) · _(следующий — Phase 4 hub / Bonus totals)_
+**Коммиты:** `15d5ceac` (zone hub) · `43fe17f1` · `26f8ae4e` · _(следующий — Bonus board totals)_
 
 ---
 
@@ -10,13 +10,13 @@
 
 - ~~Сайдбар 4 зоны + wallet + Overview hero~~
 
-## Phase 3 — Column analytics
+## Phase 3 — Column analytics ~~(готово)~~
 
-| Доска                                           | Статус                        |
-| ----------------------------------------------- | ----------------------------- |
-| Invoices · Expenses · Expense plans · CRM Deals | ~~готово~~                    |
-| **Bonus board**                                 | **[ ]** — column money totals |
-| Orders / Payments / …                           | **N/A** (нет kanban)          |
+| Доска                                           | Статус               |
+| ----------------------------------------------- | -------------------- |
+| Invoices · Expenses · Expense plans · CRM Deals | ~~готово~~           |
+| **Bonus board**                                 | ~~готово~~           |
+| Orders / Payments / …                           | **N/A** (нет kanban) |
 
 - ~~KPI только на Dashboard~~
 
@@ -39,6 +39,5 @@
 
 ## Что осталось
 
-1. **Bonus board** — суммы в колонках (единственный остаток Phase 3 по kanban).
-2. **Phase 5** — canon polish.
-3. **Опционально:** RBAC Wallet; `/finance/expenses/pay`; подписи Expense Plan.
+1. **Phase 5** — canon polish.
+2. **Опционально:** RBAC Wallet; `/finance/expenses/pay`; подписи Expense Plan; сверка hub-метрик с API.
