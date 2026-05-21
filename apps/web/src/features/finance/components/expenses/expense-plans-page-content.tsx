@@ -19,8 +19,7 @@ import {
   EXPENSE_PLANS_LIST_YEAR_QUERY,
 } from '@/features/finance/constants/expense-plans-list-url';
 import {
-  readExpensePlansViewMode,
-  writeExpensePlansViewMode,
+  useExpensePlansViewMode,
   type ExpensePlansViewMode,
 } from '@/features/finance/constants/expense-plans-view';
 import { expensePlansListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
@@ -80,7 +79,7 @@ export function ExpensePlansPageContent() {
   );
   const gridYear = parseGridYearParam(searchParams.get(EXPENSE_PLANS_LIST_YEAR_QUERY));
 
-  const [view, setView] = useState<ExpensePlansViewMode>(() => readExpensePlansViewMode());
+  const [view, setView] = useExpensePlansViewMode();
   const [searchDraft, setSearchDraft] = useState(urlSearch);
   const [plans, setPlans] = useState<ExpensePlan[]>([]);
   const [gridPayload, setGridPayload] = useState<ExpensePlanGridPayload | null>(null);
@@ -106,10 +105,12 @@ export function ExpensePlansPageContent() {
     [pathname, router, searchParams],
   );
 
-  const handleViewChange = useCallback((next: ExpensePlansViewMode) => {
-    setView(next);
-    writeExpensePlansViewMode(next);
-  }, []);
+  const handleViewChange = useCallback(
+    (next: ExpensePlansViewMode) => {
+      setView(next);
+    },
+    [setView],
+  );
 
   const handleGridYearChange = useCallback(
     (year: number) => {
