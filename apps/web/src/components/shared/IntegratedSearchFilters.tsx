@@ -121,10 +121,10 @@ export function IntegratedSearchFilters({
   };
 
   return (
-    <div ref={containerRef} className={cn('relative min-w-0', className)}>
+    <div ref={containerRef} className={cn('relative w-full min-w-0', className)}>
       <div
         className={cn(
-          'bg-muted/50 border-border/60 flex min-h-11 min-w-0 items-center gap-2 rounded-2xl border px-2 shadow-none',
+          'bg-muted/50 border-border/60 flex min-h-11 w-full min-w-0 items-center gap-2 rounded-2xl border px-2 shadow-none',
           hasQuery && 'ring-primary/30 ring-2',
           panelOpen && hasFilters && 'ring-primary/20 ring-2',
         )}

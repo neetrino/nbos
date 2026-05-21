@@ -46,12 +46,12 @@ export function PageHero({
                 : 'grid-cols-1',
         )}
       >
-        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+        <div className="flex min-w-0 items-center gap-3 sm:col-start-1 sm:row-start-1 sm:gap-4">
           <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">{title}</h1>
           {tabs ? <div className={cn(PAGE_HERO_TAB_SCROLL, 'shrink-0')}>{tabs}</div> : null}
         </div>
         {hasSearch ? (
-          <div className="min-w-0 sm:justify-self-center">
+          <div className="w-full min-w-0 sm:col-start-2">
             <div className={PAGE_HERO_SEARCH_CENTER}>{search}</div>
           </div>
         ) : null}
@@ -60,7 +60,9 @@ export function PageHero({
             viewMode={viewMode}
             actions={actions}
             trailing={trailing}
-            className={hasSearch ? 'sm:justify-self-end' : 'sm:ml-auto'}
+            className={cn(
+              hasSearch ? 'sm:col-start-3 sm:row-start-1 sm:justify-self-end' : 'sm:ml-auto',
+            )}
           />
         ) : null}
       </div>
