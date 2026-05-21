@@ -1,9 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, SlidersHorizontal } from 'lucide-react';
-import { PageHero } from '@/components/shared';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type {
   DashboardData,
@@ -73,10 +70,6 @@ export function DashboardControlCenterView({
 
   return (
     <div className="flex min-h-0 flex-col gap-5">
-      <DashboardHeader
-        editMode={editMode}
-        onToggleEdit={() => setEditMode((current) => !current)}
-      />
       {error ? <DashboardError message={error} /> : null}
       <section className="grid min-h-0 items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
         <div className="min-h-0 space-y-5">
@@ -87,6 +80,7 @@ export function DashboardControlCenterView({
             onApplyPinnedLayout={applyPinnedLayout}
             onCreatePersonalLink={createPersonalLink}
             onDeletePersonalLink={deletePersonalLink}
+            onToggleEdit={() => setEditMode((current) => !current)}
             personalLinks={personalLinks}
             saving={savingPreference}
           />
@@ -121,7 +115,6 @@ export function DashboardControlCenterView({
 export function DashboardLoadingSkeleton() {
   return (
     <div className="flex min-h-0 flex-col gap-5">
-      <Skeleton className="h-20 rounded-2xl" />
       <div className="grid min-h-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]">
         <div className="min-h-0 space-y-5">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -137,35 +130,6 @@ export function DashboardLoadingSkeleton() {
         <Skeleton className={`min-h-0 rounded-2xl ${DASHBOARD_NOTES_COLUMN_MAX_HEIGHT_CLASS}`} />
       </div>
     </div>
-  );
-}
-
-function DashboardHeader({
-  editMode,
-  onToggleEdit,
-}: {
-  editMode: boolean;
-  onToggleEdit: () => void;
-}) {
-  return (
-    <PageHero
-      title="Dashboard"
-      trailing={
-        <Button
-          type="button"
-          variant={editMode ? 'default' : 'secondary'}
-          size="sm"
-          onClick={onToggleEdit}
-        >
-          {editMode ? (
-            <Check className="h-3.5 w-3.5" aria-hidden />
-          ) : (
-            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
-          )}
-          {editMode ? 'Done' : 'Edit layout'}
-        </Button>
-      }
-    />
   );
 }
 
