@@ -1,7 +1,7 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +26,7 @@ export default function SignInPage() {
 
 function SignInForm() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') ?? '/dashboard';
 
@@ -37,6 +38,17 @@ function SignInForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
+
+  useEffect(() => {
+    if (!searchParams.has('email') && !searchParams.has('password')) {
+      return;
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('email');
+    params.delete('password');
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname);
+  }, [pathname, router, searchParams]);
 
   async function onSubmit(values: FormValues) {
     setAuthError(null);
@@ -53,12 +65,12 @@ function SignInForm() {
     }
 
     router.push(callbackUrl);
+    router.refresh();
   }
 
   return (
     <div className="bg-background flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
             <img
@@ -71,12 +83,11 @@ function SignInForm() {
             />
           </div>
           <p className="text-muted-foreground text-base font-medium">
-            Enter your credentials and sing in
+            Enter your credentials and sign in
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Email */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" method="post">
           <div>
             <label htmlFor="email" className="text-foreground mb-1.5 block text-sm font-medium">
               Email
@@ -98,7 +109,6 @@ function SignInForm() {
             )}
           </div>
 
-          {/* Password */}
           <div>
             <label htmlFor="password" className="text-foreground mb-1.5 block text-sm font-medium">
               Password
@@ -129,14 +139,12 @@ function SignInForm() {
             )}
           </div>
 
-          {/* Auth error */}
           {authError && (
             <div className="bg-destructive/10 text-destructive rounded-lg px-3 py-2.5 text-sm">
               {authError}
             </div>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
