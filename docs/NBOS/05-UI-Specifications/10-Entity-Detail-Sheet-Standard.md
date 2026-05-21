@@ -227,10 +227,35 @@ Rules:
 
 ---
 
+## Floating rail (entity detail sheets)
+
+Right-side entity sheets use a **floating rail** outside the panel seam: Close always, then contextual shortcuts.
+
+| Control               | Rule                                                                 |
+| --------------------- | -------------------------------------------------------------------- |
+| Close                 | Always — provided by the shell; do not add a second close in header. |
+| Copy link             | Copies `window.location.href` (deep-link friendly).                  |
+| Open                  | Opens `sourcePageHref` in a new tab when set.                        |
+| Dashboard / Workspace | Shown only when `workspaceHref` is passed.                           |
+| Module extras         | Pass via `trailingRail` on the shell (files, portfolio, etc.).       |
+
+**Layout modes** (`EntityDetailSheetContent`):
+
+| `layout`    | Use for                                                        | Panel                                                     | Default rail                      |
+| ----------- | -------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------- |
+| `full`      | Entity detail (Deal, Lead, Invoice, checklist workbench)       | `width`: `wide` / `medium` / `compact`, or custom classes | Close + Copy + Open (+ Workspace) |
+| `auxiliary` | Narrow helper panels (bonus releases ledger, HR employee peek) | 36rem                                                     | Close only                        |
+
+Do **not** hand-wire `floatingClose` / `floatingRail`. Use raw `SheetContent` only for quick dialogs. Drive file panel and workspace drive use the shell with `contentClassName` / `floatingRailContent` overrides. See `docs/reference/patterns/entity-detail-sheet-shell.md`.
+
+---
+
 ## Reference implementation (code)
 
 | Pattern                                     | Location                                                                                   |
 | ------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Entity detail sheet shell                   | `apps/web/src/components/shared/EntityDetailSheetContent.tsx`                              |
+| Floating rail actions                       | `apps/web/src/components/shared/entity-sheet-floating-rail.tsx`                            |
 | Quick create (compact dialog)               | `apps/web/src/components/shared/quick-create-task/QuickCreateTaskDialog.tsx`               |
 | Task detail sheet (wide operational layout) | `apps/web/src/features/tasks/components/TaskSheet.tsx`                                     |
 | Compact finance detail sheet                | `apps/web/src/features/finance/components/InvoiceSheet.tsx`, `SubscriptionDetailSheet.tsx` |

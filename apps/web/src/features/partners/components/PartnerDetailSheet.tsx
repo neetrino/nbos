@@ -2,12 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { ExternalLink, Handshake, Pencil } from 'lucide-react';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { DetailSheetSettingsMenu } from '@/components/shared';
-import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
+import { DetailSheetSettingsMenu, EntityDetailSheetContent } from '@/components/shared';
 import { EditPartnerDialog } from '@/features/partners/components/EditPartnerDialog';
 import { PartnerDetailTabs } from '@/features/partners/components/PartnerDetailTabs';
 import { PartnerLifecycleStages } from '@/features/partners/components/PartnerLifecycleStages';
@@ -94,20 +93,13 @@ export function PartnerDetailSheet({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent
-          side="right"
-          showCloseButton={false}
-          floatingClose
-          floatingRailVisible={open}
-          floatingRailAnchorClassName="sm:right-[75vw]"
-          floatingRail={
-            partner ? (
-              <EntitySheetFloatingRail
-                sourcePageHref={`/partners?${PARTNER_OPEN_QUERY}=${encodeURIComponent(partner.id)}`}
-              />
-            ) : null
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          showRailActions={Boolean(partner)}
+          sourcePageHref={
+            partner ? `/partners?${PARTNER_OPEN_QUERY}=${encodeURIComponent(partner.id)}` : '#'
           }
-          className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:data-[side=right]:w-[75vw]"
         >
           {!partnerId ? null : (
             <>
@@ -196,7 +188,7 @@ export function PartnerDetailSheet({
               </ScrollArea>
             </>
           )}
-        </SheetContent>
+        </EntityDetailSheetContent>
       </Sheet>
 
       {partner ? (

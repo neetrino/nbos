@@ -4,14 +4,12 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { Trash2 } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
-  EntitySheetFloatingRail,
+  EntityDetailSheetContent,
   StatusBadge,
-  DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS,
-  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS,
 } from '@/components/shared';
 import { getCompanyType, getTaxStatus } from '../constants/clients';
 import { useContactSearchOptions } from '../hooks/use-contact-search-options';
@@ -162,15 +160,7 @@ export function CompanySheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS}
-        floatingRail={<EntitySheetFloatingRail sourcePageHref={sourcePageHref} />}
-        className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
-      >
+      <EntityDetailSheetContent open={open} layout="full" sourcePageHref={sourcePageHref}>
         <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
           <div className="flex flex-wrap items-start gap-2">
             <div className="min-w-0 flex-1">
@@ -247,7 +237,7 @@ export function CompanySheet({
           onSave={() => void handleGeneralSave()}
           onCancel={handleGeneralCancel}
         />
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

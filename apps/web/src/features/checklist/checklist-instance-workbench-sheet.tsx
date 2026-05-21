@@ -2,12 +2,12 @@
 
 import { useMemo } from 'react';
 import { AlertCircle, CheckCircle2, ClipboardCheck, Loader2 } from 'lucide-react';
-import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
+import { EntityDetailSheetContent } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   parseChecklistInstanceItems,
   type ChecklistInstance,
@@ -23,6 +23,9 @@ import {
 const CHECKLIST_WORKBENCH_FLOATING_RAIL_ANCHOR =
   'right-[min(75vw,42rem)] sm:right-[min(75vw,56rem)] xl:right-[min(75vw,64rem)]';
 
+const CHECKLIST_WORKBENCH_PANEL_CLASS =
+  'flex w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl xl:max-w-5xl';
+
 export interface ChecklistInstanceWorkbenchSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -35,8 +38,8 @@ export interface ChecklistInstanceWorkbenchSheetProps {
   onComplete: (instance: ChecklistInstance) => Promise<void>;
   /** When complete fails validation, item rows for this instance with these ids show a red frame. */
   completionBlockHighlight?: { instanceId: string; itemIds: readonly string[] } | null;
-  /** When set, floating close + rail (same pattern as delivery product card sheet). */
-  floatingNav?: {
+  /** Deep link + workspace rail (required — same UX as delivery product sheet). */
+  floatingNav: {
     sourcePageHref: string;
     workspaceHref?: string | null;
   };
@@ -80,87 +83,115 @@ export function ChecklistInstanceWorkbenchSheet({
   floatingNav,
 }: ChecklistInstanceWorkbenchSheetProps) {
   const totals = useMemo(() => computeTotals(instances), [instances]);
-  const useFloatingNav = Boolean(floatingNav?.sourcePageHref);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
         forceNestedBackdrop
-        showCloseButton={!useFloatingNav}
-        floatingClose={useFloatingNav}
-        floatingRailVisible={open}
-        floatingRail={
-          useFloatingNav && floatingNav ? (
-            <EntitySheetFloatingRail
-              sourcePageHref={floatingNav.sourcePageHref}
-              workspaceHref={floatingNav.workspaceHref}
-            />
-          ) : undefined
-        }
-        floatingRailAnchorClassName={
-          useFloatingNav ? CHECKLIST_WORKBENCH_FLOATING_RAIL_ANCHOR : undefined
-        }
-        className="flex w-full max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl xl:max-w-5xl"
+        contentClassName={CHECKLIST_WORKBENCH_PANEL_CLASS}
+        railAnchorClassName={CHECKLIST_WORKBENCH_FLOATING_RAIL_ANCHOR}
+        sourcePageHref={floatingNav.sourcePageHref}
+        workspaceHref={floatingNav.workspaceHref}
       >
-        <SheetHeader className="border-border shrink-0 space-y-3 border-b px-5 py-4">
-          <div className={useFloatingNav ? 'pr-2' : 'pr-8'}>
-            <SheetTitle className="text-base font-semibold">{title}</SheetTitle>
-          </div>
-
-          <div className="space-y-1.5">
-            <div className="text-muted-foreground text-[11px] tabular-nums">
-              <span>
-                {totals.reviewed}/{totals.total}
-              </span>
-            </div>
-            <Progress
-              value={totals.progressPercent}
-              className={cn(
-                'h-1 w-full gap-0 [&_[data-slot=progress-track]]:h-1',
-                totals.allInstancesComplete && '[&_[data-slot=progress-indicator]]:bg-emerald-600',
-                !totals.allInstancesComplete &&
-                  totals.notDone > 0 &&
-                  '[&_[data-slot=progress-indicator]]:bg-amber-500',
-              )}
-            />
-          </div>
-
-          {loading ? (
-            <p className="text-muted-foreground flex items-center gap-2 text-[11px]">
-              <Loader2 className="size-3 animate-spin" aria-hidden />
-              Loading
-            </p>
-          ) : null}
-          {error ? <p className="text-destructive text-[11px]">{error}</p> : null}
-        </SheetHeader>
-
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="space-y-5 px-5 py-4">
-            {instances.length === 0 && !loading ? (
-              <p className="text-muted-foreground text-sm">No checklists.</p>
-            ) : (
-              instances.map((instance, index) => (
-                <div key={instance.id}>
-                  {index > 0 ? <Separator className="mb-5" /> : null}
-                  <WorkbenchInstanceBlock
-                    instance={instance}
-                    busyKey={busyKey}
-                    onMark={onMark}
-                    onComplete={onComplete}
-                    completionBlockItemIds={
-                      completionBlockHighlight?.instanceId === instance.id
-                        ? completionBlockHighlight.itemIds
-                        : null
-                    }
-                  />
-                </div>
-              ))
-            )}
-          </div>
-        </ScrollArea>
-      </SheetContent>
+        <ChecklistWorkbenchSheetBody
+          title={title}
+          totals={totals}
+          loading={loading}
+          error={error}
+          instances={instances}
+          busyKey={busyKey}
+          onMark={onMark}
+          onComplete={onComplete}
+          completionBlockHighlight={completionBlockHighlight}
+        />
+      </EntityDetailSheetContent>
     </Sheet>
+  );
+}
+
+function ChecklistWorkbenchSheetBody({
+  title,
+  totals,
+  loading,
+  error,
+  instances,
+  busyKey,
+  onMark,
+  onComplete,
+  completionBlockHighlight,
+  headerPaddingClassName,
+}: {
+  title: string;
+  totals: ReturnType<typeof computeTotals>;
+  loading: boolean;
+  error: string | null;
+  instances: ChecklistInstance[];
+  busyKey: string | null;
+  onMark: ChecklistWorkbenchMarkHandler;
+  onComplete: ChecklistInstanceWorkbenchSheetProps['onComplete'];
+  completionBlockHighlight: ChecklistInstanceWorkbenchSheetProps['completionBlockHighlight'];
+}) {
+  return (
+    <>
+      <SheetHeader className="border-border shrink-0 space-y-3 border-b px-5 py-4">
+        <div className="pr-2">
+          <SheetTitle className="text-base font-semibold">{title}</SheetTitle>
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="text-muted-foreground text-[11px] tabular-nums">
+            <span>
+              {totals.reviewed}/{totals.total}
+            </span>
+          </div>
+          <Progress
+            value={totals.progressPercent}
+            className={cn(
+              'h-1 w-full gap-0 [&_[data-slot=progress-track]]:h-1',
+              totals.allInstancesComplete && '[&_[data-slot=progress-indicator]]:bg-emerald-600',
+              !totals.allInstancesComplete &&
+                totals.notDone > 0 &&
+                '[&_[data-slot=progress-indicator]]:bg-amber-500',
+            )}
+          />
+        </div>
+
+        {loading ? (
+          <p className="text-muted-foreground flex items-center gap-2 text-[11px]">
+            <Loader2 className="size-3 animate-spin" aria-hidden />
+            Loading
+          </p>
+        ) : null}
+        {error ? <p className="text-destructive text-[11px]">{error}</p> : null}
+      </SheetHeader>
+
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="space-y-5 px-5 py-4">
+          {instances.length === 0 && !loading ? (
+            <p className="text-muted-foreground text-sm">No checklists.</p>
+          ) : (
+            instances.map((instance, index) => (
+              <div key={instance.id}>
+                {index > 0 ? <Separator className="mb-5" /> : null}
+                <WorkbenchInstanceBlock
+                  instance={instance}
+                  busyKey={busyKey}
+                  onMark={onMark}
+                  onComplete={onComplete}
+                  completionBlockItemIds={
+                    completionBlockHighlight?.instanceId === instance.id
+                      ? completionBlockHighlight.itemIds
+                      : null
+                  }
+                />
+              </div>
+            ))
+          )}
+        </div>
+      </ScrollArea>
+    </>
   );
 }
 

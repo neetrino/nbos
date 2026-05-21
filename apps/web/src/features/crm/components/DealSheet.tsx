@@ -2,9 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
 import { Trash2, LayoutGrid, History, FileText, Phone, CheckSquare } from 'lucide-react';
-import { DetailSheetFormFooter, DetailSheetSettingsMenu } from '@/components/shared';
-import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import {
+  DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
+  EntityDetailSheetContent,
+} from '@/components/shared';
+import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DealPipelineStages } from './DealPipelineStages';
@@ -207,18 +210,10 @@ export function DealSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName="sm:right-[75vw]"
-        floatingRail={
-          <EntitySheetFloatingRail
-            sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`}
-          />
-        }
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[75vw]"
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
+        sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`}
       >
         <CrmSheetEntityHeader
           title={headerTitle}
@@ -317,7 +312,7 @@ export function DealSheet({
           onSave={handleGeneralSave}
           onCancel={handleGeneralCancel}
         />
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

@@ -3,16 +3,14 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Layers } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
-  EntitySheetFloatingRail,
+  EntityDetailSheetContent,
   ErrorState,
   LoadingState,
   StatusBadge,
-  DETAIL_SHEET_CONTENT_WIDTH_MEDIUM_CLASS,
-  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS,
 } from '@/components/shared';
 import {
   CLIENT_SERVICE_STATUSES,
@@ -171,14 +169,11 @@ export function ClientServiceDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS}
-        floatingRail={<EntitySheetFloatingRail sourcePageHref={sourcePageHref} />}
-        className={DETAIL_SHEET_CONTENT_WIDTH_MEDIUM_CLASS}
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
+        width="medium"
+        sourcePageHref={sourcePageHref}
       >
         <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
           {loading ? (
@@ -236,7 +231,7 @@ export function ClientServiceDetailSheet({
           onSave={handleSave}
           onCancel={handleCancel}
         />
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

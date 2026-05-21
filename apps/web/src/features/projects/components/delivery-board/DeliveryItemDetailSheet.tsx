@@ -1,9 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DetailSheetFormFooter } from '@/components/shared';
+import { DetailSheetFormFooter, EntityDetailSheetContent } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { extensionsApi, type FullExtension } from '@/lib/api/extensions';
@@ -45,7 +45,6 @@ import { DeliveryItemDetailHeader } from './DeliveryItemDetailHeader';
 import { DeliveryItemDetailTabBar } from './DeliveryItemDetailTabBar';
 import { DeliveryItemDetailSecondaryPanels } from './DeliveryItemDetailSecondaryPanels';
 import { DeliveryItemDetailGeneralTab } from './DeliveryItemDetailGeneralTab';
-import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 
 interface DeliveryItemDetailSheetProps {
   item: DeliveryBoardItem | null;
@@ -308,21 +307,12 @@ export function DeliveryItemDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName="sm:right-[75vw]"
-        floatingRail={
-          headerProps ? (
-            <EntitySheetFloatingRail
-              sourcePageHref={headerProps.sourcePageHref}
-              workspaceHref={headerProps.workSpaceHref}
-            />
-          ) : null
-        }
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[75vw]"
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
+        showRailActions={Boolean(headerProps)}
+        sourcePageHref={headerProps?.sourcePageHref ?? '#'}
+        workspaceHref={headerProps?.workSpaceHref}
       >
         {!item ? null : (
           <>
@@ -433,7 +423,7 @@ export function DeliveryItemDetailSheet({
             />
           </>
         )}
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

@@ -14,11 +14,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
-  EntitySheetFloatingRail,
+  EntityDetailSheetContent,
   ENTITY_SHEET_FLOATING_RAIL_CONTROL_CLASS,
   ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
 } from '@/components/shared';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import { toast } from 'sonner';
 import { driveApi } from '@/lib/api/drive';
 import type { FileAsset } from '@/lib/api/drive';
@@ -65,34 +65,28 @@ export function DriveDetailPanel({
 }) {
   return (
     <Sheet open={open} onOpenChange={(nextOpen) => (!nextOpen ? onClose() : undefined)}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName="sm:right-[82vw]"
-        floatingRail={
+      <EntityDetailSheetContent
+        open={open}
+        contentClassName="w-full gap-0 overflow-hidden p-0 sm:max-w-none sm:data-[side=right]:w-[82vw]"
+        railAnchorClassName="sm:right-[82vw]"
+        showRailActions={Boolean(file)}
+        sourcePageHref={file ? buildDriveFileHref(file.id) : '#'}
+        trailingRail={
           file ? (
-            <EntitySheetFloatingRail
-              sourcePageHref={buildDriveFileHref(file.id)}
-              trailing={
-                <DriveFileRailTrailing
-                  file={file}
-                  busy={busy}
-                  onArchive={onArchive}
-                  onRestore={onRestore}
-                  onCopyFile={onCopyFile}
-                  onMoveFile={onMoveFile}
-                  onRemoveFromFolder={onRemoveFromFolder}
-                  onUnlinkFromRecord={onUnlinkFromRecord}
-                  onVersionUpload={onVersionUpload}
-                  onPermanentDeleteSuccess={onPermanentDeleteSuccess}
-                />
-              }
+            <DriveFileRailTrailing
+              file={file}
+              busy={busy}
+              onArchive={onArchive}
+              onRestore={onRestore}
+              onCopyFile={onCopyFile}
+              onMoveFile={onMoveFile}
+              onRemoveFromFolder={onRemoveFromFolder}
+              onUnlinkFromRecord={onUnlinkFromRecord}
+              onVersionUpload={onVersionUpload}
+              onPermanentDeleteSuccess={onPermanentDeleteSuccess}
             />
-          ) : null
+          ) : undefined
         }
-        className="w-full gap-0 overflow-hidden p-0 sm:max-w-none sm:data-[side=right]:w-[82vw]"
       >
         {file && (
           <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -106,7 +100,7 @@ export function DriveDetailPanel({
             </aside>
           </div>
         )}
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

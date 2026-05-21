@@ -1,13 +1,8 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { EntityDetailSheetContent } from '@/components/shared';
+import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { BonusEntryReleaseAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-release-adjust-block';
 import { BonusEntryReleasesSheetTable } from '@/features/finance/components/bonus/bonus-entry-releases-sheet-table';
 import { useBonusEntryReleasesLedger } from '@/features/finance/components/bonus/use-bonus-entry-releases-ledger';
@@ -33,7 +28,7 @@ export function BonusEntryReleasesSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full gap-0 sm:max-w-xl">
+      <EntityDetailSheetContent open={open} layout="auxiliary" className="gap-0">
         <SheetHeader>
           <SheetTitle>Bonus releases</SheetTitle>
           <SheetDescription>
@@ -67,7 +62,7 @@ export function BonusEntryReleasesSheet({
             />
           ) : null}
         </div>
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

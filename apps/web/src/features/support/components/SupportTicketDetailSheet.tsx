@@ -2,14 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  EntitySheetFloatingRail,
-  StatusBadge,
-  DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS,
-  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS,
-} from '@/components/shared';
+import { EntityDetailSheetContent, StatusBadge } from '@/components/shared';
 import {
   getTicketCategory,
   getTicketCoverage,
@@ -196,19 +191,11 @@ export function SupportTicketDetailSheet({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent
-          side="right"
-          showCloseButton={false}
-          floatingClose
-          floatingRailVisible={open}
-          floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS}
-          floatingRail={
-            <EntitySheetFloatingRail
-              sourcePageHref={sourcePageHref}
-              workspaceHref={workspaceHref}
-            />
-          }
-          className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          sourcePageHref={sourcePageHref}
+          workspaceHref={workspaceHref}
         >
           <div className="border-border flex h-full min-h-0 flex-col border-l">
             <div className="border-border bg-background shrink-0 border-b px-7 pt-5 pb-3">
@@ -292,7 +279,7 @@ export function SupportTicketDetailSheet({
               </Tabs>
             ) : null}
           </div>
-        </SheetContent>
+        </EntityDetailSheetContent>
       </Sheet>
 
       <SupportTicketCreateExecutionTaskDialog

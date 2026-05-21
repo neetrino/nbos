@@ -46,9 +46,11 @@ export {
 } from './DetailSheetSettingsMenu';
 export {
   DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS,
+  DETAIL_SHEET_CONTENT_WIDTH_AUXILIARY_CLASS,
   DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS,
   DETAIL_SHEET_CONTENT_WIDTH_MEDIUM_CLASS,
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS,
+  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS,
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS,
   DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS,
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
@@ -75,6 +77,12 @@ export {
   ENTITY_SHEET_FLOATING_RAIL_HINT_CLASS,
   type EntitySheetFloatingRailProps,
 } from './entity-sheet-floating-rail';
+export {
+  EntityDetailSheetContent,
+  type EntityDetailSheetContentProps,
+  type EntityDetailSheetLayout,
+  type EntityDetailSheetWidth,
+} from './EntityDetailSheetContent';
 export {
   QuickCreateTaskDialog,
   type QuickCreateTaskDialogProps,

@@ -5,15 +5,13 @@ import { Repeat } from 'lucide-react';
 import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
-  EntitySheetFloatingRail,
+  EntityDetailSheetContent,
   ErrorState,
   LoadingState,
   StatusBadge,
-  DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS,
-  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS,
 } from '@/components/shared';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import {
   formatAmount,
   getSubscriptionStatus,
@@ -176,19 +174,11 @@ export function SubscriptionDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS}
-        floatingRail={
-          <EntitySheetFloatingRail
-            sourcePageHref={sourcePageHref}
-            workspaceHref={subscriptionWorkspaceHref(subscriptionId)}
-          />
-        }
-        className={DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS}
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
+        sourcePageHref={sourcePageHref}
+        workspaceHref={subscriptionWorkspaceHref(subscriptionId)}
       >
         <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
           {loading ? (
@@ -268,7 +258,7 @@ export function SubscriptionDetailSheet({
           onSave={handleGeneralSave}
           onCancel={handleGeneralCancel}
         />
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

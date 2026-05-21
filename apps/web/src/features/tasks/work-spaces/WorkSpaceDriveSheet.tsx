@@ -18,7 +18,8 @@ import {
 } from '@/components/shared/entity-sheet-floating-rail';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { EntityDetailSheetContent } from '@/components/shared';
+import { Sheet } from '@/components/ui/sheet';
 import { DriveCreateFolderDialog } from '@/features/drive/DriveFolderActionDialogs';
 import { buildDriveHrefWithWorkSpace } from '@/features/drive/drive-deep-link';
 import { buildDriveFileHref } from '@/features/drive/drive-file-links';
@@ -59,22 +60,20 @@ export function WorkSpaceDriveSheet({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent
-          side="right"
-          showCloseButton={false}
-          floatingClose
-          floatingRailVisible={open}
-          floatingRailAnchorClassName={WORKSPACE_DRIVE_RAIL_ANCHOR_CLASS}
-          floatingRail={
+        <EntityDetailSheetContent
+          open={open}
+          contentClassName={cn(
+            'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none',
+            WORKSPACE_DRIVE_SHEET_WIDTH_CLASS,
+          )}
+          railAnchorClassName={WORKSPACE_DRIVE_RAIL_ANCHOR_CLASS}
+          floatingRailContent={
             <WorkSpaceDriveFloatingRail
               workSpacePageHref={workSpacePageHref}
               driveHref={driveHref}
             />
           }
-          className={cn(
-            'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none',
-            WORKSPACE_DRIVE_SHEET_WIDTH_CLASS,
-          )}
+          showRailActions={false}
         >
           <header className="border-border bg-background shrink-0 border-b px-5 pt-4 pb-3">
             <p className="text-muted-foreground mb-0.5 text-[11px] font-semibold tracking-wide uppercase">
@@ -155,7 +154,7 @@ export function WorkSpaceDriveSheet({
               Open in Drive
             </Button>
           </footer>
-        </SheetContent>
+        </EntityDetailSheetContent>
       </Sheet>
 
       <DriveCreateFolderDialog

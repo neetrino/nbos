@@ -32,8 +32,9 @@ Bring opened entity cards, sheets, and quick dialogs to one NBOS visual language
 
 **Shared UI (reuse, do not reinvent per module):**
 
-- `PipelineStagesBar`, `DetailSheetTabBar`, `DetailSheetSection`, `DetailSheetCollapsibleSection`, `InlineField`, `DetailSheetFormFooter`, `EntitySheetFloatingRail`
-- Width tokens: `DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS` (invoice), `MEDIUM` (client service), `75VW` (deal/subscription workspace)
+- `EntityDetailSheetContent` (entity sheets — floating Close + rail; prefer over hand-wired `SheetContent`)
+- `PipelineStagesBar`, `DetailSheetTabBar`, `DetailSheetSection`, `DetailSheetCollapsibleSection`, `InlineField`, `DetailSheetFormFooter`
+- Shell `layout`: `full` (entity detail) | `auxiliary` (narrow panel, Close-only rail); `width` when `full`: `wide` | `medium` | `compact`
 
 ---
 

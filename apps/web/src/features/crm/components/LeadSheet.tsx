@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { ArrowRight, Trash2, LayoutGrid, History } from 'lucide-react';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { DetailSheetFormFooter, DetailSheetSettingsMenu } from '@/components/shared';
-import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
+import {
+  DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
+  EntityDetailSheetContent,
+} from '@/components/shared';
 import { LeadPipelineStages } from './LeadPipelineStages';
 import { LEAD_STAGES } from '../constants/leadPipeline';
 import type { Lead } from '@/lib/api/leads';
@@ -189,18 +192,10 @@ export function LeadSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName="sm:right-[75vw]"
-        floatingRail={
-          <EntitySheetFloatingRail
-            sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(lead.id)}`}
-          />
-        }
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:data-[side=right]:w-[75vw]"
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
+        sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(lead.id)}`}
       >
         <CrmSheetEntityHeader
           title={headerTitle}
@@ -304,7 +299,7 @@ export function LeadSheet({
           onSave={handleGeneralSave}
           onCancel={handleGeneralCancel}
         />
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

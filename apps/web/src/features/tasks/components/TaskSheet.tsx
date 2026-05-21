@@ -1,12 +1,11 @@
 'use client';
 import { HardDrive, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { EntitySheetFloatingRail } from '@/components/shared/entity-sheet-floating-rail';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { StatusBadge } from '@/components/shared';
+import { Sheet } from '@/components/ui/sheet';
+import { EntityDetailSheetContent, StatusBadge } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import type { Task } from '@/lib/api/tasks';
@@ -64,23 +63,15 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName={TASK_SHEET_RAIL_ANCHOR_CLASS}
-        floatingRail={
-          state.task ? (
-            <EntitySheetFloatingRail
-              sourcePageHref={`/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(state.task.id)}`}
-              workspaceHref={
-                state.task.workspaceId ? `/work-spaces/${state.task.workspaceId}` : null
-              }
-            />
-          ) : undefined
+      <EntityDetailSheetContent
+        open={open}
+        contentClassName={TASK_SHEET_WIDTH_CLASS}
+        railAnchorClassName={TASK_SHEET_RAIL_ANCHOR_CLASS}
+        showRailActions={Boolean(state.task)}
+        sourcePageHref={
+          state.task ? `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(state.task.id)}` : '#'
         }
-        className={TASK_SHEET_WIDTH_CLASS}
+        workspaceHref={state.task?.workspaceId ? `/work-spaces/${state.task.workspaceId}` : null}
       >
         {state.loading && !state.task ? (
           <div className="flex flex-1 flex-col items-center justify-center">
@@ -210,7 +201,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
         ) : (
           <div className="text-muted-foreground p-5 text-sm">{state.generalError}</div>
         )}
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

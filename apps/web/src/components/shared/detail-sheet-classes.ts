@@ -1,6 +1,6 @@
 /**
  * Shared layout tokens for CRM / delivery-style detail sheets (wide right panel + floating rail).
- * Use with {@link SheetContent} from `@/components/ui/sheet`.
+ * Prefer {@link EntityDetailSheetContent} for entity detail sheets; otherwise {@link SheetContent}.
  */
 
 /** Matches Lead/Deal detail width: 75vw on `sm+`. */
@@ -22,6 +22,15 @@ export const DETAIL_SHEET_CONTENT_WIDTH_MEDIUM_CLASS =
   'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[48rem]';
 
 export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_MEDIUM_CLASS = 'sm:right-[48rem]';
+
+/**
+ * Narrow auxiliary panel (bonus ledger, HR peek) — use with
+ * {@link EntityDetailSheetContent} `layout="auxiliary"` (Close only by default).
+ */
+export const DETAIL_SHEET_CONTENT_WIDTH_AUXILIARY_CLASS =
+  'flex w-full flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-full sm:max-w-none sm:data-[side=right]:w-[36rem]';
+
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_AUXILIARY_CLASS = 'sm:right-[36rem]';
 
 /** Block surface aligned with Deal General sections. */
 export const DETAIL_SHEET_SECTION_SURFACE_CLASS =

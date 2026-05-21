@@ -4,13 +4,11 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet } from '@/components/ui/sheet';
 import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
-  EntitySheetFloatingRail,
-  DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS,
-  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS,
+  EntityDetailSheetContent,
 } from '@/components/shared';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { InvoiceMoneyStagesBar } from '@/features/finance/components/invoices/InvoiceMoneyStagesBar';
@@ -144,14 +142,11 @@ export function InvoiceSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        floatingClose
-        floatingRailVisible={open}
-        floatingRailAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_COMPACT_CLASS}
-        floatingRail={<EntitySheetFloatingRail sourcePageHref={sourcePageHref} />}
-        className={DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS}
+      <EntityDetailSheetContent
+        open={open}
+        layout="full"
+        width="compact"
+        sourcePageHref={sourcePageHref}
       >
         <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -215,7 +210,7 @@ export function InvoiceSheet({
           onSave={handleGeneralSave}
           onCancel={handleGeneralCancel}
         />
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }
