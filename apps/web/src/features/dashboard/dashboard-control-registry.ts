@@ -112,7 +112,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-expenses',
-    label: 'Expenses',
+    label: 'Pay now',
     href: '/finance/expenses',
     icon: ReceiptText,
     module: 'EXPENSES',

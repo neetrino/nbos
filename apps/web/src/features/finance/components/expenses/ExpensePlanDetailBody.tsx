@@ -50,7 +50,7 @@ export function ExpensePlanDetailBody({ plan }: ExpensePlanDetailBodyProps) {
           href={planExpensesDrilldownHref(plan.id)}
           className="text-primary font-medium hover:underline"
         >
-          View on expense board
+          View on pay now
         </Link>{' '}
         (all statuses, current period filter applies on the list).
       </p>

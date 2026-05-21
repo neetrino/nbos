@@ -56,7 +56,7 @@ export function subscriptionsListPageTitle(hasPartnerDrilldown: boolean): string
 }
 
 export function expensesListPageTitle(hasProjectDrilldown: boolean): string {
-  return hasProjectDrilldown ? 'Board · project filter' : 'Board';
+  return hasProjectDrilldown ? 'Pay now · project filter' : 'Pay now';
 }
 
 export function expensePlansListPageTitle(): string {

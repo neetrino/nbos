@@ -121,12 +121,12 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'FINANCE_SUBSCRIPTIONS', action: 'VIEW' },
       },
       {
-        label: 'Expense plans',
+        label: 'Expense Plans',
         href: '/finance/expenses/plans',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
       {
-        label: 'Board',
+        label: 'Expenses Pay',
         href: '/finance/expenses',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },

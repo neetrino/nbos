@@ -33,7 +33,7 @@ export const FINANCE_EXPENSES_NAV: PageHeroNavLinkItem[] = [
   },
   {
     href: FINANCE_EXPENSES_PREFIX,
-    label: 'Board',
+    label: 'Pay Now',
     icon: Receipt,
     matchPrefix: FINANCE_EXPENSES_PREFIX,
     excludeMatchPrefix: FINANCE_EXPENSE_PLANS_PREFIX,

@@ -12,7 +12,7 @@ export const EXPENSE_SORT_BY_FILTER_KEY = 'sortBy';
 export const EXPENSE_SORT_ORDER_FILTER_KEY = 'sortOrder';
 
 const EXPENSE_BOARD_SCOPE_OPTIONS = [
-  { value: 'active', label: 'Active board' },
+  { value: 'active', label: 'Pay now' },
   { value: 'backlog', label: 'Backlog' },
   { value: 'closed', label: 'Closed' },
 ] as const;
@@ -32,7 +32,7 @@ export function expenseBoardPathForScope(scope: string): string {
 export function buildExpenseBoardScopeFilterConfig(): FilterConfig {
   return {
     key: EXPENSE_BOARD_SCOPE_FILTER_KEY,
-    label: 'Board',
+    label: 'Scope',
     includeAllOption: false,
     defaultOptionValue: 'active',
     options: [...EXPENSE_BOARD_SCOPE_OPTIONS],

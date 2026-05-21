@@ -15,7 +15,7 @@ const COPY: Record<
   plans: {
     body: 'Plans define recurring or expected spend. Generated expense cards appear on the live board when due.',
     href: EXPENSE_LIST_PATH,
-    linkLabel: 'Open expense board',
+    linkLabel: 'Open pay now',
   },
   board: {
     body: 'This board shows expense cards to pay now. Create or edit recurring rules under Expense plans.',

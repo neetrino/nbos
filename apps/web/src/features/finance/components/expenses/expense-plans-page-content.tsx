@@ -428,7 +428,7 @@ export function ExpensePlansPageContent() {
             }
             description={
               totalInScope === 0 && !hasActiveFilters
-                ? 'Create a plan for rent, SaaS, or other recurring spend; cards appear on the expense board when due.'
+                ? 'Create a plan for rent, SaaS, or other recurring spend; cards appear on pay now when due.'
                 : 'Try clearing filters or switch to the calendar grid.'
             }
             action={
