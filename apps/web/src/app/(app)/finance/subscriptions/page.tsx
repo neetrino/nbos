@@ -32,6 +32,20 @@ import {
   subscriptionsListWithOpenSubscriptionHref,
 } from '@/features/finance/constants/subscription-deep-link';
 import type { Subscription } from '@/lib/api/finance';
+import type { FilterConfig } from '@/components/shared/FilterBar';
+
+const SUBSCRIPTION_STATIC_FILTER_CONFIGS: FilterConfig[] = [
+  {
+    key: 'type',
+    label: 'Type',
+    options: SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label })),
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    options: SUBSCRIPTION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+  },
+];
 
 function SubscriptionsPageInner() {
   const router = useRouter();
@@ -82,12 +96,15 @@ function SubscriptionsPageInner() {
     });
   };
 
-  const handleFilterChange = (key: string, value: string) => {
-    if (partnerIdFromUrl && key === 'partner') {
-      router.replace(pathname ?? '/finance/subscriptions');
-    }
-    page.setFilters((prev) => ({ ...prev, [key]: value }));
-  };
+  const handleFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (partnerIdFromUrl && key === 'partner') {
+        router.replace(pathname ?? '/finance/subscriptions');
+      }
+      page.setFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    [partnerIdFromUrl, pathname, router, page.setFilters],
+  );
 
   const openSubscriptionDetail = useCallback(
     (subscriptionId: string) => {
@@ -123,37 +140,26 @@ function SubscriptionsPageInner() {
     [page, router, subscriptionGrid],
   );
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     if (partnerIdFromUrl) {
       router.replace(pathname ?? '/finance/subscriptions');
     }
     page.setFilters({});
-  };
+  }, [partnerIdFromUrl, pathname, router, page.setFilters]);
 
-  const filterConfigs = useMemo(
-    () => [
+  const filterConfigs = useMemo((): FilterConfig[] => {
+    if (partnerFilterOptions.length === 0) {
+      return SUBSCRIPTION_STATIC_FILTER_CONFIGS;
+    }
+    return [
+      ...SUBSCRIPTION_STATIC_FILTER_CONFIGS,
       {
-        key: 'type',
-        label: 'Type',
-        options: SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label })),
+        key: 'partner',
+        label: 'Partner',
+        options: partnerFilterOptions,
       },
-      {
-        key: 'status',
-        label: 'Status',
-        options: SUBSCRIPTION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
-      },
-      ...(partnerFilterOptions.length > 0
-        ? [
-            {
-              key: 'partner',
-              label: 'Partner',
-              options: partnerFilterOptions,
-            },
-          ]
-        : []),
-    ],
-    [partnerFilterOptions],
-  );
+    ];
+  }, [partnerFilterOptions]);
 
   const moduleHeroSlots = useMemo(
     () => ({

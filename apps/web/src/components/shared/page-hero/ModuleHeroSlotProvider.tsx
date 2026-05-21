@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -57,8 +58,10 @@ export function ModuleHeroSlotProvider({
     });
   }, []);
 
+  const contextValue = useMemo(() => ({ setSlots }), [setSlots]);
+
   return (
-    <ModuleHeroSlotContext.Provider value={{ setSlots }}>
+    <ModuleHeroSlotContext.Provider value={contextValue}>
       <div className={className ?? 'flex h-full min-h-0 flex-col gap-5'}>
         <PageHero
           title={title}
@@ -84,14 +87,15 @@ export function useModuleHeroSlots(slots: ModuleHeroSlots): void {
     throw new Error('useModuleHeroSlots must be used within ModuleHeroSlotProvider');
   }
 
+  const { setSlots } = ctx;
   const slotsRef = useRef(slots);
   slotsRef.current = slots;
 
   useLayoutEffect(() => {
-    ctx.setSlots(slotsRef.current);
+    setSlots(slotsRef.current);
   });
 
   useLayoutEffect(() => {
-    return () => ctx.setSlots(EMPTY_SLOTS);
-  }, [ctx]);
+    return () => setSlots(EMPTY_SLOTS);
+  }, [setSlots]);
 }
