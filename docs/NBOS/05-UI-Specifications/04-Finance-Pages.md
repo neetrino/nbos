@@ -13,9 +13,13 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 ### 1.1. Навигация модуля (IA)
 
-- **Сайдбар:** плоский список ссылок (Overview, Orders, Invoices, …) **без** заголовков-групп «Revenue / Expenses / …» — зональная навигация только в page hero (pill-tabs).
-- **Page hero (как CRM):** одна карточка `Finance` + **3–5 pill-tabs только внутри текущей зоны** (например Revenue: Orders | Invoices | Payments | Subscriptions). Заголовки зон вроде «Revenue» **не** являются табами в контенте.
-- **Overview** (`/finance/dashboard`): без зональных табов; зональные KPI позже — в hub или в суммах колонок досок, не отдельным блоком над Kanban.
+- **Сайдбар:** **4 зоны** — Overview, Revenue, Expenses, Payroll (без плоского списка всех URL). Клик по зоне открывает **последнюю** страницу зоны (`localStorage`, как Board/List); первый заход — default (Overview → Dashboard, Revenue → Orders, …).
+- **Page hero (как CRM):** карточка `Finance` + pill-tabs **внутри текущей зоны**:
+  - Overview: Dashboard | Reports | Journal
+  - Revenue: Orders | Invoices | Payments | Subscriptions
+  - Expenses: Pay Now | Expenses Plan | Client services
+  - Payroll: Payroll | Salary | Bonus pools | Bonus
+- **Employee Wallet:** не в Finance sidebar; маршрут `/my-account/wallet`, пункт в account menu (данные только текущего пользователя, `/api/me/wallet`).
 - **Поиск / фильтры / Board|List:** в hero через `useModuleHeroSlots` (эталон — CRM Leads). **Поиск** — по центру карточки hero (`PageHero` middle column, `max-w-3xl`), слева title + zone tabs, справа view/actions. Суммы по колонкам Kanban — под заголовком колонки (как Deals), не отдельная аналитическая полоса на странице.
 
 ---

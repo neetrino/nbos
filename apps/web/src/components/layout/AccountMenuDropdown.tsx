@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChevronRight, LogOut, UserCircle2 } from 'lucide-react';
+import { ChevronRight, LogOut, UserCircle2, Wallet } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import {
   DropdownMenu,
@@ -78,6 +78,7 @@ type AccountMenuPanelProps = {
   displayName: string;
   initials: string;
   onMyAccount: () => void;
+  onMyWallet: () => void;
   onSignOut: () => void;
 };
 
@@ -86,6 +87,7 @@ function AccountMenuPanel({
   displayName,
   initials,
   onMyAccount,
+  onMyWallet,
   onSignOut,
 }: AccountMenuPanelProps) {
   return (
@@ -102,6 +104,13 @@ function AccountMenuPanel({
         >
           <UserCircle2 className="size-[18px] shrink-0" strokeWidth={1.75} />
           <span>My Account</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="focus:bg-accent h-11 cursor-pointer rounded-xl px-3"
+          onClick={onMyWallet}
+        >
+          <Wallet className="size-[18px] shrink-0" strokeWidth={1.75} />
+          <span>My wallet</span>
         </DropdownMenuItem>
       </div>
       <div className="border-border bg-muted/25 rounded-b-2xl border-t p-2">
@@ -147,6 +156,7 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
         displayName={displayName}
         initials={initials}
         onMyAccount={() => router.push('/my-account')}
+        onMyWallet={() => router.push('/my-account/wallet')}
         onSignOut={() => signOut({ callbackUrl: '/sign-in' })}
       />
     </DropdownMenu>

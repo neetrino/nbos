@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronLeft, ExternalLink, Link2 } from 'lucide-react';
@@ -16,10 +16,12 @@ import {
   type NavModuleDefinition,
 } from '@/lib/navigation/nav-config';
 import type { DashboardPersonalLink } from '@/lib/api/dashboard';
+import { writeFinanceZoneLastHref } from '@/features/finance/constants/finance-zone-storage';
+import { FinanceSidebarZoneLink } from './FinanceSidebarZoneLink';
 import {
   getFirstChildHref,
   getPathFromHref,
-  isChildRouteActive,
+  isNavChildLinkActive,
 } from '@/lib/navigation/nav-route-utils';
 import { getSidebarNavIcon } from './sidebar-nav-icons';
 
@@ -41,6 +43,11 @@ export function SidebarNavList({
   onToggleMore,
 }: SidebarNavListProps) {
   const pathname = usePathname();
+
+  useLayoutEffect(() => {
+    writeFinanceZoneLastHref(pathname);
+  }, [pathname]);
+
   const [manualExpanded, setManualExpanded] = useState<{ key: string; pathname: string } | null>(
     null,
   );
@@ -51,7 +58,7 @@ export function SidebarNavList({
       .find(
         (item) =>
           item.children?.some(
-            (child) => isNavChildLink(child) && isChildRouteActive(pathname, child.href),
+            (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child),
           ) ?? false,
       )?.key ?? null;
 
@@ -206,7 +213,7 @@ function ModuleNavRow({
   const icon = getSidebarNavIcon(item.key);
   const childPathActive =
     item.children?.some(
-      (child) => isNavChildLink(child) && isChildRouteActive(pathname, child.href),
+      (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child),
     ) ?? false;
   const active = childPathActive || pathname.startsWith(item.href);
   const firstChildHref = getFirstChildHref(item);
@@ -292,6 +299,16 @@ function ModuleNavRow({
                         {child.label}
                       </span>
                     </li>
+                  );
+                }
+                if (child.financeZone) {
+                  return (
+                    <FinanceSidebarZoneLink
+                      key={child.financeZone}
+                      zone={child.financeZone}
+                      label={child.label}
+                      pathname={pathname}
+                    />
                   );
                 }
                 const childPath = getPathFromHref(child.href);

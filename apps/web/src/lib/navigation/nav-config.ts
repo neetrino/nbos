@@ -1,4 +1,5 @@
 import type { SidebarModuleKey } from '@nbos/shared/constants';
+import type { FinanceSidebarZoneId } from '@/features/finance/constants/finance-zone-storage';
 
 export interface PermissionRequirement {
   module: string;
@@ -15,6 +16,8 @@ export type NavChildLinkDefinition = {
   kind?: 'link';
   label: string;
   href: string;
+  /** Finance sidebar zone entry — href resolved from last visited path in zone. */
+  financeZone?: FinanceSidebarZoneId;
   permission?: PermissionRequirement;
 };
 
@@ -98,77 +101,25 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
       {
         label: 'Overview',
         href: '/finance/dashboard',
+        financeZone: 'overview',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
       {
-        label: 'Orders',
+        label: 'Revenue',
         href: '/finance/orders',
-        permission: { module: 'ORDERS', action: 'VIEW' },
-      },
-      {
-        label: 'Invoices',
-        href: '/finance/invoices',
+        financeZone: 'revenue',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
       {
-        label: 'Payments',
-        href: '/finance/payments',
-        permission: { module: 'FINANCE_PAYMENTS', action: 'VIEW' },
-      },
-      {
-        label: 'Subscriptions',
-        href: '/finance/subscriptions',
-        permission: { module: 'FINANCE_SUBSCRIPTIONS', action: 'VIEW' },
-      },
-      {
-        label: 'Expenses Pay',
+        label: 'Expenses',
         href: '/finance/expenses',
-        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
-      },
-      {
-        label: 'Expense Plan',
-        href: '/finance/expenses/plans',
+        financeZone: 'expenses',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
       {
         label: 'Payroll',
         href: '/finance/payroll',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-      },
-      {
-        label: 'Salary',
-        href: '/finance/salary',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-      },
-      {
-        label: 'Bonus pools',
-        href: '/finance/bonus-pools',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-      },
-      {
-        label: 'Bonus',
-        href: '/bonus',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-      },
-      {
-        label: 'Client services',
-        href: '/finance/client-services',
-        permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
-      },
-      { kind: 'group', label: 'Analytics' },
-      {
-        label: 'Reports',
-        href: '/finance/reports',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-      },
-      {
-        label: 'Journal',
-        href: '/finance/journal',
-        permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
-      },
-      {
-        label: 'My wallet',
-        href: '/finance/wallet',
+        financeZone: 'payroll',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
     ],
