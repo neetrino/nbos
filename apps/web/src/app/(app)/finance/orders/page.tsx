@@ -39,6 +39,17 @@ import {
 } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
+const ORDER_FILTER_CONFIGS = [
+  {
+    key: 'status',
+    label: 'Status',
+    options: Object.entries(ORDER_STATUSES).map(([value, cfg]) => ({
+      value,
+      label: cfg.label,
+    })),
+  },
+];
+
 function OrdersPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -149,16 +160,13 @@ function OrdersPageContent() {
     }
   }, [fetchOrders]);
 
-  const filterConfigs = [
-    {
-      key: 'status',
-      label: 'Status',
-      options: Object.entries(ORDER_STATUSES).map(([value, cfg]) => ({
-        value,
-        label: cfg.label,
-      })),
-    },
-  ];
+  const handleOrderFilterChange = useCallback((key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleClearOrderFilters = useCallback(() => {
+    setFilters({});
+  }, []);
 
   const clearReconciliationGap = () => {
     router.replace('/finance/orders');
@@ -178,10 +186,10 @@ function OrdersPageContent() {
           search={search}
           onSearchChange={setSearch}
           searchPlaceholder="Search by order, project, product, deal, partner…"
-          filters={filterConfigs}
+          filters={ORDER_FILTER_CONFIGS}
           filterValues={filters}
-          onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-          onClearAll={() => setFilters({})}
+          onFilterChange={handleOrderFilterChange}
+          onClearAll={handleClearOrderFilters}
         />
       ),
       trailing: (
@@ -234,10 +242,11 @@ function OrdersPageContent() {
     }),
     [
       exportCsvSubmitting,
-      filterConfigs,
       filters,
+      handleClearOrderFilters,
       handleExportCsv,
       handleExportScopeStatsCsv,
+      handleOrderFilterChange,
       loading,
       period,
       search,

@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useLayoutEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -83,8 +84,14 @@ export function useModuleHeroSlots(slots: ModuleHeroSlots): void {
     throw new Error('useModuleHeroSlots must be used within ModuleHeroSlotProvider');
   }
 
+  const slotsRef = useRef(slots);
+  slotsRef.current = slots;
+
   useLayoutEffect(() => {
-    ctx.setSlots(slots);
+    ctx.setSlots(slotsRef.current);
+  });
+
+  useLayoutEffect(() => {
     return () => ctx.setSlots(EMPTY_SLOTS);
-  }, [ctx, slots]);
+  }, [ctx]);
 }

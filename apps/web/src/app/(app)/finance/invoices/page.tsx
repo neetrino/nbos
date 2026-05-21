@@ -116,12 +116,12 @@ function InvoicesPageInner() {
         return { ...prev, [key]: value };
       });
     },
-    [state],
+    [state.setFilters],
   );
 
   const handleClearFilters = useCallback(() => {
     state.setFilters({});
-  }, [state]);
+  }, [state.setFilters]);
 
   const moduleHeroSlots = useMemo(
     () => ({

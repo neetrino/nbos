@@ -223,7 +223,13 @@ function SubscriptionsPageInner() {
       handleExportCsv,
       handleExportScopeStatsCsv,
       handleFilterChange,
-      page,
+      page.filtersForBar,
+      page.loading,
+      page.period,
+      page.search,
+      page.setPeriod,
+      page.setSearch,
+      page.stats,
     ],
   );
 
