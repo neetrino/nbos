@@ -71,6 +71,10 @@ export function financeReportsPageTitle(): string {
   return 'Finance reports';
 }
 
+export function financeJournalPageTitle(): string {
+  return 'Journal';
+}
+
 export interface ExpensePlanDetailPageTitleParams {
   loading: boolean;
   loadFailed: boolean;

@@ -5,6 +5,10 @@ import { Lock, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { IntegratedSearchFilters, useModuleHeroSlots } from '@/components/shared';
+import { FinanceOverviewPageSettingsSheet } from '@/features/finance/components/overview/FinanceOverviewPageSettingsSheet';
+import { financeJournalPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import {
   Dialog,
   DialogContent,
@@ -20,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
+import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   financeJournalApi,
@@ -30,9 +34,14 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 
+const JOURNAL_MONTH_FILTER_KEY = 'month';
+
 export default function FinanceJournalPage() {
+  useFinanceDocumentTitle(financeJournalPageTitle());
+
   const [periods, setPeriods] = useState<FinancePostingPeriod[]>([]);
   const [entries, setEntries] = useState<OperationalJournalEntry[]>([]);
+  const [search, setSearch] = useState('');
   const [monthFilter, setMonthFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,36 +76,73 @@ export default function FinanceJournalPage() {
     void load();
   }, [load]);
 
+  const handleClearFilters = useCallback(() => {
+    setSearch('');
+    setMonthFilter('');
+  }, []);
+
   const moduleHeroSlots = useMemo(
     () => ({
       search: (
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="journal-month-filter">Filter entries by month</Label>
-          <Input
-            id="journal-month-filter"
-            type="month"
-            value={monthFilter}
-            onChange={(e) => setMonthFilter(e.target.value)}
-            className="w-44"
-          />
-        </div>
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by description, source, amount…"
+          filters={[
+            {
+              key: JOURNAL_MONTH_FILTER_KEY,
+              label: 'Entry month',
+              fieldType: 'month',
+              options: [],
+            },
+          ]}
+          filterValues={{ [JOURNAL_MONTH_FILTER_KEY]: monthFilter }}
+          onFilterChange={(key, value) => {
+            if (key === JOURNAL_MONTH_FILTER_KEY) {
+              setMonthFilter(value);
+            }
+          }}
+          onClearAll={handleClearFilters}
+        />
       ),
       trailing: (
         <>
-          <Button type="button" variant="outline" size="sm" onClick={() => setMonthFilter('')}>
-            Clear filter
-          </Button>
-          <Button type="button" size="sm" onClick={() => setAdjustOpen(true)}>
-            <Plus size={16} className="mr-1" aria-hidden />
+          <FinanceOverviewPageSettingsSheet
+            title="Journal — settings"
+            description="Reload posting periods and journal entries."
+            triggerAriaLabel="Journal settings"
+            refreshDisabled={loading}
+            onRefresh={() => void load()}
+          />
+          <Button type="button" onClick={() => setAdjustOpen(true)}>
+            <Plus size={16} aria-hidden />
             Manual adjustment
           </Button>
         </>
       ),
     }),
-    [monthFilter],
+    [handleClearFilters, load, loading, monthFilter, search],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
+
+  const filteredEntries = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return entries;
+    return entries.filter((entry) => {
+      const haystack = [
+        entry.description,
+        entry.sourceType,
+        entry.sourceId,
+        entry.recognitionBasis,
+        entry.functionalAmount,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [entries, search]);
 
   const handleClosePeriod = async (monthKey: string) => {
     if (
@@ -194,7 +240,7 @@ export default function FinanceJournalPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {entries.map((entry) => (
+            {filteredEntries.map((entry) => (
               <TableRow key={entry.id}>
                 <TableCell>{entry.bookedAt.slice(0, 10)}</TableCell>
                 <TableCell>
