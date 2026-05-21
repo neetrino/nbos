@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { FilterBar } from '@/components/shared';
+import { IntegratedSearchFilters, useModuleHeroSlots, ViewModeSwitch } from '@/components/shared';
+import { Download, Loader2, Plus, TableProperties } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { FINANCE_PERIOD_OPTIONS } from '@/features/finance/constants/finance';
 import { type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   expensesApi,
@@ -26,8 +29,8 @@ import { ExpensePlanDrilldownBanner } from './ExpensePlanDrilldownBanner';
 import { useExpensePlanBannerLabel } from './use-expense-plan-banner-label';
 import { ExpenseSortControls } from './ExpenseSortControls';
 import { FinanceWorkflowScopeBanner } from '../FinanceWorkflowScopeBanner';
-import { ExpensesPageHeader } from './ExpensesPageHeader';
-import { ExpenseSummaryCards } from './ExpenseSummaryCards';
+import { ExpenseFinanceSubNav } from './ExpenseFinanceSubNav';
+import { EXPENSES_VIEW_OPTIONS } from './expenses-view-options';
 import { ExpensesPageDialogs } from './ExpensesPageDialogs';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
 import { buildExpenseFilterConfigs } from './expenses-filter-config';
@@ -263,30 +266,110 @@ export function ExpensesPageContent({
     setFilters(clearedExpenseFilterRecord(pageVariant, projectIdFromUrl));
   }, [pageVariant, projectIdFromUrl]);
 
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by name, notes, project, plan…"
+          filters={filterConfigs}
+          filterValues={filters}
+          onFilterChange={handleFilterChange}
+          onClearAll={clearFilters}
+        />
+      ),
+      secondaryTabs: <ExpenseFinanceSubNav />,
+      viewMode:
+        pageVariant === 'backlog' ? undefined : (
+          <ViewModeSwitch
+            value={view}
+            onChange={handleViewChange}
+            options={EXPENSES_VIEW_OPTIONS}
+          />
+        ),
+      trailing: (
+        <>
+          <ExpenseSortControls
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortByChange={onSortByChange}
+            onSortOrderChange={onSortOrderChange}
+          />
+          <div className="border-border flex rounded-lg border p-1">
+            {FINANCE_PERIOD_OPTIONS.map((option) => (
+              <Button
+                key={option.value}
+                variant={period === option.value ? 'secondary' : 'ghost'}
+                size="sm"
+                type="button"
+                onClick={() => setPeriod(option.value)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading || !stats}
+            onClick={() => handleExportScopeStatsCsv()}
+            aria-label="Export expense scope statistics as CSV"
+          >
+            <TableProperties size={16} aria-hidden />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading || exportCsvSubmitting}
+            onClick={() => {
+              void handleExportCsv();
+            }}
+            aria-label="Export expenses as CSV"
+          >
+            {exportCsvSubmitting ? (
+              <Loader2 size={16} className="animate-spin" aria-hidden />
+            ) : (
+              <Download size={16} aria-hidden />
+            )}
+          </Button>
+          {pageVariant === 'closed' ? null : (
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <Plus size={16} aria-hidden />
+              New Expense
+            </Button>
+          )}
+        </>
+      ),
+    }),
+    [
+      clearFilters,
+      exportCsvSubmitting,
+      filterConfigs,
+      filters,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      handleFilterChange,
+      handleViewChange,
+      loading,
+      onSortByChange,
+      onSortOrderChange,
+      pageVariant,
+      period,
+      search,
+      sortBy,
+      sortOrder,
+      stats,
+      view,
+    ],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   return (
-    <div className="flex h-full flex-col gap-5">
-      <ExpensesPageHeader
-        expenseCount={expenses.length}
-        period={period}
-        onPeriodChange={setPeriod}
-        view={view}
-        onViewChange={handleViewChange}
-        hideViewToggle={pageVariant === 'backlog'}
-        pageVariant={pageVariant}
-        onExportCsv={handleExportCsv}
-        exportDisabled={loading || exportCsvSubmitting}
-        exportInProgress={exportCsvSubmitting}
-        statsExportDisabled={loading || !stats}
-        onExportScopeStatsCsv={handleExportScopeStatsCsv}
-        onCreateClick={() => setCreateOpen(true)}
-      />
-
-      <ExpenseSummaryCards
-        stats={stats}
-        loading={loading}
-        variant={pageVariant === 'backlog' ? 'backlog' : 'default'}
-      />
-
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {pageVariant === 'closed' ? <FinanceWorkflowScopeBanner variant="expense-closed" /> : null}
 
       {pageVariant === 'default' && !projectIdFromUrl && !expensePlanIdFromUrl?.trim() ? (
@@ -308,24 +391,6 @@ export function ExpensesPageContent({
           onClearPlanFilter={handleClearPlanDrilldown}
         />
       ) : null}
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by name, notes, project, plan…"
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={handleFilterChange}
-        onClearFilters={clearFilters}
-        actions={
-          <ExpenseSortControls
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSortByChange={onSortByChange}
-            onSortOrderChange={onSortOrderChange}
-          />
-        }
-      />
 
       <ExpensesPageMainPanel
         loading={loading}

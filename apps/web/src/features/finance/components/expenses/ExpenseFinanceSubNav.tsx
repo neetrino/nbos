@@ -28,7 +28,7 @@ export function ExpenseFinanceSubNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="mb-4 flex flex-wrap gap-2" aria-label="Expense views">
+    <nav className="flex flex-wrap gap-1.5" aria-label="Expense board scope">
       {LINKS.map((link) => {
         const active =
           link.href === EXPENSE_LIST_PATH

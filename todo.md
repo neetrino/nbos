@@ -16,10 +16,10 @@
 
 - [x] **Invoices:** `useModuleHeroSlots` + `IntegratedSearchFilters` + `ViewModeSwitch`; remove standalone header/filter row
 - [x] **Invoices:** remove top analytics block (`InvoiceStatsCards`)
-- [ ] **Orders:** migrate to module hero slots
-- [ ] **Payments:** migrate to module hero slots
-- [ ] **Subscriptions:** migrate to module hero slots + remove stats cards if present
-- [ ] **Expenses (board):** hero slots; move `ExpenseFinanceSubNav` → `secondaryTabs` in hero
+- [x] **Orders:** migrate to module hero slots
+- [x] **Payments:** migrate to module hero slots
+- [x] **Subscriptions:** migrate to module hero slots + remove stats cards if present
+- [x] **Expenses (board):** hero slots; move `ExpenseFinanceSubNav` → `secondaryTabs` in hero
 - [ ] **Expenses (plans):** hero slots
 - [ ] **Payroll / Salary / Bonus pools:** hero slots
 - [ ] **Client services:** hero slots + remove summary card row

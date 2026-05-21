@@ -2,16 +2,24 @@
 
 import { Suspense, useMemo, useState, useCallback } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { FilterBar, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import {
+  IntegratedSearchFilters,
+  ListMutationErrorBanner,
+  LoadingState,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { SUBSCRIPTION_TYPES, SUBSCRIPTION_STATUSES } from '@/features/finance/constants/finance';
+import { Download, Loader2, Plus, TableProperties } from 'lucide-react';
+import {
+  FINANCE_PERIOD_OPTIONS,
+  SUBSCRIPTION_TYPES,
+  SUBSCRIPTION_STATUSES,
+} from '@/features/finance/constants/finance';
 import { subscriptionsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-partner-drilldown';
 import { usePartnerFilterOptions } from '@/features/finance/hooks/usePartnerFilterOptions';
 import { SubscriptionsPageContent } from '@/features/finance/components/subscriptions/SubscriptionsPageContent';
 import { useSubscriptionGrid } from '@/features/finance/components/subscriptions/use-subscription-grid';
-import { SubscriptionsPageHeader } from '@/features/finance/components/subscriptions/SubscriptionsPageHeader';
-import { SubscriptionStatsCards } from '@/features/finance/components/subscriptions/SubscriptionStatsCards';
 import { useSubscriptionsCsvExport } from '@/features/finance/components/subscriptions/use-subscriptions-csv-export';
 import { useSubscriptionsScopeStatsCsvExport } from '@/features/finance/components/subscriptions/use-subscriptions-scope-stats-csv-export';
 import { useSubscriptionsPageState } from '@/features/finance/components/subscriptions/useSubscriptionsPageState';
@@ -64,12 +72,6 @@ function SubscriptionsPageInner() {
   });
 
   useFinanceDocumentTitle(subscriptionsListPageTitle(Boolean(partnerIdFromUrl?.trim())));
-
-  const totalMRR = Number(page.stats?.monthlyRevenue ?? 0);
-  const activeCount = page.subscriptions.filter(
-    (subscription) => subscription.status === 'ACTIVE',
-  ).length;
-  const activeSubscriptions = page.stats?.activeSubscriptions ?? activeCount;
 
   const clearPartnerDrilldown = () => {
     router.replace(pathname ?? '/finance/subscriptions');
@@ -128,45 +130,107 @@ function SubscriptionsPageInner() {
     page.setFilters({});
   };
 
-  const filterConfigs = [
-    {
-      key: 'type',
-      label: 'Type',
-      options: SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label })),
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      options: SUBSCRIPTION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
-    },
-    ...(partnerFilterOptions.length > 0
-      ? [
-          {
-            key: 'partner',
-            label: 'Partner',
-            options: partnerFilterOptions,
-          },
-        ]
-      : []),
-  ];
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'type',
+        label: 'Type',
+        options: SUBSCRIPTION_TYPES.map((t) => ({ value: t.value, label: t.label })),
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        options: SUBSCRIPTION_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+      },
+      ...(partnerFilterOptions.length > 0
+        ? [
+            {
+              key: 'partner',
+              label: 'Partner',
+              options: partnerFilterOptions,
+            },
+          ]
+        : []),
+    ],
+    [partnerFilterOptions],
+  );
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={page.search}
+          onSearchChange={page.setSearch}
+          searchPlaceholder="Search by code, project, company, partner…"
+          filters={filterConfigs}
+          filterValues={page.filtersForBar}
+          onFilterChange={handleFilterChange}
+          onClearAll={handleClearFilters}
+        />
+      ),
+      trailing: (
+        <>
+          <div className="border-border flex rounded-lg border p-1">
+            {FINANCE_PERIOD_OPTIONS.map((option) => (
+              <Button
+                key={option.value}
+                variant={page.period === option.value ? 'secondary' : 'ghost'}
+                size="sm"
+                type="button"
+                onClick={() => page.setPeriod(option.value)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={page.loading || !page.stats}
+            onClick={() => handleExportScopeStatsCsv()}
+            aria-label="Export subscription scope statistics as CSV"
+          >
+            <TableProperties size={16} aria-hidden />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={page.loading || exportCsvSubmitting}
+            onClick={() => {
+              void handleExportCsv();
+            }}
+            aria-label="Export subscriptions as CSV"
+          >
+            {exportCsvSubmitting ? (
+              <Loader2 size={16} className="animate-spin" aria-hidden />
+            ) : (
+              <Download size={16} aria-hidden />
+            )}
+          </Button>
+          <Button type="button" onClick={() => setCreateOpen(true)}>
+            <Plus size={16} aria-hidden />
+            New Subscription
+          </Button>
+        </>
+      ),
+    }),
+    [
+      exportCsvSubmitting,
+      filterConfigs,
+      handleClearFilters,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      handleFilterChange,
+      page,
+    ],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full flex-col gap-5">
-      <SubscriptionsPageHeader
-        activeSubscriptions={activeSubscriptions}
-        totalMRR={totalMRR}
-        period={page.period}
-        onPeriodChange={page.setPeriod}
-        onExportCsv={handleExportCsv}
-        exportDisabled={page.loading || exportCsvSubmitting}
-        exportInProgress={exportCsvSubmitting}
-        statsExportDisabled={page.loading || !page.stats}
-        onExportScopeStatsCsv={handleExportScopeStatsCsv}
-        onCreateClick={() => setCreateOpen(true)}
-      />
-
-      <SubscriptionStatsCards subscriptions={page.subscriptions} stats={page.stats} />
-
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {partnerIdFromUrl ? (
         <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
           <p className="text-foreground max-w-prose">
@@ -177,16 +241,6 @@ function SubscriptionsPageInner() {
           </Button>
         </div>
       ) : null}
-
-      <FilterBar
-        search={page.search}
-        onSearchChange={page.setSearch}
-        searchPlaceholder="Search by code, project, company, partner…"
-        filters={filterConfigs}
-        filterValues={page.filtersForBar}
-        onFilterChange={handleFilterChange}
-        onClearFilters={handleClearFilters}
-      />
 
       {partnerOptionsLoadError ? (
         <ListMutationErrorBanner

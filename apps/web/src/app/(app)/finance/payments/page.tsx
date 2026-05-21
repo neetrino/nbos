@@ -10,13 +10,22 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import {
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  StatusBadge,
+  useModuleHeroSlots,
+} from '@/components/shared';
+import { Download, Loader2, TableProperties } from 'lucide-react';
+import {
+  FINANCE_PERIOD_OPTIONS,
   getFinancePeriodParams,
   type FinancePeriod,
   formatAmount,
 } from '@/features/finance/constants/finance';
-import { PaymentsPageHeader } from '@/features/finance/components/payments/PaymentsPageHeader';
+import { Button } from '@/components/ui/button';
 import { usePaymentsCsvExport } from '@/features/finance/components/payments/use-payments-csv-export';
 import { usePaymentsScopeStatsCsvExport } from '@/features/finance/components/payments/use-payments-scope-stats-csv-export';
 import { buildPaymentListApiParams } from '@/features/finance/utils/build-payment-list-api-params';
@@ -86,48 +95,78 @@ export default function PaymentsPage() {
     fetchPayments();
   }, [fetchPayments]);
 
-  const totalCollected = Number(stats?.totalCollected ?? 0);
-  const thisMonthTotal = Number(stats?.thisMonthCollected ?? 0);
-  const totalPayments = stats?.totalPayments ?? payments.length;
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by invoice, company, order, project, notes…"
+          filters={[]}
+          filterValues={{}}
+          onFilterChange={() => {}}
+          onClearAll={() => {}}
+        />
+      ),
+      trailing: (
+        <>
+          <div className="border-border flex rounded-lg border p-1">
+            {FINANCE_PERIOD_OPTIONS.map((option) => (
+              <Button
+                key={option.value}
+                variant={period === option.value ? 'secondary' : 'ghost'}
+                size="sm"
+                type="button"
+                onClick={() => setPeriod(option.value)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading || !stats}
+            onClick={() => handleExportScopeStatsCsv()}
+            aria-label="Export payment scope statistics as CSV"
+          >
+            <TableProperties size={16} aria-hidden />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={loading || exportCsvSubmitting}
+            onClick={() => {
+              void handleExportCsv();
+            }}
+            aria-label="Export payments as CSV"
+          >
+            {exportCsvSubmitting ? (
+              <Loader2 size={16} className="animate-spin" aria-hidden />
+            ) : (
+              <Download size={16} aria-hidden />
+            )}
+          </Button>
+        </>
+      ),
+    }),
+    [
+      exportCsvSubmitting,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      loading,
+      period,
+      search,
+      stats,
+    ],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full flex-col gap-5">
-      <PaymentsPageHeader
-        visiblePaymentCount={payments.length}
-        period={period}
-        onPeriodChange={setPeriod}
-        onExportCsv={handleExportCsv}
-        exportDisabled={loading || exportCsvSubmitting}
-        exportInProgress={exportCsvSubmitting}
-        statsExportDisabled={loading || !stats}
-        onExportScopeStatsCsv={handleExportScopeStatsCsv}
-      />
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Collected</p>
-          <p className="mt-1 text-xl font-bold text-green-600">{formatAmount(totalCollected)}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">This Month</p>
-          <p className="mt-1 text-xl font-bold">{formatAmount(thisMonthTotal)}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Payments</p>
-          <p className="mt-1 text-xl font-bold">{totalPayments}</p>
-        </div>
-      </div>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by invoice, company, order, project, notes…"
-        filters={[]}
-        filterValues={{}}
-        onFilterChange={() => {}}
-        onClearFilters={() => {}}
-      />
-
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {loading ? (
         <LoadingState />
       ) : error ? (
