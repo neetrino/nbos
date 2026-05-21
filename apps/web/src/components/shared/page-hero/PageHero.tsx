@@ -30,10 +30,14 @@ export function PageHero({
   return (
     <section className={cn(PAGE_HERO_SURFACE, className)}>
       <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
-        <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-4">
-          <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">{title}</h1>
-          {tabs ? <div className={PAGE_HERO_TAB_SCROLL}>{tabs}</div> : null}
-        </div>
+        <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">{title}</h1>
+        {tabs ? (
+          <div
+            className={cn(PAGE_HERO_TAB_SCROLL, 'min-w-[10rem] flex-1 basis-full sm:basis-auto')}
+          >
+            {tabs}
+          </div>
+        ) : null}
         {search ? <HeroSearchSlot>{search}</HeroSearchSlot> : null}
         {hasTrailing ? (
           <HeroTrailingActions viewMode={viewMode} actions={actions} trailing={trailing} />
