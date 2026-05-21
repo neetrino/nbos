@@ -2,7 +2,7 @@
 
 > ~~Зачёркнуто = сделано.~~ Открытые пункты — дальше по плану.
 
-**Коммиты:** `15d5ceac` (zone hub) · `43fe17f1` · `26f8ae4e` · _(следующий — Bonus board totals)_
+**Коммиты:** `1c44a4e5` (bonus totals) · `15d5ceac` (zone hub) · `43fe17f1` · `26f8ae4e`
 
 ---
 
@@ -29,7 +29,12 @@
 
 ## Phase 5 — Canon polish
 
-- [ ] Filters/search kanban · invoice list parity · expense banners · stage-gate
+- [x] Expense scope hints в hero (`secondaryTabs`: active · backlog · closed)
+- [x] Invoice closed scope hint в hero
+- [x] Invoice list: overdue days parity с kanban
+- [x] Alias `/finance/expenses/pay` → active board
+- [ ] Filters/search kanban audit (остальные finance list pages)
+- [ ] Stage-gate highlights на expense sheet (invoice — частично)
 
 ## Phase 6 — Finance team custom UI (отложено)
 
@@ -39,5 +44,5 @@
 
 ## Что осталось
 
-1. **Phase 5** — canon polish.
-2. **Опционально:** RBAC Wallet; `/finance/expenses/pay`; подписи Expense Plan; сверка hub-метрик с API.
+1. **Phase 5** — остаток: filters audit · expense stage-gate.
+2. **Опционально:** RBAC Wallet (API `/me/wallet` уже без FINANCE\_\*); сверка hub-метрик с API.

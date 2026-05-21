@@ -1,6 +1,9 @@
+import { MODULE_SHELL_SURFACE_CARD } from '@/components/shared/module-shell/module-shell-surface';
+
 /** Drive-style hero card surface. */
-export const PAGE_HERO_SURFACE =
-  'border-border/70 bg-card/80 rounded-2xl border px-4 py-3 shadow-sm';
+export const PAGE_HERO_SURFACE = MODULE_SHELL_SURFACE_CARD;
+
+export { MODULE_SHELL_SURFACE_BRIDGED } from '@/components/shared/module-shell/module-shell-surface';
 
 /** Horizontal scroll when zone tabs exceed available width (hidden scrollbar; scroll via trackpad/drag). */
 export const PAGE_HERO_TAB_SCROLL =

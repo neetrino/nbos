@@ -32,6 +32,8 @@ export interface ModuleHeroSlotProviderProps {
   /** Section pills (CRM-style); omit on overview routes. */
   tabs?: ReactNode;
   children: ReactNode;
+  /** Flat PageHero top — pairs with header zone tab bridge (Finance). */
+  attachToHeaderBridge?: boolean;
   className?: string;
 }
 
@@ -40,6 +42,7 @@ export function ModuleHeroSlotProvider({
   title,
   tabs,
   children,
+  attachToHeaderBridge = false,
   className,
 }: ModuleHeroSlotProviderProps) {
   const [slots, setSlotsState] = useState<ModuleHeroSlots>(EMPTY_SLOTS);
@@ -70,6 +73,7 @@ export function ModuleHeroSlotProvider({
           viewMode={slots.viewMode}
           trailing={slots.trailing}
           secondaryTabs={slots.secondaryTabs}
+          attachToHeaderBridge={attachToHeaderBridge}
         />
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       </div>

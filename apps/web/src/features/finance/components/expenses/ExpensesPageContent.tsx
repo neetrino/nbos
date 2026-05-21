@@ -26,6 +26,7 @@ import {
 } from './expenses-page-filter-helpers';
 import { ExpensePlanDrilldownBanner } from './ExpensePlanDrilldownBanner';
 import { useExpensePlanBannerLabel } from './use-expense-plan-banner-label';
+import { resolveExpenseWorkflowScopeVariant } from '@/features/finance/constants/finance-workflow-scope-hints';
 import { FinanceWorkflowScopeBanner } from '../FinanceWorkflowScopeBanner';
 import { EXPENSES_VIEW_OPTIONS } from './expenses-view-options';
 import { ExpensesPageDialogs } from './ExpensesPageDialogs';
@@ -311,8 +312,11 @@ export function ExpensesPageContent({
     setPeriod('month');
   }, [pageVariant, projectIdFromUrl]);
 
+  const scopeBannerVariant = resolveExpenseWorkflowScopeVariant(pageVariant);
+
   const moduleHeroSlots = useMemo(
     () => ({
+      secondaryTabs: <FinanceWorkflowScopeBanner variant={scopeBannerVariant} />,
       search: (
         <IntegratedSearchFilters
           search={search}
@@ -361,6 +365,7 @@ export function ExpensesPageContent({
       integratedFilterValues,
       loading,
       pageVariant,
+      scopeBannerVariant,
       search,
       stats,
       view,
@@ -371,8 +376,6 @@ export function ExpensesPageContent({
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      {pageVariant === 'closed' ? <FinanceWorkflowScopeBanner variant="expense-closed" /> : null}
-
       {projectIdFromUrl ? (
         <ExpenseProjectDrilldownBanner
           projectId={projectIdFromUrl}

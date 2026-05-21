@@ -1,4 +1,4 @@
-import { DollarSign } from 'lucide-react';
+import { AlertTriangle, DollarSign } from 'lucide-react';
 import {
   Table,
   TableHeader,
@@ -10,6 +10,7 @@ import {
 import { StatusBadge } from '@/components/shared';
 import { formatAmount, getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoicesTableProps {
@@ -107,14 +108,20 @@ function InvoiceTaxCell({ taxStatus }: { taxStatus: string }) {
 }
 
 function InvoiceDueDateCell({ invoice }: { invoice: Invoice }) {
-  const isOverdue =
-    invoice.dueDate && new Date(invoice.dueDate) < new Date() && invoice.moneyStatus !== 'PAID';
+  const overdueDays = resolveInvoiceOverdueDays(invoice);
+  const dueLabel = invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '-';
 
   return (
-    <TableCell
-      className={`text-xs ${isOverdue ? 'font-medium text-red-500' : 'text-muted-foreground'}`}
-    >
-      {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '-'}
+    <TableCell className="text-xs">
+      <div className={overdueDays > 0 ? 'font-medium text-red-500' : 'text-muted-foreground'}>
+        {dueLabel}
+      </div>
+      {overdueDays > 0 ? (
+        <div className="mt-0.5 flex items-center gap-1 text-xs font-medium text-red-500">
+          <AlertTriangle size={10} aria-hidden />
+          {overdueDays}d overdue
+        </div>
+      ) : null}
     </TableCell>
   );
 }

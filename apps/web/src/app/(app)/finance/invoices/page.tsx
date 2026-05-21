@@ -145,8 +145,13 @@ function InvoicesPageInner() {
     [state.filters, state.period],
   );
 
+  const showClosedScopeBanner = boardScope === 'CLOSED' && !hasMoneyStatusFilter;
+
   const moduleHeroSlots = useMemo(
     () => ({
+      secondaryTabs: showClosedScopeBanner ? (
+        <FinanceWorkflowScopeBanner variant="invoice-closed" />
+      ) : undefined,
       search: (
         <IntegratedSearchFilters
           search={state.search}
@@ -193,6 +198,7 @@ function InvoicesPageInner() {
       handleFilterChange,
       invoiceFilterConfigs,
       invoiceFilterValues,
+      showClosedScopeBanner,
       state.loading,
       state.search,
       state.stats,
@@ -217,9 +223,6 @@ function InvoicesPageInner() {
             Clear filter
           </Button>
         </div>
-      ) : null}
-      {boardScope === 'CLOSED' && !hasMoneyStatusFilter ? (
-        <FinanceWorkflowScopeBanner variant="invoice-closed" />
       ) : null}
       <InvoicesPageContent
         invoices={displayInvoices}

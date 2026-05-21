@@ -4,7 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import type { HeaderNavItem } from './header-context-types';
-import { HEADER_CONTEXT_PILL_GROUP, HEADER_CONTEXT_SCROLL } from './header-context-constants';
+import {
+  HEADER_CONTEXT_SCROLL,
+  HEADER_CONTEXT_TAB_ACTIVE,
+  HEADER_CONTEXT_TAB_INACTIVE,
+  HEADER_CONTEXT_TAB_ROW,
+} from './header-context-constants';
 
 function isNavItemActive(pathname: string, item: HeaderNavItem): boolean {
   if (item.isActive) {
@@ -28,6 +33,7 @@ export interface HeaderContextNavProps {
   className?: string;
 }
 
+/** Primary module zones: browser-style tabs that bridge into PageHero below. */
 export function HeaderContextNav({ items, ariaLabel, className }: HeaderContextNavProps) {
   const pathname = usePathname();
 
@@ -36,35 +42,17 @@ export function HeaderContextNav({ items, ariaLabel, className }: HeaderContextN
   }
 
   return (
-    <nav className={cn(HEADER_CONTEXT_SCROLL, className)} aria-label={ariaLabel}>
-      <div className={cn(HEADER_CONTEXT_PILL_GROUP, 'w-max min-w-0')}>
+    <nav className={cn(HEADER_CONTEXT_SCROLL, 'h-full', className)} aria-label={ariaLabel}>
+      <div className={HEADER_CONTEXT_TAB_ROW}>
         {items.map((item) => {
           const active = isNavItemActive(pathname, item);
-          const Icon = item.icon;
           return (
             <Link
               key={`${item.href}-${item.label}`}
               href={item.href}
               aria-current={active ? 'page' : undefined}
-              className={cn(
-                'inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold tracking-tight whitespace-nowrap transition-colors sm:px-3.5 sm:py-2',
-                active
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',
-              )}
+              className={active ? HEADER_CONTEXT_TAB_ACTIVE : HEADER_CONTEXT_TAB_INACTIVE}
             >
-              {Icon ? (
-                <span
-                  className={cn(
-                    'flex size-6 shrink-0 items-center justify-center rounded-full sm:size-7',
-                    active
-                      ? 'bg-primary-foreground/20 text-primary-foreground'
-                      : 'bg-muted text-muted-foreground',
-                  )}
-                >
-                  <Icon className="size-3.5 sm:size-4" aria-hidden />
-                </span>
-              ) : null}
               {item.label}
             </Link>
           );

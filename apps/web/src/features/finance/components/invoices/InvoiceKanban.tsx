@@ -13,6 +13,7 @@ import {
 import { parseMoneyAmount } from '@/lib/format/money';
 import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoiceKanbanProps {
@@ -30,7 +31,6 @@ const STAGE_COLORS: Record<string, string> = {
   CANCELLED: 'bg-red-500',
   PAID: 'bg-green-500',
 };
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 export function InvoiceKanban({
   invoices,
@@ -90,7 +90,7 @@ function InvoiceKanbanCard({
   onInvoiceClick: (invoice: Invoice) => void;
 }) {
   const type = INVOICE_TYPES.find((invoiceType) => invoiceType.value === invoice.type);
-  const overdueDays = resolveOverdueDays(invoice);
+  const overdueDays = resolveInvoiceOverdueDays(invoice);
 
   return (
     <div
@@ -147,15 +147,4 @@ function InvoiceOverdueDays({ days }: { days: number }) {
       {days}d overdue
     </div>
   );
-}
-
-function resolveOverdueDays(invoice: Invoice) {
-  if (!invoice.dueDate || invoice.moneyStatus === 'PAID') return 0;
-
-  const dueDate = new Date(invoice.dueDate);
-  const now = new Date();
-  dueDate.setHours(0, 0, 0, 0);
-  now.setHours(0, 0, 0, 0);
-
-  return Math.max(0, Math.floor((now.getTime() - dueDate.getTime()) / DAY_IN_MS));
 }
