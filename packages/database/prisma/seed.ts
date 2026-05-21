@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { seedMessenger } from './seed-messenger';
 import { seedMail } from './seed-mail';
+import { seedRichDemo } from './seed-rich-demo';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
@@ -42,6 +43,18 @@ async function main() {
   await prisma.taskLink.deleteMany();
   await prisma.taskChecklistItem.deleteMany();
   await prisma.taskChecklist.deleteMany();
+  await prisma.operationalJournalEntry.deleteMany();
+  await prisma.financePostingPeriod.deleteMany();
+  await prisma.partnerAccrual.deleteMany();
+  await prisma.partnerPayoutBatch.deleteMany();
+  await prisma.bonusRelease.deleteMany();
+  await prisma.productBonusPool.deleteMany();
+  await prisma.salaryLine.deleteMany();
+  await prisma.payrollRun.deleteMany();
+  await prisma.expensePayment.deleteMany();
+  await prisma.expensePlan.deleteMany();
+  await prisma.clientServiceRecord.deleteMany();
+  await prisma.compensationProfile.deleteMany();
   await prisma.bonusEntry.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.invoice.deleteMany();
@@ -1204,7 +1217,7 @@ async function main() {
       title: 'Design homepage layout',
       creatorId: pm.id,
       assigneeId: designer.id,
-      status: 'DONE',
+      status: 'COMPLETED',
       priority: 'HIGH',
       productId: prod1.id,
       projectId: project1.id,
@@ -1224,7 +1237,7 @@ async function main() {
       title: 'Setup CI/CD pipeline',
       creatorId: ceo.id,
       assigneeId: dev.id,
-      status: 'NEW',
+      status: 'OPEN',
       priority: 'NORMAL',
       productId: prod1.id,
       projectId: project1.id,
@@ -1244,7 +1257,7 @@ async function main() {
       title: 'Build landing page',
       creatorId: pm.id,
       assigneeId: dev.id,
-      status: 'DONE',
+      status: 'COMPLETED',
       priority: 'NORMAL',
       productId: prod5.id,
       projectId: project2.id,
@@ -1274,7 +1287,7 @@ async function main() {
       title: 'WordPress blog setup',
       creatorId: pm.id,
       assigneeId: dev.id,
-      status: 'DONE',
+      status: 'COMPLETED',
       priority: 'NORMAL',
       productId: prod9.id,
       projectId: project4.id,
@@ -1284,7 +1297,7 @@ async function main() {
       title: 'Fleet dashboard map integration',
       creatorId: pm2.id,
       assigneeId: dev.id,
-      status: 'NEW',
+      status: 'OPEN',
       priority: 'HIGH',
       productId: prod11.id,
       projectId: project5.id,
@@ -1294,7 +1307,7 @@ async function main() {
       title: 'SEO audit report',
       creatorId: pm.id,
       assigneeId: designer.id,
-      status: 'NEW',
+      status: 'OPEN',
       priority: 'LOW',
       productId: prod3.id,
       projectId: project1.id,
@@ -1594,6 +1607,24 @@ async function main() {
     },
   });
   console.log('  ✓ Bonus entries (3)');
+
+  await seedRichDemo(prisma, {
+    ceo,
+    seller,
+    pm,
+    pm2,
+    dev,
+    designer,
+    partner1,
+    contactIds: [contact1.id, contact2.id, contact3.id, contact5.id, contact6.id],
+    companyIds: [company1.id, company2.id, company3.id, company4.id, null],
+    existing: {
+      projectIds: [project1.id, project2.id, project3.id, project4.id, project5.id],
+      orderIds: [order1.id, order2.id, order3.id, order5.id, order6.id, order7.id],
+      productIds: [prod1.id, prod2.id, prod4.id, prod6.id, prod8.id, prod11.id],
+      subscriptionCodes: ['SUB-2026-0001', 'SUB-2026-0002'],
+    },
+  });
 
   // ── Credentials ────────────────────────────────────────────
   await prisma.credential.create({
@@ -2077,9 +2108,10 @@ async function main() {
   console.log('  ✓ System list options (21)');
 
   console.log('\n✅ Seed completed successfully!');
-  console.log('   5 projects, 15 products, 8 extensions');
-  console.log('   10 deals (7 WON), 8 orders, 9 invoices');
-  console.log('   10 tasks, 5 tickets, 6 credentials');
+  console.log('   20 projects (half archived), 15+ products per baseline + rich bundle');
+  console.log('   Finance: orders, invoices, payments, subscriptions, payroll, bonus pools');
+  console.log('   Client services, expense plans, compensation profiles');
+  console.log('   10 tasks, 5 tickets, 6 credentials (baseline)');
   await prisma.$disconnect();
 }
 
