@@ -20,6 +20,15 @@
 - ~~`/bonus` — `bonus/layout.tsx` + Finance payroll tabs~~
 - ~~Fix infinite loop `useModuleHeroSlots`~~
 
+## Expense board / plans UX (2026-05 follow-up) ~~(готово)~~
+
+- ~~Period Month/Quarter/Year/All → в панель фильтров поиска~~
+- ~~Active / Backlog / Closed → фильтр Board (как CRM scope), убраны secondary tabs~~
+- ~~Sort by + Order → в фильтрах (list column sort — позже)~~
+- ~~Settings sheet (exports) как Tasks~~
+- ~~Expense plans: `IntegratedSearchFilters` вместо кастомного toolbar~~
+- ~~Убран `ExpensePlansVsBoardBanner` на board и plans~~
+
 ## Phase 3 — Column analytics (не блоки на странице)
 
 - ~~Invoices kanban: column totals~~

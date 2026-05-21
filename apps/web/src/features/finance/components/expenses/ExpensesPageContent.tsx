@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { IntegratedSearchFilters, useModuleHeroSlots, ViewModeSwitch } from '@/components/shared';
-import { Download, Loader2, Plus, TableProperties } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FINANCE_PERIOD_OPTIONS } from '@/features/finance/constants/finance';
 import { type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   expensesApi,
@@ -27,19 +26,25 @@ import {
 } from './expenses-page-filter-helpers';
 import { ExpensePlanDrilldownBanner } from './ExpensePlanDrilldownBanner';
 import { useExpensePlanBannerLabel } from './use-expense-plan-banner-label';
-import { ExpenseSortControls } from './ExpenseSortControls';
 import { FinanceWorkflowScopeBanner } from '../FinanceWorkflowScopeBanner';
-import { ExpenseFinanceSubNav } from './ExpenseFinanceSubNav';
 import { EXPENSES_VIEW_OPTIONS } from './expenses-view-options';
 import { ExpensesPageDialogs } from './ExpensesPageDialogs';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
-import { buildExpenseFilterConfigs } from './expenses-filter-config';
+import { buildExpenseIntegratedFilterConfigs } from './build-expense-integrated-filter-configs';
+import {
+  EXPENSE_BOARD_SCOPE_FILTER_KEY,
+  EXPENSE_PERIOD_FILTER_KEY,
+  EXPENSE_SORT_BY_FILTER_KEY,
+  EXPENSE_SORT_ORDER_FILTER_KEY,
+  expenseBoardPathForScope,
+  expenseBoardScopeFromVariant,
+} from './expense-board-scope';
+import { ExpensesPageSettingsSheet } from './ExpensesPageSettingsSheet';
 import {
   readExpensesBoardViewMode,
   writeExpensesBoardViewMode,
 } from '@/features/finance/constants/expenses-board-view';
 import { ExpensesPageMainPanel, type ExpensesViewMode } from './ExpensesPageMainPanel';
-import { ExpensePlansVsBoardBanner } from './ExpensePlansVsBoardBanner';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
 import {
   buildExpenseListApiParams,
@@ -75,6 +80,7 @@ export function ExpensesPageContent({
   onSortOrderChange,
 }: ExpensesPageContentProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [stats, setStats] = useState<ExpenseStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -256,14 +262,53 @@ export function ExpensesPageContent({
 
   const filterConfigs = useMemo(
     () =>
-      buildExpenseFilterConfigs(projectFilterOptions, {
+      buildExpenseIntegratedFilterConfigs(projectFilterOptions, {
         omitStatus: pageVariant === 'backlog' || pageVariant === 'closed',
       }),
     [projectFilterOptions, pageVariant],
   );
 
+  const integratedFilterValues = useMemo(
+    () => ({
+      [EXPENSE_BOARD_SCOPE_FILTER_KEY]: expenseBoardScopeFromVariant(pageVariant),
+      [EXPENSE_PERIOD_FILTER_KEY]: period,
+      [EXPENSE_SORT_BY_FILTER_KEY]: sortBy,
+      [EXPENSE_SORT_ORDER_FILTER_KEY]: sortOrder,
+      ...filters,
+    }),
+    [filters, pageVariant, period, sortBy, sortOrder],
+  );
+
+  const handleIntegratedFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (key === EXPENSE_BOARD_SCOPE_FILTER_KEY) {
+        const path = expenseBoardPathForScope(value);
+        const q = searchParams.toString();
+        router.push(q ? `${path}?${q}` : path);
+        return;
+      }
+      if (key === EXPENSE_PERIOD_FILTER_KEY) {
+        setPeriod(value as FinancePeriod);
+        return;
+      }
+      if (key === EXPENSE_SORT_BY_FILTER_KEY) {
+        onSortByChange(value as ExpenseListSortField);
+        return;
+      }
+      if (key === EXPENSE_SORT_ORDER_FILTER_KEY) {
+        if (value === 'asc' || value === 'desc') {
+          onSortOrderChange(value);
+        }
+        return;
+      }
+      handleFilterChange(key, value);
+    },
+    [handleFilterChange, onSortByChange, onSortOrderChange, router, searchParams],
+  );
+
   const clearFilters = useCallback(() => {
     setFilters(clearedExpenseFilterRecord(pageVariant, projectIdFromUrl));
+    setPeriod('month');
   }, [pageVariant, projectIdFromUrl]);
 
   const moduleHeroSlots = useMemo(
@@ -274,12 +319,11 @@ export function ExpensesPageContent({
           onSearchChange={setSearch}
           searchPlaceholder="Search by name, notes, project, plan…"
           filters={filterConfigs}
-          filterValues={filters}
-          onFilterChange={handleFilterChange}
+          filterValues={integratedFilterValues}
+          onFilterChange={handleIntegratedFilterChange}
           onClearAll={clearFilters}
         />
       ),
-      secondaryTabs: <ExpenseFinanceSubNav />,
       viewMode:
         pageVariant === 'backlog' ? undefined : (
           <ViewModeSwitch
@@ -290,51 +334,13 @@ export function ExpensesPageContent({
         ),
       trailing: (
         <>
-          <ExpenseSortControls
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSortByChange={onSortByChange}
-            onSortOrderChange={onSortOrderChange}
+          <ExpensesPageSettingsSheet
+            statsExportDisabled={loading || !stats}
+            exportCsvDisabled={loading || exportCsvSubmitting}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            onExportCsv={handleExportCsv}
           />
-          <div className="border-border flex rounded-lg border p-1">
-            {FINANCE_PERIOD_OPTIONS.map((option) => (
-              <Button
-                key={option.value}
-                variant={period === option.value ? 'secondary' : 'ghost'}
-                size="sm"
-                type="button"
-                onClick={() => setPeriod(option.value)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || !stats}
-            onClick={() => handleExportScopeStatsCsv()}
-            aria-label="Export expense scope statistics as CSV"
-          >
-            <TableProperties size={16} aria-hidden />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || exportCsvSubmitting}
-            onClick={() => {
-              void handleExportCsv();
-            }}
-            aria-label="Export expenses as CSV"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={16} className="animate-spin" aria-hidden />
-            ) : (
-              <Download size={16} aria-hidden />
-            )}
-          </Button>
           {pageVariant === 'closed' ? null : (
             <Button type="button" onClick={() => setCreateOpen(true)}>
               <Plus size={16} aria-hidden />
@@ -348,19 +354,14 @@ export function ExpensesPageContent({
       clearFilters,
       exportCsvSubmitting,
       filterConfigs,
-      filters,
       handleExportCsv,
       handleExportScopeStatsCsv,
-      handleFilterChange,
+      handleIntegratedFilterChange,
       handleViewChange,
+      integratedFilterValues,
       loading,
-      onSortByChange,
-      onSortOrderChange,
       pageVariant,
-      period,
       search,
-      sortBy,
-      sortOrder,
       stats,
       view,
     ],
@@ -371,10 +372,6 @@ export function ExpensesPageContent({
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
       {pageVariant === 'closed' ? <FinanceWorkflowScopeBanner variant="expense-closed" /> : null}
-
-      {pageVariant === 'default' && !projectIdFromUrl && !expensePlanIdFromUrl?.trim() ? (
-        <ExpensePlansVsBoardBanner variant="board" />
-      ) : null}
 
       {projectIdFromUrl ? (
         <ExpenseProjectDrilldownBanner
