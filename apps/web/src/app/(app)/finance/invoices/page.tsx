@@ -84,12 +84,12 @@ function InvoicesPageInner() {
         return { ...prev, [key]: value };
       });
     },
-    [state.setFilters],
+    [state],
   );
 
   const handleClearFilters = useCallback(() => {
     state.setFilters({});
-  }, [state.setFilters]);
+  }, [state]);
 
   return (
     <div className="flex h-full flex-col gap-5">

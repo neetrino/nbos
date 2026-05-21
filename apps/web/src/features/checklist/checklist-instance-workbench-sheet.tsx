@@ -121,7 +121,6 @@ function ChecklistWorkbenchSheetBody({
   onMark,
   onComplete,
   completionBlockHighlight,
-  headerPaddingClassName,
 }: {
   title: string;
   totals: ReturnType<typeof computeTotals>;

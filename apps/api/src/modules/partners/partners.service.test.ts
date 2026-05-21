@@ -63,7 +63,10 @@ describe('PartnersService', () => {
       expect(prisma.partner.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            name: { contains: 'acme', mode: 'insensitive' },
+            OR: expect.arrayContaining([
+              { name: { contains: 'acme', mode: 'insensitive' } },
+              { notes: { contains: 'acme', mode: 'insensitive' } },
+            ]),
           }),
         }),
       );

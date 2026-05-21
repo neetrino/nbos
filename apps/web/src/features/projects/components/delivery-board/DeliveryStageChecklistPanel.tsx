@@ -30,7 +30,7 @@ interface DeliveryStageChecklistPanelProps {
   lifecycle: DeliveryLifecycleProjection | undefined;
   onChanged: () => void;
   /** Floating rail (copy link, open record, workspace) — same UX as delivery product sheet. */
-  floatingNav?: {
+  floatingNav: {
     sourcePageHref: string;
     workspaceHref?: string | null;
   };

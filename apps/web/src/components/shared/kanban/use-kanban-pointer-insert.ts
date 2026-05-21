@@ -26,10 +26,7 @@ export function useKanbanPointerInsert(options: {
   const [dropInsert, setDropInsert] = useState<KanbanPointerInsert | null>(null);
 
   useEffect(() => {
-    if (!active) {
-      setDropInsert(null);
-      return;
-    }
+    if (!active) return;
 
     const onPointerMove = (event: PointerEvent) => {
       for (const columnKey of columnKeys) {
@@ -56,5 +53,5 @@ export function useKanbanPointerInsert(options: {
     return () => window.removeEventListener('pointermove', onPointerMove);
   }, [active, sourceColumnKey, columnKeys, excludeItemId]);
 
-  return dropInsert;
+  return active ? dropInsert : null;
 }

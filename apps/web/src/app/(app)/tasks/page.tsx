@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { Plus, CheckSquare } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -30,7 +31,7 @@ const TASKS_VIEW_OPTIONS: ViewModeOption<TasksListBoardView>[] = TASKS_BOARD_VIE
   }),
 );
 
-export default function TasksPage() {
+function TasksPageContent() {
   const {
     stats,
     loading,
@@ -150,5 +151,13 @@ export default function TasksPage() {
         onCreated={handleTaskCreated}
       />
     </div>
+  );
+}
+
+export default function TasksPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <TasksPageContent />
+    </Suspense>
   );
 }

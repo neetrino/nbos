@@ -111,7 +111,10 @@ describe('ProductsService', () => {
       expect(prisma.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            name: { contains: 'site', mode: 'insensitive' },
+            OR: expect.arrayContaining([
+              { name: { contains: 'site', mode: 'insensitive' } },
+              { project: { name: { contains: 'site', mode: 'insensitive' } } },
+            ]),
           }),
         }),
       );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -88,7 +88,7 @@ interface PendingLeadTransition {
   variant: ConfirmVariant;
 }
 
-export default function LeadsPipelinePage() {
+function LeadsPipelinePageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -585,6 +585,14 @@ export default function LeadsPipelinePage() {
         }}
       />
     </div>
+  );
+}
+
+export default function LeadsPipelinePage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <LeadsPipelinePageContent />
+    </Suspense>
   );
 }
 

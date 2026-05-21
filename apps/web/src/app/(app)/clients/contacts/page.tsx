@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Users, Phone, Mail, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 
 const OPEN_CONTACT_QUERY = 'openId';
 
-export default function ContactsPage() {
+function ContactsPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -297,5 +297,13 @@ export default function ContactsPage() {
         onDelete={handleDelete}
       />
     </div>
+  );
+}
+
+export default function ContactsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <ContactsPageContent />
+    </Suspense>
   );
 }

@@ -20,6 +20,7 @@ function minimalDashboard(): FinanceDashboardData {
       warnings: [{ code: 'UNINVOICED_ORDERS', message: 'One uninvoiced', count: 1 }],
     },
     invoiceStatusItems: [{ label: 'Paid', count: 1, amount: 100, color: 'x', pct: 50 }],
+    expenseBuckets: [{ key: 'dueNow', label: 'Due now', count: 1, amount: 15 }],
     recentPayments: [
       {
         id: 'pay-1',

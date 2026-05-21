@@ -49,7 +49,8 @@ describe('DealWonHandler', () => {
           projectId: 'proj-1',
           type: 'DEV_AND_MAINTENANCE',
           status: 'ACTIVE',
-          amount: 5000,
+          baseMonthlyAmount: 5000,
+          taxStatus: 'TAX',
         }),
       }),
     );
@@ -183,8 +184,9 @@ describe('DealWonHandler', () => {
           projectId: 'proj-1',
           type: 'MAINTENANCE_ONLY',
           status: 'PENDING',
-          amount: 80000,
+          baseMonthlyAmount: 80000,
           billingDay: 15,
+          taxStatus: 'TAX',
         }),
       }),
     );

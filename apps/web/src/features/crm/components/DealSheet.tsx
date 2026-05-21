@@ -110,14 +110,18 @@ export function DealSheet({
 
   useLayoutEffect(() => {
     if (!deal) {
-      setGeneralDraft(null);
-      setGeneralSnap(null);
+      queueMicrotask(() => {
+        setGeneralDraft(null);
+        setGeneralSnap(null);
+      });
       return;
     }
     if (generalDirtyRef.current) return;
     const next = createDealGeneralDraft(deal);
-    setGeneralDraft(next);
-    setGeneralSnap(next);
+    queueMicrotask(() => {
+      setGeneralDraft(next);
+      setGeneralSnap(next);
+    });
   }, [deal?.id, deal?.updatedAt]);
 
   const patchGeneralDraft = useCallback((partial: Partial<DealGeneralDraft>) => {
@@ -126,7 +130,10 @@ export function DealSheet({
 
   const generalDirty =
     generalDraft != null && generalSnap != null && isDealGeneralDirty(generalDraft, generalSnap);
-  generalDirtyRef.current = generalDirty;
+
+  useEffect(() => {
+    generalDirtyRef.current = generalDirty;
+  }, [generalDirty]);
 
   const handleGeneralSave = useCallback(() => {
     if (!deal || !generalDraft || !generalSnap) return;
@@ -172,7 +179,9 @@ export function DealSheet({
   }, [editingName]);
 
   useEffect(() => {
-    setEditingName(false);
+    queueMicrotask(() => {
+      setEditingName(false);
+    });
   }, [deal?.id]);
 
   const gateRequiredFields = useMemo(() => {

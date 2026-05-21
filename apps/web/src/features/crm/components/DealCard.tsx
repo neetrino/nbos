@@ -25,9 +25,10 @@ export function DealCard({ deal, onClick, onStatusChange }: DealCardProps) {
   const typeVisual = getDealTypePresentation(deal.type);
   const title = getDealDisplayTitle(deal);
   const metaLabel = getDealCardMetaLabel(deal);
+  const now = new Date();
   const deadlineOverdue =
     deal.deadline && deal.status !== 'WON' && deal.status !== 'FAILED'
-      ? new Date(deal.deadline).getTime() < Date.now()
+      ? new Date(deal.deadline).getTime() < now.getTime()
       : false;
   const TypeIcon = typeVisual.Icon;
 

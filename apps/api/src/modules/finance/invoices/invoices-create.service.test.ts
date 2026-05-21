@@ -147,7 +147,10 @@ describe('InvoicesService create', () => {
   });
 
   it('rejects first subscription invoice below monthly amount', async () => {
-    prisma.subscription.findUnique.mockResolvedValue({ taxStatus: 'TAX', amount: 50000 });
+    prisma.subscription.findUnique.mockResolvedValue({
+      taxStatus: 'TAX',
+      baseMonthlyAmount: 50000,
+    });
     prisma.invoice.count.mockResolvedValue(0);
 
     await expect(

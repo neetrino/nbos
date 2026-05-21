@@ -15,7 +15,12 @@ function baseInvoice(overrides: Partial<Invoice> = {}): Invoice {
     moneyStatus: 'AWAITING_PAYMENT',
     taxStatus: 'TAX',
     projectId: 'p1',
-    paymentCoverage: { paidAmount: 0, outstandingAmount: 1000 },
+    paymentCoverage: {
+      paidAmount: 0,
+      outstandingAmount: 1000,
+      paymentCount: 0,
+      isFullyPaid: false,
+    },
     payments: [],
     ...overrides,
   } as Invoice;
@@ -32,7 +37,12 @@ describe('invoice-money-status-gate-client', () => {
     const errors = getLocalInvoiceMoneyStatusGateErrors(
       baseInvoice({
         moneyStatus: 'AWAITING_PAYMENT',
-        paymentCoverage: { paidAmount: 1000, outstandingAmount: 0 },
+        paymentCoverage: {
+          paidAmount: 1000,
+          outstandingAmount: 0,
+          paymentCount: 1,
+          isFullyPaid: true,
+        },
       }),
       'PAID',
     );
@@ -43,7 +53,12 @@ describe('invoice-money-status-gate-client', () => {
     const errors = getLocalInvoiceMoneyStatusGateErrors(
       baseInvoice({
         moneyStatus: 'PAID',
-        paymentCoverage: { paidAmount: 1000, outstandingAmount: 0 },
+        paymentCoverage: {
+          paidAmount: 1000,
+          outstandingAmount: 0,
+          paymentCount: 1,
+          isFullyPaid: true,
+        },
       }),
       'AWAITING_PAYMENT',
     );

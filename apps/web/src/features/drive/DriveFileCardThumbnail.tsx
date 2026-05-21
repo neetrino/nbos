@@ -30,43 +30,38 @@ export function DriveFileCardThumbnail({
   file: FileAsset;
   className?: string;
 }) {
+  const imageLike = isLikelyImage(file);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [phase, setPhase] = useState<'idle' | 'loading' | 'ready'>('idle');
+  const [loadedPreviewFileId, setLoadedPreviewFileId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLikelyImage(file)) {
-      setPreviewUrl(null);
-      setPhase('ready');
-      return;
-    }
-    setPreviewUrl(null);
-    setPhase('loading');
+    if (!imageLike) return;
     let cancelled = false;
     driveApi
       .getFileAssetPreviewUrl(file.id)
       .then((res) => {
         if (cancelled) return;
         const mime = res.mimeType ?? file.mimeType ?? '';
+        setLoadedPreviewFileId(file.id);
         if (res.url && mime.startsWith('image/')) {
           setPreviewUrl(res.url);
         } else {
           setPreviewUrl(null);
         }
-        setPhase('ready');
       })
       .catch(() => {
         if (!cancelled) {
+          setLoadedPreviewFileId(file.id);
           setPreviewUrl(null);
-          setPhase('ready');
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [file.id, file.fileType, file.mimeType]);
+  }, [file.id, file.mimeType, imageLike]);
 
-  const showLoader = phase === 'loading';
-  const showImage = Boolean(previewUrl);
+  const showLoader = imageLike && loadedPreviewFileId !== file.id;
+  const showImage = imageLike && loadedPreviewFileId === file.id && Boolean(previewUrl);
 
   return (
     <div

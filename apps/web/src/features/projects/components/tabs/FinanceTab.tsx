@@ -90,7 +90,7 @@ export function FinanceTab({
   const totalExpenses = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const monthlyMRR = subscriptions
     .filter((s) => s.status === 'ACTIVE')
-    .reduce((s, sub) => s + Number(sub.baseMonthlyAmount), 0);
+    .reduce((s, sub) => s + Number(sub.amount), 0);
 
   return (
     <div className="space-y-6">
@@ -229,11 +229,11 @@ export function FinanceTab({
                       <p className="text-sm font-medium">{sub.code}</p>
                       {st && <StatusBadge label={st.label} variant={st.variant} />}
                     </div>
-                    <p className="font-bold">{formatAmount(sub.baseMonthlyAmount)} / mo</p>
+                    <p className="font-bold">{formatAmount(sub.amount)} / mo</p>
                   </div>
                   <p className="text-muted-foreground mt-1 text-xs">
                     {sub.type.replace(/_/g, ' ')} &middot; Billing day: {sub.billingDay} &middot;
-                    Since {new Date(sub.billingStartDate).toLocaleDateString()}
+                    Since {new Date(sub.startDate).toLocaleDateString()}
                   </p>
                   {sub.status === 'PENDING' && (
                     <p className="mt-2 text-xs text-amber-600">

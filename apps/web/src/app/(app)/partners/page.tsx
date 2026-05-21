@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Suspense, useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Handshake, ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,7 @@ function formatPercent(value: string | number): string {
   return `${Number.isInteger(n) ? n : n.toFixed(1)}%`;
 }
 
-export default function PartnersPage() {
+function PartnersPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const openPartnerId = searchParams.get(PARTNER_OPEN_QUERY)?.trim() || null;
@@ -299,5 +299,13 @@ export default function PartnersPage() {
         onPartnerUpdated={handlePartnerUpdatedFromSheet}
       />
     </div>
+  );
+}
+
+export default function PartnersPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <PartnersPageContent />
+    </Suspense>
   );
 }

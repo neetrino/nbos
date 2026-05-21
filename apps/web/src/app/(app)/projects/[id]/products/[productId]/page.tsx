@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
@@ -53,7 +53,7 @@ const TAB_ITEMS = [
 
 type ProductTab = (typeof TAB_ITEMS)[number]['value'];
 
-export default function ProductDetailPage() {
+function ProductDetailPageContent() {
   const params = useParams<{ id: string; productId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -325,6 +325,28 @@ export default function ProductDetailPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function ProductDetailPageFallback() {
+  return (
+    <div className="flex h-full flex-col gap-5">
+      <Skeleton className="h-12 w-72" />
+      <Skeleton className="h-10 w-full" />
+      <div className="grid grid-cols-3 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-32" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function ProductDetailPage() {
+  return (
+    <Suspense fallback={<ProductDetailPageFallback />}>
+      <ProductDetailPageContent />
+    </Suspense>
   );
 }
 

@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { LoadingState } from '@/components/shared';
 import { DeliveryBoardPageHero } from '@/features/projects/components/delivery-board/DeliveryBoardPageHero';
 import { DeliveryBoardView } from '@/features/projects/components/delivery-board/DeliveryBoardView';
 import { DeliveryBoardClosedBoard } from '@/features/projects/components/delivery-board/DeliveryBoardClosedBoard';
@@ -51,7 +52,7 @@ const DEFAULT_CLOSED_FILTERS: DeliveryBoardClosedFiltersInput = {
   result: 'ALL',
 };
 
-export default function DeliveryBoardPage() {
+function DeliveryBoardPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectFilterId = searchParams.get('projectId');
@@ -304,5 +305,13 @@ export default function DeliveryBoardPage() {
         stageGateHighlight={detailItem && stageGateHighlight ? stageGateHighlight : null}
       />
     </div>
+  );
+}
+
+export default function DeliveryBoardPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <DeliveryBoardPageContent />
+    </Suspense>
   );
 }

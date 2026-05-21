@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 const STORAGE_PREFIX = 'nbos:deal-sheet-collapse:';
 
@@ -36,11 +36,7 @@ function writeStoredOpen(storageKey: string, open: boolean): void {
 
 /** Persists deal sheet section open/closed state in localStorage (default: open). */
 export function useDealSheetSectionCollapse(storageKey: DealSheetCollapseKey, defaultOpen = true) {
-  const [open, setOpen] = useState(defaultOpen);
-
-  useLayoutEffect(() => {
-    setOpen(readStoredOpen(storageKey, defaultOpen));
-  }, [storageKey, defaultOpen]);
+  const [open, setOpen] = useState(() => readStoredOpen(storageKey, defaultOpen));
 
   const onOpenChange = useCallback(
     (next: boolean) => {

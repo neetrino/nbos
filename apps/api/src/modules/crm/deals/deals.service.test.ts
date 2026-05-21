@@ -13,6 +13,7 @@ describe('DealsService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    prisma.fileLink.count.mockResolvedValue(1);
     wonHandler = { handle: vi.fn().mockResolvedValue(undefined) };
     auditService = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
     service = new DealsService(

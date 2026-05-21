@@ -12,7 +12,15 @@ import {
 } from '@/features/drive/entity-attachment-record-actions';
 import { useOptimisticEntityFileUpload } from '@/features/drive/use-optimistic-entity-file-upload';
 
-const DEAL_FILES_LIBRARY = DRIVE_LIBRARIES.find((lib) => lib.key === 'deals');
+function resolveDealFilesLibrary() {
+  const library = DRIVE_LIBRARIES.find((item) => item.key === 'deals');
+  if (!library) {
+    throw new Error('Drive library configuration missing required "deals" entry.');
+  }
+  return library;
+}
+
+const DEAL_FILES_LIBRARY = resolveDealFilesLibrary();
 
 export type DealFilePurpose = 'OFFER' | 'CONTRACT';
 
@@ -32,14 +40,9 @@ export function DealFilesBlock({ dealId, purpose }: DealFilesBlockProps) {
     });
   }, [dealId, purpose]);
 
-  const library = DEAL_FILES_LIBRARY;
-  if (!library) {
-    return null;
-  }
-
   const { files, pending, loading, uploadFiles, refresh } = useOptimisticEntityFileUpload({
     link: { entityType: 'DEAL', entityId: dealId },
-    library,
+    library: DEAL_FILES_LIBRARY,
     purpose,
     listFiles,
   });

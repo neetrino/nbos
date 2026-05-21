@@ -39,8 +39,29 @@ export function useSidebarNavigation() {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+
+    void navigationApi
+      .getShell()
+      .then((shell) => {
+        if (cancelled) return;
+        setState((current) => ({
+          ...current,
+          sidebarModuleOrder: shell.sidebarModuleOrder,
+          hiddenSidebarModules: shell.hiddenSidebarModules,
+          personalLinks: shell.personalLinks,
+          isLoading: false,
+        }));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setState((current) => ({ ...current, isLoading: false }));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const persistNavigation = useCallback(async (order: string[], hidden: string[]) => {
     setState((current) => ({ ...current, isSaving: true }));

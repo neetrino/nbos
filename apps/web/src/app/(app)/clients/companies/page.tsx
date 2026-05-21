@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Building2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ import { toast } from 'sonner';
 
 const OPEN_COMPANY_QUERY = 'openId';
 
-export default function CompaniesPage() {
+function CompaniesPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -290,5 +290,13 @@ export default function CompaniesPage() {
         onDelete={handleDelete}
       />
     </div>
+  );
+}
+
+export default function CompaniesPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CompaniesPageContent />
+    </Suspense>
   );
 }

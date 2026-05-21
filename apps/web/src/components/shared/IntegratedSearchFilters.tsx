@@ -56,10 +56,7 @@ export function IntegratedSearchFilters({
   );
   const hasQuery = search.trim().length > 0 || chips.length > 0;
 
-  useEffect(() => {
-    if (panelOpen) return;
-    setDraftFilters((prev) => (areFilterValuesEqual(prev, filterValues) ? prev : filterValues));
-  }, [filterValues, panelOpen]);
+  const panelFilterValues = panelOpen ? draftFilters : filterValues;
 
   useEffect(() => {
     if (!panelOpen) return;
@@ -178,7 +175,7 @@ export function IntegratedSearchFilters({
         >
           <IntegratedSearchFilterPanel
             filters={filters ?? []}
-            filterValues={draftFilters}
+            filterValues={panelFilterValues}
             onFilterChange={(key, value) => setDraftFilters((prev) => ({ ...prev, [key]: value }))}
             onApply={handleApply}
             onReset={handleReset}

@@ -39,6 +39,10 @@ import { partnersApi, type Partner } from '@/lib/api/partners';
 
 const PARTNERS_PAGE_SIZE = 100;
 
+function normalizeSelectValue(value: string | null): string {
+  return value ?? '';
+}
+
 interface SubscriptionFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -144,7 +148,7 @@ export function SubscriptionFormDialog({
               <Label htmlFor="sub-project">Project</Label>
               <Select
                 value={form.projectId || undefined}
-                onValueChange={(v) => setForm({ ...form, projectId: v })}
+                onValueChange={(v) => setForm({ ...form, projectId: normalizeSelectValue(v) })}
                 disabled={optionsLoading}
               >
                 <SelectTrigger id="sub-project">
@@ -163,7 +167,10 @@ export function SubscriptionFormDialog({
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="sub-type">Type</Label>
-            <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+            <Select
+              value={form.type}
+              onValueChange={(v) => setForm({ ...form, type: normalizeSelectValue(v) })}
+            >
               <SelectTrigger id="sub-type">
                 <SelectValue />
               </SelectTrigger>
@@ -194,7 +201,9 @@ export function SubscriptionFormDialog({
               <Label htmlFor="sub-frequency">Billing frequency</Label>
               <Select
                 value={form.billingFrequency}
-                onValueChange={(v) => setForm({ ...form, billingFrequency: v })}
+                onValueChange={(v) =>
+                  setForm({ ...form, billingFrequency: normalizeSelectValue(v) })
+                }
               >
                 <SelectTrigger id="sub-frequency">
                   <SelectValue />
@@ -227,7 +236,7 @@ export function SubscriptionFormDialog({
               <Label htmlFor="sub-tax">Tax status</Label>
               <Select
                 value={form.taxStatus}
-                onValueChange={(v) => setForm({ ...form, taxStatus: v })}
+                onValueChange={(v) => setForm({ ...form, taxStatus: normalizeSelectValue(v) })}
               >
                 <SelectTrigger id="sub-tax">
                   <SelectValue />
@@ -269,7 +278,10 @@ export function SubscriptionFormDialog({
             <Label htmlFor="sub-partner">Partner (optional)</Label>
             <Select
               value={form.partnerId || 'NONE'}
-              onValueChange={(v) => setForm({ ...form, partnerId: v === 'NONE' ? '' : v })}
+              onValueChange={(v) => {
+                const nextValue = normalizeSelectValue(v);
+                setForm({ ...form, partnerId: nextValue === 'NONE' ? '' : nextValue });
+              }}
               disabled={optionsLoading}
             >
               <SelectTrigger id="sub-partner">

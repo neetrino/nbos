@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Users2, LayoutGrid, List, Mail, Phone, Calendar, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,7 @@ const TEAM_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
   },
 ];
 
-export default function TeamPage() {
+function TeamPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -374,5 +374,13 @@ export default function TeamPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function TeamPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <TeamPageContent />
+    </Suspense>
   );
 }

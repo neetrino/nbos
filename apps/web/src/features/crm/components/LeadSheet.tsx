@@ -95,14 +95,18 @@ export function LeadSheet({
 
   useLayoutEffect(() => {
     if (!lead) {
-      setGeneralDraft(null);
-      setGeneralSnap(null);
+      queueMicrotask(() => {
+        setGeneralDraft(null);
+        setGeneralSnap(null);
+      });
       return;
     }
     if (generalDirtyRef.current) return;
     const next = createLeadGeneralDraft(lead);
-    setGeneralDraft(next);
-    setGeneralSnap(next);
+    queueMicrotask(() => {
+      setGeneralDraft(next);
+      setGeneralSnap(next);
+    });
   }, [lead?.id, lead?.updatedAt]);
 
   const patchGeneralDraft = useCallback((partial: Partial<LeadGeneralDraft>) => {
@@ -111,7 +115,10 @@ export function LeadSheet({
 
   const generalDirty =
     generalDraft != null && generalSnap != null && isLeadGeneralDirty(generalDraft, generalSnap);
-  generalDirtyRef.current = generalDirty;
+
+  useEffect(() => {
+    generalDirtyRef.current = generalDirty;
+  }, [generalDirty]);
 
   const handleGeneralSave = useCallback(() => {
     if (!lead || !generalDraft || !generalSnap) return;
@@ -157,7 +164,9 @@ export function LeadSheet({
   }, [editingName]);
 
   useEffect(() => {
-    setEditingName(false);
+    queueMicrotask(() => {
+      setEditingName(false);
+    });
   }, [lead?.id]);
 
   if (!lead) return null;
