@@ -20,6 +20,11 @@
 - ~~`/bonus` — `bonus/layout.tsx` + Finance payroll tabs~~
 - ~~Fix infinite loop `useModuleHeroSlots`~~
 
+## Finance sidebar + payroll hero (2026-05) ~~(готово)~~
+
+- ~~Убраны group labels Revenue / Expenses / Payroll & bonus / Services в сайдбаре~~
+- ~~Payroll · Salary board · Bonus board · Bonus pools · Client services — IntegratedSearchFilters + Settings~~
+
 ## Expense board / plans UX (2026-05 follow-up) ~~(готово)~~
 
 - ~~Period Month/Quarter/Year/All → в панель фильтров поиска~~

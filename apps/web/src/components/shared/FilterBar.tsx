@@ -33,6 +33,8 @@ export interface FilterConfig {
   key: string;
   label: string;
   options: FilterOption[];
+  /** Select (default) or calendar month (`YYYY-MM`). */
+  fieldType?: 'select' | 'month';
   /** When false, no “All …” option; value falls back to the first option if unset. */
   includeAllOption?: boolean;
   /** Baseline value when unset; also used to hide filter chips (e.g. board default “Active”). */
@@ -44,6 +46,10 @@ export function resolveFilterSelectValue(
   filter: FilterConfig,
   filterValues: Record<string, string>,
 ): string {
+  if (filter.fieldType === 'month') {
+    const raw = filterValues[filter.key]?.trim() ?? '';
+    return raw.length > 0 ? raw : 'all';
+  }
   if (filter.includeAllOption !== false) {
     return filterValues[filter.key] || 'all';
   }
@@ -70,6 +76,10 @@ function filterBarHasActiveQuery(
   if (search.trim().length > 0) return true;
   return (
     filters?.some((f) => {
+      if (f.fieldType === 'month') {
+        const raw = filterValues[f.key]?.trim() ?? '';
+        return raw.length > 0 && raw !== 'all';
+      }
       const value = resolveFilterSelectValue(f, filterValues);
       const baseline =
         f.includeAllOption !== false ? 'all' : (f.defaultOptionValue ?? f.options[0]?.value ?? '');

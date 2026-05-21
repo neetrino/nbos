@@ -2,16 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  CheckSquare,
-  FileText,
-  ListChecks,
-  Plus,
-  Receipt,
-  RefreshCw,
-  ServerCog,
-  Trash2,
-} from 'lucide-react';
+import { CheckSquare, FileText, ListChecks, Plus, Receipt, ServerCog, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { EmptyState, ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
+import {
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   CLIENT_SERVICE_BILLING_MODELS,
@@ -33,8 +30,15 @@ import {
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { clientServicesPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { OPEN_CLIENT_SERVICE_QUERY } from '@/features/finance/constants/client-service-deep-link';
+import {
+  buildClientServiceIntegratedFilterConfigs,
+  CLIENT_SERVICE_FILTER_BILLING_KEY,
+  CLIENT_SERVICE_FILTER_STATUS_KEY,
+  CLIENT_SERVICE_FILTER_TYPE_KEY,
+} from './build-client-service-integrated-filter-configs';
 import { ClientServiceCreateDialog } from './ClientServiceCreateDialog';
 import { ClientServiceDetailSheet } from './ClientServiceDetailSheet';
+import { ClientServicesPageSettingsSheet } from './ClientServicesPageSettingsSheet';
 import {
   clientServicesApi,
   type ClientServiceRecord,
@@ -75,6 +79,10 @@ function ClientServicesPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [billingFilter, setBillingFilter] = useState('all');
   const { me } = usePermission();
 
   const fetchData = useCallback(async () => {
@@ -97,6 +105,54 @@ function ClientServicesPageInner() {
   useEffect(() => {
     void fetchData();
   }, [fetchData]);
+
+  const clientServiceFilterConfigs = useMemo(() => buildClientServiceIntegratedFilterConfigs(), []);
+
+  const clientServiceFilterValues = useMemo(
+    () => ({
+      [CLIENT_SERVICE_FILTER_TYPE_KEY]: typeFilter,
+      [CLIENT_SERVICE_FILTER_STATUS_KEY]: statusFilter,
+      [CLIENT_SERVICE_FILTER_BILLING_KEY]: billingFilter,
+    }),
+    [billingFilter, statusFilter, typeFilter],
+  );
+
+  const handleClientServiceFilterChange = useCallback((key: string, value: string) => {
+    if (key === CLIENT_SERVICE_FILTER_TYPE_KEY) {
+      setTypeFilter(value);
+      return;
+    }
+    if (key === CLIENT_SERVICE_FILTER_STATUS_KEY) {
+      setStatusFilter(value);
+      return;
+    }
+    if (key === CLIENT_SERVICE_FILTER_BILLING_KEY) {
+      setBillingFilter(value);
+    }
+  }, []);
+
+  const handleClearClientServiceFilters = useCallback(() => {
+    setSearch('');
+    setTypeFilter('all');
+    setStatusFilter('all');
+    setBillingFilter('all');
+  }, []);
+
+  const visibleItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return items.filter((service) => {
+      const matchesSearch =
+        !q ||
+        service.name.toLowerCase().includes(q) ||
+        (service.provider?.toLowerCase().includes(q) ?? false) ||
+        (service.project?.name?.toLowerCase().includes(q) ?? false) ||
+        (service.project?.code?.toLowerCase().includes(q) ?? false);
+      const matchesType = typeFilter === 'all' || service.type === typeFilter;
+      const matchesStatus = statusFilter === 'all' || service.status === statusFilter;
+      const matchesBilling = billingFilter === 'all' || service.billingModel === billingFilter;
+      return matchesSearch && matchesType && matchesStatus && matchesBilling;
+    });
+  }, [billingFilter, items, search, statusFilter, typeFilter]);
 
   const openCreate = useCallback(() => setCreateOpen(true), []);
 
@@ -170,12 +226,20 @@ function ClientServicesPageInner() {
 
   const moduleHeroSlots = useMemo(
     () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by name, provider, or project…"
+          filters={clientServiceFilterConfigs}
+          filterValues={clientServiceFilterValues}
+          onFilterChange={handleClientServiceFilterChange}
+          onClearAll={handleClearClientServiceFilters}
+        />
+      ),
       trailing: (
         <>
-          <Button variant="outline" type="button" onClick={() => void fetchData()}>
-            <RefreshCw className="mr-2 h-4 w-4" aria-hidden />
-            Refresh
-          </Button>
+          <ClientServicesPageSettingsSheet refreshDisabled={loading} onRefresh={fetchData} />
           <Button type="button" onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" aria-hidden />
             New service
@@ -183,7 +247,16 @@ function ClientServicesPageInner() {
         </>
       ),
     }),
-    [fetchData, openCreate],
+    [
+      clientServiceFilterConfigs,
+      clientServiceFilterValues,
+      fetchData,
+      handleClearClientServiceFilters,
+      handleClientServiceFilterChange,
+      loading,
+      openCreate,
+      search,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -194,6 +267,13 @@ function ClientServicesPageInner() {
       {!loading && error ? (
         <ErrorState title="Client services unavailable" description={error} />
       ) : null}
+      {!loading && !error && items.length > 0 && visibleItems.length === 0 ? (
+        <EmptyState
+          icon={ServerCog}
+          title="No services match filters"
+          description="Clear search or filters to see the full catalog."
+        />
+      ) : null}
       {!loading && !error && items.length === 0 ? (
         <EmptyState
           icon={ServerCog}
@@ -202,7 +282,7 @@ function ClientServicesPageInner() {
           action={<Button onClick={openCreate}>Create service</Button>}
         />
       ) : null}
-      {!loading && !error && items.length > 0 ? (
+      {!loading && !error && visibleItems.length > 0 ? (
         <div className="border-border bg-card overflow-hidden rounded-xl border">
           <Table>
             <TableHeader>
@@ -217,7 +297,7 @@ function ClientServicesPageInner() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((service) => (
+              {visibleItems.map((service) => (
                 <TableRow
                   key={service.id}
                   className="hover:bg-muted/40 cursor-pointer"

@@ -100,7 +100,6 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         href: '/finance/dashboard',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
-      { kind: 'group', label: 'Revenue' },
       {
         label: 'Orders',
         href: '/finance/orders',
@@ -121,7 +120,6 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         href: '/finance/subscriptions',
         permission: { module: 'FINANCE_SUBSCRIPTIONS', action: 'VIEW' },
       },
-      { kind: 'group', label: 'Expenses' },
       {
         label: 'Expense plans',
         href: '/finance/expenses/plans',
@@ -132,7 +130,6 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         href: '/finance/expenses',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
-      { kind: 'group', label: 'Payroll & bonus' },
       {
         label: 'Payroll',
         href: '/finance/payroll',
@@ -153,7 +150,6 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         href: '/bonus',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
-      { kind: 'group', label: 'Services' },
       {
         label: 'Client services',
         href: '/finance/client-services',

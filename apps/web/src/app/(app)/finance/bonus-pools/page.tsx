@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Download, ExternalLink, Loader2, PieChart } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { PieChart } from 'lucide-react';
+import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import {
   Table,
   TableBody,
@@ -17,11 +17,10 @@ import { formatAmount } from '@/features/finance/constants/finance';
 import { bonusProjectPoolsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { useBonusProductPoolsCsvExport } from '@/features/finance/components/bonus/use-bonus-product-pools-csv-export';
-import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
+import { BonusPoolsPageSettingsSheet } from '@/app/(app)/finance/bonus-pools/BonusPoolsPageSettingsSheet';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import { bonusesApi, type BonusProductPoolRow } from '@/lib/api/bonus';
-import { cn } from '@/lib/utils';
 
 function parseAmount(value: string): number {
   const n = Number.parseFloat(value);
@@ -69,30 +68,11 @@ export default function BonusPoolsPage() {
   const moduleHeroSlots = useMemo(
     () => ({
       trailing: (
-        <>
-          <Link
-            href="/bonus"
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex')}
-          >
-            Bonus board
-            <ExternalLink size={14} className="ml-1.5" aria-hidden />
-          </Link>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || Boolean(error) || rows.length === 0 || exportCsvSubmitting}
-            onClick={() => handleExportCsv()}
-            aria-label="Export bonus product pools as CSV"
-            title="UTF-8 CSV of roll-up rows plus a final grand-total row (GET /api/bonus/products/pools)"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={16} className="animate-spin" aria-hidden />
-            ) : (
-              <Download size={16} aria-hidden />
-            )}
-          </Button>
-        </>
+        <BonusPoolsPageSettingsSheet
+          exportDisabled={loading || Boolean(error) || rows.length === 0}
+          exportInProgress={exportCsvSubmitting}
+          onExportCsv={handleExportCsv}
+        />
       ),
     }),
     [error, exportCsvSubmitting, handleExportCsv, loading, rows.length],
@@ -102,11 +82,6 @@ export default function BonusPoolsPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      <p className="text-muted-foreground text-sm">
-        Figures aggregate bonus entry rows by the order&apos;s linked product or extension. Use the
-        bonus board filtered by project for delivery context (**`/bonus?projectId=`**).
-      </p>
-
       {loading ? (
         <LoadingState />
       ) : error ? (
@@ -116,14 +91,7 @@ export default function BonusPoolsPage() {
           icon={PieChart}
           title="No bonus entries yet"
           description="Once bonus lines exist on orders, product-level roll-ups appear here."
-          action={
-            <Link
-              href="/bonus"
-              className={cn(buttonVariants({ variant: 'outline' }), 'inline-flex')}
-            >
-              Open bonus board
-            </Link>
-          }
+          action={null}
         />
       ) : (
         <div className="border-border overflow-x-auto rounded-xl border">

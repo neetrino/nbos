@@ -15,6 +15,11 @@ export function buildActiveFilterChips(
 ): ActiveFilterChip[] {
   if (!filters?.length) return [];
   return filters.flatMap((filter) => {
+    if (filter.fieldType === 'month') {
+      const raw = filterValues[filter.key]?.trim() ?? '';
+      if (!raw || raw === 'all') return [];
+      return [{ key: filter.key, label: `${filter.label}: ${raw}` }];
+    }
     const raw = resolveFilterSelectValue(filter, filterValues);
     const baseline =
       filter.includeAllOption !== false

@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -58,6 +59,26 @@ function FilterField({
   filterValues: Record<string, string>;
   onFilterChange: (key: string, value: string) => void;
 }) {
+  if (filter.fieldType === 'month') {
+    const raw = filterValues[filter.key]?.trim() ?? '';
+    const monthValue = raw && raw !== 'all' ? raw : '';
+    return (
+      <label className="flex flex-col gap-1.5">
+        <span className="text-muted-foreground text-xs font-medium">{filter.label}</span>
+        <Input
+          type="month"
+          value={monthValue}
+          onChange={(event) => {
+            const next = event.target.value.trim();
+            onFilterChange(filter.key, next.length > 0 ? next : 'all');
+          }}
+          className="w-full"
+          aria-label={filter.label}
+        />
+      </label>
+    );
+  }
+
   const showAll = filter.includeAllOption !== false;
   const value = resolveFilterSelectValue(filter, filterValues);
   const items = [

@@ -1,18 +1,27 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Download, Loader2, TableProperties } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
+import {
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import {
   BONUS_BOARD_OPEN_ENTRY_QUERY,
   BONUS_BOARD_PROJECT_FILTER_QUERY,
 } from '@/features/finance/constants/bonus-board-url';
 import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
+import { BonusBoardPageSettingsSheet } from '@/features/finance/components/bonus/BonusBoardPageSettingsSheet';
+import {
+  buildBonusBoardIntegratedFilterConfigs,
+  BONUS_FILTER_EMPLOYEE_KEY,
+  BONUS_FILTER_PROJECT_KEY,
+  BONUS_FILTER_TYPE_KEY,
+} from '@/features/finance/components/bonus/build-bonus-board-integrated-filter-configs';
 import {
   BonusBoardColumns,
-  BonusBoardToolbar,
   employeeDisplayName,
   projectLabel,
   uniqueEmployeesFromRows,
@@ -172,68 +181,83 @@ export function BonusBoardPageContent() {
 
   const { handleExportScopeStatsCsv } = useBonusScopeStatsCsvExport(stats);
 
+  const bonusFilterConfigs = useMemo(
+    () =>
+      buildBonusBoardIntegratedFilterConfigs(
+        projectSelectOptions.map((p) => ({ id: p.id, label: p.label })),
+        uniqueEmployees,
+      ),
+    [projectSelectOptions, uniqueEmployees],
+  );
+
+  const bonusFilterValues = useMemo(
+    () => ({
+      [BONUS_FILTER_TYPE_KEY]: typeFilter === 'ALL' ? 'all' : typeFilter,
+      [BONUS_FILTER_PROJECT_KEY]: projectFilter === 'ALL' ? 'all' : projectFilter,
+      [BONUS_FILTER_EMPLOYEE_KEY]: employeeFilter === 'ALL' ? 'all' : employeeFilter,
+    }),
+    [employeeFilter, projectFilter, typeFilter],
+  );
+
+  const handleBonusFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (key === BONUS_FILTER_TYPE_KEY) {
+        setTypeFilter(value === 'all' ? 'ALL' : (value as BonusType));
+        return;
+      }
+      if (key === BONUS_FILTER_PROJECT_KEY) {
+        handleProjectFilterChange(value === 'all' ? 'ALL' : value);
+        return;
+      }
+      if (key === BONUS_FILTER_EMPLOYEE_KEY) {
+        setEmployeeFilter(value === 'all' ? 'ALL' : value);
+      }
+    },
+    [handleProjectFilterChange],
+  );
+
+  const handleClearBonusFilters = useCallback(() => {
+    setSearch('');
+    setTypeFilter('ALL');
+    setEmployeeFilter('ALL');
+    handleProjectFilterChange('ALL');
+  }, [handleProjectFilterChange]);
+
   const moduleHeroSlots = useMemo(
     () => ({
       search: (
-        <BonusBoardToolbar
+        <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          typeFilter={typeFilter}
-          onTypeFilterChange={setTypeFilter}
-          projectFilter={projectFilter}
-          onProjectFilterChange={handleProjectFilterChange}
-          uniqueProjects={projectSelectOptions}
-          employeeFilter={employeeFilter}
-          onEmployeeFilterChange={setEmployeeFilter}
-          uniqueEmployees={uniqueEmployees}
+          searchPlaceholder="Search by employee, project, or order…"
+          filters={bonusFilterConfigs}
+          filterValues={bonusFilterValues}
+          onFilterChange={handleBonusFilterChange}
+          onClearAll={handleClearBonusFilters}
         />
       ),
       trailing: (
-        <>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || !stats}
-            onClick={() => handleExportScopeStatsCsv()}
-            aria-label="Export bonus scope statistics as CSV"
-            title="UTF-8 CSV from GET /api/bonus/stats (global workspace totals; board filters not applied—see scope_note). Unavailable when list uses server ?projectId=."
-          >
-            <TableProperties size={16} aria-hidden />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            disabled={exportCsvSubmitting || filtered.length === 0}
-            onClick={() => handleExportCsv()}
-            title="UTF-8 CSV of visible rows plus a final amount total row (same filters as the board)"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={14} className="animate-spin" aria-hidden />
-            ) : (
-              <Download size={14} aria-hidden />
-            )}
-            Export CSV
-          </Button>
-        </>
+        <BonusBoardPageSettingsSheet
+          statsExportDisabled={loading || !stats}
+          exportCsvDisabled={exportCsvSubmitting || filtered.length === 0}
+          exportCsvInProgress={exportCsvSubmitting}
+          onExportScopeStatsCsv={handleExportScopeStatsCsv}
+          onExportCsv={handleExportCsv}
+        />
       ),
     }),
     [
-      employeeFilter,
+      bonusFilterConfigs,
+      bonusFilterValues,
       exportCsvSubmitting,
       filtered.length,
+      handleBonusFilterChange,
+      handleClearBonusFilters,
       handleExportCsv,
       handleExportScopeStatsCsv,
-      handleProjectFilterChange,
       loading,
-      projectFilter,
-      projectSelectOptions,
       search,
       stats,
-      typeFilter,
-      uniqueEmployees,
     ],
   );
 

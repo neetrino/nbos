@@ -4,11 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Grid3x3, Users } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { EmptyState, ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
+import {
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { salaryBoardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import {
   PAYROLL_RUNS_LIST_MONTH_FROM_QUERY,
@@ -21,6 +24,11 @@ import { formatAmount } from '@/features/finance/constants/finance';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { payrollRunsApi, type SalaryBoardResponse } from '@/lib/api/payroll-runs';
+import {
+  buildPayrollMonthRangeFilterConfigs,
+  PAYROLL_FILTER_MONTH_FROM_KEY,
+  PAYROLL_FILTER_MONTH_TO_KEY,
+} from '@/features/finance/components/payroll/build-payroll-integrated-filter-configs';
 import { cn } from '@/lib/utils';
 
 function parseAmount(value: string): number {
@@ -42,9 +50,6 @@ export function SalaryBoardPageContent() {
   const [data, setData] = useState<SalaryBoardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [draftFrom, setDraftFrom] = useState('');
-  const [draftTo, setDraftTo] = useState('');
-
   const monthFrom = parsePayrollRunsListMonthParam(
     searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY),
   );
@@ -61,8 +66,6 @@ export function SalaryBoardPageContent() {
         payrollMonthTo: monthTo,
       });
       setData(board);
-      setDraftFrom(board.payrollMonthFrom);
-      setDraftTo(board.payrollMonthTo);
     } catch (e) {
       setError(getApiErrorMessage(e, 'Could not load salary board'));
       setData(null);
@@ -75,60 +78,74 @@ export function SalaryBoardPageContent() {
     void load();
   }, [load]);
 
-  const applyRange = useCallback(() => {
-    const next = new URLSearchParams(searchParams.toString());
-    if (draftFrom.trim()) {
-      next.set(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY, draftFrom.trim());
-    } else {
-      next.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
-    }
-    if (draftTo.trim()) {
-      next.set(PAYROLL_RUNS_LIST_MONTH_TO_QUERY, draftTo.trim());
-    } else {
-      next.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
-    }
-    const q = next.toString();
-    router.replace(q ? `${pathname}?${q}` : pathname);
-  }, [draftFrom, draftTo, pathname, router, searchParams]);
+  const salaryFilterConfigs = useMemo(() => buildPayrollMonthRangeFilterConfigs(), []);
+
+  const salaryFilterValues = useMemo(
+    () => ({
+      [PAYROLL_FILTER_MONTH_FROM_KEY]: monthFrom ?? 'all',
+      [PAYROLL_FILTER_MONTH_TO_KEY]: monthTo ?? 'all',
+    }),
+    [monthFrom, monthTo],
+  );
+
+  const replaceSalaryBoardUrl = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
+      const next = new URLSearchParams(searchParams.toString());
+      mutate(next);
+      const q = next.toString();
+      router.replace(q ? `${pathname}?${q}` : pathname);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handleSalaryFilterChange = useCallback(
+    (key: string, value: string) => {
+      const monthValue = value === 'all' ? undefined : value;
+      if (key === PAYROLL_FILTER_MONTH_FROM_KEY) {
+        replaceSalaryBoardUrl((params) => {
+          if (!monthValue) {
+            params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
+          } else {
+            params.set(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY, monthValue);
+          }
+        });
+        return;
+      }
+      if (key === PAYROLL_FILTER_MONTH_TO_KEY) {
+        replaceSalaryBoardUrl((params) => {
+          if (!monthValue) {
+            params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
+          } else {
+            params.set(PAYROLL_RUNS_LIST_MONTH_TO_QUERY, monthValue);
+          }
+        });
+      }
+    },
+    [replaceSalaryBoardUrl],
+  );
+
+  const handleClearSalaryFilters = useCallback(() => {
+    replaceSalaryBoardUrl((params) => {
+      params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
+      params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
+    });
+  }, [replaceSalaryBoardUrl]);
 
   const moduleHeroSlots = useMemo(
     () => ({
       search: (
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="salary-board-from">From</Label>
-            <Input
-              id="salary-board-from"
-              type="month"
-              value={draftFrom}
-              onChange={(e) => setDraftFrom(e.target.value)}
-              className="w-44"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="salary-board-to">To</Label>
-            <Input
-              id="salary-board-to"
-              type="month"
-              value={draftTo}
-              onChange={(e) => setDraftTo(e.target.value)}
-              className="w-44"
-            />
-          </div>
-        </div>
-      ),
-      trailing: (
-        <>
-          <Button type="button" onClick={() => applyRange()}>
-            Apply range
-          </Button>
-          <Link href="/finance/payroll" className={cn(buttonVariants({ variant: 'outline' }))}>
-            Payroll runs
-          </Link>
-        </>
+        <IntegratedSearchFilters
+          search=""
+          onSearchChange={() => undefined}
+          searchPlaceholder="Filter salary board range…"
+          filters={salaryFilterConfigs}
+          filterValues={salaryFilterValues}
+          onFilterChange={handleSalaryFilterChange}
+          onClearAll={handleClearSalaryFilters}
+        />
       ),
     }),
-    [applyRange, draftFrom, draftTo],
+    [handleClearSalaryFilters, handleSalaryFilterChange, salaryFilterConfigs, salaryFilterValues],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -149,12 +166,6 @@ export function SalaryBoardPageContent() {
 
   return (
     <div className="flex min-h-0 flex-col gap-6">
-      <p className="text-muted-foreground max-w-3xl text-sm">
-        Range {data.payrollMonthFrom}–{data.payrollMonthTo} (UTC{' '}
-        <code className="text-xs">YYYY-MM</code>
-        ). Clear URL filters to use the API default (twelve months ending in the current UTC month).
-      </p>
-
       {error ? (
         <p className="text-destructive text-sm" role="alert">
           {error}

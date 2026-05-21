@@ -1,12 +1,4 @@
-import {
-  Search,
-  ChevronDown,
-  Gift,
-  User,
-  FolderKanban,
-  DollarSign,
-  TrendingUp,
-} from 'lucide-react';
+import { Gift, User, FolderKanban, DollarSign, TrendingUp } from 'lucide-react';
 import {
   BONUS_BOARD_STATUSES,
   BONUS_BOARD_TYPE_CONFIG,
@@ -162,102 +154,6 @@ export function BonusCard({
           Open release ledger — adjust APPROVED / DRAFT amounts before payroll.
         </p>
       ) : null}
-    </div>
-  );
-}
-
-export function BonusBoardToolbar({
-  search,
-  onSearchChange,
-  typeFilter,
-  onTypeFilterChange,
-  projectFilter,
-  onProjectFilterChange,
-  uniqueProjects,
-  employeeFilter,
-  onEmployeeFilterChange,
-  uniqueEmployees,
-}: {
-  search: string;
-  onSearchChange: (value: string) => void;
-  typeFilter: BonusType | 'ALL';
-  onTypeFilterChange: (value: BonusType | 'ALL') => void;
-  projectFilter: string;
-  onProjectFilterChange: (value: string) => void;
-  uniqueProjects: { id: string; code: string; label: string }[];
-  employeeFilter: string;
-  onEmployeeFilterChange: (value: string) => void;
-  uniqueEmployees: { id: string; label: string }[];
-}) {
-  return (
-    <div className="mt-5 flex flex-wrap items-center gap-3">
-      <div className="relative flex-1">
-        <Search
-          size={16}
-          className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2"
-        />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search by employee, project, or order…"
-          className="border-input bg-card text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-xl border py-2.5 pr-4 pl-10 text-sm focus:ring-2 focus:outline-none"
-        />
-      </div>
-      <div className="relative">
-        <ChevronDown
-          size={14}
-          className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
-        />
-        <select
-          value={typeFilter}
-          onChange={(e) => onTypeFilterChange(e.target.value as BonusType | 'ALL')}
-          className="border-input bg-card text-foreground focus:ring-ring appearance-none rounded-xl border py-2.5 pr-8 pl-3 text-sm focus:ring-2 focus:outline-none"
-        >
-          <option value="ALL">All Types</option>
-          {(Object.keys(BONUS_BOARD_TYPE_CONFIG) as BonusType[]).map((key) => (
-            <option key={key} value={key}>
-              {BONUS_BOARD_TYPE_CONFIG[key].label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="relative min-w-[10rem]">
-        <ChevronDown
-          size={14}
-          className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
-        />
-        <select
-          value={projectFilter}
-          onChange={(e) => onProjectFilterChange(e.target.value)}
-          className="border-input bg-card text-foreground focus:ring-ring max-w-[220px] appearance-none rounded-xl border py-2.5 pr-8 pl-3 text-sm focus:ring-2 focus:outline-none"
-        >
-          <option value="ALL">All Projects</option>
-          {uniqueProjects.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="relative">
-        <ChevronDown
-          size={14}
-          className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
-        />
-        <select
-          value={employeeFilter}
-          onChange={(e) => onEmployeeFilterChange(e.target.value)}
-          className="border-input bg-card text-foreground focus:ring-ring appearance-none rounded-xl border py-2.5 pr-8 pl-3 text-sm focus:ring-2 focus:outline-none"
-        >
-          <option value="ALL">All Employees</option>
-          {uniqueEmployees.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.label}
-            </option>
-          ))}
-        </select>
-      </div>
     </div>
   );
 }
