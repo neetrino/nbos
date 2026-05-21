@@ -2,7 +2,7 @@
 
 > ~~Зачёркнуто = сделано.~~ Открытые пункты — дальше по плану.
 
-**Коммиты:** `031230b6` · `ed1dae70` · `553763b2` · _(следующий — phase 2 finish)_
+**Коммиты:** `031230b6` · `ed1dae70` · `553763b2` · phase 2 hero · revenue period/settings _(следующий — phase 3)_
 
 ---
 
@@ -34,6 +34,14 @@
 - ~~Expense plans: `IntegratedSearchFilters` вместо кастомного toolbar~~
 - ~~Убран `ExpensePlansVsBoardBanner` на board и plans~~
 
+## Revenue list hero (2026-05) ~~(готово)~~
+
+- ~~Orders · Invoices · Payments · Subscriptions: период в фильтрах поиска (не pill-кнопки в hero)~~
+- ~~Экспорт scope stats + CSV → `FinanceListPageSettingsSheet`~~
+- ~~Общий `finance-period-filter.ts` + reuse в Expenses~~
+
+**Не в scope этого среза:** `/finance/dashboard` — период по-прежнему pill-кнопки на самой странице hub.
+
 ## Phase 3 — Column analytics (не блоки на странице)
 
 - ~~Invoices kanban: column totals~~
@@ -45,6 +53,7 @@
 
 - [ ] Overview: карточки 5 зон + ссылки
 - [ ] Сверка с `01-Finance-Overview.md`
+- [ ] _(опционально)_ период dashboard в фильтры / Settings, как list pages
 
 ## Phase 5 — Canon polish
 
@@ -67,3 +76,5 @@
 2. **Phase 4** — Dashboard hub по зонам.
 3. **Phase 5** — канон досок / list / stage-gate.
 4. **Phase 6** — кастомный UI для finance-команды.
+
+**Опционально:** URL alias `/finance/expenses/pay`; выровнять sidebar «Expense Plan» vs hero «Expenses Plan».

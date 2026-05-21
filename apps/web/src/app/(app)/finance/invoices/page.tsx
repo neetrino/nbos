@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Download, Loader2, Plus, TableProperties } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import {
   IntegratedSearchFilters,
   LoadingState,
@@ -11,6 +11,7 @@ import {
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
+import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
 import { FinanceWorkflowScopeBanner } from '@/features/finance/components/FinanceWorkflowScopeBanner';
@@ -30,14 +31,16 @@ import { useInvoicesPageState } from '@/features/finance/components/invoices/use
 import { invoicesListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-invoice-drilldown';
+import { getFinancePeriodParams } from '@/features/finance/constants/finance';
 import {
-  FINANCE_PERIOD_OPTIONS,
-  getFinancePeriodParams,
-} from '@/features/finance/constants/finance';
+  buildFinancePeriodFilterConfig,
+  FINANCE_PERIOD_FILTER_KEY,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 
-const INVOICE_FILTER_CONFIGS = [
+const INVOICE_FILTER_CONFIGS_BASE = [
   {
     key: 'boardScope',
     label: 'Status',
@@ -107,6 +110,10 @@ function InvoicesPageInner() {
 
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
+      if (key === FINANCE_PERIOD_FILTER_KEY) {
+        state.setPeriod(parseFinancePeriodFilterValue(value));
+        return;
+      }
       state.setFilters((prev) => {
         if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
           const next = { ...prev };
@@ -116,12 +123,27 @@ function InvoicesPageInner() {
         return { ...prev, [key]: value };
       });
     },
-    [state.setFilters],
+    [state.setFilters, state.setPeriod],
   );
 
   const handleClearFilters = useCallback(() => {
     state.setFilters({});
-  }, [state.setFilters]);
+    state.setPeriod('month');
+  }, [state.setFilters, state.setPeriod]);
+
+  const invoiceFilterConfigs = useMemo(
+    () => [buildFinancePeriodFilterConfig(), ...INVOICE_FILTER_CONFIGS_BASE],
+    [],
+  );
+
+  const invoiceFilterValues = useMemo(
+    () => ({
+      [FINANCE_PERIOD_FILTER_KEY]: state.period,
+      boardScope: state.filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+      ...state.filters,
+    }),
+    [state.filters, state.period],
+  );
 
   const moduleHeroSlots = useMemo(
     () => ({
@@ -130,11 +152,8 @@ function InvoicesPageInner() {
           search={state.search}
           onSearchChange={state.setSearch}
           searchPlaceholder="Search by invoice, company, order, project…"
-          filters={INVOICE_FILTER_CONFIGS}
-          filterValues={{
-            boardScope: state.filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
-            ...state.filters,
-          }}
+          filters={invoiceFilterConfigs}
+          filterValues={invoiceFilterValues}
           onFilterChange={handleFilterChange}
           onClearAll={handleClearFilters}
         />
@@ -148,47 +167,17 @@ function InvoicesPageInner() {
       ),
       trailing: (
         <>
-          <div className="border-border flex rounded-lg border p-1">
-            {FINANCE_PERIOD_OPTIONS.map((option) => (
-              <Button
-                key={option.value}
-                variant={state.period === option.value ? 'secondary' : 'ghost'}
-                size="sm"
-                type="button"
-                onClick={() => state.setPeriod(option.value)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={state.loading || !state.stats}
-            onClick={() => handleExportScopeStatsCsv()}
-            aria-label="Export invoice scope statistics as CSV"
-            title="UTF-8 CSV snapshot from GET /finance/invoices/stats"
-          >
-            <TableProperties size={16} aria-hidden />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={state.loading || exportCsvSubmitting}
-            onClick={() => {
-              void handleExportCsv();
-            }}
-            aria-label="Export invoices as CSV"
-            title="Export all rows matching current filters"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={16} className="animate-spin" aria-hidden />
-            ) : (
-              <Download size={16} aria-hidden />
-            )}
-          </Button>
+          <FinanceListPageSettingsSheet
+            title="Invoices — settings"
+            description="Exports for the current list scope. Period and filters follow the search bar."
+            triggerAriaLabel="Invoices settings"
+            statsExportDisabled={state.loading || !state.stats}
+            exportCsvDisabled={state.loading || exportCsvSubmitting}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            onExportCsv={handleExportCsv}
+            exportCsvLabel="Export invoices (CSV)"
+          />
           <Button type="button" onClick={() => state.setCreateOpen(true)}>
             <Plus size={16} aria-hidden />
             New Invoice
@@ -202,9 +191,9 @@ function InvoicesPageInner() {
       handleExportCsv,
       handleExportScopeStatsCsv,
       handleFilterChange,
-      state.filters,
+      invoiceFilterConfigs,
+      invoiceFilterValues,
       state.loading,
-      state.period,
       state.search,
       state.stats,
       state.view,

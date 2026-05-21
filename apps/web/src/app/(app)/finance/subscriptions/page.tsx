@@ -9,12 +9,14 @@ import {
   useModuleHeroSlots,
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { Download, Loader2, Plus, TableProperties } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { SUBSCRIPTION_TYPES, SUBSCRIPTION_STATUSES } from '@/features/finance/constants/finance';
+import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import {
-  FINANCE_PERIOD_OPTIONS,
-  SUBSCRIPTION_TYPES,
-  SUBSCRIPTION_STATUSES,
-} from '@/features/finance/constants/finance';
+  buildFinancePeriodFilterConfig,
+  FINANCE_PERIOD_FILTER_KEY,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import { subscriptionsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PARTNER_SUBSCRIPTIONS_DRILLDOWN_QUERY } from '@/features/finance/constants/subscription-partner-drilldown';
 import { usePartnerFilterOptions } from '@/features/finance/hooks/usePartnerFilterOptions';
@@ -98,12 +100,16 @@ function SubscriptionsPageInner() {
 
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
+      if (key === FINANCE_PERIOD_FILTER_KEY) {
+        page.setPeriod(parseFinancePeriodFilterValue(value));
+        return;
+      }
       if (partnerIdFromUrl && key === 'partner') {
         router.replace(pathname ?? '/finance/subscriptions');
       }
       page.setFilters((prev) => ({ ...prev, [key]: value }));
     },
-    [partnerIdFromUrl, pathname, router, page.setFilters],
+    [partnerIdFromUrl, pathname, router, page.setFilters, page.setPeriod],
   );
 
   const openSubscriptionDetail = useCallback(
@@ -145,14 +151,17 @@ function SubscriptionsPageInner() {
       router.replace(pathname ?? '/finance/subscriptions');
     }
     page.setFilters({});
-  }, [partnerIdFromUrl, pathname, router, page.setFilters]);
+    page.setPeriod('month');
+    page.setSearch('');
+  }, [partnerIdFromUrl, pathname, router, page.setFilters, page.setPeriod, page.setSearch]);
 
   const filterConfigs = useMemo((): FilterConfig[] => {
+    const base = [buildFinancePeriodFilterConfig(), ...SUBSCRIPTION_STATIC_FILTER_CONFIGS];
     if (partnerFilterOptions.length === 0) {
-      return SUBSCRIPTION_STATIC_FILTER_CONFIGS;
+      return base;
     }
     return [
-      ...SUBSCRIPTION_STATIC_FILTER_CONFIGS,
+      ...base,
       {
         key: 'partner',
         label: 'Partner',
@@ -160,6 +169,14 @@ function SubscriptionsPageInner() {
       },
     ];
   }, [partnerFilterOptions]);
+
+  const subscriptionFilterValues = useMemo(
+    () => ({
+      [FINANCE_PERIOD_FILTER_KEY]: page.period,
+      ...page.filtersForBar,
+    }),
+    [page.filtersForBar, page.period],
+  );
 
   const moduleHeroSlots = useMemo(
     () => ({
@@ -169,52 +186,24 @@ function SubscriptionsPageInner() {
           onSearchChange={page.setSearch}
           searchPlaceholder="Search by code, project, company, partner…"
           filters={filterConfigs}
-          filterValues={page.filtersForBar}
+          filterValues={subscriptionFilterValues}
           onFilterChange={handleFilterChange}
           onClearAll={handleClearFilters}
         />
       ),
       trailing: (
         <>
-          <div className="border-border flex rounded-lg border p-1">
-            {FINANCE_PERIOD_OPTIONS.map((option) => (
-              <Button
-                key={option.value}
-                variant={page.period === option.value ? 'secondary' : 'ghost'}
-                size="sm"
-                type="button"
-                onClick={() => page.setPeriod(option.value)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={page.loading || !page.stats}
-            onClick={() => handleExportScopeStatsCsv()}
-            aria-label="Export subscription scope statistics as CSV"
-          >
-            <TableProperties size={16} aria-hidden />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={page.loading || exportCsvSubmitting}
-            onClick={() => {
-              void handleExportCsv();
-            }}
-            aria-label="Export subscriptions as CSV"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={16} className="animate-spin" aria-hidden />
-            ) : (
-              <Download size={16} aria-hidden />
-            )}
-          </Button>
+          <FinanceListPageSettingsSheet
+            title="Subscriptions — settings"
+            description="Exports for the current list scope. Period follows filters in the search bar."
+            triggerAriaLabel="Subscriptions settings"
+            statsExportDisabled={page.loading || !page.stats}
+            exportCsvDisabled={page.loading || exportCsvSubmitting}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            onExportCsv={handleExportCsv}
+            exportCsvLabel="Export subscriptions (CSV)"
+          />
           <Button type="button" onClick={() => setCreateOpen(true)}>
             <Plus size={16} aria-hidden />
             New Subscription
@@ -229,13 +218,11 @@ function SubscriptionsPageInner() {
       handleExportCsv,
       handleExportScopeStatsCsv,
       handleFilterChange,
-      page.filtersForBar,
       page.loading,
-      page.period,
       page.search,
-      page.setPeriod,
       page.setSearch,
       page.stats,
+      subscriptionFilterValues,
     ],
   );
 

@@ -1,8 +1,10 @@
 import type { FilterConfig } from '@/components/shared/FilterBar';
-import { FINANCE_PERIOD_OPTIONS } from '@/features/finance/constants/finance';
+import {
+  buildFinancePeriodFilterConfig,
+  FINANCE_PERIOD_FILTER_KEY,
+} from '@/features/finance/constants/finance-period-filter';
 import {
   buildExpenseBoardScopeFilterConfig,
-  EXPENSE_PERIOD_FILTER_KEY,
   EXPENSE_SORT_BY_FILTER_KEY,
   EXPENSE_SORT_ORDER_FILTER_KEY,
 } from './expense-board-scope';
@@ -19,13 +21,7 @@ export function buildExpenseIntegratedFilterConfigs(
     configs.push(buildExpenseBoardScopeFilterConfig());
   }
 
-  configs.push({
-    key: EXPENSE_PERIOD_FILTER_KEY,
-    label: 'Period',
-    includeAllOption: false,
-    defaultOptionValue: 'month',
-    options: FINANCE_PERIOD_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
-  });
+  configs.push(buildFinancePeriodFilterConfig());
 
   const base = buildExpenseFilterConfigs(projectFilterOptions, {
     omitStatus: options.omitStatus,

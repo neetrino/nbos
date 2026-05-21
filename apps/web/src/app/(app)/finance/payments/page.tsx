@@ -18,14 +18,17 @@ import {
   StatusBadge,
   useModuleHeroSlots,
 } from '@/components/shared';
-import { Download, Loader2, TableProperties } from 'lucide-react';
 import {
-  FINANCE_PERIOD_OPTIONS,
   getFinancePeriodParams,
   type FinancePeriod,
   formatAmount,
 } from '@/features/finance/constants/finance';
-import { Button } from '@/components/ui/button';
+import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
+import {
+  buildFinancePeriodFilterConfig,
+  FINANCE_PERIOD_FILTER_KEY,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import { usePaymentsCsvExport } from '@/features/finance/components/payments/use-payments-csv-export';
 import { usePaymentsScopeStatsCsvExport } from '@/features/finance/components/payments/use-payments-scope-stats-csv-export';
 import { buildPaymentListApiParams } from '@/features/finance/utils/build-payment-list-api-params';
@@ -95,6 +98,21 @@ export default function PaymentsPage() {
     fetchPayments();
   }, [fetchPayments]);
 
+  const paymentFilterConfigs = useMemo(() => [buildFinancePeriodFilterConfig()], []);
+
+  const paymentFilterValues = useMemo(() => ({ [FINANCE_PERIOD_FILTER_KEY]: period }), [period]);
+
+  const handlePaymentFilterChange = useCallback((key: string, value: string) => {
+    if (key === FINANCE_PERIOD_FILTER_KEY) {
+      setPeriod(parseFinancePeriodFilterValue(value));
+    }
+  }, []);
+
+  const handleClearPaymentFilters = useCallback(() => {
+    setSearch('');
+    setPeriod('month');
+  }, []);
+
   const moduleHeroSlots = useMemo(
     () => ({
       search: (
@@ -102,62 +120,35 @@ export default function PaymentsPage() {
           search={search}
           onSearchChange={setSearch}
           searchPlaceholder="Search by invoice, company, order, project, notes…"
-          filters={[]}
-          filterValues={{}}
-          onFilterChange={() => {}}
-          onClearAll={() => {}}
+          filters={paymentFilterConfigs}
+          filterValues={paymentFilterValues}
+          onFilterChange={handlePaymentFilterChange}
+          onClearAll={handleClearPaymentFilters}
         />
       ),
       trailing: (
-        <>
-          <div className="border-border flex rounded-lg border p-1">
-            {FINANCE_PERIOD_OPTIONS.map((option) => (
-              <Button
-                key={option.value}
-                variant={period === option.value ? 'secondary' : 'ghost'}
-                size="sm"
-                type="button"
-                onClick={() => setPeriod(option.value)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || !stats}
-            onClick={() => handleExportScopeStatsCsv()}
-            aria-label="Export payment scope statistics as CSV"
-          >
-            <TableProperties size={16} aria-hidden />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || exportCsvSubmitting}
-            onClick={() => {
-              void handleExportCsv();
-            }}
-            aria-label="Export payments as CSV"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={16} className="animate-spin" aria-hidden />
-            ) : (
-              <Download size={16} aria-hidden />
-            )}
-          </Button>
-        </>
+        <FinanceListPageSettingsSheet
+          title="Payments — settings"
+          description="Exports for the current list scope. Period follows filters in the search bar."
+          triggerAriaLabel="Payments settings"
+          statsExportDisabled={loading || !stats}
+          exportCsvDisabled={loading || exportCsvSubmitting}
+          exportCsvInProgress={exportCsvSubmitting}
+          onExportScopeStatsCsv={handleExportScopeStatsCsv}
+          onExportCsv={handleExportCsv}
+          exportCsvLabel="Export payments (CSV)"
+        />
       ),
     }),
     [
       exportCsvSubmitting,
+      handleClearPaymentFilters,
       handleExportCsv,
       handleExportScopeStatsCsv,
+      handlePaymentFilterChange,
       loading,
-      period,
+      paymentFilterConfigs,
+      paymentFilterValues,
       search,
       stats,
     ],

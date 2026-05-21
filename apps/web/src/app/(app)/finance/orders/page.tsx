@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Download, Loader2, Plus, ShoppingCart, TableProperties, X } from 'lucide-react';
+import { Plus, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   EmptyState,
@@ -20,10 +20,14 @@ import {
 } from '@/features/finance/constants/order-reconciliation-drilldown';
 import { ordersListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PARTNER_ORDERS_DRILLDOWN_QUERY } from '@/features/finance/constants/partner-orders-drilldown';
+import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
-import { ORDER_STATUSES } from '@/features/finance/components/orders/order-statuses';
+import { ORDER_FILTER_CONFIGS } from '@/features/finance/components/orders/order-filter-configs';
 import { ReconciliationGapBanner } from '@/features/finance/components/orders/orders-page-helpers';
-import { FINANCE_PERIOD_OPTIONS } from '@/features/finance/constants/finance';
+import {
+  FINANCE_PERIOD_FILTER_KEY,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
 import { useOrdersCsvExport } from '@/features/finance/components/orders/use-orders-csv-export';
 import { useOrdersScopeStatsCsvExport } from '@/features/finance/components/orders/use-orders-scope-stats-csv-export';
@@ -38,17 +42,6 @@ import {
   type OrderStatsQueryParams,
 } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
-
-const ORDER_FILTER_CONFIGS = [
-  {
-    key: 'status',
-    label: 'Status',
-    options: Object.entries(ORDER_STATUSES).map(([value, cfg]) => ({
-      value,
-      label: cfg.label,
-    })),
-  },
-];
 
 function OrdersPageContent() {
   const router = useRouter();
@@ -160,12 +153,25 @@ function OrdersPageContent() {
     }
   }, [fetchOrders]);
 
+  const orderFilterValues = useMemo(
+    () => ({
+      [FINANCE_PERIOD_FILTER_KEY]: period,
+      ...filters,
+    }),
+    [filters, period],
+  );
+
   const handleOrderFilterChange = useCallback((key: string, value: string) => {
+    if (key === FINANCE_PERIOD_FILTER_KEY) {
+      setPeriod(parseFinancePeriodFilterValue(value));
+      return;
+    }
     setFilters((prev) => ({ ...prev, [key]: value }));
   }, []);
 
   const handleClearOrderFilters = useCallback(() => {
     setFilters({});
+    setPeriod('month');
   }, []);
 
   const clearReconciliationGap = () => {
@@ -187,52 +193,24 @@ function OrdersPageContent() {
           onSearchChange={setSearch}
           searchPlaceholder="Search by order, project, product, deal, partner…"
           filters={ORDER_FILTER_CONFIGS}
-          filterValues={filters}
+          filterValues={orderFilterValues}
           onFilterChange={handleOrderFilterChange}
           onClearAll={handleClearOrderFilters}
         />
       ),
       trailing: (
         <>
-          <div className="border-border flex rounded-lg border p-1">
-            {FINANCE_PERIOD_OPTIONS.map((option) => (
-              <Button
-                key={option.value}
-                variant={period === option.value ? 'secondary' : 'ghost'}
-                size="sm"
-                type="button"
-                onClick={() => setPeriod(option.value)}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || !stats}
-            onClick={() => handleExportScopeStatsCsv()}
-            aria-label="Export order scope statistics as CSV"
-          >
-            <TableProperties size={16} aria-hidden />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || exportCsvSubmitting}
-            onClick={() => {
-              void handleExportCsv();
-            }}
-            aria-label="Export orders as CSV"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={16} className="animate-spin" aria-hidden />
-            ) : (
-              <Download size={16} aria-hidden />
-            )}
-          </Button>
+          <FinanceListPageSettingsSheet
+            title="Orders — settings"
+            description="Exports for the current list scope. Period and status follow filters in the search bar."
+            triggerAriaLabel="Orders settings"
+            statsExportDisabled={loading || !stats}
+            exportCsvDisabled={loading || exportCsvSubmitting}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            onExportCsv={handleExportCsv}
+            exportCsvLabel="Export orders (CSV)"
+          />
           <Button type="button">
             <Plus size={16} aria-hidden />
             New Order
@@ -242,13 +220,12 @@ function OrdersPageContent() {
     }),
     [
       exportCsvSubmitting,
-      filters,
+      orderFilterValues,
       handleClearOrderFilters,
       handleExportCsv,
       handleExportScopeStatsCsv,
       handleOrderFilterChange,
       loading,
-      period,
       search,
       stats,
     ],
