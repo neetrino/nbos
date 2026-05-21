@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   expenseBacklogPageTitle,
-  expenseDetailPageTitle,
   expensesListPageTitle,
   expensePlansListPageTitle,
   financeDashboardPageTitle,
@@ -71,68 +70,6 @@ describe('finance route page titles', () => {
   it('expenseBacklogPageTitle', () => {
     expect(expenseBacklogPageTitle(false)).toBe('Expense backlog');
     expect(expenseBacklogPageTitle(true)).toBe('Expense backlog · project filter');
-  });
-
-  it('expenseDetailPageTitle', () => {
-    expect(
-      expenseDetailPageTitle({
-        loading: true,
-        loadFailed: false,
-        expenseName: 'Rent',
-        fromBacklog: false,
-        hasProjectDrilldown: false,
-      }),
-    ).toBeUndefined();
-
-    expect(
-      expenseDetailPageTitle({
-        loading: false,
-        loadFailed: true,
-        expenseName: null,
-        fromBacklog: true,
-        hasProjectDrilldown: true,
-      }),
-    ).toBe('Expense');
-
-    expect(
-      expenseDetailPageTitle({
-        loading: false,
-        loadFailed: false,
-        expenseName: 'Rent',
-        fromBacklog: false,
-        hasProjectDrilldown: false,
-      }),
-    ).toBe('Rent');
-
-    expect(
-      expenseDetailPageTitle({
-        loading: false,
-        loadFailed: false,
-        expenseName: 'Rent',
-        fromBacklog: true,
-        hasProjectDrilldown: false,
-      }),
-    ).toBe('Rent · backlog');
-
-    expect(
-      expenseDetailPageTitle({
-        loading: false,
-        loadFailed: false,
-        expenseName: 'Rent',
-        fromBacklog: false,
-        hasProjectDrilldown: true,
-      }),
-    ).toBe('Rent · project filter');
-
-    expect(
-      expenseDetailPageTitle({
-        loading: false,
-        loadFailed: false,
-        expenseName: 'Rent',
-        fromBacklog: true,
-        hasProjectDrilldown: true,
-      }),
-    ).toBe('Rent · backlog · project filter');
   });
 
   it('subscriptionDetailPageTitle', () => {

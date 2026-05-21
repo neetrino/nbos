@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import {
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetSection,
+  StatusBadge,
+} from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -80,40 +84,39 @@ export function ExpenseDetailPaymentSection({
       )}
     >
       {expense.paidAmount !== undefined && expense.remainingAmount !== undefined ? (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="border-border bg-card rounded-xl border p-4">
-            <p className="text-muted-foreground text-xs">Paid amount</p>
-            <p className="mt-2 text-lg font-semibold tabular-nums">
-              {formatAmount(parseFloat(expense.paidAmount))}
-            </p>
-          </div>
-          <div className="border-border bg-card rounded-xl border p-4">
-            <p className="text-muted-foreground text-xs">Remaining</p>
-            <p className="mt-2 text-lg font-semibold tabular-nums">
-              {formatAmount(parseFloat(expense.remainingAmount))}
-            </p>
-          </div>
-          <div className="border-border bg-card rounded-xl border p-4">
-            <p className="text-muted-foreground text-xs">Payment status</p>
-            <div className="mt-2">
-              {ledgerPresentation ? (
-                <StatusBadge
-                  label={ledgerPresentation.label}
-                  variant={ledgerPresentation.variant}
-                />
-              ) : (
-                '—'
-              )}
+        <DetailSheetSection title="Summary">
+          <div className={`${DETAIL_SHEET_SECTION_BODY_CLASS} sm:grid-cols-3`}>
+            <div>
+              <p className="text-muted-foreground text-xs">Paid</p>
+              <p className="text-foreground mt-1 font-semibold tabular-nums">
+                {formatAmount(parseFloat(expense.paidAmount))}
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Remaining</p>
+              <p className="text-foreground mt-1 font-semibold tabular-nums">
+                {formatAmount(parseFloat(expense.remainingAmount))}
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Status</p>
+              <div className="mt-1">
+                {ledgerPresentation ? (
+                  <StatusBadge
+                    label={ledgerPresentation.label}
+                    variant={ledgerPresentation.variant}
+                  />
+                ) : (
+                  '—'
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </DetailSheetSection>
       ) : null}
 
       {expense.payments !== undefined ? (
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
-            Payment history
-          </p>
+        <DetailSheetSection title="Payment history">
           {expense.payments.length === 0 ? (
             <p className="text-muted-foreground text-sm">No payments recorded yet.</p>
           ) : (
@@ -158,7 +161,7 @@ export function ExpenseDetailPaymentSection({
               </TableBody>
             </Table>
           )}
-        </div>
+        </DetailSheetSection>
       ) : null}
 
       <DeleteExpensePaymentDialog

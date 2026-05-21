@@ -19,6 +19,7 @@ export interface UseExpenseKanbanStatusChangeOptions {
   listProjectId: string | null;
   listSort: ExpenseListNavigationSort;
   fromBacklog: boolean;
+  closed: boolean;
   expensePlanId: string | null;
 }
 
@@ -32,6 +33,7 @@ function openExpenseWithStageGate(
   router.push(
     expenseDetailHref(expense.id, options.listProjectId, options.listSort, {
       fromBacklog: options.fromBacklog,
+      closed: options.closed,
       expensePlanId: options.expensePlanId,
     }),
   );

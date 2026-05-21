@@ -1,0 +1,301 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import {
+  CalendarDays,
+  DollarSign,
+  FolderKanban,
+  Layers,
+  Receipt,
+  StickyNote,
+  Trash2,
+} from 'lucide-react';
+import {
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetSection,
+  InlineField,
+  StatusBadge,
+} from '@/components/shared';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { ExpensePayrollLinkBanner } from '@/features/finance/components/expenses/ExpensePayrollLinkBanner';
+import { ExpensePlanLinkBanner } from '@/features/finance/components/expenses/ExpensePlanLinkBanner';
+import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
+import {
+  EXPENSE_CATEGORIES,
+  EXPENSE_STAGES,
+  formatAmount,
+} from '@/features/finance/constants/finance';
+import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
+import {
+  EXPENSE_GATE_FIELD_STATUS,
+  expenseStageGateFieldClass,
+} from '@/features/finance/constants/expense-stage-gate-highlight';
+import {
+  EXPENSE_BACKLOG_REASONS,
+  EXPENSE_FREQUENCIES,
+  EXPENSE_TYPES,
+  PROJECTS_PAGE_SIZE,
+  SCHEMA_EXPENSE_STATUSES,
+  TAX_STATUSES,
+} from '@/features/finance/components/expenses/edit-expense-dialog-constants';
+import type { ExpenseGeneralDraft } from '@/features/finance/utils/expense-general-form-state';
+import type { Expense } from '@/lib/api/finance';
+import { projectsApi, type Project } from '@/lib/api/projects';
+import {
+  resolveExpensePayrollMonthLabel,
+  resolveExpensePayrollRunId,
+} from '@/features/finance/utils/parse-payroll-expense-notes';
+
+interface ExpenseGeneralTabProps {
+  expense: Expense;
+  draft: ExpenseGeneralDraft;
+  patchDraft: (partial: Partial<ExpenseGeneralDraft>) => void;
+  gateRequiredFields: ReadonlySet<string>;
+  formDisabled?: boolean;
+  onDeleteClick: () => void;
+}
+
+export function ExpenseGeneralTab({
+  expense,
+  draft,
+  patchDraft,
+  gateRequiredFields,
+  formDisabled = false,
+  onDeleteClick,
+}: ExpenseGeneralTabProps) {
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    projectsApi
+      .getAll({ page: 1, pageSize: PROJECTS_PAGE_SIZE })
+      .then((res) => {
+        if (!cancelled) setProjects(res.items);
+      })
+      .catch(() => {
+        if (!cancelled) setProjects([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const categoryOptions = useMemo((): Array<{ value: string; label: string }> => {
+    const items: Array<{ value: string; label: string }> = EXPENSE_CATEGORIES.map((c) => ({
+      value: c.value,
+      label: c.label,
+    }));
+    if (!items.some((c) => c.value === expense.category)) {
+      items.push({ value: expense.category, label: expense.category });
+    }
+    return items;
+  }, [expense.category]);
+
+  const statusOptions = useMemo((): Array<{ value: string; label: string }> => {
+    const base: Array<{ value: string; label: string }> = EXPENSE_STAGES.filter((s) =>
+      SCHEMA_EXPENSE_STATUSES.has(s.value),
+    ).map((s) => ({ value: s.value, label: s.label }));
+    if (!base.some((s) => s.value === expense.status)) {
+      const row = EXPENSE_STAGES.find((s) => s.value === expense.status);
+      base.push({ value: row?.value ?? expense.status, label: row?.label ?? expense.status });
+    }
+    return base;
+  }, [expense.status]);
+
+  const projectOptions = [
+    { value: 'none', label: 'None' },
+    ...projects.map((p) => ({ value: p.id, label: `${p.code} — ${p.name}` })),
+  ];
+
+  const payrollRunId = resolveExpensePayrollRunId(expense);
+  const payrollMonth = resolveExpensePayrollMonthLabel(expense);
+  const ledgerPresentation =
+    expense.paymentStatus !== undefined
+      ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
+      : null;
+  const hasLedger = expense.paidAmount !== undefined && expense.remainingAmount !== undefined;
+
+  return (
+    <div className="mx-auto flex w-full max-w-none flex-col gap-4">
+      {expense.linkedExpensePlan?.id && expense.linkedExpensePlan.name ? (
+        <ExpensePlanLinkBanner
+          planId={expense.linkedExpensePlan.id}
+          planName={expense.linkedExpensePlan.name}
+        />
+      ) : null}
+
+      {payrollRunId ? (
+        <ExpensePayrollLinkBanner payrollRunId={payrollRunId} payrollMonth={payrollMonth} />
+      ) : null}
+
+      {hasLedger ? (
+        <DetailSheetSection title="Ledger" icon={<DollarSign size={12} />}>
+          <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+            <p className="text-muted-foreground text-sm tabular-nums">
+              Paid {formatAmount(parseFloat(expense.paidAmount!))} · Remaining{' '}
+              {formatAmount(parseFloat(expense.remainingAmount!))}
+            </p>
+            {ledgerPresentation ? (
+              <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
+            ) : null}
+          </div>
+        </DetailSheetSection>
+      ) : null}
+
+      <DetailSheetSection title="Expense" icon={<Receipt size={12} />}>
+        <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+          <InlineField
+            variant="controlled"
+            label="Name"
+            type="text"
+            value={draft.name}
+            placeholder="Expense name…"
+            disabled={formDisabled}
+            onValueChange={(v) => patchDraft({ name: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Amount"
+            type="number"
+            value={draft.amount}
+            placeholder="0"
+            icon={<DollarSign size={12} />}
+            disabled={formDisabled}
+            onValueChange={(v) => patchDraft({ amount: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Due date"
+            type="date"
+            value={draft.dueDate}
+            disabled={formDisabled}
+            onValueChange={(v) => patchDraft({ dueDate: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Type"
+            type="select"
+            value={draft.type}
+            options={EXPENSE_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+            disabled={formDisabled}
+            onValueChange={(v) => v && patchDraft({ type: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Category"
+            type="select"
+            value={draft.category}
+            options={categoryOptions}
+            disabled={formDisabled}
+            onValueChange={(v) => v && patchDraft({ category: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Frequency"
+            type="select"
+            value={draft.frequency}
+            options={EXPENSE_FREQUENCIES.map((f) => ({ value: f.value, label: f.label }))}
+            icon={<CalendarDays size={12} />}
+            disabled={formDisabled}
+            onValueChange={(v) => v && patchDraft({ frequency: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Status"
+            type="select"
+            value={draft.status}
+            options={statusOptions}
+            disabled={formDisabled}
+            className={expenseStageGateFieldClass(gateRequiredFields, EXPENSE_GATE_FIELD_STATUS)}
+            onValueChange={(v) => v && patchDraft({ status: v })}
+          />
+          {draft.status === 'BACKLOG' ? (
+            <InlineField
+              variant="controlled"
+              label="Backlog reason"
+              type="select"
+              value={draft.backlogReason}
+              options={[
+                { value: 'none', label: 'None' },
+                ...EXPENSE_BACKLOG_REASONS.map((r) => ({ value: r.value, label: r.label })),
+              ]}
+              disabled={formDisabled}
+              onValueChange={(v) => v && patchDraft({ backlogReason: v })}
+            />
+          ) : null}
+        </div>
+      </DetailSheetSection>
+
+      <DetailSheetSection title="Tax & project" icon={<FolderKanban size={12} />}>
+        <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+          <InlineField
+            variant="controlled"
+            label="Tax status"
+            type="select"
+            value={draft.taxStatus}
+            options={TAX_STATUSES.map((t) => ({ value: t.value, label: t.label }))}
+            disabled={formDisabled}
+            onValueChange={(v) => v && patchDraft({ taxStatus: v })}
+          />
+          <InlineField
+            variant="controlled"
+            label="Project"
+            type="select"
+            value={draft.projectId}
+            options={projectOptions}
+            disabled={formDisabled}
+            onValueChange={(v) => v && patchDraft({ projectId: v })}
+          />
+          <div className="flex items-center gap-2 pt-1">
+            <Checkbox
+              id={`expense-pass-${expense.id}`}
+              checked={draft.isPassThrough}
+              disabled={formDisabled}
+              onCheckedChange={(v) => patchDraft({ isPassThrough: v === true })}
+            />
+            <Label htmlFor={`expense-pass-${expense.id}`} className="text-sm font-normal">
+              Pass-through
+            </Label>
+          </div>
+        </div>
+      </DetailSheetSection>
+
+      <DetailSheetSection title="Notes" icon={<StickyNote size={12} />}>
+        <InlineField
+          variant="controlled"
+          label="Notes"
+          type="textarea"
+          value={draft.notes}
+          placeholder="Optional notes…"
+          disabled={formDisabled}
+          onValueChange={(v) => patchDraft({ notes: v })}
+        />
+      </DetailSheetSection>
+
+      <DetailSheetSection title="Proofs" icon={<Layers size={12} />}>
+        <FinanceProofAttachments
+          entityType="EXPENSE"
+          entityId={expense.id}
+          purpose="EXPENSE_PROOF"
+          title=""
+        />
+      </DetailSheetSection>
+
+      <DetailSheetSection title="Actions">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="text-destructive hover:bg-destructive/10 border-destructive/40"
+          disabled={formDisabled}
+          onClick={onDeleteClick}
+        >
+          <Trash2 size={14} aria-hidden />
+          Delete expense
+        </Button>
+      </DetailSheetSection>
+    </div>
+  );
+}

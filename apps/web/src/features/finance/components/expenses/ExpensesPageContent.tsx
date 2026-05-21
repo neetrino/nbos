@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { IntegratedSearchFilters, useModuleHeroSlots, ViewModeSwitch } from '@/components/shared';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,12 +14,14 @@ import {
   type ExpenseStats,
 } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { OPEN_EXPENSE_QUERY } from '@/features/finance/constants/expense-deep-link';
 import {
   EXPENSE_BACKLOG_FIXED_STATUS,
   EXPENSE_PLAN_DRILLDOWN_QUERY,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
-  expenseDetailHref,
+  type ExpenseListHrefOptions,
 } from '@/features/finance/constants/project-expenses-drilldown';
+import { ExpenseDetailSheet } from '@/features/finance/components/expenses/ExpenseDetailSheet';
 import {
   clearedExpenseFilterRecord,
   expenseFiltersWithoutProjectDrilldown,
@@ -80,7 +83,9 @@ export function ExpensesPageContent({
   onSortOrderChange,
 }: ExpensesPageContentProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const openExpenseIdFromUrl = searchParams.get(OPEN_EXPENSE_QUERY)?.trim() || null;
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [stats, setStats] = useState<ExpenseStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,7 +105,59 @@ export function ExpensesPageContent({
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const projectFilterOptions = useExpenseProjectFilterOptions();
+
+  const listHrefOptions = useMemo((): ExpenseListHrefOptions => {
+    return {
+      fromBacklog: pageVariant === 'backlog',
+      closed: pageVariant === 'closed',
+      expensePlanId: expensePlanIdFromUrl?.trim() || undefined,
+    };
+  }, [expensePlanIdFromUrl, pageVariant]);
+
+  const stripOpenExpenseFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has(OPEN_EXPENSE_QUERY)) return;
+    params.delete(OPEN_EXPENSE_QUERY);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const pushOpenExpenseToUrl = useCallback(
+    (expenseId: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_EXPENSE_QUERY, expenseId);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handleExpenseClick = useCallback(
+    (expense: Expense) => {
+      setSelectedExpense(expense);
+      setSheetOpen(true);
+      pushOpenExpenseToUrl(expense.id);
+    },
+    [pushOpenExpenseToUrl],
+  );
+
+  const handleExpenseSheetOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      setSheetOpen(nextOpen);
+      if (!nextOpen) {
+        setSelectedExpense(null);
+        stripOpenExpenseFromUrl();
+      }
+    },
+    [stripOpenExpenseFromUrl],
+  );
+
+  const handleExpenseUpdated = useCallback((updated: Expense) => {
+    setSelectedExpense(updated);
+    setExpenses((current) => current.map((row) => (row.id === updated.id ? updated : row)));
+  }, []);
 
   useEffect(() => {
     if (projectIdFromUrl) {
@@ -208,8 +265,43 @@ export function ExpensesPageContent({
     listProjectId: effectiveProjectId ?? null,
     listSort: { sortBy, sortOrder },
     fromBacklog: pageVariant === 'backlog',
+    closed: pageVariant === 'closed',
     expensePlanId: expensePlanIdFromUrl?.trim() ?? null,
   });
+
+  const handleExpenseDeleted = useCallback(
+    (expenseId: string) => {
+      setExpenses((current) => current.filter((row) => row.id !== expenseId));
+      void fetchExpenses();
+    },
+    [fetchExpenses],
+  );
+
+  useEffect(() => {
+    if (!openExpenseIdFromUrl) return;
+    const fromList = expenses.find((row) => row.id === openExpenseIdFromUrl);
+    if (fromList) {
+      setSelectedExpense(fromList);
+      setSheetOpen(true);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await expensesApi.getById(openExpenseIdFromUrl);
+        if (!cancelled) {
+          setSelectedExpense(data);
+          setSheetOpen(true);
+        }
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Could not open expense from link.'));
+        stripOpenExpenseFromUrl();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openExpenseIdFromUrl, expenses, stripOpenExpenseFromUrl]);
 
   const onKanbanStatusMove = useCallback(
     async (expenseId: string, _from: string, toStatus: string) => {
@@ -388,9 +480,7 @@ export function ExpensesPageContent({
         view={pageVariant === 'backlog' ? 'list' : view}
         kanbanScope={pageVariant === 'closed' ? 'closed' : 'active'}
         fromBacklog={pageVariant === 'backlog'}
-        effectiveProjectId={effectiveProjectId ?? null}
-        listExpensePlanId={expensePlanIdFromUrl?.trim() ?? null}
-        listSort={{ sortBy, sortOrder }}
+        onOpenExpense={handleExpenseClick}
         onRequestDelete={(row) => {
           setDeleteError(null);
           setDeleteTarget(row);
@@ -401,24 +491,26 @@ export function ExpensesPageContent({
         }
       />
 
+      <ExpenseDetailSheet
+        expenseId={sheetOpen ? (openExpenseIdFromUrl ?? selectedExpense?.id ?? null) : null}
+        open={sheetOpen || Boolean(openExpenseIdFromUrl)}
+        onOpenChange={handleExpenseSheetOpenChange}
+        listProjectId={effectiveProjectId ?? null}
+        listSort={{ sortBy, sortOrder }}
+        listHrefOptions={listHrefOptions}
+        onExpenseUpdated={handleExpenseUpdated}
+        onExpenseDeleted={handleExpenseDeleted}
+      />
+
       <ExpensesPageDialogs
         createOpen={createOpen}
         onCreateOpenChange={setCreateOpen}
         effectiveProjectId={effectiveProjectId ?? null}
         defaultCreateStatus={pageVariant === 'backlog' ? EXPENSE_BACKLOG_FIXED_STATUS : undefined}
         onExpenseCreated={(created) => {
-          fetchExpenses();
-          router.push(
-            expenseDetailHref(
-              created.id,
-              effectiveProjectId ?? null,
-              { sortBy, sortOrder },
-              {
-                fromBacklog: pageVariant === 'backlog',
-                expensePlanId: expensePlanIdFromUrl?.trim() || undefined,
-              },
-            ),
-          );
+          void fetchExpenses().then(() => {
+            handleExpenseClick(created);
+          });
         }}
         deleteTarget={deleteTarget}
         deleteSubmitting={deleteSubmitting}

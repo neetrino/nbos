@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { Banknote, FolderKanban, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,30 +12,16 @@ import { StatusBadge } from '@/components/shared';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { parseMoneyAmount } from '@/lib/format/money';
-import {
-  type ExpenseListNavigationSort,
-  expenseDetailHref,
-} from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
 import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 
 interface ExpenseKanbanCardProps {
   expense: Expense;
-  listProjectId: string | null;
-  listExpensePlanId?: string | null;
-  listSort?: ExpenseListNavigationSort;
-  fromBacklog?: boolean;
+  onOpen: (expense: Expense) => void;
   onRequestDelete: (expense: Expense) => void;
 }
 
-export function ExpenseKanbanCard({
-  expense,
-  listProjectId,
-  listExpensePlanId = null,
-  listSort,
-  fromBacklog = false,
-  onRequestDelete,
-}: ExpenseKanbanCardProps) {
+export function ExpenseKanbanCard({ expense, onOpen, onRequestDelete }: ExpenseKanbanCardProps) {
   const ledgerPresentation =
     expense.paymentStatus !== undefined
       ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
@@ -46,12 +31,17 @@ export function ExpenseKanbanCard({
 
   return (
     <div className="border-border bg-card relative rounded-xl border">
-      <Link
-        href={expenseDetailHref(expense.id, listProjectId, listSort, {
-          fromBacklog,
-          expensePlanId: listExpensePlanId?.trim() || undefined,
-        })}
+      <div
+        role="button"
+        tabIndex={0}
         className="focus-visible:ring-ring block cursor-pointer space-y-2 rounded-xl p-3 pr-11 transition-shadow hover:shadow-sm focus-visible:ring-2 focus-visible:outline-none"
+        onClick={() => onOpen(expense)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onOpen(expense);
+          }
+        }}
       >
         <div className="flex items-center justify-between gap-2">
           <span
@@ -85,7 +75,7 @@ export function ExpenseKanbanCard({
             {expense.project.name}
           </div>
         ) : null}
-      </Link>
+      </div>
       <div className="absolute top-2 right-2">
         <DropdownMenu>
           <DropdownMenuTrigger

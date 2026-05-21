@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
 import type {
   ExpensePlanGridCell,
   ExpensePlanGridCellKind,
@@ -69,7 +70,7 @@ function PlanGridMonthCell({
   if (cell.expenseId) {
     return (
       <Link
-        href={`/finance/expenses/${cell.expenseId}`}
+        href={expenseDetailHref(cell.expenseId)}
         className={`${cls} hover:opacity-90`}
         onClick={(e) => e.stopPropagation()}
       >

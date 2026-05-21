@@ -83,28 +83,6 @@ export function expenseClosedPageTitle(hasProjectDrilldown: boolean): string {
   return hasProjectDrilldown ? 'Closed expenses · project filter' : 'Closed expenses';
 }
 
-export interface ExpenseDetailPageTitleParams {
-  loading: boolean;
-  /** True when fetch finished and expense is missing or an error was set. */
-  loadFailed: boolean;
-  expenseName: string | null | undefined;
-  fromBacklog: boolean;
-  hasProjectDrilldown: boolean;
-}
-
-/**
- * `undefined` means leave the current document title unchanged (still loading).
- */
-export function expenseDetailPageTitle(params: ExpenseDetailPageTitleParams): string | undefined {
-  if (params.loading) return undefined;
-  if (params.loadFailed || !params.expenseName?.trim()) return 'Expense';
-  const name = params.expenseName.trim();
-  if (!params.fromBacklog && !params.hasProjectDrilldown) return name;
-  if (params.fromBacklog && params.hasProjectDrilldown) return `${name} · backlog · project filter`;
-  if (params.fromBacklog) return `${name} · backlog`;
-  return `${name} · project filter`;
-}
-
 export interface SubscriptionDetailPageTitleParams {
   loading: boolean;
   /** True when fetch finished and subscription is missing or an error was set. */

@@ -12,7 +12,6 @@ import {
 } from '@/components/shared';
 import { buildTerminalDropZones } from '@/features/shared/kanban-terminal-drop';
 import { EXPENSE_ACTIVE_TERMINAL_DROP_STAGES } from '@/features/finance/constants/expense-board';
-import type { ExpenseListNavigationSort } from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
 import { ExpenseKanbanCard } from './ExpenseKanbanCard';
 import {
@@ -32,12 +31,9 @@ interface ExpensesPageMainPanelProps {
   expenses: Expense[];
   view: ExpensesViewMode;
   kanbanScope?: ExpensesKanbanScope;
-  /** Detail links include `from=backlog` when opened from `/finance/expenses/backlog`. */
+  /** Backlog route: list-only deferred queue. */
   fromBacklog?: boolean;
-  effectiveProjectId: string | null;
-  /** When set, detail links preserve `?expensePlanId=` from the list URL. */
-  listExpensePlanId?: string | null;
-  listSort: ExpenseListNavigationSort;
+  onOpenExpense: (expense: Expense) => void;
   onRequestDelete: (expense: Expense) => void;
   onAddFirstExpense: () => void;
   onKanbanMove?: (expenseId: string, from: string, toStatus: string) => void;
@@ -51,9 +47,7 @@ export function ExpensesPageMainPanel({
   view,
   kanbanScope = 'active',
   fromBacklog = false,
-  effectiveProjectId,
-  listExpensePlanId = null,
-  listSort,
+  onOpenExpense,
   onRequestDelete,
   onAddFirstExpense,
   onKanbanMove,
@@ -109,10 +103,7 @@ export function ExpensesPageMainPanel({
         renderCard={(expense: Expense) => (
           <ExpenseKanbanCard
             expense={expense}
-            listProjectId={effectiveProjectId}
-            listExpensePlanId={listExpensePlanId}
-            listSort={listSort}
-            fromBacklog={fromBacklog}
+            onOpen={onOpenExpense}
             onRequestDelete={onRequestDelete}
           />
         )}
@@ -122,10 +113,7 @@ export function ExpensesPageMainPanel({
   return (
     <ExpensesTableSection
       expenses={expenses}
-      listProjectId={effectiveProjectId}
-      listExpensePlanId={listExpensePlanId}
-      listSort={listSort}
-      fromBacklog={fromBacklog}
+      onOpen={onOpenExpense}
       onRequestDelete={onRequestDelete}
     />
   );
