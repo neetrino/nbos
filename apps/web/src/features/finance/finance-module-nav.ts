@@ -26,17 +26,17 @@ export const FINANCE_REVENUE_NAV: PageHeroNavLinkItem[] = [
 
 export const FINANCE_EXPENSES_NAV: PageHeroNavLinkItem[] = [
   {
-    href: FINANCE_EXPENSE_PLANS_PREFIX,
-    label: 'Plans',
-    icon: CalendarDays,
-    matchPrefix: FINANCE_EXPENSE_PLANS_PREFIX,
-  },
-  {
     href: FINANCE_EXPENSES_PREFIX,
     label: 'Pay Now',
     icon: Receipt,
     matchPrefix: FINANCE_EXPENSES_PREFIX,
     excludeMatchPrefix: FINANCE_EXPENSE_PLANS_PREFIX,
+  },
+  {
+    href: FINANCE_EXPENSE_PLANS_PREFIX,
+    label: 'Expenses Plan',
+    icon: CalendarDays,
+    matchPrefix: FINANCE_EXPENSE_PLANS_PREFIX,
   },
 ];
 
