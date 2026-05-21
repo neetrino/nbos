@@ -95,13 +95,7 @@ export function SubscriptionCoverageGrid({
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-foreground text-lg font-semibold">Subscriptions</h2>
-          <p className="text-muted-foreground max-w-prose text-sm">
-            One row per subscription agreement — monthly cells show coverage; color is the daily
-            signal. Open the row for type, partner, company, and billing edits.
-          </p>
-        </div>
+        <h2 className="text-foreground text-lg font-semibold">Subscriptions</h2>
         <label className="flex flex-col gap-1 text-sm">
           <span className="text-muted-foreground">Year</span>
           <select

@@ -28,7 +28,7 @@ References:
 - **Expenses — backlog:** list-only (deferred queue; not a lifecycle board).
 - **Invoices:** kanban + list on one page; **Active / All statuses / Closed** scope (terminal columns only in Closed).
 
-Scope hint banner on closed expense view explains terminal-only scope (parity with CRM `CrmPipelineScopeBanner`).
+Closed/backlog/active scope is communicated by the **Scope** filter and route (`/finance/expenses`, `/backlog`, `/closed`); no persistent hint row under the hero.
 
 ---
 

@@ -29,8 +29,7 @@
 
 ## Phase 5 — Canon polish
 
-- [x] Expense scope hints в hero (`secondaryTabs`: active · backlog · closed)
-- [x] Invoice closed scope hint в hero
+- ~~Expense/invoice scope hints в hero~~ (удалены — мешали UX)
 - [x] Invoice list: overdue days parity с kanban
 - [x] Alias `/finance/expenses/pay` → active board
 - [ ] Filters/search kanban audit (остальные finance list pages)

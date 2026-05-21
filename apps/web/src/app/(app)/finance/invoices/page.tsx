@@ -14,7 +14,6 @@ import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { InvoicesPageContent } from '@/features/finance/components/invoices/InvoicesPageContent';
-import { FinanceWorkflowScopeBanner } from '@/features/finance/components/FinanceWorkflowScopeBanner';
 import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
 import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import { INVOICE_MONEY_STAGES, INVOICE_TYPES } from '@/features/finance/constants/finance';
@@ -145,13 +144,8 @@ function InvoicesPageInner() {
     [state.filters, state.period],
   );
 
-  const showClosedScopeBanner = boardScope === 'CLOSED' && !hasMoneyStatusFilter;
-
   const moduleHeroSlots = useMemo(
     () => ({
-      secondaryTabs: showClosedScopeBanner ? (
-        <FinanceWorkflowScopeBanner variant="invoice-closed" />
-      ) : undefined,
       search: (
         <IntegratedSearchFilters
           search={state.search}
@@ -198,7 +192,6 @@ function InvoicesPageInner() {
       handleFilterChange,
       invoiceFilterConfigs,
       invoiceFilterValues,
-      showClosedScopeBanner,
       state.loading,
       state.search,
       state.stats,
