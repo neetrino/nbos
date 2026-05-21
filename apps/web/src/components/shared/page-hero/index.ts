@@ -16,5 +16,6 @@ export {
 export {
   PAGE_HERO_SURFACE,
   PAGE_HERO_TAB_SCROLL,
+  PAGE_HERO_SEARCH_CENTER,
   PAGE_HERO_PILL_GROUP,
 } from './page-hero-constants';

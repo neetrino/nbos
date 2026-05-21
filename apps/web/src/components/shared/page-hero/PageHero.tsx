@@ -2,7 +2,11 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { PAGE_HERO_SURFACE, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
+import {
+  PAGE_HERO_SEARCH_CENTER,
+  PAGE_HERO_SURFACE,
+  PAGE_HERO_TAB_SCROLL,
+} from './page-hero-constants';
 
 export interface PageHeroProps {
   title: string;
@@ -26,21 +30,38 @@ export function PageHero({
   className,
 }: PageHeroProps) {
   const hasTrailing = Boolean(viewMode || actions || trailing);
+  const hasSearch = Boolean(search);
 
   return (
     <section className={cn(PAGE_HERO_SURFACE, className)}>
-      <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
-        <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">{title}</h1>
-        {tabs ? (
-          <div
-            className={cn(PAGE_HERO_TAB_SCROLL, 'min-w-[10rem] flex-1 basis-full sm:basis-auto')}
-          >
-            {tabs}
+      <div
+        className={cn(
+          'grid min-w-0 items-center gap-3 sm:gap-4',
+          hasSearch && hasTrailing
+            ? 'grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)_auto]'
+            : hasSearch
+              ? 'grid-cols-1 sm:grid-cols-[auto_minmax(0,1fr)]'
+              : hasTrailing
+                ? 'grid-cols-1 sm:grid-cols-[auto_auto]'
+                : 'grid-cols-1',
+        )}
+      >
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <h1 className="text-foreground shrink-0 text-xl font-semibold tracking-tight">{title}</h1>
+          {tabs ? <div className={cn(PAGE_HERO_TAB_SCROLL, 'shrink-0')}>{tabs}</div> : null}
+        </div>
+        {hasSearch ? (
+          <div className="min-w-0 sm:justify-self-center">
+            <div className={PAGE_HERO_SEARCH_CENTER}>{search}</div>
           </div>
         ) : null}
-        {search ? <HeroSearchSlot>{search}</HeroSearchSlot> : null}
         {hasTrailing ? (
-          <HeroTrailingActions viewMode={viewMode} actions={actions} trailing={trailing} />
+          <HeroTrailingActions
+            viewMode={viewMode}
+            actions={actions}
+            trailing={trailing}
+            className={hasSearch ? 'sm:justify-self-end' : 'sm:ml-auto'}
+          />
         ) : null}
       </div>
       {secondaryTabs ? (
@@ -50,25 +71,24 @@ export function PageHero({
   );
 }
 
-function HeroSearchSlot({ children }: { children: ReactNode }) {
-  return (
-    <div className="w-full min-w-0 flex-1 basis-full sm:basis-0 sm:px-1">
-      <div className="mx-auto max-w-3xl">{children}</div>
-    </div>
-  );
-}
-
 function HeroTrailingActions({
   viewMode,
   actions,
   trailing,
+  className,
 }: {
   viewMode?: ReactNode;
   actions?: ReactNode;
   trailing?: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="ml-auto flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto">
+    <div
+      className={cn(
+        'flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto',
+        className,
+      )}
+    >
       {viewMode}
       {actions}
       {trailing}
