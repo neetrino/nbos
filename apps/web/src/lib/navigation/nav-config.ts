@@ -104,13 +104,13 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
       {
-        label: 'Expenses',
-        href: '/finance/expenses',
+        label: 'Expense plans',
+        href: '/finance/expenses/plans',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
       {
-        label: 'Expense plans',
-        href: '/finance/expenses/plans',
+        label: 'Expense board',
+        href: '/finance/expenses',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
       {

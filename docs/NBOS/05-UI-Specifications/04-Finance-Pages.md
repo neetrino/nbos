@@ -155,7 +155,7 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 ### 4.1. Expense Plans / Плановые расходы
 
-**Путь:** `/finance/expenses/plans`
+**Путь:** `/finance/expenses/plans` (Finance top tab **Expense plans**, отдельно от доски карточек)
 
 Default view: `Calendar Grid / Календарная сетка`.
 
@@ -172,7 +172,7 @@ Default view: `Calendar Grid / Календарная сетка`.
 
 ### 4.2. Expense Board / Доска расходов
 
-**Путь:** `/finance/expenses/board`
+**Путь:** `/finance/expenses` (Finance top tab **Expense board**; sub-nav: Active / Backlog / Closed)
 
 Default view: `Board / Доска`.
 
