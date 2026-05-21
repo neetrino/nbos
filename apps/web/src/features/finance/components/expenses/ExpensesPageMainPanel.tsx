@@ -3,7 +3,13 @@
 import { useMemo } from 'react';
 import { Plus, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, KanbanBoard, LoadingState } from '@/components/shared';
+import {
+  EmptyState,
+  ErrorState,
+  KanbanBoard,
+  KanbanColumnMoneyTotal,
+  LoadingState,
+} from '@/components/shared';
 import { buildTerminalDropZones } from '@/features/shared/kanban-terminal-drop';
 import { EXPENSE_ACTIVE_TERMINAL_DROP_STAGES } from '@/features/finance/constants/expense-board';
 import type { ExpenseListNavigationSort } from '@/features/finance/constants/project-expenses-drilldown';
@@ -97,6 +103,9 @@ export function ExpensesPageMainPanel({
         terminalDropZones={
           kanbanScope === 'active' && onKanbanMove ? expenseTerminalDropZones : undefined
         }
+        renderColumnHeader={(column) => (
+          <KanbanColumnMoneyTotal column={column} getAmount={(expense) => expense.amount} />
+        )}
         renderCard={(expense: Expense) => (
           <ExpenseKanbanCard
             expense={expense}

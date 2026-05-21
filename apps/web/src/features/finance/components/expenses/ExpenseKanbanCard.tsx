@@ -12,6 +12,7 @@ import {
 import { StatusBadge } from '@/components/shared';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { parseMoneyAmount } from '@/lib/format/money';
 import {
   type ExpenseListNavigationSort,
   expenseDetailHref,
@@ -68,12 +69,12 @@ export function ExpenseKanbanCard({
           />
         </div>
         <p className="text-sm font-medium">{expense.name}</p>
-        <p className="text-sm font-bold">{formatAmount(parseFloat(expense.amount))}</p>
+        <p className="text-sm font-bold">{formatAmount(parseMoneyAmount(expense.amount))}</p>
         {ledgerPresentation && hasLedger ? (
           <div className="flex flex-col gap-1">
             <p className="text-muted-foreground text-xs tabular-nums">
-              Paid {formatAmount(parseFloat(expense.paidAmount!))} · Left{' '}
-              {formatAmount(parseFloat(expense.remainingAmount!))}
+              Paid {formatAmount(parseMoneyAmount(expense.paidAmount))} · Left{' '}
+              {formatAmount(parseMoneyAmount(expense.remainingAmount))}
             </p>
             <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
           </div>

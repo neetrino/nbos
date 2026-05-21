@@ -106,30 +106,16 @@ export function getSubscriptionBillingFrequency(value: string) {
   return SUBSCRIPTION_BILLING_FREQUENCIES.find((f) => f.value === value);
 }
 
-/** Armenian dram sign (compact cells, same as CRM deal cards). */
-export const AMD_CURRENCY_SYMBOL = '\u058F';
-
-export function formatAmount(amount: number, currency = 'AMD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-/** Amount without currency code — pair with {@link AMD_CURRENCY_SYMBOL} in grids. */
-export function formatAmountCompact(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-/** Grid cells: `150,000֏` (no `AMD` prefix). */
-export function formatAmountDramSuffix(amount: number): string {
-  return `${formatAmountCompact(amount)}${AMD_CURRENCY_SYMBOL}`;
-}
+export {
+  AMD_CURRENCY_SYMBOL,
+  formatAmount,
+  formatAmountCompact,
+  formatAmountDramSuffix,
+  formatGroupedNumber,
+  formatMoneyDram,
+  formatMoneyDramOrDash,
+  parseMoneyAmount,
+} from '@/lib/format/money';
 
 function toApiDate(date: Date): string {
   return date.toISOString();

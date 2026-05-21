@@ -30,6 +30,7 @@ export { LoadingState } from './LoadingState';
 export { ModulePlaceholder } from './ModulePlaceholder';
 export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } from './FilterBar';
 export { KanbanBoard, type KanbanColumn } from './KanbanBoard';
+export { KanbanColumnMoneyTotal } from './kanban/KanbanColumnMoneyTotal';
 export { InlineField, type InlineFieldProps } from './InlineField';
 export { SearchField, type SearchFieldProps } from './SearchField';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';

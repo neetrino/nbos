@@ -45,8 +45,11 @@
 ## Phase 3 — Column analytics (не блоки на странице)
 
 - ~~Invoices kanban: column totals~~
-- [ ] Expenses kanban: column totals (как CRM Deals)
-- [ ] Другие finance-доски: roll-up по колонкам
+- ~~Expenses kanban: column totals (как CRM Deals)~~
+- ~~CRM Deals kanban: column totals~~
+- ~~Expense plans kanban: column totals~~
+- ~~Глобальный money format (`lib/format/money.ts`, `hy-AM` grouping)~~
+- [ ] Другие finance-доски: roll-up по колонкам (Orders, Bonus board, …)
 - [ ] KPI модуля: только Dashboard или нигде
 
 ## Phase 4 — Finance Dashboard hub

@@ -9,6 +9,7 @@ import {
   ViewModeSwitch,
   IntegratedSearchFilters,
   KanbanBoard,
+  KanbanColumnMoneyTotal,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -498,6 +499,9 @@ function DealsPipelinePageContent() {
             terminalDropZones={
               shouldShowTerminalDropBar(boardScope) ? dealTerminalZones : undefined
             }
+            renderColumnHeader={(column) => (
+              <KanbanColumnMoneyTotal column={column} getAmount={(deal) => deal.amount} />
+            )}
           />
         </div>
       ) : (

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { AlertTriangle, Building2, Calendar, FolderKanban } from 'lucide-react';
-import { KanbanBoard, StatusBadge, type KanbanColumn } from '@/components/shared';
+import { KanbanBoard, KanbanColumnMoneyTotal, StatusBadge } from '@/components/shared';
 import {
   buildTerminalDropZonesFromBoard,
   shouldShowTerminalDropBar,
@@ -10,6 +10,7 @@ import {
   INVOICE_MONEY_STAGES,
   INVOICE_TYPES,
 } from '@/features/finance/constants/finance';
+import { parseMoneyAmount } from '@/lib/format/money';
 import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { Invoice } from '@/lib/api/finance';
@@ -70,21 +71,14 @@ export function InvoiceKanban({
         terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
         columnWidth={boardScope === 'CLOSED' ? 288 : 270}
         emptyMessage="No invoices"
-        renderColumnHeader={(column: KanbanColumn<Invoice>) => (
-          <InvoiceKanbanColumnTotal column={column} />
+        renderColumnHeader={(column) => (
+          <KanbanColumnMoneyTotal column={column} getAmount={(invoice) => invoice.amount} />
         )}
         renderCard={(invoice: Invoice) => (
           <InvoiceKanbanCard invoice={invoice} onInvoiceClick={onInvoiceClick} />
         )}
       />
     </div>
-  );
-}
-
-function InvoiceKanbanColumnTotal({ column }: { column: KanbanColumn<Invoice> }) {
-  const columnTotal = column.items.reduce((sum, invoice) => sum + parseFloat(invoice.amount), 0);
-  return (
-    <p className="text-foreground text-lg font-bold tabular-nums">{formatAmount(columnTotal)}</p>
   );
 }
 
@@ -108,7 +102,7 @@ function InvoiceKanbanCard({
         {invoice.taxStatus === 'TAX' && <StatusBadge label="Tax" variant="green" />}
       </div>
       <p className="text-foreground text-sm font-bold tabular-nums">
-        {formatAmount(parseFloat(invoice.amount))}
+        {formatAmount(parseMoneyAmount(invoice.amount))}
       </p>
       {type ? <StatusBadge label={type.label} variant="blue" /> : null}
       {invoice.company && <InvoiceCompany name={invoice.company.name} />}
