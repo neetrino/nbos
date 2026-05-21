@@ -112,7 +112,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-expenses',
-    label: 'Expense board',
+    label: 'Expenses',
     href: '/finance/expenses',
     icon: ReceiptText,
     module: 'EXPENSES',
@@ -121,7 +121,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-payroll',
-    label: 'Salary board',
+    label: 'Salary',
     href: '/finance/payroll',
     icon: FileText,
     module: 'PAYROLL',

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Grid3x3, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   EmptyState,
@@ -137,7 +137,7 @@ export function SalaryBoardPageContent() {
         <IntegratedSearchFilters
           search=""
           onSearchChange={() => undefined}
-          searchPlaceholder="Filter salary board range…"
+          searchPlaceholder="Filter salary range…"
           filters={salaryFilterConfigs}
           filterValues={salaryFilterValues}
           onFilterChange={handleSalaryFilterChange}
@@ -160,7 +160,7 @@ export function SalaryBoardPageContent() {
 
   if (!data) {
     return (
-      <EmptyState icon={Grid3x3} title="No data" description="Salary board response was empty." />
+      <EmptyState icon={Users} title="No data" description="Salary data response was empty." />
     );
   }
 
@@ -176,7 +176,7 @@ export function SalaryBoardPageContent() {
         <EmptyState
           icon={Users}
           title="No employees"
-          description="No non-terminated employees are available for the salary board."
+          description="No non-terminated employees are available for the salary view."
         />
       ) : (
         <div className="border-border overflow-x-auto rounded-xl border">

@@ -21,9 +21,9 @@ export function BonusBoardPageSettingsSheet({
 }: BonusBoardPageSettingsSheetProps) {
   return (
     <PageSettingsSheet
-      title="Bonus board — settings"
+      title="Bonus — settings"
       description="Exports for visible rows and workspace scope statistics."
-      triggerAriaLabel="Bonus board settings"
+      triggerAriaLabel="Bonus settings"
     >
       <Button
         type="button"

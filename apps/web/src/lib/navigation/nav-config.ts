@@ -126,7 +126,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
       {
-        label: 'Expense board',
+        label: 'Board',
         href: '/finance/expenses',
         permission: { module: 'FINANCE_EXPENSES', action: 'VIEW' },
       },
@@ -136,7 +136,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
       {
-        label: 'Salary board',
+        label: 'Salary',
         href: '/finance/salary',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
@@ -146,7 +146,7 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },
       {
-        label: 'Bonus board',
+        label: 'Bonus',
         href: '/bonus',
         permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
       },

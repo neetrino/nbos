@@ -4,8 +4,8 @@ import {
   CreditCard,
   FileChartColumn,
   FileText,
-  Grid3x3,
   PieChart,
+  Users,
   Receipt,
   RefreshCw,
   ServerCog,
@@ -42,9 +42,9 @@ export const FINANCE_EXPENSES_NAV: PageHeroNavLinkItem[] = [
 
 export const FINANCE_PAYROLL_NAV: PageHeroNavLinkItem[] = [
   { href: '/finance/payroll', label: 'Payroll', icon: Banknote },
-  { href: '/finance/salary', label: 'Salary board', icon: Grid3x3 },
+  { href: '/finance/salary', label: 'Salary', icon: Users },
   { href: '/finance/bonus-pools', label: 'Bonus pools', icon: PieChart },
-  { href: '/bonus', label: 'Bonus board', icon: PieChart },
+  { href: '/bonus', label: 'Bonus', icon: PieChart },
 ];
 
 export const FINANCE_ANALYTICS_NAV: PageHeroNavLinkItem[] = [

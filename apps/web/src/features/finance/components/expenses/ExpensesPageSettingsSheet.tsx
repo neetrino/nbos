@@ -21,9 +21,9 @@ export function ExpensesPageSettingsSheet({
 }: ExpensesPageSettingsSheetProps) {
   return (
     <PageSettingsSheet
-      title="Expense board — settings"
+      title="Board — settings"
       description="Exports and scope statistics. Period and board scope follow the filters in the search bar."
-      triggerAriaLabel="Expense board settings"
+      triggerAriaLabel="Board settings"
     >
       <Button
         type="button"

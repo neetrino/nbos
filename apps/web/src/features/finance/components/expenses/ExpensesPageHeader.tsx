@@ -77,7 +77,7 @@ export function ExpensesPageHeader({
       ? 'Expense backlog'
       : pageVariant === 'closed'
         ? 'Closed expenses'
-        : 'Expense board';
+        : 'Board';
 
   const pageDescription =
     pageVariant === 'backlog'

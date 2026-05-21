@@ -43,7 +43,7 @@ export function ExpensePlanDetailHeader({
             className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex gap-1')}
           >
             <LayoutGrid size={16} />
-            Expense board
+            Board
           </Link>
         ) : null}
         <Button type="button" variant="outline" size="sm" onClick={onEditClick}>

@@ -29,6 +29,7 @@ import {
 } from '@/features/finance/components/bonus/bonus-board-widgets';
 import { useBonusBoardCsvExport } from '@/features/finance/components/bonus/use-bonus-board-csv-export';
 import { useBonusScopeStatsCsvExport } from '@/features/finance/components/bonus/use-bonus-scope-stats-csv-export';
+import { bonusBoardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
@@ -40,7 +41,7 @@ import {
 } from '@/lib/api/bonus';
 
 export function BonusBoardPageContent() {
-  useFinanceDocumentTitle('Bonus Board');
+  useFinanceDocumentTitle(bonusBoardPageTitle());
 
   const router = useRouter();
   const pathname = usePathname();

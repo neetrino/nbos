@@ -102,7 +102,7 @@ export default function BonusPoolsPage() {
                 <TableHead>Kind</TableHead>
                 <TableHead>Project</TableHead>
                 <TableHead>Order</TableHead>
-                <TableHead>Bonus board</TableHead>
+                <TableHead>Bonus</TableHead>
                 <TableHead className="text-right">Entries</TableHead>
                 <TableHead className="text-right">Pipeline</TableHead>
                 <TableHead className="text-right">Paid</TableHead>

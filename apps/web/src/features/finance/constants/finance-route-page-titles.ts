@@ -16,7 +16,11 @@ export function payrollRunsListPageTitle(): string {
 }
 
 export function salaryBoardPageTitle(): string {
-  return 'Salary board';
+  return 'Salary';
+}
+
+export function bonusBoardPageTitle(): string {
+  return 'Bonus';
 }
 
 export function employeeWalletPageTitle(): string {
@@ -52,7 +56,7 @@ export function subscriptionsListPageTitle(hasPartnerDrilldown: boolean): string
 }
 
 export function expensesListPageTitle(hasProjectDrilldown: boolean): string {
-  return hasProjectDrilldown ? 'Expense board · project filter' : 'Expense board';
+  return hasProjectDrilldown ? 'Board · project filter' : 'Board';
 }
 
 export function expensePlansListPageTitle(): string {
