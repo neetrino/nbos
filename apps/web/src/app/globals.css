@@ -37,6 +37,7 @@
   --success: oklch(0.648 0.15 145);
   --warning: #2e3192;
   --info: oklch(0.631 0.098 240);
+  --calendar-weekend: oklch(0.58 0.14 25);
   --chart-1: #2e3192;
   --chart-2: oklch(0.648 0.15 145);
   --chart-3: oklch(0.631 0.098 240);
@@ -76,6 +77,7 @@
   --success: oklch(0.7 0.15 145);
   --warning: #4d51b8;
   --info: oklch(0.68 0.1 240);
+  --calendar-weekend: oklch(0.72 0.12 25);
   --chart-1: #4d51b8;
   --chart-2: oklch(0.7 0.15 145);
   --chart-3: oklch(0.68 0.1 240);
@@ -115,6 +117,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);
+  --color-calendar-weekend: var(--calendar-weekend);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);

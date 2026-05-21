@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { workSpaceSprintsApi, type WorkSpaceSprint } from '@/lib/api/work-space-sprints';
@@ -84,20 +85,20 @@ export function CreateWorkSpaceSprintDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="sprint-start">Start</Label>
-              <Input
+              <NbosDatePicker
                 id="sprint-start"
-                type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={setStartDate}
+                aria-label="Sprint start"
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="sprint-end">End</Label>
-              <Input
+              <NbosDatePicker
                 id="sprint-end"
-                type="date"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={setEndDate}
+                aria-label="Sprint end"
               />
             </div>
           </div>

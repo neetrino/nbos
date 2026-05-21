@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -61,11 +62,7 @@ export function ClientServiceDateInput(props: {
   return (
     <div>
       <Label>{props.label}</Label>
-      <Input
-        type="date"
-        value={props.value}
-        onChange={(event) => props.onChange(event.target.value)}
-      />
+      <NbosDatePicker value={props.value} onChange={props.onChange} aria-label={props.label} />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -137,11 +138,11 @@ export function CreateRecurringTaskDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="recurring-start">Start date</Label>
-              <Input
+              <NbosDatePicker
                 id="recurring-start"
-                type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={setStartDate}
+                aria-label="Start date"
               />
             </div>
             <div className="grid gap-2">

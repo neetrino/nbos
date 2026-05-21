@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -255,21 +256,21 @@ export function SubscriptionFormDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="sub-start">Billing start date</Label>
-              <Input
+              <NbosDatePicker
                 id="sub-start"
-                type="date"
                 value={form.billingStartDate}
-                onChange={(e) => setForm({ ...form, billingStartDate: e.target.value })}
-                required
+                onChange={(billingStartDate) => setForm({ ...form, billingStartDate })}
+                aria-label="Billing start date"
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="sub-end">End date (optional)</Label>
-              <Input
+              <NbosDatePicker
                 id="sub-end"
-                type="date"
                 value={form.endDate}
-                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                onChange={(endDate) => setForm({ ...form, endDate })}
+                clearable
+                aria-label="End date"
               />
             </div>
           </div>

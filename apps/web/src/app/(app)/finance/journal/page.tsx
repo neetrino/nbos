@@ -5,7 +5,7 @@ import { Lock, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { IntegratedSearchFilters, useModuleHeroSlots } from '@/components/shared';
+import { IntegratedSearchFilters, NbosDatePicker, useModuleHeroSlots } from '@/components/shared';
 import { FinanceOverviewPageSettingsSheet } from '@/features/finance/components/overview/FinanceOverviewPageSettingsSheet';
 import { financeJournalPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -279,12 +279,11 @@ export default function FinanceJournalPage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="adj-date">Booked date</Label>
-              <Input
+              <NbosDatePicker
                 id="adj-date"
-                type="date"
                 value={adjustDate}
-                onChange={(e) => setAdjustDate(e.target.value)}
-                required
+                onChange={setAdjustDate}
+                aria-label="Booked date"
               />
             </div>
             <div className="flex flex-col gap-1.5">

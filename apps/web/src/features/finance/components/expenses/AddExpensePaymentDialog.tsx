@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -102,10 +103,10 @@ export function AddExpensePaymentDialog({
             </div>
             <div>
               <Label>Payment date *</Label>
-              <Input
-                type="date"
+              <NbosDatePicker
                 value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
+                onChange={setPaymentDate}
+                aria-label="Payment date"
               />
             </div>
           </div>

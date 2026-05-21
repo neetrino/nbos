@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import {
   Select,
   SelectContent,
@@ -191,20 +192,18 @@ export function DeliveryBoardClosedFiltersBar({
         </div>
         <div className="flex min-w-[9rem] flex-col gap-1">
           <span className="text-muted-foreground text-xs font-medium">Closed from</span>
-          <Input
-            type="date"
+          <NbosDatePicker
             value={value.closedFrom}
-            onChange={(e) => patch({ closedFrom: e.target.value })}
+            onChange={(closedFrom) => patch({ closedFrom })}
             className={CONTROL}
             aria-label="Closed on or after"
           />
         </div>
         <div className="flex min-w-[9rem] flex-col gap-1">
           <span className="text-muted-foreground text-xs font-medium">Closed to</span>
-          <Input
-            type="date"
+          <NbosDatePicker
             value={value.closedTo}
-            onChange={(e) => patch({ closedTo: e.target.value })}
+            onChange={(closedTo) => patch({ closedTo })}
             className={CONTROL}
             aria-label="Closed on or before"
           />

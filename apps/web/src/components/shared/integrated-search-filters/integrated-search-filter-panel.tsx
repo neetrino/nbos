@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { NbosMonthPicker } from '@/components/shared/date-picker';
 import {
   Select,
   SelectContent,
@@ -65,15 +65,14 @@ function FilterField({
     return (
       <label className="flex flex-col gap-1.5">
         <span className="text-muted-foreground text-xs font-medium">{filter.label}</span>
-        <Input
-          type="month"
+        <NbosMonthPicker
           value={monthValue}
-          onChange={(event) => {
-            const next = event.target.value.trim();
+          onChange={(next) => {
             onFilterChange(filter.key, next.length > 0 ? next : 'all');
           }}
           className="w-full"
           aria-label={filter.label}
+          placeholder="Select month…"
         />
       </label>
     );

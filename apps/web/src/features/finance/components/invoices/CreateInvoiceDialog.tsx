@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -219,10 +220,11 @@ function InvoiceAmountFields({
       </div>
       <div>
         <Label>Due Date</Label>
-        <Input
-          type="date"
+        <NbosDatePicker
           value={form.dueDate}
-          onChange={(event) => setForm({ ...form, dueDate: event.target.value })}
+          onChange={(dueDate) => setForm({ ...form, dueDate })}
+          variant="extended"
+          aria-label="Due date"
         />
       </div>
       <div className="col-span-2">

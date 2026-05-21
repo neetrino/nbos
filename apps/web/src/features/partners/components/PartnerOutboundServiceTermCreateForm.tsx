@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -121,13 +122,12 @@ export function PartnerOutboundServiceTermCreateForm(props: {
         </div>
         <div>
           <Label htmlFor="pst-billing-start">Billing start date</Label>
-          <Input
+          <NbosDatePicker
             id="pst-billing-start"
-            type="datetime-local"
+            mode="datetime"
             value={form.billingStartDate}
-            onChange={(e) =>
-              onFormChange((prev) => ({ ...prev, billingStartDate: e.target.value }))
-            }
+            onChange={(billingStartDate) => onFormChange((prev) => ({ ...prev, billingStartDate }))}
+            aria-label="Billing start date"
           />
         </div>
       </div>

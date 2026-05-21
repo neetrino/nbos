@@ -270,6 +270,7 @@ export function DealInfoDealProductFields({
           variant="controlled"
           label="Deadline"
           type="date"
+          datePickerVariant="extended"
           value={draft.deadline ?? ''}
           placeholder="Select delivery deadline…"
           icon={<Calendar size={12} />}

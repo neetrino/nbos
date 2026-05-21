@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -99,10 +100,10 @@ export function EditExpenseDialogForm({
         </div>
         <div>
           <Label>Due date</Label>
-          <Input
-            type="date"
+          <NbosDatePicker
             value={form.dueDate}
-            onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+            onChange={(dueDate) => setForm({ ...form, dueDate })}
+            aria-label="Due date"
           />
         </div>
       </div>

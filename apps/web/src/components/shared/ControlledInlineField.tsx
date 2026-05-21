@@ -3,6 +3,7 @@
 import { type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker, type NbosDatePickerVariant } from '@/components/shared/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -39,6 +40,7 @@ export interface ControlledInlineFieldProps {
   className?: string;
   clearable?: boolean;
   disabled?: boolean;
+  datePickerVariant?: NbosDatePickerVariant;
 }
 
 const FIELD_SHELL_CLASS = cn(
@@ -61,6 +63,7 @@ export function ControlledInlineField({
   className,
   clearable = false,
   disabled = false,
+  datePickerVariant = 'compact',
 }: ControlledInlineFieldProps) {
   const str = value != null && value !== '' ? String(value) : '';
   const showClear = clearable && str !== '' && !disabled;
@@ -132,18 +135,24 @@ export function ControlledInlineField({
             placeholder={placeholder}
           />
         </div>
+      ) : type === 'date' ? (
+        <div className={FIELD_SHELL_CLASS}>
+          <NbosDatePicker
+            value={str}
+            onChange={onValueChange}
+            variant={datePickerVariant}
+            disabled={disabled}
+            clearable={clearable}
+            placeholder={placeholder ?? 'Select date…'}
+            embedded
+            className="min-w-0 flex-1"
+            aria-label={label}
+          />
+        </div>
       ) : (
         <div className={FIELD_SHELL_CLASS}>
           <Input
-            type={
-              type === 'number'
-                ? 'number'
-                : type === 'email'
-                  ? 'email'
-                  : type === 'date'
-                    ? 'date'
-                    : 'text'
-            }
+            type={type === 'number' ? 'number' : type === 'email' ? 'email' : 'text'}
             value={str}
             onChange={(e) => onValueChange(e.target.value)}
             disabled={disabled}

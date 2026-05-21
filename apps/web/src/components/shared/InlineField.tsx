@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { ControlledInlineField } from './ControlledInlineField';
 import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
@@ -57,6 +58,7 @@ type InlineFieldControlledProps = {
   className?: string;
   clearable?: boolean;
   disabled?: boolean;
+  datePickerVariant?: 'compact' | 'extended';
 };
 
 export type InlineFieldProps = InlineFieldInlineProps | InlineFieldControlledProps;
@@ -215,18 +217,18 @@ function InlineFieldUncontrolled({
               className="min-h-[72px] text-sm"
               placeholder={placeholder}
             />
+          ) : type === 'date' ? (
+            <NbosDatePicker
+              value={editValue}
+              onChange={setEditValue}
+              placeholder={placeholder ?? 'Select date…'}
+              className="min-w-0 flex-1"
+              aria-label={label}
+            />
           ) : (
             <Input
               ref={inputRef as React.Ref<HTMLInputElement>}
-              type={
-                type === 'number'
-                  ? 'number'
-                  : type === 'email'
-                    ? 'email'
-                    : type === 'date'
-                      ? 'date'
-                      : 'text'
-              }
+              type={type === 'number' ? 'number' : type === 'email' ? 'email' : 'text'}
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -307,7 +309,8 @@ function InlineFieldUncontrolled({
 
 export function InlineField(props: InlineFieldProps) {
   if (props.variant === 'controlled') {
-    return <ControlledInlineField {...props} />;
+    const { datePickerVariant, ...controlledProps } = props;
+    return <ControlledInlineField {...controlledProps} datePickerVariant={datePickerVariant} />;
   }
   return <InlineFieldUncontrolled {...props} />;
 }

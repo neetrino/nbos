@@ -1,6 +1,7 @@
 'use client';
 
 import { Label } from '@/components/ui/label';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import {
   Select,
   SelectContent,
@@ -74,26 +75,24 @@ export function MarketingDashboardPeriodBar({
               <Label htmlFor="marketing-custom-from" className="text-xs">
                 From
               </Label>
-              <input
+              <NbosDatePicker
                 id="marketing-custom-from"
-                type="date"
                 value={customFrom}
-                onChange={(e) => onCustomFromChange(e.target.value)}
+                onChange={onCustomFromChange}
                 disabled={disabled}
-                className="border-input bg-background ring-offset-background focus-visible:ring-ring rounded-md border px-2 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                aria-label="Custom period from"
               />
             </div>
             <div className="space-y-1">
               <Label htmlFor="marketing-custom-to" className="text-xs">
                 To
               </Label>
-              <input
+              <NbosDatePicker
                 id="marketing-custom-to"
-                type="date"
                 value={customTo}
-                onChange={(e) => onCustomToChange(e.target.value)}
+                onChange={onCustomToChange}
                 disabled={disabled}
-                className="border-input bg-background ring-offset-background focus-visible:ring-ring rounded-md border px-2 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                aria-label="Custom period to"
               />
             </div>
           </div>

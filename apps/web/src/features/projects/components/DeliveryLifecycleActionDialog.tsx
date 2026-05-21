@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 
 const TOMORROW_OFFSET_DAYS = 1;
@@ -75,11 +75,12 @@ export function DeliveryLifecycleActionDialog({
           {isPause && (
             <label className="space-y-1.5 text-xs font-medium">
               Resume target date
-              <Input
-                type="date"
+              <NbosDatePicker
                 value={onHoldUntil}
                 disabled={isSubmitting}
-                onChange={(event) => setOnHoldUntil(event.target.value)}
+                onChange={setOnHoldUntil}
+                variant="extended"
+                aria-label="Resume target date"
               />
             </label>
           )}

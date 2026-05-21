@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -180,22 +181,26 @@ export function CreateMeetingCalendarDialog({
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="cal-meet-start">Start *</Label>
-              <Input
+              <NbosDatePicker
                 id="cal-meet-start"
-                type="datetime-local"
+                mode="datetime"
+                variant="extended"
                 className="mt-1.5"
                 value={form.startsLocal}
-                onChange={(e) => setForm((p) => ({ ...p, startsLocal: e.target.value }))}
+                onChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
+                aria-label="Meeting start"
               />
             </div>
             <div>
               <Label htmlFor="cal-meet-end">End *</Label>
-              <Input
+              <NbosDatePicker
                 id="cal-meet-end"
-                type="datetime-local"
+                mode="datetime"
+                variant="extended"
                 className="mt-1.5"
                 value={form.endsLocal}
-                onChange={(e) => setForm((p) => ({ ...p, endsLocal: e.target.value }))}
+                onChange={(endsLocal) => setForm((p) => ({ ...p, endsLocal }))}
+                aria-label="Meeting end"
               />
             </div>
           </div>

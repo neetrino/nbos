@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { NbosMonthPicker } from '@/components/shared/date-picker';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { payrollRunsApi } from '@/lib/api/payroll-runs';
 
@@ -61,12 +62,11 @@ export function PayrollRunsCreateRunDialog({
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="payroll-month">Payroll month (YYYY-MM)</Label>
-            <input
+            <NbosMonthPicker
               id="payroll-month"
-              type="month"
               value={month}
-              onChange={(e) => setMonth(e.target.value)}
-              className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+              onChange={setMonth}
+              aria-label="Payroll month"
             />
           </div>
           <label className="flex cursor-pointer items-center gap-2 text-sm">

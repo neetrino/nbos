@@ -10,6 +10,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -328,11 +329,11 @@ export function CreateCredentialDialog({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="cred-next-rotation">Next rotation</Label>
-              <Input
+              <NbosDatePicker
                 id="cred-next-rotation"
-                type="date"
                 value={nextRotationAt}
-                onChange={(e) => setNextRotationAt(e.target.value)}
+                onChange={setNextRotationAt}
+                aria-label="Next rotation"
               />
             </div>
           </div>

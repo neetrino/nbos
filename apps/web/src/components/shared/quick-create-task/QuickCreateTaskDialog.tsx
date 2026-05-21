@@ -4,6 +4,7 @@ import { Calendar, Flame, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { usePermission } from '@/lib/permissions';
 import {
   QUICK_CREATE_TASK_BODY_CLASS,
@@ -123,18 +124,16 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               <span className={QUICK_CREATE_TASK_ROW_LABEL_CLASS}>Due date</span>
               <div className="relative flex min-w-0 flex-1 items-center gap-2">
                 <Calendar size={16} className="text-primary shrink-0" aria-hidden />
-                <input
+                <NbosDatePicker
                   id="quick-task-due"
-                  name="quick-create-task-due"
-                  type="date"
                   value={form.dueDate}
-                  onChange={(event) => form.setDueDate(event.target.value)}
+                  onChange={form.setDueDate}
+                  variant="extended"
                   disabled={form.saving || form.creatorBlocked}
-                  autoComplete="off"
-                  className={cn(
-                    QUICK_CREATE_TASK_GHOST_INPUT_CLASS,
-                    'text-foreground h-8 flex-1 text-sm [color-scheme:light] dark:[color-scheme:dark]',
-                  )}
+                  clearable
+                  embedded
+                  className="min-w-0 flex-1"
+                  aria-label="Due date"
                 />
               </div>
             </div>

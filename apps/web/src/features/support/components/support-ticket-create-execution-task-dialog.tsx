@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -71,11 +72,14 @@ export function SupportTicketCreateExecutionTaskDialog({
           </div>
           <div className="space-y-1">
             <Label htmlFor="st-task-due">Due date (optional)</Label>
-            <Input
+            <NbosDatePicker
               id="st-task-due"
-              type="datetime-local"
+              mode="datetime"
+              variant="extended"
               value={dueDate}
-              onChange={(e) => onDueDateChange(e.target.value)}
+              onChange={onDueDateChange}
+              clearable
+              aria-label="Due date"
             />
           </div>
         </div>

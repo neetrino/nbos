@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toDatetimeLocalValue } from './calendar-datetime-helpers';
@@ -106,22 +107,26 @@ export function CreatePersonalCalendarDialog({
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="cal-per-start">Start *</Label>
-              <Input
+              <NbosDatePicker
                 id="cal-per-start"
-                type="datetime-local"
+                mode="datetime"
+                variant="extended"
                 className="mt-1.5"
                 value={form.startsLocal}
-                onChange={(e) => setForm((p) => ({ ...p, startsLocal: e.target.value }))}
+                onChange={(startsLocal) => setForm((p) => ({ ...p, startsLocal }))}
+                aria-label="Reminder start"
               />
             </div>
             <div>
               <Label htmlFor="cal-per-end">End *</Label>
-              <Input
+              <NbosDatePicker
                 id="cal-per-end"
-                type="datetime-local"
+                mode="datetime"
+                variant="extended"
                 className="mt-1.5"
                 value={form.endsLocal}
-                onChange={(e) => setForm((p) => ({ ...p, endsLocal: e.target.value }))}
+                onChange={(endsLocal) => setForm((p) => ({ ...p, endsLocal }))}
+                aria-label="Reminder end"
               />
             </div>
           </div>

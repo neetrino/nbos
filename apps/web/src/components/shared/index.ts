@@ -32,6 +32,18 @@ export { FilterBar, type FilterBarProps, type FilterConfig, type FilterOption } 
 export { KanbanBoard, type KanbanColumn } from './KanbanBoard';
 export { KanbanColumnMoneyTotal } from './kanban/KanbanColumnMoneyTotal';
 export { InlineField, type InlineFieldProps } from './InlineField';
+export {
+  NbosCalendarGrid,
+  NbosDateInput,
+  NbosDatePicker,
+  NbosMonthPicker,
+  type NbosCalendarGridProps,
+  type NbosDateInputProps,
+  type NbosDatePickerMode,
+  type NbosDatePickerProps,
+  type NbosDatePickerVariant,
+  type NbosMonthPickerProps,
+} from './date-picker';
 export { SearchField, type SearchFieldProps } from './SearchField';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';
 export { DetailSheetFormFooter, type DetailSheetFormFooterProps } from './DetailSheetFormFooter';

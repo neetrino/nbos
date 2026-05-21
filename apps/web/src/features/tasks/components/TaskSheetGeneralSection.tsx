@@ -67,6 +67,7 @@ export function TaskSheetGeneralSection({
           label="Due Date"
           value={draft.dueDate}
           type="date"
+          datePickerVariant="extended"
           icon={<Calendar size={13} />}
           clearable
           disabled={saving}

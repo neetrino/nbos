@@ -1,6 +1,6 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -27,12 +27,12 @@ export function PartnerNotesStartFields(props: {
       </div>
       <div>
         <Label htmlFor="partner-start-date">Partner since</Label>
-        <Input
+        <NbosDatePicker
           id="partner-start-date"
-          type="date"
           className="mt-1.5"
           value={startDate}
-          onChange={(e) => onStartDateChange(e.target.value)}
+          onChange={onStartDateChange}
+          aria-label="Partner since"
         />
       </div>
     </div>

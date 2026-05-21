@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -141,22 +142,23 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <Label htmlFor="agr-start">Start date</Label>
-            <Input
+            <NbosDatePicker
               id="agr-start"
-              type="date"
               className="mt-1.5"
               value={form.agreementStartDate}
-              onChange={(e) => setForm((p) => ({ ...p, agreementStartDate: e.target.value }))}
+              onChange={(agreementStartDate) => setForm((p) => ({ ...p, agreementStartDate }))}
+              aria-label="Agreement start"
             />
           </div>
           <div>
             <Label htmlFor="agr-end">End date</Label>
-            <Input
+            <NbosDatePicker
               id="agr-end"
-              type="date"
               className="mt-1.5"
               value={form.agreementEndDate}
-              onChange={(e) => setForm((p) => ({ ...p, agreementEndDate: e.target.value }))}
+              onChange={(agreementEndDate) => setForm((p) => ({ ...p, agreementEndDate }))}
+              clearable
+              aria-label="Agreement end"
             />
           </div>
         </div>

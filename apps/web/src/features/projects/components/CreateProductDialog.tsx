@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -143,10 +144,11 @@ export function CreateProductDialog({
 
           <div>
             <Label>Deadline</Label>
-            <Input
-              type="date"
+            <NbosDatePicker
               value={form.deadline}
-              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+              onChange={(deadline) => setForm({ ...form, deadline })}
+              variant="extended"
+              aria-label="Deadline"
             />
           </div>
 
