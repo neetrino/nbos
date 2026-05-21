@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { bonusProjectPoolsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -66,19 +66,16 @@ export default function BonusPoolsPage() {
     };
   }, [rows]);
 
-  return (
-    <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title="Bonus pools (by product)"
-        description="Read-only totals rolled up by Product / Extension (or order fallback), aligned with NBOS Product Bonus Pool. Pipeline counts every status except Paid and Clawback."
-      >
-        <div className="flex flex-wrap items-center gap-2">
+  const moduleHeroSlots = useMemo(
+    () => ({
+      trailing: (
+        <>
           <Link
             href="/bonus"
             className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex')}
           >
             Bonus board
-            <ExternalLink size={14} className="ml-1.5" />
+            <ExternalLink size={14} className="ml-1.5" aria-hidden />
           </Link>
           <Button
             type="button"
@@ -95,9 +92,16 @@ export default function BonusPoolsPage() {
               <Download size={16} aria-hidden />
             )}
           </Button>
-        </div>
-      </PageHeader>
+        </>
+      ),
+    }),
+    [error, exportCsvSubmitting, handleExportCsv, loading, rows.length],
+  );
 
+  useModuleHeroSlots(moduleHeroSlots);
+
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-5">
       <p className="text-muted-foreground text-sm">
         Figures aggregate bonus entry rows by the order&apos;s linked product or extension. Use the
         bonus board filtered by project for delivery context (**`/bonus?projectId=`**).

@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Download, Hash, Loader2, TableProperties, TrendingUp } from 'lucide-react';
+import { Download, Loader2, TableProperties } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ErrorState, LoadingState } from '@/components/shared';
+import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import {
   BONUS_BOARD_OPEN_ENTRY_QUERY,
   BONUS_BOARD_PROJECT_FILTER_QUERY,
@@ -13,19 +13,14 @@ import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bon
 import {
   BonusBoardColumns,
   BonusBoardToolbar,
-  SummaryCard,
-  countBonusEntriesWithStatus,
   employeeDisplayName,
-  parseBonusAmount,
   projectLabel,
-  sumBonusEntryAmounts,
   uniqueEmployeesFromRows,
   uniqueProjectsFromRows,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
 import { useBonusBoardCsvExport } from '@/features/finance/components/bonus/use-bonus-board-csv-export';
 import { useBonusScopeStatsCsvExport } from '@/features/finance/components/bonus/use-bonus-scope-stats-csv-export';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   bonusesApi,
@@ -177,76 +172,24 @@ export function BonusBoardPageContent() {
 
   const { handleExportScopeStatsCsv } = useBonusScopeStatsCsvExport(stats);
 
-  const canUseGlobalBonusStats = useMemo(
-    () =>
-      search.trim() === '' &&
-      typeFilter === 'ALL' &&
-      employeeFilter === 'ALL' &&
-      projectFilter === 'ALL',
-    [search, typeFilter, employeeFilter, projectFilter],
-  );
-
-  const totalAmountDisplay = useMemo(() => {
-    if (canUseGlobalBonusStats && stats?.totalAmount != null && stats.totalAmount !== '') {
-      return formatAmount(parseBonusAmount(stats.totalAmount));
-    }
-    return formatAmount(sumBonusEntryAmounts(filtered));
-  }, [canUseGlobalBonusStats, stats, filtered]);
-
-  const paidCountDisplay = useMemo(() => {
-    if (canUseGlobalBonusStats && stats) {
-      const fromStats = stats.byStatus.find((s) => s.status === 'PAID')?._count;
-      if (typeof fromStats === 'number') return String(fromStats);
-    }
-    return String(countBonusEntriesWithStatus(filtered, 'PAID'));
-  }, [canUseGlobalBonusStats, stats, filtered]);
-
-  const visibleEmployeeCount = useMemo(() => uniqueEmployeesFromRows(filtered).length, [filtered]);
-
-  if (loading) {
-    return (
-      <div className="flex h-full flex-col">
-        <div className="mb-4">
-          <h1 className="text-foreground text-2xl font-semibold">Bonus Board</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Loading…</p>
-        </div>
-        <LoadingState />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-full flex-col">
-        <div className="mb-4">
-          <h1 className="text-foreground text-2xl font-semibold">Bonus Board</h1>
-        </div>
-        <ErrorState description={error} onRetry={() => void load()} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-full flex-col">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-foreground text-2xl font-semibold">Bonus Board</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {filtered.length === rows.length ? (
-              <>
-                {rows.length} bonuses &middot; {visibleEmployeeCount} employees
-              </>
-            ) : (
-              <>
-                {filtered.length} visible of {rows.length} &middot; {visibleEmployeeCount} employees
-              </>
-            )}
-            {projectFilter !== 'ALL' ? (
-              <span className="text-foreground"> &middot; project scope (server filter)</span>
-            ) : null}
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <BonusBoardToolbar
+          search={search}
+          onSearchChange={setSearch}
+          typeFilter={typeFilter}
+          onTypeFilterChange={setTypeFilter}
+          projectFilter={projectFilter}
+          onProjectFilterChange={handleProjectFilterChange}
+          uniqueProjects={projectSelectOptions}
+          employeeFilter={employeeFilter}
+          onEmployeeFilterChange={setEmployeeFilter}
+          uniqueEmployees={uniqueEmployees}
+        />
+      ),
+      trailing: (
+        <>
           <Button
             type="button"
             variant="outline"
@@ -274,28 +217,38 @@ export function BonusBoardPageContent() {
             )}
             Export CSV
           </Button>
-        </div>
-      </div>
+        </>
+      ),
+    }),
+    [
+      employeeFilter,
+      exportCsvSubmitting,
+      filtered.length,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      handleProjectFilterChange,
+      loading,
+      projectFilter,
+      projectSelectOptions,
+      search,
+      stats,
+      typeFilter,
+      uniqueEmployees,
+    ],
+  );
 
-      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <SummaryCard label="Total Bonuses" value={String(filtered.length)} icon={Hash} />
-        <SummaryCard label="Total Amount" value={totalAmountDisplay} icon={TrendingUp} accent />
-        <SummaryCard label="Paid" value={paidCountDisplay} icon={CheckCircle2} />
-      </div>
+  useModuleHeroSlots(moduleHeroSlots);
 
-      <BonusBoardToolbar
-        search={search}
-        onSearchChange={setSearch}
-        typeFilter={typeFilter}
-        onTypeFilterChange={setTypeFilter}
-        projectFilter={projectFilter}
-        onProjectFilterChange={handleProjectFilterChange}
-        uniqueProjects={projectSelectOptions}
-        employeeFilter={employeeFilter}
-        onEmployeeFilterChange={setEmployeeFilter}
-        uniqueEmployees={uniqueEmployees}
-      />
+  if (loading) {
+    return <LoadingState />;
+  }
 
+  if (error) {
+    return <ErrorState description={error} onRetry={() => void load()} />;
+  }
+
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-5">
       <BonusBoardColumns filtered={filtered} onOpenReleases={openReleaseLedger} />
 
       <BonusEntryReleasesSheet

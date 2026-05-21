@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Grid3x3, Users } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { salaryBoardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
@@ -91,6 +91,48 @@ export function SalaryBoardPageContent() {
     router.replace(q ? `${pathname}?${q}` : pathname);
   }, [draftFrom, draftTo, pathname, router, searchParams]);
 
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="salary-board-from">From</Label>
+            <Input
+              id="salary-board-from"
+              type="month"
+              value={draftFrom}
+              onChange={(e) => setDraftFrom(e.target.value)}
+              className="w-44"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="salary-board-to">To</Label>
+            <Input
+              id="salary-board-to"
+              type="month"
+              value={draftTo}
+              onChange={(e) => setDraftTo(e.target.value)}
+              className="w-44"
+            />
+          </div>
+        </div>
+      ),
+      trailing: (
+        <>
+          <Button type="button" onClick={() => applyRange()}>
+            Apply range
+          </Button>
+          <Link href="/finance/payroll" className={cn(buttonVariants({ variant: 'outline' }))}>
+            Payroll runs
+          </Link>
+        </>
+      ),
+    }),
+    [applyRange, draftFrom, draftTo],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   if (loading && !data) {
     return <LoadingState />;
   }
@@ -106,43 +148,12 @@ export function SalaryBoardPageContent() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        title="Salary board"
-        description="Employees × payroll months (NBOS). Header links open the payroll run; cells open the salary line on that run."
-      />
-
-      <div className="border-border flex flex-wrap items-end gap-4 rounded-xl border p-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="salary-board-from">From</Label>
-          <Input
-            id="salary-board-from"
-            type="month"
-            value={draftFrom}
-            onChange={(e) => setDraftFrom(e.target.value)}
-            className="w-44"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="salary-board-to">To</Label>
-          <Input
-            id="salary-board-to"
-            type="month"
-            value={draftTo}
-            onChange={(e) => setDraftTo(e.target.value)}
-            className="w-44"
-          />
-        </div>
-        <Button type="button" onClick={() => applyRange()}>
-          Apply range
-        </Button>
-        <p className="text-muted-foreground max-w-md text-sm">
-          Range {data.payrollMonthFrom}–{data.payrollMonthTo} (UTC{' '}
-          <code className="text-xs">YYYY-MM</code>
-          ). Clear URL filters to use the API default (twelve months ending in the current UTC
-          month).
-        </p>
-      </div>
+    <div className="flex min-h-0 flex-col gap-6">
+      <p className="text-muted-foreground max-w-3xl text-sm">
+        Range {data.payrollMonthFrom}–{data.payrollMonthTo} (UTC{' '}
+        <code className="text-xs">YYYY-MM</code>
+        ). Clear URL filters to use the API default (twelve months ending in the current UTC month).
+      </p>
 
       {error ? (
         <p className="text-destructive text-sm" role="alert">

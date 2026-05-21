@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, BarChart3, RefreshCw } from 'lucide-react';
-import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   financeReportStatusClass,
@@ -88,6 +88,20 @@ export default function FinanceReportsPage() {
     void fetchDefinitions();
   }, [fetchDefinitions]);
 
+  const moduleHeroSlots = useMemo(
+    () => ({
+      trailing: (
+        <Button variant="outline" type="button" onClick={() => void fetchDefinitions()}>
+          <RefreshCw className="mr-2 h-4 w-4" aria-hidden />
+          Refresh
+        </Button>
+      ),
+    }),
+    [fetchDefinitions],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   if (loading) return <LoadingState variant="cards" count={6} />;
 
   if (!data) {
@@ -102,16 +116,6 @@ export default function FinanceReportsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Finance reports"
-        description="Phase 3 v1 catalog for Finance-owned read-only report definitions."
-      >
-        <Button variant="outline" onClick={() => void fetchDefinitions()}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
-        </Button>
-      </PageHeader>
-
       <section className="border-border bg-card rounded-2xl border p-5">
         <div className="flex items-start gap-3">
           <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import {
   PAYROLL_RUNS_LIST_MONTH_FROM_QUERY,
   PAYROLL_RUNS_LIST_MONTH_TO_QUERY,
@@ -25,7 +25,6 @@ import { payrollRunsListPageTitle } from '@/features/finance/constants/finance-r
 import { PayrollRunsCreateRunDialog } from '@/features/finance/components/payroll/PayrollRunsCreateRunDialog';
 import { PayrollRunsListTable } from '@/features/finance/components/payroll/PayrollRunsListTable';
 import { PayrollRunsListToolbar } from '@/features/finance/components/payroll/PayrollRunsListToolbar';
-import { PayrollRunsScopeStatsCard } from '@/features/finance/components/payroll/PayrollRunsScopeStatsCard';
 import { usePayrollRunsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-csv-export';
 import { usePayrollRunsScopeStatsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-scope-stats-csv-export';
 import { sumPayrollRunsRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
@@ -201,12 +200,9 @@ export function PayrollRunsListPageContent() {
     [replaceListUrl],
   );
 
-  return (
-    <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title="Payroll"
-        description="Monthly payroll runs (NBOS Draft → Closed workflow). Status and month bounds use the same filters as list, stats, and CSV exports (per-run list and scope statistics snapshot)."
-      >
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
         <PayrollRunsListToolbar
           statusFilter={statusFilter}
           onStatusChange={handleStatusChange}
@@ -222,15 +218,35 @@ export function PayrollRunsListPageContent() {
           onExportCsv={handleExportCsv}
           onNewRun={openDialog}
         />
-      </PageHeader>
+      ),
+    }),
+    [
+      exportCsvSubmitting,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      handleMonthFromChange,
+      handleMonthToChange,
+      handleStatusChange,
+      load,
+      loading,
+      monthFrom,
+      monthTo,
+      openDialog,
+      stats,
+      statusFilter,
+    ],
+  );
 
+  useModuleHeroSlots(moduleHeroSlots);
+
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {loading ? (
         <LoadingState />
       ) : error ? (
         <ErrorState description={error} onRetry={() => void load()} />
       ) : (
         <>
-          <PayrollRunsScopeStatsCard stats={stats} loading={false} />
           {items.length === 0 ? (
             <EmptyState
               icon={Plus}

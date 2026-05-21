@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   CLIENT_SERVICE_BILLING_MODELS,
@@ -70,7 +70,7 @@ function ClientServicesPageInner() {
   const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
 
   const [items, setItems] = useState<ClientServiceRecord[]>([]);
-  const [stats, setStats] = useState<ClientServiceStats | null>(null);
+  const [, setStats] = useState<ClientServiceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -98,26 +98,7 @@ function ClientServicesPageInner() {
     void fetchData();
   }, [fetchData]);
 
-  const summary = useMemo(
-    () => [
-      { label: 'Total services', value: stats?.total ?? items.length },
-      { label: 'Due soon', value: stats?.dueSoon ?? 0 },
-      {
-        label: 'Client-paid',
-        value:
-          stats?.byBillingModel.find((row) => row.billingModel === 'CLIENT_PAID')?._count._all ?? 0,
-      },
-      {
-        label: 'Company-paid',
-        value:
-          stats?.byBillingModel.find((row) => row.billingModel === 'COMPANY_PAID')?._count._all ??
-          0,
-      },
-    ],
-    [items.length, stats],
-  );
-
-  const openCreate = () => setCreateOpen(true);
+  const openCreate = useCallback(() => setCreateOpen(true), []);
 
   const openServiceDetail = useCallback(
     (serviceId: string) => {
@@ -187,35 +168,28 @@ function ClientServicesPageInner() {
     }
   };
 
+  const moduleHeroSlots = useMemo(
+    () => ({
+      trailing: (
+        <>
+          <Button variant="outline" type="button" onClick={() => void fetchData()}>
+            <RefreshCw className="mr-2 h-4 w-4" aria-hidden />
+            Refresh
+          </Button>
+          <Button type="button" onClick={openCreate}>
+            <Plus className="mr-2 h-4 w-4" aria-hidden />
+            New service
+          </Button>
+        </>
+      ),
+    }),
+    [fetchData, openCreate],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   return (
-    <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title="Client services"
-        description="Runtime records for domains, hosting, SaaS, accounts and licenses around client projects."
-      >
-        {
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => void fetchData()}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </Button>
-            <Button onClick={openCreate}>
-              <Plus className="mr-2 h-4 w-4" />
-              New service
-            </Button>
-          </div>
-        }
-      </PageHeader>
-
-      <section className="grid gap-3 md:grid-cols-4">
-        {summary.map((card) => (
-          <div key={card.label} className="border-border bg-card rounded-xl border p-4">
-            <p className="text-muted-foreground text-sm">{card.label}</p>
-            <p className="mt-1 text-2xl font-semibold">{card.value}</p>
-          </div>
-        ))}
-      </section>
-
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {loading ? <LoadingState /> : null}
       {!loading && error ? (
         <ErrorState title="Client services unavailable" description={error} />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Lock, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PageHeader, ErrorState, LoadingState } from '@/components/shared';
+import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   financeJournalApi,
@@ -66,6 +66,37 @@ export default function FinanceJournalPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="journal-month-filter">Filter entries by month</Label>
+          <Input
+            id="journal-month-filter"
+            type="month"
+            value={monthFilter}
+            onChange={(e) => setMonthFilter(e.target.value)}
+            className="w-44"
+          />
+        </div>
+      ),
+      trailing: (
+        <>
+          <Button type="button" variant="outline" size="sm" onClick={() => setMonthFilter('')}>
+            Clear filter
+          </Button>
+          <Button type="button" size="sm" onClick={() => setAdjustOpen(true)}>
+            <Plus size={16} className="mr-1" aria-hidden />
+            Manual adjustment
+          </Button>
+        </>
+      ),
+    }),
+    [monthFilter],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   const handleClosePeriod = async (monthKey: string) => {
     if (
@@ -113,33 +144,7 @@ export default function FinanceJournalPage() {
   if (error) return <ErrorState description={error} onRetry={() => void load()} />;
 
   return (
-    <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title="Operational journal"
-        description="Posting periods, cash/accrual lines, and manual adjustments after period close."
-      >
-        <Button type="button" size="sm" onClick={() => setAdjustOpen(true)}>
-          <Plus size={16} className="mr-1" />
-          Manual adjustment
-        </Button>
-      </PageHeader>
-
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="journal-month-filter">Filter entries by month</Label>
-          <Input
-            id="journal-month-filter"
-            type="month"
-            value={monthFilter}
-            onChange={(e) => setMonthFilter(e.target.value)}
-            className="w-44"
-          />
-        </div>
-        <Button type="button" variant="outline" size="sm" onClick={() => setMonthFilter('')}>
-          Clear filter
-        </Button>
-      </div>
-
+    <div className="flex h-full min-h-0 flex-col gap-5">
       <div className="border-border rounded-lg border">
         <Table>
           <TableHeader>
