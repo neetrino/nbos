@@ -16,6 +16,10 @@ import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/const
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type Expense, type ExpensePaymentEntry } from '@/lib/api/finance';
+import {
+  EXPENSE_GATE_FIELD_PAYMENTS,
+  expenseStageGateSectionClass,
+} from '@/features/finance/constants/expense-stage-gate-highlight';
 import { DeleteExpensePaymentDialog } from './DeleteExpensePaymentDialog';
 
 function formatPaymentDate(iso: string | null): string {
@@ -30,11 +34,13 @@ function formatPaymentDate(iso: string | null): string {
 interface ExpenseDetailPaymentSectionProps {
   expense: Expense;
   onExpenseUpdated: (expense: Expense) => void;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function ExpenseDetailPaymentSection({
   expense,
   onExpenseUpdated,
+  gateRequiredFields = new Set(),
 }: ExpenseDetailPaymentSectionProps) {
   const [paymentToRemove, setPaymentToRemove] = useState<ExpensePaymentEntry | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
@@ -66,7 +72,13 @@ export function ExpenseDetailPaymentSection({
   };
 
   return (
-    <>
+    <div
+      className={expenseStageGateSectionClass(
+        gateRequiredFields,
+        EXPENSE_GATE_FIELD_PAYMENTS,
+        'flex flex-col gap-4',
+      )}
+    >
       {expense.paidAmount !== undefined && expense.remainingAmount !== undefined ? (
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="border-border bg-card rounded-xl border p-4">
@@ -162,6 +174,6 @@ export function ExpenseDetailPaymentSection({
         }}
         onConfirm={handleConfirmRemovePayment}
       />
-    </>
+    </div>
   );
 }

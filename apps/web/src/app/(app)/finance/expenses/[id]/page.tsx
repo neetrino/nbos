@@ -27,6 +27,17 @@ import { DeleteExpenseDialog } from '@/features/finance/components/expenses/Dele
 import { EditExpenseDialog } from '@/features/finance/components/expenses/EditExpenseDialog';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
+import { ExpenseDetailStageGateBlockers } from '@/features/finance/components/expenses/ExpenseDetailStageGateBlockers';
+import {
+  buildExpenseGateRequiredFields,
+  EXPENSE_GATE_FIELD_STATUS,
+  expenseStageGateSectionClass,
+  type ExpenseDetailStageGateHighlight,
+} from '@/features/finance/constants/expense-stage-gate-highlight';
+import {
+  clearExpenseStageGatePending,
+  readExpenseStageGatePending,
+} from '@/features/finance/constants/expense-stage-gate-pending';
 import { ExpensePayrollLinkBanner } from '@/features/finance/components/expenses/ExpensePayrollLinkBanner';
 import { ExpensePlanLinkBanner } from '@/features/finance/components/expenses/ExpensePlanLinkBanner';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -73,6 +84,22 @@ function ExpenseDetailPageInner() {
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [stageGateHighlight, setStageGateHighlight] =
+    useState<ExpenseDetailStageGateHighlight | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    const pending = readExpenseStageGatePending(id);
+    if (pending) {
+      setStageGateHighlight(pending);
+      clearExpenseStageGatePending(id);
+    }
+  }, [id]);
+
+  const gateRequiredFields = useMemo(
+    () => buildExpenseGateRequiredFields(stageGateHighlight),
+    [stageGateHighlight],
+  );
 
   const fetchExpense = useCallback(async () => {
     if (!id) return;
@@ -248,6 +275,8 @@ function ExpenseDetailPageInner() {
         />
       ) : null}
 
+      <ExpenseDetailStageGateBlockers highlight={stageGateHighlight} />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="border-border bg-card rounded-xl border p-4">
           <p className="text-muted-foreground text-xs">Original amount</p>
@@ -255,7 +284,13 @@ function ExpenseDetailPageInner() {
             {formatAmount(parseFloat(expense.amount))}
           </p>
         </div>
-        <div className="border-border bg-card rounded-xl border p-4">
+        <div
+          className={expenseStageGateSectionClass(
+            gateRequiredFields,
+            EXPENSE_GATE_FIELD_STATUS,
+            'border-border bg-card rounded-xl border p-4',
+          )}
+        >
           <p className="text-muted-foreground text-xs">Status</p>
           <div className="mt-2">
             {stage ? <StatusBadge label={stage.label} variant={stage.variant} /> : expense.status}
@@ -276,7 +311,14 @@ function ExpenseDetailPageInner() {
         </div>
       </div>
 
-      <ExpenseDetailPaymentSection expense={expense} onExpenseUpdated={setExpense} />
+      <ExpenseDetailPaymentSection
+        expense={expense}
+        onExpenseUpdated={(updated) => {
+          setExpense(updated);
+          setStageGateHighlight(null);
+        }}
+        gateRequiredFields={gateRequiredFields}
+      />
 
       <div className="border-border bg-card rounded-xl border p-4">
         <FinanceProofAttachments

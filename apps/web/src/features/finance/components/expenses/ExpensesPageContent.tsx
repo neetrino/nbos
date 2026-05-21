@@ -53,6 +53,7 @@ import {
 import { useExpenseCsvExport } from './use-expense-csv-export';
 import { useExpensesScopeStatsCsvExport } from './use-expenses-scope-stats-csv-export';
 import { useExpenseProjectBannerLabel } from './use-expense-project-banner-label';
+import { useExpenseKanbanStatusChange } from './use-expense-kanban-status-change';
 
 interface ExpensesPageContentProps {
   /** Backlog: deferred (`BACKLOG`). Closed: paid (`PAID`) off active board. Default: active board scope. */
@@ -203,26 +204,19 @@ export function ExpensesPageContent({
     }
   }, [listApiParams]);
 
-  const handleExpenseKanbanMove = useCallback(
+  const handleExpenseKanbanMove = useExpenseKanbanStatusChange({
+    listProjectId: effectiveProjectId ?? null,
+    listSort: { sortBy, sortOrder },
+    fromBacklog: pageVariant === 'backlog',
+    expensePlanId: expensePlanIdFromUrl?.trim() ?? null,
+  });
+
+  const onKanbanStatusMove = useCallback(
     async (expenseId: string, _from: string, toStatus: string) => {
-      const expense = expenses.find((row) => row.id === expenseId);
-      if (!expense || expense.status === toStatus) {
-        return;
-      }
-      try {
-        await expensesApi.update(expenseId, { status: toStatus });
-        setError(null);
-        await fetchExpenses();
-      } catch (caught) {
-        setError(
-          getApiErrorMessage(
-            caught,
-            'Expense status could not be updated. Try again or use the detail sheet.',
-          ),
-        );
-      }
+      setError(null);
+      await handleExpenseKanbanMove(expenseId, toStatus, expenses, fetchExpenses);
     },
-    [expenses, fetchExpenses],
+    [expenses, fetchExpenses, handleExpenseKanbanMove],
   );
 
   const handleConfirmDeleteExpense = async () => {
@@ -403,7 +397,7 @@ export function ExpensesPageContent({
         }}
         onAddFirstExpense={() => setCreateOpen(true)}
         onKanbanMove={
-          pageVariant === 'default' && view === 'kanban' ? handleExpenseKanbanMove : undefined
+          pageVariant === 'default' && view === 'kanban' ? onKanbanStatusMove : undefined
         }
       />
 
