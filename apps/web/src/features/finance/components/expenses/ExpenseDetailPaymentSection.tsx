@@ -2,11 +2,7 @@
 
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import {
-  DETAIL_SHEET_SECTION_BODY_CLASS,
-  DetailSheetSection,
-  StatusBadge,
-} from '@/components/shared';
+import { DetailSheetSection, StatusBadge } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -83,36 +79,16 @@ export function ExpenseDetailPaymentSection({
         'flex flex-col gap-4',
       )}
     >
-      {expense.paidAmount !== undefined && expense.remainingAmount !== undefined ? (
-        <DetailSheetSection title="Summary">
-          <div className={`${DETAIL_SHEET_SECTION_BODY_CLASS} sm:grid-cols-3`}>
-            <div>
-              <p className="text-muted-foreground text-xs">Paid</p>
-              <p className="text-foreground mt-1 font-semibold tabular-nums">
-                {formatAmount(parseFloat(expense.paidAmount))}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs">Remaining</p>
-              <p className="text-foreground mt-1 font-semibold tabular-nums">
-                {formatAmount(parseFloat(expense.remainingAmount))}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs">Status</p>
-              <div className="mt-1">
-                {ledgerPresentation ? (
-                  <StatusBadge
-                    label={ledgerPresentation.label}
-                    variant={ledgerPresentation.variant}
-                  />
-                ) : (
-                  '—'
-                )}
-              </div>
-            </div>
-          </div>
-        </DetailSheetSection>
+      {expense.paidAmount !== undefined &&
+      expense.remainingAmount !== undefined &&
+      ledgerPresentation ? (
+        <p className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs tabular-nums">
+          <span>
+            {formatAmount(parseFloat(expense.paidAmount))} /{' '}
+            {formatAmount(parseFloat(expense.remainingAmount!))}
+          </span>
+          <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
+        </p>
       ) : null}
 
       {expense.payments !== undefined ? (

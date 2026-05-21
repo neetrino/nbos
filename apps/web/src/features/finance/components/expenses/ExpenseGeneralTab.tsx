@@ -117,8 +117,19 @@ export function ExpenseGeneralTab({
       : null;
   const hasLedger = expense.paidAmount !== undefined && expense.remainingAmount !== undefined;
 
+  const ledgerSummary =
+    hasLedger && ledgerPresentation ? (
+      <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs tabular-nums">
+        <span>
+          {formatAmount(parseFloat(expense.paidAmount!))} /{' '}
+          {formatAmount(parseFloat(expense.remainingAmount!))}
+        </span>
+        <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
+      </div>
+    ) : null;
+
   return (
-    <div className="mx-auto flex w-full max-w-none flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-none flex-col gap-3">
       {expense.linkedExpensePlan?.id && expense.linkedExpensePlan.name ? (
         <ExpensePlanLinkBanner
           planId={expense.linkedExpensePlan.id}
@@ -130,22 +141,9 @@ export function ExpenseGeneralTab({
         <ExpensePayrollLinkBanner payrollRunId={payrollRunId} payrollMonth={payrollMonth} />
       ) : null}
 
-      {hasLedger ? (
-        <DetailSheetSection title="Ledger" icon={<DollarSign size={12} />}>
-          <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-            <p className="text-muted-foreground text-sm tabular-nums">
-              Paid {formatAmount(parseFloat(expense.paidAmount!))} · Remaining{' '}
-              {formatAmount(parseFloat(expense.remainingAmount!))}
-            </p>
-            {ledgerPresentation ? (
-              <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
-            ) : null}
-          </div>
-        </DetailSheetSection>
-      ) : null}
-
       <DetailSheetSection title="Expense" icon={<Receipt size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+          {ledgerSummary}
           <InlineField
             variant="controlled"
             label="Name"
