@@ -19,6 +19,8 @@ import {
   ReconciliationSnapshot,
   UpcomingInvoices,
 } from '@/features/finance/components/dashboard/FinanceDashboardSections';
+import { FinanceZoneHubCards } from '@/features/finance/components/dashboard/FinanceZoneHubCards';
+import { buildFinanceZoneHubMetrics } from '@/features/finance/components/dashboard/build-finance-zone-hub-metrics';
 import {
   buildFinanceDashboardData,
   type FinanceDashboardData,
@@ -120,10 +122,15 @@ export default function FinanceDashboardPage() {
   }
 
   const query = search.trim().toLowerCase();
+  const zoneHubMetrics = buildFinanceZoneHubMetrics(data);
 
   return (
     <div className="space-y-6">
       {showDashboardKpis(query) ? <KpiCards kpis={buildKpis(data)} /> : null}
+
+      {matchesOverviewSearch('Finance zones', query) ? (
+        <FinanceZoneHubCards metrics={zoneHubMetrics} />
+      ) : null}
 
       {matchesOverviewSearch('Payroll runs', query) ? (
         <PayrollRunsSnapshot payroll={data.payrollRuns} />
@@ -182,6 +189,7 @@ function showDashboardKpis(query: string): boolean {
 function hasAnyOverviewSectionMatch(query: string): boolean {
   const labels = [
     'KPI summary',
+    'Finance zones',
     'Payroll runs',
     'Expense cards',
     'Invoice distribution',

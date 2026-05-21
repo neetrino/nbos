@@ -20,14 +20,15 @@ import type {
 export function DashboardLoadingSkeleton() {
   return (
     <div className="space-y-6">
-      <div>
-        <Skeleton className="h-8 w-56 rounded-lg" />
-        <Skeleton className="mt-2 h-4 w-72 rounded-lg" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={`kpi-${index}`} className="h-36 rounded-2xl" />
+        ))}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={index} className="h-36 rounded-2xl" />
+          <Skeleton key={`zone-${index}`} className="h-44 rounded-2xl" />
         ))}
       </div>
 

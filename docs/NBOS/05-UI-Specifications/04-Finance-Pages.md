@@ -15,7 +15,7 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 - **Сайдбар:** **4 зоны** — Overview, Revenue, Expenses, Payroll (без плоского списка всех URL). Клик по зоне открывает **последнюю** страницу зоны (`localStorage`, как Board/List); первый заход — default (Overview → Dashboard, Revenue → Orders, …).
 - **Page hero (как CRM):** карточка `Finance` + pill-tabs **внутри текущей зоны**:
-  - Overview: Dashboard | Reports | Journal — hero: поиск + Settings; период (Dashboard/Reports) в фильтрах; Journal — month filter + поиск записей
+  - Overview: Dashboard | Reports | Journal — hero: поиск + Settings; период (Dashboard/Reports) в фильтрах; Journal — month filter + поиск записей; **Dashboard** — блок «Finance zones» (4 карточки зон + ссылки, last-visited)
   - Revenue: Orders | Invoices | Payments | Subscriptions
   - Expenses: Pay Now | Expenses Plan | Client services
   - Payroll: Payroll | Salary | Bonus pools | Bonus
