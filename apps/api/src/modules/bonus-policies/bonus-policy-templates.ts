@@ -8,3 +8,6 @@ export const BONUS_POLICY_TEMPLATE_DELIVERY_PROPORTIONAL_FUNDING = 'DELIVERY_PRO
 
 /** Marketing roles: planned bonuses entered in Finance until scorecard automation ships. */
 export const BONUS_POLICY_TEMPLATE_MARKETING_MANUAL_PLANNED = 'MARKETING_MANUAL_PLANNED';
+
+/** Support roles: planned bonuses entered in Finance until SLA automation ships. */
+export const BONUS_POLICY_TEMPLATE_SUPPORT_MANUAL_PLANNED = 'SUPPORT_MANUAL_PLANNED';

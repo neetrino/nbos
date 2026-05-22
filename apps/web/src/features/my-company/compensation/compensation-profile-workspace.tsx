@@ -20,6 +20,7 @@ import {
   BONUS_POLICY_TEMPLATE_MANUAL_ONLY,
   BONUS_POLICY_TEMPLATE_MARKETING_MANUAL_PLANNED,
   BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES,
+  BONUS_POLICY_TEMPLATE_SUPPORT_MANUAL_PLANNED,
 } from '@/features/my-company/compensation/bonus-policy-template-codes';
 
 const STATUS_VARIANT: Record<string, StatusVariant> = {
@@ -307,6 +308,12 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
                 <p className="text-muted-foreground text-xs">
                   Create MARKETING bonus entries manually in Finance; automated CPL/MQL accrual from
                   the Marketing module is not wired yet.
+                </p>
+              ) : null}
+              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_SUPPORT_MANUAL_PLANNED ? (
+                <p className="text-muted-foreground text-xs">
+                  Create support/maintenance bonus entries manually in Finance; automated SLA
+                  scorecard accrual is not wired yet.
                 </p>
               ) : null}
             </label>

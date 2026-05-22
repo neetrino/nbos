@@ -40,14 +40,14 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 ## Policy engine (2026-05 re-audit)
 
-| Area                            | Shipped | Notes                                                                                                               |
-| ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
-| `bonus_policies` + profile FK   | Yes     | Seeded templates: `SALES_COMPANY_RATES`, `MANUAL_ONLY`, `DELIVERY_PROPORTIONAL_FUNDING`, `MARKETING_MANUAL_PLANNED` |
-| `kpi_policies` + cap multiplier | Yes     | Gate bands + `bonusCapBaseSalaryMultiplier` (1–3×) on payroll SALES attach                                          |
-| Sales accrual                   | Yes     | Invoice paid → `SalesBonusAccrualService`; idempotent `sales_accrual_invoice_id`                                    |
-| Delivery pool funding           | Yes     | `syncProductBonusPoolForOrder` + proportional AUTO when Done + funded                                               |
-| Payroll attach                  | Yes     | SALES KPI (run + per-employee line), cap, `kpiBurnedAmount`, carry FIFO + detach reversal                           |
-| Month / wallet breakdown        | Yes     | `policyBreakdownStatuses`, `employeeSalesKpi`, burned/carry columns                                                 |
+| Area                            | Shipped | Notes                                                                                                                               |
+| ------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `bonus_policies` + profile FK   | Yes     | Seeded: `SALES_COMPANY_RATES`, `MANUAL_ONLY`, `DELIVERY_PROPORTIONAL_FUNDING`, `MARKETING_MANUAL_PLANNED`, `SUPPORT_MANUAL_PLANNED` |
+| `kpi_policies` + cap multiplier | Yes     | Gate bands + `bonusCapBaseSalaryMultiplier` (1–3×) on payroll SALES attach                                                          |
+| Sales accrual                   | Yes     | Invoice paid → `SalesBonusAccrualService`; idempotent `sales_accrual_invoice_id`                                                    |
+| Delivery pool funding           | Yes     | `syncProductBonusPoolForOrder` + proportional AUTO when Done + funded                                                               |
+| Payroll attach                  | Yes     | SALES KPI (run + per-employee line), cap, `kpiBurnedAmount`, carry FIFO + detach reversal                                           |
+| Month / wallet breakdown        | Yes     | `policyBreakdownStatuses`, `employeeSalesKpi`, burned/carry columns                                                                 |
 
 ### API (compensation / policy)
 
@@ -63,7 +63,7 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 ### Residual (canon backlog)
 
 - Marketing scorecard → automatic MARKETING accrual (template exists; engine pending).
-- Support bonus template + accrual.
+- Support SLA scorecard → automatic SUPPORT accrual (template exists; engine pending).
 - Full `Bonus Policy` CRUD UI (list/read today; create/archive later).
 - KPI scorecard metrics per role (beyond sales plan/actual on payroll).
 
