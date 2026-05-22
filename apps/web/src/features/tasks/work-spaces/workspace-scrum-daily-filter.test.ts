@@ -15,7 +15,6 @@ function task(planningStatus: string): Task {
     planningStatus,
     status: 'OPEN',
     priority: 'NORMAL',
-    startDate: null,
     dueDate: null,
     completedAt: null,
     reviewRequestedAt: null,

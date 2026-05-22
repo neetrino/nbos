@@ -112,7 +112,6 @@ export class TasksController {
       workspaceId?: string;
       planningStatus?: string;
       completionRules?: unknown;
-      startDate?: string;
       dueDate?: string;
       parentId?: string;
       links?: Array<{ entityType: string; entityId: string }>;
@@ -134,7 +133,6 @@ export class TasksController {
       coAssignees?: string[];
       observers?: string[];
       priority?: string;
-      startDate?: string | null;
       dueDate?: string | null;
       parentId?: string | null;
       myPlanStageId?: string | null;

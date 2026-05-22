@@ -60,6 +60,7 @@ type InlineFieldControlledProps = {
   clearable?: boolean;
   disabled?: boolean;
   datePickerVariant?: 'compact' | 'extended';
+  datePickerMode?: 'date' | 'datetime';
 };
 
 export type InlineFieldProps = InlineFieldInlineProps | InlineFieldControlledProps;
@@ -309,8 +310,14 @@ function InlineFieldUncontrolled({
 
 export function InlineField(props: InlineFieldProps) {
   if (props.variant === 'controlled') {
-    const { datePickerVariant, ...controlledProps } = props;
-    return <ControlledInlineField {...controlledProps} datePickerVariant={datePickerVariant} />;
+    const { datePickerVariant, datePickerMode, ...controlledProps } = props;
+    return (
+      <ControlledInlineField
+        {...controlledProps}
+        datePickerVariant={datePickerVariant}
+        datePickerMode={datePickerMode}
+      />
+    );
   }
   return <InlineFieldUncontrolled {...props} />;
 }

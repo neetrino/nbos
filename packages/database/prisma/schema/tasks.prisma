@@ -97,7 +97,6 @@ model Task {
   reviewApprovedAt   DateTime?              @map("review_approved_at")
   planningStatus     TaskPlanningStatusEnum @default(UNPLANNED) @map("planning_status")
   priority           TaskPriorityEnum       @default(NORMAL)
-  startDate          DateTime?              @map("start_date")
   dueDate            DateTime?              @map("due_date")
   completedAt        DateTime?              @map("completed_at")
   completionRules    Json?                  @map("completion_rules")

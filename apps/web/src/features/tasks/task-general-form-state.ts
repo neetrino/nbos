@@ -6,7 +6,6 @@ export interface TaskGeneralDraft {
   description: string | null;
   status: string;
   priority: string;
-  startDate: string;
   dueDate: string;
   creatorId: string;
   creatorLabel: string;
@@ -20,8 +19,7 @@ export function createTaskGeneralDraft(task: Task): TaskGeneralDraft {
     description: task.description,
     status: normalizeTaskStatusForDraft(task.status),
     priority: task.priority,
-    startDate: formatDateInput(task.startDate),
-    dueDate: formatDateInput(task.dueDate),
+    dueDate: formatDueDateInput(task.dueDate),
     creatorId: task.creator.id,
     creatorLabel: `${task.creator.firstName} ${task.creator.lastName}`.trim(),
     assigneeId: task.assignee?.id ?? null,
@@ -41,7 +39,6 @@ export function buildTaskGeneralPatch(
   }
   if (draft.status !== snap.status) patch.status = draft.status;
   if (draft.priority !== snap.priority) patch.priority = draft.priority;
-  if (draft.startDate !== snap.startDate) patch.startDate = draft.startDate || null;
   if (draft.dueDate !== snap.dueDate) patch.dueDate = draft.dueDate || null;
   if (draft.creatorId !== snap.creatorId) patch.creatorId = draft.creatorId;
   if (draft.assigneeId !== snap.assigneeId) patch.assigneeId = draft.assigneeId;
@@ -53,7 +50,11 @@ export function isTaskGeneralDirty(a: TaskGeneralDraft, b: TaskGeneralDraft): bo
   return JSON.stringify(a) !== JSON.stringify(b);
 }
 
-function formatDateInput(value: string | null): string {
+/** `datetime-local` value for {@link NbosDatePicker} mode="datetime". */
+function formatDueDateInput(value: string | null): string {
   if (!value) return '';
-  return new Date(value).toISOString().slice(0, 10);
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }

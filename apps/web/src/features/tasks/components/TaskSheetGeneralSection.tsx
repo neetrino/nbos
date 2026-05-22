@@ -117,13 +117,14 @@ export function TaskSheetGeneralSection({
             </>
           )}
 
-          <TaskSheetCompactRow label="Due date">
+          <TaskSheetCompactRow label="Deadline">
             <InlineField
               variant="controlled"
-              label="Due date"
+              label="Deadline"
               value={draft.dueDate}
               type="date"
               datePickerVariant="extended"
+              datePickerMode="datetime"
               icon={<Calendar size={13} />}
               clearable
               disabled={saving}
@@ -131,22 +132,6 @@ export function TaskSheetGeneralSection({
               onValueChange={(value) => onPatchDraft({ dueDate: value })}
             />
           </TaskSheetCompactRow>
-
-          {draft.startDate ? (
-            <TaskSheetCompactRow label="Start date">
-              <InlineField
-                variant="controlled"
-                label="Start date"
-                value={draft.startDate}
-                type="date"
-                icon={<Calendar size={13} />}
-                clearable
-                disabled={saving}
-                className={TASK_SHEET_COMPACT_FIELD_CLASS}
-                onValueChange={(value) => onPatchDraft({ startDate: value })}
-              />
-            </TaskSheetCompactRow>
-          ) : null}
 
           <TaskSheetCompactRow label="Status">
             <InlineField

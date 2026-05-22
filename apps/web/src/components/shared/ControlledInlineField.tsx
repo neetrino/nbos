@@ -3,7 +3,11 @@
 import { type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { NbosDatePicker, type NbosDatePickerVariant } from '@/components/shared/date-picker';
+import {
+  NbosDatePicker,
+  type NbosDatePickerMode,
+  type NbosDatePickerVariant,
+} from '@/components/shared/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -43,6 +47,7 @@ export interface ControlledInlineFieldProps {
   clearable?: boolean;
   disabled?: boolean;
   datePickerVariant?: NbosDatePickerVariant;
+  datePickerMode?: NbosDatePickerMode;
 }
 
 export function ControlledInlineField({
@@ -58,6 +63,7 @@ export function ControlledInlineField({
   clearable = false,
   disabled = false,
   datePickerVariant = 'compact',
+  datePickerMode = 'date',
 }: ControlledInlineFieldProps) {
   const str = value != null && value !== '' ? String(value) : '';
   const showClear = clearable && str !== '' && !disabled;
@@ -141,6 +147,7 @@ export function ControlledInlineField({
             value={str}
             onChange={onValueChange}
             variant={datePickerVariant}
+            mode={datePickerMode}
             disabled={disabled}
             clearable={clearable}
             placeholder={placeholder ?? 'Select date…'}

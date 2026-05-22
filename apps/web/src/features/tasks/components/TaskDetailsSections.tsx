@@ -33,14 +33,9 @@ export function TaskPeopleSection({ task }: TaskDetailsSectionsProps) {
 
 export function TaskDatesSection({ task }: TaskDetailsSectionsProps) {
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <PersonValue icon={<Calendar size={12} />} label="Start Date">
-        {task.startDate ? new Date(task.startDate).toLocaleDateString() : '—'}
-      </PersonValue>
-      <PersonValue icon={<Calendar size={12} />} label="Due Date">
-        {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '—'}
-      </PersonValue>
-    </div>
+    <PersonValue icon={<Calendar size={12} />} label="Deadline">
+      {task.dueDate ? new Date(task.dueDate).toLocaleString() : '—'}
+    </PersonValue>
   );
 }
 

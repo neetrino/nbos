@@ -50,7 +50,6 @@ export interface Task {
   priority: string;
   sprintId?: string | null;
   sprint?: TaskSprintRef | null;
-  startDate: string | null;
   dueDate: string | null;
   completedAt: string | null;
   reviewRequestedAt: string | null;
@@ -221,7 +220,6 @@ export const tasksApi = {
     sprintId?: string | null;
     planningStatus?: string;
     completionRules?: TaskCompletionRule[];
-    startDate?: string;
     dueDate?: string;
     parentId?: string;
     links?: Array<{ entityType: string; entityId: string }>;

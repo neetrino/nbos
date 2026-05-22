@@ -9,7 +9,6 @@ const baseTask = {
   description: null,
   status: 'OPEN',
   priority: 'NORMAL',
-  startDate: null,
   dueDate: null,
   completedAt: null,
   reviewRequestedAt: null,

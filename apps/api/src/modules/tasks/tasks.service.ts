@@ -30,7 +30,6 @@ interface CreateTaskDto {
   sprintId?: string | null;
   planningStatus?: string;
   completionRules?: unknown;
-  startDate?: string;
   dueDate?: string;
   parentId?: string;
   links?: Array<{ entityType: string; entityId: string }>;
@@ -44,7 +43,6 @@ interface UpdateTaskDto {
   coAssignees?: string[];
   observers?: string[];
   priority?: string;
-  startDate?: string | null;
   dueDate?: string | null;
   parentId?: string | null;
   myPlanStageId?: string | null;
@@ -135,7 +133,6 @@ export class TasksService {
       sprintId: data.sprintId,
       planningStatus: data.planningStatus,
     });
-    const startDate = this.parseOptionalIsoDate('startDate', data.startDate);
     const dueDate = this.parseOptionalIsoDate('dueDate', data.dueDate);
     const linkRows = this.dedupeTaskLinks(data.links);
 
@@ -156,7 +153,6 @@ export class TasksService {
         ...(data.completionRules !== undefined && {
           completionRules: this.parseCompletionRules(data.completionRules),
         }),
-        startDate,
         dueDate,
         parentId,
         ...(linkRows?.length && {
@@ -204,9 +200,6 @@ export class TasksService {
         ...(data.observers && { observers: data.observers }),
         ...(data.priority && {
           priority: data.priority as (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum],
-        }),
-        ...(data.startDate !== undefined && {
-          startDate: data.startDate ? new Date(data.startDate) : null,
         }),
         ...(data.dueDate !== undefined && {
           dueDate: data.dueDate ? new Date(data.dueDate) : null,
@@ -451,10 +444,7 @@ export class TasksService {
     return v as Prisma.TaskCreateInput['planningStatus'];
   }
 
-  private parseOptionalIsoDate(
-    field: 'startDate' | 'dueDate',
-    value: string | undefined,
-  ): Date | undefined {
+  private parseOptionalIsoDate(field: 'dueDate', value: string | undefined): Date | undefined {
     if (value === undefined || value === null || !String(value).trim()) return undefined;
     const d = new Date(String(value).trim());
     if (Number.isNaN(d.getTime())) {
