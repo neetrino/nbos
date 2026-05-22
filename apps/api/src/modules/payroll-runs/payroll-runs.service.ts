@@ -45,7 +45,11 @@ import {
   type PatchSalaryLineSalesKpiBody,
 } from './salary-line-sales-kpi-patch';
 import { loadSalaryLinesBlockingPayrollCloseCount } from './payroll-run-close-validation';
-import { sumPaymentsForPayrollMonthSuggestedSalesKpi } from './payroll-run-suggested-sales-actual';
+import {
+  sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi,
+  sumPaymentsForPayrollMonthSuggestedSalesKpi,
+} from './payroll-run-suggested-sales-actual';
+import { BONUS_POOL_ZERO } from '../bonus/bonus-pool-decimal';
 import { resolvePayrollRunSalesKpiScorecardMetrics } from './resolve-payroll-run-sales-kpi-scorecard';
 import {
   querySalaryBoard,
@@ -136,6 +140,7 @@ export class PayrollRunsService {
       includedBonusReleaseCount,
       kpiSalesActualSuggestedAmount,
       salesKpiScorecardMetrics,
+      suggestedActualBySeller,
     ] = await Promise.all([
       fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
       loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
@@ -144,10 +149,23 @@ export class PayrollRunsService {
       }),
       sumPaymentsForPayrollMonthSuggestedSalesKpi(this.prisma, run.payrollMonth),
       resolvePayrollRunSalesKpiScorecardMetrics(this.prisma, run.payrollMonth, employeeIds),
+      sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi(
+        this.prisma,
+        run.payrollMonth,
+        employeeIds,
+      ),
     ]);
+
+    const salaryLines = run.salaryLines.map((line) => ({
+      ...line,
+      kpiSalesActualSuggestedAmount: (
+        suggestedActualBySeller.get(line.employeeId) ?? BONUS_POOL_ZERO
+      ).toFixed(2),
+    }));
 
     return {
       ...run,
+      salaryLines,
       materializedExpenseLineCount: materializedByRun.get(id) ?? 0,
       journal: buildPayrollRunJournal(run),
       auditTrail,

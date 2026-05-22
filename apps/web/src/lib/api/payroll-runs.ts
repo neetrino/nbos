@@ -112,6 +112,8 @@ export interface SalaryLineRow {
   /** Per-employee sales KPI override; null uses payroll run defaults at SALES attach. */
   kpiSalesPlanAmount: string | null;
   kpiSalesActualAmount: string | null;
+  /** Seller-attributed payment sum for run month (deal.sellerId); hint until saved. */
+  kpiSalesActualSuggestedAmount: string;
   createdAt: string;
   updatedAt: string;
   employee: PayrollRunEmployeeRef;

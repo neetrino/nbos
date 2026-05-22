@@ -199,7 +199,11 @@ export function PayrollRunDetailPageContent({
         onUpdated={setRun}
       />
 
-      <PayrollRunEmployeeSalesKpiSection run={run} onUpdated={setRun} />
+      <PayrollRunEmployeeSalesKpiSection
+        run={run}
+        scorecardMetrics={run.salesKpiScorecardMetrics}
+        onUpdated={setRun}
+      />
 
       <PayrollRunBonusReleasesSection run={run} onRunUpdated={setRun} />
 

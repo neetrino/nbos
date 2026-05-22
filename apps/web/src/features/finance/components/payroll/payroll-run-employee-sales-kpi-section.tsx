@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { payrollFieldLabel } from '@/features/finance/utils/payroll-sales-kpi-scorecard-labels';
 import { buildSalesKpiGateSummary } from '@/features/finance/utils/sales-kpi-gate-summary';
+import type { KpiScorecardMetric } from '@/features/my-company/kpi-policies/kpi-scorecard-metrics.types';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   payrollRunsApi,
@@ -23,14 +25,18 @@ function moneyStringOrEmpty(value: string | null | undefined): string {
 function SalaryLineKpiRow({
   line,
   run,
+  scorecardMetrics,
   disabled,
   onSaved,
 }: {
   line: SalaryLineRow;
   run: PayrollRunDetail;
+  scorecardMetrics: KpiScorecardMetric[];
   disabled: boolean;
   onSaved: (next: PayrollRunDetail) => void;
 }) {
+  const planLabel = payrollFieldLabel(scorecardMetrics, 'kpiSalesPlanAmount');
+  const actualLabel = payrollFieldLabel(scorecardMetrics, 'kpiSalesActualAmount');
   const [plan, setPlan] = useState(moneyStringOrEmpty(line.kpiSalesPlanAmount));
   const [actual, setActual] = useState(moneyStringOrEmpty(line.kpiSalesActualAmount));
   const [busy, setBusy] = useState(false);
@@ -100,7 +106,7 @@ function SalaryLineKpiRow({
       ) : null}
       <div className="grid gap-2 sm:grid-cols-2">
         <label className="space-y-1 text-xs">
-          <span className="text-muted-foreground">Plan</span>
+          <span className="text-muted-foreground">{planLabel ?? 'Plan'}</span>
           <Input
             value={plan}
             disabled={disabled || busy}
@@ -108,18 +114,33 @@ function SalaryLineKpiRow({
           />
         </label>
         <label className="space-y-1 text-xs">
-          <span className="text-muted-foreground">Actual</span>
+          <span className="text-muted-foreground">{actualLabel ?? 'Actual'}</span>
           <Input
             value={actual}
             disabled={disabled || busy}
             onChange={(e) => setActual(e.target.value)}
           />
+          <p className="text-muted-foreground text-xs">
+            Seller payments ({run.payrollMonth}, UTC):{' '}
+            <span className="text-foreground font-medium tabular-nums">
+              {moneyStringOrEmpty(line.kpiSalesActualSuggestedAmount)}
+            </span>
+          </p>
         </label>
       </div>
       {error ? <p className="text-destructive mt-2 text-xs">{error}</p> : null}
       <div className="mt-2 flex flex-wrap gap-2">
         <Button type="button" size="sm" disabled={disabled || busy} onClick={() => void save()}>
           Save
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={disabled || busy}
+          onClick={() => setActual(moneyStringOrEmpty(line.kpiSalesActualSuggestedAmount))}
+        >
+          Use seller payments
         </Button>
         {hasOverride ? (
           <Button
@@ -139,9 +160,11 @@ function SalaryLineKpiRow({
 
 export function PayrollRunEmployeeSalesKpiSection({
   run,
+  scorecardMetrics = [],
   onUpdated,
 }: {
   run: PayrollRunDetail;
+  scorecardMetrics?: KpiScorecardMetric[];
   onUpdated: (next: PayrollRunDetail) => void;
 }) {
   const editable =
@@ -164,6 +187,7 @@ export function PayrollRunEmployeeSalesKpiSection({
             key={line.id}
             line={line}
             run={run}
+            scorecardMetrics={scorecardMetrics}
             disabled={!editable}
             onSaved={onUpdated}
           />

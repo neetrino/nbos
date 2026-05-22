@@ -51,15 +51,15 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 ### API (compensation / policy)
 
-| Route                                                        | Purpose                                               |
-| ------------------------------------------------------------ | ----------------------------------------------------- |
-| `GET /api/bonus-policies`                                    | List company bonus policy bundles                     |
-| `GET/POST/PATCH /api/compensation-profiles`                  | Profile versions + `bonusPolicyId` / `kpiPolicyId`    |
-| `GET/POST/PATCH /api/kpi-policies`                           | KPI gate templates                                    |
-| `GET /api/payroll-runs/:id`                                  | Run detail + `salesKpiScorecardMetrics` from profiles |
-| `PATCH /api/payroll-runs/:id`                                | Run-level sales KPI plan/actual                       |
-| `PATCH /api/payroll-runs/:id/salary-lines/:lineId/sales-kpi` | Per-employee sales KPI override                       |
-| `GET /api/payroll-runs/salary-lines/:id/month-detail`        | Month sheet + `employeeSalesKpi` + breakdown          |
+| Route                                                        | Purpose                                                             |
+| ------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `GET /api/bonus-policies`                                    | List company bonus policy bundles                                   |
+| `GET/POST/PATCH /api/compensation-profiles`                  | Profile versions + `bonusPolicyId` / `kpiPolicyId`                  |
+| `GET/POST/PATCH /api/kpi-policies`                           | KPI gate templates                                                  |
+| `GET /api/payroll-runs/:id`                                  | Run detail + scorecard metrics + payment KPI hints (run + per line) |
+| `PATCH /api/payroll-runs/:id`                                | Run-level sales KPI plan/actual                                     |
+| `PATCH /api/payroll-runs/:id/salary-lines/:lineId/sales-kpi` | Per-employee sales KPI override                                     |
+| `GET /api/payroll-runs/salary-lines/:id/month-detail`        | Month sheet + `employeeSalesKpi` + breakdown                        |
 
 ### Residual (canon backlog)
 

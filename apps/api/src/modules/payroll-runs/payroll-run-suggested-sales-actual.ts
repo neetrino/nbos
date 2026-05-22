@@ -42,3 +42,66 @@ export async function sumPaymentsForPayrollMonthSuggestedSalesKpi(
 
   return decimalFrom(agg._sum.amount);
 }
+
+type PaymentSellerRow = {
+  amount: { toString(): string } | number | string;
+  invoice: {
+    order: { deal: { sellerId: string } | null } | null;
+  };
+};
+
+/**
+ * Per-seller suggested KPI actual: sum of `Payment.amount` in the payroll month (UTC)
+ * for invoices on orders whose deal `sellerId` matches the employee.
+ */
+export async function sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi(
+  prisma: PrismaClient,
+  payrollMonth: string,
+  sellerIds: string[],
+): Promise<Map<string, Decimal>> {
+  const range = parsePayrollMonthToUtcRange(payrollMonth);
+  const totals = new Map<string, Decimal>();
+  if (!range) {
+    return totals;
+  }
+
+  const unique = [...new Set(sellerIds)].filter((id) => id.length > 0);
+  for (const id of unique) {
+    totals.set(id, BONUS_POOL_ZERO);
+  }
+  if (unique.length === 0) {
+    return totals;
+  }
+
+  const payments = (await prisma.payment.findMany({
+    where: {
+      paymentDate: { gte: range.gte, lt: range.lt },
+      invoice: {
+        orderId: { not: null },
+        order: {
+          dealId: { not: null },
+          deal: { sellerId: { in: unique } },
+        },
+      },
+    },
+    select: {
+      amount: true,
+      invoice: {
+        select: {
+          order: { select: { deal: { select: { sellerId: true } } } },
+        },
+      },
+    },
+  })) as PaymentSellerRow[];
+
+  for (const payment of payments) {
+    const sellerId = payment.invoice.order?.deal?.sellerId;
+    if (sellerId == null) {
+      continue;
+    }
+    const prev = totals.get(sellerId) ?? BONUS_POOL_ZERO;
+    totals.set(sellerId, prev.plus(decimalFrom(payment.amount)));
+  }
+
+  return totals;
+}

@@ -38,7 +38,7 @@ Backend must expose pool data as product-level rollups plus employee-level break
 - ☑ **Employee breakdown API:** `GET /api/bonus/products/pools/lines?poolKey=` — planned, released, paid, remaining, suggested release, KPI hint.
 - ☑ **Ledger traceability:** payments in + releases out timeline in pool sheet (`GET …/pools/timeline`).
 - ☑ **Auto release (delivery):** sheet summary + `POST …/pools/auto-release` proportional AUTO for DONE+funded orders.
-- ◐ **Auto release (sales / policy):** SALES KPI from `kpi_policies` at attach; scorecard metrics on policy + payroll labels (live plan/actual automation pending).
+- ◐ **Auto release (sales / policy):** SALES KPI at attach; scorecard labels + payment hints (run + per-seller on lines); auto-fill plan from targets pending.
 - ☑ **Manual override audit:** API requires reason (EARLY/EXTRA/OVER_FUNDING) + approver on OVER_FUNDING; release reason in pool timeline.
 - ☑ **Tests:** key, kpi-held, lines batch, funding health, fold, preview label, employee CSV, auto-release trigger.
 

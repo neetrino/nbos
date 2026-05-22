@@ -5,6 +5,7 @@ import { createMockPrisma } from '../../test-utils/mock-prisma';
 
 import {
   parsePayrollMonthToUtcRange,
+  sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi,
   sumPaymentsForPayrollMonthSuggestedSalesKpi,
 } from './payroll-run-suggested-sales-actual';
 
@@ -46,5 +47,55 @@ describe('sumPaymentsForPayrollMonthSuggestedSalesKpi', () => {
     const sum = await sumPaymentsForPayrollMonthSuggestedSalesKpi(prisma as never, '2026-99');
     expect(sum.toFixed(2)).toBe('0.00');
     expect(prisma.payment.aggregate).not.toHaveBeenCalled();
+  });
+});
+
+describe('sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi', () => {
+  it('sums payments by deal seller in payroll month', async () => {
+    const prisma = createMockPrisma();
+    prisma.payment.findMany.mockResolvedValue([
+      {
+        amount: new Decimal('100'),
+        invoice: { order: { deal: { sellerId: 'e1' } } },
+      },
+      {
+        amount: new Decimal('50'),
+        invoice: { order: { deal: { sellerId: 'e1' } } },
+      },
+      {
+        amount: new Decimal('25'),
+        invoice: { order: { deal: { sellerId: 'e2' } } },
+      },
+    ]);
+
+    const totals = await sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi(
+      prisma as never,
+      '2026-03',
+      ['e1', 'e2'],
+    );
+
+    expect(totals.get('e1')?.toFixed(2)).toBe('150.00');
+    expect(totals.get('e2')?.toFixed(2)).toBe('25.00');
+    expect(prisma.payment.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          paymentDate: {
+            gte: new Date(Date.UTC(2026, 2, 1, 0, 0, 0, 0)),
+            lt: new Date(Date.UTC(2026, 3, 1, 0, 0, 0, 0)),
+          },
+        }),
+      }),
+    );
+  });
+
+  it('returns zero map for empty seller list', async () => {
+    const prisma = createMockPrisma();
+    const totals = await sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi(
+      prisma as never,
+      '2026-03',
+      [],
+    );
+    expect(totals.size).toBe(0);
+    expect(prisma.payment.findMany).not.toHaveBeenCalled();
   });
 });
