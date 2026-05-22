@@ -77,6 +77,7 @@ export function SalaryBoardPageContent() {
   const [search, setSearch] = useState('');
   const [clientFilters, setClientFilters] = useState(INITIAL_CLIENT_FILTERS);
   const [view, setView] = useState<SalaryBoardViewMode>(() => readSalaryBoardViewMode());
+  const [gridYear, setGridYear] = useState(() => new Date().getFullYear());
 
   const monthFrom = parsePayrollRunsListMonthParam(
     searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY),
@@ -88,10 +89,12 @@ export function SalaryBoardPageContent() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    const payrollMonthFrom = view === 'grid' ? `${gridYear}-01` : monthFrom;
+    const payrollMonthTo = view === 'grid' ? `${gridYear}-12` : monthTo;
     try {
       const board = await payrollRunsApi.getSalaryBoard({
-        payrollMonthFrom: monthFrom,
-        payrollMonthTo: monthTo,
+        payrollMonthFrom,
+        payrollMonthTo,
       });
       setData(board);
     } catch (e) {
@@ -100,7 +103,7 @@ export function SalaryBoardPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [monthFrom, monthTo]);
+  }, [gridYear, monthFrom, monthTo, view]);
 
   useEffect(() => {
     void load();
@@ -303,7 +306,7 @@ export function SalaryBoardPageContent() {
   const hasVisibleLines = filteredEntries.length > 0;
 
   return (
-    <div className="flex min-h-0 flex-col gap-6">
+    <div className="flex h-full min-h-0 flex-col gap-6">
       {error ? (
         <p className="text-destructive text-sm" role="alert">
           {error}
@@ -326,7 +329,13 @@ export function SalaryBoardPageContent() {
         <>
           <SalaryBoardFilteredTotalsBar totals={filteredTotals} />
           {view === 'grid' ? (
-            <SalaryBoardGridView data={data} rows={filteredRows} onOpenMonth={openMonthSheet} />
+            <SalaryBoardGridView
+              data={data}
+              rows={filteredRows}
+              gridYear={gridYear}
+              onGridYearChange={setGridYear}
+              onOpenMonth={openMonthSheet}
+            />
           ) : view === 'cards' ? (
             <SalaryBoardCardsView data={data} rows={filteredRows} onOpenMonth={openMonthSheet} />
           ) : view === 'list' ? (
@@ -336,7 +345,9 @@ export function SalaryBoardPageContent() {
               onOpenMonth={openMonthSheet}
             />
           ) : (
-            <SalaryBoardPayoutBoardView entries={filteredEntries} onOpenMonth={openMonthSheet} />
+            <div className="flex min-h-0 flex-1 flex-col" style={{ minHeight: '28rem' }}>
+              <SalaryBoardPayoutBoardView entries={filteredEntries} onOpenMonth={openMonthSheet} />
+            </div>
           )}
         </>
       )}

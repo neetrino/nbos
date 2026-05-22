@@ -1,15 +1,17 @@
 'use client';
 
-import { StatusBadge } from '@/components/shared';
+import { useMemo } from 'react';
+import { KanbanBoard, KanbanColumnMoneyTotal, type KanbanColumn } from '@/components/shared';
 import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import {
-  employeeDisplayName,
-  SALARY_BOARD_PAYOUT_PHASE_ORDER,
-  type SalaryBoardEntry,
-} from '@/features/finance/components/payroll/salary-board-entries';
-import { SalaryBoardCellButton } from '@/features/finance/components/payroll/salary-board-cell-button';
-import type { CompensationPayoutPhase } from '@/lib/api/payroll-runs';
-import { useMemo } from 'react';
+  SALARY_BOARD_KANBAN_PHASE_ORDER,
+  SALARY_BOARD_PAYOUT_PHASE_HEX,
+} from '@/features/finance/constants/salary-board-payout-phase-hex';
+import { SalaryBoardPayoutLineCard } from '@/features/finance/components/payroll/salary-board-payout-line-card';
+import type { SalaryBoardEntry } from '@/features/finance/components/payroll/salary-board-entries';
+import { parseSalaryBoardAmount } from '@/features/finance/utils/salary-board-month-utils';
+
+const KANBAN_COLUMN_WIDTH = 270;
 
 export function SalaryBoardPayoutBoardView({
   entries,
@@ -18,61 +20,38 @@ export function SalaryBoardPayoutBoardView({
   entries: SalaryBoardEntry[];
   onOpenMonth: (salaryLineId: string) => void;
 }) {
-  const byPhase = useMemo(() => {
-    const map = new Map<CompensationPayoutPhase, SalaryBoardEntry[]>();
-    for (const phase of SALARY_BOARD_PAYOUT_PHASE_ORDER) {
-      map.set(phase, []);
-    }
-    for (const entry of entries) {
-      map.get(entry.cell.payoutPhase)?.push(entry);
-    }
-    for (const phase of SALARY_BOARD_PAYOUT_PHASE_ORDER) {
-      const list = map.get(phase) ?? [];
-      list.sort((a, b) => b.payrollMonth.localeCompare(a.payrollMonth));
-    }
-    return map;
+  const columns = useMemo((): KanbanColumn<SalaryBoardEntry>[] => {
+    return SALARY_BOARD_KANBAN_PHASE_ORDER.map((phase) => {
+      const items = entries
+        .filter((e) => e.cell.payoutPhase === phase)
+        .sort((a, b) => b.payrollMonth.localeCompare(a.payrollMonth));
+      const ui = COMPENSATION_PAYOUT_PHASE_UI[phase];
+      return {
+        key: phase,
+        label: ui.label,
+        color: phase,
+        hexColor: SALARY_BOARD_PAYOUT_PHASE_HEX[phase],
+        items,
+        readonly: true,
+      };
+    });
   }, [entries]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      {SALARY_BOARD_PAYOUT_PHASE_ORDER.map((phase) => {
-        const phaseEntries = byPhase.get(phase) ?? [];
-        const ui = COMPENSATION_PAYOUT_PHASE_UI[phase];
-        return (
-          <div
-            key={phase}
-            className="border-border bg-card flex min-h-[12rem] flex-col rounded-xl border p-3"
-          >
-            <div className="flex items-center gap-2">
-              <h3 className="text-foreground text-xs font-semibold">{ui.label}</h3>
-              <StatusBadge label={String(phaseEntries.length)} variant="gray" />
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px] leading-snug">{ui.description}</p>
-            <ul className="mt-3 flex flex-1 flex-col gap-2 overflow-y-auto">
-              {phaseEntries.length === 0 ? (
-                <li className="text-muted-foreground text-xs">No lines</li>
-              ) : (
-                phaseEntries.map((entry) => (
-                  <li
-                    key={entry.salaryLineId}
-                    className="border-border rounded-lg border px-2 py-2"
-                  >
-                    <p className="text-foreground text-xs font-medium">
-                      {employeeDisplayName(entry.employee)}
-                    </p>
-                    <p className="text-muted-foreground text-[10px] tabular-nums">
-                      {entry.payrollMonth}
-                    </p>
-                    <div className="mt-1">
-                      <SalaryBoardCellButton cell={entry.cell} onOpen={onOpenMonth} compact />
-                    </div>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        );
-      })}
+    <div className="flex min-h-0 flex-1 flex-col">
+      <KanbanBoard
+        columns={columns}
+        columnWidth={KANBAN_COLUMN_WIDTH}
+        emptyMessage="No salary lines"
+        getItemId={(entry) => entry.salaryLineId}
+        renderCard={(entry) => <SalaryBoardPayoutLineCard entry={entry} onOpen={onOpenMonth} />}
+        renderColumnHeader={(column) => (
+          <KanbanColumnMoneyTotal
+            column={column}
+            getAmount={(entry) => parseSalaryBoardAmount(entry.cell.totalPayable)}
+          />
+        )}
+      />
     </div>
   );
 }
