@@ -40,7 +40,7 @@ export const WALLET_COMPENSATION_GLOSSARY: ReadonlyArray<{ term: string; text: s
   },
   {
     term: 'Burned (KPI)',
-    text: 'When sales KPI is not met, payroll may include less than the release amount. Burned KPI is stored on attach and shown on wallet and salary breakdown.',
+    text: 'Sales KPI may reduce payout at attach (burned). Monthly bonus cap (200% of base salary, default) defers excess as carry-over to a later payroll month.',
   },
   {
     term: 'Carry-over',

@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbos/database';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
+import { applyPayrollBonusCap } from './payroll-bonus-cap';
 import { computeSalesKpiBurnedAmount } from './sales-kpi-burned-amount';
 import {
   assertSalesKpiInputsComplete,
@@ -109,11 +110,17 @@ export async function attachBonusReleasesToPayrollRun(
       );
     }
 
-    const included = computePayrollIncludedBonusAmount({
+    const kpiScaled = computePayrollIncludedBonusAmount({
       releaseAmount: rel.amount,
       bonusType: rel.bonusEntry.type,
       kpiFactor,
     });
+    const capped = applyPayrollBonusCap({
+      kpiScaledAmount: kpiScaled,
+      currentBonusesTotal: line.bonusesTotal,
+      baseSalary: line.baseSalary,
+    });
+    const included = capped.payrollIncludedAmount;
 
     const nextBonuses = line.bonusesTotal.plus(included);
     const nextTotal = computeLineTotalPayable({
@@ -138,7 +145,7 @@ export async function attachBonusReleasesToPayrollRun(
 
     const kpiBurnedAmount = computeSalesKpiBurnedAmount({
       releaseAmount: rel.amount,
-      includedAmount: included,
+      kpiScaledAmount: kpiScaled,
       bonusType: rel.bonusEntry.type,
     });
 
@@ -149,6 +156,7 @@ export async function attachBonusReleasesToPayrollRun(
         payrollRunId,
         payrollIncludedAmount: included,
         kpiBurnedAmount,
+        payrollCarryOverAmount: capped.payrollCarryOverAmount,
       },
     });
   }

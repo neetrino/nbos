@@ -16,6 +16,7 @@ export type SalaryBonusBreakdownSourceGroup = {
   planned: number;
   released: number;
   burned: number;
+  carryOver: number;
   included: number;
   paid: number;
   remaining: number;
@@ -52,6 +53,7 @@ export function groupSalaryBonusBreakdownBySource(
         planned: 0,
         released: 0,
         burned: 0,
+        carryOver: 0,
         included: 0,
         paid: 0,
         remaining: 0,
@@ -65,6 +67,9 @@ export function groupSalaryBonusBreakdownBySource(
     acc.released += parseAmount(row.releaseAmount);
     if (row.kpiBurnedAmount) {
       acc.burned += parseAmount(row.kpiBurnedAmount);
+    }
+    if (row.payrollCarryOverAmount) {
+      acc.carryOver += parseAmount(row.payrollCarryOverAmount);
     }
     const included = row.includedAmount
       ? parseAmount(row.includedAmount)
@@ -85,6 +90,7 @@ export function groupSalaryBonusBreakdownBySource(
       planned: [...acc.plannedByEntry.values()].reduce((sum, v) => sum + v, 0),
       released: acc.released,
       burned: acc.burned,
+      carryOver: acc.carryOver,
       included: acc.included,
       paid: acc.paid,
       remaining: acc.remaining,

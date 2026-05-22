@@ -17,6 +17,7 @@ const baseRow = (overrides: Partial<SalaryLineMonthBonusRow>): SalaryLineMonthBo
   releaseAmount: '400',
   includedAmount: '400',
   kpiBurnedAmount: null,
+  payrollCarryOverAmount: null,
   paidAmount: '0',
   remainingAmount: '600',
   reason: null,
@@ -49,5 +50,13 @@ describe('groupSalaryBonusBreakdownBySource', () => {
       baseRow({ bonusReleaseId: 'r2', kpiBurnedAmount: '20', releaseAmount: '50' }),
     ]);
     expect(groups[0]?.burned).toBe(50);
+  });
+
+  it('sums payroll carry-over per source group', () => {
+    const groups = groupSalaryBonusBreakdownBySource([
+      baseRow({ payrollCarryOverAmount: '15' }),
+      baseRow({ bonusReleaseId: 'r2', payrollCarryOverAmount: '5' }),
+    ]);
+    expect(groups[0]?.carryOver).toBe(20);
   });
 });

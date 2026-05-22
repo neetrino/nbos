@@ -102,6 +102,7 @@ describe('detachBonusReleasesFromPayrollRun', () => {
         payrollRunId: null,
         payrollIncludedAmount: null,
         kpiBurnedAmount: null,
+        payrollCarryOverAmount: null,
       },
     });
     expect(tx.payrollRun.update).toHaveBeenCalled();

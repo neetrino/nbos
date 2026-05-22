@@ -50,6 +50,11 @@ export function walletBonusEntryExplanation(row: EmployeeWalletBonusRow): string
     return `Sales KPI reduced payroll by ${burned.toFixed(2)} on a prior attach — see included vs released amounts.`;
   }
 
+  const carryOver = row.payrollCarryOverAmount ? parseAmount(row.payrollCarryOverAmount) : 0;
+  if (carryOver > 0) {
+    return `${carryOver.toFixed(2)} deferred to a later payroll month — monthly bonus cap was reached at attach.`;
+  }
+
   if (row.walletGroup === 'NEXT_PAYROLL' && planned > 0) {
     return 'Queued for payroll — amount may change if KPI or funding rules apply at attach.';
   }

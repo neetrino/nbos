@@ -23,6 +23,7 @@ export interface EmployeeWalletBonusRow {
   payrollMonth: string | null;
   /** Sum of persisted SALES KPI burned on releases for this entry. */
   kpiBurnedAmount: string | null;
+  payrollCarryOverAmount: string | null;
   orderPaymentType: string | null;
   salesAccrualHint: string | null;
   /** Product name, extension label, or order fallback (same source as project breakdown pool). */

@@ -17,6 +17,7 @@ const bonusRow: EmployeeWalletBonusRow = {
   remainingAmount: '60.00',
   payrollMonth: '2026-05',
   kpiBurnedAmount: null,
+  payrollCarryOverAmount: null,
   orderPaymentType: 'CLASSIC',
   salesAccrualHint: 'Seller · Classic',
   productLabel: 'Product Alpha',

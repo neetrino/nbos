@@ -6,13 +6,14 @@ import { Decimal, type BonusTypeEnum } from '@nbos/database';
  */
 export function computeSalesKpiBurnedAmount(params: {
   releaseAmount: Decimal;
-  includedAmount: Decimal;
+  /** Amount after SALES KPI scale, before monthly bonus cap. */
+  kpiScaledAmount: Decimal;
   bonusType: BonusTypeEnum | string;
 }): Decimal | null {
   if (params.bonusType !== 'SALES') {
     return null;
   }
-  const burned = params.releaseAmount.minus(params.includedAmount);
+  const burned = params.releaseAmount.minus(params.kpiScaledAmount);
   if (burned.lte(0)) {
     return null;
   }

@@ -76,6 +76,11 @@ export function WalletBonusPipelineSection({
                             Burned KPI {formatAmount(parseAmount(b.kpiBurnedAmount))}
                           </div>
                         ) : null}
+                        {b.payrollCarryOverAmount ? (
+                          <div className="text-muted-foreground mt-1 text-[10px] tabular-nums">
+                            Carry-over {formatAmount(parseAmount(b.payrollCarryOverAmount))}
+                          </div>
+                        ) : null}
                         {hint ? (
                           <p className="text-muted-foreground mt-2 text-[10px] leading-snug">
                             {hint}

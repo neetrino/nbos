@@ -133,6 +133,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         payrollRunId: 'run1',
         payrollIncludedAmount: new Decimal(50),
         kpiBurnedAmount: null,
+        payrollCarryOverAmount: null,
       },
     });
     expect(tx.payrollRun.update).toHaveBeenCalled();
@@ -197,6 +198,64 @@ describe('attachBonusReleasesToPayrollRun', () => {
       data: expect.objectContaining({
         payrollIncludedAmount: new Decimal(50),
         kpiBurnedAmount: new Decimal(50),
+        payrollCarryOverAmount: null,
+      }),
+    });
+  });
+
+  it('defers excess as carry-over when monthly bonus cap is reached', async () => {
+    const tx = createTxMock();
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'DRAFT',
+      kpiSalesPlanAmount: null,
+      kpiSalesActualAmount: null,
+    });
+    tx.bonusRelease.findMany.mockResolvedValue([
+      {
+        id: 'rel1',
+        employeeId: 'e1',
+        amount: new Decimal(80),
+        status: 'APPROVED',
+        payrollRunId: null,
+        bonusEntry: { type: 'DELIVERY' },
+      },
+    ]);
+    tx.salaryLine.findUnique.mockResolvedValue({
+      id: 'sl1',
+      payrollRunId: 'run1',
+      employeeId: 'e1',
+      baseSalary: new Decimal(100),
+      bonusesTotal: new Decimal(150),
+      adjustmentsTotal: new Decimal(0),
+      deductionsTotal: new Decimal(0),
+      totalPayable: new Decimal(250),
+      paidAmount: new Decimal(0),
+      remainingAmount: new Decimal(250),
+      status: 'PENDING',
+    });
+    tx.salaryLine.aggregate.mockResolvedValue({
+      _sum: {
+        baseSalary: new Decimal(100),
+        bonusesTotal: new Decimal(200),
+        adjustmentsTotal: new Decimal(0),
+        deductionsTotal: new Decimal(0),
+        totalPayable: new Decimal(300),
+        paidAmount: new Decimal(0),
+      },
+    });
+
+    await attachBonusReleasesToPayrollRun(tx as never, {
+      payrollRunId: 'run1',
+      releaseIds: ['rel1'],
+    });
+
+    expect(tx.bonusRelease.update).toHaveBeenCalledWith({
+      where: { id: 'rel1' },
+      data: expect.objectContaining({
+        payrollIncludedAmount: new Decimal(50),
+        payrollCarryOverAmount: new Decimal(30),
+        kpiBurnedAmount: null,
       }),
     });
   });

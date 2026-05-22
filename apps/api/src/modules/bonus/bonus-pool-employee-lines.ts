@@ -37,6 +37,7 @@ type EmployeeAcc = {
   released: Decimal;
   includedInPayroll: Decimal;
   kpiBurnedPersisted: Decimal;
+  carryOverPersisted: Decimal;
   kpiGatePassed: boolean | null;
   statuses: BonusStatusEnum[];
 };
@@ -131,6 +132,7 @@ export async function queryBonusPoolEmployeeLines(
         amount: true,
         payrollIncludedAmount: true,
         kpiBurnedAmount: true,
+        payrollCarryOverAmount: true,
         status: true,
       },
     }),
@@ -169,6 +171,7 @@ export async function queryBonusPoolEmployeeLines(
         released: ZERO,
         includedInPayroll: ZERO,
         kpiBurnedPersisted: ZERO,
+        carryOverPersisted: ZERO,
         kpiGatePassed: null,
         statuses: [],
       };
@@ -199,6 +202,9 @@ export async function queryBonusPoolEmployeeLines(
     if (rel.kpiBurnedAmount != null && rel.kpiBurnedAmount.gt(0)) {
       acc.kpiBurnedPersisted = acc.kpiBurnedPersisted.plus(rel.kpiBurnedAmount);
     }
+    if (rel.payrollCarryOverAmount != null && rel.payrollCarryOverAmount.gt(0)) {
+      acc.carryOverPersisted = acc.carryOverPersisted.plus(rel.payrollCarryOverAmount);
+    }
   }
 
   const lines: BonusPoolEmployeeLineDto[] = [...byEmployee.values()]
@@ -224,7 +230,7 @@ export async function queryBonusPoolEmployeeLines(
         paidAmount: money(acc.paid),
         remainingAmount: money(remaining),
         burnedAmount: burned != null ? money(burned) : null,
-        carryOverAmount: null,
+        carryOverAmount: acc.carryOverPersisted.gt(0) ? money(acc.carryOverPersisted) : null,
         suggestedReleaseAmount: suggested.gt(0) ? money(suggested) : null,
         kpiGatePassed: acc.kpiGatePassed,
         primaryStatus: pickPrimaryStatus(acc.statuses),

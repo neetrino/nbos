@@ -8,7 +8,7 @@ describe('computeSalesKpiBurnedAmount', () => {
     expect(
       computeSalesKpiBurnedAmount({
         releaseAmount: new Decimal(100),
-        includedAmount: new Decimal(50),
+        kpiScaledAmount: new Decimal(50),
         bonusType: 'DELIVERY',
       }),
     ).toBeNull();
@@ -18,7 +18,7 @@ describe('computeSalesKpiBurnedAmount', () => {
     expect(
       computeSalesKpiBurnedAmount({
         releaseAmount: new Decimal(100),
-        includedAmount: new Decimal(100),
+        kpiScaledAmount: new Decimal(100),
         bonusType: 'SALES',
       }),
     ).toBeNull();
@@ -28,7 +28,7 @@ describe('computeSalesKpiBurnedAmount', () => {
     expect(
       computeSalesKpiBurnedAmount({
         releaseAmount: new Decimal(100),
-        includedAmount: new Decimal(50),
+        kpiScaledAmount: new Decimal(50),
         bonusType: 'SALES',
       })?.toString(),
     ).toBe('50');

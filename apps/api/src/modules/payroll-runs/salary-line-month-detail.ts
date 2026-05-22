@@ -46,6 +46,7 @@ function mapBonusRow(
     amount: Decimal;
     payrollIncludedAmount: Decimal | null;
     kpiBurnedAmount: Decimal | null;
+    payrollCarryOverAmount: Decimal | null;
     releaseType: string;
     status: string;
     reason: string | null;
@@ -85,6 +86,10 @@ function mapBonusRow(
     kpiBurnedAmount:
       release.kpiBurnedAmount != null && release.kpiBurnedAmount.gt(0)
         ? money(release.kpiBurnedAmount)
+        : null,
+    payrollCarryOverAmount:
+      release.payrollCarryOverAmount != null && release.payrollCarryOverAmount.gt(0)
+        ? money(release.payrollCarryOverAmount)
         : null,
     paidAmount: money(paid),
     remainingAmount: money(Decimal.max(new Decimal(0), planned.minus(paid))),
