@@ -39,7 +39,7 @@ Backend must expose pool data as product-level rollups plus employee-level break
 - ☑ **Ledger traceability:** payments in + releases out timeline in pool sheet (`GET …/pools/timeline`).
 - ☑ **Auto release (delivery):** sheet summary + `POST …/pools/auto-release` proportional AUTO for DONE+funded orders.
 - ◐ **Auto release (sales / policy):** SALES KPI scale at payroll attach; full policy engine still pending.
-- ☐ **Manual override audit:** reason/approval for early / extra / over funding / cap override.
+- ◐ **Manual override audit:** API requires reason (EARLY/EXTRA/OVER_FUNDING) + approver on OVER_FUNDING; release reason in pool timeline.
 - ☑ **Tests:** key, kpi-held, lines batch, funding health, fold, preview label, employee CSV, auto-release trigger.
 
 ---
@@ -80,11 +80,11 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 
 ## 5. Payroll and wallet integration
 
-- ◐ **Payroll attach:** SALES KPI scale at attach exists; full KPI/cap/carry-over amounts pending.
+- ◐ **Payroll attach:** SALES KPI scale + employee notify when included below release; cap/carry-over pending.
 - ◐ **Salary month sheet:** by-source rollup + release lines (planned/released/included/paid/remaining); burned/carry-over pending policy.
 - ◐ **Employee wallet:** glossary + pipeline/project payout copy + per-entry hints; burned/carry-over amounts pending policy.
 - ☑ **Pay Now:** preset links from salary board, payroll runs, month sheet (month + employee URL filters).
-- ◐ **Notifications:** in-app wallet copy for KPI/partial; push templates for carried still pending.
+- ◐ **Notifications:** KPI-reduced in-app notify on payroll attach + activity detail; carried push still pending.
 
 ---
 

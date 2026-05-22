@@ -152,3 +152,28 @@ export async function notifyBonusReleaseCorrected(
     }),
   );
 }
+
+export async function notifyBonusKpiReducedOnAttach(
+  sink: WalletInAppNotifySink | undefined,
+  input: {
+    employeeId: string;
+    releaseId: string;
+    orderCode: string;
+    body: string;
+    burnedAmount: string;
+  },
+): Promise<void> {
+  await safeNotify(sink, (s) =>
+    s.create({
+      type: WALLET_NOTIFY_TYPES.BONUS_KPI_REDUCED,
+      recipientId: input.employeeId,
+      title: 'Sales bonus reduced by KPI',
+      body: input.body,
+      link: '/my-account/wallet',
+      entityType: 'BonusRelease',
+      entityId: input.releaseId,
+      sourceModule: 'finance',
+      idempotencyKey: `wallet:bonus_kpi_reduced:${input.releaseId}:${input.burnedAmount}`,
+    }),
+  );
+}

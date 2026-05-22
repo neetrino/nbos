@@ -28,6 +28,7 @@ import { loadPayrollRunAuditTrail } from './payroll-run-audit-trail';
 import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-materialized-line-counts';
 import { type PayrollRunStatsResult } from './payroll-run-list-stats';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
+import { notifySalesKpiReductionsOnAttach } from './payroll-bonus-release-kpi-notify';
 import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detach';
 import {
   refreshBonusEntryStatusesForReleases,
@@ -304,6 +305,7 @@ export class PayrollRunsService {
     });
     await refreshBonusEntryStatusesForReleases(this.prisma, uniqueIds);
     await syncProductBonusPoolsForBonusReleases(this.prisma, uniqueIds, this.notifications);
+    await notifySalesKpiReductionsOnAttach(this.prisma, this.notifications, uniqueIds);
     return this.findById(payrollRunId);
   }
 

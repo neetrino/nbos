@@ -25,11 +25,27 @@ type BonusReleaseActivityRow = {
   id: string;
   status: BonusReleaseStatusEnum;
   amount: { toFixed: (n: number) => string };
+  payrollIncludedAmount: { toFixed: (n: number) => string } | null;
   updatedAt: Date;
   payrollRunId: string | null;
   payrollRun: { id: string; payrollMonth: string } | null;
   bonusEntry: { order: { code: string } };
 };
+
+function kpiIncludedDetail(
+  amount: BonusReleaseActivityRow['amount'],
+  included: BonusReleaseActivityRow['payrollIncludedAmount'],
+): string | null {
+  if (included == null) {
+    return null;
+  }
+  const release = amount.toFixed(2);
+  const inc = included.toFixed(2);
+  if (release === inc) {
+    return null;
+  }
+  return `Release ${release} · ${inc} included after sales KPI`;
+}
 
 function mapBonusReleaseActivity(r: BonusReleaseActivityRow): EmployeeWalletActivityItem {
   const orderCode = r.bonusEntry.order.code;
@@ -50,12 +66,15 @@ function mapBonusReleaseActivity(r: BonusReleaseActivityRow): EmployeeWalletActi
     };
   }
   if (r.status === 'INCLUDED_IN_PAYROLL') {
+    const kpiDetail = kpiIncludedDetail(r.amount, r.payrollIncludedAmount);
     return {
       id: `wallet-br-included-${r.id}`,
       kind: 'BONUS_RELEASE',
       occurredAt: r.updatedAt.toISOString(),
-      title: 'Bonus included in payroll',
-      detail: `Order ${orderCode} · ${amt}${monthSuffix}`,
+      title: kpiDetail ? 'Bonus included (KPI adjusted)' : 'Bonus included in payroll',
+      detail: kpiDetail
+        ? `Order ${orderCode} · ${kpiDetail}${monthSuffix}`
+        : `Order ${orderCode} · ${amt}${monthSuffix}`,
       linkHref: payrollLink,
     };
   }
@@ -136,6 +155,7 @@ export async function fetchWalletActivity(
         id: true,
         status: true,
         amount: true,
+        payrollIncludedAmount: true,
         updatedAt: true,
         payrollRunId: true,
         payrollRun: { select: { id: true, payrollMonth: true } },
