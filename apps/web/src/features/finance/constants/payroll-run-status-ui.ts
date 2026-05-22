@@ -6,7 +6,7 @@ export const PAYROLL_RUN_STATUS_UI: Record<
   PayrollRunStatus,
   { label: string; variant: StatusVariant }
 > = {
-  DRAFT: { label: PAYROLL_RUN_STATUS_LABEL.DRAFT, variant: 'gray' },
+  DRAFT: { label: PAYROLL_RUN_STATUS_LABEL.DRAFT, variant: 'zinc' },
   REVIEW: { label: PAYROLL_RUN_STATUS_LABEL.REVIEW, variant: 'amber' },
   APPROVED: { label: PAYROLL_RUN_STATUS_LABEL.APPROVED, variant: 'blue' },
   PAYING: { label: PAYROLL_RUN_STATUS_LABEL.PAYING, variant: 'orange' },
@@ -20,7 +20,7 @@ export function payrollRunStatusUi(status: PayrollRunStatus) {
 /** Full-cell calendar styling aligned with {@link StatusBadge} variants. */
 export const PAYROLL_RUN_STATUS_CALENDAR_CELL_CLASS: Record<PayrollRunStatus, string> = {
   DRAFT:
-    'border-gray-200/80 bg-gray-100 text-gray-800 hover:bg-gray-200/70 dark:border-gray-700/60 dark:bg-gray-800/50 dark:text-gray-100 dark:hover:bg-gray-800/70',
+    'border-zinc-300 bg-white text-zinc-900 shadow-sm hover:bg-zinc-50 dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-50 dark:hover:bg-zinc-700',
   REVIEW:
     'border-amber-200/80 bg-amber-100 text-amber-900 hover:bg-amber-200/70 dark:border-amber-800/50 dark:bg-amber-900/35 dark:text-amber-200 dark:hover:bg-amber-900/50',
   APPROVED:
