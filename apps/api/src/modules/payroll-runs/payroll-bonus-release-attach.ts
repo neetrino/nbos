@@ -15,6 +15,7 @@ import {
   type SalesKpiAmountSnapshot,
 } from './resolve-employee-sales-kpi';
 import { formatSalesKpiBurnedReason } from './sales-kpi-burned-reason';
+import type { PayrollAttachNotifyEvent } from './payroll-attach-notify.types';
 
 const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
@@ -48,7 +49,8 @@ function computeLineTotalPayable(line: {
 export async function attachBonusReleasesToPayrollRun(
   tx: BonusReleaseAttachTx,
   params: AttachBonusReleasesParams,
-): Promise<void> {
+): Promise<PayrollAttachNotifyEvent[]> {
+  const notifyEvents: PayrollAttachNotifyEvent[] = [];
   const { payrollRunId, releaseIds } = params;
   if (releaseIds.length === 0) {
     throw new BadRequestException('releaseIds must be non-empty');
@@ -83,7 +85,7 @@ export async function attachBonusReleasesToPayrollRun(
       amount: true,
       status: true,
       payrollRunId: true,
-      bonusEntry: { select: { type: true } },
+      bonusEntry: { select: { type: true, order: { select: { code: true } } } },
     },
   });
   if (releases.length !== uniqueIds.length) {
@@ -109,7 +111,7 @@ export async function attachBonusReleasesToPayrollRun(
   );
   if (releasesToAttach.length === 0) {
     await recalculatePayrollRunTotalsFromSalaryLines(tx, payrollRunId);
-    return;
+    return notifyEvents;
   }
 
   const runKpiSnapshot: SalesKpiAmountSnapshot = {
@@ -159,12 +161,21 @@ export async function attachBonusReleasesToPayrollRun(
       const carryAlreadyApplied =
         line.payrollCarryAppliedAmount != null && line.payrollCarryAppliedAmount.gt(0);
       if (!carryAlreadyApplied) {
-        await applyPendingPayrollCarryOver(tx, {
+        const carryApplied = await applyPendingPayrollCarryOver(tx, {
           employeeId: rel.employeeId,
           payrollMonth: run.payrollMonth,
           line,
           bonusCapBaseSalaryMultiplier: payrollPolicy.bonusCapBaseSalaryMultiplier,
         });
+        if (carryApplied.gt(0)) {
+          notifyEvents.push({
+            kind: 'CARRY_APPLIED',
+            employeeId: rel.employeeId,
+            payrollRunId,
+            payrollMonth: run.payrollMonth,
+            amount: carryApplied,
+          });
+        }
       }
       carryAppliedEmployees.add(rel.employeeId);
       const refreshed = await tx.salaryLine.findUnique({
@@ -257,7 +268,20 @@ export async function attachBonusReleasesToPayrollRun(
         payrollCarryOverRemaining: capped.payrollCarryOverAmount,
       },
     });
+
+    const deferred = capped.payrollCarryOverAmount;
+    if (deferred != null && deferred.gt(0)) {
+      notifyEvents.push({
+        kind: 'CARRY_DEFERRED',
+        employeeId: rel.employeeId,
+        releaseId: rel.id,
+        orderCode: rel.bonusEntry.order.code,
+        payrollMonth: run.payrollMonth,
+        amount: deferred,
+      });
+    }
   }
 
   await recalculatePayrollRunTotalsFromSalaryLines(tx, payrollRunId);
+  return notifyEvents;
 }

@@ -3,6 +3,10 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 
+function bonusEntry(type: string) {
+  return { type, order: { code: 'ORD-1' } };
+}
+
 function mockAttachReleaseFindMany(
   tx: ReturnType<typeof createTxMock>,
   releases: Array<Record<string, unknown>>,
@@ -82,7 +86,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         amount: new Decimal(10),
         status: 'APPROVED',
         payrollRunId: null,
-        bonusEntry: { type: 'SALES' },
+        bonusEntry: bonusEntry('SALES'),
       },
     ]);
     await expect(
@@ -109,7 +113,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         amount: new Decimal(50),
         status: 'APPROVED',
         payrollRunId: null,
-        bonusEntry: { type: 'DELIVERY' },
+        bonusEntry: bonusEntry('DELIVERY'),
       },
     ]);
     tx.salaryLine.findUnique.mockResolvedValue({
@@ -136,10 +140,12 @@ describe('attachBonusReleasesToPayrollRun', () => {
       },
     });
 
-    await attachBonusReleasesToPayrollRun(tx as never, {
+    const events = await attachBonusReleasesToPayrollRun(tx as never, {
       payrollRunId: 'run1',
       releaseIds: ['rel1'],
     });
+
+    expect(events).toEqual([]);
 
     expect(tx.salaryLine.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -181,7 +187,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         amount: new Decimal(50),
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId: 'run1',
-        bonusEntry: { type: 'DELIVERY' },
+        bonusEntry: bonusEntry('DELIVERY'),
       },
     ]);
     tx.salaryLine.aggregate.mockResolvedValue({
@@ -221,7 +227,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         amount: new Decimal(100),
         status: 'APPROVED',
         payrollRunId: null,
-        bonusEntry: { type: 'SALES' },
+        bonusEntry: bonusEntry('SALES'),
       },
     ]);
     tx.salaryLine.findUnique.mockResolvedValue({
@@ -290,7 +296,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         amount: new Decimal(100),
         status: 'APPROVED',
         payrollRunId: null,
-        bonusEntry: { type: 'SALES' },
+        bonusEntry: bonusEntry('SALES'),
       },
     ]);
     tx.salaryLine.findUnique.mockResolvedValue({
@@ -350,7 +356,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         amount: new Decimal(80),
         status: 'APPROVED',
         payrollRunId: null,
-        bonusEntry: { type: 'DELIVERY' },
+        bonusEntry: bonusEntry('DELIVERY'),
       },
     ]);
     tx.salaryLine.findUnique.mockResolvedValue({
@@ -377,10 +383,21 @@ describe('attachBonusReleasesToPayrollRun', () => {
       },
     });
 
-    await attachBonusReleasesToPayrollRun(tx as never, {
+    const events = await attachBonusReleasesToPayrollRun(tx as never, {
       payrollRunId: 'run1',
       releaseIds: ['rel1'],
     });
+
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'CARRY_DEFERRED',
+          employeeId: 'e1',
+          releaseId: 'rel1',
+          amount: new Decimal(30),
+        }),
+      ]),
+    );
 
     expect(tx.bonusRelease.update).toHaveBeenCalledWith({
       where: { id: 'rel1' },

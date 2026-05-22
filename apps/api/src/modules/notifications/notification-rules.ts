@@ -8,6 +8,17 @@ export const NOTIFICATION_RULE_CONFIGS: NotificationRuleConfig[] = [
   { eventType: 'finance.wallet.bonus_active', category: 'informational', priority: 'normal' },
   { eventType: 'finance.wallet.bonus_paid', category: 'informational', priority: 'normal' },
   { eventType: 'finance.wallet.bonus_corrected', category: 'informational', priority: 'normal' },
+  { eventType: 'finance.wallet.bonus_kpi_reduced', category: 'informational', priority: 'normal' },
+  {
+    eventType: 'finance.wallet.bonus_carry_applied',
+    category: 'informational',
+    priority: 'normal',
+  },
+  {
+    eventType: 'finance.wallet.bonus_carry_deferred',
+    category: 'informational',
+    priority: 'normal',
+  },
   { eventType: 'finance.wallet.payroll_created', category: 'informational', priority: 'normal' },
   { eventType: 'finance.wallet.payroll_closed', category: 'informational', priority: 'normal' },
   { eventType: 'finance.wallet.salary_payment', category: 'informational', priority: 'normal' },

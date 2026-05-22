@@ -87,7 +87,8 @@ Use after deploy or large UX change:
 
 Tracked in repo root [`todo.md`](../../../../todo.md). Summary:
 
-- **Policy engine:** marketing/support accrual automation; optional burned-KPI reason field; bonus policy CRUD.
+- **Policy engine:** marketing/support accrual automation; bonus policy CRUD.
 - **KPI:** role-specific scorecard metrics (beyond payroll sales plan/actual).
+- **Notifications:** separate mobile/web push channel (in-app wallet notify ships for KPI + carry).
 - **Ops:** manual visual QA checklist (§ above); staging deploy smoke.
 - **My Company:** employee overrides + policy audit trail ([`06-My-Company-Cleanup-Register`](../07-My-Company/06-My-Company-Cleanup-Register.md) C1–C3).

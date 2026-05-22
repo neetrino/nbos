@@ -80,11 +80,11 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 
 ## 5. Payroll and wallet integration
 
-- ◐ **Payroll attach:** SALES KPI + cap + burned/carry persist + prior-month carry auto-apply + notify.
-- ◐ **Salary month sheet:** burned KPI + carry-over columns (by-source + release lines).
-- ◐ **Employee wallet:** pipeline shows burned KPI and carry-over from attach.
+- ☑ **Payroll attach:** SALES KPI + cap + burned/carry persist + prior-month carry auto-apply + in-app notify.
+- ☑ **Salary month sheet:** burned KPI + carry-over columns (by-source + release lines).
+- ☑ **Employee wallet:** pipeline shows burned KPI and carry-over from attach.
 - ☑ **Pay Now:** preset links from salary board, payroll runs, month sheet (month + employee URL filters).
-- ◐ **Notifications:** KPI-reduced in-app notify (includes burned reason); carried push still pending.
+- ☑ **Notifications:** KPI-reduced + carry applied/deferred in-app notify on payroll attach (no separate push channel in stack yet).
 
 ---
 
