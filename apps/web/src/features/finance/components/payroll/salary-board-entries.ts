@@ -1,5 +1,4 @@
 import type {
-  CompensationPayoutPhase,
   SalaryBoardCell,
   SalaryBoardResponse,
   SalaryLineStatus,
@@ -84,12 +83,6 @@ export function filterSalaryBoardRows(
       cells: row.cells.map((cell) => (cell && allowedLineIds.has(cell.salaryLineId) ? cell : null)),
     }));
 }
-
-export const SALARY_BOARD_PAYOUT_PHASE_ORDER: readonly CompensationPayoutPhase[] = [
-  'active_payout',
-  'accumulating',
-  'past_paid',
-] as const;
 
 export const SALARY_LINE_STATUS_FILTER_OPTIONS: Array<{
   value: SalaryLineStatus | 'all';

@@ -2,11 +2,10 @@
 
 import { useMemo } from 'react';
 import { KanbanBoard, KanbanColumnMoneyTotal, type KanbanColumn } from '@/components/shared';
-import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import {
+  COMPENSATION_PAYOUT_PHASE_UI,
   SALARY_BOARD_KANBAN_PHASE_ORDER,
-  SALARY_BOARD_PAYOUT_PHASE_HEX,
-} from '@/features/finance/constants/salary-board-payout-phase-hex';
+} from '@/features/finance/constants/compensation-payout-phase-ui';
 import { SalaryBoardPayoutLineCard } from '@/features/finance/components/payroll/salary-board-payout-line-card';
 import type { SalaryBoardEntry } from '@/features/finance/components/payroll/salary-board-entries';
 import { parseSalaryBoardAmount } from '@/features/finance/utils/salary-board-month-utils';
@@ -30,7 +29,7 @@ export function SalaryBoardPayoutBoardView({
         key: phase,
         label: ui.label,
         color: phase,
-        hexColor: SALARY_BOARD_PAYOUT_PHASE_HEX[phase],
+        hexColor: ui.hex,
         items,
         readonly: true,
       };

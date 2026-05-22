@@ -2,10 +2,8 @@
 
 import { StatusBadge } from '@/components/shared';
 import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
-import {
-  employeeDisplayName,
-  type SalaryBoardEntry,
-} from '@/features/finance/components/payroll/salary-board-entries';
+import { employeeDisplayName } from '@/features/finance/components/payroll/salary-board-entries';
+import { formatPayrollMonthShort } from '@/features/finance/utils/salary-board-month-utils';
 import { SalaryBoardCellButton } from '@/features/finance/components/payroll/salary-board-cell-button';
 import type { SalaryBoardResponse } from '@/lib/api/payroll-runs';
 
@@ -51,7 +49,7 @@ export function SalaryBoardCardsView({
                   <li key={cell.salaryLineId} className="flex flex-col gap-1">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-foreground text-xs font-medium tabular-nums">
-                        {month}
+                        {formatPayrollMonthShort(month)}
                       </span>
                       <StatusBadge label={phaseUi.label} variant={phaseUi.variant} />
                     </div>

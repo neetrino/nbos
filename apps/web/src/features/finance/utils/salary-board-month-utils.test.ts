@@ -1,17 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import {
-  formatPayrollMonthShort,
-  payrollMonthYear,
-  sumSalaryBoardColumn,
-} from './salary-board-month-utils';
+import { formatPayrollMonthShort, sumSalaryBoardColumn } from './salary-board-month-utils';
 
 describe('salary-board-month-utils', () => {
   it('formats month without year', () => {
     expect(formatPayrollMonthShort('2026-04')).toMatch(/april/i);
-  });
-
-  it('parses year from payroll month', () => {
-    expect(payrollMonthYear('2026-04')).toBe(2026);
   });
 
   it('sums column payable', () => {

@@ -4,12 +4,8 @@ import { StatusBadge } from '@/components/shared';
 import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { parseSalaryBoardAmount } from '@/features/finance/utils/salary-board-month-utils';
 import type { SalaryBoardCell } from '@/lib/api/payroll-runs';
-
-function parseAmount(value: string): number {
-  const n = Number.parseFloat(value);
-  return Number.isFinite(n) ? n : 0;
-}
 
 export function SalaryBoardCellButton({
   cell,
@@ -38,12 +34,12 @@ export function SalaryBoardCellButton({
         <StatusBadge label={lineUi.label} variant={lineUi.variant} />
       </div>
       <span className="text-muted-foreground text-xs tabular-nums">
-        {formatAmount(parseAmount(cell.totalPayable))}
+        {formatAmount(parseSalaryBoardAmount(cell.totalPayable))}
       </span>
       {!compact ? (
         <span className="text-muted-foreground text-[10px] tabular-nums">
-          {formatAmount(parseAmount(cell.paidAmount))} paid ·{' '}
-          {formatAmount(parseAmount(cell.remainingAmount))} left
+          {formatAmount(parseSalaryBoardAmount(cell.paidAmount))} paid ·{' '}
+          {formatAmount(parseSalaryBoardAmount(cell.remainingAmount))} left
         </span>
       ) : null}
     </button>

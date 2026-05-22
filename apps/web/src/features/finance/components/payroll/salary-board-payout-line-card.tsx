@@ -7,8 +7,10 @@ import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-boa
 import { employeeDisplayName } from '@/features/finance/components/payroll/salary-board-entries';
 import type { SalaryBoardEntry } from '@/features/finance/components/payroll/salary-board-entries';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { formatPayrollMonthShort } from '@/features/finance/utils/salary-board-month-utils';
-import { parseSalaryBoardAmount } from '@/features/finance/utils/salary-board-month-utils';
+import {
+  formatPayrollMonthShort,
+  parseSalaryBoardAmount,
+} from '@/features/finance/utils/salary-board-month-utils';
 
 export function SalaryBoardPayoutLineCard({
   entry,
