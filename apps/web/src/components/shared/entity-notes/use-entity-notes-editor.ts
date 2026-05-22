@@ -12,8 +12,10 @@ export function useEntityNotesEditor(opts: {
   onBlur?: () => void;
   placeholder: string;
   disabled?: boolean;
+  /** When false, editor is read-only (passive view). */
+  isActive?: boolean;
 }) {
-  const { value, onChange, onBlur, placeholder, disabled } = opts;
+  const { value, onChange, onBlur, placeholder, disabled, isActive = true } = opts;
   const skipEmitRef = useRef(false);
   const lastExternalRef = useRef(value);
 
@@ -21,7 +23,7 @@ export function useEntityNotesEditor(opts: {
     {
       extensions: buildEntityNotesExtensions(placeholder),
       content: notesValueToEditorHtml(value),
-      editable: !disabled,
+      editable: !disabled && isActive,
       immediatelyRender: false,
       editorProps: {
         attributes: {
@@ -40,8 +42,20 @@ export function useEntityNotesEditor(opts: {
 
   useEffect(() => {
     if (!editor) return;
-    editor.setEditable(!disabled);
-  }, [disabled, editor]);
+    editor.setEditable(!disabled && isActive);
+  }, [disabled, isActive, editor]);
+
+  const wasActiveRef = useRef(false);
+  useEffect(() => {
+    if (!editor || disabled) {
+      wasActiveRef.current = false;
+      return;
+    }
+    if (isActive && !wasActiveRef.current) {
+      editor.commands.focus();
+    }
+    wasActiveRef.current = isActive;
+  }, [disabled, editor, isActive]);
 
   useEffect(() => {
     if (!editor || value === lastExternalRef.current) return;

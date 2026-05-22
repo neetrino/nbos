@@ -14,6 +14,8 @@ export const ENTITY_NOTES_SHELL_DISABLED_CLASS = 'pointer-events-none opacity-60
 
 export const ENTITY_NOTES_EDITOR_ROOT_CLASS = 'nbos-entity-notes-editor';
 
+export const ENTITY_NOTES_SHELL_PASSIVE_CLASS = 'cursor-text';
+
 export const ENTITY_NOTES_TOOLBAR_CLASS =
   'border-border/80 bg-muted/30 flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1';
 
