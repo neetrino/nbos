@@ -70,10 +70,10 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 - ☐ **Employee-level KPI:** per employee/role, not only payroll-run sales KPI scale.
 - ◐ **Burned KPI:** persist `kpiBurnedAmount` on SALES attach + Finance/Wallet display; reason field / full policy templates still pending.
 - ☑ **Cap:** default 200% of base on attach; per-policy multiplier via linked `kpi_policies`; excess → `payrollCarryOverAmount`.
-- ◐ **Carry-over:** FIFO auto-apply on attach + `payrollCarryOverRemaining`; detach restores deferred carry on release; auto-applied prior-month bump reversal still pending.
+- ☑ **Carry-over:** FIFO auto-apply + `payrollCarryAppliedAmount` on line; detach restores release carry + reverses line carry when no releases remain.
 - ☑ **Bonus breakdown statuses:** `policyBreakdownStatuses` + month summary on salary sheet / wallet pipeline.
-- ◐ **Idempotency:** re-attach same run skips already-included releases; full recalc idempotency pending.
-- ◐ **Tests:** breakdown + attach idempotent + detach carry restore unit tests; full recalc suite pending.
+- ◐ **Idempotency:** re-attach same run skips included releases; skip duplicate carry apply per line; full recalc idempotency pending.
+- ◐ **Tests:** carry reverse + breakdown + attach idempotent tests; full recalc suite pending.
 - ☐ **Re-audit** API when Compensation Profile / policy schema changes.
 
 ---

@@ -590,6 +590,8 @@ model SalaryLine {
   compensationProfileId String?              @map("compensation_profile_id")
   baseSalary            Decimal              @default(0) @map("base_salary") @db.Decimal(12, 2)
   bonusesTotal     Decimal              @default(0) @map("bonuses_total") @db.Decimal(12, 2)
+  /// Prior-month cap carry included in `bonuses_total` this run (FIFO apply at attach).
+  payrollCarryAppliedAmount Decimal?     @map("payroll_carry_applied_amount") @db.Decimal(12, 2)
   adjustmentsTotal Decimal              @default(0) @map("adjustments_total") @db.Decimal(12, 2)
   deductionsTotal  Decimal              @default(0) @map("deductions_total") @db.Decimal(12, 2)
   totalPayable     Decimal              @default(0) @map("total_payable") @db.Decimal(12, 2)

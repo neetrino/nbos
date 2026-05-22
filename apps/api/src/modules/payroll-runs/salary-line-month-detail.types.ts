@@ -62,6 +62,8 @@ export interface SalaryLineMonthDetailDto {
     status: string;
     baseSalary: string;
     bonusesTotal: string;
+    /** Prior-month cap carry already applied to this line this run. */
+    payrollCarryAppliedAmount: string | null;
     adjustmentsTotal: string;
     deductionsTotal: string;
     totalPayable: string;

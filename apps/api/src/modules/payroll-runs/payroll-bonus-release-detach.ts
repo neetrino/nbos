@@ -1,5 +1,9 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbos/database';
+import {
+  countIncludedReleasesOnRun,
+  reversePayrollCarryAppliedOnSalaryLine,
+} from './payroll-bonus-carry-over-reverse';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
 
@@ -44,7 +48,7 @@ export async function detachBonusReleasesFromPayrollRun(
 
   const run = await tx.payrollRun.findUnique({
     where: { id: payrollRunId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, payrollMonth: true },
   });
   if (!run) {
     throw new NotFoundException(`Payroll run ${payrollRunId} not found`);
@@ -82,7 +86,10 @@ export async function detachBonusReleasesFromPayrollRun(
     }
   }
 
+  const employeesTouched = new Set<string>();
+
   for (const rel of releases) {
+    employeesTouched.add(rel.employeeId);
     const line = await tx.salaryLine.findUnique({
       where: {
         payrollRunId_employeeId: { payrollRunId, employeeId: rel.employeeId },
@@ -138,6 +145,27 @@ export async function detachBonusReleasesFromPayrollRun(
         payrollCarryOverAmount: null,
         payrollCarryOverRemaining: carryRestore,
       },
+    });
+  }
+
+  for (const employeeId of employeesTouched) {
+    const remaining = await countIncludedReleasesOnRun(tx, payrollRunId, employeeId);
+    if (remaining > 0) {
+      continue;
+    }
+
+    const line = await tx.salaryLine.findUnique({
+      where: { payrollRunId_employeeId: { payrollRunId, employeeId } },
+    });
+    if (line == null) {
+      continue;
+    }
+
+    await reversePayrollCarryAppliedOnSalaryLine(tx, {
+      payrollRunId,
+      payrollMonth: run.payrollMonth,
+      employeeId,
+      line,
     });
   }
 

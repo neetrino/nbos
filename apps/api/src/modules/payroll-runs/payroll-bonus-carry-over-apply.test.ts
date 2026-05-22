@@ -51,6 +51,11 @@ describe('applyPendingPayrollCarryOver', () => {
     });
     expect(applied.toString()).toBe('30');
     expect(tx.bonusRelease.update).toHaveBeenCalled();
-    expect(tx.salaryLine.update).toHaveBeenCalled();
+    expect(tx.salaryLine.update).toHaveBeenCalledTimes(2);
+    expect(tx.salaryLine.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { payrollCarryAppliedAmount: new Decimal(30) },
+      }),
+    );
   });
 });

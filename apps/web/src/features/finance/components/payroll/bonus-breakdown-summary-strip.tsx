@@ -42,6 +42,12 @@ export function BonusBreakdownSummaryStrip({ detail }: { detail: SalaryLineMonth
           Carry-over {formatAmount(parseAmount(summary.carryOverTotal))}
         </span>
       ) : null}
+      {detail.salaryLine.payrollCarryAppliedAmount ? (
+        <span className="text-muted-foreground tabular-nums">
+          Applied this month{' '}
+          {formatAmount(parseAmount(detail.salaryLine.payrollCarryAppliedAmount))}
+        </span>
+      ) : null}
       {detail.pendingPayrollCarryOver ? (
         <span className="text-muted-foreground tabular-nums">
           Pending prior months {formatAmount(parseAmount(detail.pendingPayrollCarryOver))}

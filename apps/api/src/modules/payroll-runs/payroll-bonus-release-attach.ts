@@ -124,6 +124,15 @@ export async function attachBonusReleasesToPayrollRun(
       where: {
         payrollRunId_employeeId: { payrollRunId, employeeId: rel.employeeId },
       },
+      select: {
+        id: true,
+        baseSalary: true,
+        bonusesTotal: true,
+        adjustmentsTotal: true,
+        deductionsTotal: true,
+        paidAmount: true,
+        payrollCarryAppliedAmount: true,
+      },
     });
     if (!line) {
       throw new BadRequestException(
@@ -142,16 +151,29 @@ export async function attachBonusReleasesToPayrollRun(
     }
 
     if (!carryAppliedEmployees.has(rel.employeeId)) {
-      await applyPendingPayrollCarryOver(tx, {
-        employeeId: rel.employeeId,
-        payrollMonth: run.payrollMonth,
-        line,
-        bonusCapBaseSalaryMultiplier: payrollPolicy.bonusCapBaseSalaryMultiplier,
-      });
+      const carryAlreadyApplied =
+        line.payrollCarryAppliedAmount != null && line.payrollCarryAppliedAmount.gt(0);
+      if (!carryAlreadyApplied) {
+        await applyPendingPayrollCarryOver(tx, {
+          employeeId: rel.employeeId,
+          payrollMonth: run.payrollMonth,
+          line,
+          bonusCapBaseSalaryMultiplier: payrollPolicy.bonusCapBaseSalaryMultiplier,
+        });
+      }
       carryAppliedEmployees.add(rel.employeeId);
       const refreshed = await tx.salaryLine.findUnique({
         where: {
           payrollRunId_employeeId: { payrollRunId, employeeId: rel.employeeId },
+        },
+        select: {
+          id: true,
+          baseSalary: true,
+          bonusesTotal: true,
+          adjustmentsTotal: true,
+          deductionsTotal: true,
+          paidAmount: true,
+          payrollCarryAppliedAmount: true,
         },
       });
       if (refreshed) {

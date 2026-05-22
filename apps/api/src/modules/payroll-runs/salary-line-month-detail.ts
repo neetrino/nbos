@@ -241,6 +241,10 @@ export async function querySalaryLineMonthDetail(
       status: line.status,
       baseSalary: money(line.baseSalary),
       bonusesTotal: money(line.bonusesTotal),
+      payrollCarryAppliedAmount:
+        line.payrollCarryAppliedAmount != null && line.payrollCarryAppliedAmount.gt(0)
+          ? money(line.payrollCarryAppliedAmount)
+          : null,
       adjustmentsTotal: money(line.adjustmentsTotal),
       deductionsTotal: money(line.deductionsTotal),
       totalPayable: money(line.totalPayable),

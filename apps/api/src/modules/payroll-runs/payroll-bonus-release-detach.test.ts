@@ -12,6 +12,7 @@ function createTxMock() {
     bonusRelease: {
       findMany: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
+      count: vi.fn().mockResolvedValue(0),
     },
     salaryLine: {
       findUnique: vi.fn(),
@@ -46,13 +47,18 @@ describe('detachBonusReleasesFromPayrollRun', () => {
 
   it('reverts salary line and release', async () => {
     const tx = createTxMock();
-    tx.payrollRun.findUnique.mockResolvedValue({ id: 'run1', status: 'DRAFT' });
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'DRAFT',
+      payrollMonth: '2026-05',
+    });
     tx.bonusRelease.findMany.mockResolvedValue([
       {
         id: 'rel1',
         employeeId: 'e1',
         amount: new Decimal(50),
         payrollIncludedAmount: new Decimal(50),
+        payrollCarryOverAmount: null,
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId: 'run1',
       },
@@ -63,6 +69,7 @@ describe('detachBonusReleasesFromPayrollRun', () => {
       employeeId: 'e1',
       baseSalary: new Decimal(100),
       bonusesTotal: new Decimal(50),
+      payrollCarryAppliedAmount: null,
       adjustmentsTotal: new Decimal(0),
       deductionsTotal: new Decimal(0),
       totalPayable: new Decimal(150),
@@ -111,7 +118,11 @@ describe('detachBonusReleasesFromPayrollRun', () => {
 
   it('restores payrollCarryOverRemaining when release had deferred carry', async () => {
     const tx = createTxMock();
-    tx.payrollRun.findUnique.mockResolvedValue({ id: 'run1', status: 'DRAFT' });
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'DRAFT',
+      payrollMonth: '2026-05',
+    });
     tx.bonusRelease.findMany.mockResolvedValue([
       {
         id: 'rel1',
@@ -129,6 +140,7 @@ describe('detachBonusReleasesFromPayrollRun', () => {
       employeeId: 'e1',
       baseSalary: new Decimal(100),
       bonusesTotal: new Decimal(200),
+      payrollCarryAppliedAmount: null,
       adjustmentsTotal: new Decimal(0),
       deductionsTotal: new Decimal(0),
       totalPayable: new Decimal(300),
@@ -162,13 +174,18 @@ describe('detachBonusReleasesFromPayrollRun', () => {
 
   it('subtracts payrollIncludedAmount when it differs from release amount', async () => {
     const tx = createTxMock();
-    tx.payrollRun.findUnique.mockResolvedValue({ id: 'run1', status: 'DRAFT' });
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'DRAFT',
+      payrollMonth: '2026-05',
+    });
     tx.bonusRelease.findMany.mockResolvedValue([
       {
         id: 'rel1',
         employeeId: 'e1',
         amount: new Decimal(100),
         payrollIncludedAmount: new Decimal(40),
+        payrollCarryOverAmount: null,
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId: 'run1',
       },
@@ -179,6 +196,7 @@ describe('detachBonusReleasesFromPayrollRun', () => {
       employeeId: 'e1',
       baseSalary: new Decimal(100),
       bonusesTotal: new Decimal(40),
+      payrollCarryAppliedAmount: null,
       adjustmentsTotal: new Decimal(0),
       deductionsTotal: new Decimal(0),
       totalPayable: new Decimal(140),
@@ -207,6 +225,78 @@ describe('detachBonusReleasesFromPayrollRun', () => {
         data: expect.objectContaining({
           bonusesTotal: new Decimal(0),
           totalPayable: new Decimal(100),
+        }),
+      }),
+    );
+  });
+
+  it('reverses prior-month carry applied to line when last release is detached', async () => {
+    const tx = createTxMock();
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'DRAFT',
+      payrollMonth: '2026-06',
+    });
+    const detachRelease = {
+      id: 'rel1',
+      employeeId: 'e1',
+      amount: new Decimal(50),
+      payrollIncludedAmount: new Decimal(50),
+      payrollCarryOverAmount: null,
+      status: 'INCLUDED_IN_PAYROLL' as const,
+      payrollRunId: 'run1',
+    };
+    tx.bonusRelease.findMany.mockImplementation((args: { where?: { id?: { in?: string[] } } }) => {
+      if (args.where?.id?.in) {
+        return Promise.resolve([detachRelease]);
+      }
+      return Promise.resolve([]);
+    });
+    tx.bonusRelease.count.mockResolvedValue(0);
+    tx.salaryLine.findUnique
+      .mockResolvedValueOnce({
+        id: 'sl1',
+        payrollRunId: 'run1',
+        employeeId: 'e1',
+        baseSalary: new Decimal(100),
+        bonusesTotal: new Decimal(75),
+        adjustmentsTotal: new Decimal(0),
+        deductionsTotal: new Decimal(0),
+        totalPayable: new Decimal(175),
+        paidAmount: new Decimal(0),
+        remainingAmount: new Decimal(175),
+        status: 'APPROVED',
+      })
+      .mockResolvedValueOnce({
+        id: 'sl1',
+        baseSalary: new Decimal(100),
+        bonusesTotal: new Decimal(25),
+        adjustmentsTotal: new Decimal(0),
+        deductionsTotal: new Decimal(0),
+        paidAmount: new Decimal(0),
+        payrollCarryAppliedAmount: new Decimal(25),
+      });
+    tx.salaryLine.aggregate.mockResolvedValue({
+      _sum: {
+        baseSalary: new Decimal(100),
+        bonusesTotal: new Decimal(0),
+        adjustmentsTotal: new Decimal(0),
+        deductionsTotal: new Decimal(0),
+        totalPayable: new Decimal(100),
+        paidAmount: new Decimal(0),
+      },
+    });
+
+    await detachBonusReleasesFromPayrollRun(tx as never, {
+      payrollRunId: 'run1',
+      releaseIds: ['rel1'],
+    });
+
+    expect(tx.salaryLine.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          payrollCarryAppliedAmount: null,
+          bonusesTotal: new Decimal(0),
         }),
       }),
     );

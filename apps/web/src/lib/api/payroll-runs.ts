@@ -213,6 +213,7 @@ export interface SalaryLineMonthDetail {
     status: SalaryLineStatus;
     baseSalary: string;
     bonusesTotal: string;
+    payrollCarryAppliedAmount: string | null;
     adjustmentsTotal: string;
     deductionsTotal: string;
     totalPayable: string;

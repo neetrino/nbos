@@ -135,5 +135,9 @@ export async function applyPendingPayrollCarryOver(
 
   await consumeCarryFifo(tx, pendingRows, applied);
   await bumpSalaryLineForCarry(tx, params.line, applied);
+  await tx.salaryLine.update({
+    where: { id: params.line.id },
+    data: { payrollCarryAppliedAmount: applied },
+  });
   return applied;
 }
