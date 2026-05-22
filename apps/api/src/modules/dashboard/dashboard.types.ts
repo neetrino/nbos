@@ -15,16 +15,24 @@ export interface DashboardPriorityProjection {
   source: string;
 }
 
+export interface DashboardControlCenterMeta {
+  source: 'module-projections';
+  generatedAt: string;
+}
+
+export interface DashboardMetricsProjection {
+  metrics: DashboardMetricProjection;
+  priorities: DashboardPriorityProjection[];
+  meta: DashboardControlCenterMeta;
+}
+
 export interface DashboardControlCenterProjection {
   metrics: DashboardMetricProjection;
   priorities: DashboardPriorityProjection[];
   preference: DashboardPreferenceProjection;
   personalLinks: DashboardPersonalLinkProjection[];
   notes: DashboardNoteProjection[];
-  meta: {
-    source: 'module-projections';
-    generatedAt: string;
-  };
+  meta: DashboardControlCenterMeta;
 }
 
 export interface DashboardPreferenceProjection {

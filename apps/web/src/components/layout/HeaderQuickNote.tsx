@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { dashboardApi } from '@/lib/api/dashboard';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
+import { prependDashboardControlCacheNote } from '@/features/dashboard/dashboard-control-cache';
 import { dispatchDashboardNoteCreated } from '@/features/dashboard/dashboard-note-sync';
 import {
   HEADER_QUICK_NOTE_EXPANDED_MIN_HEIGHT_PX,
@@ -23,6 +25,8 @@ const QUICK_NOTE_CORNER_SAVE_CLASS =
 const QUICK_NOTE_MAX_WIDTH = 'min(22rem, calc(100vw - 10rem))';
 
 export function HeaderQuickNote() {
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
   const [expanded, setExpanded] = useState(false);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
@@ -74,6 +78,7 @@ export function HeaderQuickNote() {
       const saved = await dashboardApi.createNote({ content });
       setDraft('');
       collapseComposer();
+      if (userId) prependDashboardControlCacheNote(userId, saved);
       dispatchDashboardNoteCreated(saved);
     } catch (caught) {
       toast.error(getApiErrorMessage(caught, 'Note could not be saved.'));

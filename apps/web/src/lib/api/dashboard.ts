@@ -17,16 +17,24 @@ export interface DashboardPriorityProjection {
   source: string;
 }
 
+export interface DashboardControlCenterMeta {
+  source: 'module-projections';
+  generatedAt: string;
+}
+
+export interface DashboardMetricsProjection {
+  metrics: DashboardMetricProjection;
+  priorities: DashboardPriorityProjection[];
+  meta: DashboardControlCenterMeta;
+}
+
 export interface DashboardControlCenterProjection {
   metrics: DashboardMetricProjection;
   priorities: DashboardPriorityProjection[];
   preference: DashboardPreferenceProjection;
   personalLinks: DashboardPersonalLink[];
   notes: DashboardNote[];
-  meta: {
-    source: 'module-projections';
-    generatedAt: string;
-  };
+  meta: DashboardControlCenterMeta;
 }
 
 export interface DashboardPreferenceProjection {
@@ -91,6 +99,13 @@ export const dashboardApi = {
     const response = await api.get<DashboardControlCenterProjection>(
       '/api/dashboard/control-center',
     );
+    return response.data;
+  },
+
+  async getControlCenterMetrics(): Promise<DashboardMetricsProjection> {
+    const response = await api.get<DashboardMetricsProjection>('/api/dashboard/control-center', {
+      params: { scope: 'metrics' },
+    });
     return response.data;
   },
 

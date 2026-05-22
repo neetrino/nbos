@@ -4,6 +4,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import type {
   DashboardControlCenterProjection,
   DashboardMetricProjection,
+  DashboardMetricsProjection,
   DashboardNoteProjection,
   DashboardPersonalLinkProjection,
   DashboardPreferenceProjection,
@@ -32,23 +33,32 @@ const EXTERNAL_URL_PATTERN = /^https?:\/\//i;
 export class DashboardService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
+  async getMetricsProjection(): Promise<DashboardMetricsProjection> {
+    const metrics = await this.getMetrics();
+    return {
+      metrics,
+      priorities: this.buildPriorities(metrics),
+      meta: {
+        source: 'module-projections',
+        generatedAt: new Date().toISOString(),
+      },
+    };
+  }
+
   async getControlCenterProjection(employeeId: string): Promise<DashboardControlCenterProjection> {
-    const [metrics, preference, personalLinks, notes] = await Promise.all([
-      this.getMetrics(),
+    const [metricsBundle, preference, personalLinks, notes] = await Promise.all([
+      this.getMetricsProjection(),
       this.getOrCreatePreference(employeeId),
       this.listPersonalLinks(employeeId),
       this.listNotes(employeeId),
     ]);
     return {
-      metrics,
-      priorities: this.buildPriorities(metrics),
+      metrics: metricsBundle.metrics,
+      priorities: metricsBundle.priorities,
       preference,
       personalLinks,
       notes,
-      meta: {
-        source: 'module-projections',
-        generatedAt: new Date().toISOString(),
-      },
+      meta: metricsBundle.meta,
     };
   }
 
