@@ -32,6 +32,7 @@ describe('module-last-visit-storage', () => {
   it('resolves finance sections from pathname', () => {
     expect(resolveFinanceSectionId('/finance/invoices')).toBe('revenue');
     expect(resolveFinanceSectionId('/bonus')).toBe('payroll');
+    expect(resolveFinanceSectionId('/finance/bonuses')).toBe('payroll');
   });
 
   it('remembers finance last visit for parent entry', () => {

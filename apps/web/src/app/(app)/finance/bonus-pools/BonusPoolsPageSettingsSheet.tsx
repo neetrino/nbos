@@ -23,7 +23,7 @@ export function BonusPoolsPageSettingsSheet({
       triggerAriaLabel="Bonus pools settings"
     >
       <Link
-        href="/bonus"
+        href="/finance/bonuses"
         className={buttonVariants({ variant: 'outline', className: 'justify-start gap-2' })}
       >
         <ExternalLink className="size-4 shrink-0" aria-hidden />

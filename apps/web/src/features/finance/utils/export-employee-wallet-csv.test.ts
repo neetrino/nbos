@@ -36,6 +36,7 @@ const salaryRow: EmployeeWalletSalaryRow = {
   remainingAmount: '1000',
   lineStatus: 'APPROVED',
   expenseId: 'exp-1',
+  payoutPhase: 'active_payout',
 };
 
 describe('buildWalletBonusesCsvContent', () => {

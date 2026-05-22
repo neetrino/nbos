@@ -6,6 +6,12 @@ import {
   sumBonusEntryAmounts,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
 import { formatAmount } from '@/features/finance/constants/finance';
+import {
+  groupBonusEntriesByEmployee,
+  groupBonusEntriesByPayrollMonth,
+  groupBonusEntriesByProject,
+  type BonusBoardEntryGroup,
+} from '@/features/finance/utils/bonus-board-grouping';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 
 export function BonusBoardEmployeeView({
@@ -15,7 +21,7 @@ export function BonusBoardEmployeeView({
   rows: BonusEntryListRow[];
   onOpenReleases: (entry: BonusEntryListRow) => void;
 }) {
-  const groups = useMemo(() => groupByEmployee(rows), [rows]);
+  const groups = useMemo(() => groupBonusEntriesByEmployee(rows), [rows]);
   return (
     <GroupedBonusView
       groups={groups}
@@ -32,7 +38,7 @@ export function BonusBoardProductView({
   rows: BonusEntryListRow[];
   onOpenReleases: (entry: BonusEntryListRow) => void;
 }) {
-  const groups = useMemo(() => groupByProject(rows), [rows]);
+  const groups = useMemo(() => groupBonusEntriesByProject(rows), [rows]);
   return (
     <GroupedBonusView
       groups={groups}
@@ -49,7 +55,7 @@ export function BonusBoardPayrollMonthView({
   rows: BonusEntryListRow[];
   onOpenReleases: (entry: BonusEntryListRow) => void;
 }) {
-  const groups = useMemo(() => groupByPayrollMonth(rows), [rows]);
+  const groups = useMemo(() => groupBonusEntriesByPayrollMonth(rows), [rows]);
   return (
     <GroupedBonusView
       groups={groups}
@@ -64,7 +70,7 @@ function GroupedBonusView({
   emptyLabel,
   onOpenReleases,
 }: {
-  groups: Array<{ key: string; label: string; entries: BonusEntryListRow[] }>;
+  groups: BonusBoardEntryGroup[];
   emptyLabel: string;
   onOpenReleases: (entry: BonusEntryListRow) => void;
 }) {
@@ -93,51 +99,4 @@ function GroupedBonusView({
       ))}
     </div>
   );
-}
-
-function groupByEmployee(rows: BonusEntryListRow[]) {
-  const map = new Map<string, { key: string; label: string; entries: BonusEntryListRow[] }>();
-  for (const row of rows) {
-    const key = row.employee.id;
-    const label = `${row.employee.firstName} ${row.employee.lastName}`.trim();
-    const bucket = map.get(key) ?? { key, label, entries: [] };
-    bucket.entries.push(row);
-    map.set(key, bucket);
-  }
-  return sortGroups(map);
-}
-
-function groupByProject(rows: BonusEntryListRow[]) {
-  const map = new Map<string, { key: string; label: string; entries: BonusEntryListRow[] }>();
-  for (const row of rows) {
-    const key = row.projectId;
-    const label = row.project?.code
-      ? `${row.project.code} · ${row.project.name ?? ''}`.trim()
-      : key;
-    const bucket = map.get(key) ?? { key, label, entries: [] };
-    bucket.entries.push(row);
-    map.set(key, bucket);
-  }
-  return sortGroups(map);
-}
-
-function groupByPayrollMonth(rows: BonusEntryListRow[]) {
-  const map = new Map<string, { key: string; label: string; entries: BonusEntryListRow[] }>();
-  for (const row of rows) {
-    const key = row.payoutMonth ?? '__none__';
-    const label = row.payoutMonth ?? 'No payroll month';
-    const bucket = map.get(key) ?? { key, label, entries: [] };
-    bucket.entries.push(row);
-    map.set(key, bucket);
-  }
-  const groups = sortGroups(map);
-  const unscheduled = groups.find((g) => g.key === '__none__');
-  const rest = groups.filter((g) => g.key !== '__none__');
-  return unscheduled ? [...rest, unscheduled] : rest;
-}
-
-function sortGroups(
-  map: Map<string, { key: string; label: string; entries: BonusEntryListRow[] }>,
-) {
-  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
 }

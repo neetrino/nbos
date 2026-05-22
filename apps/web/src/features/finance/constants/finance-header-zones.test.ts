@@ -5,6 +5,7 @@ describe('isFinanceHeaderContextPath', () => {
   it('matches finance and bonus routes', () => {
     expect(isFinanceHeaderContextPath('/finance/invoices')).toBe(true);
     expect(isFinanceHeaderContextPath('/bonus')).toBe(true);
+    expect(isFinanceHeaderContextPath('/finance/bonuses')).toBe(true);
   });
 
   it('does not match unrelated modules', () => {

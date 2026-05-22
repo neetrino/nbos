@@ -470,7 +470,7 @@ Design principles:
 
 ### Phase 7 - Polish, consistency, and documentation
 
-- [ ] Align route names with Finance canon, especially `/bonus` vs `/finance/bonuses`.
+- [x] Align route names with Finance canon (`/finance/bonuses` canonical; `/bonus` redirects with query preserved).
 - [ ] Update NBOS docs if final UX decisions differ from current docs.
 - [ ] Add loading, empty, and error states for every new view.
 - [ ] Add CSV/export where useful for Finance.
@@ -479,7 +479,7 @@ Design principles:
 
 ## Open product decisions
 
-- Should `Bonus` route be moved from `/bonus` to `/finance/bonuses`, or kept as a legacy route with redirect?
+- ~~Should `Bonus` route be moved…~~ **Resolved:** `/finance/bonuses` canonical; `/bonus` legacy redirect.
 - Should Wallet use exactly the same month sheet as Finance in read-only mode, or a calmer employee-specific sheet?
 - Should current month forecast include only earned bonuses, or also incoming predicted bonuses?
 - How should burned KPI amount be shown: as separate negative line, status on bonus row, or both?

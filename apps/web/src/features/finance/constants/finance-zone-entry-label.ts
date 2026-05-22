@@ -15,6 +15,7 @@ export function financeZoneEntryLabel(href: string): string {
     '/finance/payroll': 'Payroll',
     '/finance/salary': 'Salary',
     '/finance/bonus-pools': 'Bonus pools',
+    '/finance/bonuses': 'Bonus',
     '/bonus': 'Bonus',
   };
   return labels[path] ?? 'Open zone';

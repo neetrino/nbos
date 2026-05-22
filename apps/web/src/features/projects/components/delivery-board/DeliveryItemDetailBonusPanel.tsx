@@ -263,7 +263,10 @@ function BonusPanelEmptyList({
         yet. Accruals appear when finance and delivery events create them.
       </p>
       <div className="flex flex-wrap gap-x-4 gap-y-2">
-        <Link href="/bonus" className="text-primary text-sm font-semibold hover:underline">
+        <Link
+          href="/finance/bonuses"
+          className="text-primary text-sm font-semibold hover:underline"
+        >
           Open Bonus Board →
         </Link>
         <Link href={financeTabHref} className="text-primary text-sm font-semibold hover:underline">
@@ -324,7 +327,10 @@ function BonusPanelList({
         </Button>
       ) : null}
       <div className="flex flex-wrap gap-x-4 gap-y-2 pt-1">
-        <Link href="/bonus" className="text-primary text-sm font-semibold hover:underline">
+        <Link
+          href="/finance/bonuses"
+          className="text-primary text-sm font-semibold hover:underline"
+        >
           Full Bonus Board →
         </Link>
         <Link href={financeTabHref} className="text-primary text-sm font-semibold hover:underline">
