@@ -17,7 +17,7 @@ function row(amount: string): BonusEntryListRow {
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
     employee: { id: 'e1', firstName: 'A', lastName: 'B' },
-    order: { id: 'o1', code: 'O-1' },
+    order: { id: 'o1', code: 'O-1', totalAmount: '0' },
     project: { id: 'p1', code: 'P', name: 'Proj' },
   };
 }

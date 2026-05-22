@@ -60,7 +60,7 @@ function parseEnvelope(raw: string, userId: string): DashboardControlCacheSnapsh
     if (!Array.isArray(parsed.notes) || !parsed.notes.every(isDashboardNote)) return null;
 
     return {
-      metrics: parsed.metrics as DashboardData,
+      metrics: parsed.metrics as unknown as DashboardData,
       priorities: parsed.priorities as PriorityCard[],
       preference: parsed.preference,
       personalLinks: parsed.personalLinks as DashboardPersonalLink[],

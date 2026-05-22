@@ -15,7 +15,7 @@ function entry(payoutMonth: string | null): BonusEntryListRow {
     kpiGatePassed: null,
     payoutMonth,
     employee: { id: 'emp-1', firstName: 'A', lastName: 'B' },
-    order: { id: 'ord-1', code: 'O-1' },
+    order: { id: 'ord-1', code: 'O-1', totalAmount: '0' },
     project: { id: 'proj-1', code: 'P', name: 'Proj' },
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
