@@ -119,9 +119,10 @@ function TaskSheetWorkflowActions({
   const canRequestReviewChanges = taskStatus === 'REVIEW';
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-4">
       <Button
         type="button"
+        size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
         disabled={!canStart || workflowSaving}
         onClick={() => onTaskAction('start')}
       >
@@ -130,6 +131,7 @@ function TaskSheetWorkflowActions({
       <Button
         type="button"
         variant="outline"
+        size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
         disabled={!canComplete || workflowSaving}
         onClick={() => onTaskAction('complete')}
       >
@@ -142,7 +144,8 @@ function TaskSheetWorkflowActions({
               {...props}
               type="button"
               variant="outline"
-              size="icon"
+              size="icon-lg"
+              className="size-10 min-h-10 min-w-10"
               disabled={workflowSaving}
               aria-label="More task actions"
             >
