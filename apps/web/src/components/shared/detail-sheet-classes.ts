@@ -87,11 +87,25 @@ export const DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS = [
   'focus-within:border-border/60 focus-within:bg-muted/20 focus-within:shadow-sm focus-within:shadow-black/[0.04]',
 ].join(' ');
 
+/** Inner control height inside {@link DETAIL_SHEET_FIELD_SHELL_CLASS} (all field types). */
+export const DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS =
+  'h-8 min-h-8 max-h-8 flex-1 border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0';
+
+/** Select trigger inside a field shell — strips default Select chrome, keeps h-8. */
+export const DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS = [
+  DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
+  'font-normal',
+  'border-0 shadow-none hover:border-0 hover:bg-transparent',
+  'dark:border-0 dark:bg-transparent dark:hover:bg-transparent',
+  'focus-visible:ring-0 focus-visible:ring-offset-0',
+  'data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:px-0 data-[size=sm]:py-0',
+].join(' ');
+
 /** Controlled {@link InlineField} / date-in-shell wrapper. */
 export const DETAIL_SHEET_FIELD_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'flex w-full min-h-10 items-center gap-1 rounded-xl px-3 py-1.5',
+  'flex w-full min-h-8 items-center gap-1 rounded-xl px-3 py-1',
 ].join(' ');
 
 /** Fade-in for clear / edit affordances inside {@link DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS}. */
@@ -115,7 +129,7 @@ export const DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS = [
 export const RELATION_PICKER_CHIP_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'flex w-full min-w-0 items-center gap-2 rounded-xl py-1.5 pr-1 pl-2.5 text-sm',
+  'flex w-full min-h-8 min-w-0 items-center gap-2 rounded-xl py-1 pr-1 pl-2.5 text-sm',
 ].join(' ');
 
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
@@ -125,5 +139,5 @@ export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
 export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'text-muted-foreground hover:text-foreground flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm',
+  'text-muted-foreground hover:text-foreground flex min-h-8 w-full items-center gap-2 rounded-xl px-3 py-1 text-left text-sm',
 ].join(' ');

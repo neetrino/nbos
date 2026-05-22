@@ -15,7 +15,9 @@ import {
 import { cn } from '@/lib/utils';
 import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
+  DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
   DETAIL_SHEET_FIELD_SHELL_CLASS,
+  DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS,
 } from './detail-sheet-classes';
 import { resolveSelectOptionLabel } from './select-option-label';
 
@@ -42,9 +44,6 @@ export interface ControlledInlineFieldProps {
   disabled?: boolean;
   datePickerVariant?: NbosDatePickerVariant;
 }
-
-const INNER_CONTROL_CLASS =
-  'h-8 min-h-8 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0';
 
 export function ControlledInlineField({
   label,
@@ -99,7 +98,10 @@ export function ControlledInlineField({
             }}
             disabled={disabled}
           >
-            <SelectTrigger className={cn(INNER_CONTROL_CLASS, showClear && 'pr-1')}>
+            <SelectTrigger
+              size="sm"
+              className={cn(DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS, showClear && 'pr-1')}
+            >
               <SelectValue placeholder={placeholder ?? 'Select...'}>
                 {(selected: string | null) =>
                   selected ? resolveSelectOptionLabel(selected, options) : null
@@ -126,7 +128,10 @@ export function ControlledInlineField({
             onChange={(e) => onValueChange(e.target.value)}
             rows={3}
             disabled={disabled}
-            className={cn(INNER_CONTROL_CLASS, 'min-h-[72px] resize-none py-1 text-sm')}
+            className={cn(
+              DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
+              'max-h-none min-h-[72px] resize-none py-1 text-sm',
+            )}
             placeholder={placeholder}
           />
         </div>
@@ -151,7 +156,7 @@ export function ControlledInlineField({
             value={str}
             onChange={(e) => onValueChange(e.target.value)}
             disabled={disabled}
-            className={cn(INNER_CONTROL_CLASS, 'text-sm')}
+            className={cn(DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS, 'text-sm')}
             placeholder={placeholder}
           />
           {suffix && str !== '' ? (
