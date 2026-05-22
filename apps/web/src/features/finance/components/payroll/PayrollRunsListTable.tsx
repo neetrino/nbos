@@ -18,6 +18,9 @@ import type { PayrollRunListRow } from '@/lib/api/payroll-runs';
 
 const PAYROLL_LIST_ROW_CELL_CLASS = 'px-4 py-4 align-middle';
 const PAYROLL_LIST_HEAD_CELL_CLASS = 'px-4 py-3';
+const PAYROLL_LIST_FOOTER_CELL_CLASS = 'text-foreground px-4 py-3 text-sm font-bold tabular-nums';
+const PAYROLL_LIST_FOOTER_LABEL_CLASS =
+  'text-muted-foreground px-4 py-3 text-xs font-semibold uppercase tracking-wide';
 
 function parseAmount(value: string): number {
   const n = Number.parseFloat(value);
@@ -123,21 +126,25 @@ export function PayrollRunsListTable(props: {
           })}
         </TableBody>
         <tfoot>
-          <TableRow className="bg-muted/30 hover:bg-muted/30 font-medium">
-            <TableCell colSpan={3} className="text-muted-foreground px-4 py-3 text-xs">
-              Visible totals ({items.length} run{items.length === 1 ? '' : 's'})
+          <TableRow className="bg-muted/40 hover:bg-muted/40 border-border border-t-2">
+            <TableCell colSpan={3} className={PAYROLL_LIST_FOOTER_LABEL_CLASS}>
+              Total ({items.length} run{items.length === 1 ? '' : 's'})
             </TableCell>
-            <TableCell className="px-4 py-3 text-right tabular-nums">{pageTotals.lines}</TableCell>
-            <TableCell className="text-muted-foreground px-4 py-3 text-right text-xs tabular-nums">
+            <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
+              {pageTotals.lines}
+            </TableCell>
+            <TableCell
+              className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-muted-foreground text-right text-xs font-semibold`}
+            >
               {pageTotals.materialized}
             </TableCell>
-            <TableCell className="px-4 py-3 text-right tabular-nums">
+            <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
               {formatAmount(pageTotals.payable)}
             </TableCell>
-            <TableCell className="px-4 py-3 text-right tabular-nums">
+            <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
               {formatAmount(pageTotals.paid)}
             </TableCell>
-            <TableCell className="px-4 py-3 text-right tabular-nums">
+            <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
               {formatAmount(pageTotals.remaining)}
             </TableCell>
           </TableRow>
