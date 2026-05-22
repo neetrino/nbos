@@ -52,20 +52,7 @@ export function getLeadStageGateErrors(
     if (!lead.assignedTo) {
       errors.push({ field: 'assignedTo', message: "Seller is required from Didn't Get Through" });
     }
-    if (!hasNonBlankNotes(lead)) {
-      errors.push({
-        field: 'notes',
-        message: "Contact attempt note is required from Didn't Get Through",
-      });
-    }
     errors.push(...getAttributionValidationErrors(lead));
-  }
-
-  if (reachesStage('CONTACT_ESTABLISHED') && !hasNonBlankNotes(lead)) {
-    errors.push({
-      field: 'notes',
-      message: 'Conversation or result note is required from Contact Established',
-    });
   }
 
   if (targetStatus === 'SQL') {

@@ -30,13 +30,13 @@ describe('validateLeadStageGate', () => {
     ).toThrow(BadRequestException);
   });
 
-  it('requires seller and notes from DIDNT_GET_THROUGH', () => {
+  it('requires seller but not notes from DIDNT_GET_THROUGH', () => {
     expect(() => validateLeadStageGate(baseLead, 'DIDNT_GET_THROUGH')).toThrow(BadRequestException);
 
     const ready = {
       ...baseLead,
       assignedTo: 'emp-1',
-      notes: 'Left voicemail',
+      notes: null,
     };
     expect(() => validateLeadStageGate(ready, 'DIDNT_GET_THROUGH')).not.toThrow();
   });
@@ -51,17 +51,13 @@ describe('validateLeadStageGate', () => {
     expect(() => validateLeadStageGate(lead, 'DIDNT_GET_THROUGH')).toThrow(BadRequestException);
   });
 
-  it('requires notes from CONTACT_ESTABLISHED', () => {
+  it('allows CONTACT_ESTABLISHED without notes', () => {
     const lead = {
       ...baseLead,
       assignedTo: 'emp-1',
-      notes: 'Qualified interest',
+      notes: null,
     };
     expect(() => validateLeadStageGate(lead, 'CONTACT_ESTABLISHED')).not.toThrow();
-
-    expect(() => validateLeadStageGate({ ...lead, notes: null }, 'CONTACT_ESTABLISHED')).toThrow(
-      BadRequestException,
-    );
   });
 
   it('requires spam reason when moving to SPAM', () => {

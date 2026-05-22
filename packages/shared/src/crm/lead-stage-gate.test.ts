@@ -22,12 +22,18 @@ describe('getLeadStageGateErrors', () => {
     expect(getLeadStageGateErrors({ ...baseLead, notes: 'Duplicate' }, 'SPAM')).toEqual([]);
   });
 
-  it('requires seller and notes for DIDNT_GET_THROUGH', () => {
+  it('requires seller for DIDNT_GET_THROUGH but not notes', () => {
     const errors = getLeadStageGateErrors(
       { ...baseLead, assignedTo: null, notes: null },
       'DIDNT_GET_THROUGH',
     );
-    expect(errors.map((e) => e.field)).toEqual(expect.arrayContaining(['assignedTo', 'notes']));
+    expect(errors.map((e) => e.field)).toContain('assignedTo');
+    expect(errors.map((e) => e.field)).not.toContain('notes');
+  });
+
+  it('does not require notes for CONTACT_ESTABLISHED', () => {
+    const errors = getLeadStageGateErrors({ ...baseLead, notes: null }, 'CONTACT_ESTABLISHED');
+    expect(errors.map((e) => e.field)).not.toContain('notes');
   });
 
   it('requires SQL conversion fields and attribution', () => {
