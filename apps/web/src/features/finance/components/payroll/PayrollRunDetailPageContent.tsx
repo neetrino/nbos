@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ErrorState, LoadingState } from '@/components/shared';
+import { PayrollRunStatusBadge } from '@/features/finance/components/payroll/payroll-run-status-badge';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { payrollRunRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
@@ -16,10 +17,7 @@ import { usePayrollRunJournalAuditCsvExport } from '@/features/finance/component
 import { usePayrollRunSalaryLinesCsvExport } from '@/features/finance/components/payroll/use-payroll-run-salary-lines-csv-export';
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
-import {
-  PAYROLL_JOURNAL_KIND_LABEL,
-  PAYROLL_RUN_STATUS_LABEL,
-} from '@/features/finance/constants/payroll-run-ui';
+import { PAYROLL_JOURNAL_KIND_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   payrollRunsApi,
@@ -139,10 +137,11 @@ export function PayrollRunDetailPageContent({
             <ArrowLeft size={14} />
             Back to list
           </Link>
-          <h1 className="text-foreground text-2xl font-semibold">Payroll · {run.payrollMonth}</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-foreground text-2xl font-semibold">Payroll · {run.payrollMonth}</h1>
+            <PayrollRunStatusBadge status={run.status} />
+          </div>
           <p className="text-muted-foreground mt-1 text-sm">
-            {PAYROLL_RUN_STATUS_LABEL[run.status]}
-            {' · '}
             {run.salaryLines.length} line(s) · {run.materializedExpenseLineCount} expense(s) ·{' '}
             {run.includedBonusReleaseCount} bonus release(s)
           </p>

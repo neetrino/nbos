@@ -10,6 +10,7 @@ import {
   IntegratedSearchFilters,
   LoadingState,
   useModuleHeroSlots,
+  ViewModeSwitch,
 } from '@/components/shared';
 import {
   PAYROLL_RUNS_LIST_MONTH_FROM_QUERY,
@@ -28,8 +29,17 @@ import {
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
 import { payrollRunsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { PayrollRunsCardsView } from '@/features/finance/components/payroll/PayrollRunsCardsView';
+import { PayrollRunsCalendarView } from '@/features/finance/components/payroll/PayrollRunsCalendarView';
 import { PayrollRunsCreateRunDialog } from '@/features/finance/components/payroll/PayrollRunsCreateRunDialog';
 import { PayrollRunsListTable } from '@/features/finance/components/payroll/PayrollRunsListTable';
+import { PayrollRunsListTotalsBar } from '@/features/finance/components/payroll/payroll-runs-list-totals-bar';
+import { PAYROLL_RUNS_VIEW_OPTIONS } from '@/features/finance/components/payroll/payroll-runs-view-options';
+import {
+  readPayrollRunsListViewMode,
+  writePayrollRunsListViewMode,
+  type PayrollRunsListViewMode,
+} from '@/features/finance/constants/payroll-runs-list-view';
 import {
   buildPayrollIntegratedFilterConfigs,
   PAYROLL_FILTER_MONTH_FROM_KEY,
@@ -69,6 +79,7 @@ export function PayrollRunsListPageContent() {
   const [monthTo, setMonthTo] = useState<string | undefined>(() =>
     parsePayrollRunsListMonthParam(searchParams.get(PAYROLL_RUNS_LIST_MONTH_TO_QUERY)),
   );
+  const [view, setView] = useState<PayrollRunsListViewMode>(() => readPayrollRunsListViewMode());
 
   useEffect(() => {
     setStatusFilter(
@@ -240,6 +251,11 @@ export function PayrollRunsListPageContent() {
     [handleMonthFromChange, handleMonthToChange, handleStatusChange],
   );
 
+  const handleViewChange = useCallback((next: PayrollRunsListViewMode) => {
+    setView(next);
+    writePayrollRunsListViewMode(next);
+  }, []);
+
   const handleClearPayrollFilters = useCallback(() => {
     setStatusFilter('ALL');
     setMonthFrom(undefined);
@@ -262,6 +278,13 @@ export function PayrollRunsListPageContent() {
           filterValues={payrollFilterValues}
           onFilterChange={handlePayrollFilterChange}
           onClearAll={handleClearPayrollFilters}
+        />
+      ),
+      viewMode: (
+        <ViewModeSwitch
+          value={view}
+          onChange={handleViewChange}
+          options={PAYROLL_RUNS_VIEW_OPTIONS}
         />
       ),
       trailing: (
@@ -294,6 +317,8 @@ export function PayrollRunsListPageContent() {
       payrollFilterConfigs,
       payrollFilterValues,
       stats,
+      view,
+      handleViewChange,
     ],
   );
 
@@ -323,7 +348,22 @@ export function PayrollRunsListPageContent() {
               }
             />
           ) : (
-            <PayrollRunsListTable items={items} pageTotals={pageTotals} />
+            <div className="flex min-h-0 flex-1 flex-col gap-4">
+              <PayrollRunsListTotalsBar
+                runCount={items.length}
+                payable={pageTotals.payable}
+                paid={pageTotals.paid}
+                remaining={pageTotals.remaining}
+                lines={pageTotals.lines}
+              />
+              {view === 'cards' ? (
+                <PayrollRunsCardsView items={items} />
+              ) : view === 'calendar' ? (
+                <PayrollRunsCalendarView items={items} />
+              ) : (
+                <PayrollRunsListTable items={items} pageTotals={pageTotals} />
+              )}
+            </div>
           )}
         </>
       )}

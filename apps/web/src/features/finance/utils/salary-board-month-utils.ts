@@ -5,6 +5,13 @@ export function parseSalaryBoardAmount(value: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/** Month and year, e.g. `2026-04` → `April 2026`. */
+export function formatPayrollMonthLabel(payrollMonth: string): string {
+  const parts = /^(\d{4})-(\d{2})$/.exec(payrollMonth.trim());
+  if (!parts) return payrollMonth;
+  return `${formatPayrollMonthShort(payrollMonth)} ${parts[1]}`;
+}
+
 /** Month label without year, e.g. `2026-04` → `April`. */
 export function formatPayrollMonthShort(payrollMonth: string): string {
   const match = /^(\d{4})-(\d{2})$/.exec(payrollMonth.trim());
