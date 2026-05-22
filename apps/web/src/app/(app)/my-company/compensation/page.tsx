@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CircleDollarSign, ShieldCheck, Users } from 'lucide-react';
 import { PageHero, StatusBadge } from '@/components/shared';
 import { employeesApi, type Employee } from '@/lib/api/employees';
+import { CompensationProfileWorkspace } from '@/features/my-company/compensation/compensation-profile-workspace';
 import { bonusesApi, type SalesBonusPolicyRow } from '@/lib/api/bonus';
 
 function fullName(employee: Employee): string {
@@ -112,9 +113,11 @@ export default function CompensationPage() {
         </div>
       </div>
 
+      <CompensationProfileWorkspace employees={employees} />
+
       <div className="border-border bg-card overflow-hidden rounded-2xl border">
         <div className="border-border flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-sm font-semibold">Compensation Profiles (current read model)</h2>
+          <h2 className="text-sm font-semibold">Team registry (base salary on employee)</h2>
           {loading ? <span className="text-muted-foreground text-xs">Loading…</span> : null}
         </div>
         <div className="overflow-x-auto">

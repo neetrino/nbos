@@ -3,26 +3,20 @@ import {
   PrismaClient,
   type CompensationProfileStatusEnum,
   type InputJsonValue,
-  type Prisma,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import {
+  compensationProfileInclude,
+  serializeCompensationProfile,
+} from './compensation-profile-serialize';
+import type {
+  ActivateCompensationProfileMeta,
+  CreateCompensationProfileBody,
+  PatchCompensationProfileDraftBody,
+} from './compensation-profiles.types';
 
 const PROFILE_STATUSES: CompensationProfileStatusEnum[] = ['DRAFT', 'REVIEW', 'ACTIVE', 'ARCHIVED'];
-
-export interface CreateCompensationProfileBody {
-  baseSalary: number;
-  currency?: string;
-  payoutSchedule?: InputJsonValue;
-  bonusPolicyId?: string;
-  kpiPolicyId?: string;
-  effectiveFrom: string;
-  notes?: string;
-  source?: string;
-}
-
-export interface ActivateCompensationProfileMeta {
-  approvedById?: string | null;
-}
+const include = compensationProfileInclude();
 
 @Injectable()
 export class CompensationProfilesService {
@@ -33,9 +27,7 @@ export class CompensationProfilesService {
     const rows = await this.prisma.compensationProfile.findMany({
       where: { employeeId },
       orderBy: [{ effectiveFrom: 'desc' }, { createdAt: 'desc' }],
-      include: {
-        approvedBy: { select: { id: true, firstName: true, lastName: true } },
-      },
+      include,
     });
     return { items: rows.map(serializeCompensationProfile) };
   }
@@ -65,17 +57,53 @@ export class CompensationProfilesService {
         notes: body.notes?.trim() || null,
         source: body.source?.trim() || 'MANUAL',
       },
-      include: {
-        approvedBy: { select: { id: true, firstName: true, lastName: true } },
+      include,
+    });
+    return serializeCompensationProfile(row);
+  }
+
+  async patchDraft(profileId: string, body: PatchCompensationProfileDraftBody) {
+    const profile = await this.prisma.compensationProfile.findUnique({ where: { id: profileId } });
+    if (!profile) {
+      throw new NotFoundException(`Compensation profile ${profileId} not found`);
+    }
+    if (profile.status !== 'DRAFT') {
+      throw new BadRequestException('Only DRAFT compensation profiles can be edited');
+    }
+
+    let kpiPolicyId: string | null | undefined;
+    if (body.kpiPolicyId !== undefined) {
+      kpiPolicyId = body.kpiPolicyId?.trim() || null;
+      if (kpiPolicyId != null) {
+        await this.assertActiveKpiPolicyExists(kpiPolicyId);
+      }
+    }
+
+    if (body.baseSalary != null && (!Number.isFinite(body.baseSalary) || body.baseSalary < 0)) {
+      throw new BadRequestException('baseSalary must be a non-negative number');
+    }
+
+    const row = await this.prisma.compensationProfile.update({
+      where: { id: profileId },
+      data: {
+        baseSalary: body.baseSalary,
+        currency: body.currency?.trim(),
+        bonusPolicyId:
+          body.bonusPolicyId === undefined ? undefined : body.bonusPolicyId?.trim() || null,
+        kpiPolicyId,
+        effectiveFrom:
+          body.effectiveFrom != null
+            ? parseDateOnly(body.effectiveFrom, 'effectiveFrom')
+            : undefined,
+        notes: body.notes === undefined ? undefined : body.notes?.trim() || null,
       },
+      include,
     });
     return serializeCompensationProfile(row);
   }
 
   async activate(profileId: string, meta: ActivateCompensationProfileMeta) {
-    const profile = await this.prisma.compensationProfile.findUnique({
-      where: { id: profileId },
-    });
+    const profile = await this.prisma.compensationProfile.findUnique({ where: { id: profileId } });
     if (!profile) {
       throw new NotFoundException(`Compensation profile ${profileId} not found`);
     }
@@ -111,9 +139,7 @@ export class CompensationProfilesService {
           approvedById: meta.approvedById ?? undefined,
           approvedAt: now,
         },
-        include: {
-          approvedBy: { select: { id: true, firstName: true, lastName: true } },
-        },
+        include,
       });
     });
 
@@ -123,11 +149,11 @@ export class CompensationProfilesService {
   async findById(profileId: string) {
     const row = await this.prisma.compensationProfile.findUnique({
       where: { id: profileId },
-      include: {
-        approvedBy: { select: { id: true, firstName: true, lastName: true } },
-      },
+      include,
     });
-    if (!row) throw new NotFoundException(`Compensation profile ${profileId} not found`);
+    if (!row) {
+      throw new NotFoundException(`Compensation profile ${profileId} not found`);
+    }
     return serializeCompensationProfile(row);
   }
 
@@ -136,7 +162,9 @@ export class CompensationProfilesService {
       where: { id: employeeId },
       select: { id: true },
     });
-    if (!emp) throw new NotFoundException(`Employee ${employeeId} not found`);
+    if (!emp) {
+      throw new NotFoundException(`Employee ${employeeId} not found`);
+    }
   }
 
   private async assertActiveKpiPolicyExists(kpiPolicyId: string) {
@@ -156,29 +184,4 @@ function parseDateOnly(value: string, field: string): Date {
     throw new BadRequestException(`${field} must be a valid ISO date`);
   }
   return d;
-}
-
-function serializeCompensationProfile(
-  row: Prisma.CompensationProfileGetPayload<{
-    include: { approvedBy: { select: { id: true; firstName: true; lastName: true } } };
-  }>,
-) {
-  return {
-    id: row.id,
-    employeeId: row.employeeId,
-    baseSalary: row.baseSalary.toString(),
-    currency: row.currency,
-    payoutSchedule: row.payoutSchedule,
-    bonusPolicyId: row.bonusPolicyId,
-    kpiPolicyId: row.kpiPolicyId,
-    effectiveFrom: row.effectiveFrom.toISOString().slice(0, 10),
-    effectiveTo: row.effectiveTo?.toISOString().slice(0, 10) ?? null,
-    status: row.status,
-    source: row.source,
-    notes: row.notes,
-    approvedBy: row.approvedBy,
-    approvedAt: row.approvedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
 }

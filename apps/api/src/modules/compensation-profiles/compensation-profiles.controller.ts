@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequirePermission } from '../../common/decorators';
-import {
-  CompensationProfilesService,
-  type CreateCompensationProfileBody,
-} from './compensation-profiles.service';
+import { CompensationProfilesService } from './compensation-profiles.service';
+import type {
+  CreateCompensationProfileBody,
+  PatchCompensationProfileDraftBody,
+} from './compensation-profiles.types';
 
 @ApiTags('Compensation Profiles')
 @ApiBearerAuth()
@@ -27,6 +28,13 @@ export class CompensationProfilesController {
     @Body() body: CreateCompensationProfileBody,
   ) {
     return this.service.createDraft(employeeId, body);
+  }
+
+  @Patch('compensation-profiles/:id')
+  @RequirePermission('COMPANY', 'EDIT')
+  @ApiOperation({ summary: 'Update a DRAFT compensation profile (e.g. KPI policy)' })
+  patchDraft(@Param('id') id: string, @Body() body: PatchCompensationProfileDraftBody) {
+    return this.service.patchDraft(id, body);
   }
 
   @Post('compensation-profiles/:id/activate')

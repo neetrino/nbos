@@ -38,7 +38,7 @@ Backend must expose pool data as product-level rollups plus employee-level break
 - ☑ **Employee breakdown API:** `GET /api/bonus/products/pools/lines?poolKey=` — planned, released, paid, remaining, suggested release, KPI hint.
 - ☑ **Ledger traceability:** payments in + releases out timeline in pool sheet (`GET …/pools/timeline`).
 - ☑ **Auto release (delivery):** sheet summary + `POST …/pools/auto-release` proportional AUTO for DONE+funded orders.
-- ◐ **Auto release (sales / policy):** SALES KPI scale at payroll attach; full policy engine still pending.
+- ◐ **Auto release (sales / policy):** SALES KPI from profile `kpi_policies` at attach; scorecard-driven plan/actual pending.
 - ◐ **Manual override audit:** API requires reason (EARLY/EXTRA/OVER_FUNDING) + approver on OVER_FUNDING; release reason in pool timeline.
 - ☑ **Tests:** key, kpi-held, lines batch, funding health, fold, preview label, employee CSV, auto-release trigger.
 
@@ -65,8 +65,8 @@ UI must make the pool understandable without opening many pages.
 Backend + rules live in My Company policy templates; Finance executes. See `05-Bonus-and-Payroll.md` § Policy Engine.
 
 - ☐ **Bonus Policy Templates:** sales, delivery, marketing, support, manual.
-- ◐ **KPI Policy Templates:** `kpi_policies` DB + `/my-company/kpi-policies` CRUD UI; attach via profile; role-specific defaults / scorecard metrics pending.
-- ☐ **Compensation Profile link:** active bonus + KPI policies, currency, effective dates.
+- ◐ **KPI Policy Templates:** `kpi_policies` DB + CRUD UI + profile picker; role-specific defaults / scorecard metrics pending.
+- ◐ **Compensation Profile link:** create/activate profile + KPI policy dropdown on `/my-company/compensation`; bonus policy id pending.
 - ☐ **Employee-level KPI:** per employee/role, not only payroll-run sales KPI scale.
 - ◐ **Burned KPI:** persist `kpiBurnedAmount` on SALES attach + Finance/Wallet display; reason field / full policy templates still pending.
 - ◐ **Cap:** default 200% of base salary on attach; excess → `payrollCarryOverAmount`; Compensation Profile cap policy pending.
