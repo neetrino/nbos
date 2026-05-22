@@ -55,6 +55,8 @@ export interface ExpenseDetailSheetProps {
   listProjectId?: string | null;
   listSort?: ExpenseListNavigationSort;
   listHrefOptions?: ExpenseListHrefOptions;
+  /** Open Payments tab first (Pay Now payroll cards). */
+  payrollPaymentFocus?: boolean;
   onExpenseUpdated?: (expense: Expense) => void;
   onExpenseDeleted?: (expenseId: string) => void;
 }
@@ -66,6 +68,7 @@ export function ExpenseDetailSheet({
   listProjectId = null,
   listSort,
   listHrefOptions,
+  payrollPaymentFocus = false,
   onExpenseUpdated,
   onExpenseDeleted,
 }: ExpenseDetailSheetProps) {
@@ -95,8 +98,8 @@ export function ExpenseDetailSheet({
   }, [open]);
 
   useEffect(() => {
-    setActiveTab('general');
-  }, [expenseId, open]);
+    setActiveTab(payrollPaymentFocus ? 'payments' : 'general');
+  }, [expenseId, open, payrollPaymentFocus]);
 
   useEffect(() => {
     if (!open || !expenseId) return;

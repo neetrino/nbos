@@ -209,6 +209,9 @@ export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   activeBoard?: boolean;
   /** When true and `status` is omitted: same scope as `GET /expenses?closedBoard=true`. */
   closedBoard?: boolean;
+  payrollLinked?: boolean;
+  payrollMonth?: string;
+  payrollEmployeeId?: string;
 }
 
 /** Allowed `sortBy` values for `GET /expenses` (aligned with ExpensesService allowlist). */
@@ -235,6 +238,10 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   activeBoard?: boolean;
   /** When true and `status` is omitted: only `PAID` and `CANCELLED` (closed expense route). */
   closedBoard?: boolean;
+  /** When true: only payroll-materialized salary expenses. */
+  payrollLinked?: boolean;
+  payrollMonth?: string;
+  payrollEmployeeId?: string;
 }
 
 /** Body for `PUT /expenses/:id` (aligned with ExpensesController). */

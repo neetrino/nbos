@@ -424,11 +424,11 @@ Design principles:
 
 ### Phase 3 - Finance Salary UX
 
-- [ ] Upgrade `/finance/salary` from basic grid to full compensation grid.
-- [ ] Add view switcher: Grid / Cards / List / Board.
-- [ ] Add Board view by payout state: Accumulating, Ready to pay, Partially paid, Paid, Held.
+- [x] Upgrade `/finance/salary` from basic grid to full compensation grid (views + client filters).
+- [x] Add view switcher: Grid / Cards / List / Board.
+- [x] Add Board view by payout state (active_payout / accumulating / past_paid).
 - [x] Add `Employee Month Compensation Sheet` (Salary Board; URL `openSalaryLineId`).
-- [ ] Add filters by employee, department, status, month range.
+- [x] Add filters by employee, line status, payout phase, month range (URL + client).
 - [ ] Add totals and clear visual statuses.
 - [x] Preserve Bitrix parity (sheet): fix, bonus total, total payable, paid, remaining, bonus list.
 
@@ -443,12 +443,12 @@ Design principles:
 
 ### Phase 4.5 - Pay Now payroll payment UX
 
-- [ ] Upgrade `Expenses / Pay Now` for payroll-created expense cards.
-- [ ] Add payroll/month/employee filters.
-- [ ] Add `Payroll Expense Payment Sheet`.
-- [ ] Show partial payment timeline.
-- [ ] Link every payroll expense back to employee month sheet and payroll run.
-- [ ] Ensure payment actions create `ExpensePayment` and never directly mutate salary status.
+- [x] Upgrade `Expenses / Pay Now` for payroll-created expense cards (filters + preset banner).
+- [x] Add payroll/month/employee filters (`payrollLinked`, `payrollMonth`, `payrollEmployeeId`).
+- [x] Add `Payroll Expense Payment Sheet` (payments tab focus on payroll-linked expense sheet).
+- [x] Show partial payment timeline (existing `ExpenseDetailPaymentSection` + ledger on cards).
+- [x] Link every payroll expense back to employee month sheet and payroll run (`ExpensePayrollLinkBanner`).
+- [x] Ensure payment actions create `ExpensePayment` and never directly mutate salary status (unchanged API path).
 
 ### Phase 5 - Bonus and Bonus pools UX
 

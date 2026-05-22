@@ -47,6 +47,7 @@ import { projectsApi, type Project } from '@/lib/api/projects';
 import {
   resolveExpensePayrollMonthLabel,
   resolveExpensePayrollRunId,
+  resolveExpenseSalaryLineId,
 } from '@/features/finance/utils/parse-payroll-expense-notes';
 
 interface ExpenseGeneralTabProps {
@@ -112,6 +113,7 @@ export function ExpenseGeneralTab({
 
   const payrollRunId = resolveExpensePayrollRunId(expense);
   const payrollMonth = resolveExpensePayrollMonthLabel(expense);
+  const salaryLineId = resolveExpenseSalaryLineId(expense);
   const ledgerPresentation =
     expense.paymentStatus !== undefined
       ? expenseLedgerPaymentStatusPresentation(expense.paymentStatus)
@@ -139,7 +141,11 @@ export function ExpenseGeneralTab({
       ) : null}
 
       {payrollRunId ? (
-        <ExpensePayrollLinkBanner payrollRunId={payrollRunId} payrollMonth={payrollMonth} />
+        <ExpensePayrollLinkBanner
+          payrollRunId={payrollRunId}
+          payrollMonth={payrollMonth}
+          salaryLineId={salaryLineId}
+        />
       ) : null}
 
       <DetailSheetSection title="Expense" icon={<Receipt size={12} />}>

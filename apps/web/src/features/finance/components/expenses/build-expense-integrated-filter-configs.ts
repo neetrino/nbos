@@ -8,12 +8,14 @@ import {
   EXPENSE_SORT_BY_FILTER_KEY,
   EXPENSE_SORT_ORDER_FILTER_KEY,
 } from './expense-board-scope';
+import { buildPayrollExpenseFilterConfigs } from './build-payroll-expense-filter-configs';
 import { buildExpenseFilterConfigs, type ExpenseFilterBarConfig } from './expenses-filter-config';
 import { EXPENSE_LIST_SORT_OPTIONS } from './expense-list-sort-options';
 
 export function buildExpenseIntegratedFilterConfigs(
   projectFilterOptions: Array<{ value: string; label: string }>,
-  options: { omitStatus?: boolean; includeBoardScope?: boolean },
+  payrollEmployeeOptions: Array<{ value: string; label: string }>,
+  options: { omitStatus?: boolean; includeBoardScope?: boolean; includePayrollFilters?: boolean },
 ): FilterConfig[] {
   const configs: FilterConfig[] = [];
 
@@ -22,6 +24,10 @@ export function buildExpenseIntegratedFilterConfigs(
   }
 
   configs.push(buildFinancePeriodFilterConfig());
+
+  if (options.includePayrollFilters !== false) {
+    configs.push(...buildPayrollExpenseFilterConfigs(payrollEmployeeOptions));
+  }
 
   const base = buildExpenseFilterConfigs(projectFilterOptions, {
     omitStatus: options.omitStatus,

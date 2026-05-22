@@ -1,5 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { PrismaClient, type PayrollRunStatusEnum, type SalaryLineStatusEnum } from '@nbos/database';
+import { resolveCompensationPayoutPhase } from './compensation-payout-phase';
+import type { CompensationPayoutPhase } from './compensation-payout-phase';
 import { isValidPayrollMonth } from './payroll-runs.constants';
 
 /** Inclusive window length when `payrollMonthFrom` is omitted (calendar months). */
@@ -38,6 +40,7 @@ export interface SalaryBoardCellDto {
   payrollMonth: string;
   runStatus: PayrollRunStatusEnum;
   lineStatus: SalaryLineStatusEnum;
+  payoutPhase: CompensationPayoutPhase;
   totalPayable: string;
   paidAmount: string;
   remainingAmount: string;
@@ -171,6 +174,11 @@ export async function querySalaryBoard(
         payrollMonth: month,
         runStatus: meta.status,
         lineStatus: line.status,
+        payoutPhase: resolveCompensationPayoutPhase({
+          payrollMonth: month,
+          runStatus: meta.status,
+          lineStatus: line.status,
+        }),
         totalPayable: moneyToString(line.totalPayable),
         paidAmount: moneyToString(line.paidAmount),
         remainingAmount: moneyToString(line.remainingAmount),

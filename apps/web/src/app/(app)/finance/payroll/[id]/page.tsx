@@ -14,6 +14,7 @@ import { PayrollRunSalesKpiSection } from '@/features/finance/components/payroll
 import { PayrollRunSalaryLinesTable } from '@/features/finance/components/payroll/PayrollRunSalaryLinesTable';
 import { usePayrollRunJournalAuditCsvExport } from '@/features/finance/components/payroll/use-payroll-run-journal-audit-csv-export';
 import { usePayrollRunSalaryLinesCsvExport } from '@/features/finance/components/payroll/use-payroll-run-salary-lines-csv-export';
+import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
 import {
   PAYROLL_JOURNAL_KIND_LABEL,
@@ -165,8 +166,21 @@ export default function PayrollRunDetailPage() {
 
       {run.status === 'APPROVED' || run.status === 'PAYING' || run.status === 'CLOSED' ? (
         <p className="text-muted-foreground text-sm">
-          Approved runs materialize one expense card per payable salary line (linked below). Pay via
-          Finance → Expenses and partial payments as usual.
+          Approved runs materialize one expense card per payable salary line (linked below).{' '}
+          {run.status === 'APPROVED' || run.status === 'PAYING' ? (
+            <>
+              Pay via{' '}
+              <Link
+                href={expensesPayrollPresetHref({ payrollMonth: run.payrollMonth })}
+                className="text-primary font-medium hover:underline"
+              >
+                Pay now · payroll salary
+              </Link>
+              .
+            </>
+          ) : (
+            'Payments are recorded on linked expense cards.'
+          )}
         </p>
       ) : null}
 

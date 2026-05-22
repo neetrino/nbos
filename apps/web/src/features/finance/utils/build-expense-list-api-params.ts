@@ -1,4 +1,5 @@
 import { getFinancePeriodParams, type FinancePeriod } from '../constants/finance';
+import { resolveExpensePayrollListParams } from '../constants/expense-payroll-filter';
 import type {
   ExpenseListParams,
   ExpenseListSortField,
@@ -36,6 +37,7 @@ export function buildExpenseListApiParams(input: {
     variant === 'closed' && status === undefined && !planIdTrimmed
       ? ({ closedBoard: true } as const)
       : {};
+  const payrollParams = resolveExpensePayrollListParams(input.filters);
   return {
     search: input.search || undefined,
     category:
@@ -50,6 +52,7 @@ export function buildExpenseListApiParams(input: {
     ...planParams,
     ...activeBoard,
     ...closedBoard,
+    ...payrollParams,
   };
 }
 
@@ -65,5 +68,8 @@ export function pickExpenseStatsQueryParams(
     status: list.status,
     activeBoard: list.activeBoard,
     closedBoard: list.closedBoard,
+    payrollLinked: list.payrollLinked,
+    payrollMonth: list.payrollMonth,
+    payrollEmployeeId: list.payrollEmployeeId,
   };
 }

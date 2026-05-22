@@ -36,6 +36,7 @@ import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
 import { createExpensePaymentRecord, type AddExpensePaymentInput } from './expense-payment-create';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { toExpenseLedgerJson } from './expense-detail-mapper';
+import { applyPayrollExpenseListScope } from './expense-payroll-list-scope';
 import { mapSalaryLineToLinkedPayrollRun } from './expense-payroll-link-map';
 import { mapExpensePlanToLinkedPlan } from './expense-plan-link-map';
 import {
@@ -86,6 +87,9 @@ export class ExpensesService {
       sortOrder,
       activeBoard,
       closedBoard,
+      payrollLinked,
+      payrollMonth,
+      payrollEmployeeId,
     } = params;
 
     const page = normalizeExpenseListPage(pageIn);
@@ -112,6 +116,9 @@ export class ExpensesService {
       dateTo,
       activeBoard: activeBoard === true,
       closedBoard: closedBoard === true,
+      payrollLinked: payrollLinked === true,
+      payrollMonth,
+      payrollEmployeeId,
     });
 
     const [items, total] = await Promise.all([
@@ -361,6 +368,11 @@ export class ExpensesService {
       ...statusWhere,
       ...(createdAt ? { createdAt } : {}),
     };
+    applyPayrollExpenseListScope(scopeWhere, {
+      payrollLinked: params.payrollLinked === true,
+      payrollMonth: params.payrollMonth,
+      payrollEmployeeId: params.payrollEmployeeId,
+    });
 
     return fetchExpenseStatsAggregates(this.prisma, scopeWhere);
   }
@@ -429,6 +441,11 @@ export class ExpensesService {
     if (createdAt) {
       where.createdAt = createdAt;
     }
+    applyPayrollExpenseListScope(where, {
+      payrollLinked: filters.payrollLinked === true,
+      payrollMonth: filters.payrollMonth,
+      payrollEmployeeId: filters.payrollEmployeeId,
+    });
     return where;
   }
 

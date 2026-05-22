@@ -29,6 +29,7 @@ export interface SalaryBoardCell {
   payrollMonth: string;
   runStatus: PayrollRunStatus;
   lineStatus: SalaryLineStatus;
+  payoutPhase: CompensationPayoutPhase;
   totalPayable: string;
   paidAmount: string;
   remainingAmount: string;

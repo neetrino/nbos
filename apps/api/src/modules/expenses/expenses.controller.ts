@@ -57,6 +57,13 @@ export class ExpensesController {
     description:
       'When true and status is omitted: only PAID and CANCELLED (NBOS Closed expenses scope).',
   })
+  @ApiQuery({
+    name: 'payrollLinked',
+    required: false,
+    description: 'When true: only payroll-materialized expenses (salary line linked).',
+  })
+  @ApiQuery({ name: 'payrollMonth', required: false, description: 'Payroll month YYYY-MM.' })
+  @ApiQuery({ name: 'payrollEmployeeId', required: false, description: 'Salary line employee id.' })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -74,6 +81,9 @@ export class ExpensesController {
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
     @Query('activeBoard') activeBoard?: string,
     @Query('closedBoard') closedBoard?: string,
+    @Query('payrollLinked') payrollLinked?: string,
+    @Query('payrollMonth') payrollMonth?: string,
+    @Query('payrollEmployeeId') payrollEmployeeId?: string,
   ) {
     return this.expensesService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -92,6 +102,9 @@ export class ExpensesController {
       sortOrder,
       activeBoard: activeBoard === 'true',
       closedBoard: closedBoard === 'true',
+      payrollLinked: payrollLinked === 'true',
+      payrollMonth,
+      payrollEmployeeId,
     });
   }
 
@@ -118,6 +131,9 @@ export class ExpensesController {
     required: false,
     description: 'When true and status is omitted: align stats with closed-board list scope.',
   })
+  @ApiQuery({ name: 'payrollLinked', required: false })
+  @ApiQuery({ name: 'payrollMonth', required: false })
+  @ApiQuery({ name: 'payrollEmployeeId', required: false })
   async getStats(
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
@@ -126,6 +142,9 @@ export class ExpensesController {
     @Query('status') status?: string,
     @Query('activeBoard') activeBoard?: string,
     @Query('closedBoard') closedBoard?: string,
+    @Query('payrollLinked') payrollLinked?: string,
+    @Query('payrollMonth') payrollMonth?: string,
+    @Query('payrollEmployeeId') payrollEmployeeId?: string,
   ) {
     return this.expensesService.getStats({
       dateFrom,
@@ -135,6 +154,9 @@ export class ExpensesController {
       status,
       activeBoard: activeBoard === 'true',
       closedBoard: closedBoard === 'true',
+      payrollLinked: payrollLinked === 'true',
+      payrollMonth,
+      payrollEmployeeId,
     });
   }
 

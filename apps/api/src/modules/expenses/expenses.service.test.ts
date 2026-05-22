@@ -159,6 +159,18 @@ describe('ExpensesService', () => {
       expect(call?.where).not.toHaveProperty('expensePlanId');
     });
 
+    it('applies payrollLinked filter', async () => {
+      await service.findAll({ payrollLinked: true });
+
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            salaryLine: { isNot: null },
+          }),
+        }),
+      );
+    });
+
     it('attaches payment ledger fields using grouped payment totals', async () => {
       prisma.expense.findMany.mockResolvedValue([
         {

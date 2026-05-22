@@ -34,6 +34,20 @@ import { ExpensesPageDialogs } from './ExpensesPageDialogs';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
 import { buildExpenseIntegratedFilterConfigs } from './build-expense-integrated-filter-configs';
 import {
+  ExpensePayrollPresetBanner,
+  isPayrollSourceFilterActive,
+} from './ExpensePayrollPresetBanner';
+import { useExpensePayrollEmployeeFilterOptions } from './use-expense-payroll-employee-filter-options';
+import {
+  EXPENSE_PAYROLL_MONTH_FILTER_KEY,
+  EXPENSE_PAYROLL_MONTH_URL_QUERY,
+  EXPENSE_PAYROLL_PRESET_QUERY,
+  EXPENSE_PAYROLL_SOURCE_ALL,
+  EXPENSE_PAYROLL_SOURCE_FILTER_KEY,
+  EXPENSE_PAYROLL_SOURCE_PAYROLL,
+} from '@/features/finance/constants/expense-payroll-filter';
+import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
+import {
   EXPENSE_BOARD_SCOPE_FILTER_KEY,
   EXPENSE_PERIOD_FILTER_KEY,
   EXPENSE_SORT_BY_FILTER_KEY,
@@ -108,6 +122,7 @@ export function ExpensesPageContent({
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const projectFilterOptions = useExpenseProjectFilterOptions();
+  const payrollEmployeeFilterOptions = useExpensePayrollEmployeeFilterOptions();
 
   const listHrefOptions = useMemo((): ExpenseListHrefOptions => {
     return {
@@ -347,10 +362,49 @@ export function ExpensesPageContent({
 
   const filterConfigs = useMemo(
     () =>
-      buildExpenseIntegratedFilterConfigs(projectFilterOptions, {
+      buildExpenseIntegratedFilterConfigs(projectFilterOptions, payrollEmployeeFilterOptions, {
         omitStatus: pageVariant === 'backlog' || pageVariant === 'closed',
+        includePayrollFilters: pageVariant === 'default',
       }),
-    [projectFilterOptions, pageVariant],
+    [payrollEmployeeFilterOptions, projectFilterOptions, pageVariant],
+  );
+
+  const payrollFilterActive = isPayrollSourceFilterActive(filters);
+
+  useEffect(() => {
+    if (pageVariant !== 'default') return;
+    const preset = searchParams.get(EXPENSE_PAYROLL_PRESET_QUERY) === '1';
+    const monthFromUrl = searchParams.get(EXPENSE_PAYROLL_MONTH_URL_QUERY)?.trim();
+    if (!preset && !monthFromUrl) return;
+    setFilters((prev) => {
+      const next = { ...prev };
+      if (preset) {
+        next[EXPENSE_PAYROLL_SOURCE_FILTER_KEY] = EXPENSE_PAYROLL_SOURCE_PAYROLL;
+      }
+      if (monthFromUrl) {
+        next[EXPENSE_PAYROLL_MONTH_FILTER_KEY] = monthFromUrl;
+      }
+      return next;
+    });
+    replaceExpensesUrl((params) => {
+      params.delete(EXPENSE_PAYROLL_PRESET_QUERY);
+      params.delete(EXPENSE_PAYROLL_MONTH_URL_QUERY);
+    });
+  }, [pageVariant, replaceExpensesUrl, searchParams]);
+
+  const applyPayrollFilter = useCallback(() => {
+    setFilters((prev) => ({
+      ...prev,
+      [EXPENSE_PAYROLL_SOURCE_FILTER_KEY]: EXPENSE_PAYROLL_SOURCE_PAYROLL,
+    }));
+  }, []);
+
+  const clearPayrollFilter = useCallback(() => {
+    handleFilterChange(EXPENSE_PAYROLL_SOURCE_FILTER_KEY, EXPENSE_PAYROLL_SOURCE_ALL);
+  }, [handleFilterChange]);
+
+  const payrollPaymentFocus = Boolean(
+    selectedExpense && resolveExpensePayrollRunId(selectedExpense),
   );
 
   const integratedFilterValues = useMemo(
@@ -472,6 +526,14 @@ export function ExpensesPageContent({
         />
       ) : null}
 
+      {pageVariant === 'default' ? (
+        <ExpensePayrollPresetBanner
+          active={payrollFilterActive}
+          onApplyPayrollFilter={applyPayrollFilter}
+          onClearPayrollFilter={clearPayrollFilter}
+        />
+      ) : null}
+
       <ExpensesPageMainPanel
         loading={loading}
         error={error}
@@ -501,6 +563,7 @@ export function ExpensesPageContent({
         listProjectId={effectiveProjectId ?? null}
         listSort={{ sortBy, sortOrder }}
         listHrefOptions={listHrefOptions}
+        payrollPaymentFocus={payrollPaymentFocus}
         onExpenseUpdated={handleExpenseUpdated}
         onExpenseDeleted={handleExpenseDeleted}
       />

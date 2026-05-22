@@ -1,10 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import { Users } from 'lucide-react';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { SALARY_BOARD_OPEN_LINE_QUERY } from '@/features/finance/constants/salary-board-url';
+import {
+  readSalaryBoardViewMode,
+  writeSalaryBoardViewMode,
+  type SalaryBoardViewMode,
+} from '@/features/finance/constants/salary-board-view';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   EmptyState,
@@ -12,17 +16,14 @@ import {
   IntegratedSearchFilters,
   LoadingState,
   useModuleHeroSlots,
+  ViewModeSwitch,
 } from '@/components/shared';
-import { StatusBadge } from '@/components/shared/StatusBadge';
 import { salaryBoardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import {
   PAYROLL_RUNS_LIST_MONTH_FROM_QUERY,
   PAYROLL_RUNS_LIST_MONTH_TO_QUERY,
   parsePayrollRunsListMonthParam,
 } from '@/features/finance/constants/payroll-runs-list-url';
-import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
-import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { payrollRunsApi, type SalaryBoardResponse } from '@/lib/api/payroll-runs';
@@ -31,20 +32,33 @@ import {
   PAYROLL_FILTER_MONTH_FROM_KEY,
   PAYROLL_FILTER_MONTH_TO_KEY,
 } from '@/features/finance/components/payroll/build-payroll-integrated-filter-configs';
-import { cn } from '@/lib/utils';
-
-function parseAmount(value: string): number {
-  const n = Number.parseFloat(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function employeeLabel(emp: SalaryBoardResponse['rows'][number]['employee']): string {
-  return `${emp.firstName} ${emp.lastName}`.trim();
-}
+import {
+  buildSalaryBoardClientFilterConfigs,
+  SALARY_BOARD_EMPLOYEE_FILTER_KEY,
+  SALARY_BOARD_LINE_STATUS_FILTER_KEY,
+  SALARY_BOARD_PAYOUT_PHASE_FILTER_KEY,
+} from '@/features/finance/components/payroll/build-salary-board-client-filter-configs';
+import {
+  employeeDisplayName,
+  filterSalaryBoardEntries,
+  filterSalaryBoardRows,
+  flattenSalaryBoard,
+} from '@/features/finance/components/payroll/salary-board-entries';
+import { SalaryBoardCardsView } from '@/features/finance/components/payroll/salary-board-cards-view';
+import { SalaryBoardGridView } from '@/features/finance/components/payroll/salary-board-grid-view';
+import { SalaryBoardListView } from '@/features/finance/components/payroll/salary-board-list-view';
+import { SalaryBoardPayoutBoardView } from '@/features/finance/components/payroll/salary-board-payout-board-view';
+import { SALARY_BOARD_VIEW_OPTIONS } from '@/features/finance/components/payroll/salary-board-view-options';
 
 function salaryLineExistsOnBoard(board: SalaryBoardResponse, salaryLineId: string): boolean {
   return board.rows.some((row) => row.cells.some((cell) => cell?.salaryLineId === salaryLineId));
 }
+
+const INITIAL_CLIENT_FILTERS: Record<string, string> = {
+  [SALARY_BOARD_EMPLOYEE_FILTER_KEY]: 'all',
+  [SALARY_BOARD_LINE_STATUS_FILTER_KEY]: 'all',
+  [SALARY_BOARD_PAYOUT_PHASE_FILTER_KEY]: 'all',
+};
 
 export function SalaryBoardPageContent() {
   useFinanceDocumentTitle(salaryBoardPageTitle());
@@ -56,6 +70,10 @@ export function SalaryBoardPageContent() {
   const [data, setData] = useState<SalaryBoardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [clientFilters, setClientFilters] = useState(INITIAL_CLIENT_FILTERS);
+  const [view, setView] = useState<SalaryBoardViewMode>(() => readSalaryBoardViewMode());
+
   const monthFrom = parsePayrollRunsListMonthParam(
     searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY),
   );
@@ -84,14 +102,54 @@ export function SalaryBoardPageContent() {
     void load();
   }, [load]);
 
-  const salaryFilterConfigs = useMemo(() => buildPayrollMonthRangeFilterConfigs(), []);
+  const handleViewChange = useCallback((next: SalaryBoardViewMode) => {
+    setView(next);
+    writeSalaryBoardViewMode(next);
+  }, []);
+
+  const employeeOptions = useMemo(() => {
+    if (!data) return [];
+    return data.rows.map((row) => ({
+      id: row.employee.id,
+      label: employeeDisplayName(row.employee),
+    }));
+  }, [data]);
+
+  const clientFilterState = useMemo(
+    () => ({
+      search,
+      employeeId: clientFilters[SALARY_BOARD_EMPLOYEE_FILTER_KEY] ?? 'all',
+      lineStatus: clientFilters[SALARY_BOARD_LINE_STATUS_FILTER_KEY] ?? 'all',
+      payoutPhase: clientFilters[SALARY_BOARD_PAYOUT_PHASE_FILTER_KEY] ?? 'all',
+    }),
+    [clientFilters, search],
+  );
+
+  const filteredEntries = useMemo(() => {
+    if (!data) return [];
+    return filterSalaryBoardEntries(flattenSalaryBoard(data), clientFilterState);
+  }, [clientFilterState, data]);
+
+  const filteredRows = useMemo(() => {
+    if (!data) return [];
+    return filterSalaryBoardRows(data, clientFilterState);
+  }, [clientFilterState, data]);
+
+  const salaryFilterConfigs = useMemo(
+    () => [
+      ...buildPayrollMonthRangeFilterConfigs(),
+      ...buildSalaryBoardClientFilterConfigs(employeeOptions),
+    ],
+    [employeeOptions],
+  );
 
   const salaryFilterValues = useMemo(
     () => ({
       [PAYROLL_FILTER_MONTH_FROM_KEY]: monthFrom ?? 'all',
       [PAYROLL_FILTER_MONTH_TO_KEY]: monthTo ?? 'all',
+      ...clientFilters,
     }),
-    [monthFrom, monthTo],
+    [clientFilters, monthFrom, monthTo],
   );
 
   const replaceSalaryBoardUrl = useCallback(
@@ -109,23 +167,19 @@ export function SalaryBoardPageContent() {
       const monthValue = value === 'all' ? undefined : value;
       if (key === PAYROLL_FILTER_MONTH_FROM_KEY) {
         replaceSalaryBoardUrl((params) => {
-          if (!monthValue) {
-            params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
-          } else {
-            params.set(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY, monthValue);
-          }
+          if (!monthValue) params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
+          else params.set(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY, monthValue);
         });
         return;
       }
       if (key === PAYROLL_FILTER_MONTH_TO_KEY) {
         replaceSalaryBoardUrl((params) => {
-          if (!monthValue) {
-            params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
-          } else {
-            params.set(PAYROLL_RUNS_LIST_MONTH_TO_QUERY, monthValue);
-          }
+          if (!monthValue) params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
+          else params.set(PAYROLL_RUNS_LIST_MONTH_TO_QUERY, monthValue);
         });
+        return;
       }
+      setClientFilters((prev) => ({ ...prev, [key]: value }));
     },
     [replaceSalaryBoardUrl],
   );
@@ -135,6 +189,8 @@ export function SalaryBoardPageContent() {
       params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
       params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
     });
+    setSearch('');
+    setClientFilters(INITIAL_CLIENT_FILTERS);
   }, [replaceSalaryBoardUrl]);
 
   const openSalaryLineId = searchParams.get(SALARY_BOARD_OPEN_LINE_QUERY)?.trim() || null;
@@ -172,17 +228,32 @@ export function SalaryBoardPageContent() {
     () => ({
       search: (
         <IntegratedSearchFilters
-          search=""
-          onSearchChange={() => undefined}
-          searchPlaceholder="Filter salary range…"
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search employees…"
           filters={salaryFilterConfigs}
           filterValues={salaryFilterValues}
           onFilterChange={handleSalaryFilterChange}
           onClearAll={handleClearSalaryFilters}
         />
       ),
+      viewMode: (
+        <ViewModeSwitch
+          value={view}
+          onChange={handleViewChange}
+          options={SALARY_BOARD_VIEW_OPTIONS}
+        />
+      ),
     }),
-    [handleClearSalaryFilters, handleSalaryFilterChange, salaryFilterConfigs, salaryFilterValues],
+    [
+      handleClearSalaryFilters,
+      handleSalaryFilterChange,
+      handleViewChange,
+      salaryFilterConfigs,
+      salaryFilterValues,
+      search,
+      view,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -201,6 +272,8 @@ export function SalaryBoardPageContent() {
     );
   }
 
+  const hasVisibleLines = filteredEntries.length > 0;
+
   return (
     <div className="flex min-h-0 flex-col gap-6">
       {error ? (
@@ -215,90 +288,20 @@ export function SalaryBoardPageContent() {
           title="No employees"
           description="No non-terminated employees are available for the salary view."
         />
+      ) : !hasVisibleLines ? (
+        <EmptyState
+          icon={Users}
+          title="No matching lines"
+          description="Adjust search or filters to see salary lines."
+        />
+      ) : view === 'grid' ? (
+        <SalaryBoardGridView data={data} rows={filteredRows} onOpenMonth={openMonthSheet} />
+      ) : view === 'cards' ? (
+        <SalaryBoardCardsView data={data} rows={filteredRows} onOpenMonth={openMonthSheet} />
+      ) : view === 'list' ? (
+        <SalaryBoardListView entries={filteredEntries} onOpenMonth={openMonthSheet} />
       ) : (
-        <div className="border-border overflow-x-auto rounded-xl border">
-          <table className="w-full min-w-[640px] border-collapse text-sm">
-            <thead>
-              <tr className="bg-muted/40">
-                <th
-                  className={cn(
-                    'border-border text-foreground sticky left-0 z-20 border-r border-b px-3 py-2 text-left font-semibold',
-                    'bg-background',
-                  )}
-                >
-                  Employee
-                </th>
-                {data.columns.map((col) => (
-                  <th
-                    key={col.payrollMonth}
-                    className="border-border border-b px-2 py-2 text-center font-semibold"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      {col.payrollRunId ? (
-                        <Link
-                          href={`/finance/payroll/${col.payrollRunId}`}
-                          className="text-primary hover:underline"
-                        >
-                          {col.payrollMonth}
-                        </Link>
-                      ) : (
-                        <span className="text-muted-foreground">{col.payrollMonth}</span>
-                      )}
-                      {col.runStatus ? (
-                        <span className="text-muted-foreground text-xs font-normal">
-                          {PAYROLL_RUN_STATUS_LABEL[col.runStatus]}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground text-xs font-normal">No run</span>
-                      )}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.rows.map((row) => (
-                <tr key={row.employee.id} className="hover:bg-muted/20">
-                  <td
-                    className={cn(
-                      'border-border text-foreground sticky left-0 z-10 border-r border-b px-3 py-2',
-                      'bg-background',
-                    )}
-                  >
-                    <div className="font-medium">{employeeLabel(row.employee)}</div>
-                    {row.employee.position ? (
-                      <div className="text-muted-foreground text-xs">{row.employee.position}</div>
-                    ) : null}
-                  </td>
-                  {row.cells.map((cell, idx) => {
-                    const monthKey = data.months[idx] ?? `col-${idx}`;
-                    const lineUi = cell ? salaryLineStatusBoardUi(cell.lineStatus) : null;
-                    return (
-                      <td key={monthKey} className="border-border border-b px-1 py-1 align-top">
-                        {cell && lineUi ? (
-                          <button
-                            type="button"
-                            onClick={() => openMonthSheet(cell.salaryLineId)}
-                            className="hover:bg-muted/60 flex w-full flex-col items-center gap-1 rounded-md px-1 py-2 transition-colors"
-                          >
-                            <StatusBadge label={lineUi.label} variant={lineUi.variant} />
-                            <span className="text-muted-foreground text-xs tabular-nums">
-                              {formatAmount(parseAmount(cell.totalPayable))}
-                            </span>
-                          </button>
-                        ) : (
-                          <div className="text-muted-foreground flex min-h-[3rem] items-center justify-center text-xs">
-                            —
-                          </div>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SalaryBoardPayoutBoardView entries={filteredEntries} onOpenMonth={openMonthSheet} />
       )}
 
       <EmployeeMonthCompensationSheet
