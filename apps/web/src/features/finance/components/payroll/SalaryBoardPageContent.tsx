@@ -49,7 +49,9 @@ import { SalaryBoardGridView } from '@/features/finance/components/payroll/salar
 import { SalaryBoardListView } from '@/features/finance/components/payroll/salary-board-list-view';
 import { SalaryBoardPayoutBoardView } from '@/features/finance/components/payroll/salary-board-payout-board-view';
 import { SALARY_BOARD_VIEW_OPTIONS } from '@/features/finance/components/payroll/salary-board-view-options';
+import { SalaryBoardPageSettingsSheet } from '@/features/finance/components/payroll/SalaryBoardPageSettingsSheet';
 import { SalaryBoardFilteredTotalsBar } from '@/features/finance/components/payroll/salary-board-filtered-totals-bar';
+import { useSalaryBoardCsvExport } from '@/features/finance/components/payroll/use-salary-board-csv-export';
 import { computeSalaryBoardFilteredTotals } from '@/features/finance/utils/salary-board-filtered-totals';
 
 function salaryLineExistsOnBoard(board: SalaryBoardResponse, salaryLineId: string): boolean {
@@ -263,7 +265,26 @@ export function SalaryBoardPageContent() {
     [filteredEntries],
   );
 
-  useModuleHeroSlots(moduleHeroSlots);
+  const { exportCsvSubmitting, handleExportCsv } = useSalaryBoardCsvExport(filteredEntries, {
+    monthFrom,
+    monthTo,
+  });
+
+  const moduleHeroSlotsWithExport = useMemo(
+    () => ({
+      ...moduleHeroSlots,
+      trailing: (
+        <SalaryBoardPageSettingsSheet
+          exportCsvDisabled={exportCsvSubmitting || filteredEntries.length === 0}
+          exportCsvInProgress={exportCsvSubmitting}
+          onExportCsv={handleExportCsv}
+        />
+      ),
+    }),
+    [exportCsvSubmitting, filteredEntries.length, handleExportCsv, moduleHeroSlots],
+  );
+
+  useModuleHeroSlots(moduleHeroSlotsWithExport);
 
   if (loading && !data) {
     return <LoadingState />;

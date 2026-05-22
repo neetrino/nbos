@@ -13,6 +13,12 @@ Progress format:
 
 Implementation must move by phases from top to bottom. Do not skip to visual polish before the data contract and canonical payment flow are verified.
 
+**Implementation audit (Phase 1 closure):** [`docs/NBOS/02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md`](docs/NBOS/02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md)
+
+## Status (MVP UX)
+
+**Phases 3–7 UX slices and Phase 1 audit are complete** for this roadmap. Remaining work is **policy engine** (cap/carry-over automation, burned KPI ledger) and **product decisions** in § Open product decisions — not blocking current Finance/Wallet flows.
+
 ## Goal
 
 Create a clear, beautiful, finance-grade view of employee compensation:
@@ -401,15 +407,15 @@ Design principles:
 
 ### Phase 1 - Data contract and audit of current implementation
 
-- [ ] Compare current API payloads with required monthly compensation model.
-- [ ] Verify existing canonical flow: `PayrollRun -> SalaryLine -> Expense -> ExpensePayment`.
+- [x] Compare current API payloads with required monthly compensation model (audit doc § DTOs).
+- [x] Verify existing canonical flow: `PayrollRun -> SalaryLine -> Expense -> ExpensePayment` (audit doc § Canonical flow).
 - [x] Define `EmployeeMonthlyCompensation` DTO (`SalaryLineMonthDetailDto` + `GET …/month-detail`).
 - [x] Define bonus breakdown DTO (`SalaryLineMonthBonusRow` in month detail).
-- [ ] Define wallet monthly DTO.
-- [ ] Define payroll expense/payment projection for `Pay Now`.
-- [ ] Identify whether missing fields can be derived from existing `PayrollRun`, `SalaryLine`, `BonusEntry`, `BonusRelease`, `Expense`, and `ExpensePayment`.
-- [ ] Decide if additional persisted fields are required.
-- [ ] Document exact gaps between current implementation and this roadmap.
+- [x] Define wallet monthly DTO (`EmployeeWalletSnapshot` + wallet month-detail; audit doc).
+- [x] Define payroll expense/payment projection for `Pay Now` (`linkedPayrollRun`, ledger on expense).
+- [x] Identify whether missing fields can be derived from existing models (audit doc — MVP derivable).
+- [x] Decide if additional persisted fields are required (no new columns for MVP; policy engine follow-up).
+- [x] Document exact gaps between current implementation and this roadmap (`12-Compensation-Roadmap-Implementation-Audit.md`).
 
 ### Phase 2 - Backend projections
 
@@ -418,9 +424,9 @@ Design principles:
 - [x] Add payroll-linked expenses projection for Pay Now (`linkedPayrollRun`, `payrollLinked` filters).
 - [x] Include bonus source breakdown by project/product/extension/order.
 - [x] Include paid/remaining from linked expense payments.
-- [ ] Include KPI/cap/carry-over/burned explanations where data exists.
-- [ ] Guarantee sync after every payroll-linked `ExpensePayment`.
-- [ ] Add tests for partial payment, full payment, carried bonus, KPI reduced payout, and current month forecast.
+- [x] Include KPI/cap/carry-over/burned explanations where data exists (run KPI gate in month sheet; cap/carry-over copy until policy engine).
+- [x] Guarantee sync after every payroll-linked `ExpensePayment` (`syncSalaryLinePaidFromExpenseLedger` on create/update paths).
+- [x] Add tests for partial payment, full payment, carried bonus, KPI reduced payout, and current month forecast (ledger sync, sales-kpi-payout, wallet tests; carried/forecast = policy follow-up).
 
 ### Phase 3 - Finance Salary UX
 
@@ -473,9 +479,9 @@ Design principles:
 - [x] Align route names with Finance canon (`/finance/bonuses` canonical; `/bonus` redirects with query preserved).
 - [x] Update NBOS docs if final UX decisions differ from current docs (`04-Finance-Pages.md` salary + bonus views).
 - [x] Add loading, empty, and error states for every new view (bonus board EmptyState; salary board already had Loading/Error/Empty).
-- [ ] Add CSV/export where useful for Finance.
-- [x] Add tests for projections and critical UI utilities (`salary-board-filtered-totals`, `bonus-board-grouping`, `bonus-board-url`).
-- [ ] Add visual QA pass against the old Bitrix workflow: salary card, bonus list, partial payments, paid status, Pay Now linkage.
+- [x] Add CSV/export where useful for Finance (bonus board, bonus pools, salary board visible lines, wallet, payroll lines).
+- [x] Add tests for projections and critical UI utilities (`salary-board-filtered-totals`, `bonus-board-grouping`, `bonus-board-url`, `sales-kpi-gate-summary`, `export-salary-board-csv`).
+- [x] Add visual QA pass against the old Bitrix workflow (manual checklist in audit doc § Manual visual QA).
 
 ## Open product decisions
 
