@@ -10,7 +10,7 @@ import {
   type BonusPoolBoardLane,
 } from '@/features/finance/utils/bonus-pool-board-lane';
 import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
-import type { BonusProductPoolRow } from '@/lib/api/bonus';
+import type { BonusPoolEmployeeLine, BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
 const BONUS_POOL_BOARD_LANE_HEADER_CLASS: Record<BonusPoolBoardLane, string> = {
@@ -23,9 +23,11 @@ const BONUS_POOL_BOARD_LANE_HEADER_CLASS: Record<BonusPoolBoardLane, string> = {
 export function BonusPoolsBoardView({
   rows,
   onOpenPool,
+  linesByPoolKey,
 }: {
   rows: BonusProductPoolRow[];
   onOpenPool: (row: BonusProductPoolRow) => void;
+  linesByPoolKey: ReadonlyMap<string, BonusPoolEmployeeLine[]>;
 }) {
   const lanes = useMemo(() => groupPoolsByBoardLane(rows), [rows]);
 
@@ -58,7 +60,13 @@ export function BonusPoolsBoardView({
                 <p className="text-muted-foreground px-1 py-4 text-center text-xs">No pools</p>
               ) : (
                 items.map((row) => (
-                  <BonusPoolsPoolCard key={row.poolKey} row={row} onOpen={onOpenPool} compact />
+                  <BonusPoolsPoolCard
+                    key={row.poolKey}
+                    row={row}
+                    onOpen={onOpenPool}
+                    compact
+                    employeeLines={linesByPoolKey.get(row.poolKey)}
+                  />
                 ))
               )}
             </div>

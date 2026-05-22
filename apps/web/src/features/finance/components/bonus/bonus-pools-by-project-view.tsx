@@ -6,14 +6,16 @@ import { BonusPoolsPoolCard } from '@/features/finance/components/bonus/bonus-po
 import { BonusPoolsProjectSummaryBar } from '@/features/finance/components/bonus/bonus-pools-project-summary-bar';
 import { groupBonusPoolsByProject } from '@/features/finance/utils/bonus-pools-grouping';
 import { summarizeBonusPoolsProjectGroup } from '@/features/finance/utils/bonus-pools-project-summary';
-import type { BonusProductPoolRow } from '@/lib/api/bonus';
+import type { BonusPoolEmployeeLine, BonusProductPoolRow } from '@/lib/api/bonus';
 
 export function BonusPoolsByProjectView({
   rows,
   onOpenPool,
+  linesByPoolKey,
 }: {
   rows: BonusProductPoolRow[];
   onOpenPool: (row: BonusProductPoolRow) => void;
+  linesByPoolKey: ReadonlyMap<string, BonusPoolEmployeeLine[]>;
 }) {
   const groups = useMemo(() => groupBonusPoolsByProject(rows), [rows]);
 
@@ -45,7 +47,12 @@ export function BonusPoolsByProjectView({
             <BonusPoolsProjectSummaryBar summary={summary} />
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {group.pools.map((row) => (
-                <BonusPoolsPoolCard key={row.poolKey} row={row} onOpen={onOpenPool} />
+                <BonusPoolsPoolCard
+                  key={row.poolKey}
+                  row={row}
+                  onOpen={onOpenPool}
+                  employeeLines={linesByPoolKey.get(row.poolKey)}
+                />
               ))}
             </div>
           </section>

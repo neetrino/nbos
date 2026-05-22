@@ -39,7 +39,7 @@ Backend must expose pool data as product-level rollups plus employee-level break
 - ☑ **Ledger traceability:** payments in + releases out timeline in pool sheet (`GET …/pools/timeline`).
 - ◐ **Auto release suggestions:** proportional `suggestedReleaseAmount` per employee in API; full auto-release flow still pending.
 - ☐ **Manual override audit:** reason/approval for early / extra / over funding / cap override.
-- ◐ **Tests:** key, kpi-held, funding health, fold, project summary, employee CSV — timeline/integration pending.
+- ☑ **Tests:** key, kpi-held, lines batch, funding health, fold, preview label, employee CSV.
 
 ---
 
@@ -49,7 +49,7 @@ UI must make the pool understandable without opening many pages.
 
 - ☑ **Pools list view:** Product / Extension, Order(s), Project, money cols, Fill %, Funding badge, team count.
 - ☑ **Pools board view:** lanes + cards with fill bar, funding badge, team count, money summary.
-- ☑ **By project view:** project summary bar (team, received, planned, remaining, over-funding pools).
+- ☑ **By project view:** project summary + employee names/planned on pool cards (batch lines API).
 - ☑ **Pool detail sheet:** funding hero, fill bar, money grid, orders, traceability links.
 - ☑ **Employee breakdown table:** planned / released / paid / remaining / suggested + KPI gate badge.
 - ☑ **Funding timeline:** payments + releases with payroll month / paid status on release rows.

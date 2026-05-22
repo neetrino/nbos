@@ -15,22 +15,29 @@ import {
 } from '@/features/finance/utils/bonus-pool-display';
 import { BonusPoolFillBar } from '@/features/finance/components/bonus/bonus-pool-fill-bar';
 import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
-import type { BonusProductPoolRow } from '@/lib/api/bonus';
+import type { BonusPoolEmployeeLine, BonusProductPoolRow } from '@/lib/api/bonus';
+import {
+  formatBonusPoolEmployeePreviewLine,
+  topBonusPoolEmployeePreviewLines,
+} from '@/features/finance/utils/bonus-pool-employee-preview-label';
 import { cn } from '@/lib/utils';
 
 export function BonusPoolsPoolCard({
   row,
   onOpen,
   compact,
+  employeeLines,
 }: {
   row: BonusProductPoolRow;
   onOpen: (row: BonusProductPoolRow) => void;
   compact?: boolean;
+  employeeLines?: readonly BonusPoolEmployeeLine[];
 }) {
   const fundingUi = bonusPoolFundingHealthUi(resolveRowFundingHealth(row));
   const planned = parseBonusPoolAmount(row.ledgerPlannedAmount);
   const available = parseBonusPoolAmount(row.ledgerAvailableFunding);
   const remaining = parseBonusPoolAmount(row.ledgerRemainingAmount);
+  const preview = employeeLines ? topBonusPoolEmployeePreviewLines(employeeLines) : [];
 
   return (
     <button
@@ -77,6 +84,15 @@ export function BonusPoolsPoolCard({
           Avail {formatAmount(available)} · Rem {formatAmount(remaining)}
         </span>
       </div>
+      {preview.length > 0 ? (
+        <ul className="text-muted-foreground mt-2 space-y-0.5 text-xs">
+          {preview.map((line) => (
+            <li key={line.employeeId} className="truncate">
+              {formatBonusPoolEmployeePreviewLine(line)}
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {!compact ? (
         <p className="text-muted-foreground mt-1 text-xs tabular-nums">
           Planned {formatAmount(planned)} · {row.entryCount} entries

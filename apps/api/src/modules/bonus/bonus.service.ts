@@ -13,6 +13,11 @@ import {
   type BonusProductPoolRow,
 } from './bonus-product-pools';
 import { queryBonusPoolEmployeeLines } from './bonus-pool-employee-lines';
+import {
+  parsePoolKeysQuery,
+  queryBonusPoolEmployeeLinesBatch,
+  type BonusPoolEmployeeLinesBatchDto,
+} from './bonus-pool-lines-batch';
 import { queryBonusPoolTimeline } from './bonus-pool-timeline';
 import { deriveBonusPoolFundingMetrics, sumPoolLedgerFields } from './bonus-pool-funding-health';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
@@ -218,6 +223,14 @@ export class BonusService {
 
   async getProductPoolTimeline(poolKey: string) {
     return queryBonusPoolTimeline(this.prisma, poolKey);
+  }
+
+  async getProductPoolEmployeeLinesBatch(poolKeysRaw: string): Promise<{
+    items: BonusPoolEmployeeLinesBatchDto[];
+  }> {
+    const poolKeys = parsePoolKeysQuery(poolKeysRaw);
+    const items = await queryBonusPoolEmployeeLinesBatch(this.prisma, poolKeys);
+    return { items };
   }
 
   private async mergeProductPoolLedgers(

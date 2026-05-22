@@ -276,6 +276,16 @@ export const bonusesApi = {
     return resp.data;
   },
 
+  async getProductPoolEmployeeLinesBatch(
+    poolKeys: string,
+  ): Promise<{ items: { poolKey: string; lines: BonusPoolEmployeeLine[] }[] }> {
+    const resp = await api.get<{ items: { poolKey: string; lines: BonusPoolEmployeeLine[] }[] }>(
+      '/api/bonus/products/pools/lines/batch',
+      { params: { poolKeys } },
+    );
+    return resp.data;
+  },
+
   async getProductPoolTimeline(poolKey: string): Promise<BonusPoolTimelineResponse> {
     const resp = await api.get<BonusPoolTimelineResponse>('/api/bonus/products/pools/timeline', {
       params: { poolKey },

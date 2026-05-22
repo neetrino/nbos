@@ -116,6 +116,17 @@ export class BonusController {
     return this.bonusService.getProductPoolTimeline(key);
   }
 
+  @Get('products/pools/lines/batch')
+  @ApiOperation({ summary: 'Employee breakdown for multiple pools (comma-separated poolKeys)' })
+  @ApiQuery({
+    name: 'poolKeys',
+    required: true,
+    description: 'Comma-separated pool keys, max 30',
+  })
+  async getProductPoolLinesBatch(@Query('poolKeys') poolKeys?: string) {
+    return this.bonusService.getProductPoolEmployeeLinesBatch(poolKeys ?? '');
+  }
+
   @Get('entries/:entryId/releases')
   @ApiOperation({ summary: 'List bonus releases for a bonus entry (NBOS Bonus Release ledger)' })
   @ApiQuery({ name: 'page', required: false })

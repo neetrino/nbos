@@ -12,13 +12,9 @@ async function fetchEmployeeLinesByPool(
   pools: readonly BonusProductPoolRow[],
 ): Promise<Map<string, BonusPoolEmployeeLine[]>> {
   const slice = pools.slice(0, BONUS_POOL_EMPLOYEE_CSV_MAX_POOLS);
-  const results = await Promise.all(
-    slice.map(async (pool) => {
-      const data = await bonusesApi.getProductPoolEmployeeLines(pool.poolKey);
-      return [pool.poolKey, data.lines] as const;
-    }),
-  );
-  return new Map(results);
+  const poolKeys = slice.map((p) => p.poolKey).join(',');
+  const data = await bonusesApi.getProductPoolEmployeeLinesBatch(poolKeys);
+  return new Map(data.items.map((item) => [item.poolKey, item.lines] as const));
 }
 
 export function useBonusProductPoolsCsvExport(rows: BonusProductPoolRow[]) {
