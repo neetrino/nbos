@@ -11,11 +11,20 @@ export type KpiGateRules = {
 
 export type KpiPolicyStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 
+export type KpiScorecardMetric = {
+  code: string;
+  label: string;
+  period: 'WEEK' | 'MONTH' | 'QUARTER' | 'SPRINT';
+  description?: string;
+  payrollField?: 'kpiSalesPlanAmount' | 'kpiSalesActualAmount';
+};
+
 export interface KpiPolicyRow {
   id: string;
   name: string;
   templateCode: string;
   gateRules: KpiGateRules;
+  scorecardMetrics: KpiScorecardMetric[];
   bonusCapBaseSalaryMultiplier: string;
   status: KpiPolicyStatus;
   scope: string | null;
@@ -28,6 +37,7 @@ export interface KpiPolicyRow {
 export interface CreateKpiPolicyPayload {
   name: string;
   gateRules: KpiGateRules;
+  scorecardMetrics?: KpiScorecardMetric[];
   bonusCapBaseSalaryMultiplier?: number;
   scope?: string;
   notes?: string;

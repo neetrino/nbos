@@ -9,6 +9,7 @@ import { KpiGateBandEditor } from './kpi-gate-band-editor';
 import { parseDraftsToRules, rulesToDrafts, type KpiGateBandDraft } from './kpi-gate-band-utils';
 import { KpiPolicyCapField, parseCapMultiplierDraft } from './kpi-policy-cap-field';
 import { KPI_POLICY_CAP_MULTIPLIER_DEFAULT } from './kpi-policy-cap.constants';
+import { KpiPolicyScorecardMetrics } from './kpi-policy-scorecard-metrics';
 
 const STATUS_VARIANT: Record<string, 'green' | 'amber' | 'gray' | 'red'> = {
   ACTIVE: 'green',
@@ -89,6 +90,7 @@ export function KpiPolicyEditorCard({
         <KpiPolicyCapField value={capMultiplier} disabled={saving} onChange={setCapMultiplier} />
       </div>
       <KpiGateBandEditor bands={bands} onChange={setBands} disabled={saving} />
+      <KpiPolicyScorecardMetrics metrics={policy.scorecardMetrics} />
       <div className="mt-4 flex justify-end">
         <Button
           type="button"

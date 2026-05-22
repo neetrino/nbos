@@ -20,6 +20,9 @@ import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-
 import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
 import { PAYROLL_JOURNAL_KIND_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import type { KpiScorecardMetric } from '@/features/my-company/kpi-policies/kpi-scorecard-metrics.types';
+import { kpiPoliciesApi } from '@/lib/api/kpi-policies';
+import { DEFAULT_KPI_POLICY_ID } from '@/lib/constants/default-kpi-policy-id';
 import {
   payrollRunsApi,
   type PayrollRunDetail,
@@ -60,6 +63,14 @@ export function PayrollRunDetailPageContent({
   const [actionError, setActionError] = useState<string | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
   const [openSalaryLineId, setOpenSalaryLineId] = useState<string | null>(null);
+  const [scorecardMetrics, setScorecardMetrics] = useState<KpiScorecardMetric[]>([]);
+
+  useEffect(() => {
+    void kpiPoliciesApi
+      .getById(DEFAULT_KPI_POLICY_ID)
+      .then((p) => setScorecardMetrics(p.scorecardMetrics))
+      .catch(() => setScorecardMetrics([]));
+  }, []);
 
   useEffect(() => {
     setRun(initialRun);
@@ -193,7 +204,7 @@ export function PayrollRunDetailPageContent({
         />
       </div>
 
-      <PayrollRunSalesKpiSection run={run} onUpdated={setRun} />
+      <PayrollRunSalesKpiSection run={run} scorecardMetrics={scorecardMetrics} onUpdated={setRun} />
 
       <PayrollRunEmployeeSalesKpiSection run={run} onUpdated={setRun} />
 

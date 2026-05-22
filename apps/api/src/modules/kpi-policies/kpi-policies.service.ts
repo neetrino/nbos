@@ -7,6 +7,7 @@ import {
   assertBonusCapBaseSalaryMultiplierInput,
   bonusCapMultiplierToApiString,
 } from './kpi-policy-cap-multiplier';
+import { parseKpiScorecardMetrics } from './parse-kpi-scorecard-metrics';
 import type { CreateKpiPolicyBody, KpiPolicyDto, UpdateKpiPolicyBody } from './kpi-policies.types';
 
 const STATUSES: KpiPolicyStatusEnum[] = ['DRAFT', 'ACTIVE', 'ARCHIVED'];
@@ -17,6 +18,7 @@ function serializeKpiPolicy(
     name: string;
     templateCode: string;
     gateRules: unknown;
+    scorecardMetrics: unknown;
     bonusCapBaseSalaryMultiplier: { toFixed: (n: number) => string };
     status: KpiPolicyStatusEnum;
     scope: string | null;
@@ -31,6 +33,7 @@ function serializeKpiPolicy(
     name: row.name,
     templateCode: row.templateCode,
     gateRules: parseKpiGateRules(row.gateRules),
+    scorecardMetrics: parseKpiScorecardMetrics(row.scorecardMetrics),
     bonusCapBaseSalaryMultiplier: bonusCapMultiplierToApiString(
       new Decimal(row.bonusCapBaseSalaryMultiplier),
     ),
@@ -82,11 +85,13 @@ export class KpiPoliciesService {
     const capMultiplier = assertBonusCapBaseSalaryMultiplierInput(
       body.bonusCapBaseSalaryMultiplier,
     );
+    const scorecardMetrics = parseKpiScorecardMetrics(body.scorecardMetrics ?? []);
     const row = await this.prisma.kpiPolicy.create({
       data: {
         name,
         templateCode: KPI_POLICY_TEMPLATE_GATE_PAYOUT,
         gateRules,
+        scorecardMetrics,
         bonusCapBaseSalaryMultiplier: capMultiplier,
         status: 'ACTIVE',
         scope: body.scope?.trim() || null,
@@ -110,6 +115,10 @@ export class KpiPoliciesService {
       data: {
         name: body.name != null ? assertPolicyName(body.name) : undefined,
         gateRules: body.gateRules != null ? parseKpiGateRules(body.gateRules) : undefined,
+        scorecardMetrics:
+          body.scorecardMetrics !== undefined
+            ? parseKpiScorecardMetrics(body.scorecardMetrics)
+            : undefined,
         bonusCapBaseSalaryMultiplier:
           body.bonusCapBaseSalaryMultiplier != null
             ? assertBonusCapBaseSalaryMultiplierInput(body.bonusCapBaseSalaryMultiplier)

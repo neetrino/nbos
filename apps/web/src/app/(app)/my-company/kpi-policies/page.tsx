@@ -15,6 +15,7 @@ import {
   parseCapMultiplierDraft,
 } from '@/features/my-company/kpi-policies/kpi-policy-cap-field';
 import { KPI_POLICY_CAP_MULTIPLIER_DEFAULT } from '@/features/my-company/kpi-policies/kpi-policy-cap.constants';
+import { DEFAULT_SALES_SCORECARD_METRICS } from '@/features/my-company/kpi-policies/kpi-scorecard-metrics.types';
 import { kpiPoliciesApi, type KpiPolicyRow, type KpiPolicyStatus } from '@/lib/api/kpi-policies';
 
 export default function KpiPoliciesPage() {
@@ -79,6 +80,7 @@ export default function KpiPoliciesPage() {
       const created = await kpiPoliciesApi.create({
         name: newName.trim(),
         gateRules,
+        scorecardMetrics: DEFAULT_SALES_SCORECARD_METRICS,
         bonusCapBaseSalaryMultiplier: cap,
         scope: 'COMPANY',
       });

@@ -38,7 +38,7 @@ Backend must expose pool data as product-level rollups plus employee-level break
 - ☑ **Employee breakdown API:** `GET /api/bonus/products/pools/lines?poolKey=` — planned, released, paid, remaining, suggested release, KPI hint.
 - ☑ **Ledger traceability:** payments in + releases out timeline in pool sheet (`GET …/pools/timeline`).
 - ☑ **Auto release (delivery):** sheet summary + `POST …/pools/auto-release` proportional AUTO for DONE+funded orders.
-- ◐ **Auto release (sales / policy):** SALES KPI from profile `kpi_policies` at attach; scorecard-driven plan/actual pending.
+- ◐ **Auto release (sales / policy):** SALES KPI from `kpi_policies` at attach; scorecard metrics on policy + payroll labels (live plan/actual automation pending).
 - ◐ **Manual override audit:** API requires reason (EARLY/EXTRA/OVER_FUNDING) + approver on OVER_FUNDING; release reason in pool timeline.
 - ☑ **Tests:** key, kpi-held, lines batch, funding health, fold, preview label, employee CSV, auto-release trigger.
 
@@ -65,7 +65,7 @@ UI must make the pool understandable without opening many pages.
 Backend + rules live in My Company policy templates; Finance executes. See `05-Bonus-and-Payroll.md` § Policy Engine.
 
 - ☑ **Bonus Policy Templates:** `bonus_policies` + profile FK + picker; seeds SALES / MANUAL / DELIVERY / MARKETING / SUPPORT.
-- ◐ **KPI Policy Templates:** `kpi_policies` DB + CRUD UI + picker; default + lenient sales gate seeds; scorecard metrics pending.
+- ☑ **KPI Policy Templates:** `kpi_policies` + CRUD UI + picker; gate seeds + `scorecard_metrics` (sales plan/actual links).
 - ☑ **Compensation Profile link:** create/activate profile + bonus & KPI policy dropdowns on `/my-company/compensation`.
 - ☑ **Employee-level KPI:** per-employee sales plan/actual on `salary_lines` + PATCH + payroll run UI; SALES attach uses line override with run fallback.
 - ☑ **Burned KPI:** `kpiBurnedAmount` + `kpiBurnedReason` on SALES attach; salary sheet, wallet, in-app notify.

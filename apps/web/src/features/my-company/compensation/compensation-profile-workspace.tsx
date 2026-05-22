@@ -77,6 +77,11 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
     [activeBonusPolicies, bonusPolicyId],
   );
 
+  const selectedKpiPolicy = useMemo(
+    () => activeKpiPolicies.find((p) => p.id === kpiPolicyId) ?? null,
+    [activeKpiPolicies, kpiPolicyId],
+  );
+
   const loadProfiles = useCallback(async (employeeId: string) => {
     setLoading(true);
     try {
@@ -332,6 +337,18 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
                   </option>
                 ))}
               </select>
+              {selectedKpiPolicy != null && selectedKpiPolicy.scorecardMetrics.length > 0 ? (
+                <p className="text-muted-foreground text-xs">
+                  Scorecard:{' '}
+                  {selectedKpiPolicy.scorecardMetrics
+                    .map((m) =>
+                      m.payrollField
+                        ? `${m.label} → payroll ${m.payrollField === 'kpiSalesPlanAmount' ? 'plan' : 'actual'}`
+                        : m.label,
+                    )
+                    .join(' · ')}
+                </p>
+              ) : null}
             </label>
             {draftProfile ? (
               <div className="flex items-end md:col-span-2">
