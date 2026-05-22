@@ -5,7 +5,7 @@ export const ENTITY_NOTES_LABEL_CLASS =
 
 export const ENTITY_NOTES_SHELL_BASE_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  'bg-background flex w-full flex-col overflow-hidden rounded-xl border shadow-sm shadow-black/[0.04]',
+  'bg-background flex w-full flex-col rounded-xl border shadow-sm shadow-black/[0.04]',
   'border-border/70 transition-[border-color,box-shadow]',
   'focus-within:border-blue-400/90 focus-within:ring-2 focus-within:ring-blue-400/25',
 ].join(' ');

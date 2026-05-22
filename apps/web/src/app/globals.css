@@ -213,10 +213,47 @@ body {
   height: 0;
   pointer-events: none;
 }
-.nbos-entity-notes-editor .ProseMirror ul,
+.nbos-entity-notes-editor .ProseMirror p {
+  margin: 0.15rem 0;
+}
+.nbos-entity-notes-editor .ProseMirror ul {
+  list-style-type: disc;
+  list-style-position: inside;
+  margin: 0.35rem 0;
+  padding-left: 0.25rem;
+}
 .nbos-entity-notes-editor .ProseMirror ol {
-  margin: 0.25rem 0;
-  padding-left: 1.25rem;
+  list-style-type: decimal;
+  list-style-position: inside;
+  margin: 0.35rem 0;
+  padding-left: 0.25rem;
+}
+.nbos-entity-notes-editor .ProseMirror ul ul {
+  list-style-type: circle;
+}
+.nbos-entity-notes-editor .ProseMirror ol ol {
+  list-style-type: lower-alpha;
+}
+.nbos-entity-notes-editor .ProseMirror li {
+  display: list-item;
+  margin: 0.1rem 0;
+  padding-left: 0.125rem;
+}
+.nbos-entity-notes-editor .ProseMirror li > p {
+  margin: 0;
+  display: inline;
+}
+.nbos-entity-notes-editor .ProseMirror strong {
+  font-weight: 600;
+}
+.nbos-entity-notes-editor .ProseMirror em {
+  font-style: italic;
+}
+.nbos-entity-notes-editor .ProseMirror u {
+  text-decoration: underline;
+}
+.nbos-entity-notes-editor .ProseMirror s {
+  text-decoration: line-through;
 }
 .nbos-entity-notes-editor .ProseMirror a {
   color: var(--primary);

@@ -28,7 +28,7 @@ export function useEntityNotesEditor(opts: {
       editorProps: {
         attributes: {
           class:
-            'prose prose-sm dark:prose-invert max-w-none min-h-[88px] px-3 py-2.5 focus:outline-none',
+            'entity-notes-prosemirror max-w-none min-h-[88px] px-3 py-2.5 text-sm focus:outline-none',
         },
       },
       onUpdate: ({ editor: ed }) => {
