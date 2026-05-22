@@ -5,8 +5,10 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
   InlineField,
+  RelationPickerField,
   SearchField,
 } from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import type { Deal } from '@/lib/api/deals';
 import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import {
@@ -47,6 +49,8 @@ export function DealMarketingSection({
   sectionClassName,
   gateRequiredFields = new Set(),
 }: DealMarketingSectionProps) {
+  const partnerPicker = useRelationPickerActions('partner');
+  const sourceContactPicker = useRelationPickerActions('contact', 'deal-source-contact');
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
     draft.source === 'MARKETING',
   );
@@ -162,23 +166,17 @@ export function DealMarketingSection({
 
           {draft.source === 'PARTNER' && (
             <div className="min-w-0">
-              <SearchField
-                selectionMode="stage"
+              <RelationPickerField
                 label="Which Partner?"
+                entityKind="partner"
                 value={draft.sourcePartnerId}
+                selectionLabel={draft.partnerPickLabel}
                 className={dealStageGateFieldClass(gateRequiredFields, 'sourcePartnerId')}
-                displayValue={
-                  draft.partnerPickLabel ? (
-                    <span className="text-foreground text-sm font-medium">
-                      {draft.partnerPickLabel}
-                    </span>
-                  ) : undefined
-                }
-                placeholder="Search partners..."
+                placeholder="Search partners…"
                 icon={<Building2 size={12} />}
                 disabled={disabled || attributionLocked}
                 onSearch={searchPartners}
-                onStageSelect={(value, label) =>
+                onSelect={(value, label) =>
                   patchDraft({ sourcePartnerId: value, partnerPickLabel: label })
                 }
                 onClear={
@@ -186,29 +184,24 @@ export function DealMarketingSection({
                     ? undefined
                     : () => patchDraft({ sourcePartnerId: null, partnerPickLabel: null })
                 }
+                {...partnerPicker}
               />
             </div>
           )}
 
           {draft.source === 'CLIENT' && (
             <div className="min-w-0">
-              <SearchField
-                selectionMode="stage"
+              <RelationPickerField
                 label="Which Client?"
+                entityKind="contact"
                 value={draft.sourceContactId}
+                selectionLabel={draft.clientPickLabel}
                 className={dealStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
-                displayValue={
-                  draft.clientPickLabel ? (
-                    <span className="text-foreground text-sm font-medium">
-                      {draft.clientPickLabel}
-                    </span>
-                  ) : undefined
-                }
-                placeholder="Search contacts..."
+                placeholder="Search contacts…"
                 icon={<User size={12} />}
                 disabled={disabled || attributionLocked}
                 onSearch={searchContacts}
-                onStageSelect={(value, label) =>
+                onSelect={(value, label) =>
                   patchDraft({ sourceContactId: value, clientPickLabel: label })
                 }
                 onClear={
@@ -216,6 +209,7 @@ export function DealMarketingSection({
                     ? undefined
                     : () => patchDraft({ sourceContactId: null, clientPickLabel: null })
                 }
+                {...sourceContactPicker}
               />
             </div>
           )}

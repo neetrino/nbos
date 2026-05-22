@@ -6,8 +6,10 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
   InlineField,
+  RelationPickerField,
   SearchField,
 } from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import type { Deal } from '@/lib/api/deals';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import type { SearchLoader } from './deal-general-tab.types';
@@ -35,6 +37,11 @@ export function DealContactTeamSection({
   sectionClassName,
   gateRequiredFields = new Set(),
 }: DealContactTeamSectionProps) {
+  const contactPicker = useRelationPickerActions('contact', 'deal-contact');
+
+  const contactSubtitle =
+    draft.contactId && deal.contact?.id === draft.contactId ? (deal.contact.email ?? null) : null;
+
   return (
     <DetailSheetSection
       id={DEAL_SHEET_SECTION.CONTACT_TEAM}
@@ -43,18 +50,19 @@ export function DealContactTeamSection({
       className={sectionClassName}
     >
       <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-        <SearchField
-          selectionMode="stage"
+        <RelationPickerField
           label="Contact"
+          entityKind="contact"
           value={draft.contactId}
-          displayValue={<ContactDisplay deal={deal} draft={draft} />}
-          placeholder="Search contacts..."
+          selectionLabel={draft.contactDisplayLabel}
+          selectionSubtitle={contactSubtitle}
+          placeholder="Search contacts…"
           icon={<User size={12} />}
           disabled={disabled}
           onSearch={searchContacts}
-          onStageSelect={(value, label) =>
-            patchDraft({ contactId: value, contactDisplayLabel: label })
-          }
+          onSelect={(value, label) => patchDraft({ contactId: value, contactDisplayLabel: label })}
+          onClear={() => patchDraft({ contactId: null, contactDisplayLabel: null })}
+          {...contactPicker}
         />
 
         <SearchField
@@ -116,31 +124,6 @@ export function DealContactTeamSection({
       </div>
     </DetailSheetSection>
   );
-}
-
-function ContactDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft }) {
-  if (draft.contactId && deal.contact?.id === draft.contactId) {
-    return (
-      <div className="flex items-center gap-2.5">
-        <div className={DETAIL_SHEET_PERSON_AVATAR_CLASS}>
-          {deal.contact.firstName[0]}
-          {deal.contact.lastName[0]}
-        </div>
-        <div>
-          <p className="text-foreground text-sm leading-tight font-medium">
-            {deal.contact.firstName} {deal.contact.lastName}
-          </p>
-          {deal.contact.email && (
-            <p className="text-muted-foreground text-[11px]">{deal.contact.email}</p>
-          )}
-        </div>
-      </div>
-    );
-  }
-  if (draft.contactDisplayLabel) {
-    return <LabelPersonDisplay label={draft.contactDisplayLabel} />;
-  }
-  return undefined;
 }
 
 function SellerDisplay({ deal, draft }: { deal: Deal; draft: DealGeneralDraft }) {

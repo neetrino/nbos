@@ -49,6 +49,19 @@ export {
   type NbosMonthPickerProps,
 } from './date-picker';
 export { SearchField, type SearchFieldProps } from './SearchField';
+export {
+  RelationPickerField,
+  EntityRelationHost,
+  useEntityRelations,
+  useRelationPickerActions,
+  parseRelationSearchName,
+  type RelationEntityKind,
+  type RelationPickerFieldProps,
+  type RelationPickerOption,
+  type RelationPickerSearchFn,
+  type RelationCreatePrefill,
+  type RelationCreatedEvent,
+} from './relation-picker';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';
 export { DetailSheetFormFooter, type DetailSheetFormFooterProps } from './DetailSheetFormFooter';
 export {

@@ -9,7 +9,6 @@ export interface DealGeneralDraft {
   taxStatus: string | null;
   projectId: string | null;
   linkedProjectLabel: string | null;
-  isNewProject: boolean;
   type: string | null;
   maintenanceStartAt: string | null;
   productCategory: string | null;
@@ -53,7 +52,6 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     taxStatus: deal.taxStatus ?? null,
     projectId: deal.projectId,
     linkedProjectLabel: deal.handoff?.project?.name ?? null,
-    isNewProject: false,
     type: deal.type ?? null,
     maintenanceStartAt: toDateInputValue(deal.maintenanceStartAt),
     productCategory: deal.productCategory,
@@ -102,7 +100,7 @@ export function buildDealGeneralPatch(
   if (draft.name !== snap.name) out.name = draft.name;
   if (draft.amount !== snap.amount) out.amount = draft.amount;
   if (draft.paymentType !== snap.paymentType) out.paymentType = draft.paymentType;
-  if (draft.taxStatus !== snap.taxStatus) out.taxStatus = draft.taxStatus;
+  if (draft.taxStatus !== snap.taxStatus) out.taxStatus = draft.taxStatus ?? undefined;
   if (draft.projectId !== snap.projectId) out.projectId = draft.projectId;
   if (draft.type !== snap.type) out.type = draft.type;
   if (dateOrNull(draft.maintenanceStartAt) !== dateOrNull(snap.maintenanceStartAt)) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ export type CreateProjectHubDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: (project: Project) => void;
+  defaultName?: string;
 };
 
 async function createProjectRecord(input: {
@@ -38,6 +39,7 @@ export function CreateProjectHubDialog({
   open,
   onOpenChange,
   onCreated,
+  defaultName = '',
 }: CreateProjectHubDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -56,6 +58,11 @@ export function CreateProjectHubDialog({
     setSubmitError(null);
     setLoadError(null);
   }, [setLoadError]);
+
+  useEffect(() => {
+    if (!open) return;
+    setName(defaultName.trim());
+  }, [open, defaultName]);
 
   const handleOpenChange = useCallback(
     (next: boolean) => {

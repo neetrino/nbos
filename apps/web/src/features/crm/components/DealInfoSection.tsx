@@ -8,11 +8,15 @@ import {
   FolderKanban,
   Layers,
   Receipt,
-  Sparkles,
   Tag,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { DETAIL_SHEET_SECTION_BODY_CLASS, InlineField, SearchField } from '@/components/shared';
+import {
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  InlineField,
+  RelationPickerField,
+  SearchField,
+} from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
 import type { SearchLoader } from './deal-general-tab.types';
 import type { DealGeneralDraft } from './deal-general-form-state';
@@ -42,6 +46,9 @@ export function DealInfoProjectBillingFields({
   DealInfoFieldsProps,
   'draft' | 'patchDraft' | 'searchProjects' | 'searchCompanies' | 'disabled' | 'gateRequiredFields'
 >) {
+  const projectPicker = useRelationPickerActions('project');
+  const companyPicker = useRelationPickerActions('company');
+
   return (
     <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
       <InlineField
@@ -82,78 +89,34 @@ export function DealInfoProjectBillingFields({
         onValueChange={(v) => patchDraft({ paymentType: v || null })}
       />
 
-      <SearchField
-        selectionMode="stage"
+      <RelationPickerField
         label="Project"
+        entityKind="project"
         value={draft.projectId}
+        selectionLabel={draft.linkedProjectLabel}
         disabled={disabled}
-        displayValue={
-          draft.isNewProject ? (
-            <span className="text-foreground flex items-center gap-1.5 text-sm font-medium">
-              <Sparkles size={13} className="text-muted-foreground" />
-              New Project
-            </span>
-          ) : draft.linkedProjectLabel ? (
-            <span className="text-foreground text-sm font-medium">{draft.linkedProjectLabel}</span>
-          ) : undefined
-        }
-        placeholder="Search projects..."
+        placeholder="Search projects…"
         icon={<FolderKanban size={12} />}
         onSearch={searchProjects}
-        onStageSelect={(id, label) => {
-          patchDraft({
-            projectId: id,
-            linkedProjectLabel: label,
-            isNewProject: false,
-          });
-        }}
-        onClear={() => {
-          patchDraft({
-            projectId: null,
-            linkedProjectLabel: null,
-            isNewProject: false,
-          });
-        }}
-        newBadge={
-          !draft.isNewProject ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-              className="shrink-0 gap-1.5 text-xs"
-              onClick={() => {
-                patchDraft({
-                  isNewProject: true,
-                  projectId: null,
-                  linkedProjectLabel: null,
-                });
-              }}
-            >
-              <Sparkles size={12} />
-              New Project
-            </Button>
-          ) : undefined
-        }
+        onSelect={(id, label) => patchDraft({ projectId: id, linkedProjectLabel: label })}
+        onClear={() => patchDraft({ projectId: null, linkedProjectLabel: null })}
+        {...projectPicker}
       />
 
       {(draft.taxStatus ?? 'TAX') === 'TAX' && (
-        <SearchField
-          selectionMode="stage"
+        <RelationPickerField
           label="Company"
+          entityKind="company"
           value={draft.companyId}
+          selectionLabel={draft.companyPickLabel}
           className={dealStageGateFieldClass(gateRequiredFields, 'companyId')}
           disabled={disabled}
-          displayValue={
-            draft.companyPickLabel ? (
-              <span className="text-foreground text-sm font-medium">{draft.companyPickLabel}</span>
-            ) : undefined
-          }
-          placeholder="Search company..."
+          placeholder="Search company…"
           icon={<Building2 size={12} />}
           onSearch={searchCompanies}
-          onStageSelect={(id, label) => patchDraft({ companyId: id, companyPickLabel: label })}
+          onSelect={(id, label) => patchDraft({ companyId: id, companyPickLabel: label })}
           onClear={() => patchDraft({ companyId: null, companyPickLabel: null })}
+          {...companyPicker}
         />
       )}
     </div>

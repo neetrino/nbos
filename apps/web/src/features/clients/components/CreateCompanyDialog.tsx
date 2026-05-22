@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { User } from 'lucide-react';
 import {
   Dialog,
@@ -22,17 +22,23 @@ import {
 } from '@/components/ui/select';
 import { SearchField } from '@/components/shared/SearchField';
 import { COMPANY_TYPES, TAX_STATUSES } from '../constants/clients';
-import { companiesApi, type Contact } from '@/lib/api/clients';
+import { companiesApi, type Company, type Contact } from '@/lib/api/clients';
 import { CreateContactDialog } from './CreateContactDialog';
 import { useContactSearchOptions } from '../hooks/use-contact-search-options';
 
 interface CreateCompanyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated?: (company?: Company) => void;
+  defaultName?: string;
 }
 
-export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCompanyDialogProps) {
+export function CreateCompanyDialog({
+  open,
+  onOpenChange,
+  onCreated,
+  defaultName = '',
+}: CreateCompanyDialogProps) {
   const [loading, setLoading] = useState(false);
   const [nestedContactOpen, setNestedContactOpen] = useState(false);
   const searchContacts = useContactSearchOptions();
@@ -51,6 +57,11 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
     country: '',
     notes: '',
   });
+
+  useEffect(() => {
+    if (!open || !defaultName.trim()) return;
+    setForm((prev) => ({ ...prev, name: defaultName.trim() }));
+  }, [open, defaultName]);
 
   const canSubmit =
     Boolean(form.name) &&
@@ -81,7 +92,7 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
     if (!canSubmit) return;
     setLoading(true);
     try {
-      await companiesApi.create({
+      const created = await companiesApi.create({
         name: form.name,
         type: form.type,
         taxStatus: form.taxStatus,
@@ -97,7 +108,7 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
         country: form.country || undefined,
         notes: form.notes || undefined,
       });
-      onCreated();
+      onCreated?.(created);
       onOpenChange(false);
       reset();
     } finally {

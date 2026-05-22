@@ -28,7 +28,7 @@ import {
 } from '@/features/partners/constants/partners';
 import { parsePartnerDefaultPercentInput } from '@/features/partners/utils/partner-default-percent';
 import { PartnerNotesStartFields } from '@/features/partners/components/PartnerNotesStartFields';
-import { partnersApi } from '@/lib/api/partners';
+import { partnersApi, type Partner } from '@/lib/api/partners';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -37,10 +37,16 @@ import { PARTNER_CONTACTS_PAGE_SIZE } from '@/features/partners/constants/partne
 interface CreatePartnerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated?: (partner?: Partner) => void;
+  defaultName?: string;
 }
 
-export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePartnerDialogProps) {
+export function CreatePartnerDialog({
+  open,
+  onOpenChange,
+  onCreated,
+  defaultName = '',
+}: CreatePartnerDialogProps) {
   const [loading, setLoading] = useState(false);
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -56,6 +62,11 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
     notes: '',
     startDate: '',
   });
+
+  useEffect(() => {
+    if (!open || !defaultName.trim()) return;
+    setForm((prev) => ({ ...prev, name: defaultName.trim() }));
+  }, [open, defaultName]);
 
   useEffect(() => {
     if (!open) return;
@@ -116,7 +127,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
     setLoading(true);
     setFormError(null);
     try {
-      await partnersApi.create({
+      const created = await partnersApi.create({
         name: form.name.trim(),
         level: form.level,
         direction: form.direction,
@@ -126,7 +137,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
         ...(form.startDate.trim() ? { startDate: form.startDate.trim() } : {}),
       });
-      onCreated();
+      onCreated?.(created);
       onOpenChange(false);
       reset();
     } catch (caught) {

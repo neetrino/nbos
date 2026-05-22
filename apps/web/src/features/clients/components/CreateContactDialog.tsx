@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { RelationCreatePrefill } from '@/components/shared/relation-picker';
 import {
   Dialog,
   DialogContent,
@@ -26,38 +27,48 @@ interface CreateContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated?: (contact?: Contact) => void;
+  prefill?: RelationCreatePrefill | null;
 }
 
-export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateContactDialogProps) {
+const EMPTY_FORM = {
+  firstName: '',
+  lastName: '',
+  phone: '',
+  email: '',
+  role: 'CLIENT',
+  preferredChannel: '',
+  language: '',
+  whatsapp: '',
+  telegram: '',
+  notes: '',
+};
+
+export function CreateContactDialog({
+  open,
+  onOpenChange,
+  onCreated,
+  prefill = null,
+}: CreateContactDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    role: 'CLIENT',
-    preferredChannel: '',
-    language: '',
-    whatsapp: '',
-    telegram: '',
-    notes: '',
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!prefill) {
+      setForm(EMPTY_FORM);
+      return;
+    }
+    setForm({
+      ...EMPTY_FORM,
+      firstName: prefill.firstName ?? '',
+      lastName: prefill.lastName ?? '',
+    });
+  }, [open, prefill]);
 
   const canSubmit = form.firstName && form.lastName && form.phone && form.role;
 
   const reset = () => {
-    setForm({
-      firstName: '',
-      lastName: '',
-      phone: '',
-      email: '',
-      role: 'CLIENT',
-      preferredChannel: '',
-      language: '',
-      whatsapp: '',
-      telegram: '',
-      notes: '',
-    });
+    setForm(EMPTY_FORM);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
