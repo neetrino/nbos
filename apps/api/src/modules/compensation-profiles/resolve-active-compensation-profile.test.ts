@@ -7,6 +7,7 @@ describe('resolveCompensationProfileForPayrollMonth', () => {
       id: 'cp-1',
       baseSalary: { toString: () => '120000' },
       currency: 'AMD',
+      kpiPolicyId: 'pol-1',
     });
     const db = { compensationProfile: { findFirst } };
 

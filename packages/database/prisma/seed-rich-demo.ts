@@ -102,6 +102,7 @@ async function seedCompensationProfiles(
         employeeId: row.employeeId,
         baseSalary: row.baseSalary,
         currency: 'AMD',
+        kpiPolicyId: 'a0000000-0000-4000-8000-000000000001',
         effectiveFrom: monthStart(2026, 1),
         status: 'ACTIVE',
         approvedById: ctx.ceo.id,

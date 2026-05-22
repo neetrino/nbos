@@ -7,6 +7,7 @@ export interface ResolvedCompensationProfile {
   id: string;
   baseSalary: { toString(): string };
   currency: string;
+  kpiPolicyId: string | null;
 }
 
 const ACTIVE: CompensationProfileStatusEnum = 'ACTIVE';
@@ -31,6 +32,6 @@ export async function resolveCompensationProfileForPayrollMonth(
       OR: [{ effectiveTo: null }, { effectiveTo: { gte: monthStart } }],
     },
     orderBy: { effectiveFrom: 'desc' },
-    select: { id: true, baseSalary: true, currency: true },
+    select: { id: true, baseSalary: true, currency: true, kpiPolicyId: true },
   });
 }

@@ -18,13 +18,23 @@ function createTxMock() {
       update: vi.fn().mockResolvedValue({}),
       aggregate: vi.fn(),
     },
+    compensationProfile: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    kpiPolicy: {
+      findFirst: vi.fn(),
+    },
   };
 }
 
 describe('attachBonusReleasesToPayrollRun', () => {
   it('throws when run is APPROVED', async () => {
     const tx = createTxMock();
-    tx.payrollRun.findUnique.mockResolvedValue({ id: 'run1', status: 'APPROVED' });
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'APPROVED',
+      payrollMonth: '2026-05',
+    });
     await expect(
       attachBonusReleasesToPayrollRun(tx as never, {
         payrollRunId: 'run1',
@@ -49,6 +59,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
       status: 'DRAFT',
+      payrollMonth: '2026-05',
       kpiSalesPlanAmount: new Decimal(1000),
       kpiSalesActualAmount: null,
     });
@@ -75,6 +86,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
       status: 'DRAFT',
+      payrollMonth: '2026-05',
       kpiSalesPlanAmount: null,
       kpiSalesActualAmount: null,
     });
@@ -144,6 +156,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
       status: 'DRAFT',
+      payrollMonth: '2026-05',
       kpiSalesPlanAmount: new Decimal(1000),
       kpiSalesActualAmount: new Decimal(600),
     });
@@ -208,6 +221,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
       status: 'DRAFT',
+      payrollMonth: '2026-05',
       kpiSalesPlanAmount: null,
       kpiSalesActualAmount: null,
     });

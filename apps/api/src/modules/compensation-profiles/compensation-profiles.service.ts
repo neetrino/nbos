@@ -47,6 +47,11 @@ export class CompensationProfilesService {
       throw new BadRequestException('baseSalary must be a non-negative number');
     }
 
+    const kpiPolicyId = body.kpiPolicyId?.trim() || null;
+    if (kpiPolicyId != null) {
+      await this.assertActiveKpiPolicyExists(kpiPolicyId);
+    }
+
     const row = await this.prisma.compensationProfile.create({
       data: {
         employeeId,
@@ -54,7 +59,7 @@ export class CompensationProfilesService {
         currency: body.currency?.trim() || 'AMD',
         payoutSchedule: body.payoutSchedule,
         bonusPolicyId: body.bonusPolicyId?.trim() || null,
-        kpiPolicyId: body.kpiPolicyId?.trim() || null,
+        kpiPolicyId,
         effectiveFrom,
         status: 'DRAFT',
         notes: body.notes?.trim() || null,
@@ -132,6 +137,16 @@ export class CompensationProfilesService {
       select: { id: true },
     });
     if (!emp) throw new NotFoundException(`Employee ${employeeId} not found`);
+  }
+
+  private async assertActiveKpiPolicyExists(kpiPolicyId: string) {
+    const policy = await this.prisma.kpiPolicy.findFirst({
+      where: { id: kpiPolicyId, status: 'ACTIVE' },
+      select: { id: true },
+    });
+    if (!policy) {
+      throw new BadRequestException(`Active KPI policy ${kpiPolicyId} not found`);
+    }
   }
 }
 

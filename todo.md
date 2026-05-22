@@ -65,7 +65,7 @@ UI must make the pool understandable without opening many pages.
 Backend + rules live in My Company policy templates; Finance executes. See `05-Bonus-and-Payroll.md` § Policy Engine.
 
 - ☐ **Bonus Policy Templates:** sales, delivery, marketing, support, manual.
-- ☐ **KPI Policy Templates:** `<50% = 0%`, `50–69% = 50%`, `≥70% = 100%`, role variants.
+- ◐ **KPI Policy Templates:** `kpi_policies` + default seed bands; attach resolves via Compensation Profile; My Company CRUD UI pending.
 - ☐ **Compensation Profile link:** active bonus + KPI policies, currency, effective dates.
 - ☐ **Employee-level KPI:** per employee/role, not only payroll-run sales KPI scale.
 - ◐ **Burned KPI:** persist `kpiBurnedAmount` on SALES attach + Finance/Wallet display; reason field / full policy templates still pending.
@@ -73,7 +73,7 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 - ◐ **Carry-over:** persist deferred amount on attach; show in Finance/Wallet; auto-apply to next month run still pending.
 - ☐ **Bonus breakdown statuses:** Incoming, Burned, Carry-over, Clawback in API + UI.
 - ☐ **Idempotency:** no duplicate entries/releases/burned/carry-over on recalc.
-- ◐ **Tests:** burned KPI + cap/carry-over attach unit tests; next-month carry apply + re-attach idempotency pending.
+- ◐ **Tests:** burned/cap attach + KPI gate parse/resolve unit tests; next-month carry apply + re-attach idempotency pending.
 - ☐ **Re-audit** API when Compensation Profile / policy schema changes.
 
 ---

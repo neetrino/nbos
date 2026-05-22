@@ -2,12 +2,14 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbos/database';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
+import { resolveKpiGateRulesForPayrollEmployee } from '../compensation-profiles/resolve-kpi-gate-rules';
 import { applyPayrollBonusCap } from './payroll-bonus-cap';
+import { computeKpiGatePayoutFactor } from './kpi-gate-payout';
 import { computeSalesKpiBurnedAmount } from './sales-kpi-burned-amount';
+import type { KpiGateRules } from './kpi-gate-rules.types';
 import {
   assertSalesKpiInputsComplete,
   computePayrollIncludedBonusAmount,
-  resolveSalesKpiPayoutFactorFromRun,
 } from './sales-kpi-payroll-payout';
 
 const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
@@ -15,7 +17,7 @@ const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 /** Minimal DB surface for attaching bonus releases (transaction or full client). */
 export type BonusReleaseAttachTx = Pick<
   TransactionClient,
-  'payrollRun' | 'bonusRelease' | 'salaryLine'
+  'payrollRun' | 'bonusRelease' | 'salaryLine' | 'compensationProfile' | 'kpiPolicy'
 >;
 
 export interface AttachBonusReleasesParams {
@@ -55,6 +57,7 @@ export async function attachBonusReleasesToPayrollRun(
     select: {
       id: true,
       status: true,
+      payrollMonth: true,
       kpiSalesPlanAmount: true,
       kpiSalesActualAmount: true,
     },
@@ -96,7 +99,12 @@ export async function attachBonusReleasesToPayrollRun(
 
   const hasSalesRelease = releases.some((r) => r.bonusEntry.type === 'SALES');
   assertSalesKpiInputsComplete(run, hasSalesRelease);
-  const kpiFactor = resolveSalesKpiPayoutFactorFromRun(run);
+
+  const plan =
+    run.kpiSalesPlanAmount != null ? new Decimal(run.kpiSalesPlanAmount) : new Decimal(0);
+  const actual =
+    run.kpiSalesActualAmount != null ? new Decimal(run.kpiSalesActualAmount) : new Decimal(0);
+  const gateRulesByEmployee = new Map<string, KpiGateRules>();
 
   for (const rel of releases) {
     const line = await tx.salaryLine.findUnique({
@@ -109,6 +117,17 @@ export async function attachBonusReleasesToPayrollRun(
         `No salary line for employee ${rel.employeeId} in this payroll run; seed or add the line first.`,
       );
     }
+
+    let gateRules = gateRulesByEmployee.get(rel.employeeId);
+    if (gateRules == null) {
+      gateRules = await resolveKpiGateRulesForPayrollEmployee(tx, rel.employeeId, run.payrollMonth);
+      gateRulesByEmployee.set(rel.employeeId, gateRules);
+    }
+
+    const kpiFactor =
+      rel.bonusEntry.type === 'SALES'
+        ? computeKpiGatePayoutFactor(plan, actual, gateRules)
+        : new Decimal(1);
 
     const kpiScaled = computePayrollIncludedBonusAmount({
       releaseAmount: rel.amount,

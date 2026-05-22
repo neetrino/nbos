@@ -1,5 +1,29 @@
 // ─── COMPENSATION PROFILES (My Company → Finance payroll input) ───
 
+enum KpiPolicyStatusEnum {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+/// Active KPI gate parameters (template logic `KPI_GATE_PAYOUT_MULTIPLIER` lives in app code).
+model KpiPolicy {
+  id           String              @id @default(uuid())
+  name         String
+  templateCode String              @map("template_code")
+  gateRules    Json                @map("gate_rules")
+  status       KpiPolicyStatusEnum @default(ACTIVE)
+  scope        String?
+  notes        String?
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  compensationProfiles CompensationProfile[]
+
+  @@index([status])
+  @@map("kpi_policies")
+}
+
 enum CompensationProfileStatusEnum {
   DRAFT
   REVIEW
@@ -26,6 +50,7 @@ model CompensationProfile {
   updatedAt       DateTime                      @updatedAt @map("updated_at")
 
   employee    Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  kpiPolicy   KpiPolicy?   @relation(fields: [kpiPolicyId], references: [id], onDelete: SetNull)
   approvedBy  Employee?    @relation("CompensationProfileApprover", fields: [approvedById], references: [id])
   salaryLines SalaryLine[]
 

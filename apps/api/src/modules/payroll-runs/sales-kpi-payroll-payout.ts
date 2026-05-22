@@ -1,45 +1,29 @@
 import { BadRequestException } from '@nestjs/common';
 import { Decimal, type BonusTypeEnum } from '@nbos/database';
 
-/** NBOS `03-Bonus-Payroll-Logic.md`: full payout when plan execution ≥ this % */
-export const SALES_KPI_FULL_PAYOUT_MIN_PLAN_PCT = new Decimal(70);
-
-/** Half payout band lower bound (inclusive). */
-export const SALES_KPI_HALF_PAYOUT_MIN_PLAN_PCT = new Decimal(50);
-
-const ZERO = new Decimal(0);
-const ONE = new Decimal(1);
-const HALF = new Decimal(0.5);
-
-/**
- * Seller KPI coefficient applied to **payout** (not accrual), from plan attainment ratio actual/plan.
- */
-export function computeSalesKpiPayoutFactor(plan: Decimal, actual: Decimal): Decimal {
-  if (plan.lte(0)) {
-    return ONE;
-  }
-  const pct = actual.div(plan).mul(100);
-  if (pct.gte(SALES_KPI_FULL_PAYOUT_MIN_PLAN_PCT)) {
-    return ONE;
-  }
-  if (pct.gte(SALES_KPI_HALF_PAYOUT_MIN_PLAN_PCT)) {
-    return HALF;
-  }
-  return ZERO;
-}
+import { DEFAULT_KPI_GATE_RULES } from './default-kpi-gate-rules';
+import { computeKpiGatePayoutFactor } from './kpi-gate-payout';
+import type { KpiGateRules } from './kpi-gate-rules.types';
 
 export type PayrollRunKpiSnapshot = {
   kpiSalesPlanAmount: Decimal | null;
   kpiSalesActualAmount: Decimal | null;
 };
 
-export function resolveSalesKpiPayoutFactorFromRun(run: PayrollRunKpiSnapshot): Decimal {
+export function computeSalesKpiPayoutFactor(plan: Decimal, actual: Decimal): Decimal {
+  return computeKpiGatePayoutFactor(plan, actual, DEFAULT_KPI_GATE_RULES);
+}
+
+export function resolveSalesKpiPayoutFactorFromRun(
+  run: PayrollRunKpiSnapshot,
+  gateRules: KpiGateRules = DEFAULT_KPI_GATE_RULES,
+): Decimal {
   const plan = run.kpiSalesPlanAmount != null ? new Decimal(run.kpiSalesPlanAmount) : null;
   const actual = run.kpiSalesActualAmount != null ? new Decimal(run.kpiSalesActualAmount) : null;
   if (plan == null || actual == null || plan.lte(0)) {
-    return ONE;
+    return new Decimal(1);
   }
-  return computeSalesKpiPayoutFactor(plan, actual);
+  return computeKpiGatePayoutFactor(plan, actual, gateRules);
 }
 
 /**
