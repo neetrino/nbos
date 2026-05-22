@@ -65,8 +65,8 @@ function BonusBySourceTable({ rows }: { rows: readonly SalaryLineMonthBonusRow[]
             <TableCell className="text-right tabular-nums">
               {formatAmount(group.released)}
             </TableCell>
-            <TableCell className="text-muted-foreground text-right tabular-nums">
-              {POLICY_PENDING_LABEL}
+            <TableCell className="text-right tabular-nums">
+              {group.burned > 0 ? formatAmount(group.burned) : POLICY_PENDING_LABEL}
             </TableCell>
             <TableCell className="text-muted-foreground text-right tabular-nums">
               {POLICY_PENDING_LABEL}
@@ -95,6 +95,7 @@ function BonusReleaseLinesTable({ rows }: { rows: readonly SalaryLineMonthBonusR
           <TableHead className="text-right">Planned</TableHead>
           <TableHead className="text-right">Released</TableHead>
           <TableHead className="text-right">Included</TableHead>
+          <TableHead className="text-right">Burned KPI</TableHead>
           <TableHead className="text-right">Paid</TableHead>
           <TableHead className="text-right">Remaining</TableHead>
         </TableRow>
@@ -124,6 +125,9 @@ function BonusReleaseLinesTable({ rows }: { rows: readonly SalaryLineMonthBonusR
                 {row.includedAmount
                   ? formatAmount(parseAmount(row.includedAmount))
                   : formatAmount(parseAmount(row.releaseAmount))}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {row.kpiBurnedAmount ? formatAmount(parseAmount(row.kpiBurnedAmount)) : '—'}
               </TableCell>
               <TableCell className="text-right tabular-nums">
                 {formatAmount(parseAmount(row.paidAmount))}

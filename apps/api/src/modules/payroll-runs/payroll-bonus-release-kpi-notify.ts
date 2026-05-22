@@ -35,6 +35,7 @@ export async function notifySalesKpiReductionsOnAttach(
       employeeId: true,
       amount: true,
       payrollIncludedAmount: true,
+      kpiBurnedAmount: true,
       bonusEntry: { select: { type: true, order: { select: { code: true } } } },
       payrollRun: { select: { payrollMonth: true } },
     },
@@ -63,7 +64,7 @@ export async function notifySalesKpiReductionsOnAttach(
         includedAmount: includedLabel,
         payrollMonth,
       }),
-      burnedAmount: rel.amount.minus(included).toFixed(2),
+      burnedAmount: (rel.kpiBurnedAmount ?? rel.amount.minus(included)).toFixed(2),
     });
   }
 }

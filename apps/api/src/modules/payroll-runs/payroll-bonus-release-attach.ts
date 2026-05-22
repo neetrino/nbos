@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbos/database';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
+import { computeSalesKpiBurnedAmount } from './sales-kpi-burned-amount';
 import {
   assertSalesKpiInputsComplete,
   computePayrollIncludedBonusAmount,
@@ -135,12 +136,19 @@ export async function attachBonusReleasesToPayrollRun(
       },
     });
 
+    const kpiBurnedAmount = computeSalesKpiBurnedAmount({
+      releaseAmount: rel.amount,
+      includedAmount: included,
+      bonusType: rel.bonusEntry.type,
+    });
+
     await tx.bonusRelease.update({
       where: { id: rel.id },
       data: {
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId,
         payrollIncludedAmount: included,
+        kpiBurnedAmount,
       },
     });
   }

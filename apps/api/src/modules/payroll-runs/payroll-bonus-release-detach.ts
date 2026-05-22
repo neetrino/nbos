@@ -128,6 +128,7 @@ export async function detachBonusReleasesFromPayrollRun(
         status: 'APPROVED',
         payrollRunId: null,
         payrollIncludedAmount: null,
+        kpiBurnedAmount: null,
       },
     });
   }

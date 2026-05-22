@@ -36,6 +36,7 @@ type EmployeeAcc = {
   paid: Decimal;
   released: Decimal;
   includedInPayroll: Decimal;
+  kpiBurnedPersisted: Decimal;
   kpiGatePassed: boolean | null;
   statuses: BonusStatusEnum[];
 };
@@ -129,6 +130,7 @@ export async function queryBonusPoolEmployeeLines(
         employeeId: true,
         amount: true,
         payrollIncludedAmount: true,
+        kpiBurnedAmount: true,
         status: true,
       },
     }),
@@ -166,6 +168,7 @@ export async function queryBonusPoolEmployeeLines(
         paid: ZERO,
         released: ZERO,
         includedInPayroll: ZERO,
+        kpiBurnedPersisted: ZERO,
         kpiGatePassed: null,
         statuses: [],
       };
@@ -193,6 +196,9 @@ export async function queryBonusPoolEmployeeLines(
       const inc = rel.payrollIncludedAmount ?? rel.amount;
       acc.includedInPayroll = acc.includedInPayroll.plus(inc);
     }
+    if (rel.kpiBurnedAmount != null && rel.kpiBurnedAmount.gt(0)) {
+      acc.kpiBurnedPersisted = acc.kpiBurnedPersisted.plus(rel.kpiBurnedAmount);
+    }
   }
 
   const lines: BonusPoolEmployeeLineDto[] = [...byEmployee.values()]
@@ -200,6 +206,11 @@ export async function queryBonusPoolEmployeeLines(
       const remaining = Decimal.max(ZERO, acc.planned.minus(acc.released));
       const suggested = suggestReleaseForEmployee(remaining, poolRemaining, poolAvailable);
       const kpiHeld = computeAdvisoryKpiHeldAmount(acc.planned, acc.released, acc.kpiGatePassed);
+      const burned = acc.kpiBurnedPersisted.gt(0)
+        ? acc.kpiBurnedPersisted
+        : kpiHeld != null
+          ? kpiHeld
+          : null;
       return {
         employeeId: acc.employeeId,
         employeeName: acc.employeeName,
@@ -212,7 +223,7 @@ export async function queryBonusPoolEmployeeLines(
         includedInPayrollAmount: money(acc.includedInPayroll),
         paidAmount: money(acc.paid),
         remainingAmount: money(remaining),
-        burnedAmount: kpiHeld != null ? money(kpiHeld) : null,
+        burnedAmount: burned != null ? money(burned) : null,
         carryOverAmount: null,
         suggestedReleaseAmount: suggested.gt(0) ? money(suggested) : null,
         kpiGatePassed: acc.kpiGatePassed,

@@ -13,6 +13,7 @@ const base: EmployeeWalletBonusRow = {
   paidAmount: '0',
   remainingAmount: '500',
   payrollMonth: '2026-04',
+  kpiBurnedAmount: null,
   orderPaymentType: null,
   salesAccrualHint: null,
   productLabel: 'Website',

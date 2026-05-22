@@ -6,6 +6,7 @@ import { BONUS_RELEASE_COUNTING_STATUSES } from '../bonus/product-bonus-pool.con
 export interface BonusReleaseForWalletRollup {
   bonusEntryId: string;
   amount: Decimal;
+  kpiBurnedAmount: Decimal | null;
   status: BonusReleaseStatusEnum;
   updatedAt: Date;
   payrollRun: { payrollMonth: string } | null;
@@ -15,6 +16,7 @@ export interface WalletReleaseRollup {
   releasedAmount: Decimal;
   paidAmount: Decimal;
   remainingAmount: Decimal;
+  kpiBurnedAmount: Decimal;
   payrollMonth: string | null;
 }
 
@@ -26,6 +28,7 @@ function rollupOneEntry(
 ): WalletReleaseRollup {
   let released = BONUS_POOL_ZERO;
   let paid = BONUS_POOL_ZERO;
+  let kpiBurned = BONUS_POOL_ZERO;
 
   for (const r of releases) {
     if (COUNTING.has(r.status)) {
@@ -33,6 +36,9 @@ function rollupOneEntry(
     }
     if (r.status === 'PAID') {
       paid = paid.add(r.amount);
+    }
+    if (r.kpiBurnedAmount != null && r.kpiBurnedAmount.gt(0)) {
+      kpiBurned = kpiBurned.add(r.kpiBurnedAmount);
     }
   }
 
@@ -46,6 +52,7 @@ function rollupOneEntry(
     releasedAmount: released,
     paidAmount: paid,
     remainingAmount: remaining,
+    kpiBurnedAmount: kpiBurned,
     payrollMonth: payrollHit?.payrollRun?.payrollMonth ?? null,
   };
 }

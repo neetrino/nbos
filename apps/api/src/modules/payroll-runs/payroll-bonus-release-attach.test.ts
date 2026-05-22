@@ -132,6 +132,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId: 'run1',
         payrollIncludedAmount: new Decimal(50),
+        kpiBurnedAmount: null,
       },
     });
     expect(tx.payrollRun.update).toHaveBeenCalled();
@@ -195,6 +196,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
       where: { id: 'rel1' },
       data: expect.objectContaining({
         payrollIncludedAmount: new Decimal(50),
+        kpiBurnedAmount: new Decimal(50),
       }),
     });
   });

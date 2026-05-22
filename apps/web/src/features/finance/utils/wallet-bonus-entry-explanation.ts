@@ -45,6 +45,11 @@ export function walletBonusEntryExplanation(row: EmployeeWalletBonusRow): string
     return 'Released to payroll but not paid yet — follows Pay Now / expense payment timing.';
   }
 
+  const burned = row.kpiBurnedAmount ? parseAmount(row.kpiBurnedAmount) : 0;
+  if (burned > 0) {
+    return `Sales KPI reduced payroll by ${burned.toFixed(2)} on a prior attach — see included vs released amounts.`;
+  }
+
   if (row.walletGroup === 'NEXT_PAYROLL' && planned > 0) {
     return 'Queued for payroll — amount may change if KPI or funding rules apply at attach.';
   }

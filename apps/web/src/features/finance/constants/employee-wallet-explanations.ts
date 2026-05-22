@@ -40,7 +40,7 @@ export const WALLET_COMPENSATION_GLOSSARY: ReadonlyArray<{ term: string; text: s
   },
   {
     term: 'Burned (KPI)',
-    text: 'When KPI is not met, sales bonus may be reduced at payroll attach. Full burned amounts will appear here after policy engine ships.',
+    text: 'When sales KPI is not met, payroll may include less than the release amount. Burned KPI is stored on attach and shown on wallet and salary breakdown.',
   },
   {
     term: 'Carry-over',

@@ -173,6 +173,7 @@ export interface SalaryLineMonthBonusRow {
   plannedAmount: string;
   releaseAmount: string;
   includedAmount: string | null;
+  kpiBurnedAmount: string | null;
   paidAmount: string;
   remainingAmount: string;
   reason: string | null;

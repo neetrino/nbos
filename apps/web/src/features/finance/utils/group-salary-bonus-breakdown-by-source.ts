@@ -15,6 +15,7 @@ export type SalaryBonusBreakdownSourceGroup = {
   orderCode: string;
   planned: number;
   released: number;
+  burned: number;
   included: number;
   paid: number;
   remaining: number;
@@ -50,6 +51,7 @@ export function groupSalaryBonusBreakdownBySource(
         orderCode: row.orderCode,
         planned: 0,
         released: 0,
+        burned: 0,
         included: 0,
         paid: 0,
         remaining: 0,
@@ -61,6 +63,9 @@ export function groupSalaryBonusBreakdownBySource(
 
     acc.plannedByEntry.set(row.bonusEntryId, parseAmount(row.plannedAmount));
     acc.released += parseAmount(row.releaseAmount);
+    if (row.kpiBurnedAmount) {
+      acc.burned += parseAmount(row.kpiBurnedAmount);
+    }
     const included = row.includedAmount
       ? parseAmount(row.includedAmount)
       : parseAmount(row.releaseAmount);
@@ -79,6 +84,7 @@ export function groupSalaryBonusBreakdownBySource(
       orderCode: acc.orderCode,
       planned: [...acc.plannedByEntry.values()].reduce((sum, v) => sum + v, 0),
       released: acc.released,
+      burned: acc.burned,
       included: acc.included,
       paid: acc.paid,
       remaining: acc.remaining,

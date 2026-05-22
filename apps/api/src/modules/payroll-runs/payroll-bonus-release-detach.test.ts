@@ -97,7 +97,12 @@ describe('detachBonusReleasesFromPayrollRun', () => {
     );
     expect(tx.bonusRelease.update).toHaveBeenCalledWith({
       where: { id: 'rel1' },
-      data: { status: 'APPROVED', payrollRunId: null, payrollIncludedAmount: null },
+      data: {
+        status: 'APPROVED',
+        payrollRunId: null,
+        payrollIncludedAmount: null,
+        kpiBurnedAmount: null,
+      },
     });
     expect(tx.payrollRun.update).toHaveBeenCalled();
   });

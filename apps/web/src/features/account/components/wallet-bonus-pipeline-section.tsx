@@ -71,6 +71,11 @@ export function WalletBonusPipelineSection({
                           {formatAmount(parseAmount(b.paidAmount))} · Remaining{' '}
                           {formatAmount(parseAmount(b.remainingAmount))}
                         </div>
+                        {b.kpiBurnedAmount ? (
+                          <div className="text-destructive mt-1 text-[10px] tabular-nums">
+                            Burned KPI {formatAmount(parseAmount(b.kpiBurnedAmount))}
+                          </div>
+                        ) : null}
                         {hint ? (
                           <p className="text-muted-foreground mt-2 text-[10px] leading-snug">
                             {hint}

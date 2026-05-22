@@ -16,6 +16,7 @@ const baseRow = (overrides: Partial<SalaryLineMonthBonusRow>): SalaryLineMonthBo
   plannedAmount: '1000',
   releaseAmount: '400',
   includedAmount: '400',
+  kpiBurnedAmount: null,
   paidAmount: '0',
   remainingAmount: '600',
   reason: null,
@@ -40,5 +41,13 @@ describe('groupSalaryBonusBreakdownBySource', () => {
     expect(groups[0]?.included).toBe(400);
     expect(groups[0]?.paid).toBe(50);
     expect(groups[0]?.releaseCount).toBe(2);
+  });
+
+  it('sums persisted kpi burned per source group', () => {
+    const groups = groupSalaryBonusBreakdownBySource([
+      baseRow({ kpiBurnedAmount: '30' }),
+      baseRow({ bonusReleaseId: 'r2', kpiBurnedAmount: '20', releaseAmount: '50' }),
+    ]);
+    expect(groups[0]?.burned).toBe(50);
   });
 });

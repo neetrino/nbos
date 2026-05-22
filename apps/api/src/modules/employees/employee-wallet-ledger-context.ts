@@ -44,6 +44,7 @@ export async function loadWalletBonusLedgerContext(
           select: {
             bonusEntryId: true,
             amount: true,
+            kpiBurnedAmount: true,
             status: true,
             releaseType: true,
             updatedAt: true,

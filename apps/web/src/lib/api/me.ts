@@ -21,6 +21,8 @@ export interface EmployeeWalletBonusRow {
   paidAmount: string;
   remainingAmount: string;
   payrollMonth: string | null;
+  /** Sum of persisted SALES KPI burned on releases for this bonus entry. */
+  kpiBurnedAmount: string | null;
   orderPaymentType: string | null;
   salesAccrualHint: string | null;
   /** Product / extension scope for this order (from bonus pool). */

@@ -13,6 +13,7 @@ describe('buildWalletReleaseRollups', () => {
       {
         bonusEntryId: 'e1',
         amount: new Decimal(400),
+        kpiBurnedAmount: null,
         status: 'APPROVED' as const,
         updatedAt: new Date('2026-01-02'),
         payrollRun: null,
@@ -20,6 +21,7 @@ describe('buildWalletReleaseRollups', () => {
       {
         bonusEntryId: 'e1',
         amount: new Decimal(300),
+        kpiBurnedAmount: new Decimal(25),
         status: 'PAID' as const,
         updatedAt: new Date('2026-01-05'),
         payrollRun: { payrollMonth: '2026-02' },
@@ -30,6 +32,7 @@ describe('buildWalletReleaseRollups', () => {
     expect(roll?.paidAmount.toFixed(2)).toBe('300.00');
     expect(roll?.remainingAmount.toFixed(2)).toBe('700.00');
     expect(roll?.payrollMonth).toBe('2026-02');
+    expect(roll?.kpiBurnedAmount.toFixed(2)).toBe('25.00');
   });
 
   it('uses zero rollups when no releases', () => {
