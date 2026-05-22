@@ -1,5 +1,7 @@
 'use client';
 
+import { Gift } from 'lucide-react';
+import { EmptyState } from '@/components/shared';
 import {
   Table,
   TableBody,
@@ -26,9 +28,12 @@ export function BonusBoardListView({
 }) {
   if (rows.length === 0) {
     return (
-      <p className="text-muted-foreground py-8 text-center text-sm">
-        No bonus entries match filters.
-      </p>
+      <EmptyState
+        icon={Gift}
+        title="No matching entries"
+        description="Adjust search or filters to see bonus lines."
+        action={null}
+      />
     );
   }
 

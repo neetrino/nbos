@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
+import { Gift } from 'lucide-react';
+import { EmptyState } from '@/components/shared';
 import {
   BonusCard,
   sumBonusEntryAmounts,
@@ -75,7 +77,9 @@ function GroupedBonusView({
   onOpenReleases: (entry: BonusEntryListRow) => void;
 }) {
   if (groups.length === 0) {
-    return <p className="text-muted-foreground py-8 text-center text-sm">{emptyLabel}</p>;
+    return (
+      <EmptyState icon={Gift} title="No matching entries" description={emptyLabel} action={null} />
+    );
   }
 
   return (

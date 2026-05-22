@@ -49,6 +49,8 @@ import { SalaryBoardGridView } from '@/features/finance/components/payroll/salar
 import { SalaryBoardListView } from '@/features/finance/components/payroll/salary-board-list-view';
 import { SalaryBoardPayoutBoardView } from '@/features/finance/components/payroll/salary-board-payout-board-view';
 import { SALARY_BOARD_VIEW_OPTIONS } from '@/features/finance/components/payroll/salary-board-view-options';
+import { SalaryBoardFilteredTotalsBar } from '@/features/finance/components/payroll/salary-board-filtered-totals-bar';
+import { computeSalaryBoardFilteredTotals } from '@/features/finance/utils/salary-board-filtered-totals';
 
 function salaryLineExistsOnBoard(board: SalaryBoardResponse, salaryLineId: string): boolean {
   return board.rows.some((row) => row.cells.some((cell) => cell?.salaryLineId === salaryLineId));
@@ -256,6 +258,11 @@ export function SalaryBoardPageContent() {
     ],
   );
 
+  const filteredTotals = useMemo(
+    () => computeSalaryBoardFilteredTotals(filteredEntries),
+    [filteredEntries],
+  );
+
   useModuleHeroSlots(moduleHeroSlots);
 
   if (loading && !data) {
@@ -294,14 +301,23 @@ export function SalaryBoardPageContent() {
           title="No matching lines"
           description="Adjust search or filters to see salary lines."
         />
-      ) : view === 'grid' ? (
-        <SalaryBoardGridView data={data} rows={filteredRows} onOpenMonth={openMonthSheet} />
-      ) : view === 'cards' ? (
-        <SalaryBoardCardsView data={data} rows={filteredRows} onOpenMonth={openMonthSheet} />
-      ) : view === 'list' ? (
-        <SalaryBoardListView entries={filteredEntries} onOpenMonth={openMonthSheet} />
       ) : (
-        <SalaryBoardPayoutBoardView entries={filteredEntries} onOpenMonth={openMonthSheet} />
+        <>
+          <SalaryBoardFilteredTotalsBar totals={filteredTotals} />
+          {view === 'grid' ? (
+            <SalaryBoardGridView data={data} rows={filteredRows} onOpenMonth={openMonthSheet} />
+          ) : view === 'cards' ? (
+            <SalaryBoardCardsView data={data} rows={filteredRows} onOpenMonth={openMonthSheet} />
+          ) : view === 'list' ? (
+            <SalaryBoardListView
+              entries={filteredEntries}
+              totals={filteredTotals}
+              onOpenMonth={openMonthSheet}
+            />
+          ) : (
+            <SalaryBoardPayoutBoardView entries={filteredEntries} onOpenMonth={openMonthSheet} />
+          )}
+        </>
       )}
 
       <EmployeeMonthCompensationSheet

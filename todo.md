@@ -415,7 +415,7 @@ Design principles:
 
 - [x] Add monthly compensation projection for Finance (`querySalaryLineMonthDetail`).
 - [x] Add read-only employee wallet monthly projection (`GET /me/wallet/salary-lines/:id/month-detail`).
-- [ ] Add payroll-linked expenses projection for Pay Now.
+- [x] Add payroll-linked expenses projection for Pay Now (`linkedPayrollRun`, `payrollLinked` filters).
 - [x] Include bonus source breakdown by project/product/extension/order.
 - [x] Include paid/remaining from linked expense payments.
 - [ ] Include KPI/cap/carry-over/burned explanations where data exists.
@@ -429,7 +429,7 @@ Design principles:
 - [x] Add Board view by payout state (active_payout / accumulating / past_paid).
 - [x] Add `Employee Month Compensation Sheet` (Salary Board; URL `openSalaryLineId`).
 - [x] Add filters by employee, line status, payout phase, month range (URL + client).
-- [ ] Add totals and clear visual statuses.
+- [x] Add totals and clear visual statuses (filtered totals bar, list footer, payout + line badges on grid cells).
 - [x] Preserve Bitrix parity (sheet): fix, bonus total, total payable, paid, remaining, bonus list.
 
 ### Phase 4 - Payroll workspace UX
@@ -471,10 +471,10 @@ Design principles:
 ### Phase 7 - Polish, consistency, and documentation
 
 - [x] Align route names with Finance canon (`/finance/bonuses` canonical; `/bonus` redirects with query preserved).
-- [ ] Update NBOS docs if final UX decisions differ from current docs.
-- [ ] Add loading, empty, and error states for every new view.
+- [x] Update NBOS docs if final UX decisions differ from current docs (`04-Finance-Pages.md` salary + bonus views).
+- [x] Add loading, empty, and error states for every new view (bonus board EmptyState; salary board already had Loading/Error/Empty).
 - [ ] Add CSV/export where useful for Finance.
-- [ ] Add tests for projections and critical UI utilities.
+- [x] Add tests for projections and critical UI utilities (`salary-board-filtered-totals`, `bonus-board-grouping`, `bonus-board-url`).
 - [ ] Add visual QA pass against the old Bitrix workflow: salary card, bonus list, partial payments, paid status, Pay Now linkage.
 
 ## Open product decisions

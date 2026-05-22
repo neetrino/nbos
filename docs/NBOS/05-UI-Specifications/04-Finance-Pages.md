@@ -255,13 +255,17 @@ Backlog должен показывать отдельную сумму нако
 
 ### 5.1. Виды отображения
 
-Доступные виды:
+Доступные виды (реализовано, `localStorage`):
 
-- `List / Список`;
-- `Board / Доска`;
-- `Calendar/Grid / История по месяцам`.
+- `Board` — kanban по статусу бонуса;
+- `List` — плоская таблица;
+- `Employee` — группировка по сотруднику;
+- `Product` — группировка по проекту;
+- `Payroll` — preview по `payoutMonth` (месяц payroll / «No payroll month»).
 
-Последний выбранный пользователем вид должен запоминаться.
+Legacy URL `/bonus` редиректит на `/finance/bonuses` с сохранением query.
+
+Сверху фильтрованного набора — счётчики: visible entries, pipeline total.
 
 ### 5.2. Kanban-доска
 
@@ -314,14 +318,17 @@ Backlog должен показывать отдельную сумму нако
 
 ### 6.1. Основной вид
 
-Default view:
+Default view: `Grid` (сотрудники × месяцы). Переключатель видов (`localStorage`):
 
-`Calendar/Grid / сотрудники x месяцы`
+- `Grid` — матрица employee × month;
+- `Cards` — карточки по сотруднику;
+- `List` — плоская таблица с footer totals;
+- `Board` — колонки по payout phase (`past_paid` / `active_payout` / `accumulating`).
 
 - строки: сотрудники;
 - колонки: месяцы;
-- ячейка: зарплата сотрудника за месяц;
-- цвет ячейки: Pending / Approved / Partially Paid / Paid / Held.
+- ячейка: payout phase + line status badges, payable / paid / remaining;
+- панель totals над видом: visible lines, payable, paid, remaining (по активным фильтрам).
 
 Клик по заголовку месяца открывает:
 

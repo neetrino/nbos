@@ -1,6 +1,7 @@
 'use client';
 
 import { StatusBadge } from '@/components/shared';
+import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { SalaryBoardCell } from '@/lib/api/payroll-runs';
@@ -20,6 +21,7 @@ export function SalaryBoardCellButton({
   compact?: boolean;
 }) {
   const lineUi = salaryLineStatusBoardUi(cell.lineStatus);
+  const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[cell.payoutPhase];
 
   return (
     <button
@@ -31,7 +33,10 @@ export function SalaryBoardCellButton({
           : 'hover:bg-muted/60 border-border flex w-full flex-col gap-1 rounded-lg border px-2 py-2 text-left transition-colors'
       }
     >
-      <StatusBadge label={lineUi.label} variant={lineUi.variant} />
+      <div className="flex flex-wrap items-center justify-center gap-1">
+        <StatusBadge label={phaseUi.label} variant={phaseUi.variant} />
+        <StatusBadge label={lineUi.label} variant={lineUi.variant} />
+      </div>
       <span className="text-muted-foreground text-xs tabular-nums">
         {formatAmount(parseAmount(cell.totalPayable))}
       </span>

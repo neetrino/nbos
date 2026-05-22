@@ -16,6 +16,7 @@ import {
   employeeDisplayName,
   type SalaryBoardEntry,
 } from '@/features/finance/components/payroll/salary-board-entries';
+import type { SalaryBoardFilteredTotals } from '@/features/finance/utils/salary-board-filtered-totals';
 
 function parseAmount(value: string): number {
   const n = Number.parseFloat(value);
@@ -24,9 +25,11 @@ function parseAmount(value: string): number {
 
 export function SalaryBoardListView({
   entries,
+  totals,
   onOpenMonth,
 }: {
   entries: SalaryBoardEntry[];
+  totals?: SalaryBoardFilteredTotals;
   onOpenMonth: (salaryLineId: string) => void;
 }) {
   if (entries.length === 0) {
@@ -36,6 +39,13 @@ export function SalaryBoardListView({
       </p>
     );
   }
+
+  const footerTotals = totals ?? {
+    lineCount: entries.length,
+    payable: entries.reduce((s, e) => s + parseAmount(e.cell.totalPayable), 0),
+    paid: entries.reduce((s, e) => s + parseAmount(e.cell.paidAmount), 0),
+    remaining: entries.reduce((s, e) => s + parseAmount(e.cell.remainingAmount), 0),
+  };
 
   return (
     <div className="border-border overflow-x-auto rounded-xl border">
@@ -86,6 +96,22 @@ export function SalaryBoardListView({
             );
           })}
         </TableBody>
+        <tfoot>
+          <TableRow className="bg-muted/30 font-medium">
+            <TableCell colSpan={4} className="text-muted-foreground text-xs">
+              Filtered ({footerTotals.lineCount})
+            </TableCell>
+            <TableCell className="text-right tabular-nums">
+              {formatAmount(footerTotals.payable)}
+            </TableCell>
+            <TableCell className="text-right tabular-nums">
+              {formatAmount(footerTotals.paid)}
+            </TableCell>
+            <TableCell className="text-right tabular-nums">
+              {formatAmount(footerTotals.remaining)}
+            </TableCell>
+          </TableRow>
+        </tfoot>
       </Table>
     </div>
   );

@@ -1,14 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Gift } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
+  EmptyState,
   ErrorState,
   IntegratedSearchFilters,
   LoadingState,
   useModuleHeroSlots,
   ViewModeSwitch,
 } from '@/components/shared';
+import { BonusBoardFilteredTotalsBar } from '@/features/finance/components/bonus/bonus-board-filtered-totals-bar';
+import { computeBonusBoardFilteredTotals } from '@/features/finance/utils/bonus-board-filtered-totals';
 import {
   readBonusBoardViewMode,
   writeBonusBoardViewMode,
@@ -290,6 +294,8 @@ export function BonusBoardPageContent() {
     ],
   );
 
+  const filteredTotals = useMemo(() => computeBonusBoardFilteredTotals(filtered), [filtered]);
+
   const boardBody = useMemo(() => {
     switch (view) {
       case 'list':
@@ -317,7 +323,19 @@ export function BonusBoardPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      {boardBody}
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={Gift}
+          title="No matching bonuses"
+          description="Adjust search or filters, or wait for bonus entries on orders."
+          action={null}
+        />
+      ) : (
+        <>
+          <BonusBoardFilteredTotalsBar totals={filteredTotals} />
+          {boardBody}
+        </>
+      )}
 
       <BonusEntryReleasesSheet
         entry={ledgerEntry}
