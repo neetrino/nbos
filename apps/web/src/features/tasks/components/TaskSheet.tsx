@@ -12,6 +12,7 @@ import {
   TASK_SHEET_CARD_CLASS,
   TASK_SHEET_CHAT_COLUMN_CLASS,
   TASK_SHEET_DETAIL_COLUMN_CLASS,
+  TASK_SHEET_META_BLOCK_CLASS,
   TASK_SHEET_SECTION_SURFACE_CLASS,
 } from './task-sheet-classes';
 import { TaskSheetChatPanel } from './TaskSheetChatPanel';
@@ -109,15 +110,19 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                     />
 
                     <section className={TASK_SHEET_CARD_CLASS}>
-                      <TaskLinksSection
-                        task={state.task}
-                        compact
-                        onRemoveLink={state.handleRemoveLink}
-                      />
+                      <div className={TASK_SHEET_META_BLOCK_CLASS}>
+                        <TaskLinksSection
+                          task={state.task}
+                          compact
+                          onRemoveLink={state.handleRemoveLink}
+                        />
+                      </div>
                     </section>
 
                     <section className={TASK_SHEET_CARD_CLASS}>
-                      <TaskCoAssigneesSection task={state.task} />
+                      <div className={TASK_SHEET_META_BLOCK_CLASS}>
+                        <TaskCoAssigneesSection task={state.task} />
+                      </div>
                     </section>
 
                     {hasExtras ? (

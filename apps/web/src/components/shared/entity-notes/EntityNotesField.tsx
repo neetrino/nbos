@@ -7,15 +7,17 @@ import { cn } from '@/lib/utils';
 import {
   ENTITY_NOTES_EDITOR_ROOT_CLASS,
   ENTITY_NOTES_LABEL_CLASS,
-  ENTITY_NOTES_SHELL_BASE_CLASS,
   ENTITY_NOTES_SHELL_DISABLED_CLASS,
-  ENTITY_NOTES_SHELL_PASSIVE_CLASS,
+  ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS,
+  ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS,
 } from './entity-notes-field-classes';
 import type { EntityNotesFieldProps } from './entity-notes-field.types';
+import { EntityNotesEmptyHint } from './entity-notes-empty-hint';
 import { EntityNotesToolbar } from './entity-notes-toolbar';
+import { isNotesValueEmpty } from './entity-notes-value';
 import { useEntityNotesEditor } from './use-entity-notes-editor';
 
-const DEFAULT_PLACEHOLDER = 'Write a note…';
+const DEFAULT_PLACEHOLDER = 'Comment';
 
 function focusLeftShell(shell: HTMLElement | null): boolean {
   const active = document.activeElement;
@@ -39,6 +41,8 @@ export function EntityNotesField({
   const shellRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
   const isEditing = isActive && !isLocked;
+  const isEmpty = isNotesValueEmpty(value);
+  const showEmptyHint = !isEditing && isEmpty;
 
   const deactivate = useCallback(() => {
     setIsActive(false);
@@ -83,18 +87,21 @@ export function EntityNotesField({
       <div
         ref={shellRef}
         className={cn(
-          ENTITY_NOTES_SHELL_BASE_CLASS,
-          !isEditing && !isLocked && ENTITY_NOTES_SHELL_PASSIVE_CLASS,
+          isEditing
+            ? ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS
+            : ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS,
           isLocked && ENTITY_NOTES_SHELL_DISABLED_CLASS,
           shellClassName,
         )}
         data-entity-notes-id={_entityId}
         data-entity-notes-type={_entityType}
         data-entity-notes-active={isEditing ? 'true' : 'false'}
+        data-entity-notes-empty={isEmpty ? 'true' : 'false'}
         onPointerDown={onShellPointerDown}
       >
         {isEditing ? <EntityNotesToolbar editor={editor} disabled={isLocked} /> : null}
         <div className={cn(ENTITY_NOTES_EDITOR_ROOT_CLASS, 'relative')}>
+          {showEmptyHint ? <EntityNotesEmptyHint text={placeholder} /> : null}
           <EditorContent editor={editor} />
           {loading ? (
             <div className="bg-background/60 absolute inset-0 flex items-center justify-center">

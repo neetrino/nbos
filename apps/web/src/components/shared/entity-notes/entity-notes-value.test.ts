@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   editorHtmlToNotesValue,
   isHtmlNotesValue,
+  isNotesValueEmpty,
   notesValueToEditorHtml,
 } from './entity-notes-value';
 
@@ -24,5 +25,18 @@ describe('entity-notes-value', () => {
   it('preserves bold markup', () => {
     const out = editorHtmlToNotesValue('<p><strong>Important</strong></p>');
     expect(out).toContain('strong');
+  });
+
+  it('isNotesValueEmpty treats nullish and whitespace as empty', () => {
+    expect(isNotesValueEmpty(null)).toBe(true);
+    expect(isNotesValueEmpty(undefined)).toBe(true);
+    expect(isNotesValueEmpty('')).toBe(true);
+    expect(isNotesValueEmpty('   ')).toBe(true);
+    expect(isNotesValueEmpty('<p></p>')).toBe(true);
+  });
+
+  it('isNotesValueEmpty is false when content exists', () => {
+    expect(isNotesValueEmpty('Hello')).toBe(false);
+    expect(isNotesValueEmpty('<p>Hi</p>')).toBe(false);
   });
 });

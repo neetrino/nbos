@@ -3,18 +3,38 @@ import { DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS } from '../detail-sheet-classes';
 export const ENTITY_NOTES_LABEL_CLASS =
   'text-muted-foreground mb-1.5 block text-xs font-medium tracking-wide';
 
-export const ENTITY_NOTES_SHELL_BASE_CLASS = [
-  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  'bg-background flex w-full flex-col rounded-xl border shadow-sm shadow-black/[0.04]',
-  'border-border/70 transition-[border-color,box-shadow]',
-  'focus-within:border-blue-400/90 focus-within:ring-2 focus-within:ring-blue-400/25',
+/** Shell corner radius — softer than `rounded-xl` (Bitrix-style description bar). */
+const ENTITY_NOTES_SHELL_RADIUS_CLASS = 'rounded-lg';
+
+const ENTITY_NOTES_SHELL_LAYOUT_CLASS = [
+  'flex w-full flex-col transition-[border-color,box-shadow]',
+  ENTITY_NOTES_SHELL_RADIUS_CLASS,
 ].join(' ');
+
+/** Passive: one white surface on sheet canvas (Bitrix-style — no nested border fill). */
+export const ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS = [
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  ENTITY_NOTES_SHELL_LAYOUT_CLASS,
+  'cursor-text border-0 bg-white shadow-sm ring-1 ring-black/[0.05] dark:bg-card dark:ring-white/[0.07]',
+].join(' ');
+
+/** Active edit: same surface + focus ring (toolbar above editor). */
+export const ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS = [
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  ENTITY_NOTES_SHELL_LAYOUT_CLASS,
+  'border-0 bg-white shadow-sm ring-1 ring-black/[0.05] dark:bg-card dark:ring-white/[0.07]',
+  'focus-within:ring-2 focus-within:ring-blue-400/25',
+].join(' ');
+
+/** @deprecated Use passive/editing surface classes — kept for imports during migration. */
+export const ENTITY_NOTES_SHELL_BASE_CLASS = ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS;
 
 export const ENTITY_NOTES_SHELL_DISABLED_CLASS = 'pointer-events-none opacity-60';
 
 export const ENTITY_NOTES_EDITOR_ROOT_CLASS = 'nbos-entity-notes-editor';
 
-export const ENTITY_NOTES_SHELL_PASSIVE_CLASS = 'cursor-text';
+export const ENTITY_NOTES_EMPTY_HINT_CLASS =
+  'text-muted-foreground pointer-events-none absolute inset-y-0 left-3 flex max-w-[calc(100%-1.5rem)] items-center gap-1 text-xs';
 
 export const ENTITY_NOTES_TOOLBAR_CLASS =
   'border-border/80 bg-muted/30 flex flex-wrap items-center gap-0.5 border-b px-1.5 py-1';

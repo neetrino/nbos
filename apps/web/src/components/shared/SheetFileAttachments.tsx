@@ -5,7 +5,11 @@ import { Loader2 } from 'lucide-react';
 import type { FileAsset } from '@/lib/api/drive';
 import { DriveFileCard, type DriveFileCardMenuHandlers } from '@/features/drive/DriveFileCard';
 import { cn } from '@/lib/utils';
-import { SHEET_FILE_GRID_COLUMNS, SHEET_FILE_TILE_LIMIT } from './sheet-file-attachments.constants';
+import {
+  SHEET_FILE_GRID_COLUMNS,
+  SHEET_FILE_GRID_COLUMNS_DENSE,
+  SHEET_FILE_TILE_LIMIT,
+} from './sheet-file-attachments.constants';
 import { SheetPendingFileTile } from './SheetPendingFileTile';
 import type { SheetPendingUpload } from './sheet-pending-upload.types';
 
@@ -14,6 +18,10 @@ export interface SheetFileAttachmentsProps {
   pendingUploads?: SheetPendingUpload[];
   loading?: boolean;
   multiple?: boolean;
+  /** Default 4; use {@link SHEET_FILE_GRID_COLUMNS_DENSE} with `denseTiles` for task sheet. */
+  gridColumns?: number;
+  /** Smaller tiles and tighter grid (8–10 per row). */
+  denseTiles?: boolean;
   uploadBarLabel?: string;
   onUpload: (files: File[]) => void | Promise<void>;
   onOpenFile: (file: FileAsset) => void;
@@ -26,12 +34,17 @@ export function SheetFileAttachments({
   pendingUploads = [],
   loading = false,
   multiple = true,
+  gridColumns,
+  denseTiles = false,
   uploadBarLabel = 'Drag a file here or click to choose',
   onUpload,
   onOpenFile,
   fileMenu,
   footer,
 }: SheetFileAttachmentsProps) {
+  const columns =
+    gridColumns ?? (denseTiles ? SHEET_FILE_GRID_COLUMNS_DENSE : SHEET_FILE_GRID_COLUMNS);
+  const cardLayout = denseTiles ? 'sheet-dense' : 'sheet';
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -67,25 +80,36 @@ export function SheetFileAttachments({
     <div className="space-y-3">
       {showGrid ? (
         loading && visibleFiles.length === 0 && pendingUploads.length === 0 ? (
-          <p className="text-muted-foreground flex min-h-[7.25rem] items-center gap-2 text-sm">
+          <p
+            className={cn(
+              'text-muted-foreground flex items-center gap-2 text-sm',
+              denseTiles ? 'min-h-[4.75rem]' : 'min-h-[7.25rem]',
+            )}
+          >
             <Loader2 className="size-4 animate-spin" aria-hidden />
             Loading files…
           </p>
         ) : (
           <div
-            className="grid gap-3"
-            style={{
-              gridTemplateColumns: `repeat(${SHEET_FILE_GRID_COLUMNS}, minmax(0, 1fr))`,
-            }}
+            className={cn(
+              'grid min-w-0',
+              denseTiles ? 'grid-cols-8 gap-1.5 sm:grid-cols-10' : 'gap-3',
+            )}
+            style={
+              denseTiles ? undefined : { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }
+            }
           >
             {pendingUploads.map((item) => (
-              <SheetPendingFileTile key={item.localId} item={item} />
+              <SheetPendingFileTile key={item.localId} item={item} dense={denseTiles} />
             ))}
             {visibleFiles.map((file) => (
-              <div key={file.id} className="aspect-square min-w-0">
+              <div
+                key={file.id}
+                className={cn('min-w-0', denseTiles ? 'h-[4.75rem]' : 'aspect-square')}
+              >
                 <DriveFileCard
                   file={file}
-                  layout="sheet"
+                  layout={cardLayout}
                   selected={false}
                   checked={false}
                   onSelect={onOpenFile}

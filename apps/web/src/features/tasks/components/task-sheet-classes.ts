@@ -16,3 +16,10 @@ export const TASK_SHEET_SECTION_SURFACE_CLASS =
 
 export const TASK_SHEET_CARD_TITLE_CLASS =
   'text-muted-foreground mb-2 text-[11px] font-semibold tracking-wide uppercase';
+
+/** Meta rows hug the left — values only as wide as content (Bitrix task detail). */
+export const TASK_SHEET_META_BLOCK_CLASS = 'w-fit max-w-full';
+
+/** Label column width — aligned with quick-create task rows. */
+export const TASK_SHEET_META_LABEL_CLASS =
+  'text-muted-foreground w-[8.25rem] shrink-0 text-xs leading-snug';

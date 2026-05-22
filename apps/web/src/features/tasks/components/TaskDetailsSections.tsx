@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Calendar, Eye, Link as LinkIcon, Trash2, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/api/tasks';
+import { TaskSheetCompactRow } from './task-sheet-compact-row';
 
 interface TaskDetailsSectionsProps {
   task: Task;
@@ -48,51 +49,48 @@ export function TaskLinksSection({
   onRemoveLink,
   compact = false,
 }: TaskDetailsSectionsProps & { onRemoveLink?: (linkId: string) => void; compact?: boolean }) {
-  const titleClass = compact
-    ? 'text-muted-foreground mb-1.5 text-[11px] font-semibold tracking-wide uppercase'
-    : 'text-muted-foreground mb-2 flex items-center gap-1 text-xs font-medium tracking-wide';
+  const linkValues =
+    task.links.length === 0 ? (
+      <p className="text-muted-foreground text-sm">No linked entities</p>
+    ) : (
+      <div className="flex flex-col gap-1">
+        {task.links.map((link) => (
+          <span
+            key={link.id}
+            className="text-primary inline-flex min-w-0 items-center gap-1 text-sm font-medium"
+          >
+            <span className="min-w-0 truncate">
+              {link.entityLabel?.trim()
+                ? link.entityLabel
+                : `${link.entityType}: ${link.entityId.slice(0, 8)}…`}
+            </span>
+            {onRemoveLink && (
+              <Button
+                type="button"
+                size="icon-xs"
+                variant="ghost"
+                className="text-muted-foreground shrink-0"
+                title="Remove link"
+                onClick={() => onRemoveLink(link.id)}
+              >
+                <Trash2 size={11} />
+              </Button>
+            )}
+          </span>
+        ))}
+      </div>
+    );
+
+  if (compact) {
+    return <TaskSheetCompactRow label="CRM links">{linkValues}</TaskSheetCompactRow>;
+  }
 
   return (
     <div>
-      <h4 className={titleClass}>
-        {compact ? (
-          'CRM links'
-        ) : (
-          <>
-            <LinkIcon size={12} /> Linked Entities
-          </>
-        )}
+      <h4 className="text-muted-foreground mb-2 flex items-center gap-1 text-xs font-medium tracking-wide">
+        <LinkIcon size={12} /> Linked Entities
       </h4>
-      {task.links.length === 0 ? (
-        <p className="text-muted-foreground text-xs">No linked entities</p>
-      ) : (
-        <div className="flex flex-col gap-1">
-          {task.links.map((link) => (
-            <span
-              key={link.id}
-              className="text-primary inline-flex min-w-0 items-center gap-1 text-sm font-medium"
-            >
-              <span className="min-w-0 truncate">
-                {link.entityLabel?.trim()
-                  ? link.entityLabel
-                  : `${link.entityType}: ${link.entityId.slice(0, 8)}…`}
-              </span>
-              {onRemoveLink && (
-                <Button
-                  type="button"
-                  size="icon-xs"
-                  variant="ghost"
-                  className="text-muted-foreground shrink-0"
-                  title="Remove link"
-                  onClick={() => onRemoveLink(link.id)}
-                >
-                  <Trash2 size={11} />
-                </Button>
-              )}
-            </span>
-          ))}
-        </div>
-      )}
+      {linkValues}
     </div>
   );
 }
@@ -100,14 +98,11 @@ export function TaskLinksSection({
 export function TaskCoAssigneesSection({ task }: TaskDetailsSectionsProps) {
   const count = task.coAssignees.length;
   return (
-    <div className="flex items-center justify-between gap-2">
-      <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
-        Co-assignees
-      </h4>
+    <TaskSheetCompactRow label="Co-assignees">
       <span className="text-primary text-sm font-medium">
         {count > 0 ? `${count} people` : 'Add'}
       </span>
-    </div>
+    </TaskSheetCompactRow>
   );
 }
 

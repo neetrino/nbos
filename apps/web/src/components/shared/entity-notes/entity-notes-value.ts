@@ -55,3 +55,10 @@ export function editorHtmlToNotesValue(html: string): string | null {
   const stripped = stripEmptyEditorHtml(sanitized);
   return stripped.length > 0 ? stripped : null;
 }
+
+/** Whether stored notes are empty (plain or HTML). */
+export function isNotesValueEmpty(value: string | null | undefined): boolean {
+  const trimmed = value?.trim() ?? '';
+  if (!trimmed) return true;
+  return editorHtmlToNotesValue(notesValueToEditorHtml(value)) === null;
+}

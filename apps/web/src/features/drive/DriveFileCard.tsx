@@ -71,7 +71,7 @@ export function DriveFileCheckbox({
   );
 }
 
-type DriveFileCardLayout = 'grid' | 'list' | 'tiles' | 'sheet';
+type DriveFileCardLayout = 'grid' | 'list' | 'tiles' | 'sheet' | 'sheet-dense';
 
 export function DriveFileCard(props: {
   file: FileAsset;
@@ -91,8 +91,10 @@ export function DriveFileCard(props: {
   if (layout === 'tiles') {
     return <DriveFileCardTileRow {...props} menuBusy={menuBusy} />;
   }
-  if (layout === 'sheet') {
-    return <DriveFileCardSheetTile {...props} menuBusy={menuBusy} />;
+  if (layout === 'sheet' || layout === 'sheet-dense') {
+    return (
+      <DriveFileCardSheetTile {...props} menuBusy={menuBusy} dense={layout === 'sheet-dense'} />
+    );
   }
   return <DriveFileCardGrid {...props} menuBusy={menuBusy} />;
 }
@@ -103,6 +105,7 @@ function DriveFileCardSheetTile({
   onSelect,
   menu,
   menuBusy,
+  dense = false,
 }: {
   file: FileAsset;
   selected: boolean;
@@ -112,6 +115,7 @@ function DriveFileCardSheetTile({
   menu?: DriveFileCardMenuHandlers;
   menuBusy: boolean;
   fileDrag?: DriveFileCardDragConfig;
+  dense?: boolean;
 }) {
   const showMenu = Boolean(menu);
   const ext = fileExtensionLabel(file.displayName);
@@ -122,27 +126,47 @@ function DriveFileCardSheetTile({
       <button
         type="button"
         onClick={() => onSelect(file)}
-        className="border-border/70 bg-card hover:border-primary/30 focus-visible:ring-ring flex size-full flex-col overflow-hidden rounded-2xl border shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+        className={cn(
+          'border-border/70 bg-card hover:border-primary/30 focus-visible:ring-ring flex size-full flex-col overflow-hidden border shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          dense ? 'rounded-lg' : 'rounded-2xl',
+        )}
       >
-        <span className="relative flex min-h-0 flex-1 items-center justify-center p-2">
-          <span className="size-full overflow-hidden rounded-lg">
+        <span
+          className={cn(
+            'relative flex min-h-0 flex-1 items-center justify-center',
+            dense ? 'p-0.5' : 'p-2',
+          )}
+        >
+          <span className={cn('size-full overflow-hidden', dense ? 'rounded-md' : 'rounded-lg')}>
             <DriveFileCardThumbnail file={file} />
           </span>
           <span
             className={cn(
-              'absolute top-3 left-1/2 -translate-x-1/2 rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide',
+              'absolute left-1/2 -translate-x-1/2 rounded font-bold tracking-wide',
+              dense ? 'top-0.5 px-1 py-px text-[8px]' : 'top-3 px-1.5 py-0.5 text-[10px]',
               badgeClass,
             )}
           >
             {ext}
           </span>
         </span>
-        <span className="text-foreground line-clamp-2 px-2 pb-2 text-left text-[11px] leading-tight font-medium">
+        <span
+          className={cn(
+            'text-foreground line-clamp-2 text-left leading-tight font-medium',
+            dense ? 'px-1 pb-0.5 text-[9px]' : 'px-2 pb-2 text-[11px]',
+          )}
+        >
           {file.displayName}
         </span>
       </button>
       {showMenu && menu ? (
-        <div className={cn('absolute top-1.5 right-1.5 z-10', CARD_CONTROL_HOVER)}>
+        <div
+          className={cn(
+            'absolute z-10',
+            dense ? 'top-0.5 right-0.5' : 'top-1.5 right-1.5',
+            CARD_CONTROL_HOVER,
+          )}
+        >
           <FileCardActionsMenu file={file} handlers={menu} busy={menuBusy} align="end" />
         </div>
       ) : null}

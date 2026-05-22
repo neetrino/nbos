@@ -88,6 +88,7 @@ export function TaskFilesBlock({ taskId }: TaskFilesBlockProps) {
       files={files}
       pendingUploads={pending}
       loading={loading}
+      denseTiles
       uploadBarLabel="You can drag a file here or click to browse"
       onUpload={uploadFiles}
       onOpenFile={(file) => {

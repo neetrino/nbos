@@ -27,8 +27,7 @@ export function useEntityNotesEditor(opts: {
       immediatelyRender: false,
       editorProps: {
         attributes: {
-          class:
-            'entity-notes-prosemirror max-w-none min-h-[88px] px-3 py-2.5 text-sm focus:outline-none',
+          class: 'entity-notes-prosemirror max-w-none px-3 text-sm focus:outline-none',
         },
       },
       onUpdate: ({ editor: ed }) => {
