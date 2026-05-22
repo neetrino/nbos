@@ -36,3 +36,21 @@ export function payrollRunCalendarCellClass(status: PayrollRunStatus): string {
     PAYROLL_RUN_STATUS_CALENDAR_CELL_CLASS[status] ?? PAYROLL_RUN_STATUS_CALENDAR_CELL_CLASS.DRAFT
   );
 }
+
+/** Full-row list styling — same palette as calendar cells. */
+export const PAYROLL_RUN_STATUS_LIST_ROW_CLASS: Record<PayrollRunStatus, string> = {
+  DRAFT:
+    'bg-white text-zinc-900 hover:bg-zinc-50 dark:bg-zinc-800/80 dark:text-zinc-50 dark:hover:bg-zinc-700',
+  REVIEW:
+    'bg-amber-100 text-amber-900 hover:bg-amber-200/90 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/55',
+  APPROVED:
+    'bg-blue-100 text-blue-900 hover:bg-blue-200/90 dark:bg-blue-900/40 dark:text-blue-100 dark:hover:bg-blue-900/55',
+  PAYING:
+    'bg-orange-100 text-orange-900 hover:bg-orange-200/90 dark:bg-orange-900/40 dark:text-orange-100 dark:hover:bg-orange-900/55',
+  CLOSED:
+    'bg-green-100 text-green-900 hover:bg-green-200/90 dark:bg-green-900/40 dark:text-green-100 dark:hover:bg-green-900/55',
+};
+
+export function payrollRunListRowClass(status: PayrollRunStatus): string {
+  return PAYROLL_RUN_STATUS_LIST_ROW_CLASS[status] ?? PAYROLL_RUN_STATUS_LIST_ROW_CLASS.DRAFT;
+}
