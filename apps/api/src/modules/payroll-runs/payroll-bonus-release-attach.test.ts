@@ -164,6 +164,46 @@ describe('attachBonusReleasesToPayrollRun', () => {
     expect(tx.payrollRun.update).toHaveBeenCalled();
   });
 
+  it('skips releases already included in the same payroll run (idempotent attach)', async () => {
+    const tx = createTxMock();
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'DRAFT',
+      payrollMonth: '2026-05',
+      kpiSalesPlanAmount: null,
+      kpiSalesActualAmount: null,
+    });
+    mockAttachReleaseFindMany(tx, [
+      {
+        id: 'rel1',
+        employeeId: 'e1',
+        amount: new Decimal(50),
+        status: 'INCLUDED_IN_PAYROLL',
+        payrollRunId: 'run1',
+        bonusEntry: { type: 'DELIVERY' },
+      },
+    ]);
+    tx.salaryLine.aggregate.mockResolvedValue({
+      _sum: {
+        baseSalary: new Decimal(100),
+        bonusesTotal: new Decimal(50),
+        adjustmentsTotal: new Decimal(0),
+        deductionsTotal: new Decimal(0),
+        totalPayable: new Decimal(150),
+        paidAmount: new Decimal(0),
+      },
+    });
+
+    await attachBonusReleasesToPayrollRun(tx as never, {
+      payrollRunId: 'run1',
+      releaseIds: ['rel1'],
+    });
+
+    expect(tx.salaryLine.update).not.toHaveBeenCalled();
+    expect(tx.bonusRelease.update).not.toHaveBeenCalled();
+    expect(tx.payrollRun.update).toHaveBeenCalled();
+  });
+
   it('applies sales KPI factor to SALES releases when plan/actual set', async () => {
     const tx = createTxMock();
     tx.payrollRun.findUnique.mockResolvedValue({

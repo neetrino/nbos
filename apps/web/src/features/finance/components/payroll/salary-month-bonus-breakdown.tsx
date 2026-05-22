@@ -20,6 +20,8 @@ import {
 import type { BonusReleaseType } from '@/lib/api/bonus';
 import type { SalaryLineMonthBonusRow, SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
 import { useMemo } from 'react';
+import { BonusBreakdownSummaryStrip } from '@/features/finance/components/payroll/bonus-breakdown-summary-strip';
+import { BonusPolicyBreakdownBadges } from '@/features/finance/components/payroll/bonus-policy-breakdown-badges';
 
 function parseAmount(value: string): number {
   const n = Number.parseFloat(value);
@@ -35,6 +37,7 @@ function BonusBySourceTable({ rows }: { rows: readonly SalaryLineMonthBonusRow[]
         <TableRow>
           <TableHead>Project</TableHead>
           <TableHead>Product</TableHead>
+          <TableHead>Policy</TableHead>
           <TableHead className="text-right">Planned</TableHead>
           <TableHead className="text-right">Released</TableHead>
           <TableHead className="text-right">Burned</TableHead>
@@ -110,6 +113,9 @@ function BonusReleaseLinesTable({ rows }: { rows: readonly SalaryLineMonthBonusR
                 {row.productLabel}
               </TableCell>
               <TableCell>
+                <BonusPolicyBreakdownBadges statuses={row.policyBreakdownStatuses} />
+              </TableCell>
+              <TableCell>
                 {releaseUi ? (
                   <StatusBadge label={releaseUi.label} variant={releaseUi.variant} />
                 ) : (
@@ -160,6 +166,7 @@ export function SalaryMonthBonusBreakdown({ detail }: { detail: SalaryLineMonthD
 
   return (
     <div className="flex flex-col gap-4">
+      <BonusBreakdownSummaryStrip detail={detail} />
       <div>
         <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
           By bonus source

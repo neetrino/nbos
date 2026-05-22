@@ -88,6 +88,9 @@ export async function attachBonusReleasesToPayrollRun(
   }
 
   for (const rel of releases) {
+    if (rel.status === 'INCLUDED_IN_PAYROLL' && rel.payrollRunId === payrollRunId) {
+      continue;
+    }
     if (rel.status !== 'APPROVED') {
       throw new BadRequestException(
         `Bonus release ${rel.id} is not in APPROVED status (current: ${rel.status}).`,
@@ -98,7 +101,15 @@ export async function attachBonusReleasesToPayrollRun(
     }
   }
 
-  const hasSalesRelease = releases.some((r) => r.bonusEntry.type === 'SALES');
+  const releasesToAttach = releases.filter(
+    (r) => !(r.status === 'INCLUDED_IN_PAYROLL' && r.payrollRunId === payrollRunId),
+  );
+  if (releasesToAttach.length === 0) {
+    await recalculatePayrollRunTotalsFromSalaryLines(tx, payrollRunId);
+    return;
+  }
+
+  const hasSalesRelease = releasesToAttach.some((r) => r.bonusEntry.type === 'SALES');
   assertSalesKpiInputsComplete(run, hasSalesRelease);
 
   const plan =
@@ -108,7 +119,7 @@ export async function attachBonusReleasesToPayrollRun(
   const payrollPolicyByEmployee = new Map<string, CompensationPayrollPolicy>();
   const carryAppliedEmployees = new Set<string>();
 
-  for (const rel of releases) {
+  for (const rel of releasesToAttach) {
     let line = await tx.salaryLine.findUnique({
       where: {
         payrollRunId_employeeId: { payrollRunId, employeeId: rel.employeeId },

@@ -2,6 +2,10 @@ import { NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient } from '@nbos/database';
 import { plannedDecimalForEntry } from '../employees/employee-wallet-bonus-release-rollups';
 import { resolveCompensationPayoutPhase } from './compensation-payout-phase';
+import {
+  aggregateBonusBreakdownSummary,
+  deriveBonusPolicyBreakdownStatuses,
+} from './bonus-policy-breakdown-status';
 import { sumPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
 import type {
   SalaryLineMonthBonusRow,
@@ -53,6 +57,7 @@ function mapBonusRow(
     reason: string | null;
     bonusEntry: {
       id: string;
+      status: string;
       type: string;
       amount: Decimal;
       orderId: string;
@@ -66,10 +71,25 @@ function mapBonusRow(
 ): SalaryLineMonthBonusRow {
   const planned = plannedDecimalForEntry(release.bonusEntry.amount);
   const paid = paidByEntry.get(release.bonusEntry.id) ?? new Decimal(0);
+  const kpiBurned =
+    release.kpiBurnedAmount != null && release.kpiBurnedAmount.gt(0)
+      ? release.kpiBurnedAmount
+      : null;
+  const carryOver =
+    release.payrollCarryOverAmount != null && release.payrollCarryOverAmount.gt(0)
+      ? release.payrollCarryOverAmount
+      : null;
+  const policyBreakdownStatuses = deriveBonusPolicyBreakdownStatuses({
+    entryStatus: release.bonusEntry.status,
+    kpiBurnedAmount: kpiBurned,
+    payrollCarryOverAmount: carryOver,
+  });
   return {
     bonusEntryId: release.bonusEntry.id,
     bonusReleaseId: release.id,
+    entryStatus: release.bonusEntry.status,
     type: release.bonusEntry.type,
+    policyBreakdownStatuses,
     releaseType: release.releaseType,
     releaseStatus: release.status,
     projectId: release.bonusEntry.project.id,
@@ -84,14 +104,8 @@ function mapBonusRow(
     plannedAmount: money(planned),
     releaseAmount: money(release.amount),
     includedAmount: release.payrollIncludedAmount ? money(release.payrollIncludedAmount) : null,
-    kpiBurnedAmount:
-      release.kpiBurnedAmount != null && release.kpiBurnedAmount.gt(0)
-        ? money(release.kpiBurnedAmount)
-        : null,
-    payrollCarryOverAmount:
-      release.payrollCarryOverAmount != null && release.payrollCarryOverAmount.gt(0)
-        ? money(release.payrollCarryOverAmount)
-        : null,
+    kpiBurnedAmount: kpiBurned ? money(kpiBurned) : null,
+    payrollCarryOverAmount: carryOver ? money(carryOver) : null,
     paidAmount: money(paid),
     remainingAmount: money(Decimal.max(new Decimal(0), planned.minus(paid))),
     reason: release.reason,
@@ -112,7 +126,12 @@ async function loadBonusBreakdown(
     orderBy: { createdAt: 'asc' },
     include: {
       bonusEntry: {
-        include: {
+        select: {
+          id: true,
+          status: true,
+          type: true,
+          amount: true,
+          orderId: true,
           project: { select: { id: true, code: true, name: true } },
           order: { select: { code: true } },
         },
@@ -184,6 +203,15 @@ export async function querySalaryLineMonthDetail(
     line.employeeId,
     line.payrollRun.payrollMonth,
   );
+  const summaryAgg = aggregateBonusBreakdownSummary(
+    bonusBreakdown.map((row) => ({
+      entryStatus: row.entryStatus,
+      kpiBurnedAmount: row.kpiBurnedAmount != null ? new Decimal(row.kpiBurnedAmount) : null,
+      payrollCarryOverAmount:
+        row.payrollCarryOverAmount != null ? new Decimal(row.payrollCarryOverAmount) : null,
+    })),
+    pendingCarry,
+  );
 
   const expensePayments = line.expense?.expensePayments ?? [];
   const paidFromExpense = expensePayments.reduce((acc, p) => acc.plus(p.amount), new Decimal(0));
@@ -237,6 +265,12 @@ export async function querySalaryLineMonthDetail(
           payments: mapPayments(expensePayments),
         }
       : null,
+    bonusBreakdownSummary: {
+      incomingCount: summaryAgg.incomingCount,
+      burnedTotal: money(summaryAgg.burnedTotal),
+      carryOverTotal: money(summaryAgg.carryOverTotal),
+      clawbackCount: summaryAgg.clawbackCount,
+    },
     bonusBreakdown,
   };
 }

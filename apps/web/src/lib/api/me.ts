@@ -24,6 +24,7 @@ export interface EmployeeWalletBonusRow {
   /** Sum of persisted SALES KPI burned on releases for this bonus entry. */
   kpiBurnedAmount: string | null;
   payrollCarryOverAmount: string | null;
+  policyBreakdownStatuses: Array<'INCOMING' | 'BURNED' | 'CARRY_OVER' | 'CLAWBACK'>;
   orderPaymentType: string | null;
   salesAccrualHint: string | null;
   /** Product / extension scope for this order (from bonus pool). */

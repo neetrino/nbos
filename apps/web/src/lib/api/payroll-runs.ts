@@ -159,9 +159,20 @@ export interface SalaryLineMonthPaymentRow {
   notes: string | null;
 }
 
+export type BonusPolicyBreakdownStatus = 'INCOMING' | 'BURNED' | 'CARRY_OVER' | 'CLAWBACK';
+
+export interface BonusBreakdownSummary {
+  incomingCount: number;
+  burnedTotal: string;
+  carryOverTotal: string;
+  clawbackCount: number;
+}
+
 export interface SalaryLineMonthBonusRow {
   bonusEntryId: string;
   bonusReleaseId: string;
+  entryStatus: string;
+  policyBreakdownStatuses: BonusPolicyBreakdownStatus[];
   type: string;
   releaseType: string;
   releaseStatus: string;
@@ -219,6 +230,7 @@ export interface SalaryLineMonthDetail {
     remainingAmount: string;
     payments: SalaryLineMonthPaymentRow[];
   } | null;
+  bonusBreakdownSummary: BonusBreakdownSummary;
   bonusBreakdown: SalaryLineMonthBonusRow[];
 }
 

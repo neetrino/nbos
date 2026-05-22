@@ -10,6 +10,7 @@ import {
   type WalletReleaseRollup,
 } from './employee-wallet-bonus-release-rollups';
 import { mapBonusStatusToWalletGroup } from './employee-wallet-bonus-group';
+import { deriveBonusPolicyBreakdownStatuses } from '../payroll-runs/bonus-policy-breakdown-status';
 import { loadWalletBonusLedgerContext } from './employee-wallet-ledger-context';
 import { pickNextOpenPayrollSalaryLine } from './employee-wallet-next-payroll';
 import {
@@ -191,20 +192,27 @@ export class EmployeeWalletService {
     r: WalletReleaseRollup | undefined,
     pool: WalletPoolForBreakdown | undefined,
   ): EmployeeWalletBonusRow {
+    const kpiBurned = r != null && r.kpiBurnedAmount.gt(0) ? r.kpiBurnedAmount : null;
+    const carryOver = r != null && r.payrollCarryOverAmount.gt(0) ? r.payrollCarryOverAmount : null;
+
     return {
       id: b.id,
       type: b.type,
       status: b.status,
       walletGroup: mapBonusStatusToWalletGroup(b.status),
+      policyBreakdownStatuses: deriveBonusPolicyBreakdownStatuses({
+        entryStatus: b.status,
+        kpiBurnedAmount: kpiBurned,
+        payrollCarryOverAmount: carryOver,
+      }),
       amount: b.amount.toString(),
       percent: b.percent.toString(),
       releasedAmount: r?.releasedAmount.toFixed(2) ?? '0.00',
       paidAmount: r?.paidAmount.toFixed(2) ?? '0.00',
       remainingAmount: r?.remainingAmount.toFixed(2) ?? plannedDecimalForEntry(b.amount).toFixed(2),
       payrollMonth: r?.payrollMonth ?? null,
-      kpiBurnedAmount: r != null && r.kpiBurnedAmount.gt(0) ? r.kpiBurnedAmount.toFixed(2) : null,
-      payrollCarryOverAmount:
-        r != null && r.payrollCarryOverAmount.gt(0) ? r.payrollCarryOverAmount.toFixed(2) : null,
+      kpiBurnedAmount: kpiBurned ? kpiBurned.toFixed(2) : null,
+      payrollCarryOverAmount: carryOver ? carryOver.toFixed(2) : null,
       orderPaymentType: b.order.paymentType,
       salesAccrualHint: employeeWalletSalesAccrualHint(
         b.type,

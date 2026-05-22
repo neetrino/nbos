@@ -7,6 +7,7 @@ import {
   WALLET_BONUS_PIPELINE_ORDER,
 } from '@/features/finance/constants/employee-wallet-ui';
 import { WALLET_PIPELINE_GROUP_EXPLANATION } from '@/features/finance/constants/employee-wallet-explanations';
+import { BonusPolicyBreakdownBadges } from '@/features/finance/components/payroll/bonus-policy-breakdown-badges';
 import { walletBonusEntryExplanation } from '@/features/finance/utils/wallet-bonus-entry-explanation';
 import type { EmployeeWalletBonusRow, WalletBonusPipelineGroup } from '@/lib/api/me';
 
@@ -63,6 +64,11 @@ export function WalletBonusPipelineSection({
                           {b.project.code} · {b.order.code}
                         </div>
                         <div className="text-muted-foreground mt-0.5">{b.type}</div>
+                        {b.policyBreakdownStatuses.length > 0 ? (
+                          <div className="mt-2">
+                            <BonusPolicyBreakdownBadges statuses={b.policyBreakdownStatuses} />
+                          </div>
+                        ) : null}
                         <div className="text-foreground mt-1 font-semibold">
                           Planned {formatAmount(parseAmount(b.amount))}
                         </div>

@@ -2,6 +2,7 @@ import type { BonusStatusEnum } from '@nbos/database';
 import type { CompensationPayoutPhase } from '../payroll-runs/compensation-payout-phase';
 
 import type { EmployeeWalletActivityItem } from './employee-wallet-activity';
+import type { BonusPolicyBreakdownStatus } from '../payroll-runs/bonus-policy-breakdown-status';
 import type { WalletBonusPipelineGroup } from './employee-wallet-bonus-group';
 import type { EmployeeWalletProjectBreakdownRow } from './employee-wallet-project-breakdown';
 
@@ -24,6 +25,7 @@ export interface EmployeeWalletBonusRow {
   /** Sum of persisted SALES KPI burned on releases for this entry. */
   kpiBurnedAmount: string | null;
   payrollCarryOverAmount: string | null;
+  policyBreakdownStatuses: BonusPolicyBreakdownStatus[];
   orderPaymentType: string | null;
   salesAccrualHint: string | null;
   /** Product name, extension label, or order fallback (same source as project breakdown pool). */

@@ -5,6 +5,8 @@ import type { SalaryLineMonthBonusRow } from '@/lib/api/payroll-runs';
 const baseRow = (overrides: Partial<SalaryLineMonthBonusRow>): SalaryLineMonthBonusRow => ({
   bonusEntryId: 'e1',
   bonusReleaseId: 'r1',
+  entryStatus: 'ACTIVE',
+  policyBreakdownStatuses: [],
   type: 'DELIVERY',
   releaseType: 'AUTO',
   releaseStatus: 'INCLUDED_IN_PAYROLL',

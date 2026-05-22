@@ -62,6 +62,7 @@ export async function detachBonusReleasesFromPayrollRun(
       employeeId: true,
       amount: true,
       payrollIncludedAmount: true,
+      payrollCarryOverAmount: true,
       status: true,
       payrollRunId: true,
     },
@@ -122,6 +123,11 @@ export async function detachBonusReleasesFromPayrollRun(
       },
     });
 
+    const carryRestore =
+      rel.payrollCarryOverAmount != null && rel.payrollCarryOverAmount.gt(0)
+        ? rel.payrollCarryOverAmount
+        : null;
+
     await tx.bonusRelease.update({
       where: { id: rel.id },
       data: {
@@ -130,7 +136,7 @@ export async function detachBonusReleasesFromPayrollRun(
         payrollIncludedAmount: null,
         kpiBurnedAmount: null,
         payrollCarryOverAmount: null,
-        payrollCarryOverRemaining: null,
+        payrollCarryOverRemaining: carryRestore,
       },
     });
   }

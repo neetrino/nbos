@@ -1,4 +1,5 @@
 import type { CompensationPayoutPhase } from './compensation-payout-phase';
+import type { BonusPolicyBreakdownStatus } from './bonus-policy-breakdown-status';
 
 export interface SalaryLineMonthPaymentRow {
   id: string;
@@ -7,12 +8,21 @@ export interface SalaryLineMonthPaymentRow {
   notes: string | null;
 }
 
+export interface BonusBreakdownSummaryDto {
+  incomingCount: number;
+  burnedTotal: string;
+  carryOverTotal: string;
+  clawbackCount: number;
+}
+
 export interface SalaryLineMonthBonusRow {
   bonusEntryId: string;
   bonusReleaseId: string;
+  entryStatus: string;
   type: string;
   releaseType: string;
   releaseStatus: string;
+  policyBreakdownStatuses: BonusPolicyBreakdownStatus[];
   projectId: string;
   projectCode: string;
   projectName: string;
@@ -69,5 +79,6 @@ export interface SalaryLineMonthDetailDto {
     remainingAmount: string;
     payments: SalaryLineMonthPaymentRow[];
   } | null;
+  bonusBreakdownSummary: BonusBreakdownSummaryDto;
   bonusBreakdown: SalaryLineMonthBonusRow[];
 }
