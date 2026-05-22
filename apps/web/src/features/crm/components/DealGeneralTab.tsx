@@ -151,6 +151,7 @@ export function DealGeneralTab({
           gateRequiredFields={gateRequiredFields}
         />
         <DealNotesSection
+          entityId={deal.id}
           draft={draft}
           patchDraft={patchDraft}
           disabled={formDisabled}

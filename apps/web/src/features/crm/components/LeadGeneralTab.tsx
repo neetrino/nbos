@@ -44,6 +44,7 @@ export function LeadGeneralTab({
       />
       <LeadNotesSection
         id={sectionIds.notes}
+        entityId={lead.id}
         draft={draft}
         patchDraft={patchDraft}
         disabled={formDisabled}
