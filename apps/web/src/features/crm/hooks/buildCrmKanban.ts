@@ -14,6 +14,7 @@ import {
 
 interface StageMeta extends BoardStageDefinition, TerminalDropStageSource {
   color: string;
+  hexColor?: string;
 }
 
 export function buildScopedKanbanColumns<T extends { status: string }>({
@@ -33,6 +34,7 @@ export function buildScopedKanbanColumns<T extends { status: string }>({
       key,
       label: stage?.label ?? key,
       color: stage?.color ?? 'bg-muted',
+      hexColor: stage?.hexColor,
       items: items.filter((item) => item.status === key),
     };
   });

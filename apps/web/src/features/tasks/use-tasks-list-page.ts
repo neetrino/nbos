@@ -12,6 +12,7 @@ import {
 } from '@/features/shared/board-lifecycle';
 import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
 import {
+  applyTaskToKanbanColumn,
   KANBAN_STATUS_MAP,
   getDueDateForDeadlineColumn,
   reorderTasksInColumn,
@@ -67,6 +68,7 @@ export function useTasksListPage() {
   const [myPlanStages, setMyPlanStages] = useState<TaskBoardStage[]>([]);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [defaultCreateDueDate, setDefaultCreateDueDate] = useState<string | null>(null);
+  const [quickCreateColumnKey, setQuickCreateColumnKey] = useState<string | null>(null);
 
   const stripTaskOpenFromUrl = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());
@@ -173,8 +175,17 @@ export function useTasksListPage() {
     [openTaskId, stripTaskOpenFromUrl],
   );
 
-  const handleTaskCreated = (task: Task) => {
-    setTasks((prev) => [task, ...prev]);
+  const handleTaskCreated = async (task: Task) => {
+    let next = task;
+    if (quickCreateColumnKey) {
+      try {
+        next = await applyTaskToKanbanColumn(task, quickCreateColumnKey, boardView);
+      } catch {
+        next = task;
+      }
+    }
+    setTasks((prev) => [next, ...prev.filter((t) => t.id !== next.id)]);
+    setQuickCreateColumnKey(null);
   };
 
   const handleKanbanReorder = (taskId: string, columnKey: string, toIndex: number) => {
@@ -243,6 +254,7 @@ export function useTasksListPage() {
   };
 
   const handleAddTaskInColumn = (columnKey: string) => {
+    setQuickCreateColumnKey(columnKey);
     setDefaultCreateDueDate(
       boardView === 'deadline' ? (getDueDateForDeadlineColumn(columnKey) ?? null) : null,
     );
@@ -399,6 +411,7 @@ export function useTasksListPage() {
     setQuickCreateOpen,
     defaultCreateDueDate,
     setDefaultCreateDueDate,
+    setQuickCreateColumnKey,
     handleTaskUpdate,
     handleTaskDelete,
     handleTaskCreated,

@@ -54,6 +54,7 @@ function TasksPageContent() {
     setQuickCreateOpen,
     defaultCreateDueDate,
     setDefaultCreateDueDate,
+    setQuickCreateColumnKey,
     creatorId,
     creatorReady,
     selectedTaskId,
@@ -143,7 +144,10 @@ function TasksPageContent() {
         open={quickCreateOpen}
         onOpenChange={(open) => {
           setQuickCreateOpen(open);
-          if (!open) setDefaultCreateDueDate(null);
+          if (!open) {
+            setDefaultCreateDueDate(null);
+            setQuickCreateColumnKey(null);
+          }
         }}
         creatorId={creatorId ?? ''}
         creatorReady={creatorReady}

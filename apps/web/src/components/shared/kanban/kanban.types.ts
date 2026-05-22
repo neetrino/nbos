@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { resolveKanbanStageHex } from './kanban-stage-hex';
 
 export interface KanbanColumn<T> {
   key: string;
@@ -7,6 +8,24 @@ export interface KanbanColumn<T> {
   hexColor?: string;
   items: T[];
   readonly?: boolean;
+}
+
+export interface KanbanColumnQuickCreateInput {
+  title: string;
+  columnKey: string;
+}
+
+export interface KanbanColumnQuickCreateConfig<T> {
+  isEnabled: (column: KanbanColumn<T>) => boolean;
+  buttonLabel: string;
+  titlePlaceholder?: string;
+  titleAriaLabel?: string;
+  createLabel?: string;
+  cancelLabel?: string;
+  /** Inline create from title (leads, etc.). */
+  onCreate?: (input: KanbanColumnQuickCreateInput) => Promise<void>;
+  /** Opens a full create dialog (deals, invoices, expenses, tasks). */
+  onOpenDialog?: (columnKey: string) => void;
 }
 
 export type KanbanTerminalDropTone = 'danger' | 'success' | 'neutral';
@@ -21,6 +40,8 @@ export interface KanbanBoardProps<T> {
   columns: KanbanColumn<T>[];
   renderCard: (item: T, columnKey: string) => ReactNode;
   renderColumnHeader?: (column: KanbanColumn<T>) => ReactNode;
+  /** Bitrix-style quick create under the column header (first inbox column per board). */
+  columnQuickCreate?: KanbanColumnQuickCreateConfig<T>;
   onMove?: (itemId: string, fromColumn: string, toColumn: string, toIndex?: number) => void;
   /** Same-column drop: move card to `toIndex` within `columnKey`. */
   onReorderWithinColumn?: (itemId: string, columnKey: string, toIndex: number) => void;
@@ -30,7 +51,10 @@ export interface KanbanBoardProps<T> {
   onAddColumn?: (title: string, color: string, afterColumnKey?: string) => void;
   onRenameColumn?: (columnKey: string, newTitle: string, newColor: string) => void;
   onDeleteColumn?: (columnKey: string) => void;
-  /** "+" button at top of each column: on click open create form; label shown on hover */
+  /**
+   * @deprecated Use `columnQuickCreate` for the standard under-header button.
+   * Kept for boards not yet migrated.
+   */
   onAddItemInColumn?: (columnKey: string) => void;
   addButtonLabel?: string;
   /** Bottom drop targets shown while dragging (closed / terminal stages). */
@@ -95,5 +119,6 @@ export function contrastText(hex: string): '#fff' | '#000' {
 export function getColumnHex<T>(col: KanbanColumn<T>): string | undefined {
   if (col.hexColor) return col.hexColor;
   const match = col.color.match(/^#[0-9A-Fa-f]{6}$/);
-  return match ? col.color : undefined;
+  if (match) return col.color;
+  return resolveKanbanStageHex(col.color, col.hexColor);
 }

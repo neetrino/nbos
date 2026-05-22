@@ -14,6 +14,8 @@ import { parseMoneyAmount } from '@/lib/format/money';
 import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
 import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
+import { createInvoiceKanbanQuickCreateConfig } from '@/features/finance/kanban/finance-kanban-quick-create';
+import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoiceKanbanProps {
@@ -21,6 +23,7 @@ interface InvoiceKanbanProps {
   boardScope: BoardLifecycleScope;
   onInvoiceClick: (invoice: Invoice) => void;
   onMove: (itemId: string, from: string, to: string) => void;
+  onOpenQuickCreate?: () => void;
 }
 
 const STAGE_COLORS: Record<string, string> = {
@@ -37,15 +40,28 @@ export function InvoiceKanban({
   boardScope,
   onInvoiceClick,
   onMove,
+  onOpenQuickCreate,
 }: InvoiceKanbanProps) {
   const visibleKeys = getBoardStageKeys(INVOICE_MONEY_BOARD_STAGES, boardScope);
   const columns = INVOICE_MONEY_STAGES.filter((stage) => visibleKeys.includes(stage.value)).map(
-    (stage) => ({
-      key: stage.value,
-      label: stage.label,
-      color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
-      items: invoices.filter((invoice) => invoice.moneyStatus === stage.value),
-    }),
+    (stage) => {
+      const color = STAGE_COLORS[stage.value] ?? 'bg-gray-400';
+      return {
+        key: stage.value,
+        label: stage.label,
+        color,
+        hexColor: resolveKanbanStageHex(color),
+        items: invoices.filter((invoice) => invoice.moneyStatus === stage.value),
+      };
+    },
+  );
+
+  const invoiceQuickCreate = useMemo(
+    () =>
+      onOpenQuickCreate
+        ? createInvoiceKanbanQuickCreateConfig(() => onOpenQuickCreate())
+        : undefined,
+    [onOpenQuickCreate],
   );
 
   const invoiceStatusLabels = useMemo(
@@ -68,6 +84,7 @@ export function InvoiceKanban({
         columns={columns}
         getItemId={(invoice: Invoice) => invoice.id}
         onMove={onMove}
+        columnQuickCreate={invoiceQuickCreate}
         terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
         columnWidth={boardScope === 'CLOSED' ? 288 : 270}
         emptyMessage="No invoices"

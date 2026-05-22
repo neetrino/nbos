@@ -20,4 +20,5 @@ export {
   resolvePlanningColumnKey,
 } from './workspace-planning-kanban';
 export { buildMyPlanColumns } from './my-plan-columns';
+export { applyTaskToKanbanColumn } from './apply-task-to-kanban-column';
 export { TaskListTableView } from './TaskListTableView';

@@ -489,6 +489,9 @@ export function ExpensesPageContent({
         onKanbanMove={
           pageVariant === 'default' && view === 'kanban' ? onKanbanStatusMove : undefined
         }
+        onOpenQuickCreate={
+          pageVariant === 'default' && view === 'kanban' ? () => setCreateOpen(true) : undefined
+        }
       />
 
       <ExpenseDetailSheet

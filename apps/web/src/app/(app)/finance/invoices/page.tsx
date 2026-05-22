@@ -228,6 +228,7 @@ function InvoicesPageInner() {
         onRetry={state.fetchInvoices}
         onInvoiceClick={state.handleInvoiceClick}
         onMove={(itemId, _from, toColumn) => state.handleMoneyStatusChange(itemId, toColumn)}
+        onOpenQuickCreate={() => state.setCreateOpen(true)}
       />
       <InvoiceSheet
         invoice={state.selectedInvoice}

@@ -18,6 +18,7 @@ interface InvoicesPageContentProps {
   onRetry: () => void;
   onInvoiceClick: (invoice: Invoice) => void;
   onMove: (itemId: string, from: string, to: string) => void;
+  onOpenQuickCreate?: () => void;
 }
 
 export function InvoicesPageContent({
@@ -31,6 +32,7 @@ export function InvoicesPageContent({
   onRetry,
   onInvoiceClick,
   onMove,
+  onOpenQuickCreate,
 }: InvoicesPageContentProps) {
   if (loading) return <LoadingState />;
   if (error) return <ErrorState description={error} onRetry={onRetry} />;
@@ -55,6 +57,7 @@ export function InvoicesPageContent({
           boardScope={boardScope}
           onInvoiceClick={onInvoiceClick}
           onMove={onMove}
+          onOpenQuickCreate={onOpenQuickCreate}
         />
       ) : (
         <InvoicesTable

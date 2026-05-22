@@ -115,6 +115,8 @@ export function WorkSpaceRuntime({
     handleDeadlineMove,
     handleDeadlineReorder,
     handleAddTaskInColumn,
+    handleQuickCreateTask,
+    setQuickCreateColumnKey,
     handleAddMyPlanStage,
     handleRenameMyPlanStage,
     handleDeleteMyPlanStage,
@@ -205,13 +207,6 @@ export function WorkSpaceRuntime({
   const handleTaskUpdate = useCallback(
     (updated: Task) => {
       setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-    },
-    [setTasks],
-  );
-
-  const handleTaskCreated = useCallback(
-    (task: Task) => {
-      setTasks((prev) => [task, ...prev]);
     },
     [setTasks],
   );
@@ -350,7 +345,7 @@ export function WorkSpaceRuntime({
           setSprints={setSprints}
           onOpenTask={handleTaskClick}
           onAddBacklogTask={openQuickCreate}
-          onBacklogTaskCreated={handleTaskCreated}
+          onBacklogTaskCreated={handleQuickCreateTask}
           creatorId={creatorId}
           creatorReady={creatorReady}
         />
@@ -437,7 +432,10 @@ export function WorkSpaceRuntime({
         open={quickCreateOpen}
         onOpenChange={(open) => {
           setQuickCreateOpen(open);
-          if (!open) setDefaultCreateDueDate(null);
+          if (!open) {
+            setDefaultCreateDueDate(null);
+            setQuickCreateColumnKey(null);
+          }
         }}
         creatorId={creatorId ?? ''}
         creatorReady={creatorReady}
@@ -445,7 +443,7 @@ export function WorkSpaceRuntime({
         defaultPlanningStatus={workspace.scrumEnabled ? 'BACKLOG' : 'UNPLANNED'}
         defaultDueDate={defaultCreateDueDate}
         defaultLink={defaultTaskLink}
-        onCreated={handleTaskCreated}
+        onCreated={handleQuickCreateTask}
       />
     </div>
   );

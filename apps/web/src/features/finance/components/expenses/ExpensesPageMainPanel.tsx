@@ -14,6 +14,7 @@ import { buildTerminalDropZones } from '@/features/shared/kanban-terminal-drop';
 import { EXPENSE_ACTIVE_TERMINAL_DROP_STAGES } from '@/features/finance/constants/expense-board';
 import type { Expense } from '@/lib/api/finance';
 import { ExpenseKanbanCard } from './ExpenseKanbanCard';
+import { createExpenseKanbanQuickCreateConfig } from '@/features/finance/kanban/finance-kanban-quick-create';
 import {
   buildExpenseClosedKanbanColumns,
   buildExpenseKanbanColumns,
@@ -37,6 +38,7 @@ interface ExpensesPageMainPanelProps {
   onRequestDelete: (expense: Expense) => void;
   onAddFirstExpense: () => void;
   onKanbanMove?: (expenseId: string, from: string, toStatus: string) => void;
+  onOpenQuickCreate?: () => void;
 }
 
 export function ExpensesPageMainPanel({
@@ -51,6 +53,7 @@ export function ExpensesPageMainPanel({
   onRequestDelete,
   onAddFirstExpense,
   onKanbanMove,
+  onOpenQuickCreate,
 }: ExpensesPageMainPanelProps) {
   const expenseTerminalDropZones = useMemo(
     () => buildTerminalDropZones(EXPENSE_ACTIVE_TERMINAL_DROP_STAGES),
@@ -61,6 +64,14 @@ export function ExpensesPageMainPanel({
     kanbanScope === 'closed'
       ? buildExpenseClosedKanbanColumns(expenses)
       : buildExpenseKanbanColumns(expenses);
+
+  const expenseQuickCreate = useMemo(
+    () =>
+      kanbanScope === 'active' && onOpenQuickCreate
+        ? createExpenseKanbanQuickCreateConfig(() => onOpenQuickCreate())
+        : undefined,
+    [kanbanScope, onOpenQuickCreate],
+  );
 
   if (loading) {
     return <LoadingState />;
@@ -94,6 +105,7 @@ export function ExpensesPageMainPanel({
         columnWidth={kanbanScope === 'closed' ? 288 : undefined}
         getItemId={(e: Expense) => e.id}
         onMove={onKanbanMove}
+        columnQuickCreate={expenseQuickCreate}
         terminalDropZones={
           kanbanScope === 'active' && onKanbanMove ? expenseTerminalDropZones : undefined
         }

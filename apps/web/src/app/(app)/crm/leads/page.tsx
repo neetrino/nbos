@@ -22,6 +22,7 @@ import {
   type LeadSheetStageGateHighlight,
 } from '@/features/crm/components/LeadSheet';
 import { CreateLeadDialog } from '@/features/crm/components/CreateLeadDialog';
+import { createLeadKanbanQuickCreateConfig } from '@/features/crm/kanban/crm-kanban-quick-create';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import { LEAD_STAGES, LEAD_SOURCES } from '@/features/crm/constants/leadPipeline';
 import {
@@ -471,6 +472,7 @@ function LeadsPipelinePageContent() {
             onReorderWithinColumn={handleReorder}
             columnWidth={270}
             emptyMessage="No leads"
+            columnQuickCreate={createLeadKanbanQuickCreateConfig((lead) => handleLeadCreated(lead))}
             terminalDropZones={
               shouldShowTerminalDropBar(boardScope) ? leadTerminalZones : undefined
             }

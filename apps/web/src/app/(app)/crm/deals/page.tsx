@@ -24,6 +24,7 @@ import {
   type DealSheetStageGateHighlight,
 } from '@/features/crm/components/DealSheet';
 import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
+import { createDealKanbanQuickCreateConfig } from '@/features/crm/kanban/crm-kanban-quick-create';
 import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
 import { getLocalDealStageGateErrors } from '@/features/crm/deal-stage-gate';
@@ -398,6 +399,11 @@ function DealsPipelinePageContent() {
 
   const dealTerminalZones = useMemo(() => buildTerminalDropZones(DEAL_STAGES), []);
 
+  const dealKanbanQuickCreate = useMemo(
+    () => createDealKanbanQuickCreateConfig(() => setShowCreate(true)),
+    [],
+  );
+
   const filterConfigs = useMemo(
     () => [
       {
@@ -499,6 +505,7 @@ function DealsPipelinePageContent() {
             terminalDropZones={
               shouldShowTerminalDropBar(boardScope) ? dealTerminalZones : undefined
             }
+            columnQuickCreate={dealKanbanQuickCreate}
             renderColumnHeader={(column) => (
               <KanbanColumnMoneyTotal column={column} getAmount={(deal) => deal.amount} />
             )}

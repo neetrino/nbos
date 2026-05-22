@@ -8,6 +8,7 @@ import {
 } from 'react';
 import type { KanbanColumn } from '@/components/shared';
 import {
+  applyTaskToKanbanColumn,
   KANBAN_STATUS_MAP,
   getDueDateForDeadlineColumn,
   buildDeadlineKanbanColumns,
@@ -64,6 +65,7 @@ export function useWorkspaceRuntimeBoard(
   const [myPlanStages, setMyPlanStages] = useState<TaskBoardStage[]>([]);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [defaultCreateDueDate, setDefaultCreateDueDate] = useState<string | null>(null);
+  const [quickCreateColumnKey, setQuickCreateColumnKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (!myPlanOwnerId) return;
@@ -272,12 +274,29 @@ export function useWorkspaceRuntimeBoard(
 
   const handleAddTaskInColumn = useCallback(
     (columnKey: string) => {
+      setQuickCreateColumnKey(columnKey);
       const useDeadline =
         boardView === 'deadline' ? (getDueDateForDeadlineColumn(columnKey) ?? null) : null;
       setDefaultCreateDueDate(useDeadline);
       setQuickCreateOpen(true);
     },
     [boardView],
+  );
+
+  const handleQuickCreateTask = useCallback(
+    async (task: Task) => {
+      let next = task;
+      if (quickCreateColumnKey) {
+        try {
+          next = await applyTaskToKanbanColumn(task, quickCreateColumnKey, boardView);
+        } catch {
+          next = task;
+        }
+      }
+      setTasks((prev) => [next, ...prev.filter((t) => t.id !== next.id)]);
+      setQuickCreateColumnKey(null);
+    },
+    [boardView, quickCreateColumnKey, setTasks],
   );
 
   const handleAddMyPlanStage = useCallback(
@@ -338,6 +357,8 @@ export function useWorkspaceRuntimeBoard(
     setQuickCreateOpen,
     defaultCreateDueDate,
     setDefaultCreateDueDate,
+    setQuickCreateColumnKey,
+    handleQuickCreateTask,
     handleAction,
     handleKanbanMove,
     handleKanbanReorder,

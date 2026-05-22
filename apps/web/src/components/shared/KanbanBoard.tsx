@@ -21,6 +21,7 @@ import {
 import { isReorderNoop, mapFilteredInsertToFullIndex } from './kanban/kanban-reorder';
 import { KANBAN_COLUMN_LEFT_RULE_CLASS } from './kanban/kanban-column-surface';
 import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
+import { KanbanColumnQuickCreate } from './kanban/KanbanColumnQuickCreate';
 import {
   SCROLL_SPEED,
   EDGE_ZONE_WIDTH,
@@ -35,6 +36,7 @@ export function KanbanBoard<T>({
   columns,
   renderCard,
   renderColumnHeader,
+  columnQuickCreate,
   onMove,
   onReorderWithinColumn,
   getItemId,
@@ -48,6 +50,16 @@ export function KanbanBoard<T>({
   terminalDropZones,
 }: KanbanBoardProps<T>) {
   const editable = !!(onAddColumn || onRenameColumn || onDeleteColumn);
+
+  const resolvedQuickCreate =
+    columnQuickCreate ??
+    (onAddItemInColumn
+      ? {
+          isEnabled: () => true,
+          buttonLabel: addButtonLabel.replace(/^\+\s*/, ''),
+          onOpenDialog: onAddItemInColumn,
+        }
+      : undefined);
 
   const [dragItem, setDragItem] = useState<{ id: string; fromColumn: string } | null>(null);
   const [dragCardHeightPx, setDragCardHeightPx] = useState<number | null>(null);
@@ -373,6 +385,9 @@ export function KanbanBoard<T>({
                       onDeleteColumn={onDeleteColumn}
                     />
                     {renderColumnHeader?.(column)}
+                    {resolvedQuickCreate ? (
+                      <KanbanColumnQuickCreate column={column} config={resolvedQuickCreate} />
+                    ) : null}
                   </div>
 
                   <div
@@ -385,20 +400,6 @@ export function KanbanBoard<T>({
                       className="flex min-h-full min-w-0 flex-col space-y-3 pb-3"
                       {...{ [KANBAN_COLUMN_LIST_DATA_ATTR]: column.key }}
                     >
-                      {onAddItemInColumn && (
-                        <div className="group/add-btn flex justify-center">
-                          <button
-                            type="button"
-                            onClick={() => onAddItemInColumn(column.key)}
-                            className="border-border hover:bg-muted text-muted-foreground hover:text-foreground flex h-8 min-w-[2rem] items-center justify-center gap-1.5 rounded-lg border border-dashed px-3 text-xs font-medium transition-colors"
-                          >
-                            <Plus size={14} />
-                            <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity] duration-200 group-hover/add-btn:max-w-[5rem] group-hover/add-btn:opacity-100">
-                              {addButtonLabel}
-                            </span>
-                          </button>
-                        </div>
-                      )}
                       <KanbanColumnInsertPlaceholder
                         insertIndex={insertIndex}
                         itemCount={column.items.length}
