@@ -16,15 +16,14 @@ import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compe
 import { formatAmount } from '@/features/finance/constants/finance';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
-import { BONUS_RELEASE_TYPE_UI } from '@/features/finance/constants/bonus-release-type-ui';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { EmployeeMonthCompensationKpiSection } from '@/features/finance/components/payroll/employee-month-compensation-kpi-section';
+import { SalaryMonthBonusBreakdown } from '@/features/finance/components/payroll/salary-month-bonus-breakdown';
 import {
   useSalaryLineMonthDetail,
   type SalaryLineMonthDetailScope,
 } from '@/features/finance/components/payroll/use-salary-line-month-detail';
 import type { ExpenseLedgerPaymentStatus } from '@/lib/api/finance';
-import type { BonusReleaseType } from '@/lib/api/bonus';
 import type { SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
 
 function parseAmount(value: string): number {
@@ -91,64 +90,6 @@ function SummaryGrid({ detail, readOnly }: { detail: SalaryLineMonthDetail; read
         )}
       </p>
     </DetailSheetSection>
-  );
-}
-
-function BonusBreakdownTable({ detail }: { detail: SalaryLineMonthDetail }) {
-  if (detail.bonusBreakdown.length === 0) {
-    return (
-      <p className="text-muted-foreground text-sm">
-        No bonus releases included in this payroll month.
-      </p>
-    );
-  }
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Project</TableHead>
-          <TableHead>Product</TableHead>
-          <TableHead>Release</TableHead>
-          <TableHead className="text-right">Included</TableHead>
-          <TableHead className="text-right">Paid</TableHead>
-          <TableHead className="text-right">Remaining</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {detail.bonusBreakdown.map((row) => {
-          const releaseUi = BONUS_RELEASE_TYPE_UI[row.releaseType as BonusReleaseType];
-          return (
-            <TableRow key={row.bonusReleaseId}>
-              <TableCell className="max-w-[8rem] truncate" title={row.projectName}>
-                {row.projectCode}
-              </TableCell>
-              <TableCell className="max-w-[10rem] truncate" title={row.productLabel}>
-                {row.productLabel}
-              </TableCell>
-              <TableCell>
-                {releaseUi ? (
-                  <StatusBadge label={releaseUi.label} variant={releaseUi.variant} />
-                ) : (
-                  <span className="text-muted-foreground text-xs">{row.releaseType}</span>
-                )}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {row.includedAmount
-                  ? formatAmount(parseAmount(row.includedAmount))
-                  : formatAmount(parseAmount(row.releaseAmount))}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {formatAmount(parseAmount(row.paidAmount))}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {formatAmount(parseAmount(row.remainingAmount))}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
   );
 }
 
@@ -268,7 +209,7 @@ export function EmployeeMonthCompensationSheet({
                 title="Bonus breakdown"
                 icon={<Banknote className="size-4" aria-hidden />}
               >
-                <BonusBreakdownTable detail={detail} />
+                <SalaryMonthBonusBreakdown detail={detail} />
               </DetailSheetSection>
               <DetailSheetSection
                 title={readOnly ? 'Payments' : 'Pay Now / payments'}

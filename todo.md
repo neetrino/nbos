@@ -80,7 +80,7 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 ## 5. Payroll and wallet integration
 
 - ◐ **Payroll attach:** SALES KPI scale at attach exists; full KPI/cap/carry-over amounts pending.
-- ☐ **Salary month sheet:** planned, released, burned, carry-over, paid, remaining by bonus source.
+- ◐ **Salary month sheet:** by-source rollup + release lines (planned/released/included/paid/remaining); burned/carry-over pending policy.
 - ☐ **Employee wallet:** explanations for partial / delayed / carried / burned / paid / clawback.
 - ☐ **Pay Now:** payroll expenses easy to filter from salary/bonus context.
 - ◐ **Notifications:** wallet hints on release/paid exist; KPI reduced / carried copy pending.
