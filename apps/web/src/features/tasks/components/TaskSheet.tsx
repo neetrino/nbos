@@ -1,17 +1,15 @@
 'use client';
-import { HardDrive, Loader2 } from 'lucide-react';
-import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { buttonVariants } from '@/components/ui/button';
+
+import { CheckSquare, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import { EntityDetailSheetContent, StatusBadge } from '@/components/shared';
+import { DetailSheetCollapsibleSection, EntityDetailSheetContent } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
-import type { Task } from '@/lib/api/tasks';
-import { getTaskPriority, getTaskStatus } from '../constants/tasks';
 import { TASK_OPEN_QUERY } from '../constants/task-open-query';
 import {
+  TASK_SHEET_CARD_CLASS,
   TASK_SHEET_CHAT_COLUMN_CLASS,
   TASK_SHEET_DETAIL_COLUMN_CLASS,
   TASK_SHEET_SECTION_SURFACE_CLASS,
@@ -19,13 +17,12 @@ import {
 import { TaskSheetChatPanel } from './TaskSheetChatPanel';
 import { TaskChecklistSection } from './TaskChecklistSection';
 import { TaskCompletionRulesPanel } from './TaskCompletionRulesPanel';
-import { TaskDatesSection, TaskLinksSection, TaskPeopleSection } from './TaskDetailsSections';
+import { TaskCoAssigneesSection, TaskLinksSection } from './TaskDetailsSections';
 import { TaskSubtasksSection } from './TaskSubtasksSection';
 import { TaskSheetGeneralSection } from './TaskSheetGeneralSection';
+import { TaskSheetHeader } from './TaskSheetHeader';
 import { TaskSheetStickyFooter } from './TaskSheetStickyFooter';
-import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
-import { buildDriveHrefWithTask } from '@/features/drive/drive-deep-link';
-import { TaskSummaryCard } from './TaskSheetSummaryCard';
+import type { Task } from '@/lib/api/tasks';
 import { useTaskSheetState } from './use-task-sheet-state';
 
 interface TaskSheetProps {
@@ -43,6 +40,8 @@ const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[min(96vw,112rem)] 2xl:right-[min
 
 export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: TaskSheetProps) {
   const state = useTaskSheetState({ taskId, open, onUpdate, onDelete });
+  const [extrasOpen, setExtrasOpen] = useState(false);
+
   async function handleSaveAndClose() {
     const saved = await state.handleGeneralSave();
     if (saved) onOpenChange(false);
@@ -56,10 +55,14 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
 
   if (!state.task && !state.loading && !state.generalError) return null;
 
-  const status = state.task ? getTaskStatus(state.task.status) : null;
-  const priority = state.task ? getTaskPriority(state.task.priority) : null;
-  const blockers = state.task ? buildTaskCompletionBlockers(state.task) : [];
-  const readyForCompletion = state.task ? blockers.length === 0 : false;
+  const task = state.task;
+  const blockers = task ? buildTaskCompletionBlockers(task) : [];
+  const hasExtras =
+    task != null &&
+    (task.checklists.length > 0 ||
+      task.subtasks.length > 0 ||
+      (task.completionRules?.length ?? 0) > 0 ||
+      blockers.length > 0);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -80,51 +83,24 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
           </div>
         ) : state.task && state.generalDraft ? (
           <>
-            <div className="bg-muted/15 flex min-h-0 flex-1 flex-col xl:flex-row">
+            <div className="flex min-h-0 flex-1 flex-col xl:flex-row">
               <div className={TASK_SHEET_DETAIL_COLUMN_CLASS}>
                 <ScrollArea className="min-h-0 flex-1">
-                  <div className="space-y-5 px-5 py-6 sm:px-6">
+                  <div className="space-y-3 px-4 py-4 sm:px-5">
                     {state.generalError && (
                       <div className="border-destructive/25 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
                         {state.generalError}
                       </div>
                     )}
 
-                    <h1 className="sr-only">{state.generalDraft?.title || state.task.title}</h1>
-                    <div className="flex flex-wrap items-center gap-2" aria-label="Task status">
-                      {status && <StatusBadge label={status.label} variant={status.variant} />}
-                      {priority && (
-                        <StatusBadge label={priority.label} variant={priority.variant} />
-                      )}
-                      <Badge variant="outline">{state.task.code}</Badge>
-                      <StatusBadge
-                        label={readyForCompletion ? 'Ready' : 'Blocked'}
-                        variant={readyForCompletion ? 'green' : 'red'}
-                      />
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <EntityDriveQuickAttach
-                        libraryKey="tasks"
-                        entityType="TASK"
-                        entityId={state.task.id}
-                        onUploaded={() => void state.refetchTask()}
-                      />
-                      <Link
-                        href={buildDriveHrefWithTask(state.task.id)}
-                        className={cn(
-                          buttonVariants({ variant: 'outline', size: 'sm' }),
-                          'gap-1.5',
-                        )}
-                      >
-                        <HardDrive className="size-4" aria-hidden />
-                        Drive files
-                      </Link>
-                    </div>
-
-                    <TaskSummaryCard task={state.task} />
+                    <TaskSheetHeader
+                      draft={state.generalDraft}
+                      saving={state.saving}
+                      onPatchDraft={state.patchGeneralDraft}
+                    />
 
                     <TaskSheetGeneralSection
+                      task={state.task}
                       taskId={state.task.id}
                       draft={state.generalDraft}
                       saving={state.saving}
@@ -132,48 +108,76 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                       onSearchEmployees={state.searchEmployees}
                     />
 
-                    <div className="grid gap-4 lg:grid-cols-2">
-                      <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
-                        <TaskPeopleSection task={state.task} />
-                      </section>
-                      <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
-                        <TaskDatesSection task={state.task} />
-                      </section>
-                    </div>
-
-                    <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
-                      <TaskCompletionRulesPanel
+                    <section className={TASK_SHEET_CARD_CLASS}>
+                      <TaskLinksSection
                         task={state.task}
-                        serverBlockers={state.completionBlockers}
+                        compact
+                        onRemoveLink={state.handleRemoveLink}
                       />
                     </section>
 
-                    <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
-                      <TaskLinksSection task={state.task} onRemoveLink={state.handleRemoveLink} />
+                    <section className={TASK_SHEET_CARD_CLASS}>
+                      <TaskCoAssigneesSection task={state.task} />
                     </section>
 
-                    {state.task.subtasks.length > 0 && (
-                      <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
-                        <TaskSubtasksSection task={state.task} />
-                      </section>
+                    {hasExtras ? (
+                      <DetailSheetCollapsibleSection
+                        title="Checklist & rules"
+                        icon={<CheckSquare size={12} />}
+                        open={extrasOpen}
+                        onOpenChange={setExtrasOpen}
+                        className={TASK_SHEET_SECTION_SURFACE_CLASS}
+                      >
+                        <div className="space-y-4">
+                          <TaskCompletionRulesPanel
+                            task={state.task}
+                            serverBlockers={state.completionBlockers}
+                          />
+
+                          {state.task.subtasks.length > 0 && (
+                            <TaskSubtasksSection task={state.task} />
+                          )}
+
+                          {state.task.checklists.length > 0 && (
+                            <TaskChecklistSection
+                              task={state.task}
+                              newChecklistTitle={state.newChecklistTitle}
+                              newItemTexts={state.newItemTexts}
+                              onNewChecklistTitleChange={state.setNewChecklistTitle}
+                              onNewItemTextChange={(checklistId, value) =>
+                                state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
+                              }
+                              onAddChecklist={state.handleAddChecklist}
+                              onAddItem={state.handleAddItem}
+                              onToggleItem={state.handleToggleItem}
+                              onDeleteChecklist={state.handleDeleteChecklist}
+                              onDeleteItem={state.handleDeleteItem}
+                            />
+                          )}
+                        </div>
+                      </DetailSheetCollapsibleSection>
+                    ) : (
+                      <div className={cn(TASK_SHEET_SECTION_SURFACE_CLASS, 'space-y-4')}>
+                        <TaskCompletionRulesPanel
+                          task={state.task}
+                          serverBlockers={state.completionBlockers}
+                        />
+                        <TaskChecklistSection
+                          task={state.task}
+                          newChecklistTitle={state.newChecklistTitle}
+                          newItemTexts={state.newItemTexts}
+                          onNewChecklistTitleChange={state.setNewChecklistTitle}
+                          onNewItemTextChange={(checklistId, value) =>
+                            state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
+                          }
+                          onAddChecklist={state.handleAddChecklist}
+                          onAddItem={state.handleAddItem}
+                          onToggleItem={state.handleToggleItem}
+                          onDeleteChecklist={state.handleDeleteChecklist}
+                          onDeleteItem={state.handleDeleteItem}
+                        />
+                      </div>
                     )}
-
-                    <div className={TASK_SHEET_SECTION_SURFACE_CLASS}>
-                      <TaskChecklistSection
-                        task={state.task}
-                        newChecklistTitle={state.newChecklistTitle}
-                        newItemTexts={state.newItemTexts}
-                        onNewChecklistTitleChange={state.setNewChecklistTitle}
-                        onNewItemTextChange={(checklistId, value) =>
-                          state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
-                        }
-                        onAddChecklist={state.handleAddChecklist}
-                        onAddItem={state.handleAddItem}
-                        onToggleItem={state.handleToggleItem}
-                        onDeleteChecklist={state.handleDeleteChecklist}
-                        onDeleteItem={state.handleDeleteItem}
-                      />
-                    </div>
                   </div>
                 </ScrollArea>
 

@@ -46,24 +46,35 @@ export function TaskDatesSection({ task }: TaskDetailsSectionsProps) {
 export function TaskLinksSection({
   task,
   onRemoveLink,
-}: TaskDetailsSectionsProps & { onRemoveLink?: (linkId: string) => void }) {
+  compact = false,
+}: TaskDetailsSectionsProps & { onRemoveLink?: (linkId: string) => void; compact?: boolean }) {
+  const titleClass = compact
+    ? 'text-muted-foreground mb-1.5 text-[11px] font-semibold tracking-wide uppercase'
+    : 'text-muted-foreground mb-2 flex items-center gap-1 text-xs font-medium tracking-wide';
+
   return (
     <div>
-      <h4 className="text-muted-foreground mb-2 flex items-center gap-1 text-xs font-medium tracking-wide">
-        <LinkIcon size={12} /> Linked Entities
+      <h4 className={titleClass}>
+        {compact ? (
+          'CRM links'
+        ) : (
+          <>
+            <LinkIcon size={12} /> Linked Entities
+          </>
+        )}
       </h4>
       {task.links.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No linked entities</p>
+        <p className="text-muted-foreground text-xs">No linked entities</p>
       ) : (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-1">
           {task.links.map((link) => (
             <span
               key={link.id}
-              className="bg-secondary text-secondary-foreground inline-flex min-w-0 items-center gap-1 rounded-md px-2 py-1 text-xs"
+              className="text-primary inline-flex min-w-0 items-center gap-1 text-sm font-medium"
             >
               <span className="min-w-0 truncate">
                 {link.entityLabel?.trim()
-                  ? `${link.entityType}: ${link.entityLabel}`
+                  ? link.entityLabel
                   : `${link.entityType}: ${link.entityId.slice(0, 8)}…`}
               </span>
               {onRemoveLink && (
@@ -71,7 +82,7 @@ export function TaskLinksSection({
                   type="button"
                   size="icon-xs"
                   variant="ghost"
-                  className="-my-1 -mr-1"
+                  className="text-muted-foreground shrink-0"
                   title="Remove link"
                   onClick={() => onRemoveLink(link.id)}
                 >
@@ -82,6 +93,20 @@ export function TaskLinksSection({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+export function TaskCoAssigneesSection({ task }: TaskDetailsSectionsProps) {
+  const count = task.coAssignees.length;
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <h4 className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
+        Co-assignees
+      </h4>
+      <span className="text-primary text-sm font-medium">
+        {count > 0 ? `${count} people` : 'Add'}
+      </span>
     </div>
   );
 }

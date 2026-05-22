@@ -7,10 +7,20 @@ export const QUICK_CREATE_TASK_BODY_CLASS = 'min-w-0 w-full px-3 pb-4 pt-1 sm:px
 
 /** Bleeds into body padding so title + icons hug the top-right corner. */
 export const QUICK_CREATE_TASK_TITLE_ROW_CLASS =
-  'relative -mr-3 -mt-1 min-w-0 w-full pr-[5rem] sm:-mr-4 sm:pr-[5.5rem]';
+  'relative -mr-3 -mt-1 min-w-0 w-full pr-[3.25rem] sm:-mr-4 sm:pr-[3.75rem]';
 
+/** Slightly inset from the right edge (Bitrix flame alignment). */
 export const QUICK_CREATE_TASK_HEADER_ICONS_CLASS =
-  'absolute -top-1 -right-1 z-10 flex items-center gap-2.5 sm:gap-3';
+  'absolute top-0 right-3 z-10 flex items-center gap-2.5 sm:right-4 sm:gap-3';
+
+export const TASK_PRIORITY_FLAME_ICON_SIZE = 22;
+
+/** Plain icon toggle — no circular chip background. */
+export const TASK_PRIORITY_FLAME_BUTTON_CLASS =
+  'text-muted-foreground/70 size-auto h-auto min-h-0 w-auto rounded-none bg-transparent p-0 shadow-none hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0';
+
+export const TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS =
+  'text-orange-500 hover:bg-transparent hover:text-orange-600';
 
 /** Title textarea — grows with wrapped lines (Bitrix-style). */
 export const QUICK_CREATE_TASK_TITLE_INPUT_CLASS =

@@ -37,3 +37,15 @@ export function getTaskStatus(value: string) {
 export function getTaskPriority(value: string) {
   return TASK_PRIORITIES.find((p) => p.value === value);
 }
+
+const TASK_HIGH_PRIORITIES = new Set<string>(['HIGH', 'CRITICAL']);
+
+/** Matches quick-create flame: HIGH/CRITICAL vs everything else. */
+export function isTaskHighPriority(priority: string): boolean {
+  return TASK_HIGH_PRIORITIES.has(priority);
+}
+
+/** Toggle urgent flag the same way as {@link QuickCreateTaskDialog}. */
+export function toggleTaskHighPriority(priority: string): string {
+  return isTaskHighPriority(priority) ? 'NORMAL' : 'HIGH';
+}

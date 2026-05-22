@@ -15,6 +15,9 @@ import {
   QUICK_CREATE_TASK_ROW_LABEL_CLASS,
   QUICK_CREATE_TASK_TITLE_INPUT_CLASS,
   QUICK_CREATE_TASK_DESCRIPTION_INPUT_CLASS,
+  TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
+  TASK_PRIORITY_FLAME_BUTTON_CLASS,
+  TASK_PRIORITY_FLAME_ICON_SIZE,
 } from './quick-create-task-constants';
 import {
   QuickCreateTaskAutoGrowTextarea,
@@ -66,11 +69,10 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               <Button
                 type="button"
                 variant="ghost"
-                size="icon-sm"
                 className={cn(
-                  'text-muted-foreground/75 size-8 rounded-full hover:text-orange-600',
-                  form.isHighPriority &&
-                    'bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-950/40',
+                  TASK_PRIORITY_FLAME_BUTTON_CLASS,
+                  'hover:text-orange-600',
+                  form.isHighPriority && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
                 )}
                 aria-pressed={form.isHighPriority}
                 aria-label={form.isHighPriority ? 'High priority on' : 'Mark as high priority'}
@@ -78,7 +80,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
                 disabled={form.saving}
                 onClick={() => form.setIsHighPriority((value) => !value)}
               >
-                <Flame size={19} strokeWidth={1.75} aria-hidden />
+                <Flame size={TASK_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
               </Button>
               <Button
                 type="button"
