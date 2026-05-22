@@ -7,6 +7,8 @@ import { StatusBadge } from '@/components/shared';
 import type { KpiPolicyRow } from '@/lib/api/kpi-policies';
 import { KpiGateBandEditor } from './kpi-gate-band-editor';
 import { parseDraftsToRules, rulesToDrafts, type KpiGateBandDraft } from './kpi-gate-band-utils';
+import { KpiPolicyCapField, parseCapMultiplierDraft } from './kpi-policy-cap-field';
+import { KPI_POLICY_CAP_MULTIPLIER_DEFAULT } from './kpi-policy-cap.constants';
 
 const STATUS_VARIANT: Record<string, 'green' | 'amber' | 'gray' | 'red'> = {
   ACTIVE: 'green',
@@ -23,19 +25,33 @@ export function KpiPolicyEditorCard({
   saving: boolean;
   onSave: (
     id: string,
-    payload: { name: string; gateRules: KpiPolicyRow['gateRules']; status: KpiPolicyRow['status'] },
+    payload: {
+      name: string;
+      gateRules: KpiPolicyRow['gateRules'];
+      bonusCapBaseSalaryMultiplier: number;
+      status: KpiPolicyRow['status'];
+    },
   ) => Promise<void>;
 }) {
   const [name, setName] = useState(policy.name);
   const [bands, setBands] = useState<KpiGateBandDraft[]>(() => rulesToDrafts(policy.gateRules));
+  const [capMultiplier, setCapMultiplier] = useState(
+    () => policy.bonusCapBaseSalaryMultiplier || String(KPI_POLICY_CAP_MULTIPLIER_DEFAULT),
+  );
   const [status, setStatus] = useState(policy.status);
 
   const handleSave = async () => {
     const gateRules = parseDraftsToRules(bands);
-    if (gateRules == null) {
+    const cap = parseCapMultiplierDraft(capMultiplier);
+    if (gateRules == null || cap == null) {
       return;
     }
-    await onSave(policy.id, { name: name.trim(), gateRules, status });
+    await onSave(policy.id, {
+      name: name.trim(),
+      gateRules,
+      bonusCapBaseSalaryMultiplier: cap,
+      status,
+    });
   };
 
   return (
@@ -68,6 +84,9 @@ export function KpiPolicyEditorCard({
             <option value="ARCHIVED">Archived</option>
           </select>
         </label>
+      </div>
+      <div className="mb-4 max-w-xs">
+        <KpiPolicyCapField value={capMultiplier} disabled={saving} onChange={setCapMultiplier} />
       </div>
       <KpiGateBandEditor bands={bands} onChange={setBands} disabled={saving} />
       <div className="mt-4 flex justify-end">

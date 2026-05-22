@@ -2,6 +2,7 @@ import { Decimal } from '@nbos/database';
 import { describe, expect, it, vi } from 'vitest';
 
 import { applyPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
+import { defaultBonusCapBaseSalaryMultiplier } from './parse-bonus-cap-multiplier';
 
 describe('applyPendingPayrollCarryOver', () => {
   it('returns zero when no pending carry', async () => {
@@ -20,6 +21,7 @@ describe('applyPendingPayrollCarryOver', () => {
         deductionsTotal: new Decimal(0),
         paidAmount: new Decimal(0),
       },
+      bonusCapBaseSalaryMultiplier: defaultBonusCapBaseSalaryMultiplier(),
     });
     expect(applied.toString()).toBe('0');
   });
@@ -45,6 +47,7 @@ describe('applyPendingPayrollCarryOver', () => {
         deductionsTotal: new Decimal(0),
         paidAmount: new Decimal(0),
       },
+      bonusCapBaseSalaryMultiplier: defaultBonusCapBaseSalaryMultiplier(),
     });
     expect(applied.toString()).toBe('30');
     expect(tx.bonusRelease.update).toHaveBeenCalled();

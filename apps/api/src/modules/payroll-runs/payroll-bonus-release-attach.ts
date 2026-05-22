@@ -2,12 +2,12 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbos/database';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
-import { resolveKpiGateRulesForPayrollEmployee } from '../compensation-profiles/resolve-kpi-gate-rules';
+import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
 import { applyPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
 import { applyPayrollBonusCap } from './payroll-bonus-cap';
 import { computeKpiGatePayoutFactor } from './kpi-gate-payout';
 import { computeSalesKpiBurnedAmount } from './sales-kpi-burned-amount';
-import type { KpiGateRules } from './kpi-gate-rules.types';
+import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
 import {
   assertSalesKpiInputsComplete,
   computePayrollIncludedBonusAmount,
@@ -105,7 +105,7 @@ export async function attachBonusReleasesToPayrollRun(
     run.kpiSalesPlanAmount != null ? new Decimal(run.kpiSalesPlanAmount) : new Decimal(0);
   const actual =
     run.kpiSalesActualAmount != null ? new Decimal(run.kpiSalesActualAmount) : new Decimal(0);
-  const gateRulesByEmployee = new Map<string, KpiGateRules>();
+  const payrollPolicyByEmployee = new Map<string, CompensationPayrollPolicy>();
   const carryAppliedEmployees = new Set<string>();
 
   for (const rel of releases) {
@@ -120,11 +120,22 @@ export async function attachBonusReleasesToPayrollRun(
       );
     }
 
+    let payrollPolicy = payrollPolicyByEmployee.get(rel.employeeId);
+    if (payrollPolicy == null) {
+      payrollPolicy = await resolveCompensationPayrollPolicyForEmployee(
+        tx,
+        rel.employeeId,
+        run.payrollMonth,
+      );
+      payrollPolicyByEmployee.set(rel.employeeId, payrollPolicy);
+    }
+
     if (!carryAppliedEmployees.has(rel.employeeId)) {
       await applyPendingPayrollCarryOver(tx, {
         employeeId: rel.employeeId,
         payrollMonth: run.payrollMonth,
         line,
+        bonusCapBaseSalaryMultiplier: payrollPolicy.bonusCapBaseSalaryMultiplier,
       });
       carryAppliedEmployees.add(rel.employeeId);
       const refreshed = await tx.salaryLine.findUnique({
@@ -137,15 +148,9 @@ export async function attachBonusReleasesToPayrollRun(
       }
     }
 
-    let gateRules = gateRulesByEmployee.get(rel.employeeId);
-    if (gateRules == null) {
-      gateRules = await resolveKpiGateRulesForPayrollEmployee(tx, rel.employeeId, run.payrollMonth);
-      gateRulesByEmployee.set(rel.employeeId, gateRules);
-    }
-
     const kpiFactor =
       rel.bonusEntry.type === 'SALES'
-        ? computeKpiGatePayoutFactor(plan, actual, gateRules)
+        ? computeKpiGatePayoutFactor(plan, actual, payrollPolicy.gateRules)
         : new Decimal(1);
 
     const kpiScaled = computePayrollIncludedBonusAmount({
@@ -157,6 +162,7 @@ export async function attachBonusReleasesToPayrollRun(
       kpiScaledAmount: kpiScaled,
       currentBonusesTotal: line.bonusesTotal,
       baseSalary: line.baseSalary,
+      bonusCapBaseSalaryMultiplier: payrollPolicy.bonusCapBaseSalaryMultiplier,
     });
     const included = capped.payrollIncludedAmount;
 

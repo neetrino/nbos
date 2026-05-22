@@ -106,6 +106,7 @@ export async function applyPendingPayrollCarryOver(
     employeeId: string;
     payrollMonth: string;
     line: SalaryLineSnapshot;
+    bonusCapBaseSalaryMultiplier: Decimal;
   },
 ): Promise<Decimal> {
   const pendingRows = await loadPendingCarryRows(tx, params.employeeId, params.payrollMonth);
@@ -125,6 +126,7 @@ export async function applyPendingPayrollCarryOver(
     kpiScaledAmount: totalPending,
     currentBonusesTotal: params.line.bonusesTotal,
     baseSalary: params.line.baseSalary,
+    bonusCapBaseSalaryMultiplier: params.bonusCapBaseSalaryMultiplier,
   });
   const applied = capped.payrollIncludedAmount;
   if (applied.lte(0)) {

@@ -1,8 +1,12 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { PrismaClient, type KpiPolicyStatusEnum } from '@nbos/database';
+import { Decimal, PrismaClient, type KpiPolicyStatusEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { KPI_POLICY_TEMPLATE_GATE_PAYOUT } from '../payroll-runs/kpi-gate-rules.types';
 import { parseKpiGateRules } from '../payroll-runs/parse-kpi-gate-rules';
+import {
+  assertBonusCapBaseSalaryMultiplierInput,
+  bonusCapMultiplierToApiString,
+} from './kpi-policy-cap-multiplier';
 import type { CreateKpiPolicyBody, KpiPolicyDto, UpdateKpiPolicyBody } from './kpi-policies.types';
 
 const STATUSES: KpiPolicyStatusEnum[] = ['DRAFT', 'ACTIVE', 'ARCHIVED'];
@@ -13,6 +17,7 @@ function serializeKpiPolicy(
     name: string;
     templateCode: string;
     gateRules: unknown;
+    bonusCapBaseSalaryMultiplier: { toFixed: (n: number) => string };
     status: KpiPolicyStatusEnum;
     scope: string | null;
     notes: string | null;
@@ -26,6 +31,9 @@ function serializeKpiPolicy(
     name: row.name,
     templateCode: row.templateCode,
     gateRules: parseKpiGateRules(row.gateRules),
+    bonusCapBaseSalaryMultiplier: bonusCapMultiplierToApiString(
+      new Decimal(row.bonusCapBaseSalaryMultiplier),
+    ),
     status: row.status,
     scope: row.scope,
     notes: row.notes,
@@ -71,11 +79,15 @@ export class KpiPoliciesService {
   async create(body: CreateKpiPolicyBody): Promise<KpiPolicyDto> {
     const name = assertPolicyName(body.name);
     const gateRules = parseKpiGateRules(body.gateRules);
+    const capMultiplier = assertBonusCapBaseSalaryMultiplierInput(
+      body.bonusCapBaseSalaryMultiplier,
+    );
     const row = await this.prisma.kpiPolicy.create({
       data: {
         name,
         templateCode: KPI_POLICY_TEMPLATE_GATE_PAYOUT,
         gateRules,
+        bonusCapBaseSalaryMultiplier: capMultiplier,
         status: 'ACTIVE',
         scope: body.scope?.trim() || null,
         notes: body.notes?.trim() || null,
@@ -98,6 +110,10 @@ export class KpiPoliciesService {
       data: {
         name: body.name != null ? assertPolicyName(body.name) : undefined,
         gateRules: body.gateRules != null ? parseKpiGateRules(body.gateRules) : undefined,
+        bonusCapBaseSalaryMultiplier:
+          body.bonusCapBaseSalaryMultiplier != null
+            ? assertBonusCapBaseSalaryMultiplierInput(body.bonusCapBaseSalaryMultiplier)
+            : undefined,
         status: body.status,
         scope: body.scope === undefined ? undefined : body.scope?.trim() || null,
         notes: body.notes === undefined ? undefined : body.notes?.trim() || null,

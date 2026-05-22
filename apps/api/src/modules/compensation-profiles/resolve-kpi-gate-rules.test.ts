@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { Decimal } from '@nbos/database';
 
 import { resolveKpiGateRulesForPayrollEmployee } from './resolve-kpi-gate-rules';
 import { DEFAULT_KPI_GATE_RULES } from '../payroll-runs/default-kpi-gate-rules';
@@ -30,7 +31,10 @@ describe('resolveKpiGateRulesForPayrollEmployee', () => {
         }),
       },
       kpiPolicy: {
-        findFirst: vi.fn().mockResolvedValue({ gateRules: custom }),
+        findFirst: vi.fn().mockResolvedValue({
+          gateRules: custom,
+          bonusCapBaseSalaryMultiplier: new Decimal(2),
+        }),
       },
     };
     const rules = await resolveKpiGateRulesForPayrollEmployee(db as never, 'e1', '2026-05');

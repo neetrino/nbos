@@ -12,6 +12,8 @@ model KpiPolicy {
   name         String
   templateCode String              @map("template_code")
   gateRules    Json                @map("gate_rules")
+  /// Max variable bonus per month = base salary × this (NBOS default 2 = 200%).
+  bonusCapBaseSalaryMultiplier Decimal @default(2) @map("bonus_cap_base_salary_multiplier") @db.Decimal(4, 2)
   status       KpiPolicyStatusEnum @default(ACTIVE)
   scope        String?
   notes        String?

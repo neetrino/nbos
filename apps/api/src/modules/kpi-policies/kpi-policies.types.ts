@@ -3,6 +3,8 @@ import type { KpiGateRules } from '../payroll-runs/kpi-gate-rules.types';
 export interface CreateKpiPolicyBody {
   name: string;
   gateRules: KpiGateRules;
+  /** Base salary × multiplier = max bonuses per month (default 2). */
+  bonusCapBaseSalaryMultiplier?: number;
   scope?: string;
   notes?: string;
 }
@@ -10,6 +12,7 @@ export interface CreateKpiPolicyBody {
 export interface UpdateKpiPolicyBody {
   name?: string;
   gateRules?: KpiGateRules;
+  bonusCapBaseSalaryMultiplier?: number;
   status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
   scope?: string | null;
   notes?: string | null;
@@ -20,6 +23,7 @@ export interface KpiPolicyDto {
   name: string;
   templateCode: string;
   gateRules: KpiGateRules;
+  bonusCapBaseSalaryMultiplier: string;
   status: string;
   scope: string | null;
   notes: string | null;

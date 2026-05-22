@@ -23,7 +23,7 @@ how much was released/paid, what is still underfunded, and what KPI/cap rules ch
 - ☑ **Pool meaning:** Product / Extension = pool scope; Project = wrapper; Order = funding anchor.
 - ☑ **Pool fill indicators:** Empty, Partial, Ready, Over funded, Closed (list / board / sheet).
 - ☑ **Burned KPI display:** advisory when gate false; persisted `kpiBurnedAmount` on SALES payroll attach in pool lines, salary sheet, wallet.
-- ◐ **Cap / carry-over:** cap 200% base + carry persist/apply on later attach; custom cap multiplier in policy still pending.
+- ☑ **Cap / carry-over:** cap (default 200% base) + carry persist/apply; `KpiPolicy.bonusCapBaseSalaryMultiplier` (1–3×) on attach + KPI policies UI.
 - ☑ **Current month forecast:** wallet Bonus outlook card — incoming/predicted vs earned/payout path (snapshot).
 - ☑ **Pay Now default:** `/finance/expenses` opens payroll-linked + current month; `/finance/expenses/pay` alias; clear shows all.
 
@@ -69,7 +69,7 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 - ◐ **Compensation Profile link:** create/activate profile + KPI policy dropdown on `/my-company/compensation`; bonus policy id pending.
 - ☐ **Employee-level KPI:** per employee/role, not only payroll-run sales KPI scale.
 - ◐ **Burned KPI:** persist `kpiBurnedAmount` on SALES attach + Finance/Wallet display; reason field / full policy templates still pending.
-- ◐ **Cap:** default 200% of base salary on attach; excess → `payrollCarryOverAmount`; Compensation Profile cap policy pending.
+- ☑ **Cap:** default 200% of base on attach; per-policy multiplier via linked `kpi_policies`; excess → `payrollCarryOverAmount`.
 - ◐ **Carry-over:** FIFO auto-apply on attach + `payrollCarryOverRemaining`; month sheet shows pending; detach reversal of applied carry pending.
 - ☐ **Bonus breakdown statuses:** Incoming, Burned, Carry-over, Clawback in API + UI.
 - ☐ **Idempotency:** no duplicate entries/releases/burned/carry-over on recalc.

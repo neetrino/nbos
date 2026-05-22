@@ -10,6 +10,11 @@ import {
   parseDraftsToRules,
 } from '@/features/my-company/kpi-policies/kpi-gate-band-utils';
 import { KpiGateBandEditor } from '@/features/my-company/kpi-policies/kpi-gate-band-editor';
+import {
+  KpiPolicyCapField,
+  parseCapMultiplierDraft,
+} from '@/features/my-company/kpi-policies/kpi-policy-cap-field';
+import { KPI_POLICY_CAP_MULTIPLIER_DEFAULT } from '@/features/my-company/kpi-policies/kpi-policy-cap.constants';
 import { kpiPoliciesApi, type KpiPolicyRow, type KpiPolicyStatus } from '@/lib/api/kpi-policies';
 
 export default function KpiPoliciesPage() {
@@ -20,6 +25,9 @@ export default function KpiPoliciesPage() {
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newBands, setNewBands] = useState(DEFAULT_GATE_BAND_DRAFTS);
+  const [newCapMultiplier, setNewCapMultiplier] = useState(
+    String(KPI_POLICY_CAP_MULTIPLIER_DEFAULT),
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,6 +52,7 @@ export default function KpiPoliciesPage() {
       name: string;
       gateRules: KpiPolicyRow['gateRules'];
       status: KpiPolicyStatus;
+      bonusCapBaseSalaryMultiplier: number;
     },
   ) => {
     setSavingId(id);
@@ -60,8 +69,9 @@ export default function KpiPoliciesPage() {
 
   const handleCreate = async () => {
     const gateRules = parseDraftsToRules(newBands);
-    if (gateRules == null || newName.trim().length < 2) {
-      setError('Enter a policy name and valid bands before creating.');
+    const cap = parseCapMultiplierDraft(newCapMultiplier);
+    if (gateRules == null || cap == null || newName.trim().length < 2) {
+      setError('Enter a policy name, valid cap (1–3), and valid bands before creating.');
       return;
     }
     setCreating(true);
@@ -69,6 +79,7 @@ export default function KpiPoliciesPage() {
       const created = await kpiPoliciesApi.create({
         name: newName.trim(),
         gateRules,
+        bonusCapBaseSalaryMultiplier: cap,
         scope: 'COMPANY',
       });
       setItems((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
@@ -99,9 +110,8 @@ export default function KpiPoliciesPage() {
         }
       />
       <p className="text-muted-foreground text-sm">
-        Payout multipliers by plan attainment %. Assign a policy on each employee compensation
-        profile; payroll attach uses it for SALES bonus releases (template logic stays in the
-        platform).
+        Payout multipliers by plan attainment % and monthly bonus cap (× base salary). Assign on
+        each compensation profile; payroll attach applies both for SALES releases and carry-over.
       </p>
 
       {loading ? (
@@ -122,6 +132,13 @@ export default function KpiPoliciesPage() {
                 onChange={(e) => setNewName(e.target.value)}
               />
             </label>
+            <div className="mb-4 max-w-xs">
+              <KpiPolicyCapField
+                value={newCapMultiplier}
+                disabled={creating}
+                onChange={setNewCapMultiplier}
+              />
+            </div>
             <KpiGateBandEditor bands={newBands} onChange={setNewBands} disabled={creating} />
             <div className="mt-4 flex justify-end">
               <Button

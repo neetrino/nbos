@@ -14,8 +14,11 @@ function roundMoney(value: Decimal): Decimal {
 }
 
 /** Max bonuses on a salary line this month (base × multiplier). */
-export function computeMonthlyBonusCap(baseSalary: Decimal): Decimal {
-  return roundMoney(baseSalary.mul(BONUS_PAYROLL_CAP_BASE_SALARY_MULTIPLIER));
+export function computeMonthlyBonusCap(
+  baseSalary: Decimal,
+  bonusCapBaseSalaryMultiplier: Decimal = new Decimal(BONUS_PAYROLL_CAP_BASE_SALARY_MULTIPLIER),
+): Decimal {
+  return roundMoney(baseSalary.mul(bonusCapBaseSalaryMultiplier));
 }
 
 /**
@@ -26,13 +29,16 @@ export function applyPayrollBonusCap(params: {
   kpiScaledAmount: Decimal;
   currentBonusesTotal: Decimal;
   baseSalary: Decimal;
+  bonusCapBaseSalaryMultiplier?: Decimal;
 }): PayrollBonusCapApplyResult {
   const scaled = roundMoney(params.kpiScaledAmount);
   if (params.baseSalary.lte(0)) {
     return { payrollIncludedAmount: scaled, payrollCarryOverAmount: null };
   }
 
-  const capMax = computeMonthlyBonusCap(params.baseSalary);
+  const multiplier =
+    params.bonusCapBaseSalaryMultiplier ?? new Decimal(BONUS_PAYROLL_CAP_BASE_SALARY_MULTIPLIER);
+  const capMax = computeMonthlyBonusCap(params.baseSalary, multiplier);
   const room = Decimal.max(ZERO, capMax.minus(params.currentBonusesTotal));
   if (scaled.lte(room)) {
     return { payrollIncludedAmount: scaled, payrollCarryOverAmount: null };
