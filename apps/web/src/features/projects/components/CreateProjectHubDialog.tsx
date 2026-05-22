@@ -10,9 +10,11 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { projectsApi, type Project } from '@/lib/api/projects';
+import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
+import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
 
 import { CreateProjectHubDialogFields } from './create-project-hub-dialog-fields';
-import { useProjectHubCreateOptions } from './use-project-hub-create-options';
+import { applyProjectHubRelationCreated } from './apply-project-hub-relation-created';
 
 export type CreateProjectHubDialogProps = {
   open: boolean;
@@ -44,25 +46,42 @@ export function CreateProjectHubDialog({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [contactId, setContactId] = useState('');
+  const [contactLabel, setContactLabel] = useState('');
   const [companyId, setCompanyId] = useState('');
+  const [companyLabel, setCompanyLabel] = useState('');
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const { contacts, companies, optionsLoading, loadError, setLoadError } =
-    useProjectHubCreateOptions(open);
 
   const reset = useCallback(() => {
     setName('');
     setDescription('');
     setContactId('');
+    setContactLabel('');
     setCompanyId('');
+    setCompanyLabel('');
     setSubmitError(null);
-    setLoadError(null);
-  }, [setLoadError]);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
     setName(defaultName.trim());
   }, [open, defaultName]);
+
+  const handleRelationCreated = useCallback(
+    (event: RelationCreatedEvent) => {
+      const next = applyProjectHubRelationCreated(
+        { contactId, contactLabel, companyId, companyLabel },
+        event,
+      );
+      setContactId(next.contactId);
+      setContactLabel(next.contactLabel);
+      setCompanyId(next.companyId);
+      setCompanyLabel(next.companyLabel);
+    },
+    [contactId, contactLabel, companyId, companyLabel],
+  );
+
+  useRegisterRelationCreated(open ? handleRelationCreated : null);
 
   const handleOpenChange = useCallback(
     (next: boolean) => {
@@ -93,8 +112,7 @@ export function CreateProjectHubDialog({
     }
   };
 
-  const displayError = loadError ?? submitError;
-  const canSubmit = name.trim().length > 0 && contactId.length > 0 && !optionsLoading && !saving;
+  const canSubmit = name.trim().length > 0 && contactId.length > 0 && !saving;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -109,14 +127,23 @@ export function CreateProjectHubDialog({
           description={description}
           onDescriptionChange={setDescription}
           contactId={contactId}
-          onContactIdChange={setContactId}
+          contactLabel={contactLabel}
+          onContactChange={(id, label) => {
+            setContactId(id);
+            setContactLabel(label);
+          }}
           companyId={companyId}
-          onCompanyIdChange={setCompanyId}
-          contacts={contacts}
-          companies={companies}
-          optionsLoading={optionsLoading}
+          companyLabel={companyLabel}
+          onCompanyChange={(id, label) => {
+            setCompanyId(id);
+            setCompanyLabel(label);
+          }}
+          onCompanyClear={() => {
+            setCompanyId('');
+            setCompanyLabel('');
+          }}
           saving={saving}
-          error={displayError}
+          error={submitError}
         />
 
         <DialogFooter>

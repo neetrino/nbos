@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { User } from 'lucide-react';
 import {
   Dialog,
@@ -20,11 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SearchField } from '@/components/shared/SearchField';
-import { COMPANY_TYPES, TAX_STATUSES } from '../constants/clients';
-import { companiesApi, type Company, type Contact } from '@/lib/api/clients';
-import { CreateContactDialog } from './CreateContactDialog';
+import { RelationPickerField } from '@/components/shared';
+import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
+import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { useContactSearchOptions } from '../hooks/use-contact-search-options';
+import { COMPANY_TYPES, TAX_STATUSES } from '../constants/clients';
+import { companiesApi, type Company } from '@/lib/api/clients';
+import { applyCompanyRelationCreated } from './apply-company-relation-created';
 
 interface CreateCompanyDialogProps {
   open: boolean;
@@ -40,8 +43,9 @@ export function CreateCompanyDialog({
   defaultName = '',
 }: CreateCompanyDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [nestedContactOpen, setNestedContactOpen] = useState(false);
   const searchContacts = useContactSearchOptions();
+  const primaryContactPicker = useRelationPickerActions('contact', 'company-create-primary');
+  const billingContactPicker = useRelationPickerActions('contact', 'company-create-billing');
   const [form, setForm] = useState({
     name: '',
     type: 'LEGAL',
@@ -116,209 +120,188 @@ export function CreateCompanyDialog({
     }
   };
 
-  const applyPrimaryFromContact = (c: Contact) => {
-    setForm((prev) => ({
-      ...prev,
-      primaryContactId: c.id,
-      primaryContactLabel: `${c.firstName} ${c.lastName}`.trim(),
-    }));
-  };
+  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
+    setForm((prev) => ({ ...prev, ...applyCompanyRelationCreated(prev, event) }));
+  }, []);
+
+  useRegisterRelationCreated(open ? handleRelationCreated : null);
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[560px]">
-          <DialogHeader>
-            <DialogTitle>New Company</DialogTitle>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle>New Company</DialogTitle>
+        </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label>Company Name *</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Company LLC or Individual Name"
-                autoFocus
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Type *</Label>
-                <Select
-                  value={form.type}
-                  onValueChange={(v) => setForm({ ...form, type: v as string })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COMPANY_TYPES.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Tax Status *</Label>
-                <Select
-                  value={form.taxStatus}
-                  onValueChange={(v) => setForm({ ...form, taxStatus: v as string })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TAX_STATUSES.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Tax ID</Label>
-                <Input
-                  value={form.taxId}
-                  onChange={(e) => setForm({ ...form, taxId: e.target.value })}
-                  placeholder="Tax ID / VOEN"
-                />
-              </div>
-              <div>
-                <Label>Country</Label>
-                <Input
-                  value={form.country}
-                  onChange={(e) => setForm({ ...form, country: e.target.value })}
-                  placeholder="Armenia"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label>Legal Address</Label>
-              <Input
-                value={form.legalAddress}
-                onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
-                placeholder="Legal address..."
-              />
-            </div>
-
-            <SearchField
-              selectionMode="stage"
-              label="Primary Contact *"
-              value={form.primaryContactId}
-              displayValue={
-                form.primaryContactLabel ? (
-                  <span className="text-foreground font-medium">{form.primaryContactLabel}</span>
-                ) : undefined
-              }
-              placeholder="Search by name, phone, email..."
-              icon={<User size={12} />}
-              maxResults={25}
-              onSearch={searchContacts}
-              onStageSelect={(id, label) =>
-                setForm((prev) => ({
-                  ...prev,
-                  primaryContactId: id,
-                  primaryContactLabel: label,
-                }))
-              }
-              onClear={() =>
-                setForm((prev) => ({
-                  ...prev,
-                  primaryContactId: '',
-                  primaryContactLabel: '',
-                }))
-              }
-              onNew={() => setNestedContactOpen(true)}
-              newLabel="Create contact"
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label>Company Name *</Label>
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Company LLC or Individual Name"
+              autoFocus
             />
+          </div>
 
-            <SearchField
-              selectionMode="stage"
-              label="Billing Contact"
-              value={form.billingContactId}
-              displayValue={
-                form.billingContactLabel ? (
-                  <span className="text-foreground font-medium">{form.billingContactLabel}</span>
-                ) : undefined
-              }
-              placeholder="Optional — defaults to primary when empty"
-              icon={<User size={12} />}
-              maxResults={25}
-              onSearch={searchContacts}
-              onStageSelect={(id, label) =>
-                setForm((prev) => ({
-                  ...prev,
-                  billingContactId: id,
-                  billingContactLabel: label,
-                }))
-              }
-              onClear={() =>
-                setForm((prev) => ({
-                  ...prev,
-                  billingContactId: '',
-                  billingContactLabel: '',
-                }))
-              }
-            />
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Company Phone</Label>
-                <Input
-                  type="tel"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Company Email</Label>
-                <Input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                />
-              </div>
-            </div>
-
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Notes</Label>
-              <Textarea
-                value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                rows={2}
-                placeholder="Special conditions, bank details..."
+              <Label>Type *</Label>
+              <Select
+                value={form.type}
+                onValueChange={(v) => setForm({ ...form, type: v as string })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {COMPANY_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Tax Status *</Label>
+              <Select
+                value={form.taxStatus}
+                onValueChange={(v) => setForm({ ...form, taxStatus: v as string })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TAX_STATUSES.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Tax ID</Label>
+              <Input
+                value={form.taxId}
+                onChange={(e) => setForm({ ...form, taxId: e.target.value })}
+                placeholder="Tax ID / VOEN"
               />
             </div>
+            <div>
+              <Label>Country</Label>
+              <Input
+                value={form.country}
+                onChange={(e) => setForm({ ...form, country: e.target.value })}
+                placeholder="Armenia"
+              />
+            </div>
+          </div>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading || !canSubmit}>
-                {loading ? 'Creating...' : 'Create Company'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+          <div>
+            <Label>Legal Address</Label>
+            <Input
+              value={form.legalAddress}
+              onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
+              placeholder="Legal address..."
+            />
+          </div>
 
-      <CreateContactDialog
-        open={nestedContactOpen}
-        onOpenChange={setNestedContactOpen}
-        onCreated={(contact) => {
-          setNestedContactOpen(false);
-          if (contact) applyPrimaryFromContact(contact);
-        }}
-      />
-    </>
+          <RelationPickerField
+            label="Primary Contact *"
+            entityKind="contact"
+            value={form.primaryContactId || null}
+            selectionLabel={form.primaryContactLabel || null}
+            placeholder="Search by name, phone, email…"
+            icon={<User size={12} />}
+            maxResults={25}
+            onSearch={searchContacts}
+            onSelect={(id, label) =>
+              setForm((prev) => ({
+                ...prev,
+                primaryContactId: id,
+                primaryContactLabel: label,
+              }))
+            }
+            onClear={() =>
+              setForm((prev) => ({
+                ...prev,
+                primaryContactId: '',
+                primaryContactLabel: '',
+              }))
+            }
+            {...primaryContactPicker}
+          />
+
+          <RelationPickerField
+            label="Billing Contact"
+            entityKind="contact"
+            value={form.billingContactId || null}
+            selectionLabel={form.billingContactLabel || null}
+            placeholder="Optional — defaults to primary when empty"
+            icon={<User size={12} />}
+            maxResults={25}
+            onSearch={searchContacts}
+            onSelect={(id, label) =>
+              setForm((prev) => ({
+                ...prev,
+                billingContactId: id,
+                billingContactLabel: label,
+              }))
+            }
+            onClear={() =>
+              setForm((prev) => ({
+                ...prev,
+                billingContactId: '',
+                billingContactLabel: '',
+              }))
+            }
+            {...billingContactPicker}
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Company Phone</Label>
+              <Input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Company Email</Label>
+              <Input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label>Notes</Label>
+            <Textarea
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              rows={2}
+              placeholder="Special conditions, bank details..."
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading || !canSubmit}>
+              {loading ? 'Creating...' : 'Create Company'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

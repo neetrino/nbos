@@ -119,9 +119,18 @@ export function SupportTicketDetailGeneralTab({
                   <SupportTicketDetailTriageFields
                     draft={draft}
                     terminal={terminal}
-                    employees={employees}
-                    contacts={contacts}
-                    productOptions={productOptions}
+                    projectId={ticket.projectId}
+                    assigneeLabel={
+                      ticket.assignee
+                        ? `${ticket.assignee.firstName} ${ticket.assignee.lastName}`
+                        : null
+                    }
+                    productLabel={ticket.product?.name ?? null}
+                    contactLabel={
+                      ticket.contact
+                        ? `${ticket.contact.firstName} ${ticket.contact.lastName}`
+                        : null
+                    }
                     onPatchDraft={onPatchDraft}
                   />
                 </div>

@@ -14,7 +14,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { SearchField, StatusBadge } from '@/components/shared';
+import { RelationPickerField, SearchField, StatusBadge } from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import {
   PARTNER_AGREEMENT_STATUSES,
   getPartnerAgreementStatus,
@@ -32,6 +33,7 @@ interface PartnerAgreementsCardProps {
 
 export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCardProps) {
   const loadEmployees = useEmployeeSearchLoader();
+  const employeePicker = useRelationPickerActions('employee');
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [fileDisplay, setFileDisplay] = useState('');
@@ -194,16 +196,14 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
           }}
         />
 
-        <SearchField
-          selectionMode="stage"
+        <RelationPickerField
           label="Agreement owner"
-          value={form.agreementOwnerId || undefined}
-          displayValue={
-            ownerDisplay ? <span className="text-foreground">{ownerDisplay}</span> : undefined
-          }
+          entityKind="employee"
+          value={form.agreementOwnerId || null}
+          selectionLabel={ownerDisplay || null}
           placeholder="Search employees…"
           onSearch={loadEmployees}
-          onStageSelect={(id, label) => {
+          onSelect={(id, label) => {
             setForm((p) => ({ ...p, agreementOwnerId: id }));
             setOwnerDisplay(label);
           }}
@@ -211,6 +211,7 @@ export function PartnerAgreementsCard({ partner, onSaved }: PartnerAgreementsCar
             setForm((p) => ({ ...p, agreementOwnerId: '' }));
             setOwnerDisplay('');
           }}
+          {...employeePicker}
         />
 
         <div className="flex justify-end">

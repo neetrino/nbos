@@ -89,9 +89,6 @@ export function SupportPageView() {
       <SupportCreateTicketDialog
         open={createForm.createOpen}
         onOpenChange={createForm.setCreateOpen}
-        projects={createForm.projectsForFilters}
-        productOptions={createForm.createProductOptions}
-        contacts={createForm.createContacts}
         title={createForm.createTitle}
         projectId={createForm.createProjectId}
         productId={createForm.createProductId}

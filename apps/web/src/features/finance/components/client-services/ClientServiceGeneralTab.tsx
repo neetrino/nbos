@@ -8,7 +8,10 @@ import {
   DetailSheetCollapsibleSection,
   DetailSheetSection,
   InlineField,
+  RelationPickerField,
 } from '@/components/shared';
+import { useProjectRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import {
   CLIENT_SERVICE_BILLING_MODELS,
@@ -49,11 +52,11 @@ export function ClientServiceGeneralTab({
   const [basicsOpen, setBasicsOpen] = useState(true);
   const [billingOpen, setBillingOpen] = useState(true);
   const [datesOpen, setDatesOpen] = useState(true);
+  const searchProjects = useProjectRelationSearch();
+  const projectPicker = useRelationPickerActions('project');
 
-  const projectOptions = projects.map((p) => ({
-    value: p.id,
-    label: `${p.code} — ${p.name}`,
-  }));
+  const linkedProject = projects.find((p) => p.id === draft.projectId);
+  const projectLabel = linkedProject ? `${linkedProject.code} — ${linkedProject.name}` : null;
 
   return (
     <div className="flex max-w-[48rem] flex-col gap-4">
@@ -73,15 +76,17 @@ export function ClientServiceGeneralTab({
             disabled={formDisabled}
             onValueChange={(name) => patchDraft({ name })}
           />
-          <InlineField
-            variant="controlled"
+          <RelationPickerField
             label="Project"
-            type="select"
-            value={draft.projectId}
-            options={projectOptions}
+            entityKind="project"
+            value={draft.projectId || null}
+            selectionLabel={projectLabel}
+            placeholder="Search projects…"
             icon={<FolderKanban size={12} />}
             disabled={formDisabled}
-            onValueChange={(projectId) => projectId && patchDraft({ projectId })}
+            onSearch={searchProjects}
+            onSelect={(id) => patchDraft({ projectId: id })}
+            {...projectPicker}
           />
           <InlineField
             variant="controlled"

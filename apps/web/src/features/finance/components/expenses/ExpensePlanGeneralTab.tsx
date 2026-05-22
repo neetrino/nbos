@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   CalendarDays,
   DollarSign,
@@ -15,20 +15,19 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
   InlineField,
+  RelationPickerField,
 } from '@/components/shared';
+import { useProjectRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 import { planExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
-import {
-  EXPENSE_FREQUENCIES,
-  PROJECTS_PAGE_SIZE,
-} from '@/features/finance/components/expenses/edit-expense-dialog-constants';
+import { EXPENSE_FREQUENCIES } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { expensePlanFrequencyLabel } from '@/features/finance/utils/expense-plan-display';
 import type { ExpensePlanGeneralDraft } from '@/features/finance/utils/expense-plan-general-form-state';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
-import { projectsApi, type Project } from '@/lib/api/projects';
 
 const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES.filter((c) => c.value !== 'OFFICE');
 
@@ -49,27 +48,10 @@ export function ExpensePlanGeneralTab({
   onGenerateClick,
   onDeleteClick,
 }: ExpensePlanGeneralTabProps) {
-  const [projects, setProjects] = useState<Project[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    projectsApi
-      .getAll({ page: 1, pageSize: PROJECTS_PAGE_SIZE })
-      .then((res) => {
-        if (!cancelled) setProjects(res.items);
-      })
-      .catch(() => {
-        if (!cancelled) setProjects([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const projectOptions = [
-    { value: 'none', label: 'None' },
-    ...projects.map((p) => ({ value: p.id, label: `${p.code} — ${p.name}` })),
-  ];
+  const searchProjects = useProjectRelationSearch();
+  const projectPicker = useRelationPickerActions('project');
+  const projectLabel = plan.project ? `${plan.project.code} — ${plan.project.name}` : null;
+  const projectValue = draft.projectId === 'none' ? null : draft.projectId;
 
   return (
     <div className="mx-auto flex w-full max-w-none flex-col gap-4">
@@ -146,14 +128,18 @@ export function ExpensePlanGeneralTab({
 
       <DetailSheetSection title="Linked" icon={<FolderKanban size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <InlineField
-            variant="controlled"
+          <RelationPickerField
             label="Project"
-            type="select"
-            value={draft.projectId}
-            options={projectOptions}
+            entityKind="project"
+            value={projectValue}
+            selectionLabel={projectLabel}
+            placeholder="Optional — search project…"
+            icon={<FolderKanban size={12} />}
             disabled={formDisabled}
-            onValueChange={(v) => v && patchDraft({ projectId: v })}
+            onSearch={searchProjects}
+            onSelect={(id) => patchDraft({ projectId: id })}
+            onClear={() => patchDraft({ projectId: 'none' })}
+            {...projectPicker}
           />
           {plan._count.expenses > 0 ? (
             <Link

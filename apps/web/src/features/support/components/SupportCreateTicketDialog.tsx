@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { FolderKanban, Layers, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,20 +14,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { RelationPickerField } from '@/components/shared';
+import {
+  useContactRelationSearch,
+  useProductRelationSearch,
+  useProjectRelationSearch,
+} from '@/components/shared/relation-picker/relation-search-loaders';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import {
   TICKET_CATEGORIES,
   TICKET_COVERAGE_DECISIONS,
   TICKET_PRIORITIES,
 } from '@/features/support/constants/support';
-import type { Project, ProjectProductSummary } from '@/lib/api/projects';
-import type { Contact } from '@/lib/api/clients';
 
 export interface SupportCreateTicketDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projects: Project[];
-  productOptions: ProjectProductSummary[];
-  contacts: Contact[];
   title: string;
   projectId: string;
   productId: string;
@@ -50,9 +54,6 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
   const {
     open,
     onOpenChange,
-    projects,
-    productOptions,
-    contacts,
     title,
     projectId,
     productId,
@@ -73,6 +74,36 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
     submitting,
   } = props;
 
+  const [projectLabel, setProjectLabel] = useState('');
+  const [productLabel, setProductLabel] = useState('');
+  const [contactLabel, setContactLabel] = useState('');
+
+  const searchProjects = useProjectRelationSearch();
+  const searchProducts = useProductRelationSearch(projectId || null);
+  const searchContacts = useContactRelationSearch();
+  const projectPicker = useRelationPickerActions('project');
+  const productPicker = useRelationPickerActions('product');
+  const contactPicker = useRelationPickerActions('contact');
+
+  useEffect(() => {
+    if (!projectId) setProjectLabel('');
+  }, [projectId]);
+
+  useEffect(() => {
+    if (!productId) setProductLabel('');
+  }, [productId]);
+
+  useEffect(() => {
+    if (!contactId) setContactLabel('');
+  }, [contactId]);
+
+  useEffect(() => {
+    if (!projectId) {
+      onProductIdChange('');
+      setProductLabel('');
+    }
+  }, [projectId, onProductIdChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -92,39 +123,39 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
               placeholder="Short description of the issue"
             />
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="support-new-project">Project</Label>
-            <select
-              id="support-new-project"
-              className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-              value={projectId}
-              onChange={(event) => onProjectIdChange(event.target.value)}
-            >
-              <option value="">Select project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.code} · {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="support-new-product">Product (optional)</Label>
-            <select
-              id="support-new-product"
-              className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-              value={productId}
-              onChange={(event) => onProductIdChange(event.target.value)}
-              disabled={!projectId}
-            >
-              <option value="">None</option>
-              {productOptions.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <RelationPickerField
+            label="Project"
+            entityKind="project"
+            value={projectId || null}
+            selectionLabel={projectLabel || null}
+            placeholder="Search projects…"
+            icon={<FolderKanban size={12} />}
+            onSearch={searchProjects}
+            onSelect={(id, label) => {
+              onProjectIdChange(id);
+              setProjectLabel(label);
+            }}
+            {...projectPicker}
+          />
+          <RelationPickerField
+            label="Product"
+            entityKind="product"
+            value={productId || null}
+            selectionLabel={productLabel || null}
+            placeholder={projectId ? 'Search products…' : 'Select a project first'}
+            icon={<Layers size={12} />}
+            disabled={!projectId}
+            onSearch={searchProducts}
+            onSelect={(id, label) => {
+              onProductIdChange(id);
+              setProductLabel(label);
+            }}
+            onClear={() => {
+              onProductIdChange('');
+              setProductLabel('');
+            }}
+            {...productPicker}
+          />
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label htmlFor="support-new-category">Category</Label>
@@ -183,22 +214,24 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
               ))}
             </select>
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="support-new-contact">Contact (optional)</Label>
-            <select
-              id="support-new-contact"
-              className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-              value={contactId}
-              onChange={(event) => onContactIdChange(event.target.value)}
-            >
-              <option value="">None</option>
-              {contacts.map((contact) => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.firstName} {contact.lastName}
-                </option>
-              ))}
-            </select>
-          </div>
+          <RelationPickerField
+            label="Contact"
+            entityKind="contact"
+            value={contactId || null}
+            selectionLabel={contactLabel || null}
+            placeholder="Search contacts…"
+            icon={<User size={12} />}
+            onSearch={searchContacts}
+            onSelect={(id, label) => {
+              onContactIdChange(id);
+              setContactLabel(label);
+            }}
+            onClear={() => {
+              onContactIdChange('');
+              setContactLabel('');
+            }}
+            {...contactPicker}
+          />
         </div>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

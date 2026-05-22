@@ -63,6 +63,10 @@ export {
   type RelationPickerSearchFn,
   type RelationCreatePrefill,
   type RelationCreatedEvent,
+  useContactRelationSearch,
+  useCompanyRelationSearch,
+  useProjectRelationSearch,
+  useProductRelationSearch,
 } from './relation-picker';
 export { ListMutationErrorBanner } from './ListMutationErrorBanner';
 export { DetailSheetFormFooter, type DetailSheetFormFooterProps } from './DetailSheetFormFooter';

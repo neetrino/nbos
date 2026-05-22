@@ -1,7 +1,13 @@
 'use client';
 
 import { Building2, Calendar, FileText, MessageCircle, Receipt, Tag, User } from 'lucide-react';
-import { DetailSheetSection, InlineField, SearchField, StatusBadge } from '@/components/shared';
+import {
+  DetailSheetSection,
+  InlineField,
+  RelationPickerField,
+  StatusBadge,
+} from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { COMPANY_TYPES, getTaxStatus } from '../constants/clients';
 import { companyTypeNumberLabel } from '../constants/company-type-field-copy';
 import type { Company } from '@/lib/api/clients';
@@ -47,6 +53,8 @@ export function CompanySheetScrollBody({
   searchContacts,
   onPortfolioRetry,
 }: CompanySheetScrollBodyProps) {
+  const contactPicker = useRelationPickerActions('contact', 'company-sheet-primary');
+  const billingContactPicker = useRelationPickerActions('contact', 'company-sheet-billing');
   const taxStatus = getTaxStatus(company.taxStatus);
   const typeOptions = COMPANY_TYPES.map((t) => ({ value: t.value, label: t.label }));
 
@@ -146,46 +154,36 @@ export function CompanySheetScrollBody({
 
           <DetailSheetSection title="Contacts" icon={<User size={12} />}>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <SearchField
-                selectionMode="stage"
+              <RelationPickerField
                 label="Primary contact"
-                value={draft.primaryContactId}
-                displayValue={
-                  draft.primaryContactLabel ? (
-                    <span className="text-foreground text-sm font-medium">
-                      {draft.primaryContactLabel}
-                    </span>
-                  ) : undefined
-                }
+                entityKind="contact"
+                value={draft.primaryContactId || null}
+                selectionLabel={draft.primaryContactLabel || null}
                 placeholder="Search contacts…"
                 icon={<User size={12} />}
                 maxResults={25}
                 disabled={saving}
                 onSearch={searchContacts}
-                onStageSelect={(id, label) =>
+                onSelect={(id, label) =>
                   patchDraft({ primaryContactId: id, primaryContactLabel: label })
                 }
+                {...contactPicker}
               />
-              <SearchField
-                selectionMode="stage"
+              <RelationPickerField
                 label="Billing contact"
-                value={draft.billingContactId}
-                displayValue={
-                  draft.billingContactLabel ? (
-                    <span className="text-foreground text-sm font-medium">
-                      {draft.billingContactLabel}
-                    </span>
-                  ) : undefined
-                }
+                entityKind="contact"
+                value={draft.billingContactId || null}
+                selectionLabel={draft.billingContactLabel || null}
                 placeholder="Optional — clear to match primary"
                 icon={<User size={12} />}
                 maxResults={25}
                 disabled={saving}
                 onSearch={searchContacts}
-                onStageSelect={(id, label) =>
+                onSelect={(id, label) =>
                   patchDraft({ billingContactId: id, billingContactLabel: label })
                 }
                 onClear={() => patchDraft({ billingContactId: '', billingContactLabel: '' })}
+                {...billingContactPicker}
               />
             </div>
           </DetailSheetSection>

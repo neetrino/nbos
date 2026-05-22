@@ -1,35 +1,66 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { Layers, User, UserCog } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RelationPickerField } from '@/components/shared';
+import {
+  useContactRelationSearch,
+  useProductRelationSearch,
+} from '@/components/shared/relation-picker/relation-search-loaders';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { useEmployeeSearchLoader } from '@/features/projects/components/delivery-board/delivery-item-detail-employee-search';
 import {
   TICKET_CATEGORIES,
   TICKET_COVERAGE_DECISIONS,
   TICKET_PRIORITIES,
 } from '@/features/support/constants/support';
-import type { Contact } from '@/lib/api/clients';
-import type { Employee } from '@/lib/api/employees';
-import type { ProjectProductSummary } from '@/lib/api/projects';
 import type { SupportTriageDraft } from './support-ticket-detail-helpers';
 
 export interface SupportTicketDetailTriageFieldsProps {
   draft: SupportTriageDraft;
   terminal: boolean;
-  employees: Employee[];
-  contacts: Contact[];
-  productOptions: ProjectProductSummary[];
+  projectId: string;
+  assigneeLabel?: string | null;
+  productLabel?: string | null;
+  contactLabel?: string | null;
   onPatchDraft: (partial: Partial<SupportTriageDraft>) => void;
 }
 
 export function SupportTicketDetailTriageFields({
   draft,
   terminal,
-  employees,
-  contacts,
-  productOptions,
+  projectId,
+  assigneeLabel: assigneeLabelProp,
+  productLabel: productLabelProp,
+  contactLabel: contactLabelProp,
   onPatchDraft,
 }: SupportTicketDetailTriageFieldsProps) {
+  const [assigneeLabel, setAssigneeLabel] = useState(assigneeLabelProp ?? '');
+  const [productLabel, setProductLabel] = useState(productLabelProp ?? '');
+  const [contactLabel, setContactLabel] = useState(contactLabelProp ?? '');
+
+  const searchEmployees = useEmployeeSearchLoader();
+  const searchProducts = useProductRelationSearch(projectId || null);
+  const searchContacts = useContactRelationSearch();
+  const employeePicker = useRelationPickerActions('employee');
+  const productPicker = useRelationPickerActions('product');
+  const contactPicker = useRelationPickerActions('contact');
+
+  useEffect(() => {
+    if (assigneeLabelProp != null) setAssigneeLabel(assigneeLabelProp);
+  }, [assigneeLabelProp]);
+
+  useEffect(() => {
+    if (productLabelProp != null) setProductLabel(productLabelProp);
+  }, [productLabelProp]);
+
+  useEffect(() => {
+    if (contactLabelProp != null) setContactLabel(contactLabelProp);
+  }, [contactLabelProp]);
+
   return (
     <>
       <div className="space-y-3">
@@ -105,58 +136,70 @@ export function SupportTicketDetailTriageFields({
             ))}
           </select>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="st-asg">Assignee</Label>
-          <select
-            id="st-asg"
-            className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-            value={draft.assignedTo}
-            onChange={(e) => onPatchDraft({ assignedTo: e.target.value })}
+        <div className="min-w-0">
+          <RelationPickerField
+            label="Assignee"
+            entityKind="employee"
+            value={draft.assignedTo || null}
+            selectionLabel={assigneeLabel || null}
+            placeholder="Unassigned — search employee…"
+            icon={<UserCog size={12} />}
             disabled={terminal}
-          >
-            <option value="">Unassigned</option>
-            {employees.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.firstName} {e.lastName}
-              </option>
-            ))}
-          </select>
+            onSearch={searchEmployees}
+            onSelect={(id, label) => {
+              onPatchDraft({ assignedTo: id });
+              setAssigneeLabel(label);
+            }}
+            onClear={() => {
+              onPatchDraft({ assignedTo: '' });
+              setAssigneeLabel('');
+            }}
+            {...employeePicker}
+          />
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="st-prod">Product</Label>
-          <select
-            id="st-prod"
-            className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-            value={draft.productId}
-            onChange={(e) => onPatchDraft({ productId: e.target.value })}
+        <div className="min-w-0">
+          <RelationPickerField
+            label="Product"
+            entityKind="product"
+            value={draft.productId || null}
+            selectionLabel={productLabel || null}
+            placeholder="Search products…"
+            icon={<Layers size={12} />}
             disabled={terminal}
-          >
-            <option value="">None</option>
-            {productOptions.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+            onSearch={searchProducts}
+            onSelect={(id, label) => {
+              onPatchDraft({ productId: id });
+              setProductLabel(label);
+            }}
+            onClear={() => {
+              onPatchDraft({ productId: '' });
+              setProductLabel('');
+            }}
+            {...productPicker}
+          />
         </div>
-        <div className="space-y-1 sm:col-span-2">
-          <Label htmlFor="st-contact">Contact</Label>
-          <select
-            id="st-contact"
-            className="border-border bg-background w-full rounded-md border px-2 py-2 text-sm"
-            value={draft.contactId}
-            onChange={(e) => onPatchDraft({ contactId: e.target.value })}
+        <div className="min-w-0 sm:col-span-2">
+          <RelationPickerField
+            label="Contact"
+            entityKind="contact"
+            value={draft.contactId || null}
+            selectionLabel={contactLabel || null}
+            placeholder="Search contacts…"
+            icon={<User size={12} />}
             disabled={terminal}
-          >
-            <option value="">None</option>
-            {contacts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.firstName} {c.lastName}
-              </option>
-            ))}
-          </select>
+            onSearch={searchContacts}
+            onSelect={(id, label) => {
+              onPatchDraft({ contactId: id });
+              setContactLabel(label);
+            }}
+            onClear={() => {
+              onPatchDraft({ contactId: '' });
+              setContactLabel('');
+            }}
+            {...contactPicker}
+          />
         </div>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-sm sm:col-span-2">
           <input
             type="checkbox"
             checked={draft.billable}

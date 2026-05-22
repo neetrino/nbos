@@ -22,11 +22,11 @@ Unified UX for linking entities (Client, Partner, Project, Contact, …) across 
 
 - [x] Delivery board — team employee fields
 - [x] Tasks sheet — assignee
-- [ ] Project hub create / link fields (`create-project-hub-dialog-fields`)
-- [ ] Finance (invoice, expense plan, client service)
-- [ ] Support ticket triage
-- [ ] Partners agreements card
-- [ ] Company sheet contact pickers
+- [x] Project hub create — contact / company pickers
+- [x] Finance — client service project, expense plan project, invoice create project
+- [x] Support — create ticket + triage assignee / product / contact
+- [x] Partners agreements — agreement owner (employee)
+- [x] Company sheet + create dialog — primary / billing contact
 
 ## Phase 3 — Platform
 
@@ -34,9 +34,10 @@ Unified UX for linking entities (Client, Partner, Project, Contact, …) across 
 - [x] Employee open from picker (`EmployeeSheet`)
 - [x] Product open from picker (`/projects/:projectId/products/:id`)
 - [x] Project open from picker (`/projects/:id`)
+- [x] Shared search loaders (`useContactRelationSearch`, etc.)
 - [ ] Product entity sheet + create flow
 - [ ] Docs: `docs/NBOS` pattern for relation fields
-- [ ] Deprecate legacy `SearchField` for relation use cases (keep for non-entity search)
+- [ ] Deprecate legacy `SearchField` for relation use cases (drive file search, marketing attribution stay)
 
 ## Contact multi-select
 

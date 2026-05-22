@@ -14,3 +14,9 @@ export type {
 } from './relation-picker.types';
 export type { RelationCreatedEvent } from './relation-created-event';
 export { buildRelationCreatePrefill } from './build-relation-create-prefill';
+export {
+  useContactRelationSearch,
+  useCompanyRelationSearch,
+  useProjectRelationSearch,
+  useProductRelationSearch,
+} from './relation-search-loaders';

@@ -21,6 +21,9 @@ import {
   type CompanyGeneralDraft,
 } from './company-general-form-state';
 import { CompanySheetScrollBody } from './CompanySheetScrollBody';
+import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
+import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
+import { applyCompanyRelationCreated } from './apply-company-relation-created';
 import {
   ClientDetailTabBar,
   ClientPortfolioPanel,
@@ -129,6 +132,12 @@ export function CompanySheet({
     setGeneralError(null);
     if (snap) setDraft({ ...snap });
   }, [snap]);
+
+  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
+    setDraft((prev) => (prev ? { ...prev, ...applyCompanyRelationCreated(prev, event) } : null));
+  }, []);
+
+  useRegisterRelationCreated(open && draft ? handleRelationCreated : null);
 
   const startEditingName = () => {
     setNameValue(draft?.name ?? company?.name ?? '');
