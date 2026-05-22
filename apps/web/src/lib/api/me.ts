@@ -1,4 +1,6 @@
 import { api } from '../api';
+import type { SalaryLineMonthDetail } from './payroll-runs';
+import type { CompensationPayoutPhase } from './payroll-runs';
 
 export type WalletBonusPipelineGroup =
   | 'POTENTIAL'
@@ -32,6 +34,7 @@ export interface EmployeeWalletSalaryRow {
   id: string;
   payrollRunId: string;
   payrollMonth: string;
+  payoutPhase: CompensationPayoutPhase;
   runStatus: string;
   baseSalary: string;
   bonusesTotal: string;
@@ -108,6 +111,13 @@ export interface EmployeeWalletSnapshot {
 export const meApi = {
   async getWallet(): Promise<EmployeeWalletSnapshot> {
     const resp = await api.get<EmployeeWalletSnapshot>('/api/me/wallet');
+    return resp.data;
+  },
+
+  async getWalletSalaryLineMonthDetail(salaryLineId: string): Promise<SalaryLineMonthDetail> {
+    const resp = await api.get<SalaryLineMonthDetail>(
+      `/api/me/wallet/salary-lines/${salaryLineId}/month-detail`,
+    );
     return resp.data;
   },
 };

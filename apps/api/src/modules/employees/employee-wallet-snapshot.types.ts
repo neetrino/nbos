@@ -1,4 +1,5 @@
 import type { BonusStatusEnum } from '@nbos/database';
+import type { CompensationPayoutPhase } from '../payroll-runs/compensation-payout-phase';
 
 import type { EmployeeWalletActivityItem } from './employee-wallet-activity';
 import type { WalletBonusPipelineGroup } from './employee-wallet-bonus-group';
@@ -33,6 +34,7 @@ export interface EmployeeWalletSalaryRow {
   id: string;
   payrollRunId: string;
   payrollMonth: string;
+  payoutPhase: CompensationPayoutPhase;
   runStatus: string;
   baseSalary: string;
   bonusesTotal: string;

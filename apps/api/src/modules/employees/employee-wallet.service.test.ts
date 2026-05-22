@@ -117,6 +117,7 @@ describe('EmployeeWalletService', () => {
     expect(snap.salaryHistory).toHaveLength(1);
     expect(snap.salaryHistory[0].expenseId).toBe('ex1');
     expect(snap.salaryHistory[0].payrollRunId).toBe('run-1');
+    expect(snap.salaryHistory[0].payoutPhase).toBe('active_payout');
     expect(snap.projectBreakdown).toHaveLength(1);
     expect(snap.projectBreakdown[0].order.code).toBe('O1');
     expect(snap.projectBreakdown[0].productLabel).toBe('Website');

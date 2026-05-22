@@ -1,4 +1,7 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { resolveCompensationPayoutPhase } from '../payroll-runs/compensation-payout-phase';
+import { querySalaryLineMonthDetail } from '../payroll-runs/salary-line-month-detail';
+import type { SalaryLineMonthDetailDto } from '../payroll-runs/salary-line-month-detail.types';
 import { Prisma, PrismaClient, type Decimal } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { fetchWalletActivity } from './employee-wallet-activity';
@@ -59,6 +62,24 @@ type WalletBonusEntryDb = Prisma.BonusEntryGetPayload<{ include: typeof walletBo
 @Injectable()
 export class EmployeeWalletService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+
+  /** Read-only month detail for the signed-in employee (same DTO as Finance salary board). */
+  async getSalaryLineMonthDetail(
+    employeeId: string,
+    salaryLineId: string,
+  ): Promise<SalaryLineMonthDetailDto> {
+    const line = await this.prisma.salaryLine.findUnique({
+      where: { id: salaryLineId },
+      select: { employeeId: true },
+    });
+    if (!line) {
+      throw new NotFoundException(`Salary line ${salaryLineId} not found`);
+    }
+    if (line.employeeId !== employeeId) {
+      throw new ForbiddenException('Salary line does not belong to the current employee');
+    }
+    return querySalaryLineMonthDetail(this.prisma, salaryLineId);
+  }
 
   async getWallet(employeeId: string): Promise<EmployeeWalletSnapshot> {
     const employee = await this.loadEmployeeOrThrow(employeeId);
@@ -228,6 +249,11 @@ export class EmployeeWalletService {
       id: s.id,
       payrollRunId: s.payrollRunId,
       payrollMonth: s.payrollRun.payrollMonth,
+      payoutPhase: resolveCompensationPayoutPhase({
+        payrollMonth: s.payrollRun.payrollMonth,
+        runStatus: s.payrollRun.status,
+        lineStatus: s.status,
+      }),
       runStatus: s.payrollRun.status,
       baseSalary: s.baseSalary.toString(),
       bonusesTotal: s.bonusesTotal.toString(),

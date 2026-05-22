@@ -17,7 +17,10 @@ import { formatAmount } from '@/features/finance/constants/finance';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
-import { useSalaryLineMonthDetail } from '@/features/finance/components/payroll/use-salary-line-month-detail';
+import {
+  useSalaryLineMonthDetail,
+  type SalaryLineMonthDetailScope,
+} from '@/features/finance/components/payroll/use-salary-line-month-detail';
 import type { ExpenseLedgerPaymentStatus } from '@/lib/api/finance';
 import type { SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
 
@@ -38,7 +41,7 @@ function employeeName(detail: SalaryLineMonthDetail): string {
   return `${detail.employee.firstName} ${detail.employee.lastName}`.trim();
 }
 
-function SummaryGrid({ detail }: { detail: SalaryLineMonthDetail }) {
+function SummaryGrid({ detail, readOnly }: { detail: SalaryLineMonthDetail; readOnly: boolean }) {
   const lineUi = salaryLineStatusBoardUi(detail.salaryLine.status);
   const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[detail.payoutPhase];
   const rows: Array<{ label: string; value: string }> = [
@@ -67,14 +70,22 @@ function SummaryGrid({ detail }: { detail: SalaryLineMonthDetail }) {
         ))}
       </dl>
       <p className="text-muted-foreground pt-3 text-xs">
-        Payroll run{' '}
-        <Link
-          href={`/finance/payroll/${detail.payrollRun.id}`}
-          className="text-primary hover:underline"
-        >
-          {detail.payrollMonth}
-        </Link>{' '}
-        · {PAYROLL_RUN_STATUS_LABEL[detail.payrollRun.status]}
+        {readOnly ? (
+          <>
+            Payroll month <span className="text-foreground font-medium">{detail.payrollMonth}</span>
+          </>
+        ) : (
+          <>
+            Payroll run{' '}
+            <Link
+              href={`/finance/payroll/${detail.payrollRun.id}`}
+              className="text-primary hover:underline"
+            >
+              {detail.payrollMonth}
+            </Link>{' '}
+            · {PAYROLL_RUN_STATUS_LABEL[detail.payrollRun.status]}
+          </>
+        )}
       </p>
     </DetailSheetSection>
   );
@@ -127,7 +138,13 @@ function BonusBreakdownTable({ detail }: { detail: SalaryLineMonthDetail }) {
   );
 }
 
-function ExpensePaymentsSection({ detail }: { detail: SalaryLineMonthDetail }) {
+function ExpensePaymentsSection({
+  detail,
+  readOnly,
+}: {
+  detail: SalaryLineMonthDetail;
+  readOnly: boolean;
+}) {
   const expense = detail.expense;
   if (!expense) {
     return (
@@ -149,12 +166,14 @@ function ExpensePaymentsSection({ detail }: { detail: SalaryLineMonthDetail }) {
           {formatAmount(parseAmount(expense.paidAmount))} /{' '}
           {formatAmount(parseAmount(expense.amount))}
         </span>
-        <Link
-          href={`/finance/expenses/${expense.id}`}
-          className="text-primary text-sm hover:underline"
-        >
-          Open expense card
-        </Link>
+        {readOnly ? null : (
+          <Link
+            href={`/finance/expenses/${expense.id}`}
+            className="text-primary text-sm hover:underline"
+          >
+            Open expense card
+          </Link>
+        )}
       </div>
       {expense.payments.length === 0 ? (
         <p className="text-muted-foreground text-sm">No payments recorded yet.</p>
@@ -190,22 +209,31 @@ export function EmployeeMonthCompensationSheet({
   salaryLineId,
   open,
   onOpenChange,
+  readOnly = false,
+  detailScope = 'finance',
 }: {
   salaryLineId: string | null;
   open: boolean;
   onOpenChange: (next: boolean) => void;
+  /** Wallet: hide Finance navigation links. */
+  readOnly?: boolean;
+  detailScope?: SalaryLineMonthDetailScope;
 }) {
-  const { detail, loading, loadError } = useSalaryLineMonthDetail(salaryLineId, open);
+  const { detail, loading, loadError } = useSalaryLineMonthDetail(salaryLineId, open, detailScope);
+
+  const emptyHint = readOnly
+    ? 'Select a month on your wallet.'
+    : 'Select a month cell on the salary board.';
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <EntityDetailSheetContent open={open} layout="auxiliary" className="gap-0">
         <SheetHeader>
-          <SheetTitle>Employee month compensation</SheetTitle>
+          <SheetTitle>
+            {readOnly ? 'Your month compensation' : 'Employee month compensation'}
+          </SheetTitle>
           <SheetDescription>
-            {detail
-              ? `${employeeName(detail)} · ${detail.payrollMonth}`
-              : 'Select a month cell on the salary board.'}
+            {detail ? `${employeeName(detail)} · ${detail.payrollMonth}` : emptyHint}
           </SheetDescription>
         </SheetHeader>
 
@@ -220,7 +248,7 @@ export function EmployeeMonthCompensationSheet({
 
           {!loading && !loadError && detail ? (
             <>
-              <SummaryGrid detail={detail} />
+              <SummaryGrid detail={detail} readOnly={readOnly} />
               <DetailSheetSection
                 title="Bonus breakdown"
                 icon={<Banknote className="size-4" aria-hidden />}
@@ -228,10 +256,10 @@ export function EmployeeMonthCompensationSheet({
                 <BonusBreakdownTable detail={detail} />
               </DetailSheetSection>
               <DetailSheetSection
-                title="Pay Now / payments"
+                title={readOnly ? 'Payments' : 'Pay Now / payments'}
                 icon={<Banknote className="size-4" aria-hidden />}
               >
-                <ExpensePaymentsSection detail={detail} />
+                <ExpensePaymentsSection detail={detail} readOnly={readOnly} />
               </DetailSheetSection>
             </>
           ) : null}

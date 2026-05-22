@@ -49,6 +49,22 @@ export class MeController {
     return this.employeeWalletService.getWallet(user.id);
   }
 
+  @Get('wallet/salary-lines/:salaryLineId/month-detail')
+  @ApiOperation({
+    summary: 'Read-only employee month compensation (wallet)',
+    description:
+      'Same payload as Finance GET /payroll-runs/salary-lines/:id/month-detail, scoped to the current employee only.',
+  })
+  async getWalletSalaryLineMonthDetail(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('salaryLineId') salaryLineId: string,
+  ) {
+    if (!user?.id) {
+      throw new NotFoundException('Employee record not found for this user');
+    }
+    return this.employeeWalletService.getSalaryLineMonthDetail(user.id, salaryLineId);
+  }
+
   @Get('navigation')
   @ApiOperation({
     summary: 'Get sidebar navigation preferences and personal links for current user',

@@ -414,7 +414,7 @@ Design principles:
 ### Phase 2 - Backend projections
 
 - [x] Add monthly compensation projection for Finance (`querySalaryLineMonthDetail`).
-- [ ] Add read-only employee wallet monthly projection.
+- [x] Add read-only employee wallet monthly projection (`GET /me/wallet/salary-lines/:id/month-detail`).
 - [ ] Add payroll-linked expenses projection for Pay Now.
 - [x] Include bonus source breakdown by project/product/extension/order.
 - [x] Include paid/remaining from linked expense payments.
@@ -459,14 +459,14 @@ Design principles:
 
 ### Phase 6 - Employee Wallet UX
 
-- [ ] Build month-card based wallet.
-- [ ] Add current payout card.
-- [ ] Add current accumulating month card.
-- [ ] Add past paid history.
-- [ ] Add month detail sheet.
-- [ ] Show bonus list by project/product inside every wallet month.
-- [ ] Show partial progress like `20,000 / 60,000`.
-- [ ] Keep all actions read-only.
+- [x] Build month-card based wallet (`WalletSalaryMonthCards` by payout phase).
+- [x] Add current payout card (active_payout column + next payroll CTA).
+- [x] Add current accumulating month card (accumulating column).
+- [x] Add past paid history (past_paid column + salary table).
+- [x] Add month detail sheet (read-only `EmployeeMonthCompensationSheet`, wallet scope).
+- [x] Show bonus list by project/product inside every wallet month (sheet breakdown).
+- [x] Show partial progress like `20,000 / 60,000` (cards + sheet payments).
+- [x] Keep all actions read-only (no Finance links in wallet sheet).
 
 ### Phase 7 - Polish, consistency, and documentation
 

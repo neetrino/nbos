@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Download, Loader2, User, Wallet } from 'lucide-react';
+import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
+import { WalletSalaryMonthCards } from '@/features/account/components/wallet-salary-month-cards';
+import { WALLET_OPEN_SALARY_LINE_QUERY } from '@/features/account/constants/wallet-url';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -34,6 +38,13 @@ function parseAmount(value: string | null): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function salaryLineInWallet(data: EmployeeWalletSnapshot, salaryLineId: string): boolean {
+  if (data.nextPayroll?.salaryLineId === salaryLineId) {
+    return true;
+  }
+  return data.salaryHistory.some((row) => row.id === salaryLineId);
+}
+
 function groupBonuses(
   rows: EmployeeWalletBonusRow[],
 ): Map<WalletBonusPipelineGroup, EmployeeWalletBonusRow[]> {
@@ -49,6 +60,10 @@ function groupBonuses(
 
 export function EmployeeWalletPage() {
   usePageDocumentTitle('My wallet');
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [data, setData] = useState<EmployeeWalletSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,6 +86,47 @@ export function EmployeeWalletPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const replaceWalletUrl = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
+      const next = new URLSearchParams(searchParams.toString());
+      mutate(next);
+      const q = next.toString();
+      router.replace(q ? `${pathname}?${q}` : pathname);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const openSalaryLineId = searchParams.get(WALLET_OPEN_SALARY_LINE_QUERY)?.trim() || null;
+  const monthSheetOpen = Boolean(openSalaryLineId);
+
+  const openMonthSheet = useCallback(
+    (salaryLineId: string) => {
+      replaceWalletUrl((params) => {
+        params.set(WALLET_OPEN_SALARY_LINE_QUERY, salaryLineId);
+      });
+    },
+    [replaceWalletUrl],
+  );
+
+  const handleMonthSheetOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) return;
+      replaceWalletUrl((params) => {
+        params.delete(WALLET_OPEN_SALARY_LINE_QUERY);
+      });
+    },
+    [replaceWalletUrl],
+  );
+
+  useEffect(() => {
+    if (loading || !openSalaryLineId || !data) return;
+    if (!salaryLineInWallet(data, openSalaryLineId)) {
+      replaceWalletUrl((params) => {
+        params.delete(WALLET_OPEN_SALARY_LINE_QUERY);
+      });
+    }
+  }, [data, loading, openSalaryLineId, replaceWalletUrl]);
 
   const bonusGroups = useMemo(() => (data ? groupBonuses(data.bonuses) : null), [data]);
 
@@ -221,12 +277,15 @@ export function EmployeeWalletPage() {
                     Run status: {data.nextPayroll.runStatus}
                   </p>
                 </div>
-                <Link
-                  href={`/finance/payroll/${data.nextPayroll.payrollRunId}`}
-                  className="text-primary text-xs font-medium hover:underline"
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="text-primary h-auto px-0 text-xs"
+                  onClick={() => openMonthSheet(data.nextPayroll!.salaryLineId)}
                 >
-                  Open payroll run
-                </Link>
+                  View month details
+                </Button>
               </div>
               <dl className="grid gap-2 text-xs sm:grid-cols-2">
                 <div>
@@ -273,13 +332,7 @@ export function EmployeeWalletPage() {
               </dl>
               {data.nextPayroll.expenseId ? (
                 <p className="text-muted-foreground text-xs">
-                  Expense card:{' '}
-                  <Link
-                    href={`/finance/expenses/${data.nextPayroll.expenseId}`}
-                    className="text-primary font-medium hover:underline"
-                  >
-                    Open
-                  </Link>
+                  Payroll expense card is linked — see payment timeline in month details.
                 </p>
               ) : null}
               {data.nextPayroll.partialPayments.length > 0 ? (
@@ -302,6 +355,21 @@ export function EmployeeWalletPage() {
               No open payroll run includes your line yet (or all your runs are closed).
             </p>
           )}
+        </section>
+
+        <section className="border-border bg-card rounded-2xl border p-5">
+          <h2 className="text-foreground text-sm font-semibold">Salary by month</h2>
+          <p className="text-muted-foreground mt-1 text-xs leading-snug">
+            Three payout states (accumulating, active payout, paid). Tap a month for bonus list and
+            payment progress.
+          </p>
+          <div className="mt-4">
+            <WalletSalaryMonthCards
+              rows={data.salaryHistory}
+              onOpenMonth={openMonthSheet}
+              highlightSalaryLineId={openSalaryLineId}
+            />
+          </div>
         </section>
 
         <section className="border-border bg-card rounded-2xl border p-5">
@@ -414,19 +482,18 @@ export function EmployeeWalletPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Month</TableHead>
-                  <TableHead>Payroll run</TableHead>
                   <TableHead className="text-right">Payable</TableHead>
                   <TableHead className="text-right">Paid</TableHead>
                   <TableHead className="text-right">Remaining</TableHead>
                   <TableHead>Line</TableHead>
-                  <TableHead>Expense</TableHead>
+                  <TableHead>Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.salaryHistory.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={6}
                       className="text-muted-foreground py-8 text-center text-sm"
                     >
                       No payroll lines yet.
@@ -435,17 +502,14 @@ export function EmployeeWalletPage() {
                 ) : (
                   data.salaryHistory.map((row) => (
                     <TableRow key={row.id}>
-                      <TableCell className="font-medium">{row.payrollMonth}</TableCell>
                       <TableCell>
-                        <div className="flex flex-col gap-0.5">
-                          <Link
-                            href={`/finance/payroll/${row.payrollRunId}`}
-                            className="text-primary text-xs font-medium hover:underline"
-                          >
-                            Open run
-                          </Link>
-                          <span className="text-muted-foreground text-xs">{row.runStatus}</span>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => openMonthSheet(row.id)}
+                          className="text-foreground hover:text-primary font-medium hover:underline"
+                        >
+                          {row.payrollMonth}
+                        </button>
                       </TableCell>
                       <TableCell className="text-right">
                         {formatAmount(parseAmount(row.totalPayable))}
@@ -458,16 +522,15 @@ export function EmployeeWalletPage() {
                       </TableCell>
                       <TableCell className="text-xs">{row.lineStatus}</TableCell>
                       <TableCell>
-                        {row.expenseId ? (
-                          <Link
-                            href={`/finance/expenses/${row.expenseId}`}
-                            className="text-primary text-xs font-medium hover:underline"
-                          >
-                            Open
-                          </Link>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        )}
+                        <Button
+                          type="button"
+                          variant="link"
+                          size="sm"
+                          className="text-primary h-auto px-0 text-xs"
+                          onClick={() => openMonthSheet(row.id)}
+                        >
+                          View
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -561,6 +624,14 @@ export function EmployeeWalletPage() {
           </div>
         </section>
       </div>
+
+      <EmployeeMonthCompensationSheet
+        salaryLineId={openSalaryLineId}
+        open={monthSheetOpen}
+        onOpenChange={handleMonthSheetOpenChange}
+        readOnly
+        detailScope="wallet"
+      />
     </div>
   );
 }
