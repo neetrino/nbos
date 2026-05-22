@@ -148,7 +148,7 @@ export function LeadCombinedInfoSection({
               patchDraft({ assignedTo: value, sellerDisplayLabel: label })
             }
             onClear={
-              formDisabled
+              formDisabled || gateRequiredFields.has('assignedTo')
                 ? undefined
                 : () => patchDraft({ assignedTo: null, sellerDisplayLabel: null })
             }

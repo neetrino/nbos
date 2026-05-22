@@ -92,3 +92,16 @@ export const DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS = [
   'text-muted-foreground/70 shrink-0',
   DETAIL_SHEET_FIELD_ACTIONS_ON_HOVER_CLASS,
 ].join(' ');
+
+/** Full-width selected-value shell for {@link RelationPickerField} (all entity kinds). */
+export const RELATION_PICKER_CHIP_SHELL_CLASS = [
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  'border-border/60 bg-muted/30 flex w-full min-w-0 items-center gap-2 rounded-xl border py-1.5 pr-1 pl-2.5 text-sm shadow-sm shadow-black/[0.04]',
+].join(' ');
+
+/** Vertical stack for multi-select relation chips (symmetric full-width rows). */
+export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
+
+/** Empty / add trigger aligned with relation chip width. */
+export const RELATION_PICKER_EMPTY_TRIGGER_CLASS =
+  'border-border/60 text-muted-foreground hover:border-border hover:text-foreground flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors';

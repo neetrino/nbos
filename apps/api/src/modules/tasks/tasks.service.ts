@@ -39,6 +39,7 @@ interface CreateTaskDto {
 interface UpdateTaskDto {
   title?: string;
   description?: string;
+  creatorId?: string;
   assigneeId?: string | null;
   coAssignees?: string[];
   observers?: string[];
@@ -177,6 +178,12 @@ export class TasksService {
 
   async update(id: string, data: UpdateTaskDto) {
     const existing = await this.findById(id);
+    if (data.creatorId !== undefined) {
+      const creatorId = data.creatorId.trim();
+      if (!creatorId) throw new BadRequestException('creatorId is required');
+      const found = await this.prisma.employee.count({ where: { id: creatorId } });
+      if (found !== 1) throw new BadRequestException('Creator employee was not found.');
+    }
     const sprintAssignment =
       data.sprintId !== undefined || data.planningStatus !== undefined
         ? await resolveTaskSprintAssignment(this.prisma, {
@@ -191,6 +198,7 @@ export class TasksService {
       data: {
         ...(data.title && { title: data.title }),
         ...(data.description !== undefined && { description: data.description }),
+        ...(data.creatorId !== undefined && { creatorId: data.creatorId.trim() }),
         ...(data.assigneeId !== undefined && { assigneeId: data.assigneeId }),
         ...(data.coAssignees && { coAssignees: data.coAssignees }),
         ...(data.observers && { observers: data.observers }),

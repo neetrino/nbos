@@ -129,6 +129,7 @@ export class TasksController {
     body: {
       title?: string;
       description?: string;
+      creatorId?: string;
       assigneeId?: string | null;
       coAssignees?: string[];
       observers?: string[];

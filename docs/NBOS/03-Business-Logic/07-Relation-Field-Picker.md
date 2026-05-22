@@ -7,7 +7,7 @@ NBOS links records across modules (Lead, Deal, Project, Finance, Support, …). 
 1. **Search** — typeahead against the API (dropdown, capped results).
 2. **Select** — row shows entity kind, title, optional subtitle; checkmark on current value.
 3. **Create** — blue bottom bar opens the **same create dialog** as elsewhere; search text prefills name (contacts: first/last split).
-4. **Closed state** — chip: label click **opens** entity (sheet or route); **X** clears only (no accidental navigation).
+4. **Closed state** — full-width chip row (same width as empty search trigger, independent of label length). Label click **opens** entity (sheet or route); **pencil** opens search to **replace** the link; **X** clears when `onClear` is provided (optional fields only). Multi-select stacks one full-width chip per row.
 
 Implementation: `apps/web/src/components/shared/relation-picker/`.
 

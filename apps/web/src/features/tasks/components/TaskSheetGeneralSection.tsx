@@ -75,6 +75,20 @@ export function TaskSheetGeneralSection({
           onValueChange={(value) => onPatchDraft({ dueDate: value })}
         />
         <RelationPickerField
+          label="Creator"
+          entityKind="employee"
+          value={draft.creatorId}
+          selectionLabel={draft.creatorLabel}
+          icon={<User size={13} />}
+          placeholder="Select creator…"
+          disabled={saving}
+          onSearch={onSearchEmployees}
+          onSelect={(employeeId, label) =>
+            onPatchDraft({ creatorId: employeeId, creatorLabel: label })
+          }
+          {...employeePicker}
+        />
+        <RelationPickerField
           label="Assignee"
           entityKind="employee"
           value={draft.assigneeId}

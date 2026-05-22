@@ -50,6 +50,7 @@ export type RelationPickerSingleProps = RelationPickerBaseProps & {
   selectionLabel?: string | null;
   selectionSubtitle?: string | null;
   onSelect: (id: string, label: string) => void;
+  /** When omitted, chip shows no X (use for required links — replace via search instead). */
   onClear?: () => void;
 };
 

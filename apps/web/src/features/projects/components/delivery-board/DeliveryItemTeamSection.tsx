@@ -64,7 +64,7 @@ function ProductRolePicker({
   employeeId: string | null;
   employeeLabel: string;
   onSelect: (id: string, name: string) => void;
-  onClear: () => void;
+  onClear?: () => void;
   onSearchEmployees: (
     query: string,
   ) => Promise<Array<{ value: string; label: string; subtitle?: string }>>;
@@ -188,7 +188,11 @@ export function DeliveryItemTeamSection({
               employeeId={extensionPlan.assignedTo}
               employeeLabel={extensionPlan.assigneeLabel}
               onSelect={(id, name) => patchExtension({ assignedTo: id, assigneeLabel: name })}
-              onClear={() => patchExtension({ assignedTo: null, assigneeLabel: '' })}
+              onClear={
+                gateRequiredFields.has('assignedTo')
+                  ? undefined
+                  : () => patchExtension({ assignedTo: null, assigneeLabel: '' })
+              }
               onSearchEmployees={searchEmployees}
               disabled={disabled}
               className={deliveryStageGateFieldClass(gateRequiredFields, 'assignedTo')}

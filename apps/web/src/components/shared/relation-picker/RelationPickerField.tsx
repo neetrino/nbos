@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DETAIL_SHEET_PERSON_AVATAR_CLASS } from '../detail-sheet-classes';
+import {
+  DETAIL_SHEET_PERSON_AVATAR_CLASS,
+  RELATION_PICKER_CHIP_STACK_CLASS,
+  RELATION_PICKER_EMPTY_TRIGGER_CLASS,
+} from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
 import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
 import { RelationPickerDropdown } from './RelationPickerDropdown';
@@ -164,7 +168,11 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   return (
     <div
       ref={containerRef}
-      className={cn('relative', disabled && 'pointer-events-none opacity-60', className)}
+      className={cn(
+        'relative w-full min-w-0',
+        disabled && 'pointer-events-none opacity-60',
+        className,
+      )}
     >
       <div className="text-foreground/85 mb-1.5 flex items-center justify-between gap-2 text-sm font-medium">
         <div className="flex min-w-0 items-center gap-1.5">
@@ -250,7 +258,7 @@ function ClosedRelationPicker({
     }));
 
     return (
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={RELATION_PICKER_CHIP_STACK_CLASS}>
         {chips.map((chip) => (
           <RelationPickerChip
             key={chip.id}
@@ -272,10 +280,10 @@ function ClosedRelationPicker({
             type="button"
             disabled={disabled}
             onClick={onOpen}
-            className="border-border/60 text-muted-foreground hover:border-border hover:text-foreground inline-flex items-center gap-1.5 rounded-xl border border-dashed px-3 py-2 text-sm transition-colors"
+            className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'border-dashed')}
           >
-            <Search size={14} />
-            {placeholder}
+            <Search size={14} className="shrink-0 opacity-70" />
+            <span>{placeholder}</span>
           </button>
         ) : null}
       </div>
@@ -288,17 +296,22 @@ function ClosedRelationPicker({
 
     if (hasValue && chipLabel) {
       return (
-        <RelationPickerChip
-          label={chipLabel}
-          subtitle={props.selectionSubtitle}
-          icon={chipIcon(entityKind, chipLabel)}
-          entityKind={entityKind}
-          disabled={disabled}
-          onOpen={
-            onOpenSelected && props.value ? () => onOpenSelected(props.value as string) : undefined
-          }
-          onClear={props.onClear}
-        />
+        <div className="w-full min-w-0">
+          <RelationPickerChip
+            label={chipLabel}
+            subtitle={props.selectionSubtitle}
+            icon={chipIcon(entityKind, chipLabel)}
+            entityKind={entityKind}
+            disabled={disabled}
+            onOpen={
+              onOpenSelected && props.value
+                ? () => onOpenSelected(props.value as string)
+                : undefined
+            }
+            onReplace={disabled ? undefined : onOpen}
+            onClear={props.onClear}
+          />
+        </div>
       );
     }
 
@@ -307,7 +320,7 @@ function ClosedRelationPicker({
         type="button"
         disabled={disabled}
         onClick={onOpen}
-        className="border-border/60 bg-muted/20 text-muted-foreground hover:border-border hover:bg-muted/30 flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors"
+        className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'bg-muted/20 hover:bg-muted/30')}
       >
         <Search size={14} className="shrink-0 opacity-70" />
         <span>{placeholder}</span>

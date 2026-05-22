@@ -8,6 +8,8 @@ export interface TaskGeneralDraft {
   priority: string;
   startDate: string;
   dueDate: string;
+  creatorId: string;
+  creatorLabel: string;
   assigneeId: string | null;
   assigneeLabel: string | null;
 }
@@ -20,6 +22,8 @@ export function createTaskGeneralDraft(task: Task): TaskGeneralDraft {
     priority: task.priority,
     startDate: formatDateInput(task.startDate),
     dueDate: formatDateInput(task.dueDate),
+    creatorId: task.creator.id,
+    creatorLabel: `${task.creator.firstName} ${task.creator.lastName}`.trim(),
     assigneeId: task.assignee?.id ?? null,
     assigneeLabel: task.assignee ? `${task.assignee.firstName} ${task.assignee.lastName}` : null,
   };
@@ -39,6 +43,7 @@ export function buildTaskGeneralPatch(
   if (draft.priority !== snap.priority) patch.priority = draft.priority;
   if (draft.startDate !== snap.startDate) patch.startDate = draft.startDate || null;
   if (draft.dueDate !== snap.dueDate) patch.dueDate = draft.dueDate || null;
+  if (draft.creatorId !== snap.creatorId) patch.creatorId = draft.creatorId;
   if (draft.assigneeId !== snap.assigneeId) patch.assigneeId = draft.assigneeId;
 
   return patch;
