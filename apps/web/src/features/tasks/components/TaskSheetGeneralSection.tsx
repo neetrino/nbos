@@ -1,5 +1,6 @@
 import { Calendar, Copy, User, Users } from 'lucide-react';
 import { EntityNotesField, InlineField, RelationPickerField } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/api/tasks';
@@ -7,8 +8,10 @@ import type { TaskGeneralDraft } from '../task-general-form-state';
 import {
   TASK_SHEET_CARD_CLASS,
   TASK_SHEET_META_BLOCK_CLASS,
+  TASK_SHEET_TEAM_COLUMN_CLASS,
   TASK_SHEET_TEAM_COLUMNS_CLASS,
   TASK_SHEET_TEAM_DIVIDER_CLASS,
+  TASK_SHEET_TEAM_META_GRID_CLASS,
   TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS,
 } from './task-sheet-classes';
 import { formatTaskSheetDateTime } from './task-sheet-format';
@@ -62,8 +65,8 @@ export function TaskSheetGeneralSection({
       <section className={TASK_SHEET_CARD_CLASS}>
         <div className={TASK_SHEET_META_BLOCK_CLASS}>
           <div className={TASK_SHEET_TEAM_COLUMNS_CLASS}>
-            <div className="space-y-1">
-              <TaskSheetCompactRow label="Creator">
+            <div className={cn(TASK_SHEET_TEAM_COLUMN_CLASS, TASK_SHEET_TEAM_META_GRID_CLASS)}>
+              <TaskSheetCompactRow gridCells label="Creator">
                 <RelationPickerField
                   label="Creator"
                   entityKind="employee"
@@ -81,7 +84,7 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow label="Assignee">
+              <TaskSheetCompactRow gridCells label="Assignee">
                 <RelationPickerField
                   label="Assignee"
                   entityKind="employee"
@@ -100,7 +103,7 @@ export function TaskSheetGeneralSection({
                 />
               </TaskSheetCompactRow>
 
-              <TaskSheetCompactRow label="Deadline">
+              <TaskSheetCompactRow gridCells label="Deadline">
                 <InlineField
                   variant="controlled"
                   label="Deadline"
@@ -119,7 +122,7 @@ export function TaskSheetGeneralSection({
 
             <div className={TASK_SHEET_TEAM_DIVIDER_CLASS} role="presentation" />
 
-            <div className={TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS}>
+            <div className={cn(TASK_SHEET_TEAM_COLUMN_CLASS, TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS)}>
               <TaskSheetCompactRow
                 label="Assistant"
                 alignEnd

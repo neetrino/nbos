@@ -8,11 +8,8 @@ import { DetailSheetCollapsibleSection, EntityDetailSheetContent } from '@/compo
 import { cn } from '@/lib/utils';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import { TASK_OPEN_QUERY } from '../constants/task-open-query';
-import {
-  TASK_SHEET_CHAT_COLUMN_CLASS,
-  TASK_SHEET_DETAIL_COLUMN_CLASS,
-  TASK_SHEET_SECTION_SURFACE_CLASS,
-} from './task-sheet-classes';
+import { TASK_SHEET_SECTION_SURFACE_CLASS } from './task-sheet-classes';
+import { TaskSheetSplitLayout } from './TaskSheetSplitLayout';
 import { TaskSheetChatPanel } from './TaskSheetChatPanel';
 import { TaskChecklistSection } from './TaskChecklistSection';
 import { TaskCompletionRulesPanel } from './TaskCompletionRulesPanel';
@@ -81,114 +78,118 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
           </div>
         ) : state.task && state.generalDraft ? (
           <>
-            <div className="flex min-h-0 flex-1 flex-col xl:flex-row">
-              <div className={TASK_SHEET_DETAIL_COLUMN_CLASS}>
-                <ScrollArea className="min-h-0 flex-1">
-                  <div className="space-y-3 px-4 py-4 sm:px-5">
-                    {state.generalError && (
-                      <div className="border-destructive/25 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
-                        {state.generalError}
-                      </div>
-                    )}
+            <TaskSheetSplitLayout
+              detail={
+                <>
+                  <ScrollArea className="min-h-0 min-w-0 flex-1 overflow-hidden [&_[data-slot=scroll-area-viewport]]:min-w-0 [&_[data-slot=scroll-area-viewport]]:overflow-x-hidden">
+                    <div className="min-w-0 space-y-3 px-4 py-4 sm:px-5">
+                      {state.generalError && (
+                        <div className="border-destructive/25 bg-destructive/10 text-destructive rounded-lg border px-3 py-2 text-sm">
+                          {state.generalError}
+                        </div>
+                      )}
 
-                    <TaskSheetHeader
-                      draft={state.generalDraft}
-                      disabled={state.loading}
-                      onPatchDraft={state.patchGeneralDraft}
-                      onToggleUrgent={() => void state.handleToggleTaskUrgent()}
-                    />
+                      <TaskSheetHeader
+                        draft={state.generalDraft}
+                        disabled={state.loading}
+                        onPatchDraft={state.patchGeneralDraft}
+                        onToggleUrgent={() => void state.handleToggleTaskUrgent()}
+                      />
 
-                    <TaskSheetGeneralSection
-                      task={state.task}
-                      taskId={state.task.id}
-                      draft={state.generalDraft}
-                      disabled={state.loading}
-                      onPatchDraft={state.patchGeneralDraft}
-                      onSearchEmployees={state.searchEmployees}
-                    />
+                      <TaskSheetGeneralSection
+                        task={state.task}
+                        taskId={state.task.id}
+                        draft={state.generalDraft}
+                        disabled={state.loading}
+                        onPatchDraft={state.patchGeneralDraft}
+                        onSearchEmployees={state.searchEmployees}
+                      />
 
-                    {hasExtras ? (
-                      <DetailSheetCollapsibleSection
-                        title="Checklist & rules"
-                        icon={<CheckSquare size={12} />}
-                        open={extrasOpen}
-                        onOpenChange={setExtrasOpen}
-                        className={TASK_SHEET_SECTION_SURFACE_CLASS}
-                      >
-                        <div className="space-y-4">
+                      {hasExtras ? (
+                        <DetailSheetCollapsibleSection
+                          title="Checklist & rules"
+                          icon={<CheckSquare size={12} />}
+                          open={extrasOpen}
+                          onOpenChange={setExtrasOpen}
+                          className={TASK_SHEET_SECTION_SURFACE_CLASS}
+                        >
+                          <div className="space-y-4">
+                            <TaskCompletionRulesPanel
+                              task={state.task}
+                              serverBlockers={state.completionBlockers}
+                            />
+
+                            {state.task.subtasks.length > 0 && (
+                              <TaskSubtasksSection task={state.task} />
+                            )}
+
+                            {state.task.checklists.length > 0 && (
+                              <TaskChecklistSection
+                                task={state.task}
+                                newChecklistTitle={state.newChecklistTitle}
+                                newItemTexts={state.newItemTexts}
+                                onNewChecklistTitleChange={state.setNewChecklistTitle}
+                                onNewItemTextChange={(checklistId, value) =>
+                                  state.setNewItemTexts((prev) => ({
+                                    ...prev,
+                                    [checklistId]: value,
+                                  }))
+                                }
+                                onAddChecklist={state.handleAddChecklist}
+                                onAddItem={state.handleAddItem}
+                                onToggleItem={state.handleToggleItem}
+                                onDeleteChecklist={state.handleDeleteChecklist}
+                                onDeleteItem={state.handleDeleteItem}
+                              />
+                            )}
+                          </div>
+                        </DetailSheetCollapsibleSection>
+                      ) : (
+                        <div className={cn(TASK_SHEET_SECTION_SURFACE_CLASS, 'space-y-4')}>
                           <TaskCompletionRulesPanel
                             task={state.task}
                             serverBlockers={state.completionBlockers}
                           />
-
-                          {state.task.subtasks.length > 0 && (
-                            <TaskSubtasksSection task={state.task} />
-                          )}
-
-                          {state.task.checklists.length > 0 && (
-                            <TaskChecklistSection
-                              task={state.task}
-                              newChecklistTitle={state.newChecklistTitle}
-                              newItemTexts={state.newItemTexts}
-                              onNewChecklistTitleChange={state.setNewChecklistTitle}
-                              onNewItemTextChange={(checklistId, value) =>
-                                state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
-                              }
-                              onAddChecklist={state.handleAddChecklist}
-                              onAddItem={state.handleAddItem}
-                              onToggleItem={state.handleToggleItem}
-                              onDeleteChecklist={state.handleDeleteChecklist}
-                              onDeleteItem={state.handleDeleteItem}
-                            />
-                          )}
+                          <TaskChecklistSection
+                            task={state.task}
+                            newChecklistTitle={state.newChecklistTitle}
+                            newItemTexts={state.newItemTexts}
+                            onNewChecklistTitleChange={state.setNewChecklistTitle}
+                            onNewItemTextChange={(checklistId, value) =>
+                              state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
+                            }
+                            onAddChecklist={state.handleAddChecklist}
+                            onAddItem={state.handleAddItem}
+                            onToggleItem={state.handleToggleItem}
+                            onDeleteChecklist={state.handleDeleteChecklist}
+                            onDeleteItem={state.handleDeleteItem}
+                          />
                         </div>
-                      </DetailSheetCollapsibleSection>
-                    ) : (
-                      <div className={cn(TASK_SHEET_SECTION_SURFACE_CLASS, 'space-y-4')}>
-                        <TaskCompletionRulesPanel
-                          task={state.task}
-                          serverBlockers={state.completionBlockers}
-                        />
-                        <TaskChecklistSection
-                          task={state.task}
-                          newChecklistTitle={state.newChecklistTitle}
-                          newItemTexts={state.newItemTexts}
-                          onNewChecklistTitleChange={state.setNewChecklistTitle}
-                          onNewItemTextChange={(checklistId, value) =>
-                            state.setNewItemTexts((prev) => ({ ...prev, [checklistId]: value }))
-                          }
-                          onAddChecklist={state.handleAddChecklist}
-                          onAddItem={state.handleAddItem}
-                          onToggleItem={state.handleToggleItem}
-                          onDeleteChecklist={state.handleDeleteChecklist}
-                          onDeleteItem={state.handleDeleteItem}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
+                      )}
+                    </div>
+                  </ScrollArea>
 
-                <TaskSheetStickyFooter
-                  dirty={state.generalDirty}
-                  workflowSaving={state.workflowSaving}
-                  errorMessage={state.generalError}
-                  taskStatus={state.task.status}
-                  onSave={() => void state.handleGeneralSave()}
-                  onSaveAndClose={handleSaveAndClose}
-                  onCancel={state.handleGeneralCancel}
-                  onTaskAction={state.handleAction}
-                  onDelete={() => void handleDelete()}
-                />
-              </div>
-
-              <div className={cn(TASK_SHEET_CHAT_COLUMN_CLASS, 'bg-white')}>
+                  <TaskSheetStickyFooter
+                    dirty={state.generalDirty}
+                    workflowSaving={state.workflowSaving}
+                    errorMessage={state.generalError}
+                    taskStatus={state.task.status}
+                    onSave={() => void state.handleGeneralSave()}
+                    onSaveAndClose={handleSaveAndClose}
+                    onCancel={state.handleGeneralCancel}
+                    onTaskAction={state.handleAction}
+                    onDelete={() => void handleDelete()}
+                  />
+                </>
+              }
+              chat={
                 <TaskSheetChatPanel
                   task={state.task}
                   messages={state.taskMessages}
                   onSend={state.handleSendMessage}
                 />
-              </div>
-            </div>
+              }
+            />
           </>
         ) : (
           <div className="text-muted-foreground p-5 text-sm">{state.generalError}</div>
