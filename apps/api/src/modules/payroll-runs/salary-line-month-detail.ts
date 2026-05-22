@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient } from '@nbos/database';
 import { plannedDecimalForEntry } from '../employees/employee-wallet-bonus-release-rollups';
 import { resolveCompensationPayoutPhase } from './compensation-payout-phase';
+import { sumPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
 import type {
   SalaryLineMonthBonusRow,
   SalaryLineMonthDetailDto,
@@ -178,6 +179,11 @@ export async function querySalaryLineMonthDetail(
   }
 
   const bonusBreakdown = await loadBonusBreakdown(prisma, line.payrollRunId, line.employeeId);
+  const pendingCarry = await sumPendingPayrollCarryOver(
+    prisma,
+    line.employeeId,
+    line.payrollRun.payrollMonth,
+  );
 
   const expensePayments = line.expense?.expensePayments ?? [];
   const paidFromExpense = expensePayments.reduce((acc, p) => acc.plus(p.amount), new Decimal(0));
@@ -193,6 +199,7 @@ export async function querySalaryLineMonthDetail(
 
   return {
     payoutPhase,
+    pendingPayrollCarryOver: pendingCarry.gt(0) ? money(pendingCarry) : null,
     employee: line.employee,
     payrollMonth: line.payrollRun.payrollMonth,
     payrollRun: {

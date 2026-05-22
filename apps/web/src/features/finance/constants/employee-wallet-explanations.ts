@@ -40,7 +40,7 @@ export const WALLET_COMPENSATION_GLOSSARY: ReadonlyArray<{ term: string; text: s
   },
   {
     term: 'Burned (KPI)',
-    text: 'Sales KPI may reduce payout at attach (burned). Monthly bonus cap (200% of base salary, default) defers excess as carry-over to a later payroll month.',
+    text: 'Sales KPI may reduce payout at attach (burned). Monthly bonus cap (200% of base salary, default) defers excess; prior-month carry-over applies automatically when you attach bonuses in a later month.',
   },
   {
     term: 'Carry-over',

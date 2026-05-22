@@ -3,6 +3,18 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 
+function mockAttachReleaseFindMany(
+  tx: ReturnType<typeof createTxMock>,
+  releases: Array<Record<string, unknown>>,
+): void {
+  tx.bonusRelease.findMany.mockImplementation((args: { where?: { id?: { in?: string[] } } }) => {
+    if (args.where?.id?.in) {
+      return Promise.resolve(releases);
+    }
+    return Promise.resolve([]);
+  });
+}
+
 function createTxMock() {
   return {
     payrollRun: {
@@ -63,7 +75,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
       kpiSalesPlanAmount: new Decimal(1000),
       kpiSalesActualAmount: null,
     });
-    tx.bonusRelease.findMany.mockResolvedValue([
+    mockAttachReleaseFindMany(tx, [
       {
         id: 'rel1',
         employeeId: 'e1',
@@ -90,7 +102,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
       kpiSalesPlanAmount: null,
       kpiSalesActualAmount: null,
     });
-    tx.bonusRelease.findMany.mockResolvedValue([
+    mockAttachReleaseFindMany(tx, [
       {
         id: 'rel1',
         employeeId: 'e1',
@@ -146,6 +158,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         payrollIncludedAmount: new Decimal(50),
         kpiBurnedAmount: null,
         payrollCarryOverAmount: null,
+        payrollCarryOverRemaining: null,
       },
     });
     expect(tx.payrollRun.update).toHaveBeenCalled();
@@ -160,7 +173,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
       kpiSalesPlanAmount: new Decimal(1000),
       kpiSalesActualAmount: new Decimal(600),
     });
-    tx.bonusRelease.findMany.mockResolvedValue([
+    mockAttachReleaseFindMany(tx, [
       {
         id: 'rel1',
         employeeId: 'e1',
@@ -212,6 +225,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         payrollIncludedAmount: new Decimal(50),
         kpiBurnedAmount: new Decimal(50),
         payrollCarryOverAmount: null,
+        payrollCarryOverRemaining: null,
       }),
     });
   });
@@ -225,7 +239,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
       kpiSalesPlanAmount: null,
       kpiSalesActualAmount: null,
     });
-    tx.bonusRelease.findMany.mockResolvedValue([
+    mockAttachReleaseFindMany(tx, [
       {
         id: 'rel1',
         employeeId: 'e1',
@@ -269,6 +283,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
       data: expect.objectContaining({
         payrollIncludedAmount: new Decimal(50),
         payrollCarryOverAmount: new Decimal(30),
+        payrollCarryOverRemaining: new Decimal(30),
         kpiBurnedAmount: null,
       }),
     });

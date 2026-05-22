@@ -130,6 +130,7 @@ export async function detachBonusReleasesFromPayrollRun(
         payrollIncludedAmount: null,
         kpiBurnedAmount: null,
         payrollCarryOverAmount: null,
+        payrollCarryOverRemaining: null,
       },
     });
   }

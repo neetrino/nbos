@@ -23,7 +23,7 @@ how much was released/paid, what is still underfunded, and what KPI/cap rules ch
 - ☑ **Pool meaning:** Product / Extension = pool scope; Project = wrapper; Order = funding anchor.
 - ☑ **Pool fill indicators:** Empty, Partial, Ready, Over funded, Closed (list / board / sheet).
 - ☑ **Burned KPI display:** advisory when gate false; persisted `kpiBurnedAmount` on SALES payroll attach in pool lines, salary sheet, wallet.
-- ◐ **Cap / carry-over:** monthly cap (200% base) + persisted carry-over on attach; pool/wallet/salary display; policy templates for custom cap still pending.
+- ◐ **Cap / carry-over:** cap 200% base + carry persist/apply on later attach; custom cap multiplier in policy still pending.
 - ☑ **Current month forecast:** wallet Bonus outlook card — incoming/predicted vs earned/payout path (snapshot).
 - ☑ **Pay Now default:** `/finance/expenses` opens payroll-linked + current month; `/finance/expenses/pay` alias; clear shows all.
 
@@ -70,17 +70,17 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 - ☐ **Employee-level KPI:** per employee/role, not only payroll-run sales KPI scale.
 - ◐ **Burned KPI:** persist `kpiBurnedAmount` on SALES attach + Finance/Wallet display; reason field / full policy templates still pending.
 - ◐ **Cap:** default 200% of base salary on attach; excess → `payrollCarryOverAmount`; Compensation Profile cap policy pending.
-- ◐ **Carry-over:** persist deferred amount on attach; show in Finance/Wallet; auto-apply to next month run still pending.
+- ◐ **Carry-over:** FIFO auto-apply on attach + `payrollCarryOverRemaining`; month sheet shows pending; detach reversal of applied carry pending.
 - ☐ **Bonus breakdown statuses:** Incoming, Burned, Carry-over, Clawback in API + UI.
 - ☐ **Idempotency:** no duplicate entries/releases/burned/carry-over on recalc.
-- ◐ **Tests:** burned/cap attach + KPI gate parse/resolve unit tests; next-month carry apply + re-attach idempotency pending.
+- ◐ **Tests:** burned/cap/carry-over attach unit tests; re-attach idempotency + detach carry reversal pending.
 - ☐ **Re-audit** API when Compensation Profile / policy schema changes.
 
 ---
 
 ## 5. Payroll and wallet integration
 
-- ◐ **Payroll attach:** SALES KPI + cap + burned/carry-over persist + notify; next-month auto-apply pending.
+- ◐ **Payroll attach:** SALES KPI + cap + burned/carry persist + prior-month carry auto-apply + notify.
 - ◐ **Salary month sheet:** burned KPI + carry-over columns (by-source + release lines).
 - ◐ **Employee wallet:** pipeline shows burned KPI and carry-over from attach.
 - ☑ **Pay Now:** preset links from salary board, payroll runs, month sheet (month + employee URL filters).

@@ -182,6 +182,7 @@ export interface SalaryLineMonthBonusRow {
 
 export interface SalaryLineMonthDetail {
   payoutPhase: CompensationPayoutPhase;
+  pendingPayrollCarryOver: string | null;
   employee: {
     id: string;
     firstName: string;

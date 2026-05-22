@@ -45,6 +45,8 @@ export interface SalaryLineMonthDetailDto {
     kpiSalesPlanAmount: string | null;
     kpiSalesActualAmount: string | null;
   };
+  /** Cap carry-over from earlier payroll months not yet applied to this line. */
+  pendingPayrollCarryOver: string | null;
   salaryLine: {
     id: string;
     status: string;

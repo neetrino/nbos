@@ -50,6 +50,14 @@ function SummaryGrid({ detail, readOnly }: { detail: SalaryLineMonthDetail; read
   const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[detail.payoutPhase];
   const rows: Array<{ label: string; value: string }> = [
     { label: 'Base salary', value: formatAmount(parseAmount(detail.salaryLine.baseSalary)) },
+    ...(detail.pendingPayrollCarryOver
+      ? [
+          {
+            label: 'Pending carry-over',
+            value: formatAmount(parseAmount(detail.pendingPayrollCarryOver)),
+          },
+        ]
+      : []),
     { label: 'Bonuses', value: formatAmount(parseAmount(detail.salaryLine.bonusesTotal)) },
     { label: 'Adjustments', value: formatAmount(parseAmount(detail.salaryLine.adjustmentsTotal)) },
     { label: 'Deductions', value: formatAmount(parseAmount(detail.salaryLine.deductionsTotal)) },

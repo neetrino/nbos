@@ -3,6 +3,7 @@ import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbo
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
 import { resolveKpiGateRulesForPayrollEmployee } from '../compensation-profiles/resolve-kpi-gate-rules';
+import { applyPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
 import { applyPayrollBonusCap } from './payroll-bonus-cap';
 import { computeKpiGatePayoutFactor } from './kpi-gate-payout';
 import { computeSalesKpiBurnedAmount } from './sales-kpi-burned-amount';
@@ -105,9 +106,10 @@ export async function attachBonusReleasesToPayrollRun(
   const actual =
     run.kpiSalesActualAmount != null ? new Decimal(run.kpiSalesActualAmount) : new Decimal(0);
   const gateRulesByEmployee = new Map<string, KpiGateRules>();
+  const carryAppliedEmployees = new Set<string>();
 
   for (const rel of releases) {
-    const line = await tx.salaryLine.findUnique({
+    let line = await tx.salaryLine.findUnique({
       where: {
         payrollRunId_employeeId: { payrollRunId, employeeId: rel.employeeId },
       },
@@ -116,6 +118,23 @@ export async function attachBonusReleasesToPayrollRun(
       throw new BadRequestException(
         `No salary line for employee ${rel.employeeId} in this payroll run; seed or add the line first.`,
       );
+    }
+
+    if (!carryAppliedEmployees.has(rel.employeeId)) {
+      await applyPendingPayrollCarryOver(tx, {
+        employeeId: rel.employeeId,
+        payrollMonth: run.payrollMonth,
+        line,
+      });
+      carryAppliedEmployees.add(rel.employeeId);
+      const refreshed = await tx.salaryLine.findUnique({
+        where: {
+          payrollRunId_employeeId: { payrollRunId, employeeId: rel.employeeId },
+        },
+      });
+      if (refreshed) {
+        line = refreshed;
+      }
     }
 
     let gateRules = gateRulesByEmployee.get(rel.employeeId);
@@ -176,6 +195,7 @@ export async function attachBonusReleasesToPayrollRun(
         payrollIncludedAmount: included,
         kpiBurnedAmount,
         payrollCarryOverAmount: capped.payrollCarryOverAmount,
+        payrollCarryOverRemaining: capped.payrollCarryOverAmount,
       },
     });
   }
