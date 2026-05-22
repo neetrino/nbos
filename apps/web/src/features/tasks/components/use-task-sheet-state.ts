@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { employeesApi, type Employee } from '@/lib/api/employees';
@@ -25,10 +25,14 @@ interface UseTaskSheetStateParams {
   onDelete?: (taskId: string) => void;
 }
 
+function taskGeneralSaveErrorMessage(err: unknown): string {
+  return getApiErrorMessage(err, 'Could not save changes.');
+}
+
 export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskSheetStateParams) {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [workflowSaving, setWorkflowSaving] = useState(false);
   const [generalDraft, setGeneralDraft] = useState<TaskGeneralDraft | null>(null);
   const [generalSnap, setGeneralSnap] = useState<TaskGeneralDraft | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -36,13 +40,18 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
   const [newItemTexts, setNewItemTexts] = useState<Record<string, string>>({});
   const [completionBlockers, setCompletionBlockers] = useState<TaskCompletionBlocker[]>([]);
   const [messagesByTask, setMessagesByTask] = useState<Record<string, TaskLocalMessage[]>>({});
+  const generalDirtyRef = useRef(false);
 
-  const hydrateTask = useCallback(async (nextTask: Task) => {
-    setTask(nextTask);
-    const nextDraft = await enrichTaskGeneralDraft(nextTask);
-    setGeneralDraft(nextDraft);
-    setGeneralSnap(nextDraft);
-  }, []);
+  const applyTaskFromServer = useCallback(
+    async (nextTask: Task, options?: { forceDraftReset?: boolean }) => {
+      setTask(nextTask);
+      if (generalDirtyRef.current && !options?.forceDraftReset) return;
+      const nextDraft = await enrichTaskGeneralDraft(nextTask);
+      setGeneralDraft(nextDraft);
+      setGeneralSnap(nextDraft);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!taskId || !open) return;
@@ -53,7 +62,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
       try {
         const nextTask = await tasksApi.getById(taskId!);
         if (!cancelled) {
-          await hydrateTask(nextTask);
+          await applyTaskFromServer(nextTask, { forceDraftReset: true });
           setGeneralError(null);
           setCompletionBlockers([]);
           setNewChecklistTitle('');
@@ -72,7 +81,19 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     return () => {
       cancelled = true;
     };
-  }, [hydrateTask, open, taskId]);
+  }, [applyTaskFromServer, open, taskId]);
+
+  useLayoutEffect(() => {
+    if (!task) {
+      queueMicrotask(() => {
+        setGeneralDraft(null);
+        setGeneralSnap(null);
+      });
+      return;
+    }
+    if (generalDirtyRef.current) return;
+    void applyTaskFromServer(task);
+  }, [applyTaskFromServer, task?.id, task?.updatedAt]);
 
   const setLocalTask = useCallback(
     (recipe: (current: Task) => Task) => {
@@ -90,71 +111,94 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     setGeneralDraft((current) => (current ? { ...current, ...partial } : null));
   }, []);
 
-  const handleToggleTaskUrgent = useCallback(async () => {
-    if (!task || !generalDraft) return;
+  const generalDirty =
+    generalDraft != null && generalSnap != null && isTaskGeneralDirty(generalDraft, generalSnap);
+
+  useEffect(() => {
+    generalDirtyRef.current = generalDirty;
+  }, [generalDirty]);
+
+  const handleToggleTaskUrgent = useCallback(() => {
+    if (!task || !generalDraft || !generalSnap) return;
 
     const nextPriority = toggleTaskUrgentPriority(generalDraft.priority);
     if (nextPriority === generalDraft.priority) return;
 
-    setSaving(true);
+    const draftAtToggle = generalDraft;
+    const snapAtToggle = generalSnap;
+    const previousPriority = generalDraft.priority;
+    const nextDraft = { ...generalDraft, priority: nextPriority };
+
     setGeneralError(null);
-    try {
-      const updated = await tasksApi.update(task.id, { priority: nextPriority });
-      await hydrateTask(updated);
-      onUpdate?.(updated);
-    } catch (caught) {
-      const message = getApiErrorMessage(caught, 'Priority could not be updated.');
-      setGeneralError(message);
-      toast.error(message);
-    } finally {
-      setSaving(false);
-    }
-  }, [generalDraft, hydrateTask, onUpdate, task]);
+    setGeneralDraft(nextDraft);
+    setGeneralSnap(nextDraft);
+    setTask((current) => (current ? { ...current, priority: nextPriority } : current));
 
-  const generalDirty =
-    generalDraft != null && generalSnap != null && isTaskGeneralDirty(generalDraft, generalSnap);
+    void (async () => {
+      try {
+        const updated = await tasksApi.update(task.id, { priority: nextPriority });
+        setTask(updated);
+        onUpdate?.(updated);
+      } catch (caught) {
+        setGeneralDraft(draftAtToggle);
+        setGeneralSnap(snapAtToggle);
+        setTask((current) => (current ? { ...current, priority: previousPriority } : current));
+        const message = getApiErrorMessage(caught, 'Priority could not be updated.');
+        setGeneralError(message);
+        toast.error(message);
+      }
+    })();
+  }, [generalDraft, generalSnap, onUpdate, task]);
 
-  const handleGeneralSave = useCallback(async () => {
+  const handleGeneralSave = useCallback(() => {
     if (!task || !generalDraft || !generalSnap) return false;
+    setGeneralError(null);
     const patch = buildTaskGeneralPatch(generalSnap, generalDraft);
     if (Object.keys(patch).length === 0) return true;
 
-    setSaving(true);
-    setGeneralError(null);
-    try {
-      const statusTarget = typeof patch.status === 'string' ? patch.status : undefined;
-      const fieldPatch = { ...patch };
-      delete fieldPatch.status;
+    const draftAtSave = generalDraft;
+    const snapAtSave = generalSnap;
+    setGeneralSnap({ ...draftAtSave });
 
-      let updated: Task = task;
-      if (Object.keys(fieldPatch).length > 0) {
-        updated = await tasksApi.update(task.id, fieldPatch);
-      }
+    void (async () => {
+      try {
+        const statusTarget = typeof patch.status === 'string' ? patch.status : undefined;
+        const fieldPatch = { ...patch };
+        delete fieldPatch.status;
 
-      if (statusTarget === 'COMPLETED' && generalSnap.status !== 'COMPLETED') {
-        updated = await tasksApi.complete(task.id);
-      } else if (statusTarget === 'REVIEW' && generalSnap.status !== 'REVIEW') {
-        updated = await tasksApi.submitForReview(task.id);
-      } else if (statusTarget && statusTarget !== generalSnap.status) {
-        updated = await tasksApi.update(task.id, { status: statusTarget });
-      }
+        let updated: Task = task;
+        if (Object.keys(fieldPatch).length > 0) {
+          updated = await tasksApi.update(task.id, fieldPatch);
+        }
 
-      await hydrateTask(updated);
-      setCompletionBlockers([]);
-      onUpdate?.(updated);
-      return true;
-    } catch (caught) {
-      const message = getApiErrorMessage(caught, 'Task could not be updated.');
-      setGeneralError(message);
-      toast.error(message);
-      if (patch.status === 'COMPLETED') {
-        setCompletionBlockers(parseTaskCompletionBlockers(caught));
+        if (statusTarget === 'COMPLETED' && snapAtSave.status !== 'COMPLETED') {
+          updated = await tasksApi.complete(task.id);
+        } else if (statusTarget === 'REVIEW' && snapAtSave.status !== 'REVIEW') {
+          updated = await tasksApi.submitForReview(task.id);
+        } else if (statusTarget && statusTarget !== snapAtSave.status) {
+          updated = await tasksApi.update(task.id, { status: statusTarget });
+        }
+
+        setTask(updated);
+        onUpdate?.(updated);
+        setCompletionBlockers([]);
+        const syncedDraft = await enrichTaskGeneralDraft(updated);
+        setGeneralDraft(syncedDraft);
+        setGeneralSnap(syncedDraft);
+      } catch (caught) {
+        setGeneralSnap(snapAtSave);
+        setGeneralDraft(draftAtSave);
+        const message = taskGeneralSaveErrorMessage(caught);
+        setGeneralError(message);
+        toast.error(message);
+        if (patch.status === 'COMPLETED') {
+          setCompletionBlockers(parseTaskCompletionBlockers(caught));
+        }
       }
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  }, [generalDraft, generalSnap, hydrateTask, onUpdate, task]);
+    })();
+
+    return true;
+  }, [generalDraft, generalSnap, onUpdate, task]);
 
   const handleGeneralCancel = useCallback(() => {
     setGeneralError(null);
@@ -166,7 +210,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
       action: 'start' | 'complete' | 'reopen' | 'hold' | 'approveReview' | 'requestReviewChanges',
     ) => {
       if (!task) return;
-      setSaving(true);
+      setWorkflowSaving(true);
       try {
         const updated =
           action === 'start'
@@ -180,7 +224,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
                   : action === 'requestReviewChanges'
                     ? await tasksApi.requestReviewChanges(task.id)
                     : await tasksApi.setOnHold(task.id);
-        await hydrateTask(updated);
+        await applyTaskFromServer(updated, { forceDraftReset: true });
         onUpdate?.(updated);
         setGeneralError(null);
         setCompletionBlockers([]);
@@ -190,10 +234,10 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
         toast.error(message);
         if (action === 'complete') setCompletionBlockers(parseTaskCompletionBlockers(caught));
       } finally {
-        setSaving(false);
+        setWorkflowSaving(false);
       }
     },
-    [hydrateTask, onUpdate, task],
+    [applyTaskFromServer, onUpdate, task],
   );
 
   const handleAddChecklist = useCallback(async () => {
@@ -330,7 +374,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
   return {
     task,
     loading,
-    saving,
+    workflowSaving,
     generalDraft,
     generalError,
     generalDirty,

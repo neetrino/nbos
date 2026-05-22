@@ -11,14 +11,14 @@ import type { TaskGeneralDraft } from '../task-general-form-state';
 
 interface TaskSheetHeaderProps {
   draft: TaskGeneralDraft;
-  saving: boolean;
+  disabled?: boolean;
   onPatchDraft: (partial: Partial<TaskGeneralDraft>) => void;
   onToggleUrgent: () => void;
 }
 
 export function TaskSheetHeader({
   draft,
-  saving,
+  disabled = false,
   onPatchDraft,
   onToggleUrgent,
 }: TaskSheetHeaderProps) {
@@ -30,7 +30,7 @@ export function TaskSheetHeader({
         <input
           value={draft.title}
           onChange={(e) => onPatchDraft({ title: e.target.value })}
-          disabled={saving}
+          disabled={disabled}
           placeholder="Task title…"
           aria-label="Task title"
           className="text-foreground placeholder:text-muted-foreground/55 w-full border-0 bg-transparent py-0 text-2xl leading-snug font-bold tracking-tight outline-none disabled:opacity-60 sm:text-[1.65rem]"
@@ -47,7 +47,7 @@ export function TaskSheetHeader({
             aria-pressed={urgent}
             aria-label={urgent ? 'Urgent' : 'Mark as urgent'}
             title={urgent ? 'Urgent' : 'Mark as urgent'}
-            disabled={saving}
+            disabled={disabled}
             onClick={onToggleUrgent}
           >
             <Flame size={19} strokeWidth={1.75} aria-hidden />

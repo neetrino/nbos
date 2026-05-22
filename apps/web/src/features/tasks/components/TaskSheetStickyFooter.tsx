@@ -20,7 +20,8 @@ type TaskFooterAction =
 
 interface TaskSheetStickyFooterProps {
   dirty: boolean;
-  saving: boolean;
+  /** Blocks workflow actions (start, complete, …) while a server transition runs. */
+  workflowSaving: boolean;
   errorMessage?: string | null;
   taskStatus: string;
   onSave: () => void;
@@ -32,7 +33,7 @@ interface TaskSheetStickyFooterProps {
 
 export function TaskSheetStickyFooter({
   dirty,
-  saving,
+  workflowSaving,
   errorMessage,
   taskStatus,
   onSave,
@@ -51,7 +52,7 @@ export function TaskSheetStickyFooter({
   return (
     <div className="border-border/50 bg-background/95 supports-[backdrop-filter]:bg-background/85 sticky bottom-0 z-20 shrink-0 border-t px-6 py-3 backdrop-blur-sm">
       <div className="flex flex-col gap-3">
-        {(dirty || saving || errorMessage) && (
+        {(dirty || errorMessage) && (
           <div className="flex flex-col gap-3">
             {errorMessage ? (
               <p className="text-destructive text-sm" role="alert">
@@ -59,13 +60,13 @@ export function TaskSheetStickyFooter({
               </p>
             ) : null}
             <div className="flex flex-wrap items-center gap-2">
-              <Button type="button" disabled={!dirty || saving} onClick={onSave}>
-                {saving ? 'Saving…' : 'Save'}
+              <Button type="button" disabled={!dirty} onClick={onSave}>
+                Save
               </Button>
-              <Button type="button" variant="secondary" disabled={saving} onClick={onSaveAndClose}>
-                {saving ? 'Saving…' : 'Save & Close'}
+              <Button type="button" variant="secondary" onClick={onSaveAndClose}>
+                Save & Close
               </Button>
-              <Button type="button" variant="outline" disabled={saving} onClick={onCancel}>
+              <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
             </div>
@@ -75,7 +76,7 @@ export function TaskSheetStickyFooter({
         <div className="flex items-center gap-3 border-t pt-3">
           <Button
             type="button"
-            disabled={!canStart || saving}
+            disabled={!canStart || workflowSaving}
             onClick={() => onTaskAction('start')}
           >
             <Play size={14} /> Start
@@ -83,7 +84,7 @@ export function TaskSheetStickyFooter({
           <Button
             type="button"
             variant="outline"
-            disabled={!canComplete || saving}
+            disabled={!canComplete || workflowSaving}
             onClick={() => onTaskAction('complete')}
           >
             <CheckCircle2 size={14} /> Complete
@@ -96,7 +97,7 @@ export function TaskSheetStickyFooter({
                   type="button"
                   variant="outline"
                   size="icon"
-                  disabled={saving}
+                  disabled={workflowSaving}
                   aria-label="More task actions"
                 >
                   <MoreHorizontal size={16} />
@@ -105,28 +106,31 @@ export function TaskSheetStickyFooter({
             />
             <DropdownMenuContent align="start" className="min-w-[12rem]">
               <DropdownMenuItem
-                disabled={!canApproveReview || saving}
+                disabled={!canApproveReview || workflowSaving}
                 onClick={() => onTaskAction('approveReview')}
               >
                 Approve review
               </DropdownMenuItem>
               <DropdownMenuItem
-                disabled={!canRequestReviewChanges || saving}
+                disabled={!canRequestReviewChanges || workflowSaving}
                 onClick={() => onTaskAction('requestReviewChanges')}
               >
                 Request changes
               </DropdownMenuItem>
-              <DropdownMenuItem disabled={!canHold || saving} onClick={() => onTaskAction('hold')}>
+              <DropdownMenuItem
+                disabled={!canHold || workflowSaving}
+                onClick={() => onTaskAction('hold')}
+              >
                 <Pause size={14} /> Put On Hold
               </DropdownMenuItem>
               <DropdownMenuItem
-                disabled={!canReopen || saving}
+                disabled={!canReopen || workflowSaving}
                 onClick={() => onTaskAction('reopen')}
               >
                 <RotateCcw size={14} /> Reopen
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" disabled={saving} onClick={onDelete}>
+              <DropdownMenuItem variant="destructive" disabled={workflowSaving} onClick={onDelete}>
                 <Trash2 size={14} /> Delete Task
               </DropdownMenuItem>
             </DropdownMenuContent>

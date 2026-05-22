@@ -19,7 +19,7 @@ interface TaskSheetGeneralSectionProps {
   task: Task;
   taskId: string;
   draft: TaskGeneralDraft;
-  saving: boolean;
+  disabled?: boolean;
   onPatchDraft: (partial: Partial<TaskGeneralDraft>) => void;
   onSearchEmployees: (
     query: string,
@@ -30,7 +30,7 @@ export function TaskSheetGeneralSection({
   task,
   taskId,
   draft,
-  saving,
+  disabled = false,
   onPatchDraft,
   onSearchEmployees,
 }: TaskSheetGeneralSectionProps) {
@@ -55,7 +55,7 @@ export function TaskSheetGeneralSection({
         value={draft.description}
         onChange={(description) => onPatchDraft({ description })}
         placeholder="Description"
-        disabled={saving}
+        disabled={disabled}
         shellClassName="[&_.entity-notes-prosemirror]:text-sm"
       />
 
@@ -71,7 +71,7 @@ export function TaskSheetGeneralSection({
                   selectionLabel={draft.creatorLabel}
                   icon={<User size={13} />}
                   placeholder="Select creator…"
-                  disabled={saving}
+                  disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
                   onSelect={(employeeId, label) =>
@@ -89,7 +89,7 @@ export function TaskSheetGeneralSection({
                   selectionLabel={draft.assigneeLabel}
                   icon={<User size={13} />}
                   placeholder="Select assignee…"
-                  disabled={saving}
+                  disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
                   onSelect={(employeeId, label) =>
@@ -110,7 +110,7 @@ export function TaskSheetGeneralSection({
                   datePickerMode="datetime"
                   icon={<Calendar size={13} />}
                   clearable
-                  disabled={saving}
+                  disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onValueChange={(value) => onPatchDraft({ dueDate: value })}
                 />
@@ -133,7 +133,7 @@ export function TaskSheetGeneralSection({
                   selectionLabels={draft.coAssigneeLabels}
                   icon={<Users size={13} />}
                   placeholder="Add assistant…"
-                  disabled={saving}
+                  disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
                   onChange={(ids, labels) =>
@@ -156,7 +156,7 @@ export function TaskSheetGeneralSection({
                   selectionLabels={draft.observerLabels}
                   icon={<Users size={13} />}
                   placeholder="Add observer…"
-                  disabled={saving}
+                  disabled={disabled}
                   className={TASK_SHEET_COMPACT_FIELD_CLASS}
                   onSearch={onSearchEmployees}
                   onChange={(ids, labels) =>

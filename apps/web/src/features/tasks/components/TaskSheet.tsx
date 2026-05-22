@@ -40,8 +40,8 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
   const state = useTaskSheetState({ taskId, open, onUpdate, onDelete });
   const [extrasOpen, setExtrasOpen] = useState(false);
 
-  async function handleSaveAndClose() {
-    const saved = await state.handleGeneralSave();
+  function handleSaveAndClose() {
+    const saved = state.handleGeneralSave();
     if (saved) onOpenChange(false);
   }
 
@@ -93,7 +93,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
 
                     <TaskSheetHeader
                       draft={state.generalDraft}
-                      saving={state.saving}
+                      disabled={state.loading}
                       onPatchDraft={state.patchGeneralDraft}
                       onToggleUrgent={() => void state.handleToggleTaskUrgent()}
                     />
@@ -102,7 +102,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                       task={state.task}
                       taskId={state.task.id}
                       draft={state.generalDraft}
-                      saving={state.saving}
+                      disabled={state.loading}
                       onPatchDraft={state.patchGeneralDraft}
                       onSearchEmployees={state.searchEmployees}
                     />
@@ -170,11 +170,11 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
 
                 <TaskSheetStickyFooter
                   dirty={state.generalDirty}
-                  saving={state.saving}
+                  workflowSaving={state.workflowSaving}
                   errorMessage={state.generalError}
                   taskStatus={state.task.status}
                   onSave={() => void state.handleGeneralSave()}
-                  onSaveAndClose={() => void handleSaveAndClose()}
+                  onSaveAndClose={handleSaveAndClose}
                   onCancel={state.handleGeneralCancel}
                   onTaskAction={state.handleAction}
                   onDelete={() => void handleDelete()}
