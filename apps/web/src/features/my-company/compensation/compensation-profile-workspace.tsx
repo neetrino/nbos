@@ -290,6 +290,11 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
                   .
                 </p>
               ) : null}
+              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_MANUAL_ONLY ? (
+                <p className="text-muted-foreground text-xs">
+                  No automatic accrual — bonuses are created manually in Finance.
+                </p>
+              ) : null}
             </label>
             <label className="space-y-1 text-sm">
               <span className="text-muted-foreground">KPI gate policy</span>
