@@ -64,7 +64,7 @@ UI must make the pool understandable without opening many pages.
 
 Backend + rules live in My Company policy templates; Finance executes. See `05-Bonus-and-Payroll.md` § Policy Engine.
 
-- ◐ **Bonus Policy Templates:** `bonus_policies` + profile FK + picker; SALES + MANUAL_ONLY + DELIVERY_PROPORTIONAL_FUNDING seeds; marketing template pending.
+- ☑ **Bonus Policy Templates:** `bonus_policies` + profile FK + picker; seeds SALES / MANUAL / DELIVERY / MARKETING (support template pending).
 - ◐ **KPI Policy Templates:** `kpi_policies` DB + CRUD UI + profile picker; role-specific defaults / scorecard metrics pending.
 - ☑ **Compensation Profile link:** create/activate profile + bonus & KPI policy dropdowns on `/my-company/compensation`.
 - ☑ **Employee-level KPI:** per-employee sales plan/actual on `salary_lines` + PATCH + payroll run UI; SALES attach uses line override with run fallback.
@@ -74,7 +74,7 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 - ☑ **Bonus breakdown statuses:** `policyBreakdownStatuses` + month summary on salary sheet / wallet pipeline.
 - ☑ **Idempotency:** payroll re-attach + carry apply; SALES accrual `createMany` skipDuplicates + partial unique indexes.
 - ◐ **Tests:** sales accrual + payroll attach idempotency; delivery pool funding recalc tests (`product-bonus-pool-sync`).
-- ☐ **Re-audit** API when Compensation Profile / policy schema changes.
+- ☑ **Re-audit** API when Compensation Profile / policy schema changes (`12-Compensation-Roadmap-Implementation-Audit.md` § Policy engine).
 
 ---
 

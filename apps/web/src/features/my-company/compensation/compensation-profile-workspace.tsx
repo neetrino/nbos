@@ -18,6 +18,7 @@ import { DEFAULT_KPI_POLICY_ID } from '@/lib/constants/default-kpi-policy-id';
 import {
   BONUS_POLICY_TEMPLATE_DELIVERY_PROPORTIONAL_FUNDING,
   BONUS_POLICY_TEMPLATE_MANUAL_ONLY,
+  BONUS_POLICY_TEMPLATE_MARKETING_MANUAL_PLANNED,
   BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES,
 } from '@/features/my-company/compensation/bonus-policy-template-codes';
 
@@ -300,6 +301,12 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
                 <p className="text-muted-foreground text-xs">
                   Planned delivery bonuses auto-release proportionally when the product is Done and
                   client payments fund the pool (Finance bonus pools).
+                </p>
+              ) : null}
+              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_MARKETING_MANUAL_PLANNED ? (
+                <p className="text-muted-foreground text-xs">
+                  Create MARKETING bonus entries manually in Finance; automated CPL/MQL accrual from
+                  the Marketing module is not wired yet.
                 </p>
               ) : null}
             </label>

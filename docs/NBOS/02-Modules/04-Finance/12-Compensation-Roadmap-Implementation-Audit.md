@@ -26,7 +26,7 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 | Salary board cell  | `SalaryBoardCell`                                               | Includes `payoutPhase`, line amounts                          |
 | Pay Now payroll    | Expense list + `linkedPayrollRun`                               | Filters in `expense-payroll-list-scope`                       |
 
-**Decision:** MVP does **not** require new DB columns for employee×month UX. Remaining gaps are **policy engine** (cap/carry-over automation, burned KPI line items) — show as copy/hints until engine ships.
+**Decision:** Employee×month UX uses existing payroll/bonus DTOs plus policy-engine fields below (no separate ledger table for MVP).
 
 ## Web routes (canon)
 
@@ -38,9 +38,38 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 | Pay Now      | `/finance/expenses` (+ payroll preset query)  |
 | Wallet       | `/my-account/wallet`                          |
 
+## Policy engine (2026-05 re-audit)
+
+| Area                            | Shipped | Notes                                                                                                               |
+| ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `bonus_policies` + profile FK   | Yes     | Seeded templates: `SALES_COMPANY_RATES`, `MANUAL_ONLY`, `DELIVERY_PROPORTIONAL_FUNDING`, `MARKETING_MANUAL_PLANNED` |
+| `kpi_policies` + cap multiplier | Yes     | Gate bands + `bonusCapBaseSalaryMultiplier` (1–3×) on payroll SALES attach                                          |
+| Sales accrual                   | Yes     | Invoice paid → `SalesBonusAccrualService`; idempotent `sales_accrual_invoice_id`                                    |
+| Delivery pool funding           | Yes     | `syncProductBonusPoolForOrder` + proportional AUTO when Done + funded                                               |
+| Payroll attach                  | Yes     | SALES KPI (run + per-employee line), cap, `kpiBurnedAmount`, carry FIFO + detach reversal                           |
+| Month / wallet breakdown        | Yes     | `policyBreakdownStatuses`, `employeeSalesKpi`, burned/carry columns                                                 |
+
+### API (compensation / policy)
+
+| Route                                                        | Purpose                                            |
+| ------------------------------------------------------------ | -------------------------------------------------- |
+| `GET /api/bonus-policies`                                    | List company bonus policy bundles                  |
+| `GET/POST/PATCH /api/compensation-profiles`                  | Profile versions + `bonusPolicyId` / `kpiPolicyId` |
+| `GET/POST/PATCH /api/kpi-policies`                           | KPI gate templates                                 |
+| `PATCH /api/payroll-runs/:id`                                | Run-level sales KPI plan/actual                    |
+| `PATCH /api/payroll-runs/:id/salary-lines/:lineId/sales-kpi` | Per-employee sales KPI override                    |
+| `GET /api/payroll-runs/salary-lines/:id/month-detail`        | Month sheet + `employeeSalesKpi` + breakdown       |
+
+### Residual (canon backlog)
+
+- Marketing scorecard → automatic MARKETING accrual (template exists; engine pending).
+- Support bonus template + accrual.
+- Full `Bonus Policy` CRUD UI (list/read today; create/archive later).
+- KPI scorecard metrics per role (beyond sales plan/actual on payroll).
+
 ## Tests (automated)
 
-- API: `payroll-salary-line-ledger-sync`, `sales-kpi-payroll-payout`, `payroll-salary-board`, `expense-payroll-list-scope`, `employee-wallet`
+- API: `payroll-salary-line-ledger-sync`, `sales-kpi-payroll-payout`, `sales-bonus-accrual`, `payroll-bonus-release-attach`, `resolve-employee-sales-kpi`, `product-bonus-pool-sync`, `product-bonus-pool-auto-release`, `payroll-salary-board`, `expense-payroll-list-scope`, `employee-wallet`
 - Web: `salary-board-filtered-totals`, `bonus-board-grouping`, `export-salary-board-csv`, `sales-kpi-gate-summary`, `bonus-board-url`
 
 ## Manual visual QA checklist (Bitrix parity)
@@ -56,10 +85,9 @@ Use after deploy or large UX change:
 
 ## Follow-up (out of MVP roadmap closure)
 
-Tracked in repo root [`todo.md`](../../../../todo.md) (single remaining-work list). Summary:
+Tracked in repo root [`todo.md`](../../../../todo.md). Summary:
 
-- **Policy engine:** cap, carry-over, burned KPI ledger + month/wallet explanations.
-- **Product decisions:** wallet sheet variant, forecast scope, burned KPI display, Pay Now default.
-- **UX gaps:** bonus pool employee breakdown, salary department filter, manual QA checklist.
-- **My Company:** versioned Compensation Profile + universal Bonus/KPI policies ([`06-My-Company-Cleanup-Register`](../07-My-Company/06-My-Company-Cleanup-Register.md) C1–C3).
-- Re-audit payloads when compensation profile schema changes.
+- **Policy engine:** marketing/support accrual automation; optional burned-KPI reason field; bonus policy CRUD.
+- **KPI:** role-specific scorecard metrics (beyond payroll sales plan/actual).
+- **Ops:** manual visual QA checklist (§ above); staging deploy smoke.
+- **My Company:** employee overrides + policy audit trail ([`06-My-Company-Cleanup-Register`](../07-My-Company/06-My-Company-Cleanup-Register.md) C1–C3).
