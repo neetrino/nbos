@@ -4,6 +4,7 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 import { validateLeadStageGate } from './lead-stage-gate';
+import { resolveLeadCreateDefaults } from './lead-create-defaults.op';
 
 const ACTIVE_LEAD_STATUSES = new Set([
   'NEW',
@@ -140,30 +141,33 @@ export class LeadsService {
     return lead;
   }
 
-  async create(data: CreateLeadDto, meta: { actorRoleLevel?: number } = {}) {
-    if (data.source === 'PARTNER' || data.sourcePartnerId) {
+  async create(data: CreateLeadDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {
+    const resolved = resolveLeadCreateDefaults(data, meta);
+    if (resolved.source === 'PARTNER' || resolved.sourcePartnerId) {
       await assertPartnerAssignableForInboundCrm(
         this.prisma,
-        data.source ?? null,
-        data.sourcePartnerId,
+        resolved.source ?? null,
+        resolved.sourcePartnerId,
         meta.actorRoleLevel,
       );
     }
     const code = await this.generateCode();
     const createData: Prisma.LeadUncheckedCreateInput = {
       code,
-      name: data.name,
-      contactName: data.contactName ?? '',
-      phone: data.phone,
-      email: data.email,
-      source: data.source ? (data.source as Prisma.LeadUncheckedCreateInput['source']) : undefined,
-      sourceDetail: data.sourceDetail,
-      sourcePartnerId: data.sourcePartnerId,
-      sourceContactId: data.sourceContactId,
-      marketingAccountId: data.marketingAccountId,
-      marketingActivityId: data.marketingActivityId,
-      assignedTo: data.assignedTo,
-      notes: data.notes,
+      name: resolved.name,
+      contactName: resolved.contactName ?? '',
+      phone: resolved.phone,
+      email: resolved.email,
+      source: resolved.source
+        ? (resolved.source as Prisma.LeadUncheckedCreateInput['source'])
+        : undefined,
+      sourceDetail: resolved.sourceDetail,
+      sourcePartnerId: resolved.sourcePartnerId,
+      sourceContactId: resolved.sourceContactId,
+      marketingAccountId: resolved.marketingAccountId,
+      marketingActivityId: resolved.marketingActivityId,
+      assignedTo: resolved.assignedTo,
+      notes: resolved.notes,
     };
 
     return this.prisma.lead.create({

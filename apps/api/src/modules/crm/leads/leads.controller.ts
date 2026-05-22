@@ -89,7 +89,10 @@ export class LeadsController {
       notes?: string;
     },
   ) {
-    return this.leadsService.create(body, { actorRoleLevel: user?.roleLevel });
+    return this.leadsService.create(body, {
+      actorId: user?.id,
+      actorRoleLevel: user?.roleLevel,
+    });
   }
 
   @Put(':id')

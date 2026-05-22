@@ -100,6 +100,19 @@ describe('LeadsService', () => {
       const createCall = prisma.lead.create.mock.calls[0][0];
       expect(createCall.data.code).toBe('L-2026-0006');
     });
+
+    it('defaults assignedTo to creator when actorId is provided', async () => {
+      prisma.lead.findFirst.mockResolvedValue(null);
+      prisma.lead.create.mockImplementation(({ data }) => Promise.resolve({ id: '1', ...data }));
+
+      await service.create({ name: 'Quick lead' }, { actorId: 'emp-1' });
+
+      expect(prisma.lead.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ assignedTo: 'emp-1' }),
+        }),
+      );
+    });
   });
 
   describe('update', () => {
