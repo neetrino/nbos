@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Users } from 'lucide-react';
+import Link from 'next/link';
+import { Banknote, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { SALARY_BOARD_OPEN_LINE_QUERY } from '@/features/finance/constants/salary-board-url';
 import {
@@ -26,6 +28,7 @@ import {
 } from '@/features/finance/constants/payroll-runs-list-url';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { departmentsApi } from '@/lib/api/employees';
 import { payrollRunsApi, type SalaryBoardResponse } from '@/lib/api/payroll-runs';
 import {
   buildPayrollMonthRangeFilterConfigs,
@@ -34,10 +37,12 @@ import {
 } from '@/features/finance/components/payroll/build-payroll-integrated-filter-configs';
 import {
   buildSalaryBoardClientFilterConfigs,
+  SALARY_BOARD_DEPARTMENT_FILTER_KEY,
   SALARY_BOARD_EMPLOYEE_FILTER_KEY,
   SALARY_BOARD_LINE_STATUS_FILTER_KEY,
   SALARY_BOARD_PAYOUT_PHASE_FILTER_KEY,
 } from '@/features/finance/components/payroll/build-salary-board-client-filter-configs';
+import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import {
   employeeDisplayName,
   filterSalaryBoardEntries,
@@ -58,6 +63,7 @@ function salaryLineExistsOnBoard(board: SalaryBoardResponse, salaryLineId: strin
 }
 
 const INITIAL_CLIENT_FILTERS: Record<string, string> = {
+  [SALARY_BOARD_DEPARTMENT_FILTER_KEY]: 'all',
   [SALARY_BOARD_EMPLOYEE_FILTER_KEY]: 'all',
   [SALARY_BOARD_LINE_STATUS_FILTER_KEY]: 'all',
   [SALARY_BOARD_PAYOUT_PHASE_FILTER_KEY]: 'all',
@@ -71,6 +77,9 @@ export function SalaryBoardPageContent() {
   const searchParams = useSearchParams();
 
   const [data, setData] = useState<SalaryBoardResponse | null>(null);
+  const [departmentOptions, setDepartmentOptions] = useState<Array<{ id: string; label: string }>>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -108,6 +117,26 @@ export function SalaryBoardPageContent() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    let cancelled = false;
+    void departmentsApi
+      .getAll()
+      .then((items) => {
+        if (cancelled) return;
+        setDepartmentOptions(
+          items
+            .map((d) => ({ id: d.id, label: d.name }))
+            .sort((a, b) => a.label.localeCompare(b.label)),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setDepartmentOptions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleViewChange = useCallback((next: SalaryBoardViewMode) => {
     setView(next);
     writeSalaryBoardViewMode(next);
@@ -125,10 +154,16 @@ export function SalaryBoardPageContent() {
     () => ({
       search,
       employeeId: clientFilters[SALARY_BOARD_EMPLOYEE_FILTER_KEY] ?? 'all',
+      departmentId: clientFilters[SALARY_BOARD_DEPARTMENT_FILTER_KEY] ?? 'all',
       lineStatus: clientFilters[SALARY_BOARD_LINE_STATUS_FILTER_KEY] ?? 'all',
       payoutPhase: clientFilters[SALARY_BOARD_PAYOUT_PHASE_FILTER_KEY] ?? 'all',
     }),
     [clientFilters, search],
+  );
+
+  const payNowPresetHref = useMemo(
+    () => expensesPayrollPresetHref({ payrollMonth: monthTo ?? monthFrom }),
+    [monthFrom, monthTo],
   );
 
   const filteredEntries = useMemo(() => {
@@ -144,9 +179,9 @@ export function SalaryBoardPageContent() {
   const salaryFilterConfigs = useMemo(
     () => [
       ...buildPayrollMonthRangeFilterConfigs(),
-      ...buildSalaryBoardClientFilterConfigs(employeeOptions),
+      ...buildSalaryBoardClientFilterConfigs(employeeOptions, departmentOptions),
     ],
-    [employeeOptions],
+    [departmentOptions, employeeOptions],
   );
 
   const salaryFilterValues = useMemo(
@@ -276,14 +311,28 @@ export function SalaryBoardPageContent() {
     () => ({
       ...moduleHeroSlots,
       trailing: (
-        <SalaryBoardPageSettingsSheet
-          exportCsvDisabled={exportCsvSubmitting || filteredEntries.length === 0}
-          exportCsvInProgress={exportCsvSubmitting}
-          onExportCsv={handleExportCsv}
-        />
+        <>
+          <Button type="button" variant="outline" size="sm" asChild>
+            <Link href={payNowPresetHref}>
+              <Banknote className="mr-1.5 size-4" aria-hidden />
+              Pay Now
+            </Link>
+          </Button>
+          <SalaryBoardPageSettingsSheet
+            exportCsvDisabled={exportCsvSubmitting || filteredEntries.length === 0}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportCsv={handleExportCsv}
+          />
+        </>
       ),
     }),
-    [exportCsvSubmitting, filteredEntries.length, handleExportCsv, moduleHeroSlots],
+    [
+      exportCsvSubmitting,
+      filteredEntries.length,
+      handleExportCsv,
+      moduleHeroSlots,
+      payNowPresetHref,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlotsWithExport);

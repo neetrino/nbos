@@ -47,6 +47,8 @@ export interface SalaryBoardRow {
     firstName: string;
     lastName: string;
     position: string | null;
+    departmentIds: string[];
+    primaryDepartmentId: string | null;
   };
   cells: (SalaryBoardCell | null)[];
 }

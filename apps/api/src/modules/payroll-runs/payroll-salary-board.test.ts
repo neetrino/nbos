@@ -31,7 +31,13 @@ describe('querySalaryBoard', () => {
   it('builds grid for one month with a salary line', async () => {
     const prisma: MockPrisma = createMockPrisma();
     prisma.employee.findMany.mockResolvedValue([
-      { id: 'e1', firstName: 'A', lastName: 'Zed', position: null },
+      {
+        id: 'e1',
+        firstName: 'A',
+        lastName: 'Zed',
+        position: null,
+        departments: [{ departmentId: 'd-sales', isPrimary: true }],
+      },
     ]);
     prisma.payrollRun.findMany.mockResolvedValue([
       { id: 'r1', payrollMonth: '2026-04', status: 'DRAFT' },
@@ -60,6 +66,10 @@ describe('querySalaryBoard', () => {
       runStatus: 'DRAFT',
     });
     expect(result.rows).toHaveLength(1);
+    expect(result.rows[0].employee).toMatchObject({
+      departmentIds: ['d-sales'],
+      primaryDepartmentId: 'd-sales',
+    });
     expect(result.rows[0].cells[0]).toMatchObject({
       salaryLineId: 'sl1',
       payrollRunId: 'r1',

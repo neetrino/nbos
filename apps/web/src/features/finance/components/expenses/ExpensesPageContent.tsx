@@ -39,6 +39,8 @@ import {
 } from './ExpensePayrollPresetBanner';
 import { useExpensePayrollEmployeeFilterOptions } from './use-expense-payroll-employee-filter-options';
 import {
+  EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY,
+  EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY,
   EXPENSE_PAYROLL_MONTH_FILTER_KEY,
   EXPENSE_PAYROLL_MONTH_URL_QUERY,
   EXPENSE_PAYROLL_PRESET_QUERY,
@@ -375,7 +377,8 @@ export function ExpensesPageContent({
     if (pageVariant !== 'default') return;
     const preset = searchParams.get(EXPENSE_PAYROLL_PRESET_QUERY) === '1';
     const monthFromUrl = searchParams.get(EXPENSE_PAYROLL_MONTH_URL_QUERY)?.trim();
-    if (!preset && !monthFromUrl) return;
+    const employeeFromUrl = searchParams.get(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY)?.trim();
+    if (!preset && !monthFromUrl && !employeeFromUrl) return;
     setFilters((prev) => {
       const next = { ...prev };
       if (preset) {
@@ -384,11 +387,15 @@ export function ExpensesPageContent({
       if (monthFromUrl) {
         next[EXPENSE_PAYROLL_MONTH_FILTER_KEY] = monthFromUrl;
       }
+      if (employeeFromUrl) {
+        next[EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY] = employeeFromUrl;
+      }
       return next;
     });
     replaceExpensesUrl((params) => {
       params.delete(EXPENSE_PAYROLL_PRESET_QUERY);
       params.delete(EXPENSE_PAYROLL_MONTH_URL_QUERY);
+      params.delete(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY);
     });
   }, [pageVariant, replaceExpensesUrl, searchParams]);
 

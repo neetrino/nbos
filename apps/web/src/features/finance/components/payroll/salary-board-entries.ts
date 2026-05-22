@@ -41,8 +41,17 @@ export function employeeInitials(emp: SalaryBoardEntry['employee']): string {
 export interface SalaryBoardClientFilters {
   search: string;
   employeeId: string;
+  departmentId: string;
   lineStatus: string;
   payoutPhase: string;
+}
+
+function employeeMatchesDepartment(
+  employee: SalaryBoardEntry['employee'],
+  departmentId: string,
+): boolean {
+  if (departmentId === 'all') return true;
+  return employee.departmentIds.includes(departmentId);
 }
 
 export function filterSalaryBoardEntries(
@@ -56,11 +65,12 @@ export function filterSalaryBoardEntries(
     const matchesSearch = !q || name.includes(q) || position.includes(q);
     const matchesEmployee =
       filters.employeeId === 'all' || entry.employee.id === filters.employeeId;
+    const matchesDepartment = employeeMatchesDepartment(entry.employee, filters.departmentId);
     const matchesStatus =
       filters.lineStatus === 'all' || entry.cell.lineStatus === filters.lineStatus;
     const matchesPhase =
       filters.payoutPhase === 'all' || entry.cell.payoutPhase === filters.payoutPhase;
-    return matchesSearch && matchesEmployee && matchesStatus && matchesPhase;
+    return matchesSearch && matchesEmployee && matchesDepartment && matchesStatus && matchesPhase;
   });
 }
 
@@ -74,6 +84,9 @@ export function filterSalaryBoardRows(
   return data.rows
     .filter((row) => {
       if (filters.employeeId !== 'all' && row.employee.id !== filters.employeeId) {
+        return false;
+      }
+      if (!employeeMatchesDepartment(row.employee, filters.departmentId)) {
         return false;
       }
       if (filters.search.trim()) {

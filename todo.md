@@ -83,14 +83,14 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 - ◐ **Payroll attach:** SALES KPI scale at attach exists; full KPI/cap/carry-over amounts pending.
 - ◐ **Salary month sheet:** by-source rollup + release lines (planned/released/included/paid/remaining); burned/carry-over pending policy.
 - ☐ **Employee wallet:** explanations for partial / delayed / carried / burned / paid / clawback.
-- ☐ **Pay Now:** payroll expenses easy to filter from salary/bonus context.
+- ☑ **Pay Now:** preset links from salary board, payroll runs, month sheet (month + employee URL filters).
 - ◐ **Notifications:** wallet hints on release/paid exist; KPI reduced / carried copy pending.
 
 ---
 
 ## 6. Other UX gaps (canon vs current MVP)
 
-- ☐ **Salary board:** department filter (CEO/Finance parity).
+- ☑ **Salary board:** department filter (client-side on `departmentIds` from API).
 - ☑ **Salary board:** calendar + list views with status colors and month dividers (shipped).
 - ☑ **Payroll runs list:** table view with filters, totals, CSV export.
 - ☑ **Payroll runs calendar:** year × month grid with status-colored cells.

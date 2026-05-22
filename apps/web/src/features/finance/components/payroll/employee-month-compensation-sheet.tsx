@@ -16,6 +16,7 @@ import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compe
 import { formatAmount } from '@/features/finance/constants/finance';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
+import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { EmployeeMonthCompensationKpiSection } from '@/features/finance/components/payroll/employee-month-compensation-kpi-section';
 import { SalaryMonthBonusBreakdown } from '@/features/finance/components/payroll/salary-month-bonus-breakdown';
@@ -122,12 +123,23 @@ function ExpensePaymentsSection({
           {formatAmount(parseAmount(expense.amount))}
         </span>
         {readOnly ? null : (
-          <Link
-            href={`/finance/expenses/${expense.id}`}
-            className="text-primary text-sm hover:underline"
-          >
-            Open expense card
-          </Link>
+          <>
+            <Link
+              href={`/finance/expenses/${expense.id}`}
+              className="text-primary text-sm hover:underline"
+            >
+              Open expense card
+            </Link>
+            <Link
+              href={expensesPayrollPresetHref({
+                payrollMonth: detail.payrollMonth,
+                employeeId: detail.employee.id,
+              })}
+              className="text-primary text-sm hover:underline"
+            >
+              Pay Now (this employee)
+            </Link>
+          </>
         )}
       </div>
       {expense.payments.length === 0 ? (

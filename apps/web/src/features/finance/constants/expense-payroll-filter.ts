@@ -14,11 +14,21 @@ const EXPENSE_LIST_PATH = '/finance/expenses' as const;
 /** URL query for payroll month filter on Pay Now (YYYY-MM). */
 export const EXPENSE_PAYROLL_MONTH_URL_QUERY = 'payrollMonth' as const;
 
-export function expensesPayrollPresetHref(options?: { payrollMonth?: string }): string {
+/** URL query for payroll employee filter on Pay Now (`Employee.id`). */
+export const EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY = 'payrollEmployee' as const;
+
+export function expensesPayrollPresetHref(options?: {
+  payrollMonth?: string;
+  employeeId?: string;
+}): string {
   const q = new URLSearchParams({ [EXPENSE_PAYROLL_PRESET_QUERY]: '1' });
   const month = options?.payrollMonth?.trim();
   if (month) {
     q.set(EXPENSE_PAYROLL_MONTH_URL_QUERY, month);
+  }
+  const employeeId = options?.employeeId?.trim();
+  if (employeeId) {
+    q.set(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY, employeeId);
   }
   return `${EXPENSE_LIST_PATH}?${q.toString()}`;
 }

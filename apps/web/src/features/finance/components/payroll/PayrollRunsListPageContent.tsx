@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import { Banknote, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   EmptyState,
@@ -28,6 +29,7 @@ import {
   type PayrollRunStats,
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
+import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import { payrollRunsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PayrollRunsBoardView } from '@/features/finance/components/payroll/PayrollRunsBoardView';
 import { PayrollRunsCalendarView } from '@/features/finance/components/payroll/PayrollRunsCalendarView';
@@ -289,6 +291,12 @@ export function PayrollRunsListPageContent() {
       ),
       trailing: (
         <>
+          <Button type="button" variant="outline" size="sm" asChild>
+            <Link href={expensesPayrollPresetHref({ payrollMonth: monthTo ?? monthFrom })}>
+              <Banknote className="mr-1.5 size-4" aria-hidden />
+              Pay Now
+            </Link>
+          </Button>
           <PayrollRunsPageSettingsSheet
             refreshDisabled={loading}
             statsExportDisabled={loading || !stats}
@@ -313,6 +321,8 @@ export function PayrollRunsListPageContent() {
       handlePayrollFilterChange,
       load,
       loading,
+      monthFrom,
+      monthTo,
       openDialog,
       payrollFilterConfigs,
       payrollFilterValues,

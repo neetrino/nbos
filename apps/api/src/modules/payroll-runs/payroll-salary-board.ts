@@ -51,6 +51,9 @@ export interface SalaryBoardEmployeeDto {
   firstName: string;
   lastName: string;
   position: string | null;
+  /** All department memberships (for client-side board filter). */
+  departmentIds: string[];
+  primaryDepartmentId: string | null;
 }
 
 export interface SalaryBoardColumnDto {
@@ -80,6 +83,26 @@ export interface SalaryBoardQueryParams {
 
 function moneyToString(value: { toFixed: (n: number) => string }): string {
   return value.toFixed(2);
+}
+
+type EmployeeWithDepartments = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  position: string | null;
+  departments: Array<{ departmentId: string; isPrimary: boolean }>;
+};
+
+function mapSalaryBoardEmployee(emp: EmployeeWithDepartments): SalaryBoardEmployeeDto {
+  const primary = emp.departments.find((d) => d.isPrimary);
+  return {
+    id: emp.id,
+    firstName: emp.firstName,
+    lastName: emp.lastName,
+    position: emp.position,
+    departmentIds: emp.departments.map((d) => d.departmentId),
+    primaryDepartmentId: primary?.departmentId ?? emp.departments[0]?.departmentId ?? null,
+  };
 }
 
 function resolveMonthRange(params: SalaryBoardQueryParams): {
@@ -123,7 +146,13 @@ export async function querySalaryBoard(
     prisma.employee.findMany({
       where: { status: { not: 'TERMINATED' } },
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
-      select: { id: true, firstName: true, lastName: true, position: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        position: true,
+        departments: { select: { departmentId: true, isPrimary: true } },
+      },
     }),
     prisma.payrollRun.findMany({
       where: { payrollMonth: { gte: from, lte: to } },
@@ -185,12 +214,7 @@ export async function querySalaryBoard(
       };
     });
     return {
-      employee: {
-        id: emp.id,
-        firstName: emp.firstName,
-        lastName: emp.lastName,
-        position: emp.position,
-      },
+      employee: mapSalaryBoardEmployee(emp),
       cells,
     };
   });
