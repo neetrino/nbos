@@ -1,13 +1,13 @@
-import { Columns3, List, Rows3 } from 'lucide-react';
+import { CalendarDays, Columns3, List } from 'lucide-react';
 import type { ViewModeOption } from '@/components/shared';
 import type { SalaryBoardViewMode } from '@/features/finance/constants/salary-board-view';
 
 export const SALARY_BOARD_VIEW_OPTIONS: ViewModeOption<SalaryBoardViewMode>[] = [
   {
-    value: 'grid',
-    label: 'Grid',
-    icon: <Rows3 className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Employee by month grid',
+    value: 'calendar',
+    label: 'Calendar',
+    icon: <CalendarDays className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Employee salary calendar by month',
   },
   {
     value: 'list',

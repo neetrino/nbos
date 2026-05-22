@@ -44,7 +44,7 @@ import {
   filterSalaryBoardRows,
   flattenSalaryBoard,
 } from '@/features/finance/components/payroll/salary-board-entries';
-import { SalaryBoardGridView } from '@/features/finance/components/payroll/salary-board-grid-view';
+import { SalaryBoardCalendarView } from '@/features/finance/components/payroll/salary-board-calendar-view';
 import { SalaryBoardListView } from '@/features/finance/components/payroll/salary-board-list-view';
 import { SalaryBoardPayoutBoardView } from '@/features/finance/components/payroll/salary-board-payout-board-view';
 import { SALARY_BOARD_VIEW_OPTIONS } from '@/features/finance/components/payroll/salary-board-view-options';
@@ -76,7 +76,7 @@ export function SalaryBoardPageContent() {
   const [search, setSearch] = useState('');
   const [clientFilters, setClientFilters] = useState(INITIAL_CLIENT_FILTERS);
   const [view, setView] = useState<SalaryBoardViewMode>(() => readSalaryBoardViewMode());
-  const [gridYear, setGridYear] = useState(() => new Date().getFullYear());
+  const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
 
   const monthFrom = parsePayrollRunsListMonthParam(
     searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY),
@@ -88,8 +88,8 @@ export function SalaryBoardPageContent() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const payrollMonthFrom = view === 'grid' ? `${gridYear}-01` : monthFrom;
-    const payrollMonthTo = view === 'grid' ? `${gridYear}-12` : monthTo;
+    const payrollMonthFrom = view === 'calendar' ? `${calendarYear}-01` : monthFrom;
+    const payrollMonthTo = view === 'calendar' ? `${calendarYear}-12` : monthTo;
     try {
       const board = await payrollRunsApi.getSalaryBoard({
         payrollMonthFrom,
@@ -102,7 +102,7 @@ export function SalaryBoardPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [gridYear, monthFrom, monthTo, view]);
+  }, [calendarYear, monthFrom, monthTo, view]);
 
   useEffect(() => {
     void load();
@@ -327,12 +327,12 @@ export function SalaryBoardPageContent() {
       ) : (
         <>
           <SalaryBoardFilteredTotalsBar totals={filteredTotals} />
-          {view === 'grid' ? (
-            <SalaryBoardGridView
+          {view === 'calendar' ? (
+            <SalaryBoardCalendarView
               data={data}
               rows={filteredRows}
-              gridYear={gridYear}
-              onGridYearChange={setGridYear}
+              calendarYear={calendarYear}
+              onCalendarYearChange={setCalendarYear}
               onOpenMonth={openMonthSheet}
             />
           ) : view === 'list' ? (

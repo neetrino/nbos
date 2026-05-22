@@ -31,6 +31,13 @@ export function employeeDisplayName(emp: SalaryBoardEntry['employee']): string {
   return `${emp.firstName} ${emp.lastName}`.trim();
 }
 
+export function employeeInitials(emp: SalaryBoardEntry['employee']): string {
+  const first = emp.firstName.trim().charAt(0);
+  const last = emp.lastName.trim().charAt(0);
+  const combined = `${first}${last}`.toUpperCase();
+  return combined || '?';
+}
+
 export interface SalaryBoardClientFilters {
   search: string;
   employeeId: string;

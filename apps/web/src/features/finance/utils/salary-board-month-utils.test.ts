@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatPayrollMonthAbbrev,
   formatPayrollMonthShort,
   sumSalaryBoardColumn,
   sumSalaryBoardRowsTotal,
@@ -8,6 +9,10 @@ import {
 describe('salary-board-month-utils', () => {
   it('formats month without year', () => {
     expect(formatPayrollMonthShort('2026-04')).toMatch(/april/i);
+  });
+
+  it('formats month abbrev', () => {
+    expect(formatPayrollMonthAbbrev('2026-04')).toMatch(/apr/i);
   });
 
   it('sums column payable', () => {

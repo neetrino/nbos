@@ -1,16 +1,19 @@
-export type SalaryBoardViewMode = 'grid' | 'list' | 'board';
+export type SalaryBoardViewMode = 'calendar' | 'list' | 'board';
 
 const STORAGE_KEY = 'nbos:finance:salary-board-view';
 
 export function readSalaryBoardViewMode(): SalaryBoardViewMode {
   if (typeof window === 'undefined') {
-    return 'grid';
+    return 'calendar';
   }
   const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (raw === 'list' || raw === 'board') {
+  if (raw === 'list' || raw === 'board' || raw === 'calendar') {
     return raw;
   }
-  return 'grid';
+  if (raw === 'grid') {
+    return 'calendar';
+  }
+  return 'calendar';
 }
 
 export function writeSalaryBoardViewMode(mode: SalaryBoardViewMode): void {
