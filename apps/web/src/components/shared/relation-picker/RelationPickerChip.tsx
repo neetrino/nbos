@@ -3,7 +3,10 @@
 import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS } from '../detail-sheet-classes';
+import {
+  DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+} from '../detail-sheet-classes';
 import type { RelationEntityKind } from './relation-picker.types';
 import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
 
@@ -30,6 +33,7 @@ export function RelationPickerChip({
   return (
     <span
       className={cn(
+        DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
         'border-border/60 bg-muted/30 inline-flex max-w-full min-w-0 items-center gap-2 rounded-xl border py-1.5 pr-1 pl-2.5 text-sm shadow-sm',
         disabled && 'opacity-60',
       )}

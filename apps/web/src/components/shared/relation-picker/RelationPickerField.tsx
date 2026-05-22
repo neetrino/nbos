@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DETAIL_SHEET_PERSON_AVATAR_CLASS } from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
@@ -159,15 +159,29 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
   };
 
   const searchPlaceholder = placeholder ?? `Search ${kindLabel.toLowerCase()}s…`;
+  const multiChipCount = multiple && isMultiProps(props) ? props.value.length : 0;
 
   return (
     <div
       ref={containerRef}
       className={cn('relative', disabled && 'pointer-events-none opacity-60', className)}
     >
-      <div className="text-foreground/85 mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-        {icon ? <span className="text-muted-foreground/70">{icon}</span> : null}
-        {label}
+      <div className="text-foreground/85 mb-1.5 flex items-center justify-between gap-2 text-sm font-medium">
+        <div className="flex min-w-0 items-center gap-1.5">
+          {icon ? <span className="text-muted-foreground/70 shrink-0">{icon}</span> : null}
+          <span className="truncate">{label}</span>
+        </div>
+        {multiple && multiChipCount > 0 && !open ? (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setOpen(true)}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/40 flex size-7 shrink-0 items-center justify-center rounded-md transition-colors"
+            aria-label={`Add ${kindLabel.toLowerCase()}`}
+          >
+            <Plus size={16} />
+          </button>
+        ) : null}
       </div>
 
       {open ? (
@@ -253,15 +267,17 @@ function ClosedRelationPicker({
             }}
           />
         ))}
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onOpen}
-          className="border-border/60 text-muted-foreground hover:border-border hover:text-foreground inline-flex items-center gap-1.5 rounded-xl border border-dashed px-3 py-2 text-sm transition-colors"
-        >
-          <Search size={14} />
-          {chips.length === 0 ? placeholder : 'Add…'}
-        </button>
+        {chips.length === 0 ? (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={onOpen}
+            className="border-border/60 text-muted-foreground hover:border-border hover:text-foreground inline-flex items-center gap-1.5 rounded-xl border border-dashed px-3 py-2 text-sm transition-colors"
+          >
+            <Search size={14} />
+            {placeholder}
+          </button>
+        ) : null}
       </div>
     );
   }

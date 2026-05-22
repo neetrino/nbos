@@ -29,8 +29,7 @@ export function ProjectContactsSection({ project, onProjectUpdated }: ProjectCon
   );
   const [saving, setSaving] = useState(false);
 
-  const mainContactPicker = useRelationPickerActions('contact', 'project-main-contact');
-  const additionalContactPicker = useRelationPickerActions('contact', 'project-additional-contact');
+  const contactsPicker = useRelationPickerActions('contact', 'project-contacts');
   const companyPicker = useRelationPickerActions('company', 'project-company');
   const contactSearch = useContactRelationSearch();
   const companySearch = useCompanyRelationSearch();
@@ -86,25 +85,16 @@ export function ProjectContactsSection({ project, onProjectUpdated }: ProjectCon
       <h3 className="text-sm font-semibold">Client contacts</h3>
       <div className="grid gap-4 md:grid-cols-2">
         <RelationPickerField
-          label="Main contact"
+          label="Contacts"
           entityKind="contact"
-          value={draft.contactId}
-          selectionLabel={draft.contactLabel}
-          placeholder="Search contacts…"
+          multiple
+          value={draft.contactIds}
+          selectionLabels={draft.contactLabels}
+          placeholder="Search or create contact…"
           icon={<User size={12} />}
           onSearch={contactSearch}
-          onSelect={(id, label) => {
-            const additionalContactIds = draft.additionalContactIds.filter((cid) => cid !== id);
-            const additionalContactLabels = { ...draft.additionalContactLabels };
-            delete additionalContactLabels[id];
-            patchDraft({
-              contactId: id,
-              contactLabel: label,
-              additionalContactIds,
-              additionalContactLabels,
-            });
-          }}
-          {...mainContactPicker}
+          onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
+          {...contactsPicker}
         />
         <RelationPickerField
           label="Company"
@@ -119,20 +109,6 @@ export function ProjectContactsSection({ project, onProjectUpdated }: ProjectCon
           {...companyPicker}
         />
       </div>
-      <RelationPickerField
-        label="Additional contacts"
-        entityKind="contact"
-        multiple
-        value={draft.additionalContactIds}
-        selectionLabels={draft.additionalContactLabels}
-        placeholder="Add other people on this project…"
-        icon={<User size={12} />}
-        onSearch={contactSearch}
-        onChange={(ids, labels) =>
-          patchDraft({ additionalContactIds: ids, additionalContactLabels: labels })
-        }
-        {...additionalContactPicker}
-      />
     </div>
   );
 }

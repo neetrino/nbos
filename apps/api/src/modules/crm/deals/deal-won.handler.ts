@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Inject, Logger } from '@nestjs/common';
-import { syncProjectAdditionalContacts } from '../../projects/project-additional-contacts.ops';
+import { mergeEntityContactIds } from '@nbos/shared';
+import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { DriveDealWonLinksService } from '../../drive/drive-deal-won-links.service';
@@ -157,12 +158,13 @@ export class DealWonHandler {
       where: { dealId: deal.id },
       select: { contactId: true },
     });
-    if (dealAdditional.length > 0) {
-      await syncProjectAdditionalContacts(
+    const additionalIds = dealAdditional.map((row) => row.contactId);
+    if (additionalIds.length > 0) {
+      await syncEntityContactLinks(
         this.prisma,
+        'project',
         project.id,
-        dealAdditional.map((row) => row.contactId),
-        contactId,
+        mergeEntityContactIds(contactId, additionalIds),
       );
     }
 

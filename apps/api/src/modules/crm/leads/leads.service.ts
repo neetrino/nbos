@@ -6,7 +6,7 @@ import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm
 import { validateLeadStageGate } from './lead-stage-gate';
 import { resolveLeadCreateDefaults } from './lead-create-defaults.op';
 import { leadDetailInclude } from './lead.includes';
-import { syncLeadAdditionalContacts } from './lead-additional-contacts.ops';
+import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
 
 const ACTIVE_LEAD_STATUSES = new Set([
   'NEW',
@@ -46,7 +46,7 @@ interface UpdateLeadDto {
   status?: string;
   assignedTo?: string;
   notes?: string;
-  additionalContactIds?: string[];
+  contactIds?: string[];
 }
 
 interface LeadQueryParams {
@@ -205,8 +205,17 @@ export class LeadsService {
       locked: attributionLocked,
     });
 
-    const nextContactId =
-      existing.contactId !== undefined && existing.contactId !== null ? existing.contactId : null;
+    let resolvedContactId = existing.contactId;
+
+    if (data.contactIds !== undefined) {
+      const { primaryContactId } = await syncEntityContactLinks(
+        this.prisma,
+        'lead',
+        id,
+        data.contactIds,
+      );
+      resolvedContactId = primaryContactId;
+    }
 
     const lead = await this.prisma.lead.update({
       where: { id },
@@ -230,12 +239,12 @@ export class LeadsService {
         ...(data.status && { status: data.status as Prisma.LeadUpdateInput['status'] }),
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
         ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.contactIds !== undefined && { contactId: resolvedContactId }),
       },
       include: leadDetailInclude,
     });
 
-    if (data.additionalContactIds !== undefined) {
-      await syncLeadAdditionalContacts(this.prisma, id, data.additionalContactIds, nextContactId);
+    if (data.contactIds !== undefined) {
       return this.findById(id);
     }
 

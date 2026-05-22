@@ -131,7 +131,13 @@ describe('LeadConversionService', () => {
       { contactId: 'c-extra-1' },
       { contactId: 'c-extra-2' },
     ]);
-    prisma.contact.count.mockResolvedValue(2);
+    prisma.contact.count.mockImplementation(
+      async (args: { where: { id: string | { in: string[] } } }) => {
+        const id = args.where.id;
+        if (typeof id === 'string') return id === 'c1' ? 1 : 0;
+        return id.in.length;
+      },
+    );
 
     await service.convertToDeal('lead-1', convertDto);
 

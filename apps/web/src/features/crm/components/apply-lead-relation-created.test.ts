@@ -19,19 +19,19 @@ const baseDraft: LeadGeneralDraft = {
   notes: null,
   assignedTo: null,
   sellerDisplayLabel: null,
-  additionalContactIds: [],
-  additionalContactLabels: {},
+  contactIds: [],
+  contactLabels: {},
 };
 
 describe('applyLeadRelationCreated', () => {
-  it('appends additional contact', () => {
+  it('appends linked contact', () => {
     const next = applyLeadRelationCreated(baseDraft, {
       kind: 'contact',
       id: 'c-2',
       label: 'Samvel K.',
-      intent: 'lead-additional-contact',
+      intent: 'lead-contacts',
     });
-    expect(next.additionalContactIds).toEqual(['c-2']);
-    expect(next.additionalContactLabels['c-2']).toBe('Samvel K.');
+    expect(next.contactIds).toEqual(['c-2']);
+    expect(next.contactLabels['c-2']).toBe('Samvel K.');
   });
 });

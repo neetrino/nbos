@@ -41,20 +41,20 @@ When one form has several pickers of the **same kind**, pass a stable `createInt
 
 ## Multi-select (contacts)
 
-`RelationPickerField` supports `multiple` in UI.
+`RelationPickerField` supports `multiple` in UI. One **Contacts** field per entity; the API accepts
+`contactIds[]` (ordered: first id → primary `contactId` FK, rest → junction table).
 
-**Deal (shipped):** primary contact stays `contactId` (single field). Additional client contacts use
-`additionalContactIds[]` on `PUT /deals/:id` and the **Additional contacts** multi picker on the deal
-sheet (`deal-additional-contact` create intent). Canon: Clients process flow — extra people on a deal
-without replacing the primary contact.
+| Entity  | Create intent      | Notes                                                                 |
+| ------- | ------------------ | --------------------------------------------------------------------- |
+| Deal    | `deal-contacts`    | Single multi picker on deal sheet                                     |
+| Lead    | `lead-contacts`    | Free-text **Contact name** stays separate; CRM links via multi picker |
+| Project | `project-contacts` | Company stays a separate single picker (`project-company`)            |
 
-**Lead (shipped):** free-text **Contact name** remains primary; linked people use
-`additionalContactIds[]` and the **Additional contacts** multi picker (`lead-additional-contact`
-intent). On SQL / Deal conversion, additional contacts copy to the new deal.
+When at least one contact is linked, a **+** on the field label opens the same search/create dropdown
+to add more. Chips: hover shows **X** to disconnect; click the chip body to open the contact sheet.
 
-**Project (shipped):** main `contactId` + company + **Additional contacts** on the project
-detail page (`project-main-contact`, `project-additional-contact`, `project-company` intents).
-Deal Won auto-create copies deal additional contacts onto the new project.
+On SQL / Deal conversion and Deal Won project auto-create, the full `contactIds` list copies to the
+target entity.
 
 ## When not to use the picker
 

@@ -164,7 +164,6 @@ export function DealGeneralTab({
             deal={deal}
             draft={draft}
             patchDraft={patchDraft}
-            searchContacts={searchContacts}
             searchEmployees={searchEmployees}
             disabled={formDisabled}
             gateRequiredFields={gateRequiredFields}

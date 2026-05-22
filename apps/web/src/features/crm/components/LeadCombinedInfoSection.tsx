@@ -46,7 +46,7 @@ export function LeadCombinedInfoSection({
 }: LeadCombinedInfoSectionProps) {
   const [open, setOpen] = useState(true);
 
-  const additionalContactPicker = useRelationPickerActions('contact', 'lead-additional-contact');
+  const contactsPicker = useRelationPickerActions('contact', 'lead-contacts');
   const contactRelationSearch = useContactRelationSearch();
   const employeePicker = useRelationPickerActions('employee');
 
@@ -103,19 +103,17 @@ export function LeadCombinedInfoSection({
               onValueChange={(v) => patchDraft({ email: v || null })}
             />
             <RelationPickerField
-              label="Additional contacts"
+              label="Contacts"
               entityKind="contact"
               multiple
-              value={draft.additionalContactIds}
-              selectionLabels={draft.additionalContactLabels}
-              placeholder="Link more people on this lead…"
+              value={draft.contactIds}
+              selectionLabels={draft.contactLabels}
+              placeholder="Link CRM contacts…"
               icon={<User size={12} />}
               disabled={formDisabled}
               onSearch={contactRelationSearch}
-              onChange={(ids, labels) =>
-                patchDraft({ additionalContactIds: ids, additionalContactLabels: labels })
-              }
-              {...additionalContactPicker}
+              onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
+              {...contactsPicker}
             />
           </div>
         </div>

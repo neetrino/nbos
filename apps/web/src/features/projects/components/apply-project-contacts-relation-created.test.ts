@@ -3,28 +3,21 @@ import { applyProjectContactsRelationCreated } from './apply-project-contacts-re
 import type { ProjectContactsDraft } from './project-contacts-state';
 
 const baseDraft: ProjectContactsDraft = {
-  contactId: 'c-main',
-  contactLabel: 'Anna',
+  contactIds: ['c-main'],
+  contactLabels: { 'c-main': 'Anna' },
   companyId: null,
   companyLabel: null,
-  additionalContactIds: [],
-  additionalContactLabels: {},
 };
 
 describe('applyProjectContactsRelationCreated', () => {
-  it('sets main contact and drops it from additional', () => {
-    const withExtra: ProjectContactsDraft = {
-      ...baseDraft,
-      additionalContactIds: ['c-main', 'c-other'],
-      additionalContactLabels: { 'c-main': 'Anna', 'c-other': 'Sam' },
-    };
-    const next = applyProjectContactsRelationCreated(withExtra, {
+  it('appends contact without duplicating', () => {
+    const next = applyProjectContactsRelationCreated(baseDraft, {
       kind: 'contact',
-      id: 'c-new',
-      label: 'Jane',
-      intent: 'project-main-contact',
+      id: 'c-other',
+      label: 'Sam',
+      intent: 'project-contacts',
     });
-    expect(next.contactId).toBe('c-new');
-    expect(next.additionalContactIds).toEqual(['c-other']);
+    expect(next.contactIds).toEqual(['c-main', 'c-other']);
+    expect(next.contactLabels['c-other']).toBe('Sam');
   });
 });

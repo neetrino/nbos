@@ -27,10 +27,8 @@ const baseDraft: DealGeneralDraft = {
   partnerPickLabel: null,
   clientPickLabel: null,
   notes: null,
-  contactId: null,
-  contactDisplayLabel: null,
-  additionalContactIds: [],
-  additionalContactLabels: {},
+  contactIds: [],
+  contactLabels: {},
   sellerId: null,
   sellerDisplayLabel: null,
   sellerAssistantId: null,
@@ -41,22 +39,22 @@ const baseDraft: DealGeneralDraft = {
 };
 
 describe('applyDealRelationCreated', () => {
-  it('appends additional contact without duplicating', () => {
+  it('appends linked contact without duplicating', () => {
     const withOne = applyDealRelationCreated(baseDraft, {
       kind: 'contact',
       id: 'c-1',
       label: 'Jane Doe',
-      intent: 'deal-additional-contact',
+      intent: 'deal-contacts',
     });
-    expect(withOne.additionalContactIds).toEqual(['c-1']);
+    expect(withOne.contactIds).toEqual(['c-1']);
 
     const again = applyDealRelationCreated(withOne, {
       kind: 'contact',
       id: 'c-1',
       label: 'Jane Doe',
-      intent: 'deal-additional-contact',
+      intent: 'deal-contacts',
     });
-    expect(again.additionalContactIds).toEqual(['c-1']);
+    expect(again.contactIds).toEqual(['c-1']);
   });
 
   it('maps product create for extension deals', () => {

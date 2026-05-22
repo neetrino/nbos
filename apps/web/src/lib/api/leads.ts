@@ -25,6 +25,7 @@ export interface Lead {
   marketingAccount: { id: string; name: string; channel: string; phone: string | null } | null;
   marketingActivity: { id: string; title: string; channel: string; status: string } | null;
   deal: { id: string; code: string; status: string } | null;
+  contact?: { id: string; firstName: string; lastName: string; email: string | null } | null;
   additionalContacts?: Array<{
     contact: { id: string; firstName: string; lastName: string; email: string | null };
   }>;

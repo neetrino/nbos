@@ -8,7 +8,7 @@ import {
   attachProductDeliveryLifecycle,
   type DeliveryStatusCarrier,
 } from './delivery-lifecycle';
-import { syncProjectAdditionalContacts } from './project-additional-contacts.ops';
+import { syncEntityContactLinks } from '../crm/shared/sync-entity-contact-links.ops';
 
 interface CreateProjectDto {
   name: string;
@@ -23,7 +23,7 @@ interface UpdateProjectDto {
   companyId?: string | null;
   contactId?: string;
   isArchived?: boolean;
-  additionalContactIds?: string[];
+  contactIds?: string[];
 }
 
 interface ProjectQueryParams {
@@ -119,7 +119,17 @@ export class ProjectsService {
     });
     if (!existing) throw new NotFoundException(`Project ${id} not found`);
 
-    const nextContactId = data.contactId ?? existing.contactId;
+    let resolvedContactId = data.contactId ?? existing.contactId;
+
+    if (data.contactIds !== undefined) {
+      const { primaryContactId } = await syncEntityContactLinks(
+        this.prisma,
+        'project',
+        id,
+        data.contactIds,
+      );
+      resolvedContactId = primaryContactId ?? existing.contactId;
+    }
 
     await this.prisma.project.update({
       where: { id },
@@ -127,19 +137,12 @@ export class ProjectsService {
         ...(data.name && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.companyId !== undefined && { companyId: data.companyId || null }),
-        ...(data.contactId !== undefined && { contactId: data.contactId }),
+        ...(data.contactIds !== undefined || data.contactId !== undefined
+          ? { contactId: resolvedContactId }
+          : {}),
         ...(data.isArchived !== undefined && { isArchived: data.isArchived }),
       },
     });
-
-    if (data.additionalContactIds !== undefined) {
-      await syncProjectAdditionalContacts(
-        this.prisma,
-        id,
-        data.additionalContactIds,
-        nextContactId,
-      );
-    }
 
     return this.findById(id);
   }

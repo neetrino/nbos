@@ -21,7 +21,6 @@ interface DealContactTeamSectionProps {
   deal: Deal;
   draft: DealGeneralDraft;
   patchDraft: (partial: Partial<DealGeneralDraft>) => void;
-  searchContacts: SearchLoader;
   searchEmployees: SearchLoader;
   disabled?: boolean;
   sectionClassName?: string;
@@ -32,19 +31,14 @@ export function DealContactTeamSection({
   deal,
   draft,
   patchDraft,
-  searchContacts,
   searchEmployees,
   disabled = false,
   sectionClassName,
   gateRequiredFields = new Set(),
 }: DealContactTeamSectionProps) {
-  const contactPicker = useRelationPickerActions('contact', 'deal-contact');
-  const additionalContactPicker = useRelationPickerActions('contact', 'deal-additional-contact');
+  const contactsPicker = useRelationPickerActions('contact', 'deal-contacts');
   const contactRelationSearch = useContactRelationSearch();
   const employeePicker = useRelationPickerActions('employee');
-
-  const contactSubtitle =
-    draft.contactId && deal.contact?.id === draft.contactId ? (deal.contact.email ?? null) : null;
 
   return (
     <DetailSheetSection
@@ -55,44 +49,17 @@ export function DealContactTeamSection({
     >
       <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
         <RelationPickerField
-          label="Contact"
-          entityKind="contact"
-          value={draft.contactId}
-          selectionLabel={draft.contactDisplayLabel}
-          selectionSubtitle={contactSubtitle}
-          placeholder="Search contacts…"
-          icon={<User size={12} />}
-          disabled={disabled}
-          onSearch={searchContacts}
-          onSelect={(value, label) => {
-            const additionalContactIds = draft.additionalContactIds.filter((id) => id !== value);
-            const additionalContactLabels = { ...draft.additionalContactLabels };
-            delete additionalContactLabels[value];
-            patchDraft({
-              contactId: value,
-              contactDisplayLabel: label,
-              additionalContactIds,
-              additionalContactLabels,
-            });
-          }}
-          onClear={() => patchDraft({ contactId: null, contactDisplayLabel: null })}
-          {...contactPicker}
-        />
-
-        <RelationPickerField
-          label="Additional contacts"
+          label="Contacts"
           entityKind="contact"
           multiple
-          value={draft.additionalContactIds}
-          selectionLabels={draft.additionalContactLabels}
-          placeholder="Add more client contacts…"
+          value={draft.contactIds}
+          selectionLabels={draft.contactLabels}
+          placeholder="Search or create contact…"
           icon={<User size={12} />}
           disabled={disabled}
           onSearch={contactRelationSearch}
-          onChange={(ids, labels) =>
-            patchDraft({ additionalContactIds: ids, additionalContactLabels: labels })
-          }
-          {...additionalContactPicker}
+          onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
+          {...contactsPicker}
         />
 
         <RelationPickerField

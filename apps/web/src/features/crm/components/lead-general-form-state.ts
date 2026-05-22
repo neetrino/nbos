@@ -1,4 +1,6 @@
+import { contactIdListsEqual } from '@nbos/shared';
 import type { Lead } from '@/lib/api/leads';
+import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
 
 /** Editable General tab fields + labels for staged search fields. */
 export interface LeadGeneralDraft {
@@ -18,36 +20,20 @@ export interface LeadGeneralDraft {
   notes: string | null;
   assignedTo: string | null;
   sellerDisplayLabel: string | null;
-  additionalContactIds: string[];
-  additionalContactLabels: Record<string, string>;
+  contactIds: string[];
+  contactLabels: Record<string, string>;
 }
 
 export type LeadGeneralUpdatePayload = Partial<Lead> & {
-  additionalContactIds?: string[];
+  contactIds?: string[];
 };
 
-function additionalContactsFromLead(lead: Lead): {
-  ids: string[];
-  labels: Record<string, string>;
-} {
-  const labels: Record<string, string> = {};
-  const ids: string[] = [];
-  for (const row of lead.additionalContacts ?? []) {
-    const contact = row.contact;
-    ids.push(contact.id);
-    labels[contact.id] = `${contact.firstName} ${contact.lastName}`.trim();
-  }
-  return { ids, labels };
-}
-
-function contactIdSetsEqual(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false;
-  const sortedA = [...a].sort();
-  const sortedB = [...b].sort();
-  return sortedA.every((id, index) => id === sortedB[index]);
-}
-
 export function createLeadGeneralDraft(lead: Lead): LeadGeneralDraft {
+  const { contactIds, contactLabels } = contactIdsAndLabelsFromRows(
+    lead.contact ?? null,
+    lead.additionalContacts,
+  );
+
   return {
     name: lead.name,
     contactName: lead.contactName ?? '',
@@ -69,13 +55,8 @@ export function createLeadGeneralDraft(lead: Lead): LeadGeneralDraft {
     sellerDisplayLabel: lead.assignee
       ? `${lead.assignee.firstName} ${lead.assignee.lastName}`
       : null,
-    ...(() => {
-      const additional = additionalContactsFromLead(lead);
-      return {
-        additionalContactIds: additional.ids,
-        additionalContactLabels: additional.labels,
-      };
-    })(),
+    contactIds,
+    contactLabels,
   };
 }
 
@@ -111,8 +92,8 @@ export function buildLeadGeneralPatch(
   }
   if (!strEq(draft.notes, snap.notes)) out.notes = draft.notes;
   if (draft.assignedTo !== snap.assignedTo) out.assignedTo = draft.assignedTo;
-  if (!contactIdSetsEqual(draft.additionalContactIds, snap.additionalContactIds)) {
-    out.additionalContactIds = draft.additionalContactIds;
+  if (!contactIdListsEqual(draft.contactIds, snap.contactIds)) {
+    out.contactIds = draft.contactIds;
   }
 
   return out;

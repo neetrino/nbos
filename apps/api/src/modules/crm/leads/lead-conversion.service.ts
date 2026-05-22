@@ -4,7 +4,8 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { LeadsService } from './leads.service';
 import { validateAttributionGate } from '../attribution-gate';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
-import { syncDealAdditionalContacts } from '../deals/deal-additional-contacts.ops';
+import { mergeEntityContactIds } from '@nbos/shared';
+import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
 
 interface ConvertLeadDto {
   dealType?: string;
@@ -167,12 +168,13 @@ export class LeadConversionService {
       where: { leadId: lead.id },
       select: { contactId: true },
     });
-    if (leadAdditional.length > 0) {
-      await syncDealAdditionalContacts(
+    const additionalIds = leadAdditional.map((row) => row.contactId);
+    if (additionalIds.length > 0) {
+      await syncEntityContactLinks(
         this.prisma,
+        'deal',
         deal.id,
-        leadAdditional.map((row) => row.contactId),
-        contactId,
+        mergeEntityContactIds(contactId, additionalIds),
       );
     }
 
