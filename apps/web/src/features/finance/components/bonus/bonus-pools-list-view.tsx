@@ -16,6 +16,11 @@ import {
   bonusPoolStatusUi,
 } from '@/features/finance/constants/bonus-pool-status-ui';
 import type { BonusPoolsFilteredTotals } from '@/features/finance/utils/bonus-pools-filtered-totals';
+import {
+  BONUS_POOL_SCOPE_COLUMN_LABEL,
+  bonusPoolKindLabel,
+  bonusPoolScopeTitle,
+} from '@/features/finance/utils/bonus-pool-display';
 import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
@@ -25,6 +30,10 @@ const LIST_HEAD_CELL = 'px-4 py-3';
 const LIST_FOOTER_CELL = 'text-foreground px-4 py-3 text-sm font-bold tabular-nums';
 const LIST_FOOTER_LABEL =
   'text-muted-foreground px-4 py-3 text-xs font-semibold uppercase tracking-wide';
+const LIST_SCOPE_COL_CLASS = 'min-w-[10rem]';
+const LIST_ORDER_COL_CLASS = 'min-w-[6rem]';
+const LIST_PROJECT_COL_CLASS = 'min-w-[9rem]';
+const LIST_IDENTITY_COLS = 3;
 
 function handlePoolRowKeyDown(
   event: KeyboardEvent<HTMLTableRowElement>,
@@ -50,8 +59,11 @@ export function BonusPoolsListView({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead className={LIST_HEAD_CELL}>Pool</TableHead>
-            <TableHead className={LIST_HEAD_CELL}>Project</TableHead>
+            <TableHead className={cn(LIST_HEAD_CELL, LIST_SCOPE_COL_CLASS)}>
+              {BONUS_POOL_SCOPE_COLUMN_LABEL}
+            </TableHead>
+            <TableHead className={cn(LIST_HEAD_CELL, LIST_ORDER_COL_CLASS)}>Order</TableHead>
+            <TableHead className={cn(LIST_HEAD_CELL, LIST_PROJECT_COL_CLASS)}>Project</TableHead>
             <TableHead className={`${LIST_HEAD_CELL} text-right`}>Received</TableHead>
             <TableHead className={`${LIST_HEAD_CELL} text-right`}>Planned</TableHead>
             <TableHead className={`${LIST_HEAD_CELL} text-right`}>Released</TableHead>
@@ -67,7 +79,7 @@ export function BonusPoolsListView({
         </TableBody>
         <tfoot>
           <TableRow className="bg-muted/30 font-medium">
-            <TableCell colSpan={2} className={LIST_FOOTER_LABEL}>
+            <TableCell colSpan={LIST_IDENTITY_COLS} className={LIST_FOOTER_LABEL}>
               Filtered ({totals.poolCount} pools · {totals.entryCount} entries)
             </TableCell>
             <TableCell className={`${LIST_FOOTER_CELL} text-right`}>—</TableCell>
@@ -97,6 +109,7 @@ function BonusPoolsListRow({
   onOpenPool: (row: BonusProductPoolRow) => void;
 }) {
   const statusUi = bonusPoolStatusUi(row.ledgerPoolStatus);
+  const scopeTitle = bonusPoolScopeTitle(row);
 
   return (
     <TableRow
@@ -105,24 +118,28 @@ function BonusPoolsListRow({
       onKeyDown={(event) => handlePoolRowKeyDown(event, row, onOpenPool)}
       tabIndex={0}
       role="button"
-      aria-label={`${row.poolName} · ${statusUi.label}`}
+      aria-label={`${scopeTitle} · ${row.orderCode} · ${row.projectCode}`}
     >
-      <TableCell className={LIST_ROW_CELL}>
+      <TableCell className={cn(LIST_ROW_CELL, LIST_SCOPE_COL_CLASS)}>
         <div className="flex flex-col gap-0.5">
-          <span className="text-base font-semibold">{row.poolName}</span>
-          <span className="text-xs opacity-80">
-            {row.poolKind} · {row.orderCode}
+          <span className="text-base font-semibold">{scopeTitle}</span>
+          <span className="text-xs font-medium tracking-wide uppercase opacity-80">
+            {bonusPoolKindLabel(row.poolKind)}
           </span>
         </div>
       </TableCell>
-      <TableCell className={LIST_ROW_CELL}>
+      <TableCell className={cn(LIST_ROW_CELL, LIST_ORDER_COL_CLASS)}>
+        <span className="font-mono text-sm font-semibold">{row.orderCode}</span>
+      </TableCell>
+      <TableCell className={cn(LIST_ROW_CELL, LIST_PROJECT_COL_CLASS)}>
         <Link
           href={`/projects/${row.projectId}`}
-          className="font-medium hover:underline"
+          className="font-semibold hover:underline"
           onClick={(event) => event.stopPropagation()}
         >
           {row.projectCode}
         </Link>
+        <p className="text-muted-foreground mt-0.5 truncate text-xs">{row.projectName}</p>
       </TableCell>
       <TableCell className={`${LIST_ROW_CELL} text-right text-sm tabular-nums`}>
         {formatBonusPoolMoney(row.ledgerReceivedAmount)}

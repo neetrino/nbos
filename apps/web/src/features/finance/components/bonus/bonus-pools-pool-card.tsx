@@ -3,6 +3,10 @@
 import Link from 'next/link';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { bonusPoolStatusUi } from '@/features/finance/constants/bonus-pool-status-ui';
+import {
+  bonusPoolKindLabel,
+  bonusPoolScopeTitle,
+} from '@/features/finance/utils/bonus-pool-display';
 import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
@@ -30,23 +34,28 @@ export function BonusPoolsPoolCard({
         compact ? 'py-2' : 'py-3',
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-foreground line-clamp-2 text-sm font-semibold">{row.poolName}</span>
-        <span className="text-muted-foreground shrink-0 text-[10px] font-semibold uppercase">
-          {row.poolKind}
+      <div className="flex flex-col gap-1">
+        <span className="text-foreground line-clamp-2 text-sm font-semibold">
+          {bonusPoolScopeTitle(row)}
+        </span>
+        <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
+          {bonusPoolKindLabel(row.poolKind)}
         </span>
       </div>
-      <p className="text-muted-foreground mt-1 text-xs">
-        <Link
-          href={`/projects/${row.projectId}`}
-          className="text-primary hover:underline"
-          onClick={(event) => event.stopPropagation()}
-        >
-          {row.projectCode}
-        </Link>
-        {' · '}
-        {row.orderCode}
-      </p>
+      <dl className="text-muted-foreground mt-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-xs">
+        <dt>Order</dt>
+        <dd className="text-foreground font-mono font-medium">{row.orderCode}</dd>
+        <dt>Project</dt>
+        <dd>
+          <Link
+            href={`/projects/${row.projectId}`}
+            className="text-primary hover:underline"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {row.projectCode}
+          </Link>
+        </dd>
+      </dl>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         <span className="font-semibold tracking-wide uppercase">{statusUi.label}</span>
         <span className="tabular-nums">
