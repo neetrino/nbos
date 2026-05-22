@@ -112,6 +112,16 @@ export class PayrollRunsController {
     return this.payrollRunsService.getSalaryLineMonthDetail(salaryLineId);
   }
 
+  @Get(':id/bonus-releases')
+  @ApiOperation({
+    summary: 'Bonus releases for payroll run workspace',
+    description:
+      'Returns INCLUDED_IN_PAYROLL rows on this run and APPROVED releases available to attach while DRAFT/REVIEW.',
+  })
+  async getBonusReleases(@Param('id') id: string) {
+    return this.payrollRunsService.getBonusReleases(id);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get payroll run with salary lines',

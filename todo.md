@@ -434,12 +434,12 @@ Design principles:
 
 ### Phase 4 - Payroll workspace UX
 
-- [ ] Improve payroll run detail as operational workspace.
-- [ ] Add bonus release workspace inside payroll.
-- [ ] Show included bonus releases with source breakdown.
-- [ ] Show expense materialization and payment progress clearly.
-- [ ] Add sheet actions where editing is needed.
-- [ ] Keep Payroll focused on approval/reconciliation, not employee salary history.
+- [x] Improve payroll run detail as operational workspace (KPI, bonus releases, salary lines, month sheet).
+- [x] Add bonus release workspace inside payroll (attach/detach APPROVED releases).
+- [x] Show included bonus releases with source breakdown (employee, project, product, amounts).
+- [x] Show expense materialization and payment progress clearly (paid/remaining + Pay now link).
+- [x] Add sheet actions where editing is needed (month compensation sheet on run).
+- [x] Keep Payroll focused on approval/reconciliation, not employee salary history (Details → month sheet only).
 
 ### Phase 4.5 - Pay Now payroll payment UX
 
