@@ -3,7 +3,10 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { PayrollRunStatusBadge } from '@/features/finance/components/payroll/payroll-run-status-badge';
+import {
+  payrollRunCalendarCellClass,
+  payrollRunStatusUi,
+} from '@/features/finance/constants/payroll-run-status-ui';
 import {
   buildPayrollRunsCalendarModel,
   PAYROLL_CALENDAR_MONTH_NUMBERS,
@@ -12,6 +15,8 @@ import {
 import { formatPayrollMonthShort } from '@/features/finance/utils/salary-board-month-utils';
 import type { PayrollRunListRow } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
+
+const PAYROLL_CALENDAR_CELL_MIN_HEIGHT_CLASS = 'min-h-[5.75rem]';
 
 function parseAmount(value: string): number {
   const n = Number.parseFloat(value);
@@ -64,22 +69,16 @@ export function PayrollRunsCalendarView({ items }: { items: PayrollRunListRow[] 
                 const key = payrollMonthKey(year, monthNum);
                 const run = runsByMonthKey.get(key);
                 return (
-                  <td key={key} className="border-border border-b px-1 py-1 align-top">
+                  <td key={key} className="border-border border-b p-1.5 align-top">
                     {run ? (
-                      <Link
-                        href={`/finance/payroll/${run.id}`}
-                        className="hover:bg-muted/50 border-border bg-card flex min-h-[4.5rem] flex-col gap-1 rounded-lg border p-2 transition-colors"
-                      >
-                        <PayrollRunStatusBadge status={run.status} />
-                        <span className="text-foreground text-xs font-semibold tabular-nums">
-                          {formatAmount(parseAmount(run.totalPayable))}
-                        </span>
-                        <span className="text-muted-foreground text-[10px] tabular-nums">
-                          {run._count.salaryLines} lines
-                        </span>
-                      </Link>
+                      <PayrollCalendarMonthCell run={run} />
                     ) : (
-                      <div className="text-muted-foreground flex min-h-[4.5rem] items-center justify-center text-xs">
+                      <div
+                        className={cn(
+                          'text-muted-foreground flex items-center justify-center rounded-lg text-xs',
+                          PAYROLL_CALENDAR_CELL_MIN_HEIGHT_CLASS,
+                        )}
+                      >
                         —
                       </div>
                     )}
@@ -91,5 +90,30 @@ export function PayrollRunsCalendarView({ items }: { items: PayrollRunListRow[] 
         </tbody>
       </table>
     </div>
+  );
+}
+
+function PayrollCalendarMonthCell({ run }: { run: PayrollRunListRow }) {
+  const statusUi = payrollRunStatusUi(run.status);
+  const payable = formatAmount(parseAmount(run.totalPayable));
+
+  return (
+    <Link
+      href={`/finance/payroll/${run.id}`}
+      className={cn(
+        'flex flex-col items-center justify-center gap-1 rounded-lg border px-2 py-3 text-center transition-colors',
+        PAYROLL_CALENDAR_CELL_MIN_HEIGHT_CLASS,
+        payrollRunCalendarCellClass(run.status),
+      )}
+      aria-label={`${statusUi.label} payroll ${payable}`}
+    >
+      <span className="text-[10px] font-semibold tracking-wide uppercase opacity-90">
+        {statusUi.label}
+      </span>
+      <span className="text-lg font-bold tabular-nums">{payable}</span>
+      <span className="text-[10px] font-medium tabular-nums opacity-80">
+        {run._count.salaryLines} lines
+      </span>
+    </Link>
   );
 }
