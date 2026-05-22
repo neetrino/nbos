@@ -35,9 +35,9 @@ Unified UX for linking entities (Client, Partner, Project, Contact, …) across 
 - [x] Product open from picker (`/projects/:projectId/products/:id`)
 - [x] Project open from picker (`/projects/:id`)
 - [x] Shared search loaders (`useContactRelationSearch`, etc.)
-- [ ] Product entity sheet + create flow
-- [ ] Docs: `docs/NBOS` pattern for relation fields
-- [ ] Deprecate legacy `SearchField` for relation use cases (drive file search, marketing attribution stay)
+- [x] Product entity sheet + create flow (open route; create via `CreateProductDialog` when `projectId` set)
+- [x] Docs: `docs/NBOS/03-Business-Logic/07-Relation-Field-Picker.md`
+- [x] Deprecate legacy `SearchField` for relation use cases (JSDoc; Drive / marketing attribution stay)
 
 ## Contact multi-select
 

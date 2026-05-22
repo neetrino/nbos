@@ -1,11 +1,20 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import type { RelationCreatePrefill, RelationEntityKind } from './relation-picker.types';
+import type {
+  RelationCreateContext,
+  RelationCreatePrefill,
+  RelationEntityKind,
+} from './relation-picker.types';
 
 export type EntityRelationsApi = {
   openEntity: (kind: RelationEntityKind, id: string) => void;
-  openCreate: (kind: RelationEntityKind, searchQuery?: string, intent?: string) => void;
+  openCreate: (
+    kind: RelationEntityKind,
+    searchQuery?: string,
+    intent?: string,
+    context?: RelationCreateContext,
+  ) => void;
   buildCreatePrefill: (kind: RelationEntityKind, searchQuery: string) => RelationCreatePrefill;
 };
 

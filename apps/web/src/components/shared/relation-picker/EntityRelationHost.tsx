@@ -8,19 +8,29 @@ import { CreateContactDialog } from '@/features/clients/components/CreateContact
 import { CreateCompanyDialog } from '@/features/clients/components/CreateCompanyDialog';
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
+import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
 import { PartnerDetailSheet } from '@/features/partners/components/PartnerDetailSheet';
 import { contactsApi, companiesApi, type Contact, type Company } from '@/lib/api/clients';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import type { Project } from '@/lib/api/projects';
-import { productsApi } from '@/lib/api/products';
+import { productsApi, type Product } from '@/lib/api/products';
+import { parseRelationCreateIntent } from './parse-relation-create-intent';
 import { emitRelationCreatedHandlers } from './relation-created-registry';
 import { EntityRelationsProvider, type EntityRelationsApi } from './entity-relations-context';
 import { buildRelationCreatePrefill } from './build-relation-create-prefill';
-import type { RelationCreatePrefill, RelationEntityKind } from './relation-picker.types';
+import type {
+  RelationCreateContext,
+  RelationCreatePrefill,
+  RelationEntityKind,
+} from './relation-picker.types';
 import type { RelationCreatedEvent } from './relation-created-event';
 
-type CreateKind = 'contact' | 'company' | 'project' | 'partner';
+type CreateKind = 'contact' | 'company' | 'project' | 'partner' | 'product';
+
+function relationCreateFieldIntent(intent?: string): string | undefined {
+  return parseRelationCreateIntent(intent).fieldIntent;
+}
 
 type EntityRelationHostProps = {
   children: ReactNode;
@@ -91,12 +101,28 @@ export function EntityRelationHost({
     [router],
   );
 
-  const openCreate = useCallback((kind: RelationEntityKind, searchQuery = '', intent?: string) => {
-    if (kind === 'product' || kind === 'employee') return;
-    setCreatePrefill(buildRelationCreatePrefill(kind, searchQuery));
-    setCreateIntent(intent);
-    setCreateKind(kind);
-  }, []);
+  const openCreate = useCallback(
+    (
+      kind: RelationEntityKind,
+      searchQuery = '',
+      intent?: string,
+      context?: RelationCreateContext,
+    ) => {
+      if (kind === 'employee') return;
+      if (kind === 'product') {
+        const prefill = buildRelationCreatePrefill(kind, searchQuery, context, intent);
+        if (!prefill.projectId) return;
+        setCreatePrefill(prefill);
+        setCreateIntent(intent);
+        setCreateKind('product');
+        return;
+      }
+      setCreatePrefill(buildRelationCreatePrefill(kind, searchQuery, context, intent));
+      setCreateIntent(intent);
+      setCreateKind(kind);
+    },
+    [],
+  );
 
   const api = useMemo<EntityRelationsApi>(
     () => ({
@@ -129,7 +155,7 @@ export function EntityRelationHost({
         kind: 'contact',
         id: contact.id,
         label,
-        intent,
+        intent: relationCreateFieldIntent(intent),
       });
     }
   };
@@ -139,14 +165,24 @@ export function EntityRelationHost({
     closeCreate();
     if (company) {
       setCompanySheet(company);
-      emitCreated({ kind: 'company', id: company.id, label: company.name, intent });
+      emitCreated({
+        kind: 'company',
+        id: company.id,
+        label: company.name,
+        intent: relationCreateFieldIntent(intent),
+      });
     }
   };
 
   const handleProjectCreated = (project: Project) => {
     const intent = createIntent;
     closeCreate();
-    emitCreated({ kind: 'project', id: project.id, label: project.name, intent });
+    emitCreated({
+      kind: 'project',
+      id: project.id,
+      label: project.name,
+      intent: relationCreateFieldIntent(intent),
+    });
   };
 
   const handlePartnerCreated = (partner?: { id: string; name: string }) => {
@@ -154,7 +190,25 @@ export function EntityRelationHost({
     closeCreate();
     if (partner) {
       setPartnerId(partner.id);
-      emitCreated({ kind: 'partner', id: partner.id, label: partner.name, intent });
+      emitCreated({
+        kind: 'partner',
+        id: partner.id,
+        label: partner.name,
+        intent: relationCreateFieldIntent(intent),
+      });
+    }
+  };
+
+  const handleProductCreated = (product?: Product) => {
+    const intent = createIntent;
+    closeCreate();
+    if (product) {
+      emitCreated({
+        kind: 'product',
+        id: product.id,
+        label: product.name,
+        intent: relationCreateFieldIntent(intent),
+      });
     }
   };
 
@@ -240,6 +294,18 @@ export function EntityRelationHost({
         }}
         onCreated={handlePartnerCreated}
       />
+
+      {createPrefill?.projectId ? (
+        <CreateProductDialog
+          open={createKind === 'product'}
+          projectId={createPrefill.projectId}
+          defaultName={createPrefill.name}
+          onOpenChange={(next) => {
+            if (!next) closeCreate();
+          }}
+          onCreated={handleProductCreated}
+        />
+      ) : null}
     </EntityRelationsProvider>
   );
 }

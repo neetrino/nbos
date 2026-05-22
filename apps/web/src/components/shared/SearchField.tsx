@@ -48,6 +48,16 @@ type SearchFieldStageProps = SearchFieldBaseProps & {
 
 export type SearchFieldProps = SearchFieldPersistProps | SearchFieldStageProps;
 
+/**
+ * Generic async search + optional inline “new” action.
+ *
+ * For **entity links** (Contact, Company, Project, Partner, Product, Employee) use
+ * {@link RelationPickerField} with {@link useRelationPickerActions} and app-wide
+ * {@link EntityRelationHost} instead — unified search, create bar, chip open, and clear.
+ *
+ * Keep `SearchField` for non-entity cases: Drive file pickers, composite ids (e.g. marketing
+ * attribution `ACCOUNT:id`), filters, and legacy screens not yet migrated.
+ */
 function isStageProps(props: SearchFieldProps): props is SearchFieldStageProps {
   return props.selectionMode === 'stage';
 }

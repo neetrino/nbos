@@ -131,7 +131,11 @@ export function DealInfoDealProductFields({
   disabled = false,
   gateRequiredFields = new Set(),
 }: Omit<DealInfoFieldsProps, 'searchProjects' | 'searchCompanies'>) {
-  const productPicker = useRelationPickerActions('product');
+  const productPicker = useRelationPickerActions(
+    'product',
+    'deal-existing-product',
+    draft.projectId ? { projectId: draft.projectId } : undefined,
+  );
   const isExtension = draft.type === 'EXTENSION';
   const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
 

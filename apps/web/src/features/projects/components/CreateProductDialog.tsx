@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -25,13 +25,14 @@ import {
   PRODUCT_TYPES,
   PRODUCT_TYPES_BY_CATEGORY,
 } from '@/features/projects/constants/projects';
-import { productsApi, type CreateProductData } from '@/lib/api/products';
+import { productsApi, type CreateProductData, type Product } from '@/lib/api/products';
 
 interface CreateProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated?: (product?: Product) => void;
   projectId: string;
+  defaultName?: string;
 }
 
 export function CreateProductDialog({
@@ -39,6 +40,7 @@ export function CreateProductDialog({
   onOpenChange,
   onCreated,
   projectId,
+  defaultName = '',
 }: CreateProductDialogProps) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -60,6 +62,11 @@ export function CreateProductDialog({
 
   const canSubmit = form.name.trim() && form.productCategory && form.productType;
 
+  useEffect(() => {
+    if (!open || !defaultName.trim()) return;
+    setForm((prev) => ({ ...prev, name: defaultName.trim() }));
+  }, [open, defaultName]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
@@ -73,8 +80,8 @@ export function CreateProductDialog({
         description: form.description || undefined,
         deadline: form.deadline || undefined,
       };
-      await productsApi.create(data);
-      onCreated();
+      const product = await productsApi.create(data);
+      onCreated?.(product);
       onOpenChange(false);
       setForm({ name: '', productCategory: '', productType: '', description: '', deadline: '' });
     } finally {

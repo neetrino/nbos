@@ -20,6 +20,11 @@ export type RelationCreatePrefill = {
   name?: string;
   firstName?: string;
   lastName?: string;
+  projectId?: string;
+};
+
+export type RelationCreateContext = {
+  projectId?: string;
 };
 
 type RelationPickerBaseProps = {

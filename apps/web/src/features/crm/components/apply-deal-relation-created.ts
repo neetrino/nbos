@@ -18,6 +18,15 @@ export function applyDealRelationCreated(
       return { ...draft, contactId: event.id, contactDisplayLabel: event.label };
     case 'partner':
       return { ...draft, sourcePartnerId: event.id, partnerPickLabel: event.label };
+    case 'product':
+      if (event.intent === 'deal-existing-product') {
+        return {
+          ...draft,
+          existingProductId: event.id,
+          existingProductPickLabel: event.label,
+        };
+      }
+      return draft;
     default:
       return draft;
   }
