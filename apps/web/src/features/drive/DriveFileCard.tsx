@@ -18,6 +18,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import {
+  SHEET_FILE_EXTENSION_BADGE_CLASS,
+  SHEET_FILE_TILE_ICON_AREA_CLASS,
+  SHEET_FILE_TILE_NAME_CLASS,
+  SHEET_FILE_TILE_SHELL_CLASS,
+} from '@/components/shared/sheet-file-attachments.constants';
 import { formatDriveLabel, formatFileSize } from './drive-format';
 import { fileExtensionBadgeClass, fileExtensionLabel } from './drive-file-extension';
 import { DriveTileShell } from './DriveTileShell';
@@ -119,7 +125,6 @@ function DriveFileCardSheetTile({
 }) {
   const showMenu = Boolean(menu);
   const ext = fileExtensionLabel(file.displayName);
-  const badgeClass = fileExtensionBadgeClass(file.displayName);
 
   return (
     <div className="group relative size-full min-h-0">
@@ -127,37 +132,25 @@ function DriveFileCardSheetTile({
         type="button"
         onClick={() => onSelect(file)}
         className={cn(
-          'border-border/70 bg-card hover:border-primary/30 focus-visible:ring-ring flex size-full flex-col overflow-hidden border shadow-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-          dense ? 'rounded-lg' : 'rounded-2xl',
+          SHEET_FILE_TILE_SHELL_CLASS,
+          'hover:border-border focus-visible:ring-ring size-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
+          dense ? 'h-[4.75rem]' : 'aspect-square',
         )}
       >
-        <span
-          className={cn(
-            'relative flex min-h-0 flex-1 items-center justify-center',
-            dense ? 'p-0.5' : 'p-2',
-          )}
-        >
-          <span className={cn('size-full overflow-hidden', dense ? 'rounded-md' : 'rounded-lg')}>
+        <span className={SHEET_FILE_TILE_ICON_AREA_CLASS}>
+          <span className="size-full overflow-hidden rounded-md">
             <DriveFileCardThumbnail file={file} />
           </span>
           <span
             className={cn(
-              'absolute left-1/2 -translate-x-1/2 rounded font-bold tracking-wide',
-              dense ? 'top-0.5 px-1 py-px text-[8px]' : 'top-3 px-1.5 py-0.5 text-[10px]',
-              badgeClass,
+              'absolute left-1/2 -translate-x-1/2 rounded px-1 py-px',
+              SHEET_FILE_EXTENSION_BADGE_CLASS,
             )}
           >
             {ext}
           </span>
         </span>
-        <span
-          className={cn(
-            'text-foreground line-clamp-2 text-left leading-tight font-medium',
-            dense ? 'px-1 pb-0.5 text-[9px]' : 'px-2 pb-2 text-[11px]',
-          )}
-        >
-          {file.displayName}
-        </span>
+        <span className={SHEET_FILE_TILE_NAME_CLASS}>{file.displayName}</span>
       </button>
       {showMenu && menu ? (
         <div
