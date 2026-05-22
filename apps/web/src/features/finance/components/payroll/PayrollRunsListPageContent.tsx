@@ -29,7 +29,6 @@ import {
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
 import { payrollRunsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
-import { PayrollRunsCardsView } from '@/features/finance/components/payroll/PayrollRunsCardsView';
 import { PayrollRunsCalendarView } from '@/features/finance/components/payroll/PayrollRunsCalendarView';
 import { PayrollRunsCreateRunDialog } from '@/features/finance/components/payroll/PayrollRunsCreateRunDialog';
 import { PayrollRunsListTable } from '@/features/finance/components/payroll/PayrollRunsListTable';
@@ -356,9 +355,7 @@ export function PayrollRunsListPageContent() {
                 remaining={pageTotals.remaining}
                 lines={pageTotals.lines}
               />
-              {view === 'cards' ? (
-                <PayrollRunsCardsView items={items} />
-              ) : view === 'calendar' ? (
+              {view === 'calendar' ? (
                 <PayrollRunsCalendarView items={items} />
               ) : (
                 <PayrollRunsListTable items={items} pageTotals={pageTotals} />

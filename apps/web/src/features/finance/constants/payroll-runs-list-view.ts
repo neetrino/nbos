@@ -1,4 +1,4 @@
-export type PayrollRunsListViewMode = 'list' | 'cards' | 'calendar';
+export type PayrollRunsListViewMode = 'list' | 'calendar';
 
 const STORAGE_KEY = 'nbos:finance:payroll-runs-list-view';
 
@@ -7,8 +7,8 @@ export function readPayrollRunsListViewMode(): PayrollRunsListViewMode {
     return 'list';
   }
   const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (raw === 'cards' || raw === 'calendar') {
-    return raw;
+  if (raw === 'calendar') {
+    return 'calendar';
   }
   return 'list';
 }
