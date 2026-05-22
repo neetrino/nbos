@@ -6,10 +6,6 @@ import { cn } from '@/lib/utils';
 import { KanbanColorPicker } from './KanbanColorPicker';
 import { contrastText, getColumnHex, type KanbanColumn } from './kanban.types';
 
-/** Soft arrow tip for pipeline column headers (rounded feel, not a sharp point). */
-const KANBAN_HEADER_CLIP_PATH =
-  'polygon(0 0, calc(100% - 16px) 0, calc(100% - 7px) 30%, calc(100% - 2px) 50%, calc(100% - 7px) 70%, calc(100% - 16px) 100%, 0 100%)';
-
 interface ColumnHeaderProps<T> {
   column: KanbanColumn<T>;
   editable: boolean;
@@ -50,11 +46,8 @@ function KanbanStageHeaderBar({
 
   return (
     <div
-      className="group/bar flex min-h-8 w-full items-center gap-1.5 rounded-l-lg py-1.5 pr-5 pl-3"
-      style={{
-        backgroundColor: hex,
-        clipPath: KANBAN_HEADER_CLIP_PATH,
-      }}
+      className="group/bar flex min-h-8 w-full items-center gap-1.5 rounded-md px-3 py-1.5"
+      style={{ backgroundColor: hex }}
     >
       <span className="min-w-0 truncate text-sm font-bold" style={{ color: textColor }}>
         {label}
