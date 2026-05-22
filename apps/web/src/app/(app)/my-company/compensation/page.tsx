@@ -70,10 +70,12 @@ export default function CompensationPage() {
         <div className="border-border bg-card rounded-2xl border p-4">
           <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
             <ShieldCheck size={16} />
-            Active bonus policies
+            Active sales rate rows
           </div>
           <p className="text-foreground text-2xl font-semibold">{activePolicyCount}</p>
-          <p className="text-muted-foreground text-xs">Sales policy rows with `isActive=true`</p>
+          <p className="text-muted-foreground text-xs">
+            Rows in sales_bonus_policies with isActive
+          </p>
         </div>
       </div>
 

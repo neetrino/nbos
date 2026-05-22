@@ -4,6 +4,7 @@ import type { CompensationProfileDto } from './compensation-profiles.types';
 
 const profileInclude = {
   approvedBy: { select: { id: true, firstName: true, lastName: true } },
+  bonusPolicy: { select: { id: true, name: true, templateCode: true } },
   kpiPolicy: { select: { id: true, name: true } },
 } as const;
 
@@ -25,6 +26,7 @@ export function serializeCompensationProfile(
     currency: row.currency,
     payoutSchedule: row.payoutSchedule,
     bonusPolicyId: row.bonusPolicyId,
+    bonusPolicy: row.bonusPolicy,
     kpiPolicyId: row.kpiPolicyId,
     kpiPolicy: row.kpiPolicy,
     effectiveFrom: row.effectiveFrom.toISOString().slice(0, 10),

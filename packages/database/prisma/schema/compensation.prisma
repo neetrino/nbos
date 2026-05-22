@@ -6,6 +6,12 @@ enum KpiPolicyStatusEnum {
   ARCHIVED
 }
 
+enum BonusPolicyStatusEnum {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
 /// Active KPI gate parameters (template logic `KPI_GATE_PAYOUT_MULTIPLIER` lives in app code).
 model KpiPolicy {
   id           String              @id @default(uuid())
@@ -24,6 +30,23 @@ model KpiPolicy {
 
   @@index([status])
   @@map("kpi_policies")
+}
+
+/// Active bonus rule bundle (template logic in app code; SALES rates live in `sales_bonus_policies`).
+model BonusPolicy {
+  id           String                @id @default(uuid())
+  name         String
+  templateCode String                @map("template_code")
+  status       BonusPolicyStatusEnum @default(ACTIVE)
+  scope        String?
+  notes        String?
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+
+  compensationProfiles CompensationProfile[]
+
+  @@index([status])
+  @@map("bonus_policies")
 }
 
 enum CompensationProfileStatusEnum {
@@ -52,6 +75,7 @@ model CompensationProfile {
   updatedAt       DateTime                      @updatedAt @map("updated_at")
 
   employee    Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  bonusPolicy BonusPolicy? @relation(fields: [bonusPolicyId], references: [id], onDelete: SetNull)
   kpiPolicy   KpiPolicy?   @relation(fields: [kpiPolicyId], references: [id], onDelete: SetNull)
   approvedBy  Employee?    @relation("CompensationProfileApprover", fields: [approvedById], references: [id])
   salaryLines SalaryLine[]

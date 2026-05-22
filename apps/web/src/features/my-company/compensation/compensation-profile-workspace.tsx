@@ -10,9 +10,12 @@ import {
   compensationProfilesApi,
   type CompensationProfileRow,
 } from '@/lib/api/compensation-profiles';
+import { bonusPoliciesApi, type BonusPolicyRow } from '@/lib/api/bonus-policies';
 import { kpiPoliciesApi, type KpiPolicyRow } from '@/lib/api/kpi-policies';
 import type { Employee } from '@/lib/api/employees';
+import { DEFAULT_BONUS_POLICY_ID } from '@/lib/constants/default-bonus-policy-id';
 import { DEFAULT_KPI_POLICY_ID } from '@/lib/constants/default-kpi-policy-id';
+import { BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES } from '@/features/my-company/compensation/bonus-policy-template-codes';
 
 const STATUS_VARIANT: Record<string, StatusVariant> = {
   ACTIVE: 'green',
@@ -32,6 +35,7 @@ function employeeLabel(employee: Employee): string {
 export function CompensationProfileWorkspace({ employees }: { employees: readonly Employee[] }) {
   const [selectedId, setSelectedId] = useState('');
   const [profiles, setProfiles] = useState<CompensationProfileRow[]>([]);
+  const [bonusPolicies, setBonusPolicies] = useState<BonusPolicyRow[]>([]);
   const [kpiPolicies, setKpiPolicies] = useState<KpiPolicyRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +43,7 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
 
   const [baseSalary, setBaseSalary] = useState('');
   const [effectiveFrom, setEffectiveFrom] = useState(todayIsoDate());
+  const [bonusPolicyId, setBonusPolicyId] = useState(DEFAULT_BONUS_POLICY_ID);
   const [kpiPolicyId, setKpiPolicyId] = useState(DEFAULT_KPI_POLICY_ID);
 
   const selectedEmployee = useMemo(
@@ -46,7 +51,12 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
     [employees, selectedId],
   );
 
-  const activePolicies = useMemo(
+  const activeBonusPolicies = useMemo(
+    () => bonusPolicies.filter((p) => p.status === 'ACTIVE'),
+    [bonusPolicies],
+  );
+
+  const activeKpiPolicies = useMemo(
     () => kpiPolicies.filter((p) => p.status === 'ACTIVE'),
     [kpiPolicies],
   );
@@ -54,6 +64,11 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
   const draftProfile = useMemo(
     () => profiles.find((p) => p.status === 'DRAFT') ?? null,
     [profiles],
+  );
+
+  const selectedBonusTemplate = useMemo(
+    () => activeBonusPolicies.find((p) => p.id === bonusPolicyId)?.templateCode ?? null,
+    [activeBonusPolicies, bonusPolicyId],
   );
 
   const loadProfiles = useCallback(async (employeeId: string) => {
@@ -71,7 +86,10 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
   }, []);
 
   useEffect(() => {
-    void kpiPoliciesApi.list().then((r) => setKpiPolicies(r.items));
+    void Promise.all([bonusPoliciesApi.list(), kpiPoliciesApi.list()]).then(([bonus, kpi]) => {
+      setBonusPolicies(bonus.items);
+      setKpiPolicies(kpi.items);
+    });
   }, []);
 
   useEffect(() => {
@@ -84,6 +102,12 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
     setEffectiveFrom(todayIsoDate());
     void loadProfiles(selectedId);
   }, [selectedId, employees, loadProfiles]);
+
+  useEffect(() => {
+    if (draftProfile?.bonusPolicyId) {
+      setBonusPolicyId(draftProfile.bonusPolicyId);
+    }
+  }, [draftProfile?.id, draftProfile?.bonusPolicyId]);
 
   useEffect(() => {
     if (draftProfile?.kpiPolicyId) {
@@ -103,6 +127,7 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
       const created = await compensationProfilesApi.createDraft(selectedId, {
         baseSalary: salary,
         effectiveFrom,
+        bonusPolicyId: bonusPolicyId || undefined,
         kpiPolicyId: kpiPolicyId || undefined,
       });
       setProfiles((prev) => [created, ...prev]);
@@ -114,17 +139,18 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
     }
   };
 
-  const handleSaveDraftKpi = async () => {
+  const handleSaveDraftPolicies = async () => {
     if (!draftProfile) return;
     setBusy(true);
     try {
       const updated = await compensationProfilesApi.patchDraft(draftProfile.id, {
+        bonusPolicyId: bonusPolicyId || null,
         kpiPolicyId: kpiPolicyId || null,
       });
       setProfiles((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
       setError(null);
     } catch {
-      setError('Could not update KPI policy on draft.');
+      setError('Could not update policies on draft.');
     } finally {
       setBusy(false);
     }
@@ -157,16 +183,24 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
         <div>
           <h2 className="text-foreground text-sm font-semibold">Compensation profiles</h2>
           <p className="text-muted-foreground mt-1 text-xs leading-snug">
-            Link an active KPI gate policy per employee. Payroll attach reads the ACTIVE profile for
-            the payroll month.
+            Link bonus and KPI policies per employee. Payroll attach uses the ACTIVE profile for the
+            payroll month; sales accrual uses company rate rows when bonus policy is sales template.
           </p>
         </div>
-        <Link
-          href="/my-company/kpi-policies"
-          className="text-primary text-xs font-medium hover:underline"
-        >
-          Edit KPI policies
-        </Link>
+        <div className="flex flex-wrap gap-2 text-xs">
+          <Link
+            href="/my-company/sales-bonus-policies"
+            className="text-primary font-medium hover:underline"
+          >
+            Sales rates
+          </Link>
+          <Link
+            href="/my-company/kpi-policies"
+            className="text-primary font-medium hover:underline"
+          >
+            KPI gates
+          </Link>
+        </div>
       </div>
 
       <label className="block space-y-1 text-sm">
@@ -203,6 +237,7 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
                     {p.baseSalary} {p.currency}
                   </span>
                   <span className="text-muted-foreground">from {p.effectiveFrom}</span>
+                  <span className="text-muted-foreground">Bonus: {p.bonusPolicy?.name ?? '—'}</span>
                   <span className="text-muted-foreground">KPI: {p.kpiPolicy?.name ?? '—'}</span>
                   {p.status === 'DRAFT' ? (
                     <Button
@@ -226,15 +261,43 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
 
           <div className="border-border grid gap-3 rounded-xl border p-3 md:grid-cols-2">
             <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">Bonus policy</span>
+              <select
+                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+                value={bonusPolicyId}
+                disabled={busy || activeBonusPolicies.length === 0}
+                onChange={(e) => setBonusPolicyId(e.target.value)}
+              >
+                <option value="">None</option>
+                {activeBonusPolicies.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES ? (
+                <p className="text-muted-foreground text-xs">
+                  Percentages are edited under{' '}
+                  <Link
+                    href="/my-company/sales-bonus-policies"
+                    className="text-primary hover:underline"
+                  >
+                    Sales bonus policies
+                  </Link>
+                  .
+                </p>
+              ) : null}
+            </label>
+            <label className="space-y-1 text-sm">
               <span className="text-muted-foreground">KPI gate policy</span>
               <select
                 className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
                 value={kpiPolicyId}
-                disabled={busy || activePolicies.length === 0}
+                disabled={busy || activeKpiPolicies.length === 0}
                 onChange={(e) => setKpiPolicyId(e.target.value)}
               >
                 <option value="">None</option>
-                {activePolicies.map((p) => (
+                {activeKpiPolicies.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
                   </option>
@@ -242,15 +305,15 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
               </select>
             </label>
             {draftProfile ? (
-              <div className="flex items-end">
+              <div className="flex items-end md:col-span-2">
                 <Button
                   type="button"
                   size="sm"
                   variant="secondary"
                   disabled={busy}
-                  onClick={() => void handleSaveDraftKpi()}
+                  onClick={() => void handleSaveDraftPolicies()}
                 >
-                  Save KPI on draft
+                  Save policies on draft
                 </Button>
               </div>
             ) : null}

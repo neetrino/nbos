@@ -64,9 +64,9 @@ UI must make the pool understandable without opening many pages.
 
 Backend + rules live in My Company policy templates; Finance executes. See `05-Bonus-and-Payroll.md` § Policy Engine.
 
-- ☐ **Bonus Policy Templates:** sales, delivery, marketing, support, manual.
+- ◐ **Bonus Policy Templates:** `bonus_policies` + profile FK + picker; SALES seed uses `sales_bonus_policies` grid; delivery/marketing/manual templates pending.
 - ◐ **KPI Policy Templates:** `kpi_policies` DB + CRUD UI + profile picker; role-specific defaults / scorecard metrics pending.
-- ◐ **Compensation Profile link:** create/activate profile + KPI policy dropdown on `/my-company/compensation`; bonus policy id pending.
+- ☑ **Compensation Profile link:** create/activate profile + bonus & KPI policy dropdowns on `/my-company/compensation`.
 - ☐ **Employee-level KPI:** per employee/role, not only payroll-run sales KPI scale.
 - ◐ **Burned KPI:** persist `kpiBurnedAmount` on SALES attach + Finance/Wallet display; reason field / full policy templates still pending.
 - ☑ **Cap:** default 200% of base on attach; per-policy multiplier via linked `kpi_policies`; excess → `payrollCarryOverAmount`.

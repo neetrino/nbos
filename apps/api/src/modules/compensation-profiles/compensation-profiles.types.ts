@@ -29,6 +29,12 @@ export interface CompensationProfileKpiPolicyRef {
   name: string;
 }
 
+export interface CompensationProfileBonusPolicyRef {
+  id: string;
+  name: string;
+  templateCode: string;
+}
+
 export interface CompensationProfileDto {
   id: string;
   employeeId: string;
@@ -36,6 +42,7 @@ export interface CompensationProfileDto {
   currency: string;
   payoutSchedule: unknown;
   bonusPolicyId: string | null;
+  bonusPolicy: CompensationProfileBonusPolicyRef | null;
   kpiPolicyId: string | null;
   kpiPolicy: CompensationProfileKpiPolicyRef | null;
   effectiveFrom: string;

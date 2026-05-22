@@ -8,6 +8,7 @@ export interface CompensationProfileRow {
   baseSalary: string;
   currency: string;
   bonusPolicyId: string | null;
+  bonusPolicy: { id: string; name: string; templateCode: string } | null;
   kpiPolicyId: string | null;
   kpiPolicy: { id: string; name: string } | null;
   effectiveFrom: string;
@@ -21,6 +22,7 @@ export interface CompensationProfileRow {
 export interface CreateCompensationProfilePayload {
   baseSalary: number;
   currency?: string;
+  bonusPolicyId?: string;
   kpiPolicyId?: string;
   effectiveFrom: string;
   notes?: string;
@@ -28,6 +30,7 @@ export interface CreateCompensationProfilePayload {
 
 export interface PatchCompensationProfileDraftPayload {
   baseSalary?: number;
+  bonusPolicyId?: string | null;
   kpiPolicyId?: string | null;
   effectiveFrom?: string;
   notes?: string | null;

@@ -39,6 +39,11 @@ export class CompensationProfilesService {
       throw new BadRequestException('baseSalary must be a non-negative number');
     }
 
+    const bonusPolicyId = body.bonusPolicyId?.trim() || null;
+    if (bonusPolicyId != null) {
+      await this.assertActiveBonusPolicyExists(bonusPolicyId);
+    }
+
     const kpiPolicyId = body.kpiPolicyId?.trim() || null;
     if (kpiPolicyId != null) {
       await this.assertActiveKpiPolicyExists(kpiPolicyId);
@@ -50,7 +55,7 @@ export class CompensationProfilesService {
         baseSalary: body.baseSalary,
         currency: body.currency?.trim() || 'AMD',
         payoutSchedule: body.payoutSchedule,
-        bonusPolicyId: body.bonusPolicyId?.trim() || null,
+        bonusPolicyId,
         kpiPolicyId,
         effectiveFrom,
         status: 'DRAFT',
@@ -71,6 +76,14 @@ export class CompensationProfilesService {
       throw new BadRequestException('Only DRAFT compensation profiles can be edited');
     }
 
+    let bonusPolicyId: string | null | undefined;
+    if (body.bonusPolicyId !== undefined) {
+      bonusPolicyId = body.bonusPolicyId?.trim() || null;
+      if (bonusPolicyId != null) {
+        await this.assertActiveBonusPolicyExists(bonusPolicyId);
+      }
+    }
+
     let kpiPolicyId: string | null | undefined;
     if (body.kpiPolicyId !== undefined) {
       kpiPolicyId = body.kpiPolicyId?.trim() || null;
@@ -88,8 +101,7 @@ export class CompensationProfilesService {
       data: {
         baseSalary: body.baseSalary,
         currency: body.currency?.trim(),
-        bonusPolicyId:
-          body.bonusPolicyId === undefined ? undefined : body.bonusPolicyId?.trim() || null,
+        bonusPolicyId,
         kpiPolicyId,
         effectiveFrom:
           body.effectiveFrom != null
@@ -164,6 +176,16 @@ export class CompensationProfilesService {
     });
     if (!emp) {
       throw new NotFoundException(`Employee ${employeeId} not found`);
+    }
+  }
+
+  private async assertActiveBonusPolicyExists(bonusPolicyId: string) {
+    const policy = await this.prisma.bonusPolicy.findFirst({
+      where: { id: bonusPolicyId, status: 'ACTIVE' },
+      select: { id: true },
+    });
+    if (!policy) {
+      throw new BadRequestException(`Active bonus policy ${bonusPolicyId} not found`);
     }
   }
 
