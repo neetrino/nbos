@@ -5,13 +5,14 @@ import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
 import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
 import { applyPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
 import { applyPayrollBonusCap } from './payroll-bonus-cap';
-import { computeKpiGatePayoutFactor } from './kpi-gate-payout';
 import { computeSalesKpiBurnedAmount } from './sales-kpi-burned-amount';
 import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
+import { computePayrollIncludedBonusAmount } from './sales-kpi-payroll-payout';
 import {
-  assertSalesKpiInputsComplete,
-  computePayrollIncludedBonusAmount,
-} from './sales-kpi-payroll-payout';
+  assertSalesKpiForAttachEmployees,
+  resolveSalesKpiFactorForEmployee,
+  type SalesKpiAmountSnapshot,
+} from './resolve-employee-sales-kpi';
 
 const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
@@ -109,14 +110,14 @@ export async function attachBonusReleasesToPayrollRun(
     return;
   }
 
-  const hasSalesRelease = releasesToAttach.some((r) => r.bonusEntry.type === 'SALES');
-  assertSalesKpiInputsComplete(run, hasSalesRelease);
+  const runKpiSnapshot: SalesKpiAmountSnapshot = {
+    kpiSalesPlanAmount: run.kpiSalesPlanAmount,
+    kpiSalesActualAmount: run.kpiSalesActualAmount,
+  };
+  await assertSalesKpiForAttachEmployees(tx, payrollRunId, releasesToAttach, runKpiSnapshot);
 
-  const plan =
-    run.kpiSalesPlanAmount != null ? new Decimal(run.kpiSalesPlanAmount) : new Decimal(0);
-  const actual =
-    run.kpiSalesActualAmount != null ? new Decimal(run.kpiSalesActualAmount) : new Decimal(0);
   const payrollPolicyByEmployee = new Map<string, CompensationPayrollPolicy>();
+  const salesKpiFactorByEmployee = new Map<string, Decimal>();
   const carryAppliedEmployees = new Set<string>();
 
   for (const rel of releasesToAttach) {
@@ -132,6 +133,8 @@ export async function attachBonusReleasesToPayrollRun(
         deductionsTotal: true,
         paidAmount: true,
         payrollCarryAppliedAmount: true,
+        kpiSalesPlanAmount: true,
+        kpiSalesActualAmount: true,
       },
     });
     if (!line) {
@@ -174,6 +177,8 @@ export async function attachBonusReleasesToPayrollRun(
           deductionsTotal: true,
           paidAmount: true,
           payrollCarryAppliedAmount: true,
+          kpiSalesPlanAmount: true,
+          kpiSalesActualAmount: true,
         },
       });
       if (refreshed) {
@@ -181,10 +186,14 @@ export async function attachBonusReleasesToPayrollRun(
       }
     }
 
-    const kpiFactor =
-      rel.bonusEntry.type === 'SALES'
-        ? computeKpiGatePayoutFactor(plan, actual, payrollPolicy.gateRules)
-        : new Decimal(1);
+    const kpiFactor = resolveSalesKpiFactorForEmployee({
+      employeeId: rel.employeeId,
+      bonusType: rel.bonusEntry.type,
+      line,
+      runKpiSnapshot,
+      payrollPolicy,
+      cache: salesKpiFactorByEmployee,
+    });
 
     const kpiScaled = computePayrollIncludedBonusAmount({
       releaseAmount: rel.amount,

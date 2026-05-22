@@ -593,6 +593,9 @@ model SalaryLine {
   bonusesTotal     Decimal              @default(0) @map("bonuses_total") @db.Decimal(12, 2)
   /// Prior-month cap carry included in `bonuses_total` this run (FIFO apply at attach).
   payrollCarryAppliedAmount Decimal?     @map("payroll_carry_applied_amount") @db.Decimal(12, 2)
+  /// Employee sales KPI override; null uses payroll run-level plan/actual at attach.
+  kpiSalesPlanAmount        Decimal?     @map("kpi_sales_plan_amount") @db.Decimal(14, 2)
+  kpiSalesActualAmount      Decimal?     @map("kpi_sales_actual_amount") @db.Decimal(14, 2)
   adjustmentsTotal Decimal              @default(0) @map("adjustments_total") @db.Decimal(12, 2)
   deductionsTotal  Decimal              @default(0) @map("deductions_total") @db.Decimal(12, 2)
   totalPayable     Decimal              @default(0) @map("total_payable") @db.Decimal(12, 2)

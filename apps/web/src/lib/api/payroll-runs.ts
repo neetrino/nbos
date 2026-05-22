@@ -108,6 +108,9 @@ export interface SalaryLineRow {
   remainingAmount: string;
   status: SalaryLineStatus;
   expenseId: string | null;
+  /** Per-employee sales KPI override; null uses payroll run defaults at SALES attach. */
+  kpiSalesPlanAmount: string | null;
+  kpiSalesActualAmount: string | null;
   createdAt: string;
   updatedAt: string;
   employee: PayrollRunEmployeeRef;
@@ -136,6 +139,18 @@ export interface PayrollRunDetail extends PayrollRunListRow {
 export interface PatchPayrollRunBody {
   kpiSalesPlanAmount?: number | null;
   kpiSalesActualAmount?: number | null;
+}
+
+export interface PatchSalaryLineSalesKpiBody {
+  kpiSalesPlanAmount?: number | null;
+  kpiSalesActualAmount?: number | null;
+}
+
+export interface EmployeeSalesKpiDetail {
+  planAmount: string | null;
+  actualAmount: string | null;
+  source: 'RUN_DEFAULT' | 'LINE_OVERRIDE';
+  effectivePayoutScaleLabel: string | null;
 }
 
 export interface PayrollRunListParams {
@@ -208,6 +223,7 @@ export interface SalaryLineMonthDetail {
     kpiSalesPlanAmount: string | null;
     kpiSalesActualAmount: string | null;
   };
+  employeeSalesKpi: EmployeeSalesKpiDetail;
   salaryLine: {
     id: string;
     status: SalaryLineStatus;
@@ -220,6 +236,8 @@ export interface SalaryLineMonthDetail {
     paidAmount: string;
     remainingAmount: string;
     compensationProfileId: string | null;
+    kpiSalesPlanAmount: string | null;
+    kpiSalesActualAmount: string | null;
   };
   expense: {
     id: string;
@@ -300,6 +318,18 @@ export const payrollRunsApi = {
 
   async patch(id: string, body: PatchPayrollRunBody): Promise<PayrollRunDetail> {
     const resp = await api.patch<PayrollRunDetail>(`/api/payroll-runs/${id}`, body);
+    return resp.data;
+  },
+
+  async patchSalaryLineSalesKpi(
+    payrollRunId: string,
+    salaryLineId: string,
+    body: PatchSalaryLineSalesKpiBody,
+  ): Promise<PayrollRunDetail> {
+    const resp = await api.patch<PayrollRunDetail>(
+      `/api/payroll-runs/${payrollRunId}/salary-lines/${salaryLineId}/sales-kpi`,
+      body,
+    );
     return resp.data;
   },
 

@@ -235,6 +235,9 @@ describe('attachBonusReleasesToPayrollRun', () => {
       paidAmount: new Decimal(0),
       remainingAmount: new Decimal(100),
       status: 'PENDING',
+      payrollCarryAppliedAmount: null,
+      kpiSalesPlanAmount: null,
+      kpiSalesActualAmount: null,
     });
     tx.salaryLine.aggregate.mockResolvedValue({
       _sum: {
@@ -266,6 +269,66 @@ describe('attachBonusReleasesToPayrollRun', () => {
         kpiBurnedAmount: new Decimal(50),
         payrollCarryOverAmount: null,
         payrollCarryOverRemaining: null,
+      }),
+    });
+  });
+
+  it('uses per-employee sales KPI override instead of run defaults', async () => {
+    const tx = createTxMock();
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'DRAFT',
+      payrollMonth: '2026-05',
+      kpiSalesPlanAmount: new Decimal(1000),
+      kpiSalesActualAmount: new Decimal(600),
+    });
+    mockAttachReleaseFindMany(tx, [
+      {
+        id: 'rel1',
+        employeeId: 'e1',
+        amount: new Decimal(100),
+        status: 'APPROVED',
+        payrollRunId: null,
+        bonusEntry: { type: 'SALES' },
+      },
+    ]);
+    tx.salaryLine.findUnique.mockResolvedValue({
+      id: 'sl1',
+      payrollRunId: 'run1',
+      employeeId: 'e1',
+      baseSalary: new Decimal(100),
+      bonusesTotal: new Decimal(0),
+      adjustmentsTotal: new Decimal(0),
+      deductionsTotal: new Decimal(0),
+      totalPayable: new Decimal(100),
+      paidAmount: new Decimal(0),
+      remainingAmount: new Decimal(100),
+      status: 'PENDING',
+      payrollCarryAppliedAmount: null,
+      kpiSalesPlanAmount: new Decimal(500),
+      kpiSalesActualAmount: new Decimal(500),
+    });
+    tx.salaryLine.aggregate.mockResolvedValue({
+      _sum: {
+        baseSalary: new Decimal(100),
+        bonusesTotal: new Decimal(100),
+        adjustmentsTotal: new Decimal(0),
+        deductionsTotal: new Decimal(0),
+        totalPayable: new Decimal(200),
+        paidAmount: new Decimal(0),
+      },
+    });
+
+    await attachBonusReleasesToPayrollRun(tx as never, {
+      payrollRunId: 'run1',
+      releaseIds: ['rel1'],
+    });
+
+    expect(tx.bonusRelease.update).toHaveBeenCalledWith({
+      where: { id: 'rel1' },
+      data: expect.objectContaining({
+        payrollIncludedAmount: new Decimal(100),
+        kpiBurnedAmount: null,
       }),
     });
   });

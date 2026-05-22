@@ -6,7 +6,13 @@ import {
   aggregateBonusBreakdownSummary,
   deriveBonusPolicyBreakdownStatuses,
 } from './bonus-policy-breakdown-status';
+import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
+import {
+  resolveEmployeeSalesKpi,
+  salesKpiPayoutFactorFromSnapshot,
+} from './resolve-employee-sales-kpi';
 import { sumPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
+import { buildEmployeeSalesKpiDetail } from './employee-sales-kpi-month-detail';
 import type {
   SalaryLineMonthBonusRow,
   SalaryLineMonthDetailDto,
@@ -165,7 +171,22 @@ export async function querySalaryLineMonthDetail(
 ): Promise<SalaryLineMonthDetailDto> {
   const line = await prisma.salaryLine.findUnique({
     where: { id: salaryLineId },
-    include: {
+    select: {
+      id: true,
+      employeeId: true,
+      payrollRunId: true,
+      compensationProfileId: true,
+      baseSalary: true,
+      bonusesTotal: true,
+      adjustmentsTotal: true,
+      deductionsTotal: true,
+      totalPayable: true,
+      paidAmount: true,
+      remainingAmount: true,
+      status: true,
+      payrollCarryAppliedAmount: true,
+      kpiSalesPlanAmount: true,
+      kpiSalesActualAmount: true,
       employee: {
         select: { id: true, firstName: true, lastName: true, email: true, position: true },
       },
@@ -203,6 +224,24 @@ export async function querySalaryLineMonthDetail(
     line.employeeId,
     line.payrollRun.payrollMonth,
   );
+  const resolvedKpi = resolveEmployeeSalesKpi(
+    {
+      kpiSalesPlanAmount: line.kpiSalesPlanAmount,
+      kpiSalesActualAmount: line.kpiSalesActualAmount,
+    },
+    {
+      kpiSalesPlanAmount: line.payrollRun.kpiSalesPlanAmount,
+      kpiSalesActualAmount: line.payrollRun.kpiSalesActualAmount,
+    },
+  );
+  const payrollPolicy = await resolveCompensationPayrollPolicyForEmployee(
+    prisma,
+    line.employeeId,
+    line.payrollRun.payrollMonth,
+  );
+  const kpiFactor = salesKpiPayoutFactorFromSnapshot(resolvedKpi, payrollPolicy.gateRules);
+  const employeeSalesKpi = buildEmployeeSalesKpiDetail(resolvedKpi, kpiFactor);
+
   const summaryAgg = aggregateBonusBreakdownSummary(
     bonusBreakdown.map((row) => ({
       entryStatus: row.entryStatus,
@@ -228,6 +267,7 @@ export async function querySalaryLineMonthDetail(
   return {
     payoutPhase,
     pendingPayrollCarryOver: pendingCarry.gt(0) ? money(pendingCarry) : null,
+    employeeSalesKpi,
     employee: line.employee,
     payrollMonth: line.payrollRun.payrollMonth,
     payrollRun: {
@@ -251,6 +291,14 @@ export async function querySalaryLineMonthDetail(
       paidAmount: money(line.paidAmount),
       remainingAmount: money(line.remainingAmount),
       compensationProfileId: line.compensationProfileId,
+      kpiSalesPlanAmount:
+        line.kpiSalesPlanAmount != null && line.kpiSalesPlanAmount.gt(0)
+          ? money(line.kpiSalesPlanAmount)
+          : null,
+      kpiSalesActualAmount:
+        line.kpiSalesActualAmount != null && line.kpiSalesActualAmount.gt(0)
+          ? money(line.kpiSalesActualAmount)
+          : null,
     },
     expense: line.expense
       ? {

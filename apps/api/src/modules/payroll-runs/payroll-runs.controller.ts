@@ -1,7 +1,11 @@
 import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
-import { PayrollRunsService, type PatchPayrollRunBody } from './payroll-runs.service';
+import {
+  PayrollRunsService,
+  type PatchPayrollRunBody,
+  type PatchSalaryLineSalesKpiBody,
+} from './payroll-runs.service';
 
 @ApiTags('Payroll runs')
 @ApiBearerAuth()
@@ -140,6 +144,20 @@ export class PayrollRunsController {
   })
   async patchPayrollRun(@Param('id') id: string, @Body() body: PatchPayrollRunBody) {
     return this.payrollRunsService.patchPayrollRun(id, body);
+  }
+
+  @Patch(':id/salary-lines/:salaryLineId/sales-kpi')
+  @ApiOperation({
+    summary: 'Patch per-employee sales KPI on a salary line',
+    description:
+      'Overrides run-level plan/actual for SALES bonus attach on this employee. DRAFT/REVIEW only; employee must have no INCLUDED_IN_PAYROLL releases.',
+  })
+  async patchSalaryLineSalesKpi(
+    @Param('id') id: string,
+    @Param('salaryLineId') salaryLineId: string,
+    @Body() body: PatchSalaryLineSalesKpiBody,
+  ) {
+    return this.payrollRunsService.patchSalaryLineSalesKpi(id, salaryLineId, body);
   }
 
   @Post()

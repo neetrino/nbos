@@ -10,6 +10,7 @@ import { payrollRunRemainingMajorUnits } from '@/features/finance/utils/payroll-
 import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
 import { PayrollRunBonusReleasesSection } from '@/features/finance/components/payroll/payroll-run-bonus-releases-section';
 import { PayrollRunDetailActions } from '@/features/finance/components/payroll/PayrollRunDetailActions';
+import { PayrollRunEmployeeSalesKpiSection } from '@/features/finance/components/payroll/payroll-run-employee-sales-kpi-section';
 import { PayrollRunSalesKpiSection } from '@/features/finance/components/payroll/payroll-run-sales-kpi-section';
 import { PayrollRunSalaryLinesTable } from '@/features/finance/components/payroll/PayrollRunSalaryLinesTable';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
@@ -193,6 +194,8 @@ export function PayrollRunDetailPageContent({
       </div>
 
       <PayrollRunSalesKpiSection run={run} onUpdated={setRun} />
+
+      <PayrollRunEmployeeSalesKpiSection run={run} onUpdated={setRun} />
 
       <PayrollRunBonusReleasesSection run={run} onRunUpdated={setRun} />
 

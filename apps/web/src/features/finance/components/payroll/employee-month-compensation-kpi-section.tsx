@@ -5,21 +5,29 @@ import { buildSalesKpiGateSummary } from '@/features/finance/utils/sales-kpi-gat
 import type { SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
 
 export function EmployeeMonthCompensationKpiSection({ detail }: { detail: SalaryLineMonthDetail }) {
-  const summary = buildSalesKpiGateSummary(
-    detail.payrollRun.kpiSalesPlanAmount,
-    detail.payrollRun.kpiSalesActualAmount,
-  );
-  if (!summary) {
+  const kpi = detail.employeeSalesKpi;
+  const summary = buildSalesKpiGateSummary(kpi.planAmount, kpi.actualAmount);
+  if (!summary && !kpi.effectivePayoutScaleLabel) {
     return null;
   }
 
+  const sourceLabel = kpi.source === 'LINE_OVERRIDE' ? 'Employee override' : 'Payroll run default';
+
   return (
-    <DetailSheetSection title="Sales KPI (run gate)">
-      <p className="text-muted-foreground text-sm leading-snug">{summary}</p>
-      <p className="text-muted-foreground mt-2 text-xs">
-        Cap, carry-over, and per-entry KPI flags on bonus rows are policy-engine follow-ups; this
-        month shows run-level gate only when plan/actual are recorded.
-      </p>
+    <DetailSheetSection title="Sales KPI (effective at attach)">
+      <p className="text-muted-foreground text-xs">{sourceLabel}</p>
+      {summary ? (
+        <p className="text-muted-foreground mt-2 text-sm leading-snug">{summary}</p>
+      ) : null}
+      {kpi.effectivePayoutScaleLabel ? (
+        <p className="text-foreground mt-2 text-sm font-medium">{kpi.effectivePayoutScaleLabel}</p>
+      ) : null}
+      {kpi.source === 'LINE_OVERRIDE' ? (
+        <p className="text-muted-foreground mt-2 text-xs">
+          Run default: plan {detail.payrollRun.kpiSalesPlanAmount ?? '—'}, actual{' '}
+          {detail.payrollRun.kpiSalesActualAmount ?? '—'}
+        </p>
+      ) : null}
     </DetailSheetSection>
   );
 }

@@ -8,6 +8,13 @@ export interface SalaryLineMonthPaymentRow {
   notes: string | null;
 }
 
+export interface EmployeeSalesKpiDetailDto {
+  planAmount: string | null;
+  actualAmount: string | null;
+  source: 'RUN_DEFAULT' | 'LINE_OVERRIDE';
+  effectivePayoutScaleLabel: string | null;
+}
+
 export interface BonusBreakdownSummaryDto {
   incomingCount: number;
   burnedTotal: string;
@@ -57,6 +64,7 @@ export interface SalaryLineMonthDetailDto {
   };
   /** Cap carry-over from earlier payroll months not yet applied to this line. */
   pendingPayrollCarryOver: string | null;
+  employeeSalesKpi: EmployeeSalesKpiDetailDto;
   salaryLine: {
     id: string;
     status: string;
@@ -70,6 +78,8 @@ export interface SalaryLineMonthDetailDto {
     paidAmount: string;
     remainingAmount: string;
     compensationProfileId: string | null;
+    kpiSalesPlanAmount: string | null;
+    kpiSalesActualAmount: string | null;
   };
   expense: {
     id: string;
