@@ -102,7 +102,6 @@ function TerminalColumn({
   const g = parseInt(raw.substring(2, 4), 16);
   const b = parseInt(raw.substring(4, 6), 16);
   const textColor = (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? '#000' : '#fff';
-  const countBg = textColor === '#fff' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.12)';
 
   return (
     <div className={DELIVERY_KANBAN_COLUMN_SHELL_CLASS}>
@@ -116,8 +115,8 @@ function TerminalColumn({
             {title}
           </span>
           <span
-            className="ml-auto shrink-0 rounded px-1.5 py-0.5 text-xs font-medium tabular-nums"
-            style={{ backgroundColor: countBg, color: textColor }}
+            className="ml-auto shrink-0 text-xs font-medium tabular-nums"
+            style={{ color: textColor }}
           >
             {items.length}
           </span>

@@ -19,7 +19,6 @@ function KanbanStageHeaderBar({
   label,
   count,
   textColor,
-  countBg,
   trailing,
   editable,
   column,
@@ -32,7 +31,6 @@ function KanbanStageHeaderBar({
   label: string;
   count: number;
   textColor: '#fff' | '#000';
-  countBg: string;
   trailing?: ReactNode;
   editable: boolean;
   column: KanbanColumn<unknown>;
@@ -54,8 +52,8 @@ function KanbanStageHeaderBar({
       </span>
 
       <span
-        className="shrink-0 rounded px-1.5 py-0.5 text-xs font-medium tabular-nums"
-        style={{ backgroundColor: countBg, color: textColor }}
+        className="ml-auto shrink-0 text-xs font-medium tabular-nums"
+        style={{ color: textColor }}
       >
         {count}
       </span>
@@ -180,7 +178,6 @@ export function KanbanColumnHeader<T>({
 
   if (hex) {
     const textColor = contrastText(hex);
-    const countBg = textColor === '#fff' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.12)';
 
     return (
       <KanbanStageHeaderBar
@@ -188,7 +185,6 @@ export function KanbanColumnHeader<T>({
         label={column.label}
         count={column.items.length}
         textColor={textColor}
-        countBg={countBg}
         trailing={trailing}
         editable={editable}
         column={column as KanbanColumn<unknown>}
@@ -206,7 +202,6 @@ export function KanbanColumnHeader<T>({
       label={column.label}
       count={column.items.length}
       textColor="#fff"
-      countBg="rgba(255,255,255,0.25)"
       trailing={trailing}
       editable={editable}
       column={column as KanbanColumn<unknown>}
