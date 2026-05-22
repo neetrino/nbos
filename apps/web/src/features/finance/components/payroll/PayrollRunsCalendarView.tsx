@@ -16,7 +16,9 @@ import { formatPayrollMonthShort } from '@/features/finance/utils/salary-board-m
 import type { PayrollRunListRow } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
 
-const PAYROLL_CALENDAR_CELL_MIN_HEIGHT_CLASS = 'min-h-[5.75rem]';
+const PAYROLL_CALENDAR_YEAR_COL_WIDTH_CLASS = 'w-14';
+const PAYROLL_CALENDAR_MONTH_COL_WIDTH_CLASS = 'w-[4.5rem]';
+const PAYROLL_CALENDAR_SLOT_CLASS = 'h-16 w-full';
 
 function parseAmount(value: string): number {
   const n = Number.parseFloat(value);
@@ -24,13 +26,25 @@ function parseAmount(value: string): number {
 }
 
 const STICKY_YEAR_CELL_CLASS = cn(
-  'border-border text-foreground sticky left-0 z-10 border-r border-b px-3 py-2 text-left font-semibold tabular-nums',
+  'border-border text-foreground sticky left-0 z-10 border-r border-b px-2 py-2 text-left text-sm font-semibold tabular-nums',
   'bg-background',
+  PAYROLL_CALENDAR_YEAR_COL_WIDTH_CLASS,
 );
 
 const STICKY_YEAR_HEADER_CLASS = cn(
-  'border-border text-muted-foreground sticky left-0 z-20 border-r border-b px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide',
+  'border-border text-muted-foreground sticky left-0 z-20 border-r border-b px-2 py-2 text-left text-[10px] font-semibold uppercase tracking-wide',
   'bg-background',
+  PAYROLL_CALENDAR_YEAR_COL_WIDTH_CLASS,
+);
+
+const PAYROLL_CALENDAR_MONTH_HEAD_CLASS = cn(
+  'border-border border-b px-1 py-1.5 text-center text-[10px] font-semibold leading-tight',
+  PAYROLL_CALENDAR_MONTH_COL_WIDTH_CLASS,
+);
+
+const PAYROLL_CALENDAR_MONTH_CELL_CLASS = cn(
+  'border-border border-b p-1 align-middle',
+  PAYROLL_CALENDAR_MONTH_COL_WIDTH_CLASS,
 );
 
 export function PayrollRunsCalendarView({ items }: { items: PayrollRunListRow[] }) {
@@ -47,15 +61,18 @@ export function PayrollRunsCalendarView({ items }: { items: PayrollRunListRow[] 
 
   return (
     <div className="border-border min-h-0 flex-1 overflow-x-auto rounded-xl border">
-      <table className="w-full min-w-[960px] border-collapse text-sm">
+      <table className="w-full table-fixed border-collapse text-sm">
+        <colgroup>
+          <col className={PAYROLL_CALENDAR_YEAR_COL_WIDTH_CLASS} />
+          {PAYROLL_CALENDAR_MONTH_NUMBERS.map((monthNum) => (
+            <col key={monthNum} className={PAYROLL_CALENDAR_MONTH_COL_WIDTH_CLASS} />
+          ))}
+        </colgroup>
         <thead>
           <tr className="bg-muted/40">
             <th className={STICKY_YEAR_HEADER_CLASS}>Year</th>
             {monthHeaders.map(({ monthNum, label }) => (
-              <th
-                key={monthNum}
-                className="border-border border-b px-2 py-2 text-center text-xs font-semibold"
-              >
+              <th key={monthNum} className={PAYROLL_CALENDAR_MONTH_HEAD_CLASS}>
                 {label}
               </th>
             ))}
@@ -69,18 +86,11 @@ export function PayrollRunsCalendarView({ items }: { items: PayrollRunListRow[] 
                 const key = payrollMonthKey(year, monthNum);
                 const run = runsByMonthKey.get(key);
                 return (
-                  <td key={key} className="border-border border-b p-1.5 align-top">
+                  <td key={key} className={PAYROLL_CALENDAR_MONTH_CELL_CLASS}>
                     {run ? (
                       <PayrollCalendarMonthCell run={run} />
                     ) : (
-                      <div
-                        className={cn(
-                          'text-muted-foreground flex items-center justify-center rounded-lg text-xs',
-                          PAYROLL_CALENDAR_CELL_MIN_HEIGHT_CLASS,
-                        )}
-                      >
-                        —
-                      </div>
+                      <PayrollCalendarEmptyMonthCell />
                     )}
                   </td>
                 );
@@ -93,6 +103,20 @@ export function PayrollRunsCalendarView({ items }: { items: PayrollRunListRow[] 
   );
 }
 
+function PayrollCalendarEmptyMonthCell() {
+  return (
+    <div
+      className={cn(
+        'border-border bg-muted/20 text-muted-foreground flex items-center justify-center rounded-md border border-dashed text-xs',
+        PAYROLL_CALENDAR_SLOT_CLASS,
+      )}
+      aria-hidden
+    >
+      —
+    </div>
+  );
+}
+
 function PayrollCalendarMonthCell({ run }: { run: PayrollRunListRow }) {
   const statusUi = payrollRunStatusUi(run.status);
   const payable = formatAmount(parseAmount(run.totalPayable));
@@ -101,18 +125,17 @@ function PayrollCalendarMonthCell({ run }: { run: PayrollRunListRow }) {
     <Link
       href={`/finance/payroll/${run.id}`}
       className={cn(
-        'flex flex-col items-center justify-center gap-1 rounded-lg border px-2 py-3 text-center transition-colors',
-        PAYROLL_CALENDAR_CELL_MIN_HEIGHT_CLASS,
+        'flex flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border px-1 py-1.5 text-center transition-colors',
+        PAYROLL_CALENDAR_SLOT_CLASS,
         payrollRunCalendarCellClass(run.status),
       )}
       aria-label={`${statusUi.label} payroll ${payable}`}
     >
-      <span className="text-[10px] font-semibold tracking-wide uppercase opacity-90">
+      <span className="max-w-full truncate text-[9px] font-semibold tracking-wide uppercase opacity-90">
         {statusUi.label}
       </span>
-      <span className="text-lg font-bold tabular-nums">{payable}</span>
-      <span className="text-[10px] font-medium tabular-nums opacity-80">
-        {run._count.salaryLines} lines
+      <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
+        {payable}
       </span>
     </Link>
   );
