@@ -160,6 +160,20 @@ function DealsPipelinePageContent() {
     }
   }, [search, filters]);
 
+  const handleDealCreated = async (deal: Deal, options?: { openFull?: boolean }) => {
+    setDeals((prev) => [deal, ...prev.filter((item) => item.id !== deal.id)]);
+    setError(null);
+
+    if (options?.openFull) {
+      setSelectedDeal(deal);
+      setDealBlockerNav(null);
+      pushOpenDealToUrl(deal.id);
+      setSheetOpen(true);
+    }
+
+    await fetchDeals();
+  };
+
   useEffect(() => {
     fetchDeals();
   }, [fetchDeals]);
@@ -587,7 +601,7 @@ function DealsPipelinePageContent() {
       <CreateDealDialog
         open={showCreate}
         onOpenChange={setShowCreate}
-        onCreated={fetchDeals}
+        onCreated={handleDealCreated}
         prefill={dealPrefill}
       />
 

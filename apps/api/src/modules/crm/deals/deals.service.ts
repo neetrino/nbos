@@ -16,6 +16,7 @@ import { assertAttributionUpdateAllowed, type AttributionForValidation } from '.
 import { validateDealStageGate } from './deal-stage-gate';
 import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';
 import { assertDealSellerRefs, validateDealCreate } from './deal-create-validation';
+import { resolveDealCreateDefaults } from './deal-create-defaults.op';
 import {
   dealNeedsPartnerReferralTerms,
   patchPartnerReferralTerms as persistPartnerReferralTerms,
@@ -116,12 +117,13 @@ export class DealsService {
   }
 
   async create(data: CreateDealDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {
-    await validateDealCreate(this.prisma, data);
-    if (data.source === 'PARTNER' || data.sourcePartnerId) {
+    const resolved = await resolveDealCreateDefaults(this.prisma, data, meta);
+    await validateDealCreate(this.prisma, resolved);
+    if (resolved.source === 'PARTNER' || resolved.sourcePartnerId) {
       await assertPartnerAssignableForInboundCrm(
         this.prisma,
-        data.source ?? null,
-        data.sourcePartnerId,
+        resolved.source ?? null,
+        resolved.sourcePartnerId,
         meta.actorRoleLevel,
       );
     }
@@ -129,36 +131,40 @@ export class DealsService {
     const deal = await this.prisma.deal.create({
       data: {
         code,
-        name: data.name,
-        leadId: data.leadId,
-        contactId: data.contactId,
-        type: data.type as Prisma.DealCreateInput['type'],
-        amount: data.amount,
-        paymentType: data.paymentType as Prisma.DealCreateInput['paymentType'],
-        taxStatus: (data.taxStatus as Prisma.DealCreateInput['taxStatus']) ?? 'TAX',
-        companyId: data.companyId ?? undefined,
-        sellerId: data.sellerId,
-        sellerAssistantId: data.sellerAssistantId?.trim() || undefined,
-        source: data.source as Prisma.DealCreateInput['source'],
-        sourceDetail: data.sourceDetail,
-        sourcePartnerId: data.sourcePartnerId,
-        sourceContactId: data.sourceContactId,
-        marketingAccountId: data.marketingAccountId,
-        marketingActivityId: data.marketingActivityId,
-        notes: data.notes,
+        name: resolved.name,
+        leadId: resolved.leadId,
+        contactId: resolved.contactId!,
+        type: resolved.type as Prisma.DealCreateInput['type'],
+        amount: resolved.amount,
+        paymentType: resolved.paymentType as Prisma.DealCreateInput['paymentType'],
+        taxStatus: (resolved.taxStatus as Prisma.DealCreateInput['taxStatus']) ?? 'TAX',
+        companyId: resolved.companyId ?? undefined,
+        sellerId: resolved.sellerId!,
+        sellerAssistantId: resolved.sellerAssistantId?.trim() || undefined,
+        source: resolved.source as Prisma.DealCreateInput['source'],
+        sourceDetail: resolved.sourceDetail,
+        sourcePartnerId: resolved.sourcePartnerId,
+        sourceContactId: resolved.sourceContactId,
+        marketingAccountId: resolved.marketingAccountId,
+        marketingActivityId: resolved.marketingActivityId,
+        notes: resolved.notes,
         productCategory:
-          (data.productCategory as Prisma.DealCreateInput['productCategory']) ?? undefined,
-        productType: data.productType ?? undefined,
-        pmId: data.pmId ?? undefined,
-        deadline: data.deadline ? new Date(data.deadline) : undefined,
-        existingProductId: data.existingProductId ?? undefined,
-        offerSentAt: data.offerSentAt ? new Date(data.offerSentAt) : undefined,
-        offerLink: data.offerLink,
-        offerFileUrl: data.offerFileUrl,
-        offerScreenshotUrl: data.offerScreenshotUrl,
-        contractSignedAt: data.contractSignedAt ? new Date(data.contractSignedAt) : undefined,
-        contractFileUrl: data.contractFileUrl,
-        maintenanceStartAt: data.maintenanceStartAt ? new Date(data.maintenanceStartAt) : undefined,
+          (resolved.productCategory as Prisma.DealCreateInput['productCategory']) ?? undefined,
+        productType: resolved.productType ?? undefined,
+        pmId: resolved.pmId ?? undefined,
+        deadline: resolved.deadline ? new Date(resolved.deadline) : undefined,
+        existingProductId: resolved.existingProductId ?? undefined,
+        offerSentAt: resolved.offerSentAt ? new Date(resolved.offerSentAt) : undefined,
+        offerLink: resolved.offerLink,
+        offerFileUrl: resolved.offerFileUrl,
+        offerScreenshotUrl: resolved.offerScreenshotUrl,
+        contractSignedAt: resolved.contractSignedAt
+          ? new Date(resolved.contractSignedAt)
+          : undefined,
+        contractFileUrl: resolved.contractFileUrl,
+        maintenanceStartAt: resolved.maintenanceStartAt
+          ? new Date(resolved.maintenanceStartAt)
+          : undefined,
       },
       include: dealCreateInclude,
     });
@@ -170,8 +176,8 @@ export class DealsService {
         userId: meta.actorId,
         changes: {
           code: deal.code,
-          withoutPriorLead: !data.leadId?.trim(),
-          type: data.type,
+          withoutPriorLead: !resolved.leadId?.trim(),
+          type: resolved.type,
         },
       });
     }

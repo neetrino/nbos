@@ -93,37 +93,13 @@ describe('validateDealCreate', () => {
     });
   });
 
-  it('throws when direct deal has no name', async () => {
+  it('passes when direct deal has no From/Where (filled later in deal card)', async () => {
     await expect(
       validateDealCreate(prismaWithContact() as never, {
         ...baseDto,
-        name: 'A',
+        source: undefined,
+        sourceDetail: undefined,
       }),
-    ).rejects.toSatisfy((err: unknown) => {
-      const res = err instanceof BadRequestException ? err.getResponse() : {};
-      return (
-        typeof res === 'object' &&
-        res !== null &&
-        'code' in res &&
-        res.code === 'DIRECT_DEAL_NAME_REQUIRED'
-      );
-    });
-  });
-
-  it('throws when direct deal has no attribution', async () => {
-    await expect(
-      validateDealCreate(prismaWithContact() as never, {
-        ...baseDto,
-        sourceDetail: '',
-      }),
-    ).rejects.toSatisfy((err: unknown) => {
-      const res = err instanceof BadRequestException ? err.getResponse() : {};
-      return (
-        typeof res === 'object' &&
-        res !== null &&
-        'code' in res &&
-        res.code === 'DIRECT_DEAL_ATTRIBUTION_REQUIRED'
-      );
-    });
+    ).resolves.toBeUndefined();
   });
 });

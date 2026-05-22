@@ -163,11 +163,11 @@ export const dealsApi = {
   async create(data: {
     name?: string;
     leadId?: string;
-    contactId: string;
-    type: string;
+    contactId?: string;
+    type?: string;
     amount?: number;
     paymentType?: string;
-    sellerId: string;
+    sellerId?: string;
     sellerAssistantId?: string | null;
     source?: string;
     sourceDetail?: string;

@@ -1,13 +1,15 @@
 export interface CreateDealDto {
   name?: string;
   leadId?: string;
-  contactId: string;
-  type: string;
+  /** Omitted on quick-create — a placeholder contact is created from the deal title. */
+  contactId?: string;
+  type?: string;
   amount?: number;
   paymentType?: string;
   taxStatus?: string;
   companyId?: string | null;
-  sellerId: string;
+  /** Defaults to the authenticated employee when omitted. */
+  sellerId?: string;
   sellerAssistantId?: string | null;
   projectId?: string;
   source?: string | null;
