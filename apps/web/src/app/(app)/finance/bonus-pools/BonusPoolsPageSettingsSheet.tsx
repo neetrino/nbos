@@ -9,12 +9,18 @@ export interface BonusPoolsPageSettingsSheetProps {
   exportDisabled: boolean;
   exportInProgress: boolean;
   onExportCsv: () => void;
+  exportEmployeesDisabled: boolean;
+  exportEmployeesInProgress: boolean;
+  onExportEmployeesCsv: () => void;
 }
 
 export function BonusPoolsPageSettingsSheet({
   exportDisabled,
   exportInProgress,
   onExportCsv,
+  exportEmployeesDisabled,
+  exportEmployeesInProgress,
+  onExportEmployeesCsv,
 }: BonusPoolsPageSettingsSheetProps) {
   return (
     <PageSettingsSheet
@@ -42,6 +48,20 @@ export function BonusPoolsPageSettingsSheet({
           <Download className="size-4 shrink-0" aria-hidden />
         )}
         Export pools (CSV)
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        className="justify-start gap-2"
+        disabled={exportEmployeesDisabled}
+        onClick={() => onExportEmployeesCsv()}
+      >
+        {exportEmployeesInProgress ? (
+          <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+        ) : (
+          <Download className="size-4 shrink-0" aria-hidden />
+        )}
+        Export employees (CSV)
       </Button>
     </PageSettingsSheet>
   );

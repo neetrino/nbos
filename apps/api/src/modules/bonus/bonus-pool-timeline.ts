@@ -92,10 +92,13 @@ export async function queryBonusPoolTimeline(
         releaseType: true,
         status: true,
         createdAt: true,
+        updatedAt: true,
+        payrollIncludedAmount: true,
         employee: { select: { firstName: true, lastName: true } },
         bonusEntry: { select: { orderId: true } },
+        payrollRun: { select: { payrollMonth: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
     }),
     prisma.bonusEntry.findMany({
       where: { orderId: { in: orderIds }, kpiGatePassed: false },
@@ -132,12 +135,23 @@ export async function queryBonusPoolTimeline(
 
   const releaseEvents: BonusPoolTimelineEventDto[] = releases.map((r) => {
     const name = `${r.employee.firstName} ${r.employee.lastName}`.trim();
+    const payrollMonth = r.payrollRun?.payrollMonth;
+    const statusSuffix =
+      r.status === 'PAID'
+        ? ' · Paid'
+        : r.status === 'INCLUDED_IN_PAYROLL' && payrollMonth
+          ? ` · Payroll ${payrollMonth}`
+          : r.status === 'INCLUDED_IN_PAYROLL'
+            ? ' · In payroll'
+            : '';
+    const occurredAt = r.status === 'PAID' ? r.updatedAt : r.createdAt;
+    const displayAmount = r.payrollIncludedAmount ?? r.amount;
     return {
       id: r.id,
       kind: 'RELEASE_OUT',
-      occurredAt: r.createdAt.toISOString(),
-      amount: money(r.amount),
-      label: `Release · ${r.releaseType}`,
+      occurredAt: occurredAt.toISOString(),
+      amount: money(displayAmount),
+      label: `Release · ${r.releaseType}${statusSuffix}`,
       orderCode: orderCodeById.get(r.bonusEntry.orderId) ?? null,
       employeeName: name,
       releaseType: r.releaseType,

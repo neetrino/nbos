@@ -2,6 +2,7 @@ import { Decimal, PrismaClient, type BonusStatusEnum, type BonusTypeEnum } from 
 import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
 import { orderWhereForPoolKey } from './bonus-pool-key';
 import { sumPoolLedgerFields } from './bonus-pool-funding-health';
+import { computeAdvisoryKpiHeldAmount } from './bonus-pool-kpi-held';
 
 const ZERO = new Decimal(0);
 
@@ -198,6 +199,7 @@ export async function queryBonusPoolEmployeeLines(
     .map((acc) => {
       const remaining = Decimal.max(ZERO, acc.planned.minus(acc.released));
       const suggested = suggestReleaseForEmployee(remaining, poolRemaining, poolAvailable);
+      const kpiHeld = computeAdvisoryKpiHeldAmount(acc.planned, acc.released, acc.kpiGatePassed);
       return {
         employeeId: acc.employeeId,
         employeeName: acc.employeeName,
@@ -210,7 +212,7 @@ export async function queryBonusPoolEmployeeLines(
         includedInPayrollAmount: money(acc.includedInPayroll),
         paidAmount: money(acc.paid),
         remainingAmount: money(remaining),
-        burnedAmount: null,
+        burnedAmount: kpiHeld != null ? money(kpiHeld) : null,
         carryOverAmount: null,
         suggestedReleaseAmount: suggested.gt(0) ? money(suggested) : null,
         kpiGatePassed: acc.kpiGatePassed,

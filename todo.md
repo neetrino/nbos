@@ -22,7 +22,7 @@ how much was released/paid, what is still underfunded, and what KPI/cap rules ch
 
 - ☑ **Pool meaning:** Product / Extension = pool scope; Project = wrapper; Order = funding anchor.
 - ☑ **Pool fill indicators:** Empty, Partial, Ready, Over funded, Closed (list / board / sheet).
-- ☐ **Burned KPI display:** separate negative line and row badge when KPI reduces bonus.
+- ◐ **Burned KPI display:** advisory KPI held in employee API/sheet/CSV when gate false; ledger burned pending policy engine.
 - ☐ **Cap / carry-over:** auto-apply in payroll vs advisory until policy engine ships.
 - ☐ **Current month forecast:** wallet card — earned-only vs incoming/predicted bonus.
 - ☐ **Pay Now default:** all expenses vs dedicated payroll preset/filter as default landing.
@@ -39,7 +39,7 @@ Backend must expose pool data as product-level rollups plus employee-level break
 - ☑ **Ledger traceability:** payments in + releases out timeline in pool sheet (`GET …/pools/timeline`).
 - ◐ **Auto release suggestions:** proportional `suggestedReleaseAmount` per employee in API; full auto-release flow still pending.
 - ☐ **Manual override audit:** reason/approval for early / extra / over funding / cap override.
-- ◐ **Tests:** unit tests for fold, funding health, service merge, board lane, CSV — employee-lines + e2e cases still pending.
+- ◐ **Tests:** key, kpi-held, funding health, fold, project summary, employee CSV — timeline/integration pending.
 
 ---
 
@@ -52,9 +52,9 @@ UI must make the pool understandable without opening many pages.
 - ☑ **By project view:** project summary bar (team, received, planned, remaining, over-funding pools).
 - ☑ **Pool detail sheet:** funding hero, fill bar, money grid, orders, traceability links.
 - ☑ **Employee breakdown table:** planned / released / paid / remaining / suggested + KPI gate badge.
-- ◐ **Funding timeline:** payments + releases in sheet; payroll paid date / overrides on timeline still pending.
+- ☑ **Funding timeline:** payments + releases with payroll month / paid status on release rows.
 - ☑ **Risk indicators:** Over funding, underfunded, KPI not passed, early/extra/over-funding release badges in sheet.
-- ◐ **CSV/export:** pool roll-up columns extended; employee breakdown export still pending.
+- ☑ **CSV/export:** pool roll-ups + employee breakdown export (settings → Export employees CSV, max 40 pools).
 
 ---
 

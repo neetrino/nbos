@@ -107,7 +107,12 @@ export function BonusPoolsPageContent() {
     [filteredRows],
   );
 
-  const { exportCsvSubmitting, handleExportCsv } = useBonusProductPoolsCsvExport(filteredRows);
+  const {
+    exportCsvSubmitting,
+    exportEmployeesSubmitting,
+    handleExportCsv,
+    handleExportEmployeesCsv,
+  } = useBonusProductPoolsCsvExport(filteredRows);
 
   const openPoolSheet = useCallback((row: BonusProductPoolRow) => {
     setSheetPool(row);
@@ -144,17 +149,22 @@ export function BonusPoolsPageContent() {
           exportDisabled={loading || Boolean(error) || filteredRows.length === 0}
           exportInProgress={exportCsvSubmitting}
           onExportCsv={handleExportCsv}
+          exportEmployeesDisabled={loading || Boolean(error) || filteredRows.length === 0}
+          exportEmployeesInProgress={exportEmployeesSubmitting}
+          onExportEmployeesCsv={() => void handleExportEmployeesCsv()}
         />
       ),
     }),
     [
       error,
       exportCsvSubmitting,
+      exportEmployeesSubmitting,
       filterConfigs,
       filterValues,
       filteredRows,
       handleClearFilters,
       handleExportCsv,
+      handleExportEmployeesCsv,
       handleViewChange,
       loading,
       search,

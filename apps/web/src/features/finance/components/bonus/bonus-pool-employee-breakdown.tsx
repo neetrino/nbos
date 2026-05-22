@@ -66,6 +66,7 @@ export function BonusPoolEmployeeBreakdown({
             <TableHead className={`${HEAD} text-right`}>Released</TableHead>
             <TableHead className={`${HEAD} text-right`}>Paid</TableHead>
             <TableHead className={`${HEAD} text-right`}>Remaining</TableHead>
+            <TableHead className={`${HEAD} text-right`}>KPI held</TableHead>
             <TableHead className={`${HEAD} text-right`}>Suggested</TableHead>
           </TableRow>
         </TableHeader>
@@ -103,6 +104,15 @@ export function BonusPoolEmployeeBreakdown({
                 </TableCell>
                 <TableCell className={`${CELL} text-right tabular-nums`}>
                   {formatBonusPoolMoney(line.remainingAmount)}
+                </TableCell>
+                <TableCell className={`${CELL} text-right tabular-nums`}>
+                  {line.burnedAmount ? (
+                    <span className="text-amber-700 dark:text-amber-400">
+                      {formatBonusPoolMoney(line.burnedAmount)}
+                    </span>
+                  ) : (
+                    '—'
+                  )}
                 </TableCell>
                 <TableCell className={`${CELL} text-right font-medium tabular-nums`}>
                   {formatBonusPoolMoney(line.suggestedReleaseAmount)}
