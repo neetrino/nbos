@@ -134,6 +134,14 @@ export function PayrollRunSalesKpiSection(props: {
             placeholder="e.g. 5000000"
             autoComplete="off"
           />
+          {run.kpiSalesPlanSuggestedAmount != null ? (
+            <p className="text-muted-foreground text-xs">
+              Prior month run plan:{' '}
+              <span className="text-foreground font-medium tabular-nums">
+                {moneyStringOrEmpty(run.kpiSalesPlanSuggestedAmount)}
+              </span>
+            </p>
+          ) : null}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="payroll-kpi-actual">
@@ -163,6 +171,20 @@ export function PayrollRunSalesKpiSection(props: {
           <Button type="button" size="sm" disabled={saving} onClick={() => void handleSave()}>
             Save KPI inputs
           </Button>
+          {run.kpiSalesPlanSuggestedAmount != null ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={saving}
+              onClick={() => {
+                setPlan(moneyStringOrEmpty(run.kpiSalesPlanSuggestedAmount));
+                setError(null);
+              }}
+            >
+              Use prior month plan
+            </Button>
+          ) : null}
           <Button
             type="button"
             size="sm"

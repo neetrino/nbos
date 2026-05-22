@@ -112,6 +112,14 @@ function SalaryLineKpiRow({
             disabled={disabled || busy}
             onChange={(e) => setPlan(e.target.value)}
           />
+          {Number.parseFloat(line.kpiSalesPlanSuggestedAmount) > 0 ? (
+            <p className="text-muted-foreground text-xs">
+              Prior month plan:{' '}
+              <span className="text-foreground font-medium tabular-nums">
+                {moneyStringOrEmpty(line.kpiSalesPlanSuggestedAmount)}
+              </span>
+            </p>
+          ) : null}
         </label>
         <label className="space-y-1 text-xs">
           <span className="text-muted-foreground">{actualLabel ?? 'Actual'}</span>
@@ -133,6 +141,17 @@ function SalaryLineKpiRow({
         <Button type="button" size="sm" disabled={disabled || busy} onClick={() => void save()}>
           Save
         </Button>
+        {Number.parseFloat(line.kpiSalesPlanSuggestedAmount) > 0 ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={disabled || busy}
+            onClick={() => setPlan(moneyStringOrEmpty(line.kpiSalesPlanSuggestedAmount))}
+          >
+            Use prior month plan
+          </Button>
+        ) : null}
         <Button
           type="button"
           size="sm"

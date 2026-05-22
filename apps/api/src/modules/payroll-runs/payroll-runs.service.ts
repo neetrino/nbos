@@ -49,6 +49,10 @@ import {
   sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi,
   sumPaymentsForPayrollMonthSuggestedSalesKpi,
 } from './payroll-run-suggested-sales-actual';
+import {
+  resolvePriorPayrollRunSalesPlanAmount,
+  resolveSuggestedSalesPlanByEmployee,
+} from './payroll-run-suggested-sales-plan';
 import { BONUS_POOL_ZERO } from '../bonus/bonus-pool-decimal';
 import { resolvePayrollRunSalesKpiScorecardMetrics } from './resolve-payroll-run-sales-kpi-scorecard';
 import {
@@ -141,6 +145,8 @@ export class PayrollRunsService {
       kpiSalesActualSuggestedAmount,
       salesKpiScorecardMetrics,
       suggestedActualBySeller,
+      kpiSalesPlanSuggestedAmount,
+      suggestedPlanByEmployee,
     ] = await Promise.all([
       fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
       loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
@@ -154,10 +160,15 @@ export class PayrollRunsService {
         run.payrollMonth,
         employeeIds,
       ),
+      resolvePriorPayrollRunSalesPlanAmount(this.prisma, run.payrollMonth),
+      resolveSuggestedSalesPlanByEmployee(this.prisma, run.payrollMonth, employeeIds),
     ]);
 
     const salaryLines = run.salaryLines.map((line) => ({
       ...line,
+      kpiSalesPlanSuggestedAmount: (
+        suggestedPlanByEmployee.get(line.employeeId) ?? BONUS_POOL_ZERO
+      ).toFixed(2),
       kpiSalesActualSuggestedAmount: (
         suggestedActualBySeller.get(line.employeeId) ?? BONUS_POOL_ZERO
       ).toFixed(2),
@@ -171,6 +182,7 @@ export class PayrollRunsService {
       auditTrail,
       includedBonusReleaseCount,
       kpiSalesActualSuggestedAmount: kpiSalesActualSuggestedAmount.toFixed(2),
+      kpiSalesPlanSuggestedAmount: kpiSalesPlanSuggestedAmount?.toFixed(2) ?? null,
       salesKpiScorecardMetrics,
     };
   }

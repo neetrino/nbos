@@ -89,7 +89,7 @@ Use after deploy or large UX change:
 Tracked in repo root [`todo.md`](../../../../todo.md). Summary:
 
 - **Policy engine:** marketing/support accrual automation; bonus policy CRUD.
-- **KPI:** automated plan/actual from scorecard results (metrics reference on policy today).
+- **KPI:** `KPI Plan` / `KPI Result` entities; automated targets beyond prior-month + payment hints.
 - **Notifications:** separate mobile/web push channel (in-app wallet notify ships for KPI + carry).
 - **Ops:** manual visual QA checklist (§ above); staging deploy smoke.
 - **My Company:** employee overrides + policy audit trail ([`06-My-Company-Cleanup-Register`](../07-My-Company/06-My-Company-Cleanup-Register.md) C1–C3).

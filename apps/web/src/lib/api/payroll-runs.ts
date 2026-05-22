@@ -112,6 +112,8 @@ export interface SalaryLineRow {
   /** Per-employee sales KPI override; null uses payroll run defaults at SALES attach. */
   kpiSalesPlanAmount: string | null;
   kpiSalesActualAmount: string | null;
+  /** Prior-month line plan or that run's default; hint until saved. */
+  kpiSalesPlanSuggestedAmount: string;
   /** Seller-attributed payment sum for run month (deal.sellerId); hint until saved. */
   kpiSalesActualSuggestedAmount: string;
   createdAt: string;
@@ -133,6 +135,8 @@ export interface PayrollRunDetail extends PayrollRunListRow {
    * Hint for sales actual; does not persist until saved via PATCH.
    */
   kpiSalesActualSuggestedAmount: string;
+  /** Prior payroll month run-level plan; null when unavailable. */
+  kpiSalesPlanSuggestedAmount: string | null;
   /** Labels/links from dominant active KPI policy on run salary lines. */
   salesKpiScorecardMetrics: KpiScorecardMetric[];
   /** Read-only milestones from run timestamps (no intermediate status audit yet). */
