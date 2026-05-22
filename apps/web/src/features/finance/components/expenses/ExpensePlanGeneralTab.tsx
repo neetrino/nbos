@@ -14,6 +14,7 @@ import Link from 'next/link';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
+  EntityNotesSection,
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
@@ -157,17 +158,16 @@ export function ExpensePlanGeneralTab({
         </div>
       </DetailSheetSection>
 
-      <DetailSheetSection title="Notes" icon={<StickyNote size={12} />}>
-        <InlineField
-          variant="controlled"
-          label="Notes"
-          type="textarea"
-          value={draft.notes}
-          placeholder="Optional notes…"
-          disabled={formDisabled}
-          onValueChange={(v) => patchDraft({ notes: v })}
-        />
-      </DetailSheetSection>
+      <EntityNotesSection
+        title="Notes"
+        icon={<StickyNote size={12} />}
+        entityType="expense"
+        entityId={plan.id}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        placeholder="Optional notes…"
+        disabled={formDisabled}
+      />
 
       <DetailSheetSection title="Actions">
         <div className="flex flex-wrap gap-2">

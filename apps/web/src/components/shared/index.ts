@@ -126,10 +126,12 @@ export {
 } from './quick-create-task/QuickCreateTaskDialog';
 export {
   EntityNotesField,
+  EntityNotesSection,
   ENTITY_NOTE_ENTITY_TYPES,
   editorHtmlToNotesValue,
   isHtmlNotesValue,
   notesValueToEditorHtml,
   type EntityNoteEntityType,
   type EntityNotesFieldProps,
+  type EntityNotesSectionProps,
 } from './entity-notes';

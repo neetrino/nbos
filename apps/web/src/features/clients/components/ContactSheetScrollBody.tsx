@@ -1,7 +1,7 @@
 'use client';
 
 import { Building2, Calendar, Mail, MessageCircle, Phone, User } from 'lucide-react';
-import { DetailSheetSection, InlineField } from '@/components/shared';
+import { DetailSheetSection, EntityNotesSection, InlineField } from '@/components/shared';
 import { CONTACT_ROLES, LANGUAGES, PREFERRED_CHANNELS } from '../constants/clients';
 import type { Contact } from '@/lib/api/clients';
 import type { ContactPortfolioResponse } from '@/lib/api/client-portfolio';
@@ -173,18 +173,16 @@ export function ContactSheetScrollBody({
             </div>
           </DetailSheetSection>
 
-          <DetailSheetSection title="Notes" icon={<MessageCircle size={12} />}>
-            <InlineField
-              variant="controlled"
-              label=""
-              type="textarea"
-              value={draft.notes}
-              placeholder="Preferences, important details…"
-              icon={<MessageCircle size={12} />}
-              disabled={saving}
-              onValueChange={(v) => patchDraft({ notes: v })}
-            />
-          </DetailSheetSection>
+          <EntityNotesSection
+            title="Notes"
+            icon={<MessageCircle size={12} />}
+            entityType="contact"
+            entityId={contact.id}
+            value={draft.notes}
+            onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+            placeholder="Preferences, important details…"
+            disabled={saving}
+          />
 
           {contact.companies.length > 0 ? (
             <DetailSheetSection

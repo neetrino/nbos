@@ -7,6 +7,7 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetCollapsibleSection,
   DetailSheetSection,
+  EntityNotesSection,
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
@@ -221,17 +222,14 @@ export function ClientServiceGeneralTab({
         </div>
       </DetailSheetCollapsibleSection>
 
-      <DetailSheetSection title="Notes">
-        <InlineField
-          variant="controlled"
-          label="Notes"
-          type="textarea"
-          value={draft.notes}
-          placeholder="Optional"
-          disabled={formDisabled}
-          onValueChange={(notes) => patchDraft({ notes })}
-        />
-      </DetailSheetSection>
+      <EntityNotesSection
+        entityType="generic"
+        entityId={serviceId}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        placeholder="Optional notes…"
+        disabled={formDisabled}
+      />
 
       <DetailSheetSection title="Proofs">
         <FinanceProofAttachments

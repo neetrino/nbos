@@ -3,6 +3,7 @@
 import { Building2, Calendar, FileText, MessageCircle, Receipt, Tag, User } from 'lucide-react';
 import {
   DetailSheetSection,
+  EntityNotesSection,
   InlineField,
   RelationPickerField,
   StatusBadge,
@@ -188,18 +189,16 @@ export function CompanySheetScrollBody({
             </div>
           </DetailSheetSection>
 
-          <DetailSheetSection title="Notes" icon={<MessageCircle size={12} />}>
-            <InlineField
-              variant="controlled"
-              label=""
-              type="textarea"
-              value={draft.notes}
-              placeholder="Internal notes…"
-              icon={<MessageCircle size={12} />}
-              disabled={saving}
-              onValueChange={(v) => patchDraft({ notes: v })}
-            />
-          </DetailSheetSection>
+          <EntityNotesSection
+            title="Notes"
+            icon={<MessageCircle size={12} />}
+            entityType="company"
+            entityId={company.id}
+            value={draft.notes}
+            onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+            placeholder="Internal notes…"
+            disabled={saving}
+          />
         </div>
 
         <div className="space-y-4">

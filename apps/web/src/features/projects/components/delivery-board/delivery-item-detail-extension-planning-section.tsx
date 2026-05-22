@@ -1,7 +1,8 @@
 'use client';
 
 import { Layers, Package, Sparkles, Tag } from 'lucide-react';
-import { InlineField } from '@/components/shared';
+import { EntityNotesField, InlineField } from '@/components/shared';
+import { cn } from '@/lib/utils';
 import type { FullExtension } from '@/lib/api/extensions';
 import { EXTENSION_SIZES, getProductType } from '@/features/projects/constants/projects';
 import type { ExtensionPlanSnapshot } from './delivery-item-detail-planning-state';
@@ -67,17 +68,20 @@ export function ExtensionPlanningSection({
         <div className="md:col-span-2">
           <ExtensionPlanProductLine extension={extension} />
         </div>
-        <div className="md:col-span-2">
-          <InlineField
-            variant="controlled"
-            label="Scope & notes"
-            type="textarea"
+        <div
+          className={cn(
+            'md:col-span-2',
+            deliveryStageGateFieldClass(gateRequiredFields, 'description', ''),
+          )}
+        >
+          <EntityNotesField
+            entityType="generic"
+            entityId={extension.id}
             value={draft.description}
-            icon={<Sparkles size={12} />}
+            onChange={(description) => patchDraft({ description: description ?? '' })}
+            label="Scope & notes"
             placeholder="Plan, acceptance criteria…"
             disabled={disabled}
-            className={deliveryStageGateFieldClass(gateRequiredFields, 'description')}
-            onValueChange={(v) => patchDraft({ description: v })}
           />
         </div>
       </div>

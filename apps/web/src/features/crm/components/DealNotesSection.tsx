@@ -1,11 +1,7 @@
 'use client';
 
 import { MessageSquare } from 'lucide-react';
-import {
-  DETAIL_SHEET_SECTION_BODY_CLASS,
-  DetailSheetSection,
-  EntityNotesField,
-} from '@/components/shared';
+import { EntityNotesSection } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
@@ -28,22 +24,17 @@ export function DealNotesSection({
   gateRequiredFields = new Set(),
 }: DealNotesSectionProps) {
   return (
-    <DetailSheetSection
+    <EntityNotesSection
       title="Notes"
       icon={<MessageSquare size={12} />}
-      className={sectionClassName}
-    >
-      <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-        <EntityNotesField
-          entityType="deal"
-          entityId={entityId}
-          value={draft.notes}
-          onChange={(notes) => patchDraft({ notes })}
-          disabled={disabled}
-          placeholder="Add notes about this deal…"
-          shellClassName={cn(dealStageGateFieldClass(gateRequiredFields, 'notes', ''))}
-        />
-      </div>
-    </DetailSheetSection>
+      sectionClassName={sectionClassName}
+      entityType="deal"
+      entityId={entityId}
+      value={draft.notes}
+      onChange={(notes) => patchDraft({ notes })}
+      disabled={disabled}
+      placeholder="Add notes about this deal…"
+      shellClassName={cn(dealStageGateFieldClass(gateRequiredFields, 'notes', ''))}
+    />
   );
 }

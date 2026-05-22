@@ -5,6 +5,7 @@ import { Calendar, Layers, Package, Sparkles, Tag } from 'lucide-react';
 import {
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
+  EntityNotesField,
   InlineField,
 } from '@/components/shared';
 import {
@@ -12,15 +13,18 @@ import {
   PRODUCT_TYPES,
   PRODUCT_TYPES_BY_CATEGORY,
 } from '@/features/projects/constants/projects';
+import { cn } from '@/lib/utils';
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
 
 export function ProductPlanningSection({
+  entityId,
   draft,
   onDraftChange,
   disabled = false,
   gateRequiredFields = new Set<string>(),
 }: {
+  entityId: string;
   draft: ProductPlanSnapshot;
   onDraftChange: (next: ProductPlanSnapshot) => void;
   disabled?: boolean;
@@ -102,17 +106,17 @@ export function ProductPlanningSection({
           />
         </div>
       </div>
-      <div className="mt-3">
-        <InlineField
-          variant="controlled"
-          label="Scope & working notes"
-          type="textarea"
+      <div
+        className={cn('mt-3', deliveryStageGateFieldClass(gateRequiredFields, 'description', ''))}
+      >
+        <EntityNotesField
+          entityType="generic"
+          entityId={entityId}
           value={draft.description}
-          icon={<Sparkles size={12} />}
+          onChange={(description) => patchDraft({ description: description ?? '' })}
+          label="Scope & working notes"
           placeholder="Plan, milestones, client context…"
           disabled={disabled}
-          className={deliveryStageGateFieldClass(gateRequiredFields, 'description')}
-          onValueChange={(v) => patchDraft({ description: v })}
         />
       </div>
     </section>

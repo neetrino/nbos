@@ -13,6 +13,7 @@ import {
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
+  EntityNotesSection,
   InlineField,
   StatusBadge,
 } from '@/components/shared';
@@ -260,17 +261,16 @@ export function ExpenseGeneralTab({
         </div>
       </DetailSheetSection>
 
-      <DetailSheetSection title="Notes" icon={<StickyNote size={12} />}>
-        <InlineField
-          variant="controlled"
-          label="Notes"
-          type="textarea"
-          value={draft.notes}
-          placeholder="Optional notes…"
-          disabled={formDisabled}
-          onValueChange={(v) => patchDraft({ notes: v })}
-        />
-      </DetailSheetSection>
+      <EntityNotesSection
+        title="Notes"
+        icon={<StickyNote size={12} />}
+        entityType="expense"
+        entityId={expense.id}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        placeholder="Optional notes…"
+        disabled={formDisabled}
+      />
 
       <DetailSheetSection title="Proofs" icon={<Layers size={12} />}>
         <FinanceProofAttachments

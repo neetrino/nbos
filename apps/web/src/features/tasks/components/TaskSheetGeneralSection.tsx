@@ -1,11 +1,12 @@
 import { Calendar, ClipboardList, CircleDot, Flag, User } from 'lucide-react';
-import { InlineField, RelationPickerField } from '@/components/shared';
+import { EntityNotesField, InlineField, RelationPickerField } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { TASK_PRIORITIES, TASK_STATUSES } from '../constants/tasks';
 import type { TaskGeneralDraft } from '../task-general-form-state';
 import { TASK_SHEET_SECTION_SURFACE_CLASS } from './task-sheet-classes';
 
 interface TaskSheetGeneralSectionProps {
+  taskId: string;
   draft: TaskGeneralDraft;
   saving: boolean;
   onPatchDraft: (partial: Partial<TaskGeneralDraft>) => void;
@@ -15,6 +16,7 @@ interface TaskSheetGeneralSectionProps {
 }
 
 export function TaskSheetGeneralSection({
+  taskId,
   draft,
   saving,
   onPatchDraft,
@@ -103,16 +105,17 @@ export function TaskSheetGeneralSection({
           onClear={() => onPatchDraft({ assigneeId: null, assigneeLabel: null })}
           {...employeePicker}
         />
-        <InlineField
-          variant="controlled"
-          label="Description"
-          value={draft.description ?? ''}
-          type="textarea"
-          placeholder="Add description"
-          className="lg:col-span-2"
-          disabled={saving}
-          onValueChange={(value) => onPatchDraft({ description: value.trim() ? value : null })}
-        />
+        <div className="lg:col-span-2">
+          <EntityNotesField
+            entityType="task"
+            entityId={taskId}
+            value={draft.description}
+            onChange={(description) => onPatchDraft({ description })}
+            label="Description"
+            placeholder="Add description…"
+            disabled={saving}
+          />
+        </div>
       </div>
     </section>
   );

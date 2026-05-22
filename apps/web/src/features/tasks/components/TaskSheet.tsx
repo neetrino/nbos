@@ -125,6 +125,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                     <TaskSummaryCard task={state.task} />
 
                     <TaskSheetGeneralSection
+                      taskId={state.task.id}
                       draft={state.generalDraft}
                       saving={state.saving}
                       onPatchDraft={state.patchGeneralDraft}
