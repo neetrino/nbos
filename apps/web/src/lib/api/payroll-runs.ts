@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { KpiScorecardMetric } from '@/features/my-company/kpi-policies/kpi-scorecard-metrics.types';
 import type { ListData } from './finance-common';
 
 export type PayrollRunStatus = 'DRAFT' | 'REVIEW' | 'APPROVED' | 'PAYING' | 'CLOSED';
@@ -130,6 +131,8 @@ export interface PayrollRunDetail extends PayrollRunListRow {
    * Hint for sales actual; does not persist until saved via PATCH.
    */
   kpiSalesActualSuggestedAmount: string;
+  /** Labels/links from dominant active KPI policy on run salary lines. */
+  salesKpiScorecardMetrics: KpiScorecardMetric[];
   /** Read-only milestones from run timestamps (no intermediate status audit yet). */
   journal: PayrollJournalEntry[];
   /** Audit log rows for this run (`CREATED`, `STATUS_CHANGED`, …). */

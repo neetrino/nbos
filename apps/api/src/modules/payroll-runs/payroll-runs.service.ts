@@ -46,6 +46,7 @@ import {
 } from './salary-line-sales-kpi-patch';
 import { loadSalaryLinesBlockingPayrollCloseCount } from './payroll-run-close-validation';
 import { sumPaymentsForPayrollMonthSuggestedSalesKpi } from './payroll-run-suggested-sales-actual';
+import { resolvePayrollRunSalesKpiScorecardMetrics } from './resolve-payroll-run-sales-kpi-scorecard';
 import {
   querySalaryBoard,
   type SalaryBoardQueryParams,
@@ -127,11 +128,14 @@ export class PayrollRunsService {
     });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
 
+    const employeeIds = run.salaryLines.map((line) => line.employeeId);
+
     const [
       materializedByRun,
       auditTrail,
       includedBonusReleaseCount,
       kpiSalesActualSuggestedAmount,
+      salesKpiScorecardMetrics,
     ] = await Promise.all([
       fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
       loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
@@ -139,6 +143,7 @@ export class PayrollRunsService {
         where: { payrollRunId: id, status: 'INCLUDED_IN_PAYROLL' },
       }),
       sumPaymentsForPayrollMonthSuggestedSalesKpi(this.prisma, run.payrollMonth),
+      resolvePayrollRunSalesKpiScorecardMetrics(this.prisma, run.payrollMonth, employeeIds),
     ]);
 
     return {
@@ -148,6 +153,7 @@ export class PayrollRunsService {
       auditTrail,
       includedBonusReleaseCount,
       kpiSalesActualSuggestedAmount: kpiSalesActualSuggestedAmount.toFixed(2),
+      salesKpiScorecardMetrics,
     };
   }
 

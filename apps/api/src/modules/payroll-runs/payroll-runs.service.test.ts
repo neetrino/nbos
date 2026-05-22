@@ -200,6 +200,7 @@ describe('PayrollRunsService', () => {
         approvedBy: { id: 'e2', firstName: 'C', lastName: 'D' },
       });
       prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: new Decimal('99.10') } });
+      prisma.kpiPolicy.findFirst.mockResolvedValue({ scorecardMetrics: [] });
       const result = await service.findById('p1');
       expect(result.kpiSalesActualSuggestedAmount).toBe('99.10');
       expect(result.materializedExpenseLineCount).toBe(2);

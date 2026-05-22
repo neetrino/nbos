@@ -90,6 +90,8 @@ export function createMockPrisma() {
     salesBonusPolicy: createModelMock(),
     productBonusPool: createModelMock(),
     bonusRelease: createModelMock(),
+    compensationProfile: createModelMock(),
+    kpiPolicy: createModelMock(),
     financePostingPeriod: createModelMock(),
     operationalJournalEntry: createModelMock(),
     notificationEvent: createModelMock(),
