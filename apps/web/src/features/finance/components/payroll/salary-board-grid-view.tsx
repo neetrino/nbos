@@ -114,7 +114,7 @@ export function SalaryBoardGridView({
                     return (
                       <td key={monthKey} className="border-border border-b px-1 py-1 align-top">
                         {cell ? (
-                          <SalaryBoardCellButton cell={cell} onOpen={onOpenMonth} compact />
+                          <SalaryBoardCellButton cell={cell} onOpen={onOpenMonth} />
                         ) : (
                           <div className="text-muted-foreground flex min-h-[3rem] items-center justify-center text-xs">
                             —

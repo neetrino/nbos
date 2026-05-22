@@ -320,15 +320,16 @@ Legacy URL `/bonus` редиректит на `/finance/bonuses` с сохран
 
 Default view: `Grid` (сотрудники × месяцы). Переключатель видов (`localStorage`):
 
-- `Grid` — матрица employee × month;
-- `Cards` — карточки по сотруднику;
+- `Grid` — матрица employee × month (год в правом верхнем углу, итог по сотруднику справа);
 - `List` — плоская таблица с footer totals;
-- `Board` — колонки по payout phase (`past_paid` / `active_payout` / `accumulating`).
+- `Board` — kanban по payout phase (`Fully paid` / `Active payout` / `Accumulating`).
 
 - строки: сотрудники;
 - колонки: месяцы;
-- ячейка: payout phase + line status badges, payable / paid / remaining;
+- ячейка grid: один badge **line status** + payable;
 - панель totals над видом: visible lines, payable, paid, remaining (по активным фильтрам).
+
+**Список payroll runs** (`/finance/payroll`): виды `List` (строка целиком в цвете статуса run) и `Calendar` (год × 12 месяцев, ячейка в цвете статуса).
 
 Клик по заголовку месяца открывает:
 
