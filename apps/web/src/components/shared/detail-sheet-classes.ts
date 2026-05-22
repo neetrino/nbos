@@ -141,3 +141,6 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
   'text-muted-foreground hover:text-foreground flex min-h-8 w-full items-center gap-2 rounded-xl px-3 py-1 text-left text-sm',
 ].join(' ');
+
+/** Use on Save / Cancel in detail sheets and sticky form footers. */
+export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;

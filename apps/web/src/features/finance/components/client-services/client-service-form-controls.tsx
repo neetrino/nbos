@@ -74,11 +74,11 @@ export function ClientServiceFormFooter(props: {
   submitLabel: string;
 }) {
   return (
-    <div className="flex justify-end gap-2 pt-2">
-      <Button type="button" variant="outline" onClick={props.onCancel}>
+    <div className="flex justify-end gap-4 pt-2">
+      <Button type="button" variant="outline" size="form" onClick={props.onCancel}>
         Cancel
       </Button>
-      <Button type="submit" disabled={!props.canSubmit || props.submitting}>
+      <Button type="submit" size="form" disabled={!props.canSubmit || props.submitting}>
         {props.submitting ? 'Saving…' : props.submitLabel}
       </Button>
     </div>

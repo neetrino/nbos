@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 
 export interface DetailSheetFormFooterProps {
@@ -44,14 +45,19 @@ export function DetailSheetFormFooter({
             {errorMessage}
           </p>
         ) : null}
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button type="button" size="default" disabled={!dirty} onClick={onSave}>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <Button
+            type="button"
+            size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+            disabled={!dirty}
+            onClick={onSave}
+          >
             {saving ? 'Saving…' : saveLabel}
           </Button>
           <Button
             type="button"
             variant="outline"
-            size="default"
+            size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
             disabled={!dirty}
             onClick={onCancel}
           >
