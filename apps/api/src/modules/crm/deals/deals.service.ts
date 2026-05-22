@@ -133,11 +133,15 @@ export class DealsService {
         code,
         name: resolved.name,
         leadId: resolved.leadId,
-        contactId: resolved.contactId!,
-        type: resolved.type as Prisma.DealCreateInput['type'],
+        ...(resolved.contactId && { contactId: resolved.contactId }),
+        ...(resolved.type && { type: resolved.type as Prisma.DealCreateInput['type'] }),
         amount: resolved.amount,
-        paymentType: resolved.paymentType as Prisma.DealCreateInput['paymentType'],
-        taxStatus: (resolved.taxStatus as Prisma.DealCreateInput['taxStatus']) ?? 'TAX',
+        ...(resolved.paymentType && {
+          paymentType: resolved.paymentType as Prisma.DealCreateInput['paymentType'],
+        }),
+        ...(resolved.taxStatus && {
+          taxStatus: resolved.taxStatus as Prisma.DealCreateInput['taxStatus'],
+        }),
         companyId: resolved.companyId ?? undefined,
         sellerId: resolved.sellerId!,
         sellerAssistantId: resolved.sellerAssistantId?.trim() || undefined,
@@ -181,7 +185,10 @@ export class DealsService {
         },
       });
     }
-    await syncPartnerReferralTermsForDeal(this.prisma, deal.id, this.partnerTermsSnapshot(deal));
+    const termsSnapshot = this.partnerTermsSnapshot(deal);
+    if (termsSnapshot) {
+      await syncPartnerReferralTermsForDeal(this.prisma, deal.id, termsSnapshot);
+    }
     const withTerms = await this.prisma.deal.findUnique({
       where: { id: deal.id },
       include: dealCreateInclude,
@@ -285,7 +292,10 @@ export class DealsService {
       },
       include: dealUpdateInclude,
     });
-    await syncPartnerReferralTermsForDeal(this.prisma, id, this.partnerTermsSnapshot(deal));
+    const termsSnapshot = this.partnerTermsSnapshot(deal);
+    if (termsSnapshot) {
+      await syncPartnerReferralTermsForDeal(this.prisma, id, termsSnapshot);
+    }
     const refreshed = await this.prisma.deal.findUnique({
       where: { id },
       include: dealUpdateInclude,
@@ -309,7 +319,10 @@ export class DealsService {
     this.assertStatusTransitionAllowed(current.status, status);
 
     if (dealNeedsPartnerReferralTerms(current)) {
-      await syncPartnerReferralTermsForDeal(this.prisma, id, this.partnerTermsSnapshot(current));
+      const termsSnapshot = this.partnerTermsSnapshot(current);
+      if (termsSnapshot) {
+        await syncPartnerReferralTermsForDeal(this.prisma, id, termsSnapshot);
+      }
       current = await this.findById(id);
     }
 
@@ -404,9 +417,10 @@ export class DealsService {
   private partnerTermsSnapshot(deal: {
     source: string | null;
     sourcePartnerId: string | null;
-    type: string;
+    type: string | null;
     paymentType: string | null;
-  }): PartnerReferralTermsDealSnapshot {
+  }): PartnerReferralTermsDealSnapshot | null {
+    if (!deal.type) return null;
     return {
       source: deal.source,
       sourcePartnerId: deal.sourcePartnerId,

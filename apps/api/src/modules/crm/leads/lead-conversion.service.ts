@@ -30,9 +30,6 @@ interface LeadForConversion {
   deal?: { id: string } | null;
 }
 
-const DEFAULT_LEAD_DEAL_TYPE = 'PRODUCT';
-const DEFAULT_LEAD_PAYMENT_TYPE = 'CLASSIC';
-
 interface ConversionFieldError {
   field: string;
   message: string;
@@ -79,11 +76,7 @@ export class LeadConversionService {
 
     return this.createDealFromLead(
       lead,
-      {
-        dealType: DEFAULT_LEAD_DEAL_TYPE,
-        paymentType: DEFAULT_LEAD_PAYMENT_TYPE,
-        sellerId: lead.assignedTo ?? undefined,
-      },
+      { sellerId: lead.assignedTo ?? undefined },
       true,
       opts?.actorRoleLevel,
     );
@@ -144,9 +137,9 @@ export class LeadConversionService {
         leadId: lead.id,
         contactId,
         name: inquiryTitle || undefined,
-        type: (data.dealType ?? DEFAULT_LEAD_DEAL_TYPE) as DealTypeEnum,
+        ...(data.dealType && { type: data.dealType as DealTypeEnum }),
         amount: data.amount,
-        paymentType: data.paymentType ? (data.paymentType as PaymentTypeEnum) : undefined,
+        ...(data.paymentType && { paymentType: data.paymentType as PaymentTypeEnum }),
         sellerId: confirmedSellerId,
         source: lead.source ? (lead.source as LeadSourceEnum) : undefined,
         sourceDetail: lead.sourceDetail,

@@ -4,7 +4,8 @@ import { getAttributionValidationErrors, type AttributionForValidation } from '.
 export type { StageGateError } from './attribution-gate';
 
 export interface DealStageGateInput extends AttributionForValidation {
-  type: string;
+  contactId?: string | null;
+  type: string | null;
   amount: unknown;
   paymentType: string | null;
   productCategory: string | null;
@@ -69,14 +70,24 @@ export function getDealStageGateErrors(
   if (targetIdx < 0) return [];
 
   const errors: import('./attribution-gate').StageGateError[] = [];
-  const isProductLike = deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE';
-  const isExtension = deal.type === 'EXTENSION';
+  const dealType = deal.type;
+  const isProductLike = dealType === 'PRODUCT' || dealType === 'OUTSOURCE';
+  const isExtension = dealType === 'EXTENSION';
   const hasInvoice = deal.orders?.some((order) => (order.invoices?.length ?? 0) > 0) ?? false;
 
   const reachesStage = (stage: string) =>
     targetIdx >= DEAL_STAGE_GATE_ORDER.indexOf(stage as (typeof DEAL_STAGE_GATE_ORDER)[number]);
 
   if (reachesStage('DISCUSS_NEEDS')) {
+    if (!hasNonBlankValue(deal.contactId ?? null)) {
+      errors.push({ field: 'contactId', message: 'Contact is required at DISCUSS_NEEDS' });
+    }
+    if (!dealType) {
+      errors.push({ field: 'type', message: 'Deal type is required at DISCUSS_NEEDS' });
+    }
+    if (!deal.taxStatus) {
+      errors.push({ field: 'taxStatus', message: 'Tax status is required at DISCUSS_NEEDS' });
+    }
     errors.push(...getAttributionValidationErrors(deal));
   }
 
@@ -139,7 +150,7 @@ export function getDealStageGateErrors(
         message: 'Deposit invoice must be created before DEPOSIT_AND_CONTRACT',
       });
     }
-    if (deal.type === 'PRODUCT') {
+    if (dealType === 'PRODUCT') {
       if (!deal.pmId) {
         errors.push({
           field: 'pmId',

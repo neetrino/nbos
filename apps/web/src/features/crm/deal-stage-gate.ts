@@ -8,6 +8,7 @@ export function getLocalDealStageGateErrors(deal: Deal, targetStatus: string): A
 
 export function toDealStageGateInput(deal: Deal): DealStageGateInput {
   return {
+    contactId: deal.contact?.id ?? null,
     type: deal.type,
     amount: deal.amount,
     paymentType: deal.paymentType,
@@ -17,7 +18,7 @@ export function toDealStageGateInput(deal: Deal): DealStageGateInput {
     deadline: deal.deadline,
     existingProductId: deal.existingProductId,
     companyId: deal.companyId ?? null,
-    taxStatus: deal.taxStatus ?? 'TAX',
+    taxStatus: deal.taxStatus ?? null,
     offerLink: deal.offerLink,
     offerFileUrl: deal.offerFileUrl,
     offerScreenshotUrl: deal.offerScreenshotUrl,

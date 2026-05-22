@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import { validateDealStageGate } from './deal-stage-gate';
 
 const baseDeal = {
+  contactId: 'contact-1',
   type: 'PRODUCT',
   amount: null as unknown,
   paymentType: null as string | null,

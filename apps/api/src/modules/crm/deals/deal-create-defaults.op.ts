@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import type { CreateDealDto } from './deal.types';
 
@@ -17,41 +17,84 @@ export function assertQuickDealTitle(name: string | undefined): string {
   return trimmed;
 }
 
-function splitTitleForPlaceholderContact(title: string): { firstName: string; lastName: string } {
-  const parts = title.split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return { firstName: 'New', lastName: 'Contact' };
-  if (parts.length === 1) return { firstName: parts[0], lastName: '—' };
-  return { firstName: parts[0], lastName: parts.slice(1).join(' ') };
+type LeadFactsForDealCreate = {
+  id: string;
+  name: string | null;
+  contactId: string | null;
+  assignedTo: string | null;
+  source: string | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
+};
+
+function mergeLeadFactsIntoDealCreate(
+  data: CreateDealDto,
+  lead: LeadFactsForDealCreate,
+): CreateDealDto {
+  return {
+    ...data,
+    leadId: data.leadId?.trim() || lead.id,
+    name: data.name?.trim() || lead.name?.trim() || undefined,
+    contactId: data.contactId?.trim() || lead.contactId?.trim() || undefined,
+    sellerId: data.sellerId?.trim() || lead.assignedTo?.trim() || undefined,
+    source: data.source !== undefined ? data.source : lead.source,
+    sourceDetail: data.sourceDetail !== undefined ? data.sourceDetail : lead.sourceDetail,
+    sourcePartnerId:
+      data.sourcePartnerId !== undefined ? data.sourcePartnerId : lead.sourcePartnerId,
+    sourceContactId:
+      data.sourceContactId !== undefined ? data.sourceContactId : lead.sourceContactId,
+    marketingAccountId:
+      data.marketingAccountId !== undefined ? data.marketingAccountId : lead.marketingAccountId,
+    marketingActivityId:
+      data.marketingActivityId !== undefined ? data.marketingActivityId : lead.marketingActivityId,
+  };
 }
 
-async function createPlaceholderContact(
-  prisma: InstanceType<typeof PrismaClient>,
-  title: string,
-): Promise<string> {
-  const { firstName, lastName } = splitTitleForPlaceholderContact(title);
-  const contact = await prisma.contact.create({
-    data: { firstName, lastName },
-  });
-  return contact.id;
+function pickOptionalTrimmed(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed || undefined;
 }
 
 /**
- * Fills required deal FKs for quick-create (title-only UI); contact/seller/type defaults.
+ * Prepares deal create payload: actor as seller; lead facts only when leadId is set.
+ * Does not auto-fill business fields (type, paymentType, taxStatus, placeholder contact).
  */
 export async function resolveDealCreateDefaults(
   prisma: InstanceType<typeof PrismaClient>,
   data: CreateDealDto,
   meta: { actorId?: string },
 ): Promise<CreateDealDto> {
-  const hasPriorLead = Boolean(data.leadId?.trim());
-  const name = hasPriorLead ? data.name?.trim() || undefined : assertQuickDealTitle(data.name);
+  const leadId = data.leadId?.trim();
+  let merged: CreateDealDto = { ...data };
 
-  let contactId = data.contactId?.trim();
-  if (!contactId) {
-    contactId = await createPlaceholderContact(prisma, name ?? 'New deal');
+  if (leadId) {
+    const lead = await prisma.lead.findUnique({
+      where: { id: leadId },
+      select: {
+        id: true,
+        name: true,
+        contactId: true,
+        assignedTo: true,
+        source: true,
+        sourceDetail: true,
+        sourcePartnerId: true,
+        sourceContactId: true,
+        marketingAccountId: true,
+        marketingActivityId: true,
+      },
+    });
+    if (!lead) {
+      throw new NotFoundException(`Lead ${leadId} not found`);
+    }
+    merged = mergeLeadFactsIntoDealCreate(merged, lead);
+  } else {
+    merged = { ...merged, name: assertQuickDealTitle(merged.name) };
   }
 
-  const sellerId = data.sellerId?.trim() || meta.actorId?.trim();
+  const sellerId = pickOptionalTrimmed(merged.sellerId) || pickOptionalTrimmed(meta.actorId);
   if (!sellerId) {
     throw new BadRequestException({
       statusCode: 400,
@@ -64,11 +107,12 @@ export async function resolveDealCreateDefaults(
   }
 
   return {
-    ...data,
-    name,
-    contactId,
+    ...merged,
+    name: pickOptionalTrimmed(merged.name),
+    contactId: pickOptionalTrimmed(merged.contactId),
     sellerId,
-    type: data.type?.trim() || 'PRODUCT',
-    paymentType: data.paymentType?.trim() || 'CLASSIC',
+    type: pickOptionalTrimmed(merged.type),
+    paymentType: pickOptionalTrimmed(merged.paymentType),
+    taxStatus: pickOptionalTrimmed(merged.taxStatus),
   };
 }

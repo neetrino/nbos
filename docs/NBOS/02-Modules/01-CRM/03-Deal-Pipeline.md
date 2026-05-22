@@ -199,29 +199,29 @@ Deal Pipeline — воронка для работы с квалифициров
 
 ### Основные поля
 
-| Поле                 | Тип                                                  | Обязательное | Когда заполняется           |
-| -------------------- | ---------------------------------------------------- | ------------ | --------------------------- |
-| Название сделки      | Текст                                                | Да           | Стадия 1                    |
-| Контакт              | Связь                                                | Да           | Стадия 1 (из лида)          |
-| Компания             | Связь                                                | Нет → Да     | До стадии 7                 |
-| Deal Type            | Выбор: PRODUCT / EXTENSION / MAINTENANCE / OUTSOURCE | Да           | Стадия 1                    |
-| Linked Project       | Связь с Project                                      | Условно      | Для Extension / Maintenance |
-| Linked Product       | Связь с Product                                      | Условно      | Для Extension / Maintenance |
-| Marketing From       | Выбор                                                | Да\*         | Стадия 1                    |
-| Marketing Where      | Выбор                                                | Да\*         | Стадия 1                    |
-| Ответственный Seller | Сотрудник                                            | Да           | Стадия 1                    |
-| Тип услуги           | Выбор из списка                                      | Да           | Стадия 2                    |
-| Описание потребности | Текст                                                | Да           | Стадия 2                    |
-| Дата встречи         | Дата                                                 | Нет          | Стадия 3                    |
-| Product Category     | CODE / WORDPRESS / SHOPIFY / MARKETING / OTHER       | Да           | Стадия 4                    |
-| Product Type         | Website / Mobile App / CRM / Ecommerce / SaaS / etc. | Да           | Стадия 4                    |
-| Оценка сроков        | Число (дни/месяцы)                                   | Да           | Стадия 4                    |
-| Сумма сделки         | Число                                                | Да           | Стадия 5                    |
-| Тип оплаты           | Classic 50/50 / 30/30/40 / Subscription              | Да           | Стадия 5                    |
-| Offer Materials      | Drive File Asset: файл / ссылка / screenshot         | Да           | Стадия 5                    |
-| Налогооблагаемость   | Tax / Free                                           | Да           | До стадии 7                 |
-| Deadline             | Дата                                                 | Да\*\*       | Стадия 7                    |
-| Причина проигрыша    | Текст + выбор                                        | Условно      | Если Failed                 |
+| Поле                 | Тип                                                  | Обязательное | Когда заполняется                                            |
+| -------------------- | ---------------------------------------------------- | ------------ | ------------------------------------------------------------ |
+| Название сделки      | Текст                                                | Да           | Стадия 1                                                     |
+| Контакт              | Связь                                                | Да           | До **DISCUSS_NEEDS** (из лида при конвертации; иначе Seller) |
+| Компания             | Связь                                                | Нет → Да     | До стадии 7                                                  |
+| Deal Type            | Выбор: PRODUCT / EXTENSION / MAINTENANCE / OUTSOURCE | Да           | До **DISCUSS_NEEDS** (не автозаполняется при создании)       |
+| Linked Project       | Связь с Project                                      | Условно      | Для Extension / Maintenance                                  |
+| Linked Product       | Связь с Product                                      | Условно      | Для Extension / Maintenance                                  |
+| Marketing From       | Выбор                                                | Да\*         | Стадия 1                                                     |
+| Marketing Where      | Выбор                                                | Да\*         | Стадия 1                                                     |
+| Ответственный Seller | Сотрудник                                            | Да           | Стадия 1                                                     |
+| Тип услуги           | Выбор из списка                                      | Да           | Стадия 2                                                     |
+| Описание потребности | Текст                                                | Да           | Стадия 2                                                     |
+| Дата встречи         | Дата                                                 | Нет          | Стадия 3                                                     |
+| Product Category     | CODE / WORDPRESS / SHOPIFY / MARKETING / OTHER       | Да           | Стадия 4                                                     |
+| Product Type         | Website / Mobile App / CRM / Ecommerce / SaaS / etc. | Да           | Стадия 4                                                     |
+| Оценка сроков        | Число (дни/месяцы)                                   | Да           | Стадия 4                                                     |
+| Сумма сделки         | Число                                                | Да           | Стадия 5                                                     |
+| Тип оплаты           | Classic 50/50 / 30/30/40 / Subscription              | Да           | Стадия 5                                                     |
+| Offer Materials      | Drive File Asset: файл / ссылка / screenshot         | Да           | Стадия 5                                                     |
+| Налогооблагаемость   | Tax / Free                                           | Да           | До **DISCUSS_NEEDS** (выбор Seller; не default при создании) |
+| Deadline             | Дата                                                 | Да\*\*       | Стадия 7                                                     |
+| Причина проигрыша    | Текст + выбор                                        | Условно      | Если Failed                                                  |
 
 > \*Обязательно до перехода дальше первой meaningful stage. Значение **Marketing From** (Sales / Marketing / Partner / Client) также выбирает строку **политики sales bonus** (независимые проценты Seller и Assistant от базы Classic/Subscription): см. `03-Business-Logic/03-Bonus-Payroll-Logic.md`.
 > \*\*Для `PRODUCT / EXTENSION / OUTSOURCE` это delivery deadline; для `MAINTENANCE` это planned maintenance start date

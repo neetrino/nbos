@@ -55,7 +55,7 @@ export interface Deal {
   code: string;
   name: string | null;
   status: string;
-  type: string;
+  type: string | null;
   amount: number | null;
   paymentType: string | null;
   projectId: string | null;
@@ -89,7 +89,7 @@ export interface Deal {
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
-  contact: { id: string; firstName: string; lastName: string; email: string | null };
+  contact: { id: string; firstName: string; lastName: string; email: string | null } | null;
   seller: { id: string; firstName: string; lastName: string };
   sellerAssistant?: { id: string; firstName: string; lastName: string } | null;
   orders: DealOrder[];

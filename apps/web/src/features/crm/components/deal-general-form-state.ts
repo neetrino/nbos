@@ -6,11 +6,11 @@ export interface DealGeneralDraft {
   name: string | null;
   amount: number | null;
   paymentType: string | null;
-  taxStatus: string;
+  taxStatus: string | null;
   projectId: string | null;
   linkedProjectLabel: string | null;
   isNewProject: boolean;
-  type: string;
+  type: string | null;
   maintenanceStartAt: string | null;
   productCategory: string | null;
   productType: string | null;
@@ -50,11 +50,11 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     name: deal.name,
     amount: deal.amount,
     paymentType: deal.paymentType,
-    taxStatus: deal.taxStatus ?? 'TAX',
+    taxStatus: deal.taxStatus ?? null,
     projectId: deal.projectId,
     linkedProjectLabel: deal.handoff?.project?.name ?? null,
     isNewProject: false,
-    type: deal.type,
+    type: deal.type ?? null,
     maintenanceStartAt: toDateInputValue(deal.maintenanceStartAt),
     productCategory: deal.productCategory,
     productType: deal.productType,

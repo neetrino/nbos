@@ -218,7 +218,60 @@ describe('DealsService', () => {
       );
     });
 
+    it('creates draft deal with title and seller only', async () => {
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          id: '1',
+          code: data.code,
+          projectId: null,
+          type: null,
+          source: null,
+          sourcePartnerId: null,
+          paymentType: null,
+        }),
+      );
+      prisma.deal.findUnique.mockImplementation(({ where }) =>
+        Promise.resolve({
+          id: where.id,
+          code: 'D-2026-0010',
+          projectId: null,
+          type: null,
+          source: null,
+          sourcePartnerId: null,
+          paymentType: null,
+        }),
+      );
+
+      await service.create({ name: 'Draft only' }, { actorId: 'user-1' });
+
+      expect(prisma.deal.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            name: 'Draft only',
+            sellerId: 'user-1',
+          }),
+        }),
+      );
+      const createData = prisma.deal.create.mock.calls[0][0].data;
+      expect(createData).not.toHaveProperty('type');
+      expect(createData).not.toHaveProperty('contactId');
+      expect(createData).not.toHaveProperty('taxStatus');
+    });
+
     it('allows minimal payload when leadId is present', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: 'lead-1',
+        name: 'Lead title',
+        contactId: 'c-1',
+        assignedTo: 's-1',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
       prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
       prisma.deal.findFirst.mockResolvedValue(null);
       prisma.deal.create.mockResolvedValue({
@@ -254,17 +307,37 @@ describe('DealsService', () => {
       expect(prisma.deal.create).toHaveBeenCalled();
     });
 
-    it('rejects direct deal without attribution', async () => {
-      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
-      await expect(
-        service.create({
-          contactId: 'c-1',
-          type: 'PRODUCT',
-          paymentType: 'CLASSIC',
-          sellerId: 's-1',
-          name: 'Needs attribution',
+    it('allows draft direct deal without attribution at create', async () => {
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          id: '1',
+          code: data.code,
+          projectId: null,
+          type: null,
+          source: null,
+          sourcePartnerId: null,
+          paymentType: null,
         }),
-      ).rejects.toThrow(BadRequestException);
+      );
+      prisma.deal.findUnique.mockImplementation(({ where }) =>
+        Promise.resolve({
+          id: where.id,
+          code: 'D-2026-0004',
+          projectId: null,
+          type: null,
+          source: null,
+          sourcePartnerId: null,
+          paymentType: null,
+        }),
+      );
+
+      await service.create(
+        { name: 'Needs attribution later', sellerId: 's-1' },
+        { actorId: 's-1' },
+      );
+
+      expect(prisma.deal.create).toHaveBeenCalled();
     });
 
     it('skips DEAL_CREATED audit when actorId is omitted', async () => {
@@ -482,6 +555,7 @@ describe('DealsService', () => {
     it('updates deal status for early stage (no gate)', async () => {
       const before = {
         id: '1',
+        contactId: 'contact-1',
         status: 'START_CONVERSATION',
         type: 'PRODUCT',
         amount: null,
@@ -662,6 +736,7 @@ describe('DealsService', () => {
 function completeProductDeal(invoiceMoneyStatus: 'PAID' | 'AWAITING_PAYMENT' = 'PAID') {
   return {
     id: '1',
+    contactId: 'contact-1',
     status: 'DEPOSIT_AND_CONTRACT',
     type: 'PRODUCT',
     amount: 5000,

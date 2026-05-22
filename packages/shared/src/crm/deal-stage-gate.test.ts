@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { getDealStageGateErrors } from './deal-stage-gate';
 
 const baseDeal = {
+  contactId: 'contact-1',
   type: 'PRODUCT',
   amount: null as unknown,
   paymentType: null as string | null,
@@ -26,7 +27,28 @@ const baseDeal = {
 };
 
 describe('getDealStageGateErrors', () => {
-  it('returns no errors for early stages', () => {
+  it('returns no errors for START_CONVERSATION draft', () => {
+    expect(
+      getDealStageGateErrors(
+        {
+          ...baseDeal,
+          contactId: null,
+          type: null,
+          taxStatus: null,
+        },
+        'START_CONVERSATION',
+      ),
+    ).toEqual([]);
+  });
+
+  it('requires contact, type and tax at DISCUSS_NEEDS', () => {
+    const errors = getDealStageGateErrors(
+      { ...baseDeal, contactId: null, type: null, taxStatus: null },
+      'DISCUSS_NEEDS',
+    );
+    expect(errors.map((e) => e.field)).toEqual(
+      expect.arrayContaining(['contactId', 'type', 'taxStatus']),
+    );
     expect(getDealStageGateErrors(baseDeal, 'DISCUSS_NEEDS')).toEqual([]);
   });
 

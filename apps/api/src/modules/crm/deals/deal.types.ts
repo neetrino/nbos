@@ -1,7 +1,7 @@
 export interface CreateDealDto {
   name?: string;
   leadId?: string;
-  /** Omitted on quick-create — a placeholder contact is created from the deal title. */
+  /** Optional at create; required before DISCUSS_NEEDS (stage gate). From lead when leadId is set. */
   contactId?: string;
   type?: string;
   amount?: number;

@@ -7,26 +7,19 @@ export async function validateDealCreate(
   data: CreateDealDto,
 ): Promise<void> {
   const contactId = data.contactId?.trim();
-  if (!contactId) {
-    throw new BadRequestException({
-      statusCode: 400,
-      code: 'CONTACT_REQUIRED',
-      message: 'Contact is required for deal creation.',
-      errors: [{ field: 'contactId', message: 'Contact id is missing' }],
+  if (contactId) {
+    const contact = await prisma.contact.findUnique({
+      where: { id: contactId },
+      select: { id: true },
     });
-  }
-
-  const contact = await prisma.contact.findUnique({
-    where: { id: contactId },
-    select: { id: true },
-  });
-  if (!contact) {
-    throw new BadRequestException({
-      statusCode: 400,
-      code: 'CONTACT_NOT_FOUND',
-      message: `Contact ${contactId} was not found.`,
-      errors: [{ field: 'contactId', message: 'Unknown contact id' }],
-    });
+    if (!contact) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'CONTACT_NOT_FOUND',
+        message: `Contact ${contactId} was not found.`,
+        errors: [{ field: 'contactId', message: 'Unknown contact id' }],
+      });
+    }
   }
 
   const sellerId = data.sellerId?.trim();

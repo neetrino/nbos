@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Handshake, Package, Puzzle, Wrench } from 'lucide-react';
+import { CircleDashed, Handshake, Package, Puzzle, Wrench } from 'lucide-react';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 
 export type DealTypeKey = 'PRODUCT' | 'EXTENSION' | 'MAINTENANCE' | 'OUTSOURCE';
@@ -79,6 +79,19 @@ export function normalizeDealType(value: string): DealTypeKey {
   return (DEAL_TYPE_KEYS as readonly string[]).includes(upper) ? (upper as DealTypeKey) : 'PRODUCT';
 }
 
-export function getDealTypePresentation(dealType: string): DealTypePresentation {
+const DRAFT_PRESENTATION: DealTypePresentation = {
+  key: 'PRODUCT',
+  label: 'Type not set',
+  Icon: CircleDashed,
+  badgeVariant: 'gray',
+  cardShellClassName: 'border-border/80 bg-muted/30',
+  iconWrapClassName: 'bg-muted text-muted-foreground',
+  amountIconClassName: 'text-muted-foreground',
+  headerIconClassName: 'text-muted-foreground',
+  headerBadgeClassName: 'border-border bg-muted text-muted-foreground',
+};
+
+export function getDealTypePresentation(dealType: string | null | undefined): DealTypePresentation {
+  if (!dealType?.trim()) return DRAFT_PRESENTATION;
   return PRESENTATION[normalizeDealType(dealType)];
 }

@@ -72,13 +72,13 @@ export class DealsController {
     body: {
       name?: string;
       leadId?: string;
-      contactId: string;
-      type: string;
+      contactId?: string;
+      type?: string;
       amount?: number;
       paymentType?: string;
       taxStatus?: string;
       companyId?: string | null;
-      sellerId: string;
+      sellerId?: string;
       sellerAssistantId?: string | null;
       projectId?: string;
       source?: string;

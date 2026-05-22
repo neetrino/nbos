@@ -156,8 +156,6 @@ describe('LeadConversionService', () => {
     expect(prisma.deal.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          type: 'PRODUCT',
-          paymentType: 'CLASSIC',
           sellerId: 'seller-1',
         }),
       }),

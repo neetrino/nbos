@@ -90,6 +90,9 @@ export async function syncPartnerReferralTermsForDeal(
     await prisma.partnerReferralTerms.deleteMany({ where: { dealId } });
     return;
   }
+  if (!deal.type) {
+    return;
+  }
 
   const existing = await prisma.partnerReferralTerms.findUnique({
     where: { dealId },

@@ -93,6 +93,22 @@ describe('validateDealCreate', () => {
     });
   });
 
+  it('passes draft create without contact when only seller is set', async () => {
+    const prisma = {
+      contact: { findUnique: vi.fn() },
+      employee: {
+        findUnique: vi.fn().mockResolvedValue({ id: 's-1' }),
+      },
+    };
+    await expect(
+      validateDealCreate(prisma as never, {
+        name: 'Draft deal',
+        sellerId: 's-1',
+      }),
+    ).resolves.toBeUndefined();
+    expect(prisma.contact.findUnique).not.toHaveBeenCalled();
+  });
+
   it('passes when direct deal has no From/Where (filled later in deal card)', async () => {
     await expect(
       validateDealCreate(prismaWithContact() as never, {
