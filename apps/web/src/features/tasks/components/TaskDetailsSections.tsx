@@ -90,17 +90,6 @@ export function TaskLinksSection({
   );
 }
 
-export function TaskCoAssigneesSection({ task }: TaskDetailsSectionsProps) {
-  const count = task.coAssignees.length;
-  return (
-    <TaskSheetCompactRow label="Co-assignees">
-      <span className="text-primary text-sm font-medium">
-        {count > 0 ? `${count} people` : 'Add'}
-      </span>
-    </TaskSheetCompactRow>
-  );
-}
-
 interface PersonValueProps {
   icon: ReactNode;
   label: string;

@@ -9,16 +9,13 @@ import { cn } from '@/lib/utils';
 import { buildTaskCompletionBlockers } from '../utils/task-completion-readiness';
 import { TASK_OPEN_QUERY } from '../constants/task-open-query';
 import {
-  TASK_SHEET_CARD_CLASS,
   TASK_SHEET_CHAT_COLUMN_CLASS,
   TASK_SHEET_DETAIL_COLUMN_CLASS,
-  TASK_SHEET_META_BLOCK_CLASS,
   TASK_SHEET_SECTION_SURFACE_CLASS,
 } from './task-sheet-classes';
 import { TaskSheetChatPanel } from './TaskSheetChatPanel';
 import { TaskChecklistSection } from './TaskChecklistSection';
 import { TaskCompletionRulesPanel } from './TaskCompletionRulesPanel';
-import { TaskCoAssigneesSection } from './TaskDetailsSections';
 import { TaskSubtasksSection } from './TaskSubtasksSection';
 import { TaskSheetGeneralSection } from './TaskSheetGeneralSection';
 import { TaskSheetHeader } from './TaskSheetHeader';
@@ -108,12 +105,6 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                       onPatchDraft={state.patchGeneralDraft}
                       onSearchEmployees={state.searchEmployees}
                     />
-
-                    <section className={TASK_SHEET_CARD_CLASS}>
-                      <div className={TASK_SHEET_META_BLOCK_CLASS}>
-                        <TaskCoAssigneesSection task={state.task} />
-                      </div>
-                    </section>
 
                     {hasExtras ? (
                       <DetailSheetCollapsibleSection

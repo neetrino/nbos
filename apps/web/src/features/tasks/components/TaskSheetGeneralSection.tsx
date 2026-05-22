@@ -1,4 +1,4 @@
-import { Calendar, Copy, Flag, User } from 'lucide-react';
+import { Calendar, Copy, Flag, User, Users } from 'lucide-react';
 import { EntityNotesField, InlineField, RelationPickerField } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
@@ -29,8 +29,10 @@ export function TaskSheetGeneralSection({
   onPatchDraft,
   onSearchEmployees,
 }: TaskSheetGeneralSectionProps) {
-  const employeePicker = useRelationPickerActions('employee');
-  const samePerson = Boolean(draft.assigneeId) && draft.creatorId === draft.assigneeId;
+  const creatorPicker = useRelationPickerActions('employee', 'task-creator');
+  const assigneePicker = useRelationPickerActions('employee', 'task-assignee');
+  const assistantPicker = useRelationPickerActions('employee', 'task-assistant');
+  const observerPicker = useRelationPickerActions('employee', 'task-observer');
 
   async function copyTaskCode() {
     try {
@@ -54,68 +56,82 @@ export function TaskSheetGeneralSection({
 
       <section className={TASK_SHEET_CARD_CLASS}>
         <div className={TASK_SHEET_META_BLOCK_CLASS}>
-          {samePerson ? (
-            <TaskSheetCompactRow label="Creator & assignee">
+          <TaskSheetCompactRow label="Creator">
+            <RelationPickerField
+              label="Creator"
+              entityKind="employee"
+              value={draft.creatorId}
+              selectionLabel={draft.creatorLabel}
+              icon={<User size={13} />}
+              placeholder="Select creator…"
+              disabled={saving}
+              className={TASK_SHEET_COMPACT_FIELD_CLASS}
+              onSearch={onSearchEmployees}
+              onSelect={(employeeId, label) =>
+                onPatchDraft({ creatorId: employeeId, creatorLabel: label })
+              }
+              {...creatorPicker}
+            />
+          </TaskSheetCompactRow>
+
+          <TaskSheetCompactRow label="Assignee">
+            <RelationPickerField
+              label="Assignee"
+              entityKind="employee"
+              value={draft.assigneeId}
+              selectionLabel={draft.assigneeLabel}
+              icon={<User size={13} />}
+              placeholder="Select assignee…"
+              disabled={saving}
+              className={TASK_SHEET_COMPACT_FIELD_CLASS}
+              onSearch={onSearchEmployees}
+              onSelect={(employeeId, label) =>
+                onPatchDraft({ assigneeId: employeeId, assigneeLabel: label })
+              }
+              onClear={() => onPatchDraft({ assigneeId: null, assigneeLabel: null })}
+              {...assigneePicker}
+            />
+          </TaskSheetCompactRow>
+
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-1">
+            <TaskSheetCompactRow label="Assistant" className="py-0">
               <RelationPickerField
-                label="Creator & assignee"
+                label="Assistant"
                 entityKind="employee"
-                value={draft.creatorId}
-                selectionLabel={draft.creatorLabel}
-                icon={<User size={13} />}
-                placeholder="Select person…"
+                multiple
+                value={draft.coAssigneeIds}
+                selectionLabels={draft.coAssigneeLabels}
+                icon={<Users size={13} />}
+                placeholder="Add assistant…"
                 disabled={saving}
                 className={TASK_SHEET_COMPACT_FIELD_CLASS}
                 onSearch={onSearchEmployees}
-                onSelect={(employeeId, label) =>
-                  onPatchDraft({
-                    creatorId: employeeId,
-                    creatorLabel: label,
-                    assigneeId: employeeId,
-                    assigneeLabel: label,
-                  })
+                onChange={(ids, labels) =>
+                  onPatchDraft({ coAssigneeIds: ids, coAssigneeLabels: labels })
                 }
-                {...employeePicker}
+                {...assistantPicker}
               />
             </TaskSheetCompactRow>
-          ) : (
-            <>
-              <TaskSheetCompactRow label="Creator">
-                <RelationPickerField
-                  label="Creator"
-                  entityKind="employee"
-                  value={draft.creatorId}
-                  selectionLabel={draft.creatorLabel}
-                  icon={<User size={13} />}
-                  placeholder="Select creator…"
-                  disabled={saving}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
-                  onSearch={onSearchEmployees}
-                  onSelect={(employeeId, label) =>
-                    onPatchDraft({ creatorId: employeeId, creatorLabel: label })
-                  }
-                  {...employeePicker}
-                />
-              </TaskSheetCompactRow>
-              <TaskSheetCompactRow label="Assignee">
-                <RelationPickerField
-                  label="Assignee"
-                  entityKind="employee"
-                  value={draft.assigneeId}
-                  selectionLabel={draft.assigneeLabel}
-                  icon={<User size={13} />}
-                  placeholder="Assign employee"
-                  disabled={saving}
-                  className={TASK_SHEET_COMPACT_FIELD_CLASS}
-                  onSearch={onSearchEmployees}
-                  onSelect={(employeeId, label) =>
-                    onPatchDraft({ assigneeId: employeeId, assigneeLabel: label })
-                  }
-                  onClear={() => onPatchDraft({ assigneeId: null, assigneeLabel: null })}
-                  {...employeePicker}
-                />
-              </TaskSheetCompactRow>
-            </>
-          )}
+
+            <TaskSheetCompactRow label="Observer" className="py-0">
+              <RelationPickerField
+                label="Observer"
+                entityKind="employee"
+                multiple
+                value={draft.observerIds}
+                selectionLabels={draft.observerLabels}
+                icon={<Users size={13} />}
+                placeholder="Add observer…"
+                disabled={saving}
+                className={TASK_SHEET_COMPACT_FIELD_CLASS}
+                onSearch={onSearchEmployees}
+                onChange={(ids, labels) =>
+                  onPatchDraft({ observerIds: ids, observerLabels: labels })
+                }
+                {...observerPicker}
+              />
+            </TaskSheetCompactRow>
+          </div>
 
           <TaskSheetCompactRow label="Deadline">
             <InlineField

@@ -7,7 +7,7 @@ import { employeesApi, type Employee } from '@/lib/api/employees';
 import { tasksApi, type Task } from '@/lib/api/tasks';
 import {
   buildTaskGeneralPatch,
-  createTaskGeneralDraft,
+  enrichTaskGeneralDraft,
   isTaskGeneralDirty,
   type TaskGeneralDraft,
 } from '../task-general-form-state';
@@ -36,9 +36,9 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
   const [completionBlockers, setCompletionBlockers] = useState<TaskCompletionBlocker[]>([]);
   const [messagesByTask, setMessagesByTask] = useState<Record<string, TaskLocalMessage[]>>({});
 
-  const hydrateTask = useCallback((nextTask: Task) => {
+  const hydrateTask = useCallback(async (nextTask: Task) => {
     setTask(nextTask);
-    const nextDraft = createTaskGeneralDraft(nextTask);
+    const nextDraft = await enrichTaskGeneralDraft(nextTask);
     setGeneralDraft(nextDraft);
     setGeneralSnap(nextDraft);
   }, []);
@@ -52,7 +52,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
       try {
         const nextTask = await tasksApi.getById(taskId!);
         if (!cancelled) {
-          hydrateTask(nextTask);
+          await hydrateTask(nextTask);
           setGeneralError(null);
           setCompletionBlockers([]);
           setNewChecklistTitle('');
@@ -77,7 +77,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     if (!taskId) return;
     try {
       const nextTask = await tasksApi.getById(taskId);
-      hydrateTask(nextTask);
+      await hydrateTask(nextTask);
       setGeneralError(null);
     } catch (caught) {
       setGeneralError(getApiErrorMessage(caught, 'Task could not be refreshed.'));
@@ -128,7 +128,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
         updated = await tasksApi.update(task.id, { status: statusTarget });
       }
 
-      hydrateTask(updated);
+      await hydrateTask(updated);
       setCompletionBlockers([]);
       onUpdate?.(updated);
       return true;
@@ -169,7 +169,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
                   : action === 'requestReviewChanges'
                     ? await tasksApi.requestReviewChanges(task.id)
                     : await tasksApi.setOnHold(task.id);
-        hydrateTask(updated);
+        await hydrateTask(updated);
         onUpdate?.(updated);
         setGeneralError(null);
         setCompletionBlockers([]);
