@@ -217,6 +217,7 @@ export function LeadSheet({
       <EntityDetailSheetContent
         open={open}
         layout="full"
+        width="medium"
         sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(lead.id)}`}
       >
         <CrmSheetEntityHeader
@@ -296,7 +297,7 @@ export function LeadSheet({
 
         {/* ── Content ── */}
         <ScrollArea className="min-h-0 flex-1">
-          <div className="px-7 py-5">
+          <div className="px-5 py-4">
             {activeTab === 'general' && generalDraft ? (
               <LeadGeneralTab
                 lead={lead}

@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { User, Megaphone, ExternalLink, Building2 } from 'lucide-react';
-import { DetailSheetSection, InlineField, SearchField } from '@/components/shared';
+import { DETAIL_SHEET_SECTION_BODY_CLASS, InlineField, SearchField } from '@/components/shared';
 import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import {
   isLeadAttributionLocked,
@@ -14,26 +14,23 @@ import { contactsApi } from '@/lib/api/clients';
 import { marketingApi } from '@/lib/api/marketing';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 import type { LeadGeneralDraft } from './lead-general-form-state';
-import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
 import { leadStageGateFieldClass } from '@/features/crm/lead-stage-gate-highlight';
 
-interface LeadGeneralMarketingSectionProps {
+export interface LeadMarketingFieldsProps {
   lead: Lead;
   draft: LeadGeneralDraft;
   patchDraft: (partial: Partial<LeadGeneralDraft>) => void;
   formDisabled: boolean;
-  sectionId: LeadSheetSectionId;
   gateRequiredFields?: ReadonlySet<string>;
 }
 
-export function LeadGeneralMarketingSection({
+export function LeadMarketingFields({
   lead,
   draft,
   patchDraft,
   formDisabled,
-  sectionId,
   gateRequiredFields = new Set(),
-}: LeadGeneralMarketingSectionProps) {
+}: LeadMarketingFieldsProps) {
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
     draft.source === 'MARKETING',
   );
@@ -80,153 +77,149 @@ export function LeadGeneralMarketingSection({
         : [];
 
   return (
-    <DetailSheetSection id={sectionId} title="Marketing" icon={<Megaphone size={12} />}>
-      <div className="space-y-4">
+    <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+      <InlineField
+        variant="controlled"
+        label="From"
+        type="select"
+        value={draft.source ?? ''}
+        options={LEAD_SOURCES.map((s) => ({
+          value: s.value,
+          label: s.label,
+          icon: <span>{s.icon}</span>,
+        }))}
+        placeholder="Select source…"
+        icon={<Megaphone size={12} />}
+        disabled={formDisabled || attributionLocked}
+        clearable={!attributionLocked}
+        className={leadStageGateFieldClass(gateRequiredFields, 'source')}
+        onValueChange={(value) =>
+          patchDraft({
+            source: value || null,
+            sourceDetail: null,
+            sourcePartnerId: null,
+            sourceContactId: null,
+            marketingAccountId: null,
+            marketingActivityId: null,
+            marketingPickLabel: null,
+            partnerPickLabel: null,
+            clientPickLabel: null,
+          })
+        }
+      />
+
+      {(draft.source === 'SALES' || draft.source === 'MARKETING') && (
         <InlineField
           variant="controlled"
-          label="From"
+          label="Where?"
           type="select"
-          value={draft.source ?? ''}
-          options={LEAD_SOURCES.map((s) => ({
-            value: s.value,
-            label: s.label,
-            icon: <span>{s.icon}</span>,
-          }))}
-          placeholder="Select source…"
-          icon={<Megaphone size={12} />}
+          value={draft.sourceDetail ?? ''}
+          options={whereOptions}
+          placeholder="Select channel…"
+          icon={<ExternalLink size={12} />}
           disabled={formDisabled || attributionLocked}
           clearable={!attributionLocked}
-          className={leadStageGateFieldClass(gateRequiredFields, 'source')}
+          className={leadStageGateFieldClass(gateRequiredFields, 'sourceDetail')}
           onValueChange={(value) =>
             patchDraft({
-              source: value || null,
-              sourceDetail: null,
-              sourcePartnerId: null,
-              sourceContactId: null,
+              sourceDetail: value || null,
               marketingAccountId: null,
               marketingActivityId: null,
               marketingPickLabel: null,
-              partnerPickLabel: null,
-              clientPickLabel: null,
             })
           }
         />
+      )}
 
-        {(draft.source === 'SALES' || draft.source === 'MARKETING') && (
-          <InlineField
-            variant="controlled"
-            label="Where?"
-            type="select"
-            value={draft.sourceDetail ?? ''}
-            options={whereOptions}
-            placeholder="Select channel…"
-            icon={<ExternalLink size={12} />}
-            disabled={formDisabled || attributionLocked}
-            clearable={!attributionLocked}
-            className={leadStageGateFieldClass(gateRequiredFields, 'sourceDetail')}
-            onValueChange={(value) =>
-              patchDraft({
-                sourceDetail: value || null,
-                marketingAccountId: null,
-                marketingActivityId: null,
-                marketingPickLabel: null,
-              })
-            }
-          />
-        )}
+      {showMarketingWhichOne ? (
+        <SearchField
+          selectionMode="stage"
+          label="Which one?"
+          className={leadStageGateFieldClass(gateRequiredFields, 'whichOne')}
+          value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
+          displayValue={
+            draft.marketingPickLabel ? (
+              <span className="text-foreground text-sm font-medium">
+                {draft.marketingPickLabel}
+              </span>
+            ) : undefined
+          }
+          placeholder="Search accounts or activities…"
+          icon={<ExternalLink size={12} />}
+          disabled={formDisabled || attributionLocked}
+          onSearch={searchAttributionOptions}
+          onStageSelect={(value, label) => {
+            const [type, id] = value.split(':');
+            patchDraft({
+              marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
+              marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
+              marketingPickLabel: label,
+            });
+          }}
+          onClear={
+            attributionLocked || formDisabled
+              ? undefined
+              : () =>
+                  patchDraft({
+                    marketingAccountId: null,
+                    marketingActivityId: null,
+                    marketingPickLabel: null,
+                  })
+          }
+        />
+      ) : null}
 
-        {showMarketingWhichOne ? (
-          <SearchField
-            selectionMode="stage"
-            label="Which one?"
-            className={leadStageGateFieldClass(gateRequiredFields, 'whichOne')}
-            value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
-            displayValue={
-              draft.marketingPickLabel ? (
-                <span className="text-foreground text-sm font-medium">
-                  {draft.marketingPickLabel}
-                </span>
-              ) : undefined
-            }
-            placeholder="Search accounts or activities…"
-            icon={<ExternalLink size={12} />}
-            disabled={formDisabled || attributionLocked}
-            onSearch={searchAttributionOptions}
-            onStageSelect={(value, label) => {
-              const [type, id] = value.split(':');
-              patchDraft({
-                marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
-                marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
-                marketingPickLabel: label,
-              });
-            }}
-            onClear={
-              attributionLocked || formDisabled
-                ? undefined
-                : () =>
-                    patchDraft({
-                      marketingAccountId: null,
-                      marketingActivityId: null,
-                      marketingPickLabel: null,
-                    })
-            }
-          />
-        ) : null}
+      {draft.source === 'PARTNER' ? (
+        <SearchField
+          selectionMode="stage"
+          label="Which partner?"
+          className={leadStageGateFieldClass(gateRequiredFields, 'sourcePartnerId')}
+          value={draft.sourcePartnerId}
+          displayValue={
+            draft.partnerPickLabel ? (
+              <span className="text-foreground text-sm font-medium">{draft.partnerPickLabel}</span>
+            ) : undefined
+          }
+          placeholder="Search partners…"
+          icon={<Building2 size={12} />}
+          disabled={formDisabled || attributionLocked}
+          onSearch={searchPartners}
+          onStageSelect={(value, label) =>
+            patchDraft({ sourcePartnerId: value, partnerPickLabel: label })
+          }
+          onClear={
+            attributionLocked || formDisabled
+              ? undefined
+              : () => patchDraft({ sourcePartnerId: null, partnerPickLabel: null })
+          }
+        />
+      ) : null}
 
-        {draft.source === 'PARTNER' ? (
-          <SearchField
-            selectionMode="stage"
-            label="Which partner?"
-            className={leadStageGateFieldClass(gateRequiredFields, 'sourcePartnerId')}
-            value={draft.sourcePartnerId}
-            displayValue={
-              draft.partnerPickLabel ? (
-                <span className="text-foreground text-sm font-medium">
-                  {draft.partnerPickLabel}
-                </span>
-              ) : undefined
-            }
-            placeholder="Search partners…"
-            icon={<Building2 size={12} />}
-            disabled={formDisabled || attributionLocked}
-            onSearch={searchPartners}
-            onStageSelect={(value, label) =>
-              patchDraft({ sourcePartnerId: value, partnerPickLabel: label })
-            }
-            onClear={
-              attributionLocked || formDisabled
-                ? undefined
-                : () => patchDraft({ sourcePartnerId: null, partnerPickLabel: null })
-            }
-          />
-        ) : null}
-
-        {draft.source === 'CLIENT' ? (
-          <SearchField
-            selectionMode="stage"
-            label="Which client?"
-            className={leadStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
-            value={draft.sourceContactId}
-            displayValue={
-              draft.clientPickLabel ? (
-                <span className="text-foreground text-sm font-medium">{draft.clientPickLabel}</span>
-              ) : undefined
-            }
-            placeholder="Search contacts…"
-            icon={<User size={12} />}
-            disabled={formDisabled || attributionLocked}
-            onSearch={searchContacts}
-            onStageSelect={(value, label) =>
-              patchDraft({ sourceContactId: value, clientPickLabel: label })
-            }
-            onClear={
-              attributionLocked || formDisabled
-                ? undefined
-                : () => patchDraft({ sourceContactId: null, clientPickLabel: null })
-            }
-          />
-        ) : null}
-      </div>
-    </DetailSheetSection>
+      {draft.source === 'CLIENT' ? (
+        <SearchField
+          selectionMode="stage"
+          label="Which client?"
+          className={leadStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
+          value={draft.sourceContactId}
+          displayValue={
+            draft.clientPickLabel ? (
+              <span className="text-foreground text-sm font-medium">{draft.clientPickLabel}</span>
+            ) : undefined
+          }
+          placeholder="Search contacts…"
+          icon={<User size={12} />}
+          disabled={formDisabled || attributionLocked}
+          onSearch={searchContacts}
+          onStageSelect={(value, label) =>
+            patchDraft({ sourceContactId: value, clientPickLabel: label })
+          }
+          onClear={
+            attributionLocked || formDisabled
+              ? undefined
+              : () => patchDraft({ sourceContactId: null, clientPickLabel: null })
+          }
+        />
+      ) : null}
+    </div>
   );
 }
