@@ -58,4 +58,29 @@ describe('tryCreateProportionalAutoReleases', () => {
     expect(prisma.$transaction).toHaveBeenCalled();
     expect(prisma.bonusRelease.create).toHaveBeenCalled();
   });
+
+  it('is idempotent when planned amounts are already fully released', async () => {
+    prisma.bonusEntry.findMany.mockResolvedValue([
+      { id: 'be1', employeeId: 'e1', projectId: 'p1', amount: new Decimal(50) },
+    ]);
+    prisma.bonusRelease.groupBy.mockResolvedValue([
+      { bonusEntryId: 'be1', _sum: { amount: new Decimal(50) } },
+    ]);
+
+    const done = await tryCreateProportionalAutoReleases(prisma as never, {
+      order: {
+        id: 'o1',
+        projectId: 'p1',
+        productId: 'prod1',
+        extensionId: null,
+        product: { status: 'DONE' },
+        extension: null,
+      },
+      received: new Decimal(200),
+      released: new Decimal(50),
+    });
+
+    expect(done).toBe(false);
+    expect(prisma.bonusRelease.create).not.toHaveBeenCalled();
+  });
 });

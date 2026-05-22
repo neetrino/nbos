@@ -16,6 +16,7 @@ import type { Employee } from '@/lib/api/employees';
 import { DEFAULT_BONUS_POLICY_ID } from '@/lib/constants/default-bonus-policy-id';
 import { DEFAULT_KPI_POLICY_ID } from '@/lib/constants/default-kpi-policy-id';
 import {
+  BONUS_POLICY_TEMPLATE_DELIVERY_PROPORTIONAL_FUNDING,
   BONUS_POLICY_TEMPLATE_MANUAL_ONLY,
   BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES,
 } from '@/features/my-company/compensation/bonus-policy-template-codes';
@@ -293,6 +294,12 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
               {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_MANUAL_ONLY ? (
                 <p className="text-muted-foreground text-xs">
                   No automatic accrual — bonuses are created manually in Finance.
+                </p>
+              ) : null}
+              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_DELIVERY_PROPORTIONAL_FUNDING ? (
+                <p className="text-muted-foreground text-xs">
+                  Planned delivery bonuses auto-release proportionally when the product is Done and
+                  client payments fund the pool (Finance bonus pools).
                 </p>
               ) : null}
             </label>
