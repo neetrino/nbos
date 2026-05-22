@@ -48,19 +48,19 @@ const STICKY_EMPLOYEE_CELL_CLASS = cn(
 );
 
 const STICKY_TOTAL_HEADER_CLASS = cn(
-  'border-border text-muted-foreground sticky right-0 z-20 border-l border-b px-3 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wide',
+  'border-border text-foreground sticky right-0 z-20 border-l border-b px-3 py-2 text-right text-sm font-bold uppercase tracking-wide',
   'bg-muted/40',
   SALARY_CALENDAR_TOTAL_COL_CLASS,
 );
 
 const STICKY_TOTAL_CELL_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-10 border-l border-b px-3 py-2 text-right text-sm font-semibold tabular-nums',
+  'border-border text-foreground sticky right-0 z-10 border-l border-b px-3 py-2 text-right text-sm font-bold tabular-nums',
   'bg-muted/40',
   SALARY_CALENDAR_TOTAL_COL_CLASS,
 );
 
 const STICKY_TOTAL_FOOTER_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-10 border-l px-3 py-2 text-right text-sm font-bold tabular-nums',
+  'border-border text-foreground sticky right-0 z-10 border-l px-3 py-2 text-right text-base font-bold tabular-nums',
   'bg-muted/40',
   SALARY_CALENDAR_TOTAL_COL_CLASS,
 );
@@ -93,99 +93,101 @@ export function SalaryBoardCalendarView({
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col gap-3"
+      className="border-border min-h-0 flex-1 overflow-x-auto rounded-xl border"
       aria-label={`Salary calendar ${calendarYear}`}
     >
-      <div className="flex items-center justify-end">
-        <SalaryBoardCalendarYearControl year={calendarYear} onYearChange={onCalendarYearChange} />
-      </div>
-
-      <div className="border-border min-h-0 flex-1 overflow-x-auto rounded-xl border">
-        <table className="w-full table-fixed border-collapse text-sm">
-          <colgroup>
-            <col className={SALARY_CALENDAR_EMPLOYEE_COL_CLASS} />
+      <table className="w-full table-fixed border-collapse text-sm">
+        <colgroup>
+          <col className={SALARY_CALENDAR_EMPLOYEE_COL_CLASS} />
+          {data.columns.map((col) => (
+            <col key={col.payrollMonth} className={SALARY_CALENDAR_MONTH_COL_CLASS} />
+          ))}
+          <col className={SALARY_CALENDAR_TOTAL_COL_CLASS} />
+        </colgroup>
+        <thead>
+          <tr className="bg-muted/40">
+            <th className={cn(STICKY_EMPLOYEE_HEADER_CLASS, 'py-2 normal-case')}>
+              <div className="flex w-full items-center justify-between gap-1">
+                <span className="text-[10px] font-semibold tracking-wide uppercase">Employee</span>
+                <SalaryBoardCalendarYearControl
+                  year={calendarYear}
+                  onYearChange={onCalendarYearChange}
+                />
+              </div>
+            </th>
             {data.columns.map((col) => (
-              <col key={col.payrollMonth} className={SALARY_CALENDAR_MONTH_COL_CLASS} />
+              <th key={col.payrollMonth} className={SALARY_CALENDAR_MONTH_HEAD_CLASS}>
+                <SalaryBoardCalendarMonthHeader column={col} />
+              </th>
             ))}
-            <col className={SALARY_CALENDAR_TOTAL_COL_CLASS} />
-          </colgroup>
-          <thead>
-            <tr className="bg-muted/40">
-              <th className={STICKY_EMPLOYEE_HEADER_CLASS}>Employee</th>
-              {data.columns.map((col) => (
-                <th key={col.payrollMonth} className={SALARY_CALENDAR_MONTH_HEAD_CLASS}>
-                  <SalaryBoardCalendarMonthHeader column={col} />
-                </th>
-              ))}
-              <th className={STICKY_TOTAL_HEADER_CLASS}>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => {
-              const rowTotal = sumSalaryBoardRow(row, columnCount);
-              return (
-                <tr key={row.employee.id} className="hover:bg-muted/15">
-                  <td className={STICKY_EMPLOYEE_CELL_CLASS}>
-                    <div className="flex items-center gap-2.5">
-                      <span
-                        className="bg-muted/50 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
-                        aria-hidden
-                      >
-                        {employeeInitials(row.employee)}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="truncate font-medium">
-                          {employeeDisplayName(row.employee)}
-                        </div>
-                        {row.employee.position ? (
-                          <div className="text-muted-foreground truncate text-xs">
-                            {row.employee.position}
-                          </div>
-                        ) : null}
+            <th className={STICKY_TOTAL_HEADER_CLASS}>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => {
+            const rowTotal = sumSalaryBoardRow(row, columnCount);
+            return (
+              <tr key={row.employee.id} className="hover:bg-muted/15">
+                <td className={STICKY_EMPLOYEE_CELL_CLASS}>
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="bg-muted/50 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                      aria-hidden
+                    >
+                      {employeeInitials(row.employee)}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">
+                        {employeeDisplayName(row.employee)}
                       </div>
+                      {row.employee.position ? (
+                        <div className="text-muted-foreground truncate text-xs">
+                          {row.employee.position}
+                        </div>
+                      ) : null}
                     </div>
-                  </td>
-                  {row.cells.map((cell, idx) => {
-                    const monthKey = data.months[idx] ?? `col-${idx}`;
-                    return (
-                      <td key={monthKey} className={SALARY_CALENDAR_MONTH_CELL_CLASS}>
-                        {cell ? (
-                          <SalaryBoardCalendarMonthCell cell={cell} onOpen={onOpenMonth} />
-                        ) : (
-                          <SalaryBoardCalendarEmptyCell />
-                        )}
-                      </td>
-                    );
-                  })}
-                  <td className={STICKY_TOTAL_CELL_CLASS}>{formatAmount(rowTotal)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-          <tfoot>
-            <tr className="bg-muted/30 font-medium">
-              <td
-                className={cn(
-                  'border-border text-muted-foreground sticky left-0 z-10 border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
-                  'bg-muted/40',
-                  SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
-                )}
-              >
-                Month total
-              </td>
-              {data.columns.map((col, idx) => (
-                <td
-                  key={`total-${col.payrollMonth}`}
-                  className="border-border px-1 py-2 text-center text-sm font-bold tabular-nums"
-                >
-                  {formatAmount(sumSalaryBoardColumn(rows, idx))}
+                  </div>
                 </td>
-              ))}
-              <td className={STICKY_TOTAL_FOOTER_CLASS}>{formatAmount(filteredGrandTotal)}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+                {row.cells.map((cell, idx) => {
+                  const monthKey = data.months[idx] ?? `col-${idx}`;
+                  return (
+                    <td key={monthKey} className={SALARY_CALENDAR_MONTH_CELL_CLASS}>
+                      {cell ? (
+                        <SalaryBoardCalendarMonthCell cell={cell} onOpen={onOpenMonth} />
+                      ) : (
+                        <SalaryBoardCalendarEmptyCell />
+                      )}
+                    </td>
+                  );
+                })}
+                <td className={STICKY_TOTAL_CELL_CLASS}>{formatAmount(rowTotal)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr className="bg-muted/30 font-medium">
+            <td
+              className={cn(
+                'border-border text-muted-foreground sticky left-0 z-10 border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
+                'bg-muted/40',
+                SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
+              )}
+            >
+              Month total
+            </td>
+            {data.columns.map((col, idx) => (
+              <td
+                key={`total-${col.payrollMonth}`}
+                className="border-border px-1 py-2 text-center text-sm font-bold tabular-nums"
+              >
+                {formatAmount(sumSalaryBoardColumn(rows, idx))}
+              </td>
+            ))}
+            <td className={STICKY_TOTAL_FOOTER_CLASS}>{formatAmount(filteredGrandTotal)}</td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   );
 }
@@ -201,7 +203,7 @@ function SalaryBoardCalendarYearControl({
 
   return (
     <div
-      className="border-border bg-muted/30 inline-flex items-center gap-0.5 rounded-full border p-0.5"
+      className="border-border bg-muted/30 inline-flex items-center gap-1 rounded-full border p-1"
       role="group"
       aria-label="Calendar year"
     >
@@ -216,7 +218,7 @@ function SalaryBoardCalendarYearControl({
       >
         <ChevronLeft className="size-4" aria-hidden />
       </Button>
-      <span className="text-foreground min-w-[3.25rem] px-1 text-center text-sm font-semibold tabular-nums">
+      <span className="text-foreground min-w-[3rem] px-1 text-center text-sm font-semibold tabular-nums">
         {year}
       </span>
       <Button
