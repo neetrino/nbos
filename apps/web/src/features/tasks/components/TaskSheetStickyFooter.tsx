@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { resolveTaskWorkflowFooterMode } from './task-sheet-workflow-footer';
 
 type TaskFooterAction =
   | 'start'
@@ -103,8 +104,7 @@ function TaskSheetWorkflowActions({
   onTaskAction,
   onDelete,
 }: TaskSheetWorkflowActionsProps) {
-  const canStart = ['NEW', 'OPEN', 'ON_HOLD'].includes(taskStatus);
-  const canComplete = ['IN_PROGRESS', 'REVIEW'].includes(taskStatus);
+  const mode = resolveTaskWorkflowFooterMode(taskStatus);
   const canHold = ['IN_PROGRESS', 'REVIEW'].includes(taskStatus);
   const canReopen = ['COMPLETED', 'DONE', 'ON_HOLD'].includes(taskStatus);
   const canApproveReview = taskStatus === 'REVIEW';
@@ -112,23 +112,38 @@ function TaskSheetWorkflowActions({
 
   return (
     <div className="flex items-center gap-4">
-      <Button
-        type="button"
-        size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-        disabled={!canStart || workflowSaving}
-        onClick={() => onTaskAction('start')}
-      >
-        <Play size={14} /> Start
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-        disabled={!canComplete || workflowSaving}
-        onClick={() => onTaskAction('complete')}
-      >
-        <CheckCircle2 size={14} /> Complete
-      </Button>
+      {mode === 'start-and-complete' ? (
+        <Button
+          type="button"
+          size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+          disabled={workflowSaving}
+          onClick={() => onTaskAction('start')}
+        >
+          <Play size={14} /> Start
+        </Button>
+      ) : null}
+      {mode === 'start-and-complete' || mode === 'complete-only' ? (
+        <Button
+          type="button"
+          variant={mode === 'complete-only' ? 'success' : 'outline'}
+          size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+          disabled={workflowSaving}
+          onClick={() => onTaskAction('complete')}
+        >
+          <CheckCircle2 size={14} /> Complete
+        </Button>
+      ) : null}
+      {mode === 'resume-only' ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+          disabled={workflowSaving}
+          onClick={() => onTaskAction('reopen')}
+        >
+          <RotateCcw size={14} /> Resume
+        </Button>
+      ) : null}
       <DropdownMenu>
         <DropdownMenuTrigger
           render={(props) => (
