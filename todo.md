@@ -44,7 +44,7 @@ Unified UX for linking entities (Client, Partner, Project, Contact, …) across 
 - [x] `RelationPickerField` `multiple` mode (chips, toggle in list, per-chip clear)
 - [x] Deal: `additionalContactIds[]` API + draft + **Additional contacts** multi picker
 - [x] Lead: `additionalContactIds[]` + multi picker; copies to deal on conversion
-- [ ] Project: additional project contacts (Projects Hub; separate from Delivery board)
+- [x] Project: `additionalContactIds[]` + contacts section on project detail page
 
 ## Design checklist (1:1 target)
 

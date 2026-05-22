@@ -163,7 +163,32 @@ describe('ProjectsService', () => {
 
   describe('update', () => {
     it('updates project fields', async () => {
-      prisma.project.findUnique.mockResolvedValue({ id: '1' });
+      const detailRow = {
+        id: '1',
+        contactId: 'c1',
+        name: 'Updated',
+        products: [],
+        extensions: [],
+        orders: [],
+        tickets: [],
+        credentials: [],
+        subscriptions: [],
+        domains: [],
+        expenses: [],
+        auditLogs: [],
+        _count: {
+          products: 0,
+          extensions: 0,
+          orders: 0,
+          tickets: 0,
+          credentials: 0,
+          expenses: 0,
+        },
+      };
+      prisma.project.findUnique.mockImplementation((args: { select?: { contactId?: boolean } }) => {
+        if (args?.select?.contactId) return Promise.resolve({ contactId: 'c1' });
+        return Promise.resolve(detailRow);
+      });
       prisma.project.update.mockResolvedValue({ id: '1', name: 'Updated' });
       const result = await service.update('1', {
         name: 'Updated',

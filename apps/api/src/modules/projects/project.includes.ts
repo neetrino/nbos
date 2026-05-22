@@ -1,8 +1,17 @@
 import { type Prisma } from '@nbos/database';
 
+const contactSummarySelect = { id: true, firstName: true, lastName: true, email: true } as const;
+
+export const projectAdditionalContactsInclude = {
+  additionalContacts: {
+    include: { contact: { select: contactSummarySelect } },
+  },
+} as const;
+
 export const projectDetailInclude = {
   company: true,
   contact: true,
+  ...projectAdditionalContactsInclude,
   products: {
     include: {
       pm: { select: { id: true, firstName: true, lastName: true } },

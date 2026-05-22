@@ -35,8 +35,21 @@ model Project {
   operationalJournalEntries OperationalJournalEntry[]
   partnerAccruals           PartnerAccrual[]
   partnerServiceTerms       PartnerServiceTerm[]
+  additionalContacts        ProjectAdditionalContact[]
 
   @@map("projects")
+}
+
+/// Extra client contacts on a project (v1 list; main person stays `Project.contactId`).
+model ProjectAdditionalContact {
+  projectId String @map("project_id")
+  contactId String @map("contact_id")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  contact Contact @relation("ProjectAdditionalContact", fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, contactId])
+  @@map("project_additional_contacts")
 }
 
 model ProjectKickoffChecklistItem {

@@ -7,6 +7,7 @@ import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
 import { ProjectExtensionsSnapshot } from '@/features/projects/components/ProjectExtensionsSnapshot';
 import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
+import { ProjectContactsSection } from '@/features/projects/components/ProjectContactsSection';
 import { ProjectInfoCard } from '@/features/projects/components/ProjectInfoCard';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
 
@@ -48,6 +49,8 @@ export default function ProjectDetailPage() {
   return (
     <div className="flex h-full flex-col gap-6">
       <ProjectHeader project={project} onBack={() => router.push('/projects')} />
+
+      <ProjectContactsSection project={project} onProjectUpdated={setProject} />
 
       <ProjectInfoCard project={project} />
 

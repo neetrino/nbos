@@ -36,6 +36,21 @@ describe('DealWonHandler', () => {
     expect(prisma.product.create).toHaveBeenCalledTimes(1);
   });
 
+  it('copies deal additional contacts onto auto-created project', async () => {
+    prisma.project.findFirst.mockResolvedValue(null);
+    prisma.project.create.mockResolvedValue({ id: 'proj-1', code: 'P-2026-0001' });
+    prisma.dealAdditionalContact.findMany.mockResolvedValue([{ contactId: 'c-extra' }]);
+    prisma.contact.count.mockResolvedValue(1);
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+
+    await handler.handle(productDeal({ projectId: null }));
+
+    expect(prisma.projectAdditionalContact.createMany).toHaveBeenCalledWith({
+      data: [{ projectId: 'proj-1', contactId: 'c-extra' }],
+      skipDuplicates: true,
+    });
+  });
+
   it('creates active subscription for PRODUCT subscription deal after paid invoice', async () => {
     prisma.product.create.mockResolvedValue({ id: 'product-1' });
     prisma.subscription.findFirst.mockResolvedValue(null);

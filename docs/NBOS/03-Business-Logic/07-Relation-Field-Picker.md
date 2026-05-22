@@ -52,8 +52,9 @@ without replacing the primary contact.
 `additionalContactIds[]` and the **Additional contacts** multi picker (`lead-additional-contact`
 intent). On SQL / Deal conversion, additional contacts copy to the new deal.
 
-**Delivery / Project:** project main contact is still a single `contactId`; extra project
-contacts are a separate Projects Hub slice per Clients canon.
+**Project (shipped):** main `contactId` + company + **Additional contacts** on the project
+detail page (`project-main-contact`, `project-additional-contact`, `project-company` intents).
+Deal Won auto-create copies deal additional contacts onto the new project.
 
 ## When not to use the picker
 

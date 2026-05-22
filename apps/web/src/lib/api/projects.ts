@@ -33,6 +33,9 @@ export interface Project {
   updatedAt: string;
   company: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string };
+  additionalContacts?: Array<{
+    contact: { id: string; firstName: string; lastName: string; email: string | null };
+  }>;
   _count: { orders: number; products?: number; extensions?: number };
 }
 
@@ -277,8 +280,8 @@ export const projectsApi = {
     return resp.data;
   },
 
-  async update(id: string, data: Record<string, unknown>): Promise<Project> {
-    const resp = await api.put<Project>(`/api/projects/${id}`, data);
+  async update(id: string, data: Record<string, unknown>): Promise<FullProject> {
+    const resp = await api.put<FullProject>(`/api/projects/${id}`, data);
     return resp.data;
   },
 

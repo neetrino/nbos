@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
 
-export type AdditionalContactEntityKind = 'deal' | 'lead';
+export type AdditionalContactEntityKind = 'deal' | 'lead' | 'project';
 
 /** Replaces additional contact links; excludes primary contact id and unknown contacts. */
 export async function syncEntityAdditionalContacts(
@@ -34,10 +34,20 @@ export async function syncEntityAdditionalContacts(
     return;
   }
 
-  await prisma.leadAdditionalContact.deleteMany({ where: { leadId: entityId } });
+  if (kind === 'lead') {
+    await prisma.leadAdditionalContact.deleteMany({ where: { leadId: entityId } });
+    if (uniqueIds.length === 0) return;
+    await prisma.leadAdditionalContact.createMany({
+      data: uniqueIds.map((contactId) => ({ leadId: entityId, contactId })),
+      skipDuplicates: true,
+    });
+    return;
+  }
+
+  await prisma.projectAdditionalContact.deleteMany({ where: { projectId: entityId } });
   if (uniqueIds.length === 0) return;
-  await prisma.leadAdditionalContact.createMany({
-    data: uniqueIds.map((contactId) => ({ leadId: entityId, contactId })),
+  await prisma.projectAdditionalContact.createMany({
+    data: uniqueIds.map((contactId) => ({ projectId: entityId, contactId })),
     skipDuplicates: true,
   });
 }

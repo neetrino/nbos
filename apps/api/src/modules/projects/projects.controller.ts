@@ -80,6 +80,7 @@ export class ProjectsController {
       companyId?: string;
       contactId?: string;
       isArchived?: boolean;
+      additionalContactIds?: string[];
     },
   ) {
     return this.projectsService.update(id, body);

@@ -1,4 +1,5 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
+import { syncProjectAdditionalContacts } from '../../projects/project-additional-contacts.ops';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { DriveDealWonLinksService } from '../../drive/drive-deal-won-links.service';
@@ -145,6 +146,19 @@ export class DealWonHandler {
       where: { id: deal.id },
       data: { projectId: project.id },
     });
+
+    const dealAdditional = await this.prisma.dealAdditionalContact.findMany({
+      where: { dealId: deal.id },
+      select: { contactId: true },
+    });
+    if (dealAdditional.length > 0) {
+      await syncProjectAdditionalContacts(
+        this.prisma,
+        project.id,
+        dealAdditional.map((row) => row.contactId),
+        deal.contactId,
+      );
+    }
 
     this.logger.log(`Auto-created project ${projectCode} for deal ${deal.code}`);
     return project.id;

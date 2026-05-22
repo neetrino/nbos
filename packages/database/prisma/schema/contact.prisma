@@ -29,6 +29,7 @@ model Contact {
   dealsAsSource       Deal[]               @relation("DealSourceContact")
   dealAdditionalLinks DealAdditionalContact[] @relation("DealAdditionalContact")
   leadAdditionalLinks LeadAdditionalContact[] @relation("LeadAdditionalContact")
+  projectAdditionalLinks ProjectAdditionalContact[] @relation("ProjectAdditionalContact")
   partners            Partner[]
   partnerServiceTerms PartnerServiceTerm[]
 

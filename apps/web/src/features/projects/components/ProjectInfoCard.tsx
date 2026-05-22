@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Package, UserCircle } from 'lucide-react';
+import { Building2, Package } from 'lucide-react';
 import type { FullProject } from '@/lib/api/projects';
 
 interface ProjectInfoCardProps {
@@ -13,13 +13,6 @@ export function ProjectInfoCard({ project }: ProjectInfoCardProps) {
       <div className="space-y-3">
         <h3 className="text-sm font-semibold">Project Details</h3>
         <div className="space-y-2">
-          {project.contact && (
-            <InfoRow
-              icon={UserCircle}
-              label="Contact"
-              value={`${project.contact.firstName} ${project.contact.lastName}`}
-            />
-          )}
           {project.company && (
             <InfoRow icon={Building2} label="Company" value={project.company.name} />
           )}

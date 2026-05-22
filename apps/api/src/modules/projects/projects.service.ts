@@ -8,6 +8,7 @@ import {
   attachProductDeliveryLifecycle,
   type DeliveryStatusCarrier,
 } from './delivery-lifecycle';
+import { syncProjectAdditionalContacts } from './project-additional-contacts.ops';
 
 interface CreateProjectDto {
   name: string;
@@ -19,9 +20,10 @@ interface CreateProjectDto {
 interface UpdateProjectDto {
   name?: string;
   description?: string;
-  companyId?: string;
+  companyId?: string | null;
   contactId?: string;
   isArchived?: boolean;
+  additionalContactIds?: string[];
 }
 
 interface ProjectQueryParams {
@@ -111,21 +113,35 @@ export class ProjectsService {
   }
 
   async update(id: string, data: UpdateProjectDto) {
-    await this.findById(id);
-    return this.prisma.project.update({
+    const existing = await this.prisma.project.findUnique({
+      where: { id },
+      select: { contactId: true },
+    });
+    if (!existing) throw new NotFoundException(`Project ${id} not found`);
+
+    const nextContactId = data.contactId ?? existing.contactId;
+
+    await this.prisma.project.update({
       where: { id },
       data: {
         ...(data.name && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.companyId !== undefined && { companyId: data.companyId || null }),
-        ...(data.contactId && { contactId: data.contactId }),
+        ...(data.contactId !== undefined && { contactId: data.contactId }),
         ...(data.isArchived !== undefined && { isArchived: data.isArchived }),
       },
-      include: {
-        company: { select: { id: true, name: true } },
-        contact: { select: { id: true, firstName: true, lastName: true } },
-      },
     });
+
+    if (data.additionalContactIds !== undefined) {
+      await syncProjectAdditionalContacts(
+        this.prisma,
+        id,
+        data.additionalContactIds,
+        nextContactId,
+      );
+    }
+
+    return this.findById(id);
   }
 
   async delete(id: string) {
