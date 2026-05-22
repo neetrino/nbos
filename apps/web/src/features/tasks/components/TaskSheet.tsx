@@ -37,11 +37,6 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
   const state = useTaskSheetState({ taskId, open, onUpdate, onDelete });
   const [extrasOpen, setExtrasOpen] = useState(false);
 
-  function handleSaveAndClose() {
-    const saved = state.handleGeneralSave();
-    if (saved) onOpenChange(false);
-  }
-
   async function handleDelete() {
     if (!window.confirm('Delete this task? This action cannot be undone.')) return;
     const deleted = await state.handleDeleteTask();
@@ -175,7 +170,6 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                     errorMessage={state.generalError}
                     taskStatus={state.task.status}
                     onSave={() => void state.handleGeneralSave()}
-                    onSaveAndClose={handleSaveAndClose}
                     onCancel={state.handleGeneralCancel}
                     onTaskAction={state.handleAction}
                     onDelete={() => void handleDelete()}

@@ -26,7 +26,6 @@ interface TaskSheetStickyFooterProps {
   errorMessage?: string | null;
   taskStatus: string;
   onSave: () => void;
-  onSaveAndClose: () => void;
   onCancel: () => void;
   onTaskAction: (action: TaskFooterAction) => void;
   onDelete: () => void;
@@ -41,7 +40,6 @@ export function TaskSheetStickyFooter({
   errorMessage,
   taskStatus,
   onSave,
-  onSaveAndClose,
   onCancel,
   onTaskAction,
   onDelete,
@@ -51,36 +49,30 @@ export function TaskSheetStickyFooter({
   if (showSaveBar) {
     return (
       <div className={FOOTER_SHELL_CLASS}>
-        {errorMessage ? (
-          <p className="text-destructive mb-3 text-sm" role="alert">
-            {errorMessage}
-          </p>
-        ) : null}
-        <div className="flex flex-wrap items-center gap-4">
-          <Button
-            type="button"
-            size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-            disabled={!dirty}
-            onClick={onSave}
-          >
-            Save
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-            onClick={onSaveAndClose}
-          >
-            Save & Close
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
+        <div className="flex flex-col items-center gap-3">
+          {errorMessage ? (
+            <p className="text-destructive max-w-lg text-center text-sm" role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Button
+              type="button"
+              size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+              disabled={!dirty}
+              onClick={onSave}
+            >
+              Save
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
       </div>
     );
