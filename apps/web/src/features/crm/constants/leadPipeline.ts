@@ -9,13 +9,6 @@ export const LEAD_STAGES = [
     hexColor: '#3B82F6',
   },
   {
-    key: 'ON_HOLD',
-    label: 'On Hold',
-    variant: 'gray' as StatusVariant,
-    color: 'bg-amber-500',
-    hexColor: '#F59E0B',
-  },
-  {
     key: 'DIDNT_GET_THROUGH',
     label: "Didn't Get Through",
     variant: 'gray' as StatusVariant,
@@ -35,6 +28,13 @@ export const LEAD_STAGES = [
     variant: 'purple' as StatusVariant,
     color: 'bg-purple-500',
     hexColor: '#A855F7',
+  },
+  {
+    key: 'ON_HOLD',
+    label: 'On Hold',
+    variant: 'gray' as StatusVariant,
+    color: 'bg-stone-900',
+    hexColor: '#171717',
   },
   {
     key: 'SPAM',

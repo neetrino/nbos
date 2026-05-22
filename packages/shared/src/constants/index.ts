@@ -1,9 +1,9 @@
 export const LEAD_STATUSES = [
   'NEW',
-  'ON_HOLD',
   'DIDNT_GET_THROUGH',
   'CONTACT_ESTABLISHED',
   'MQL',
+  'ON_HOLD',
   'SPAM',
   'SQL',
 ] as const;

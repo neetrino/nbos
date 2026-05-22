@@ -30,6 +30,10 @@ export function getLeadStageGateErrors(
     return [{ field: 'notes', message: 'Spam reason is required when marking a lead as Spam' }];
   }
 
+  if (targetStatus === 'ON_HOLD') {
+    return [];
+  }
+
   const targetIdx = LEAD_STAGE_GATE_ORDER.indexOf(
     targetStatus as (typeof LEAD_STAGE_GATE_ORDER)[number],
   );
@@ -39,7 +43,7 @@ export function getLeadStageGateErrors(
   const reachesStage = (stage: string) =>
     targetIdx >= LEAD_STAGE_GATE_ORDER.indexOf(stage as (typeof LEAD_STAGE_GATE_ORDER)[number]);
 
-  if (reachesStage('NEW') || reachesStage('ON_HOLD')) {
+  if (targetStatus === 'NEW') {
     if (!lead.contactName?.trim()) {
       errors.push({ field: 'contactName', message: 'Contact name is required' });
     }
@@ -48,7 +52,7 @@ export function getLeadStageGateErrors(
     }
   }
 
-  if (reachesStage('DIDNT_GET_THROUGH')) {
+  if (targetStatus !== 'ON_HOLD' && reachesStage('DIDNT_GET_THROUGH')) {
     if (!lead.assignedTo) {
       errors.push({ field: 'assignedTo', message: "Seller is required from Didn't Get Through" });
     }

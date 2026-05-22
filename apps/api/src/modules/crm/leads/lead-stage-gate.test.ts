@@ -21,13 +21,13 @@ describe('validateLeadStageGate', () => {
     expect(() => validateLeadStageGate(baseLead, 'NEW')).not.toThrow();
   });
 
-  it('requires contact name and phone or email for ON_HOLD', () => {
+  it('allows ON_HOLD without contact or attribution', () => {
     expect(() =>
       validateLeadStageGate(
-        { ...baseLead, contactName: '  ', phone: null, email: null },
+        { ...baseLead, contactName: '  ', phone: null, email: null, source: null },
         'ON_HOLD',
       ),
-    ).toThrow(BadRequestException);
+    ).not.toThrow();
   });
 
   it('requires seller but not notes from DIDNT_GET_THROUGH', () => {

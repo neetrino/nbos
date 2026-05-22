@@ -6,7 +6,7 @@ import { LEAD_STAGES } from '../constants/leadPipeline';
 
 const STAGE_HEX: Record<string, string> = {
   NEW: '#3b82f6',
-  ON_HOLD: '#f59e0b',
+  ON_HOLD: '#171717',
   DIDNT_GET_THROUGH: '#9ca3af',
   CONTACT_ESTABLISHED: '#6366f1',
   MQL: '#a855f7',

@@ -22,6 +22,22 @@ describe('getLeadStageGateErrors', () => {
     expect(getLeadStageGateErrors({ ...baseLead, notes: 'Duplicate' }, 'SPAM')).toEqual([]);
   });
 
+  it('allows ON_HOLD without any required fields', () => {
+    const errors = getLeadStageGateErrors(
+      {
+        ...baseLead,
+        contactName: '',
+        phone: null,
+        email: null,
+        assignedTo: null,
+        source: null,
+        sourceDetail: null,
+      },
+      'ON_HOLD',
+    );
+    expect(errors).toEqual([]);
+  });
+
   it('requires seller for DIDNT_GET_THROUGH but not notes', () => {
     const errors = getLeadStageGateErrors(
       { ...baseLead, assignedTo: null, notes: null },

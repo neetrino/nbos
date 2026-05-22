@@ -25,10 +25,10 @@ export const DEAL_STAGE_GATE_ORDER = [
 /** Lead statuses in pipeline order (excludes SPAM; matches lead stage gate). */
 export const LEAD_STAGE_GATE_ORDER = [
   'NEW',
-  'ON_HOLD',
   'DIDNT_GET_THROUGH',
   'CONTACT_ESTABLISHED',
   'MQL',
+  'ON_HOLD',
   'SQL',
 ] as const;
 
