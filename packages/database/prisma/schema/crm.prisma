@@ -217,6 +217,19 @@ model Deal {
   supportTickets       SupportTicket[]
   salesBonusEntries    BonusEntry[]          @relation("DealSalesBonusEntries")
   partnerReferralTerms PartnerReferralTerms?
+  additionalContacts   DealAdditionalContact[]
 
   @@map("deals")
+}
+
+/// Extra client contacts on a deal (v1 list; primary remains `Deal.contactId`).
+model DealAdditionalContact {
+  dealId    String @map("deal_id")
+  contactId String @map("contact_id")
+
+  deal    Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  contact Contact @relation("DealAdditionalContact", fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([dealId, contactId])
+  @@map("deal_additional_contacts")
 }

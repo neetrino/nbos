@@ -90,6 +90,9 @@ export interface Deal {
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
   contact: { id: string; firstName: string; lastName: string; email: string | null } | null;
+  additionalContacts?: Array<{
+    contact: { id: string; firstName: string; lastName: string; email: string | null };
+  }>;
   seller: { id: string; firstName: string; lastName: string };
   sellerAssistant?: { id: string; firstName: string; lastName: string } | null;
   orders: DealOrder[];

@@ -7,7 +7,10 @@ import {
   InlineField,
   RelationPickerField,
 } from '@/components/shared';
-import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import {
+  useContactRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import type { Deal } from '@/lib/api/deals';
 import type { DealGeneralDraft } from './deal-general-form-state';
 import type { SearchLoader } from './deal-general-tab.types';
@@ -36,6 +39,8 @@ export function DealContactTeamSection({
   gateRequiredFields = new Set(),
 }: DealContactTeamSectionProps) {
   const contactPicker = useRelationPickerActions('contact', 'deal-contact');
+  const additionalContactPicker = useRelationPickerActions('contact', 'deal-additional-contact');
+  const contactRelationSearch = useContactRelationSearch();
   const employeePicker = useRelationPickerActions('employee');
 
   const contactSubtitle =
@@ -59,9 +64,35 @@ export function DealContactTeamSection({
           icon={<User size={12} />}
           disabled={disabled}
           onSearch={searchContacts}
-          onSelect={(value, label) => patchDraft({ contactId: value, contactDisplayLabel: label })}
+          onSelect={(value, label) => {
+            const additionalContactIds = draft.additionalContactIds.filter((id) => id !== value);
+            const additionalContactLabels = { ...draft.additionalContactLabels };
+            delete additionalContactLabels[value];
+            patchDraft({
+              contactId: value,
+              contactDisplayLabel: label,
+              additionalContactIds,
+              additionalContactLabels,
+            });
+          }}
           onClear={() => patchDraft({ contactId: null, contactDisplayLabel: null })}
           {...contactPicker}
+        />
+
+        <RelationPickerField
+          label="Additional contacts"
+          entityKind="contact"
+          multiple
+          value={draft.additionalContactIds}
+          selectionLabels={draft.additionalContactLabels}
+          placeholder="Add more client contacts…"
+          icon={<User size={12} />}
+          disabled={disabled}
+          onSearch={contactRelationSearch}
+          onChange={(ids, labels) =>
+            patchDraft({ additionalContactIds: ids, additionalContactLabels: labels })
+          }
+          {...additionalContactPicker}
         />
 
         <RelationPickerField

@@ -41,7 +41,14 @@ When one form has several pickers of the **same kind**, pass a stable `createInt
 
 ## Multi-select (contacts)
 
-`RelationPickerField` supports `multiple` in UI. Backend `contactIds[]` on Deal/Lead/Delivery is not shipped yet; keep single-select on those forms until API + canon allow arrays.
+`RelationPickerField` supports `multiple` in UI.
+
+**Deal (shipped):** primary contact stays `contactId` (single field). Additional client contacts use
+`additionalContactIds[]` on `PUT /deals/:id` and the **Additional contacts** multi picker on the deal
+sheet (`deal-additional-contact` create intent). Canon: Clients process flow — extra people on a deal
+without replacing the primary contact.
+
+**Lead / Delivery:** still single `contactId` until their APIs add multi-link support.
 
 ## When not to use the picker
 

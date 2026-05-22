@@ -2,6 +2,13 @@ const userSummarySelect = { id: true, firstName: true, lastName: true } as const
 const companySummarySelect = { id: true, name: true } as const;
 const productSummarySelect = { id: true, name: true, productType: true, status: true } as const;
 const partnerSummarySelect = { id: true, name: true, defaultPercent: true } as const;
+const contactSummarySelect = { id: true, firstName: true, lastName: true, email: true } as const;
+
+export const dealAdditionalContactsInclude = {
+  additionalContacts: {
+    include: { contact: { select: contactSummarySelect } },
+  },
+} as const;
 
 export const partnerReferralTermsSelect = {
   id: true,
@@ -15,7 +22,7 @@ export const partnerReferralTermsSelect = {
 
 export const dealListInclude = {
   lead: { select: { id: true, code: true, contactName: true } },
-  contact: { select: { id: true, firstName: true, lastName: true, email: true } },
+  contact: { select: contactSummarySelect },
   company: { select: companySummarySelect },
   seller: { select: userSummarySelect },
   sellerAssistant: { select: userSummarySelect },
@@ -44,6 +51,7 @@ export const dealListInclude = {
   marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
   marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
   partnerReferralTerms: { select: partnerReferralTermsSelect },
+  ...dealAdditionalContactsInclude,
 } as const;
 
 export const dealDetailInclude = {

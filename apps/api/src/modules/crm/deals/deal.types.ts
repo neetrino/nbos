@@ -37,6 +37,8 @@ export interface UpdateDealDto extends Partial<Omit<CreateDealDto, 'projectId'>>
   status?: string;
   contactId?: string;
   projectId?: string | null;
+  /** Replaces linked additional contacts (excludes primary `contactId`). */
+  additionalContactIds?: string[];
 }
 
 export interface DealQueryParams {

@@ -25,6 +25,7 @@ import {
   type PatchPartnerReferralTermsBody,
 } from './partner-referral-terms.ops';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
+import { syncDealAdditionalContacts } from './deal-additional-contacts.ops';
 
 @Injectable()
 export class DealsService {
@@ -232,6 +233,9 @@ export class DealsService {
       });
     }
 
+    const nextContactId =
+      data.contactId !== undefined ? data.contactId : (existing.contact?.id ?? null);
+
     const deal = await this.prisma.deal.update({
       where: { id },
       data: {
@@ -248,7 +252,7 @@ export class DealsService {
         ...(data.sellerAssistantId !== undefined && {
           sellerAssistantId: data.sellerAssistantId,
         }),
-        ...(data.contactId && { contactId: data.contactId }),
+        ...(data.contactId !== undefined && { contactId: data.contactId }),
         ...(data.projectId !== undefined && { projectId: data.projectId }),
         ...(data.source !== undefined && {
           source: data.source ? (data.source as Prisma.DealUpdateInput['source']) : null,
@@ -292,6 +296,11 @@ export class DealsService {
       },
       include: dealUpdateInclude,
     });
+
+    if (data.additionalContactIds !== undefined) {
+      await syncDealAdditionalContacts(this.prisma, id, data.additionalContactIds, nextContactId);
+    }
+
     const termsSnapshot = this.partnerTermsSnapshot(deal);
     if (termsSnapshot) {
       await syncPartnerReferralTermsForDeal(this.prisma, id, termsSnapshot);

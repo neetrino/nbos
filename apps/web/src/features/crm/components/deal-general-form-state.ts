@@ -29,6 +29,8 @@ export interface DealGeneralDraft {
   notes: string | null;
   contactId: string | null;
   contactDisplayLabel: string | null;
+  additionalContactIds: string[];
+  additionalContactLabels: Record<string, string>;
   sellerId: string | null;
   sellerDisplayLabel: string | null;
   sellerAssistantId: string | null;
@@ -42,7 +44,29 @@ export interface DealGeneralDraft {
 export type DealGeneralUpdatePayload = Partial<Deal> & {
   contactId?: string | null;
   sellerId?: string | null;
+  additionalContactIds?: string[];
 };
+
+function additionalContactsFromDeal(deal: Deal): {
+  ids: string[];
+  labels: Record<string, string>;
+} {
+  const labels: Record<string, string> = {};
+  const ids: string[] = [];
+  for (const row of deal.additionalContacts ?? []) {
+    const contact = row.contact;
+    ids.push(contact.id);
+    labels[contact.id] = `${contact.firstName} ${contact.lastName}`.trim();
+  }
+  return { ids, labels };
+}
+
+function contactIdSetsEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const sortedA = [...a].sort();
+  const sortedB = [...b].sort();
+  return sortedA.every((id, index) => id === sortedB[index]);
+}
 
 export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
   return {
@@ -74,6 +98,13 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     notes: deal.notes,
     contactId: deal.contact?.id ?? null,
     contactDisplayLabel: deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : null,
+    ...(() => {
+      const additional = additionalContactsFromDeal(deal);
+      return {
+        additionalContactIds: additional.ids,
+        additionalContactLabels: additional.labels,
+      };
+    })(),
     sellerId: deal.seller?.id ?? null,
     sellerDisplayLabel: deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null,
     sellerAssistantId: deal.sellerAssistant?.id ?? null,
@@ -135,6 +166,9 @@ export function buildDealGeneralPatch(
   if (draft.notes !== snap.notes) out.notes = draft.notes;
 
   if (draft.contactId !== snap.contactId) out.contactId = draft.contactId;
+  if (!contactIdSetsEqual(draft.additionalContactIds, snap.additionalContactIds)) {
+    out.additionalContactIds = draft.additionalContactIds;
+  }
   if (draft.sellerId !== snap.sellerId) out.sellerId = draft.sellerId;
   if (draft.sellerAssistantId !== snap.sellerAssistantId) {
     out.sellerAssistantId = draft.sellerAssistantId;

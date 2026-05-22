@@ -143,6 +143,7 @@ export class DealsController {
       contractSignedAt?: string | null;
       contractFileUrl?: string | null;
       maintenanceStartAt?: string | null;
+      additionalContactIds?: string[];
     },
   ) {
     return this.dealsService.update(id, body, { actorRoleLevel: user?.roleLevel });

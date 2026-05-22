@@ -42,8 +42,8 @@ Unified UX for linking entities (Client, Partner, Project, Contact, …) across 
 ## Contact multi-select
 
 - [x] `RelationPickerField` `multiple` mode (chips, toggle in list, per-chip clear)
-- [ ] API + draft: `contactIds[]` on Deal / Lead / Delivery when canon allows
-- [ ] Enable `multiple` on Deal Contact when backend ships
+- [x] Deal: `additionalContactIds[]` API + draft + **Additional contacts** multi picker
+- [ ] Lead / Delivery: multi-contact when canon + API extend beyond single `contactId`
 
 ## Design checklist (1:1 target)
 
