@@ -403,8 +403,8 @@ Design principles:
 
 - [ ] Compare current API payloads with required monthly compensation model.
 - [ ] Verify existing canonical flow: `PayrollRun -> SalaryLine -> Expense -> ExpensePayment`.
-- [ ] Define `EmployeeMonthlyCompensation` DTO.
-- [ ] Define bonus breakdown DTO.
+- [x] Define `EmployeeMonthlyCompensation` DTO (`SalaryLineMonthDetailDto` + `GET …/month-detail`).
+- [x] Define bonus breakdown DTO (`SalaryLineMonthBonusRow` in month detail).
 - [ ] Define wallet monthly DTO.
 - [ ] Define payroll expense/payment projection for `Pay Now`.
 - [ ] Identify whether missing fields can be derived from existing `PayrollRun`, `SalaryLine`, `BonusEntry`, `BonusRelease`, `Expense`, and `ExpensePayment`.
@@ -413,11 +413,11 @@ Design principles:
 
 ### Phase 2 - Backend projections
 
-- [ ] Add monthly compensation projection for Finance.
+- [x] Add monthly compensation projection for Finance (`querySalaryLineMonthDetail`).
 - [ ] Add read-only employee wallet monthly projection.
 - [ ] Add payroll-linked expenses projection for Pay Now.
-- [ ] Include bonus source breakdown by project/product/extension/order.
-- [ ] Include paid/remaining from linked expense payments.
+- [x] Include bonus source breakdown by project/product/extension/order.
+- [x] Include paid/remaining from linked expense payments.
 - [ ] Include KPI/cap/carry-over/burned explanations where data exists.
 - [ ] Guarantee sync after every payroll-linked `ExpensePayment`.
 - [ ] Add tests for partial payment, full payment, carried bonus, KPI reduced payout, and current month forecast.
@@ -427,10 +427,10 @@ Design principles:
 - [ ] Upgrade `/finance/salary` from basic grid to full compensation grid.
 - [ ] Add view switcher: Grid / Cards / List / Board.
 - [ ] Add Board view by payout state: Accumulating, Ready to pay, Partially paid, Paid, Held.
-- [ ] Add `Employee Month Compensation Sheet`.
+- [x] Add `Employee Month Compensation Sheet` (Salary Board; URL `openSalaryLineId`).
 - [ ] Add filters by employee, department, status, month range.
 - [ ] Add totals and clear visual statuses.
-- [ ] Preserve Bitrix parity: employee/month card must show fix, bonus total, total payable, paid, remaining, bonus list.
+- [x] Preserve Bitrix parity (sheet): fix, bonus total, total payable, paid, remaining, bonus list.
 
 ### Phase 4 - Payroll workspace UX
 

@@ -45,6 +45,10 @@ import {
   type SalaryBoardResponseDto,
 } from './payroll-salary-board';
 import { resolveCompensationProfileForPayrollMonth } from '../compensation-profiles/resolve-active-compensation-profile';
+import { querySalaryLineMonthDetail } from './salary-line-month-detail';
+import type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types';
+
+export type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types';
 
 export type { PayrollRunListParams } from './payroll-run-list-queries';
 export type { PayrollRunStatsResult } from './payroll-run-list-stats';
@@ -83,6 +87,11 @@ export class PayrollRunsService {
   /** NBOS Salary Board: employees × payroll months with salary line status and links to runs/lines. */
   async getSalaryBoard(params: SalaryBoardQueryParams): Promise<SalaryBoardResponseDto> {
     return querySalaryBoard(this.prisma, params);
+  }
+
+  /** Employee + month compensation detail for Salary Board sheet and Wallet (read-only). */
+  async getSalaryLineMonthDetail(salaryLineId: string): Promise<SalaryLineMonthDetailDto> {
+    return querySalaryLineMonthDetail(this.prisma, salaryLineId);
   }
 
   async findById(id: string) {

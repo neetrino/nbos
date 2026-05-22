@@ -102,6 +102,16 @@ export class PayrollRunsController {
     return this.payrollRunsService.getSalaryBoard({ payrollMonthFrom, payrollMonthTo });
   }
 
+  @Get('salary-lines/:salaryLineId/month-detail')
+  @ApiOperation({
+    summary: 'Employee month compensation detail (salary line)',
+    description:
+      'Summary, bonus breakdown, expense payments, and payout phase for one employee/month salary line. Used by Finance Salary Board sheet and Wallet.',
+  })
+  async getSalaryLineMonthDetail(@Param('salaryLineId') salaryLineId: string) {
+    return this.payrollRunsService.getSalaryLineMonthDetail(salaryLineId);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get payroll run with salary lines',

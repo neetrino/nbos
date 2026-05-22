@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Users } from 'lucide-react';
+import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
+import { SALARY_BOARD_OPEN_LINE_QUERY } from '@/features/finance/constants/salary-board-url';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   EmptyState,
@@ -38,6 +40,10 @@ function parseAmount(value: string): number {
 
 function employeeLabel(emp: SalaryBoardResponse['rows'][number]['employee']): string {
   return `${emp.firstName} ${emp.lastName}`.trim();
+}
+
+function salaryLineExistsOnBoard(board: SalaryBoardResponse, salaryLineId: string): boolean {
+  return board.rows.some((row) => row.cells.some((cell) => cell?.salaryLineId === salaryLineId));
 }
 
 export function SalaryBoardPageContent() {
@@ -130,6 +136,37 @@ export function SalaryBoardPageContent() {
       params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
     });
   }, [replaceSalaryBoardUrl]);
+
+  const openSalaryLineId = searchParams.get(SALARY_BOARD_OPEN_LINE_QUERY)?.trim() || null;
+  const monthSheetOpen = Boolean(openSalaryLineId);
+
+  const openMonthSheet = useCallback(
+    (salaryLineId: string) => {
+      replaceSalaryBoardUrl((params) => {
+        params.set(SALARY_BOARD_OPEN_LINE_QUERY, salaryLineId);
+      });
+    },
+    [replaceSalaryBoardUrl],
+  );
+
+  const handleMonthSheetOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) return;
+      replaceSalaryBoardUrl((params) => {
+        params.delete(SALARY_BOARD_OPEN_LINE_QUERY);
+      });
+    },
+    [replaceSalaryBoardUrl],
+  );
+
+  useEffect(() => {
+    if (loading || !openSalaryLineId || !data) return;
+    if (!salaryLineExistsOnBoard(data, openSalaryLineId)) {
+      replaceSalaryBoardUrl((params) => {
+        params.delete(SALARY_BOARD_OPEN_LINE_QUERY);
+      });
+    }
+  }, [data, loading, openSalaryLineId, replaceSalaryBoardUrl]);
 
   const moduleHeroSlots = useMemo(
     () => ({
@@ -239,15 +276,16 @@ export function SalaryBoardPageContent() {
                     return (
                       <td key={monthKey} className="border-border border-b px-1 py-1 align-top">
                         {cell && lineUi ? (
-                          <Link
-                            href={`/finance/payroll/${cell.payrollRunId}#salary-line-${cell.salaryLineId}`}
-                            className="hover:bg-muted/60 flex flex-col items-center gap-1 rounded-md px-1 py-2 transition-colors"
+                          <button
+                            type="button"
+                            onClick={() => openMonthSheet(cell.salaryLineId)}
+                            className="hover:bg-muted/60 flex w-full flex-col items-center gap-1 rounded-md px-1 py-2 transition-colors"
                           >
                             <StatusBadge label={lineUi.label} variant={lineUi.variant} />
                             <span className="text-muted-foreground text-xs tabular-nums">
                               {formatAmount(parseAmount(cell.totalPayable))}
                             </span>
-                          </Link>
+                          </button>
                         ) : (
                           <div className="text-muted-foreground flex min-h-[3rem] items-center justify-center text-xs">
                             —
@@ -262,6 +300,12 @@ export function SalaryBoardPageContent() {
           </table>
         </div>
       )}
+
+      <EmployeeMonthCompensationSheet
+        salaryLineId={openSalaryLineId}
+        open={monthSheetOpen}
+        onOpenChange={handleMonthSheetOpenChange}
+      />
     </div>
   );
 }

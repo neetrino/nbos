@@ -147,6 +147,75 @@ export interface PayrollRunListParams {
 
 export type SalaryBoardParams = Pick<PayrollRunListParams, 'payrollMonthFrom' | 'payrollMonthTo'>;
 
+export type CompensationPayoutPhase = 'past_paid' | 'active_payout' | 'accumulating';
+
+export interface SalaryLineMonthPaymentRow {
+  id: string;
+  amount: string;
+  paymentDate: string;
+  notes: string | null;
+}
+
+export interface SalaryLineMonthBonusRow {
+  bonusEntryId: string;
+  bonusReleaseId: string;
+  type: string;
+  releaseType: string;
+  releaseStatus: string;
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  orderCode: string;
+  productLabel: string;
+  plannedAmount: string;
+  releaseAmount: string;
+  includedAmount: string | null;
+  paidAmount: string;
+  remainingAmount: string;
+  reason: string | null;
+}
+
+export interface SalaryLineMonthDetail {
+  payoutPhase: CompensationPayoutPhase;
+  employee: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    position: string | null;
+  };
+  payrollMonth: string;
+  payrollRun: {
+    id: string;
+    status: PayrollRunStatus;
+    kpiSalesPlanAmount: string | null;
+    kpiSalesActualAmount: string | null;
+  };
+  salaryLine: {
+    id: string;
+    status: SalaryLineStatus;
+    baseSalary: string;
+    bonusesTotal: string;
+    adjustmentsTotal: string;
+    deductionsTotal: string;
+    totalPayable: string;
+    paidAmount: string;
+    remainingAmount: string;
+    compensationProfileId: string | null;
+  };
+  expense: {
+    id: string;
+    name: string;
+    amount: string;
+    status: string;
+    paymentStatus: string;
+    paidAmount: string;
+    remainingAmount: string;
+    payments: SalaryLineMonthPaymentRow[];
+  } | null;
+  bonusBreakdown: SalaryLineMonthBonusRow[];
+}
+
 export interface PayrollRunStats {
   runCount: number;
   totals: {
@@ -185,6 +254,13 @@ export const payrollRunsApi = {
 
   async getSalaryBoard(params?: SalaryBoardParams): Promise<SalaryBoardResponse> {
     const resp = await api.get<SalaryBoardResponse>('/api/payroll-runs/salary-board', { params });
+    return resp.data;
+  },
+
+  async getSalaryLineMonthDetail(salaryLineId: string): Promise<SalaryLineMonthDetail> {
+    const resp = await api.get<SalaryLineMonthDetail>(
+      `/api/payroll-runs/salary-lines/${salaryLineId}/month-detail`,
+    );
     return resp.data;
   },
 
