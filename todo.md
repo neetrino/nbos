@@ -13,22 +13,26 @@ Unified UX for linking entities (Client, Partner, Project, Contact, …) across 
 ## Phase 1 — CRM sheets
 
 - [x] Lead sheet — partner / client relation fields (marketing)
-- [ ] Deal — products / attribution pickers (optional `entityKind` extensions)
-- [ ] Migrate remaining `SearchField` relation usages in CRM
+- [x] Lead sheet — seller (employee picker)
+- [x] Deal — existing product picker (extension; open product page)
+- [x] Deal — seller / PM / assistant (employee pickers)
+- [x] CRM entity relation fields migrated (marketing attribution “Which one?” stays `SearchField` — composite id)
 
 ## Phase 2 — Other modules
 
-- [ ] Delivery board — team / contact fields
-- [ ] Tasks sheet
-- [ ] Project hub create / link fields
+- [x] Delivery board — team employee fields
+- [x] Tasks sheet — assignee
+- [ ] Project hub create / link fields (`create-project-hub-dialog-fields`)
 - [ ] Finance (invoice, expense plan, client service)
 - [ ] Support ticket triage
 - [ ] Partners agreements card
-- [ ] HR employee pickers (open only; create N/A)
+- [ ] Company sheet contact pickers
 
 ## Phase 3 — Platform
 
-- [ ] Mount `EntityRelationHost` at `(app)` layout so nested sheets work on every page
+- [x] Mount `EntityRelationHost` at app layout (`AppEntityRelationProvider`)
+- [x] Employee open from picker (`EmployeeSheet`)
+- [x] Product open from picker (`/projects/:projectId/products/:id`)
 - [x] Project open from picker (`/projects/:id`)
 - [ ] Product entity sheet + create flow
 - [ ] Docs: `docs/NBOS` pattern for relation fields
@@ -46,9 +50,10 @@ Unified UX for linking entities (Client, Partner, Project, Contact, …) across 
 - [x] Row: kind label + title + optional subtitle; selected row highlight + checkmark
 - [x] Bottom bar: blue tint, `+` circle, “Create …”
 - [x] Closed: chip with icon/avatar, label click → sheet, X → clear only
-- [ ] Icons per entity kind in picker rows — polish pass
+- [x] Icons per entity kind in picker rows
 
 ## Notes
 
 - Reuse existing create forms so form changes propagate everywhere.
 - [x] `isNewProject` removed from deal draft; project creation via create dialog + picker.
+- Sheets register `useRegisterRelationCreated` to patch draft after inline create.

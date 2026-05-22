@@ -10,7 +10,11 @@ import { CreateProjectHubDialog } from '@/features/projects/components/CreatePro
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
 import { PartnerDetailSheet } from '@/features/partners/components/PartnerDetailSheet';
 import { contactsApi, companiesApi, type Contact, type Company } from '@/lib/api/clients';
+import { employeesApi, type Employee } from '@/lib/api/employees';
+import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import type { Project } from '@/lib/api/projects';
+import { productsApi } from '@/lib/api/products';
+import { emitRelationCreatedHandlers } from './relation-created-registry';
 import { EntityRelationsProvider, type EntityRelationsApi } from './entity-relations-context';
 import { buildRelationCreatePrefill } from './build-relation-create-prefill';
 import type { RelationCreatePrefill, RelationEntityKind } from './relation-picker.types';
@@ -33,6 +37,7 @@ export function EntityRelationHost({
   const [contactSheet, setContactSheet] = useState<Contact | null>(null);
   const [companySheet, setCompanySheet] = useState<Company | null>(null);
   const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [employeeSheet, setEmployeeSheet] = useState<Employee | null>(null);
   const [createKind, setCreateKind] = useState<CreateKind | null>(null);
   const [createPrefill, setCreatePrefill] = useState<RelationCreatePrefill | null>(null);
   const [createIntent, setCreateIntent] = useState<string | undefined>(undefined);
@@ -63,6 +68,24 @@ export function EntityRelationHost({
       }
       if (kind === 'partner') {
         setPartnerId(id);
+        return;
+      }
+      if (kind === 'employee') {
+        try {
+          const employee = await employeesApi.getById(id);
+          setEmployeeSheet(employee);
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+      if (kind === 'product') {
+        try {
+          const product = await productsApi.getById(id);
+          router.push(`/projects/${product.projectId}/products/${id}`);
+        } catch {
+          /* ignore */
+        }
       }
     },
     [router],
@@ -92,6 +115,7 @@ export function EntityRelationHost({
 
   const emitCreated = (event: RelationCreatedEvent) => {
     onRelationCreated?.(event);
+    emitRelationCreatedHandlers(event);
     onEntityChanged?.();
   };
 
@@ -171,6 +195,14 @@ export function EntityRelationHost({
           if (!next) setPartnerId(null);
         }}
         onPartnerUpdated={() => onEntityChanged?.()}
+      />
+
+      <EmployeeSheet
+        employee={employeeSheet}
+        open={Boolean(employeeSheet)}
+        onOpenChange={(next) => {
+          if (!next) setEmployeeSheet(null);
+        }}
       />
 
       <CreateContactDialog

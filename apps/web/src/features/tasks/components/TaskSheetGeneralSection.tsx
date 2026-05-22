@@ -1,7 +1,6 @@
-import type { ReactNode } from 'react';
 import { Calendar, ClipboardList, CircleDot, Flag, User } from 'lucide-react';
-import { InlineField } from '@/components/shared';
-import { SearchField } from '@/components/shared/SearchField';
+import { InlineField, RelationPickerField } from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { TASK_PRIORITIES, TASK_STATUSES } from '../constants/tasks';
 import type { TaskGeneralDraft } from '../task-general-form-state';
 import { TASK_SHEET_SECTION_SURFACE_CLASS } from './task-sheet-classes';
@@ -21,6 +20,8 @@ export function TaskSheetGeneralSection({
   onPatchDraft,
   onSearchEmployees,
 }: TaskSheetGeneralSectionProps) {
+  const employeePicker = useRelationPickerActions('employee');
+
   return (
     <section className={TASK_SHEET_SECTION_SURFACE_CLASS}>
       <div className="grid gap-x-5 gap-y-4 lg:grid-cols-2">
@@ -73,21 +74,20 @@ export function TaskSheetGeneralSection({
           disabled={saving}
           onValueChange={(value) => onPatchDraft({ dueDate: value })}
         />
-        <SearchField
-          selectionMode="stage"
+        <RelationPickerField
           label="Assignee"
+          entityKind="employee"
           value={draft.assigneeId}
+          selectionLabel={draft.assigneeLabel}
           icon={<User size={13} />}
-          displayValue={
-            draft.assigneeLabel ? <PersonPill>{draft.assigneeLabel}</PersonPill> : undefined
-          }
           placeholder="Assign employee"
           disabled={saving}
           onSearch={onSearchEmployees}
-          onStageSelect={(employeeId, label) =>
+          onSelect={(employeeId, label) =>
             onPatchDraft({ assigneeId: employeeId, assigneeLabel: label })
           }
           onClear={() => onPatchDraft({ assigneeId: null, assigneeLabel: null })}
+          {...employeePicker}
         />
         <InlineField
           variant="controlled"
@@ -102,8 +102,4 @@ export function TaskSheetGeneralSection({
       </div>
     </section>
   );
-}
-
-function PersonPill({ children }: { children: ReactNode }) {
-  return <span className="text-foreground font-medium">{children}</span>;
 }

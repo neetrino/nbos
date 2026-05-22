@@ -1,7 +1,9 @@
 export { RelationPickerField } from './RelationPickerField';
 export { EntityRelationHost } from './EntityRelationHost';
+export { AppEntityRelationProvider } from './AppEntityRelationProvider';
 export { useEntityRelations } from './entity-relations-context';
 export { useRelationPickerActions } from './use-relation-picker-actions';
+export { useRegisterRelationCreated } from './use-register-relation-created';
 export { parseRelationSearchName } from './parse-relation-search-name';
 export type {
   RelationEntityKind,

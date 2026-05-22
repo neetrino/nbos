@@ -14,7 +14,6 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   InlineField,
   RelationPickerField,
-  SearchField,
 } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
@@ -132,6 +131,7 @@ export function DealInfoDealProductFields({
   disabled = false,
   gateRequiredFields = new Set(),
 }: Omit<DealInfoFieldsProps, 'searchProjects' | 'searchCompanies'>) {
+  const productPicker = useRelationPickerActions('product');
   const isExtension = draft.type === 'EXTENSION';
   const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
 
@@ -205,26 +205,21 @@ export function DealInfoDealProductFields({
       )}
 
       {isExtension && (
-        <SearchField
-          selectionMode="stage"
+        <RelationPickerField
           label="Existing Product"
+          entityKind="product"
           value={draft.existingProductId}
+          selectionLabel={draft.existingProductPickLabel}
           className={dealStageGateFieldClass(gateRequiredFields, 'existingProductId')}
           disabled={disabled}
-          displayValue={
-            draft.existingProductPickLabel ? (
-              <span className="text-foreground text-sm font-medium">
-                {draft.existingProductPickLabel}
-              </span>
-            ) : undefined
-          }
-          placeholder="Search products..."
+          placeholder="Search products…"
           icon={<Layers size={12} />}
           onSearch={searchProducts}
-          onStageSelect={(id, label) =>
+          onSelect={(id, label) =>
             patchDraft({ existingProductId: id, existingProductPickLabel: label })
           }
           onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
+          {...productPicker}
         />
       )}
 

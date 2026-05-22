@@ -5,10 +5,12 @@ import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DETAIL_SHEET_PERSON_AVATAR_CLASS } from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
+import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
 import { RelationPickerDropdown } from './RelationPickerDropdown';
 import {
   RELATION_CREATE_LABELS,
   RELATION_KIND_LABELS,
+  type RelationEntityKind,
   type RelationPickerFieldProps,
   type RelationPickerOption,
 } from './relation-picker.types';
@@ -32,6 +34,13 @@ function initialsFromLabel(label: string): string {
 
 function personAvatar(label: string): ReactNode {
   return <div className={DETAIL_SHEET_PERSON_AVATAR_CLASS}>{initialsFromLabel(label)}</div>;
+}
+
+function chipIcon(kind: RelationEntityKind, label: string): ReactNode {
+  if (kind === 'contact' || kind === 'employee') {
+    return personAvatar(label);
+  }
+  return <RelationPickerEntityIcon kind={kind} />;
 }
 
 export function RelationPickerField(props: RelationPickerFieldProps) {
@@ -179,6 +188,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           highlightIdx={highlightIdx}
           selectedIds={selectedIds}
           multiple={multiple}
+          entityKind={entityKind}
           kindLabel={kindLabel}
           createLabel={createLabel}
           createEnabled={Boolean(onCreate)}
@@ -195,7 +205,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           placeholder={searchPlaceholder}
           onOpen={() => setOpen(true)}
           onOpenSelected={onOpenSelected}
-          personAvatar={entityKind === 'contact' || entityKind === 'employee'}
+          entityKind={entityKind}
         />
       )}
     </div>
@@ -209,7 +219,7 @@ function ClosedRelationPicker({
   placeholder,
   onOpen,
   onOpenSelected,
-  personAvatar: usePersonAvatar,
+  entityKind,
 }: {
   props: RelationPickerFieldProps;
   multiple: boolean;
@@ -217,7 +227,7 @@ function ClosedRelationPicker({
   placeholder: string;
   onOpen: () => void;
   onOpenSelected?: (id: string) => void;
-  personAvatar: boolean;
+  entityKind: RelationEntityKind;
 }) {
   if (multiple && isMultiProps(props)) {
     const chips = props.value.map((id) => ({
@@ -231,7 +241,8 @@ function ClosedRelationPicker({
           <RelationPickerChip
             key={chip.id}
             label={chip.label}
-            icon={usePersonAvatar ? personAvatar(chip.label) : undefined}
+            icon={chipIcon(entityKind, chip.label)}
+            entityKind={entityKind}
             disabled={disabled}
             onOpen={onOpenSelected ? () => onOpenSelected(chip.id) : undefined}
             onClear={() => {
@@ -264,7 +275,8 @@ function ClosedRelationPicker({
         <RelationPickerChip
           label={chipLabel}
           subtitle={props.selectionSubtitle}
-          icon={usePersonAvatar ? personAvatar(chipLabel) : undefined}
+          icon={chipIcon(entityKind, chipLabel)}
+          entityKind={entityKind}
           disabled={disabled}
           onOpen={
             onOpenSelected && props.value ? () => onOpenSelected(props.value as string) : undefined

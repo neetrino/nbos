@@ -1,7 +1,8 @@
 'use client';
 
 import { User } from 'lucide-react';
-import { SearchField } from '@/components/shared';
+import { RelationPickerField } from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct, ProductEmployee } from '@/lib/api/products';
 import { useEmployeeSearchLoader } from './delivery-item-detail-employee-search';
@@ -70,21 +71,22 @@ function ProductRolePicker({
   disabled?: boolean;
   className?: string;
 }) {
+  const employeePicker = useRelationPickerActions('employee');
+
   return (
     <div className={className}>
-      <SearchField
-        selectionMode="stage"
+      <RelationPickerField
         label={label}
+        entityKind="employee"
         value={employeeId}
-        displayValue={
-          employeeLabel ? <DeliveryTeamEmployeeChoiceDisplay label={employeeLabel} /> : undefined
-        }
+        selectionLabel={employeeLabel || null}
         placeholder="Choose…"
         icon={<User size={12} />}
         onSearch={onSearchEmployees}
-        onStageSelect={(id, name) => onSelect(id, name)}
+        onSelect={(id, name) => onSelect(id, name)}
         onClear={onClear}
         disabled={disabled}
+        {...employeePicker}
       />
     </div>
   );

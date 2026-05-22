@@ -9,10 +9,10 @@ import {
   DETAIL_SHEET_SUBSECTION_LABEL_CLASS,
   DetailSheetCollapsibleSection,
   InlineField,
-  SearchField,
+  RelationPickerField,
   StatusBadge,
 } from '@/components/shared';
-import { DeliveryTeamEmployeeChoiceDisplay } from '@/features/projects/components/delivery-board/delivery-team-employee-display';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import type { Lead } from '@/lib/api/leads';
 import { employeesApi } from '@/lib/api/employees';
 import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
@@ -42,6 +42,8 @@ export function LeadCombinedInfoSection({
   sectionIds,
 }: LeadCombinedInfoSectionProps) {
   const [open, setOpen] = useState(true);
+
+  const employeePicker = useRelationPickerActions('employee');
 
   const searchEmployees = useCallback(async (query: string) => {
     const data = await employeesApi.getAll({ pageSize: 8, search: query || undefined });
@@ -111,21 +113,20 @@ export function LeadCombinedInfoSection({
 
       <div className="pt-4">
         <div id={sectionIds.assignment} className="min-w-0">
-          <SearchField
-            selectionMode="stage"
+          <RelationPickerField
             label="Seller"
+            entityKind="employee"
             className={leadStageGateFieldClass(gateRequiredFields, 'assignedTo')}
             value={draft.assignedTo}
-            displayValue={
-              draft.sellerDisplayLabel ? (
-                <DeliveryTeamEmployeeChoiceDisplay label={draft.sellerDisplayLabel} />
-              ) : undefined
+            selectionLabel={
+              draft.sellerDisplayLabel ??
+              (lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : null)
             }
             placeholder="Search seller…"
             icon={<User size={12} />}
             disabled={formDisabled}
             onSearch={searchEmployees}
-            onStageSelect={(value, label) =>
+            onSelect={(value, label) =>
               patchDraft({ assignedTo: value, sellerDisplayLabel: label })
             }
             onClear={
@@ -133,6 +134,7 @@ export function LeadCombinedInfoSection({
                 ? undefined
                 : () => patchDraft({ assignedTo: null, sellerDisplayLabel: null })
             }
+            {...employeePicker}
           />
         </div>
       </div>

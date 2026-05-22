@@ -52,8 +52,10 @@ export { SearchField, type SearchFieldProps } from './SearchField';
 export {
   RelationPickerField,
   EntityRelationHost,
+  AppEntityRelationProvider,
   useEntityRelations,
   useRelationPickerActions,
+  useRegisterRelationCreated,
   parseRelationSearchName,
   type RelationEntityKind,
   type RelationPickerFieldProps,

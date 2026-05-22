@@ -4,11 +4,14 @@ import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS } from '../detail-sheet-classes';
+import type { RelationEntityKind } from './relation-picker.types';
+import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
 
 type RelationPickerChipProps = {
   label: string;
   subtitle?: string | null;
   icon?: ReactNode;
+  entityKind?: RelationEntityKind;
   disabled?: boolean;
   onOpen?: () => void;
   onClear?: () => void;
@@ -18,10 +21,12 @@ export function RelationPickerChip({
   label,
   subtitle,
   icon,
+  entityKind,
   disabled,
   onOpen,
   onClear,
 }: RelationPickerChipProps) {
+  const leading = icon ?? (entityKind ? <RelationPickerEntityIcon kind={entityKind} /> : null);
   return (
     <span
       className={cn(
@@ -39,7 +44,7 @@ export function RelationPickerChip({
           (!onOpen || disabled) && 'cursor-default',
         )}
       >
-        {icon}
+        {leading}
         <span className="min-w-0">
           <span className="text-foreground block truncate font-medium">{label}</span>
           {subtitle ? (
