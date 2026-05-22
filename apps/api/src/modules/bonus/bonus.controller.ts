@@ -141,6 +141,15 @@ export class BonusController {
     return this.bonusService.triggerProductPoolAutoRelease(key);
   }
 
+  @Get('marketing-accrual/preview')
+  @ApiOperation({
+    summary: 'Preview MARKETING bonus accrual from attributed MQL/SQL leads (no persist)',
+  })
+  @ApiQuery({ name: 'payrollMonth', required: true, description: 'YYYY-MM payroll month' })
+  async previewMarketingAccrual(@Query('payrollMonth') payrollMonth: string) {
+    return this.bonusService.previewMarketingBonusAccrual(payrollMonth);
+  }
+
   @Get('entries/:entryId/releases')
   @ApiOperation({ summary: 'List bonus releases for a bonus entry (NBOS Bonus Release ledger)' })
   @ApiQuery({ name: 'page', required: false })

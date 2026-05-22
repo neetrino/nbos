@@ -22,6 +22,7 @@ import { queryBonusPoolTimeline } from './bonus-pool-timeline';
 import { triggerPoolProportionalAutoRelease } from './bonus-pool-auto-release-trigger';
 import { deriveBonusPoolFundingMetrics, sumPoolLedgerFields } from './bonus-pool-funding-health';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
+import { queryMarketingBonusAccrualPreview } from './marketing-bonus-accrual-preview';
 
 interface CreateBonusDto {
   employeeId: string;
@@ -319,6 +320,10 @@ export class BonusService {
       ...row,
       employeeCount: employeesByPool.get(row.poolKey)?.size ?? 0,
     }));
+  }
+
+  async previewMarketingBonusAccrual(payrollMonth: string) {
+    return queryMarketingBonusAccrualPreview(this.prisma, payrollMonth);
   }
 
   private buildWhere(

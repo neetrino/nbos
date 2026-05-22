@@ -98,6 +98,13 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 
 ---
 
+## 4b. Policy accrual automation (backlog)
+
+- ◐ **Marketing accrual:** MQL/SQL preview on bonus board; persist + rates config pending.
+- ☐ **Support accrual:** SLA scorecard → SUPPORT/MARKETING bonus entries (template seeded).
+
+---
+
 ## 7. QA and ops
 
 - ☐ **Manual visual QA** — audit doc § Manual visual QA (salary card, bonus list, partial pay, Pay Now).

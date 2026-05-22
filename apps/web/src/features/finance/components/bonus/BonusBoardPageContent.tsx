@@ -29,6 +29,7 @@ import {
   BONUS_BOARD_OPEN_ENTRY_QUERY,
   BONUS_BOARD_PROJECT_FILTER_QUERY,
 } from '@/features/finance/constants/bonus-board-url';
+import { MarketingBonusAccrualPreviewPanel } from '@/features/finance/components/bonus/marketing-bonus-accrual-preview-panel';
 import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
 import { BonusBoardPageSettingsSheet } from '@/features/finance/components/bonus/BonusBoardPageSettingsSheet';
 import {
@@ -323,6 +324,7 @@ export function BonusBoardPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
+      <MarketingBonusAccrualPreviewPanel />
       {filtered.length === 0 ? (
         <EmptyState
           icon={Gift}

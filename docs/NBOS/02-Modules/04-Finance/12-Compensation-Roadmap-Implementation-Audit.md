@@ -63,7 +63,7 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 ### Residual (canon backlog)
 
-- Marketing scorecard → automatic MARKETING accrual (template exists; engine pending).
+- Marketing: `GET /api/bonus/marketing-accrual/preview` + Finance UI (counts); apply + rates in DB pending.
 - Support SLA scorecard → automatic SUPPORT accrual (template exists; engine pending).
 - Bonus policy template parameters beyond name/notes (per-template config UI).
 - KPI scorecard metrics per non-sales role (sales plan/actual links ship on `kpi_policies`).
