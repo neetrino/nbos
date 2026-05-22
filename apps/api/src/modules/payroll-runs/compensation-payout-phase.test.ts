@@ -22,6 +22,16 @@ describe('resolveCompensationPayoutPhase', () => {
     ).toBe('active_payout');
   });
 
+  it('does not treat CLOSED run as past_paid when line is not PAID', () => {
+    expect(
+      resolveCompensationPayoutPhase({
+        payrollMonth: '2020-01',
+        runStatus: 'CLOSED',
+        lineStatus: 'APPROVED',
+      }),
+    ).toBe('active_payout');
+  });
+
   it('returns accumulating for current or future month', () => {
     const future = '2099-12';
     expect(

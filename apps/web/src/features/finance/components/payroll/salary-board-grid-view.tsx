@@ -11,8 +11,24 @@ import {
   formatPayrollMonthShort,
   sumSalaryBoardColumn,
   sumSalaryBoardRow,
+  sumSalaryBoardRowsTotal,
 } from '@/features/finance/utils/salary-board-month-utils';
 import { cn } from '@/lib/utils';
+
+const STICKY_ROW_TOTAL_HEADER_CLASS = cn(
+  'border-border text-foreground sticky right-0 z-20 border-l border-b px-3 py-2 text-right font-semibold',
+  'bg-background',
+);
+
+const STICKY_ROW_TOTAL_CELL_CLASS = cn(
+  'border-border text-foreground sticky right-0 z-10 border-l border-b px-3 py-2 text-right tabular-nums',
+  'bg-background',
+);
+
+const STICKY_ROW_TOTAL_FOOTER_CLASS = cn(
+  'border-border text-foreground sticky right-0 z-10 border-l px-3 py-2 text-right font-semibold tabular-nums',
+  'bg-muted/30',
+);
 
 export function SalaryBoardGridView({
   data,
@@ -28,6 +44,7 @@ export function SalaryBoardGridView({
   onOpenMonth: (salaryLineId: string) => void;
 }) {
   const columnCount = data.columns.length;
+  const filteredGrandTotal = sumSalaryBoardRowsTotal(rows, columnCount);
 
   return (
     <div className="flex min-h-0 flex-col gap-3">
@@ -73,6 +90,7 @@ export function SalaryBoardGridView({
                   </div>
                 </th>
               ))}
+              <th className={STICKY_ROW_TOTAL_HEADER_CLASS}>Total</th>
             </tr>
           </thead>
           <tbody>
@@ -86,10 +104,7 @@ export function SalaryBoardGridView({
                       'bg-background',
                     )}
                   >
-                    <p className="text-foreground text-sm font-semibold tabular-nums">
-                      {formatAmount(rowTotal)}
-                    </p>
-                    <div className="mt-1 font-medium">{employeeDisplayName(row.employee)}</div>
+                    <div className="font-medium">{employeeDisplayName(row.employee)}</div>
                     {row.employee.position ? (
                       <div className="text-muted-foreground text-xs">{row.employee.position}</div>
                     ) : null}
@@ -108,6 +123,9 @@ export function SalaryBoardGridView({
                       </td>
                     );
                   })}
+                  <td className={STICKY_ROW_TOTAL_CELL_CLASS}>
+                    <span className="text-sm font-semibold">{formatAmount(rowTotal)}</span>
+                  </td>
                 </tr>
               );
             })}
@@ -130,6 +148,7 @@ export function SalaryBoardGridView({
                   {formatAmount(sumSalaryBoardColumn(rows, idx))}
                 </td>
               ))}
+              <td className={STICKY_ROW_TOTAL_FOOTER_CLASS}>{formatAmount(filteredGrandTotal)}</td>
             </tr>
           </tfoot>
         </table>

@@ -20,12 +20,8 @@ export function resolveCompensationPayoutPhase(params: {
     return 'past_paid';
   }
 
-  if (runStatus === 'CLOSED' && lineStatus !== null) {
-    return 'past_paid';
-  }
-
   if (payrollMonth < nowMonth && runStatus !== null && lineStatus !== null) {
-    if (runStatus === 'APPROVED' || runStatus === 'PAYING') {
+    if (runStatus === 'APPROVED' || runStatus === 'PAYING' || runStatus === 'CLOSED') {
       return 'active_payout';
     }
     if (runStatus === 'DRAFT' || runStatus === 'REVIEW') {

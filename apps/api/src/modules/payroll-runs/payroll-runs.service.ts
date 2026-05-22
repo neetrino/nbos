@@ -38,6 +38,7 @@ import {
   notifyEmployeesOnPayrollRunCreated,
 } from './payroll-run-employee-wallet-notify';
 import { applyPayrollRunKpiPatch, type PatchPayrollRunBody } from './payroll-run-kpi-patch';
+import { loadSalaryLinesBlockingPayrollCloseCount } from './payroll-run-close-validation';
 import { sumPaymentsForPayrollMonthSuggestedSalesKpi } from './payroll-run-suggested-sales-actual';
 import {
   querySalaryBoard,
@@ -230,6 +231,15 @@ export class PayrollRunsService {
 
     if (!canTransitionPayrollRun(run.status, status)) {
       throw new ConflictException(`Cannot transition payroll run from ${run.status} to ${status}`);
+    }
+
+    if (status === 'CLOSED') {
+      const blockingCount = await loadSalaryLinesBlockingPayrollCloseCount(this.prisma, id);
+      if (blockingCount > 0) {
+        throw new ConflictException(
+          `Cannot close payroll run: ${blockingCount} salary line(s) are not fully paid or held.`,
+        );
+      }
     }
 
     const data: Prisma.PayrollRunUpdateInput = { status };

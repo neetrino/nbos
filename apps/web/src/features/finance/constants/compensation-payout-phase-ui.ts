@@ -6,8 +6,8 @@ export const COMPENSATION_PAYOUT_PHASE_UI: Record<
   { label: string; description: string; variant: StatusVariant; hex: string }
 > = {
   past_paid: {
-    label: 'Paid',
-    description: 'Month closed or salary line fully paid.',
+    label: 'Fully paid',
+    description: 'Salary line fully paid through expense payments.',
     variant: 'green',
     hex: '#16A34A',
   },

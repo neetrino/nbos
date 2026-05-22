@@ -1,7 +1,5 @@
 'use client';
 
-import { StatusBadge } from '@/components/shared';
-import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import { employeeDisplayName } from '@/features/finance/components/payroll/salary-board-entries';
 import { formatPayrollMonthShort } from '@/features/finance/utils/salary-board-month-utils';
 import { SalaryBoardCellButton } from '@/features/finance/components/payroll/salary-board-cell-button';
@@ -43,20 +41,14 @@ export function SalaryBoardCardsView({
               <p className="text-muted-foreground text-xs">{row.employee.position}</p>
             ) : null}
             <ul className="mt-3 flex flex-col gap-2">
-              {monthCells.map(({ cell, month }) => {
-                const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[cell.payoutPhase];
-                return (
-                  <li key={cell.salaryLineId} className="flex flex-col gap-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-foreground text-xs font-medium tabular-nums">
-                        {formatPayrollMonthShort(month)}
-                      </span>
-                      <StatusBadge label={phaseUi.label} variant={phaseUi.variant} />
-                    </div>
-                    <SalaryBoardCellButton cell={cell} onOpen={onOpenMonth} />
-                  </li>
-                );
-              })}
+              {monthCells.map(({ cell, month }) => (
+                <li key={cell.salaryLineId} className="flex flex-col gap-1">
+                  <span className="text-foreground text-xs font-medium tabular-nums">
+                    {formatPayrollMonthShort(month)}
+                  </span>
+                  <SalaryBoardCellButton cell={cell} onOpen={onOpenMonth} compact />
+                </li>
+              ))}
             </ul>
           </article>
         );

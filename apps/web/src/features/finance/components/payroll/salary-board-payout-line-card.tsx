@@ -2,7 +2,6 @@
 
 import { Calendar, User } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
-import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { employeeDisplayName } from '@/features/finance/components/payroll/salary-board-entries';
 import type { SalaryBoardEntry } from '@/features/finance/components/payroll/salary-board-entries';
@@ -20,7 +19,6 @@ export function SalaryBoardPayoutLineCard({
   onOpen: (salaryLineId: string) => void;
 }) {
   const lineUi = salaryLineStatusBoardUi(entry.cell.lineStatus);
-  const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[entry.cell.payoutPhase];
   const payable = parseSalaryBoardAmount(entry.cell.totalPayable);
   const remaining = parseSalaryBoardAmount(entry.cell.remainingAmount);
 
@@ -50,7 +48,6 @@ export function SalaryBoardPayoutLineCard({
         {formatAmount(remaining)} left
       </p>
       <div className="mt-2 flex flex-wrap gap-1">
-        <StatusBadge label={phaseUi.label} variant={phaseUi.variant} />
         <StatusBadge label={lineUi.label} variant={lineUi.variant} />
       </div>
     </button>

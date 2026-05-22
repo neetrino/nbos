@@ -1,7 +1,6 @@
 'use client';
 
 import { StatusBadge } from '@/components/shared';
-import { COMPENSATION_PAYOUT_PHASE_UI } from '@/features/finance/constants/compensation-payout-phase-ui';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { parseSalaryBoardAmount } from '@/features/finance/utils/salary-board-month-utils';
@@ -17,7 +16,6 @@ export function SalaryBoardCellButton({
   compact?: boolean;
 }) {
   const lineUi = salaryLineStatusBoardUi(cell.lineStatus);
-  const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[cell.payoutPhase];
 
   return (
     <button
@@ -30,7 +28,6 @@ export function SalaryBoardCellButton({
       }
     >
       <div className="flex flex-wrap items-center justify-center gap-1">
-        <StatusBadge label={phaseUi.label} variant={phaseUi.variant} />
         <StatusBadge label={lineUi.label} variant={lineUi.variant} />
       </div>
       <span className="text-muted-foreground text-xs tabular-nums">

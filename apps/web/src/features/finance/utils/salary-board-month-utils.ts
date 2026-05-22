@@ -38,3 +38,14 @@ export function sumSalaryBoardRow(
   }
   return total;
 }
+
+export function sumSalaryBoardRowsTotal(
+  rows: SalaryBoardResponse['rows'],
+  columnCount: number,
+): number {
+  let total = 0;
+  for (const row of rows) {
+    total += sumSalaryBoardRow(row, columnCount);
+  }
+  return total;
+}
