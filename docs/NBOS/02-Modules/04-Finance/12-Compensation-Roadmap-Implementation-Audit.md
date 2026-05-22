@@ -56,6 +56,10 @@ Use after deploy or large UX change:
 
 ## Follow-up (out of MVP roadmap closure)
 
-- Policy engine: cap/carry-over auto-apply, burned KPI as ledger line.
-- Phase 1 “compare every field” — re-run when compensation profile schema changes.
-- Dedicated Pay Now default = payroll-only (product decision in `todo.md` open decisions).
+Tracked in repo root [`todo.md`](../../../../todo.md) (single remaining-work list). Summary:
+
+- **Policy engine:** cap, carry-over, burned KPI ledger + month/wallet explanations.
+- **Product decisions:** wallet sheet variant, forecast scope, burned KPI display, Pay Now default.
+- **UX gaps:** bonus pool employee breakdown, salary department filter, manual QA checklist.
+- **My Company:** versioned Compensation Profile + universal Bonus/KPI policies ([`06-My-Company-Cleanup-Register`](../07-My-Company/06-My-Company-Cleanup-Register.md) C1–C3).
+- Re-audit payloads when compensation profile schema changes.

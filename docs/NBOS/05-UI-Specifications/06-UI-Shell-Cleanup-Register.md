@@ -112,13 +112,13 @@ Runtime имеет search entry в sidebar. Canon допускает global sear
 
 Статус: `PARTIAL UI / RBAC VISIBILITY HARDENED`
 
-Runtime finance children не соответствуют новому Finance canon:
+Runtime finance zone nav (Payroll section pills) now includes **Salary**, **Bonus**, **Bonus pools**, **Payroll** — см. `finance-module-nav.ts`. Compensation MVP audit: [`12-Compensation-Roadmap-Implementation-Audit.md`](../02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md); remaining: [`todo.md`](../../../todo.md).
 
-- нет Salary Board;
-- нет Bonus Board;
-- нет Client Services;
-- нет Expense Plans / Expense Backlog separation;
-- Orders может быть stale naming.
+**Ещё не по канону:**
+
+- отдельный пункт sidebar / backlog для **Expense Backlog** (есть Pay Now + Expenses Plan + Client services);
+- Orders naming может быть stale;
+- top-level sidebar tree может не дублировать все finance zone links — проверить при shell refactor.
 
 CRM children тоже должны быть приведены к CRM canon:
 

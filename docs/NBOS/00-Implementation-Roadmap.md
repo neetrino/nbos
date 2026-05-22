@@ -226,6 +226,8 @@ Exit criteria:
 - bonus release and product bonus pool logic are safe;
 - partner payout rules respect Deal Type and Payment Type.
 
+**Compensation slice (2026-05):** salary board, payroll workspace, bonus board, pools, Pay Now payroll linkage, employee wallet MVP — audit [`02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md`](02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md). **Still open for Phase 3 exit:** My Company policy engine (cap/carry-over/burned), expense/subscription canon — [`todo.md`](../../todo.md) at repo root.
+
 Key docs:
 
 - `02-Modules/04-Finance/*`

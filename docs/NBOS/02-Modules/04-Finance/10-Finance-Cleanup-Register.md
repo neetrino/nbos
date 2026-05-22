@@ -2,6 +2,8 @@
 
 > NBOS Finance - что уже совпадает с новым каноном, что устарело только в документации, а что требует будущего runtime refactor.
 
+**Compensation / Payroll / Wallet MVP (2026-05):** shipped in runtime. **Что осталось** — только в корневом [`todo.md`](../../../../todo.md) и [`12-Compensation-Roadmap-Implementation-Audit.md`](./12-Compensation-Roadmap-Implementation-Audit.md) (policy engine, product decisions, мелкие UX gaps, QA).
+
 ## Назначение
 
 Этот файл фиксирует хвосты после пересборки Finance-канона.
@@ -74,6 +76,29 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 - `CLAWBACK`.
 
 `HOLDBACK` уже удалён из активного канона. Будущий refactor должен убрать legacy `HOLDBACK` / holdback fields из runtime и выровнять выпуск бонусов через `Product Bonus Pool`, `Bonus Release`, `Payroll Run`, `Salary Line`, `Expense Card` и `Employee Wallet`.
+
+### A4. Compensation MVP UX aligned with Bitrix-style flow
+
+Статус: `MVP SHIPPED` (2026-05) — **policy engine и My Company policies — не закрыты**
+
+**Сделано в runtime + UI:**
+
+- `PayrollRun`, `SalaryLine`, `BonusRelease`, product bonus pool roll-ups;
+- approve → expense card → `Expense Payment` → `syncSalaryLinePaidFromExpenseLedger`;
+- `/finance/salary` (grid/cards/list/board + month sheet), `/finance/payroll/[id]` workspace;
+- `/finance/bonuses` (+ legacy `/bonus` redirect), `/finance/bonus-pools`;
+- Pay Now payroll filters + expense sheet links to month sheet / payroll run;
+- `/my-account/wallet` read-only month cards + month-detail;
+- `GET …/salary-lines/:id/month-detail` (Finance + wallet scope);
+- CSV exports (salary board, bonus board, pools, wallet, payroll lines);
+- Sales KPI gate on payroll run + read-only hint in month sheet.
+
+**Остаётся (см. `todo.md`):**
+
+- автоматический **cap / carry-over / burned KPI** (policy engine);
+- employee breakdown inside bonus pool rows;
+- department filter on salary board (если нужен);
+- product decisions (wallet sheet variant, Pay Now default, …).
 
 ---
 
@@ -217,34 +242,24 @@ Done slice:
 - update expense board routes and UI;
 - update P&L and cash flow sources.
 
-### C4. Payroll runtime is not implemented as canonical entity set
+### C4. Payroll / compensation runtime
 
-Статус: `MISSING CODE`
+Статус: `MVP SHIPPED` — **Compensation Profile + universal policy engine still `MISSING`**
 
-Новый канон требует:
+**Уже в runtime (не «только employee salary fields»):**
 
-- `Compensation Profile`;
-- `Payroll Run`;
-- `Salary Line`;
-- `Product Bonus Pool`;
-- `Bonus Release`;
-- `Expense Card` creation from approved payroll;
-- partial salary payments via `Expense Payment`;
-- `Employee Wallet` as read-only projection.
+- `PayrollRun`, `SalaryLine`, `BonusEntry`, `BonusRelease`, pool sync;
+- expense materialization on approval; partial/full pay via `ExpensePayment` + salary line sync;
+- sales KPI scale at bonus attach (`sales-kpi-payroll-payout`);
+- Finance + wallet projections (`salary-line-month-detail`, wallet snapshot).
 
-Runtime currently still has only basic employee salary fields and bonus entries. It does not have the full payroll entity flow, product bonus pool, automatic release after Product / Extension done, or manual release overrides.
+**Остаётся:**
 
-Будущий refactor:
-
-- move compensation settings out of simple employee scalar fields into compensation profile history;
-- add payroll run model;
-- add salary line model;
-- add product bonus pool and bonus release models;
-- add automatic release after Product / Extension done based on available product funding;
-- add manual override flow for early release, extra bonus and over funding;
-- connect payroll to expense cards and expense payments;
-- update salary UI from monthly table to `employees x months` matrix;
-- add payroll bonus release workspace.
+- versioned **`Compensation Profile`** as source of truth (My Company — см. [06-My-Company-Cleanup-Register](../07-My-Company/06-My-Company-Cleanup-Register.md) C1–C3);
+- universal **Bonus / KPI Policy** templates (not only sales policy rows);
+- **policy engine:** cap, carry-over, burned KPI ledger lines;
+- deeper automatic release rules + manual override audit beyond current release types;
+- optional: payroll runs list **board/calendar** views.
 
 ### C5. Client Service Record runtime foundation
 
@@ -334,15 +349,15 @@ Frontend:
 - expense pages still use `THIS_MONTH / PAY_NOW / DELAYED / ON_HOLD / OLD` (workflow канона Expense Card — в C3);
 - subscription UI still uses `PAUSED` и т.д. (C2);
 - project finance tab: проверять оставшиеся места на старые имена там, где ещё не переведено на money/expense канон.
+- ~~Salary Board matrix~~ — **done** (`/finance/salary`, views + month sheet); ~~Bonus Board~~ — **done** (`/finance/bonuses`).
 
 Будущий refactor:
 
-- rebuild Finance UI around:
+- rebuild remaining Finance UI around:
   - Invoice Cards (money layer — база есть; official invoice block в UI — по полям runtime);
   - Subscription Grid with coverage;
-  - Client Services;
-  - Expense Plans / Expense Board / Expense Backlog;
-  - Salary Board matrix;
+  - Client Services (foundation done);
+  - Expense Plans / Expense Board / **Expense Backlog** separation;
   - P&L / Cash Flow / Journal View.
 
 ### C8. Finance summary and scheduler logic still use old status semantics
@@ -375,16 +390,14 @@ Remaining refactor:
 2. Add notification/reminder automation based on invoice card rules, not invoice board stages.
 3. Replace subscription statuses and add billing coverage fields.
 4. Add `Expense Plan`, `Expense Card`, `Expense Payment`, `Expense Backlog`.
-5. ~~Add partial outgoing payments for expenses and salary.~~ Partial/full outgoing is implemented via
-   `ExpensePayment`; salary lines linked to an expense card sync partial pay state. Remaining work is
-   the full canon entity split and payroll UI depth (see items 4, 7, 12).
-6. Add `Client Service Record` and connect it to invoice/expense/task/credential.
-7. Add `Compensation Profile`, `Product Bonus Pool`, `Bonus Release`, `Payroll Run`, `Salary Line`.
-8. Add automatic subscription delivery bonus release after Product / Extension done, with manual override.
-9. Add `Employee Wallet` read model.
+5. ~~Add partial outgoing payments for expenses and salary.~~ Done (`ExpensePayment` + salary line sync).
+6. Add `Client Service Record` and connect it to invoice/expense/task/credential (foundation done; domain migration — C5).
+7. ~~`Payroll Run` / `Salary Line` / `Bonus Release` / pool roll-ups / compensation month UI / wallet read model.~~ **MVP done.** Remaining: **`Compensation Profile`**, **policy engine** (cap/carry-over/burned) — `todo.md`.
+8. Add automatic subscription delivery bonus release after Product / Extension done, with manual override (partial: release types + attach/detach; full policy automation pending).
+9. ~~`Employee Wallet` read model.~~ Done (`/my-account/wallet`).
 10. Add Finance report aggregate endpoints behind the v1 definitions shell.
 11. Add `Operational Journal`, period close and adjustment flow.
-12. Rebuild Finance UI routes and views around the new canon.
+12. Rebuild **remaining** Finance UI (expense backlog split, subscription coverage, journal) — compensation routes **shipped**.
 13. Update finance dashboard/summary/scheduler logic.
 14. Add tests for all transition and generation rules.
 
@@ -396,9 +409,9 @@ Remaining refactor:
 2. `Subscriptions` status + coverage because recurring revenue depends on invoice cards.
 3. `Client Service Record` because it feeds both invoice and expense.
 4. `Expense Plan / Card / Payment / Backlog`.
-5. `Compensation Profile / Bonus Policy / KPI Policy`.
-6. `Product Bonus Pool / Bonus Release`.
-7. `Payroll Run / Salary Line / Employee Wallet`.
+5. `Compensation Profile / Bonus Policy / KPI Policy` (My Company — **blocks policy engine**).
+6. ~~`Product Bonus Pool / Bonus Release` (MVP).~~ Policy automation — `todo.md` §2.
+7. ~~`Payroll Run / Salary Line / Employee Wallet` (MVP UX).~~ Policy engine + pool employee breakdown — `todo.md`.
 8. `Operational Journal / P&L / Cash Flow`.
 9. Finance dashboard and reporting refinements.
 
