@@ -44,7 +44,6 @@ import {
   filterSalaryBoardRows,
   flattenSalaryBoard,
 } from '@/features/finance/components/payroll/salary-board-entries';
-import { SalaryBoardCardsView } from '@/features/finance/components/payroll/salary-board-cards-view';
 import { SalaryBoardGridView } from '@/features/finance/components/payroll/salary-board-grid-view';
 import { SalaryBoardListView } from '@/features/finance/components/payroll/salary-board-list-view';
 import { SalaryBoardPayoutBoardView } from '@/features/finance/components/payroll/salary-board-payout-board-view';
@@ -336,8 +335,6 @@ export function SalaryBoardPageContent() {
               onGridYearChange={setGridYear}
               onOpenMonth={openMonthSheet}
             />
-          ) : view === 'cards' ? (
-            <SalaryBoardCardsView data={data} rows={filteredRows} onOpenMonth={openMonthSheet} />
           ) : view === 'list' ? (
             <SalaryBoardListView
               entries={filteredEntries}

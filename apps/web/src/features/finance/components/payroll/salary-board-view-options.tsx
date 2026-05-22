@@ -1,4 +1,4 @@
-import { Columns3, LayoutGrid, List, Rows3 } from 'lucide-react';
+import { Columns3, List, Rows3 } from 'lucide-react';
 import type { ViewModeOption } from '@/components/shared';
 import type { SalaryBoardViewMode } from '@/features/finance/constants/salary-board-view';
 
@@ -8,12 +8,6 @@ export const SALARY_BOARD_VIEW_OPTIONS: ViewModeOption<SalaryBoardViewMode>[] = 
     label: 'Grid',
     icon: <Rows3 className="size-3.5 shrink-0" aria-hidden />,
     ariaLabel: 'Employee by month grid',
-  },
-  {
-    value: 'cards',
-    label: 'Cards',
-    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Employee cards view',
   },
   {
     value: 'list',

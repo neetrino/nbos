@@ -1,4 +1,4 @@
-export type SalaryBoardViewMode = 'grid' | 'cards' | 'list' | 'board';
+export type SalaryBoardViewMode = 'grid' | 'list' | 'board';
 
 const STORAGE_KEY = 'nbos:finance:salary-board-view';
 
@@ -7,7 +7,7 @@ export function readSalaryBoardViewMode(): SalaryBoardViewMode {
     return 'grid';
   }
   const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (raw === 'cards' || raw === 'list' || raw === 'board') {
+  if (raw === 'list' || raw === 'board') {
     return raw;
   }
   return 'grid';
