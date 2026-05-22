@@ -4,18 +4,17 @@ import { useRef, useState, type DragEvent, type ReactNode } from 'react';
 import { Loader2, Paperclip, Plus } from 'lucide-react';
 import type { FileAsset } from '@/lib/api/drive';
 import { DriveFileCard, type DriveFileCardMenuHandlers } from '@/features/drive/DriveFileCard';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
+  SHEET_FILE_ATTACHMENTS_ADD_BUTTON_CLASS,
   SHEET_FILE_ATTACHMENTS_ADD_ICON_CLASS,
   SHEET_FILE_ATTACHMENTS_CLIP_ICON_CLASS,
   SHEET_FILE_ATTACHMENTS_EMBEDDED_CLASS,
   SHEET_FILE_ATTACHMENTS_HEADER_CLASS,
   SHEET_FILE_ATTACHMENTS_SURFACE_CLASS,
   SHEET_FILE_ATTACHMENTS_TITLE_CLASS,
-  SHEET_FILE_GRID_COLUMNS,
-  SHEET_FILE_GRID_COLUMNS_DENSE,
   SHEET_FILE_SECTION_TITLE,
+  SHEET_FILE_TILE_HEIGHT_CLASS,
   SHEET_FILE_TILE_LIMIT,
   SHEET_FILE_TILE_WIDTH_CLASS,
 } from './sheet-file-attachments.constants';
@@ -49,7 +48,7 @@ export function SheetFileAttachments({
   pendingUploads = [],
   loading = false,
   multiple = true,
-  gridColumns,
+  gridColumns: _gridColumns,
   denseTiles = false,
   embedded = false,
   sectionTitle = SHEET_FILE_SECTION_TITLE,
@@ -60,8 +59,6 @@ export function SheetFileAttachments({
   fileMenu,
   footer,
 }: SheetFileAttachmentsProps) {
-  const columns =
-    gridColumns ?? (denseTiles ? SHEET_FILE_GRID_COLUMNS_DENSE : SHEET_FILE_GRID_COLUMNS);
   const cardLayout = denseTiles ? 'sheet-dense' : 'sheet';
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -122,17 +119,15 @@ export function SheetFileAttachments({
             <Loader2 className="text-muted-foreground size-3.5 shrink-0 animate-spin" aria-hidden />
           ) : null}
         </span>
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="icon-xs"
-          className="text-muted-foreground hover:text-foreground size-7 shrink-0"
+          className={SHEET_FILE_ATTACHMENTS_ADD_BUTTON_CLASS}
           disabled={barDisabled}
           aria-label={hint ?? 'Add file'}
           onClick={openPicker}
         >
           <Plus className={SHEET_FILE_ATTACHMENTS_ADD_ICON_CLASS} aria-hidden />
-        </Button>
+        </button>
       </div>
 
       <input
@@ -148,21 +143,25 @@ export function SheetFileAttachments({
 
       {hasFiles ? (
         loading && visibleFiles.length === 0 && pendingUploads.length === 0 ? (
-          <p className="text-muted-foreground mt-3 flex min-h-[4.75rem] items-center gap-2 text-xs">
+          <p
+            className={cn(
+              'text-muted-foreground mt-3 flex items-center gap-2 text-xs',
+              SHEET_FILE_TILE_HEIGHT_CLASS,
+            )}
+          >
             <Loader2 className="size-3.5 animate-spin" aria-hidden />
             Loading files…
           </p>
         ) : (
-          <div
-            className={cn('mt-3 flex min-w-0 flex-wrap gap-2', !denseTiles && 'sm:grid sm:gap-2')}
-            style={
-              denseTiles ? undefined : { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }
-            }
-          >
+          <div className="mt-2.5 flex min-w-0 flex-wrap gap-2.5">
             {pendingUploads.map((item) => (
               <div
                 key={item.localId}
-                className={cn('min-w-0 shrink-0', SHEET_FILE_TILE_WIDTH_CLASS)}
+                className={cn(
+                  'min-w-0 shrink-0',
+                  SHEET_FILE_TILE_WIDTH_CLASS,
+                  SHEET_FILE_TILE_HEIGHT_CLASS,
+                )}
               >
                 <SheetPendingFileTile item={item} dense={denseTiles} />
               </div>
@@ -172,9 +171,8 @@ export function SheetFileAttachments({
                 key={file.id}
                 className={cn(
                   'min-w-0 shrink-0',
-                  denseTiles
-                    ? 'h-[4.75rem]'
-                    : cn(SHEET_FILE_TILE_WIDTH_CLASS, 'sm:h-auto sm:w-auto'),
+                  SHEET_FILE_TILE_WIDTH_CLASS,
+                  SHEET_FILE_TILE_HEIGHT_CLASS,
                 )}
               >
                 <DriveFileCard

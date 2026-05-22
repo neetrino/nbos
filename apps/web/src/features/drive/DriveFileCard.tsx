@@ -20,9 +20,11 @@ import {
 import { cn } from '@/lib/utils';
 import {
   SHEET_FILE_EXTENSION_BADGE_CLASS,
+  SHEET_FILE_TILE_HEIGHT_CLASS,
   SHEET_FILE_TILE_ICON_AREA_CLASS,
   SHEET_FILE_TILE_NAME_CLASS,
   SHEET_FILE_TILE_SHELL_CLASS,
+  SHEET_FILE_TILE_THUMBNAIL_CLASS,
 } from '@/components/shared/sheet-file-attachments.constants';
 import { formatDriveLabel, formatFileSize } from './drive-format';
 import { fileExtensionBadgeClass, fileExtensionLabel } from './drive-file-extension';
@@ -133,17 +135,17 @@ function DriveFileCardSheetTile({
         onClick={() => onSelect(file)}
         className={cn(
           SHEET_FILE_TILE_SHELL_CLASS,
-          'hover:border-border focus-visible:ring-ring size-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
-          dense ? 'h-[4.75rem]' : 'aspect-square',
+          SHEET_FILE_TILE_HEIGHT_CLASS,
+          'focus-visible:ring-ring size-full transition-colors outline-none hover:border-black/15 focus-visible:ring-2 focus-visible:ring-offset-1',
         )}
       >
         <span className={SHEET_FILE_TILE_ICON_AREA_CLASS}>
-          <span className="size-full overflow-hidden rounded-md">
-            <DriveFileCardThumbnail file={file} />
+          <span className="flex max-h-full w-full items-center justify-center overflow-hidden">
+            <DriveFileCardThumbnail file={file} className={SHEET_FILE_TILE_THUMBNAIL_CLASS} />
           </span>
           <span
             className={cn(
-              'absolute left-1/2 -translate-x-1/2 rounded px-1 py-px',
+              'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded px-1 py-px',
               SHEET_FILE_EXTENSION_BADGE_CLASS,
             )}
           >

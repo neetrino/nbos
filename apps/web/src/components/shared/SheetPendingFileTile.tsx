@@ -5,6 +5,8 @@ import { fileExtensionLabel } from '@/features/drive/drive-file-extension';
 import { cn } from '@/lib/utils';
 import {
   SHEET_FILE_EXTENSION_BADGE_CLASS,
+  SHEET_FILE_TILE_FILE_ICON_CLASS,
+  SHEET_FILE_TILE_HEIGHT_CLASS,
   SHEET_FILE_TILE_ICON_AREA_CLASS,
   SHEET_FILE_TILE_NAME_CLASS,
   SHEET_FILE_TILE_SHELL_CLASS,
@@ -25,8 +27,8 @@ export function SheetPendingFileTile({
     <div
       className={cn(
         SHEET_FILE_TILE_SHELL_CLASS,
+        SHEET_FILE_TILE_HEIGHT_CLASS,
         'relative',
-        dense ? 'h-[4.75rem]' : 'aspect-square',
         isError && 'border-destructive/50',
       )}
       aria-busy={item.status === 'uploading'}
@@ -36,14 +38,14 @@ export function SheetPendingFileTile({
           <img
             src={item.previewUrl}
             alt=""
-            className="size-full rounded-md object-cover opacity-90"
+            className="max-h-full w-full rounded-sm object-contain opacity-90"
           />
         ) : (
-          <File className="text-muted-foreground size-5 stroke-[1.25]" aria-hidden />
+          <File className={SHEET_FILE_TILE_FILE_ICON_CLASS} aria-hidden />
         )}
         <span
           className={cn(
-            'absolute left-1/2 -translate-x-1/2 rounded px-1 py-px',
+            'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded px-1 py-px',
             SHEET_FILE_EXTENSION_BADGE_CLASS,
           )}
         >
