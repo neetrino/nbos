@@ -40,7 +40,7 @@ Backend must expose pool data as product-level rollups plus employee-level break
 - ☑ **Auto release (delivery):** sheet summary + `POST …/pools/auto-release` proportional AUTO for DONE+funded orders.
 - ◐ **Auto release (sales / policy):** SALES KPI scale at payroll attach; full policy engine still pending.
 - ☐ **Manual override audit:** reason/approval for early / extra / over funding / cap override.
-- ☑ **Tests:** key, kpi-held, lines batch, funding health, fold, preview label, employee CSV.
+- ☑ **Tests:** key, kpi-held, lines batch, funding health, fold, preview label, employee CSV, auto-release trigger.
 
 ---
 
@@ -52,8 +52,9 @@ UI must make the pool understandable without opening many pages.
 - ☑ **Pools board view:** lanes + cards with fill bar, funding badge, team count, money summary.
 - ☑ **By project view:** project summary + employee names/planned on pool cards (batch lines API).
 - ☑ **Pool detail sheet:** funding hero, fill bar, money grid, orders, traceability links.
+- ☑ **Suggested release panel:** totals vs funding + delivery AUTO trigger + bonus board link.
 - ☑ **Employee breakdown table:** planned / released / paid / remaining / suggested + KPI gate badge.
-- ☑ **Funding timeline:** payments + releases with payroll month / paid status on release rows.
+- ☑ **Funding timeline:** payments + releases with payroll month / paid status / release reason.
 - ☑ **Risk indicators:** Over funding, underfunded, KPI not passed, early/extra/over-funding release badges in sheet.
 - ☑ **CSV/export:** pool roll-ups + employee breakdown export (settings → Export employees CSV, max 40 pools).
 
@@ -91,7 +92,9 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 
 - ☐ **Salary board:** department filter (CEO/Finance parity).
 - ☑ **Salary board:** calendar + list views with status colors and month dividers (shipped).
-- ☐ **Payroll run:** Board / Calendar for runs list (list + detail exist).
+- ☑ **Payroll runs list:** table view with filters, totals, CSV export.
+- ☑ **Payroll runs calendar:** year × month grid with status-colored cells.
+- ☑ **Payroll runs board:** kanban lanes by run status (Draft → Closed).
 
 ---
 
@@ -105,5 +108,6 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 ## 8. Resolved (no action)
 
 - ☑ Bonus route: `/finance/bonuses` canonical; `/bonus` redirects with query preserved.
-- ☑ Bonus pools: list / board / project views + scope columns (Product / Extension · Order · Project).
+- ☑ Bonus pools control center: list / board / by-project + pool sheet (funding, timeline, employees, export).
 - ☑ Salary route: `/finance/salary` calendar + list (grid removed).
+- ☑ Payroll runs: list + board + calendar on `/finance/payroll`.
