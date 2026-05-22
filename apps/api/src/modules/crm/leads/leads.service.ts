@@ -5,6 +5,8 @@ import { assertAttributionUpdateAllowed, type AttributionForValidation } from '.
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 import { validateLeadStageGate } from './lead-stage-gate';
 import { resolveLeadCreateDefaults } from './lead-create-defaults.op';
+import { leadDetailInclude } from './lead.includes';
+import { syncLeadAdditionalContacts } from './lead-additional-contacts.ops';
 
 const ACTIVE_LEAD_STATUSES = new Set([
   'NEW',
@@ -44,6 +46,7 @@ interface UpdateLeadDto {
   status?: string;
   assignedTo?: string;
   notes?: string;
+  additionalContactIds?: string[];
 }
 
 interface LeadQueryParams {
@@ -125,15 +128,7 @@ export class LeadsService {
   async findById(id: string) {
     const lead = await this.prisma.lead.findUnique({
       where: { id },
-      include: {
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-        sourcePartner: { select: { id: true, name: true } },
-        sourceContact: { select: { id: true, firstName: true, lastName: true } },
-        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
-        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
-        contact: true,
-        deal: true,
-      },
+      include: leadDetailInclude,
     });
     if (!lead) {
       throw new NotFoundException(`Lead ${id} not found`);
@@ -210,7 +205,10 @@ export class LeadsService {
       locked: attributionLocked,
     });
 
-    return this.prisma.lead.update({
+    const nextContactId =
+      existing.contactId !== undefined && existing.contactId !== null ? existing.contactId : null;
+
+    const lead = await this.prisma.lead.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
@@ -233,15 +231,15 @@ export class LeadsService {
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
         ...(data.notes !== undefined && { notes: data.notes }),
       },
-      include: {
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-        sourcePartner: { select: { id: true, name: true } },
-        sourceContact: { select: { id: true, firstName: true, lastName: true } },
-        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
-        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
-        deal: { select: { id: true, code: true, status: true } },
-      },
+      include: leadDetailInclude,
     });
+
+    if (data.additionalContactIds !== undefined) {
+      await syncLeadAdditionalContacts(this.prisma, id, data.additionalContactIds, nextContactId);
+      return this.findById(id);
+    }
+
+    return lead;
   }
 
   async delete(id: string) {

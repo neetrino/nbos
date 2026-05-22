@@ -12,7 +12,10 @@ import {
   RelationPickerField,
   StatusBadge,
 } from '@/components/shared';
-import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import {
+  useContactRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import type { Lead } from '@/lib/api/leads';
 import { employeesApi } from '@/lib/api/employees';
 import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
@@ -43,6 +46,8 @@ export function LeadCombinedInfoSection({
 }: LeadCombinedInfoSectionProps) {
   const [open, setOpen] = useState(true);
 
+  const additionalContactPicker = useRelationPickerActions('contact', 'lead-additional-contact');
+  const contactRelationSearch = useContactRelationSearch();
   const employeePicker = useRelationPickerActions('employee');
 
   const searchEmployees = useCallback(async (query: string) => {
@@ -96,6 +101,21 @@ export function LeadCombinedInfoSection({
               disabled={formDisabled}
               className={leadStageGateFieldClass(gateRequiredFields, 'email')}
               onValueChange={(v) => patchDraft({ email: v || null })}
+            />
+            <RelationPickerField
+              label="Additional contacts"
+              entityKind="contact"
+              multiple
+              value={draft.additionalContactIds}
+              selectionLabels={draft.additionalContactLabels}
+              placeholder="Link more people on this lead…"
+              icon={<User size={12} />}
+              disabled={formDisabled}
+              onSearch={contactRelationSearch}
+              onChange={(ids, labels) =>
+                patchDraft({ additionalContactIds: ids, additionalContactLabels: labels })
+              }
+              {...additionalContactPicker}
             />
           </div>
         </div>

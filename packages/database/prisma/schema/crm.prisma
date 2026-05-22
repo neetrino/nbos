@@ -144,8 +144,21 @@ model Lead {
   marketingAccount  MarketingAccount?  @relation(fields: [marketingAccountId], references: [id])
   marketingActivity MarketingActivity? @relation(fields: [marketingActivityId], references: [id])
   deal              Deal?
+  additionalContacts LeadAdditionalContact[]
 
   @@map("leads")
+}
+
+/// Extra client contacts on a lead (v1 list; primary person stays `contactName` / `contactId`).
+model LeadAdditionalContact {
+  leadId    String @map("lead_id")
+  contactId String @map("contact_id")
+
+  lead    Lead    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  contact Contact @relation("LeadAdditionalContact", fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([leadId, contactId])
+  @@map("lead_additional_contacts")
 }
 
 enum DealStatusEnum {

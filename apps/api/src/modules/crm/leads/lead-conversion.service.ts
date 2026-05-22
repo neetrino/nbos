@@ -4,6 +4,7 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { LeadsService } from './leads.service';
 import { validateAttributionGate } from '../attribution-gate';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
+import { syncDealAdditionalContacts } from '../deals/deal-additional-contacts.ops';
 
 interface ConvertLeadDto {
   dealType?: string;
@@ -161,6 +162,19 @@ export class LeadConversionService {
         ...(markLeadAsSql && { status: 'SQL' }),
       },
     });
+
+    const leadAdditional = await this.prisma.leadAdditionalContact.findMany({
+      where: { leadId: lead.id },
+      select: { contactId: true },
+    });
+    if (leadAdditional.length > 0) {
+      await syncDealAdditionalContacts(
+        this.prisma,
+        deal.id,
+        leadAdditional.map((row) => row.contactId),
+        contactId,
+      );
+    }
 
     return deal;
   }

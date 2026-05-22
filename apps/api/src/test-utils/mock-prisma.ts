@@ -23,6 +23,8 @@ function createModelMock() {
 export function createMockPrisma() {
   const prisma = {
     lead: createModelMock(),
+    leadAdditionalContact: createModelMock(),
+    dealAdditionalContact: createModelMock(),
     deal: createModelMock(),
     project: createModelMock(),
     contact: createModelMock(),

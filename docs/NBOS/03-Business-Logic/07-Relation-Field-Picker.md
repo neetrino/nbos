@@ -48,7 +48,12 @@ When one form has several pickers of the **same kind**, pass a stable `createInt
 sheet (`deal-additional-contact` create intent). Canon: Clients process flow — extra people on a deal
 without replacing the primary contact.
 
-**Lead / Delivery:** still single `contactId` until their APIs add multi-link support.
+**Lead (shipped):** free-text **Contact name** remains primary; linked people use
+`additionalContactIds[]` and the **Additional contacts** multi picker (`lead-additional-contact`
+intent). On SQL / Deal conversion, additional contacts copy to the new deal.
+
+**Delivery / Project:** project main contact is still a single `contactId`; extra project
+contacts are a separate Projects Hub slice per Clients canon.
 
 ## When not to use the picker
 

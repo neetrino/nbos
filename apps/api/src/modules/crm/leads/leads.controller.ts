@@ -115,6 +115,7 @@ export class LeadsController {
       status?: string;
       assignedTo?: string;
       notes?: string;
+      additionalContactIds?: string[];
     },
   ) {
     return this.leadsService.update(id, body, { actorRoleLevel: user?.roleLevel });

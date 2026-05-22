@@ -1,12 +1,12 @@
 import type { PrismaClient } from '@nbos/database';
 import { syncEntityAdditionalContacts } from '../shared/sync-entity-additional-contacts.ops';
 
-/** Replaces deal additional contacts; excludes primary contact and unknown ids. */
-export async function syncDealAdditionalContacts(
+/** Replaces lead additional contacts; excludes primary contact and unknown ids. */
+export async function syncLeadAdditionalContacts(
   prisma: InstanceType<typeof PrismaClient>,
-  dealId: string,
+  leadId: string,
   contactIds: string[],
   primaryContactId: string | null,
 ): Promise<void> {
-  return syncEntityAdditionalContacts(prisma, 'deal', dealId, contactIds, primaryContactId);
+  return syncEntityAdditionalContacts(prisma, 'lead', leadId, contactIds, primaryContactId);
 }

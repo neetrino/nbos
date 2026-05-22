@@ -11,6 +11,17 @@ export function applyLeadRelationCreated(
       if (event.intent === 'lead-source-contact') {
         return { ...draft, sourceContactId: event.id, clientPickLabel: event.label };
       }
+      if (event.intent === 'lead-additional-contact') {
+        if (draft.additionalContactIds.includes(event.id)) return draft;
+        return {
+          ...draft,
+          additionalContactIds: [...draft.additionalContactIds, event.id],
+          additionalContactLabels: {
+            ...draft.additionalContactLabels,
+            [event.id]: event.label,
+          },
+        };
+      }
       return draft;
     case 'partner':
       return { ...draft, sourcePartnerId: event.id, partnerPickLabel: event.label };

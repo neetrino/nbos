@@ -123,6 +123,30 @@ describe('LeadConversionService', () => {
     );
   });
 
+  it('copies lead additional contacts to deal on conversion', async () => {
+    prisma.lead.findUnique.mockResolvedValue({ ...baseLead, contactId: 'c1' });
+    prisma.deal.findFirst.mockResolvedValue(null);
+    prisma.deal.create.mockResolvedValue({ id: 'deal-1', code: 'D-2026-0001' });
+    prisma.leadAdditionalContact.findMany.mockResolvedValue([
+      { contactId: 'c-extra-1' },
+      { contactId: 'c-extra-2' },
+    ]);
+    prisma.contact.count.mockResolvedValue(2);
+
+    await service.convertToDeal('lead-1', convertDto);
+
+    expect(prisma.dealAdditionalContact.deleteMany).toHaveBeenCalledWith({
+      where: { dealId: 'deal-1' },
+    });
+    expect(prisma.dealAdditionalContact.createMany).toHaveBeenCalledWith({
+      data: [
+        { dealId: 'deal-1', contactId: 'c-extra-1' },
+        { dealId: 'deal-1', contactId: 'c-extra-2' },
+      ],
+      skipDuplicates: true,
+    });
+  });
+
   it('copies full attribution block to deal', async () => {
     prisma.lead.findUnique.mockResolvedValue({ ...baseLead, contactId: 'c1' });
     prisma.deal.findFirst.mockResolvedValue(null);
