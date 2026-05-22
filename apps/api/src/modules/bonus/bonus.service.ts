@@ -224,6 +224,7 @@ export class BonusService {
         totalReleasedAmount: true,
         totalRemainingAmount: true,
         availableFunding: true,
+        overFundingAmount: true,
         status: true,
       },
     });
@@ -233,12 +234,17 @@ export class BonusService {
       if (!ledger) {
         return row;
       }
+      const received = ledger.availableFunding
+        .plus(ledger.totalReleasedAmount)
+        .minus(ledger.overFundingAmount);
       return {
         ...row,
         ledgerPlannedAmount: ledger.totalPlannedAmount.toFixed(2),
         ledgerReleasedAmount: ledger.totalReleasedAmount.toFixed(2),
         ledgerRemainingAmount: ledger.totalRemainingAmount.toFixed(2),
         ledgerAvailableFunding: ledger.availableFunding.toFixed(2),
+        ledgerOverFundingAmount: ledger.overFundingAmount.toFixed(2),
+        ledgerReceivedAmount: received.toFixed(2),
         ledgerPoolStatus: ledger.status,
       };
     });

@@ -19,6 +19,8 @@ const CSV_HEADERS = [
   'ledgerReleasedAmount',
   'ledgerRemainingAmount',
   'ledgerAvailableFunding',
+  'ledgerOverFundingAmount',
+  'ledgerReceivedAmount',
   'ledgerPoolStatus',
 ] as const;
 
@@ -50,6 +52,8 @@ function rowToCsvCells(row: BonusProductPoolRow): string[] {
     row.ledgerReleasedAmount ?? '',
     row.ledgerRemainingAmount ?? '',
     row.ledgerAvailableFunding ?? '',
+    row.ledgerOverFundingAmount ?? '',
+    row.ledgerReceivedAmount ?? '',
     row.ledgerPoolStatus ?? '',
   ];
   return cells.map((c) => escapeCsvCell(String(c)));
@@ -75,6 +79,8 @@ function grandTotalCsvLine(rows: BonusProductPoolRow[]): string {
     paid,
     clawback,
     total,
+    '',
+    '',
     '',
     '',
     '',

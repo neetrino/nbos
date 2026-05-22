@@ -31,6 +31,8 @@ export interface BonusProductPoolRow {
   ledgerReleasedAmount: string | null;
   ledgerRemainingAmount: string | null;
   ledgerAvailableFunding: string | null;
+  ledgerOverFundingAmount: string | null;
+  ledgerReceivedAmount: string | null;
   ledgerPoolStatus: string | null;
 }
 
@@ -201,6 +203,8 @@ export function foldBonusProductPools(
       ledgerReleasedAmount: null,
       ledgerRemainingAmount: null,
       ledgerAvailableFunding: null,
+      ledgerOverFundingAmount: null,
+      ledgerReceivedAmount: null,
       ledgerPoolStatus: null,
     });
   }

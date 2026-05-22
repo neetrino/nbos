@@ -90,6 +90,8 @@ export interface BonusProductPoolRow {
   ledgerReleasedAmount: string | null;
   ledgerRemainingAmount: string | null;
   ledgerAvailableFunding: string | null;
+  ledgerOverFundingAmount: string | null;
+  ledgerReceivedAmount: string | null;
   ledgerPoolStatus: string | null;
 }
 
@@ -258,9 +260,14 @@ export const bonusesApi = {
 export async function fetchAllBonusListRows(options?: {
   /** When set, each list page is requested with this server filter (aligned with `GET /api/bonus`). */
   projectId?: string;
+  orderId?: string;
 }): Promise<BonusEntryListRow[]> {
   const projectId = options?.projectId?.trim();
-  const listParams: BonusListQueryParams = projectId ? { projectId } : {};
+  const orderId = options?.orderId?.trim();
+  const listParams: BonusListQueryParams = {
+    ...(projectId ? { projectId } : {}),
+    ...(orderId ? { orderId } : {}),
+  };
   const combined: BonusEntryListRow[] = [];
   for (let page = 1; page <= BONUS_FETCH_MAX_PAGES; page += 1) {
     const { items, meta } = await bonusesApi.getPage({

@@ -20,6 +20,8 @@ const sample: BonusProductPoolRow = {
   ledgerReleasedAmount: '0.00',
   ledgerRemainingAmount: '150.00',
   ledgerAvailableFunding: '0.00',
+  ledgerOverFundingAmount: '0.00',
+  ledgerReceivedAmount: '0.00',
   ledgerPoolStatus: 'ACTIVE',
 };
 

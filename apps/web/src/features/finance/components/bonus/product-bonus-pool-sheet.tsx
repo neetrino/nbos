@@ -46,12 +46,12 @@ export function ProductBonusPoolSheet({
   const [entriesLoading, setEntriesLoading] = useState(false);
   const [entriesError, setEntriesError] = useState<string | null>(null);
 
-  const loadEntries = useCallback(async (projectId: string) => {
+  const loadEntries = useCallback(async (orderId: string) => {
     setEntriesLoading(true);
     setEntriesError(null);
     try {
-      const rows = await fetchAllBonusListRows({ projectId });
-      setEntries(rows.slice(0, 12));
+      const rows = await fetchAllBonusListRows({ orderId });
+      setEntries(rows);
     } catch (caught) {
       setEntries([]);
       setEntriesError(getApiErrorMessage(caught, 'Bonus entries could not be loaded.'));
@@ -66,7 +66,7 @@ export function ProductBonusPoolSheet({
       setEntriesError(null);
       return;
     }
-    void loadEntries(pool.projectId);
+    void loadEntries(pool.anchorOrderId);
   }, [loadEntries, open, pool]);
 
   return (
@@ -132,14 +132,28 @@ export function ProductBonusPoolSheet({
                     ? formatAmount(parsePoolAmount(pool.ledgerRemainingAmount))
                     : '—'}
                 </dd>
+                <dt className="text-muted-foreground">Received</dt>
+                <dd className="text-right tabular-nums">
+                  {pool.ledgerReceivedAmount != null
+                    ? formatAmount(parsePoolAmount(pool.ledgerReceivedAmount))
+                    : '—'}
+                </dd>
                 <dt className="text-muted-foreground">Available funding</dt>
                 <dd className="text-right tabular-nums">
                   {pool.ledgerAvailableFunding != null
                     ? formatAmount(parsePoolAmount(pool.ledgerAvailableFunding))
                     : '—'}
                 </dd>
+                <dt className="text-muted-foreground">Over funding</dt>
+                <dd className="text-right tabular-nums">
+                  {pool.ledgerOverFundingAmount != null
+                    ? formatAmount(parsePoolAmount(pool.ledgerOverFundingAmount))
+                    : '—'}
+                </dd>
               </dl>
-              {pool.ledgerPoolStatus?.toUpperCase().includes('OVER') ? (
+              {pool.ledgerPoolStatus?.toUpperCase().includes('OVER') ||
+              (pool.ledgerOverFundingAmount != null &&
+                parsePoolAmount(pool.ledgerOverFundingAmount) > 0) ? (
                 <p className="text-destructive mt-2 text-xs">
                   Over-funding on this order pool — review releases before payroll attach.
                 </p>
@@ -162,7 +176,7 @@ export function ProductBonusPoolSheet({
               </Link>
             </DetailSheetSection>
 
-            <DetailSheetSection title="Recent entries">
+            <DetailSheetSection title="Bonus entries (this order)">
               {entriesLoading ? (
                 <div className="text-muted-foreground flex items-center gap-2 text-sm">
                   <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -171,7 +185,7 @@ export function ProductBonusPoolSheet({
               ) : null}
               {entriesError ? <p className="text-destructive text-sm">{entriesError}</p> : null}
               {!entriesLoading && !entriesError && entries.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No bonus entries on this project.</p>
+                <p className="text-muted-foreground text-sm">No bonus entries on this order.</p>
               ) : null}
               {!entriesLoading && entries.length > 0 ? (
                 <ul className="flex flex-col gap-2">
