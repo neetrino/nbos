@@ -6,6 +6,31 @@ export const EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY = 'payrollEmployee' as const;
 export const EXPENSE_PAYROLL_SOURCE_PAYROLL = 'payroll' as const;
 export const EXPENSE_PAYROLL_SOURCE_ALL = 'all' as const;
 
+/** UTC calendar month for Pay Now payroll month filter default (YYYY-MM). */
+export function defaultPayrollMonthIso(reference = new Date()): string {
+  const y = reference.getUTCFullYear();
+  const m = String(reference.getUTCMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+/** Default integrated filters on `/finance/expenses` (Pay Now landing). */
+export function payNowDefaultExpenseFilters(reference = new Date()): Record<string, string> {
+  return {
+    [EXPENSE_PAYROLL_SOURCE_FILTER_KEY]: EXPENSE_PAYROLL_SOURCE_PAYROLL,
+    [EXPENSE_PAYROLL_MONTH_FILTER_KEY]: defaultPayrollMonthIso(reference),
+    [EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY]: 'all',
+  };
+}
+
+/** Clears payroll scope filters to show all expense types and months. */
+export function clearPayrollPayNowFilters(): Record<string, string> {
+  return {
+    [EXPENSE_PAYROLL_SOURCE_FILTER_KEY]: EXPENSE_PAYROLL_SOURCE_ALL,
+    [EXPENSE_PAYROLL_MONTH_FILTER_KEY]: 'all',
+    [EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY]: 'all',
+  };
+}
+
 /** URL preset: open Pay Now with payroll salary filter applied. */
 export const EXPENSE_PAYROLL_PRESET_QUERY = 'payrollPreset' as const;
 
@@ -20,9 +45,13 @@ export const EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY = 'payrollEmployee' as const;
 export function expensesPayrollPresetHref(options?: {
   payrollMonth?: string;
   employeeId?: string;
+  /** When true, omit month query so Pay Now applies server-side default month. */
+  useDefaultMonth?: boolean;
 }): string {
   const q = new URLSearchParams({ [EXPENSE_PAYROLL_PRESET_QUERY]: '1' });
-  const month = options?.payrollMonth?.trim();
+  const month = options?.useDefaultMonth
+    ? defaultPayrollMonthIso()
+    : (options?.payrollMonth?.trim() ?? defaultPayrollMonthIso());
   if (month) {
     q.set(EXPENSE_PAYROLL_MONTH_URL_QUERY, month);
   }

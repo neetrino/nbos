@@ -44,9 +44,9 @@ import {
   EXPENSE_PAYROLL_MONTH_FILTER_KEY,
   EXPENSE_PAYROLL_MONTH_URL_QUERY,
   EXPENSE_PAYROLL_PRESET_QUERY,
-  EXPENSE_PAYROLL_SOURCE_ALL,
   EXPENSE_PAYROLL_SOURCE_FILTER_KEY,
-  EXPENSE_PAYROLL_SOURCE_PAYROLL,
+  clearPayrollPayNowFilters,
+  payNowDefaultExpenseFilters,
 } from '@/features/finance/constants/expense-payroll-filter';
 import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
 import {
@@ -402,13 +402,16 @@ export function ExpensesPageContent({
   const applyPayrollFilter = useCallback(() => {
     setFilters((prev) => ({
       ...prev,
-      [EXPENSE_PAYROLL_SOURCE_FILTER_KEY]: EXPENSE_PAYROLL_SOURCE_PAYROLL,
+      ...payNowDefaultExpenseFilters(),
     }));
   }, []);
 
   const clearPayrollFilter = useCallback(() => {
-    handleFilterChange(EXPENSE_PAYROLL_SOURCE_FILTER_KEY, EXPENSE_PAYROLL_SOURCE_ALL);
-  }, [handleFilterChange]);
+    setFilters((prev) => ({
+      ...prev,
+      ...clearPayrollPayNowFilters(),
+    }));
+  }, []);
 
   const payrollPaymentFocus = Boolean(
     selectedExpense && resolveExpensePayrollRunId(selectedExpense),
