@@ -37,7 +37,8 @@ Backend must expose pool data as product-level rollups plus employee-level break
 - ☑ **Multi-order pools:** aggregate all orders per Product / Extension (not one `anchorOrderId` only).
 - ☑ **Employee breakdown API:** `GET /api/bonus/products/pools/lines?poolKey=` — planned, released, paid, remaining, suggested release, KPI hint.
 - ☑ **Ledger traceability:** payments in + releases out timeline in pool sheet (`GET …/pools/timeline`).
-- ◐ **Auto release suggestions:** proportional `suggestedReleaseAmount` per employee in API; full auto-release flow still pending.
+- ☑ **Auto release (delivery):** sheet summary + `POST …/pools/auto-release` proportional AUTO for DONE+funded orders.
+- ◐ **Auto release (sales / policy):** SALES KPI scale at payroll attach; full policy engine still pending.
 - ☐ **Manual override audit:** reason/approval for early / extra / over funding / cap override.
 - ☑ **Tests:** key, kpi-held, lines batch, funding health, fold, preview label, employee CSV.
 
@@ -47,7 +48,7 @@ Backend must expose pool data as product-level rollups plus employee-level break
 
 UI must make the pool understandable without opening many pages.
 
-- ☑ **Pools list view:** Product / Extension, Order(s), Project, money cols, Fill %, Funding badge, team count.
+- ☑ **Pools list view:** money cols + Fill % + Funding + employee preview line under scope.
 - ☑ **Pools board view:** lanes + cards with fill bar, funding badge, team count, money summary.
 - ☑ **By project view:** project summary + employee names/planned on pool cards (batch lines API).
 - ☑ **Pool detail sheet:** funding hero, fill bar, money grid, orders, traceability links.

@@ -26,7 +26,11 @@ import {
   bonusPoolScopeTitle,
 } from '@/features/finance/utils/bonus-pool-display';
 import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
-import type { BonusProductPoolRow } from '@/lib/api/bonus';
+import {
+  formatBonusPoolEmployeePreviewLine,
+  topBonusPoolEmployeePreviewLines,
+} from '@/features/finance/utils/bonus-pool-employee-preview-label';
+import type { BonusPoolEmployeeLine, BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
 const LIST_ROW_CELL = 'px-4 py-4 align-middle';
@@ -54,10 +58,12 @@ export function BonusPoolsListView({
   rows,
   totals,
   onOpenPool,
+  linesByPoolKey,
 }: {
   rows: BonusProductPoolRow[];
   totals: BonusPoolsFilteredTotals;
   onOpenPool: (row: BonusProductPoolRow) => void;
+  linesByPoolKey: ReadonlyMap<string, BonusPoolEmployeeLine[]>;
 }) {
   return (
     <div className="border-border overflow-x-auto rounded-xl border">
@@ -80,7 +86,12 @@ export function BonusPoolsListView({
         </TableHeader>
         <TableBody>
           {rows.map((row) => (
-            <BonusPoolsListRow key={row.poolKey} row={row} onOpenPool={onOpenPool} />
+            <BonusPoolsListRow
+              key={row.poolKey}
+              row={row}
+              onOpenPool={onOpenPool}
+              employeeLines={linesByPoolKey.get(row.poolKey)}
+            />
           ))}
         </TableBody>
         <tfoot>
@@ -111,12 +122,15 @@ export function BonusPoolsListView({
 function BonusPoolsListRow({
   row,
   onOpenPool,
+  employeeLines,
 }: {
   row: BonusProductPoolRow;
   onOpenPool: (row: BonusProductPoolRow) => void;
+  employeeLines?: readonly BonusPoolEmployeeLine[];
 }) {
   const fundingUi = bonusPoolFundingHealthUi(resolveRowFundingHealth(row));
   const scopeTitle = bonusPoolScopeTitle(row);
+  const preview = employeeLines ? topBonusPoolEmployeePreviewLines(employeeLines, 2) : [];
 
   return (
     <TableRow
@@ -133,6 +147,11 @@ function BonusPoolsListRow({
           <span className="text-xs font-medium tracking-wide uppercase opacity-80">
             {bonusPoolKindLabel(row.poolKind)}
           </span>
+          {preview.length > 0 ? (
+            <span className="text-muted-foreground truncate text-xs">
+              {preview.map((line) => formatBonusPoolEmployeePreviewLine(line)).join(' · ')}
+            </span>
+          ) : null}
         </div>
       </TableCell>
       <TableCell className={cn(LIST_ROW_CELL, LIST_ORDER_COL_CLASS)}>

@@ -9,6 +9,7 @@ import { BonusPoolEmployeeBreakdown } from '@/features/finance/components/bonus/
 import { BonusPoolFillBar } from '@/features/finance/components/bonus/bonus-pool-fill-bar';
 import { BonusPoolFundingTimeline } from '@/features/finance/components/bonus/bonus-pool-funding-timeline';
 import { BonusPoolRiskBadges } from '@/features/finance/components/bonus/bonus-pool-risk-badges';
+import { BonusPoolSheetSuggestedPanel } from '@/features/finance/components/bonus/bonus-pool-sheet-suggested-panel';
 import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import {
   bonusPoolFundingHealthUi,
@@ -61,10 +62,12 @@ export function ProductBonusPoolSheet({
   pool,
   open,
   onOpenChange,
+  onPoolsRefresh,
 }: {
   pool: BonusProductPoolRow | null;
   open: boolean;
   onOpenChange: (next: boolean) => void;
+  onPoolsRefresh?: () => void | Promise<void>;
 }) {
   const [lines, setLines] = useState<BonusPoolEmployeeLine[]>([]);
   const [orderCodes, setOrderCodes] = useState<string[]>([]);
@@ -188,6 +191,17 @@ export function ProductBonusPoolSheet({
                 events={timelineEvents}
                 loading={detailLoading}
                 error={timelineError}
+              />
+            </DetailSheetSection>
+
+            <DetailSheetSection title="Suggested release">
+              <BonusPoolSheetSuggestedPanel
+                pool={pool}
+                lines={lines}
+                onAfterAutoRelease={async () => {
+                  await loadPoolDetail(pool.poolKey);
+                  await onPoolsRefresh?.();
+                }}
               />
             </DetailSheetSection>
 

@@ -127,6 +127,20 @@ export class BonusController {
     return this.bonusService.getProductPoolEmployeeLinesBatch(poolKeys ?? '');
   }
 
+  @Post('products/pools/auto-release')
+  @ApiOperation({
+    summary:
+      'Run proportional delivery AUTO releases for all orders in a pool (DONE + funded; NBOS)',
+  })
+  @ApiQuery({ name: 'poolKey', required: true })
+  async postProductPoolAutoRelease(@Query('poolKey') poolKey?: string) {
+    const key = poolKey?.trim();
+    if (!key) {
+      throw new BadRequestException('poolKey query parameter is required');
+    }
+    return this.bonusService.triggerProductPoolAutoRelease(key);
+  }
+
   @Get('entries/:entryId/releases')
   @ApiOperation({ summary: 'List bonus releases for a bonus entry (NBOS Bonus Release ledger)' })
   @ApiQuery({ name: 'page', required: false })

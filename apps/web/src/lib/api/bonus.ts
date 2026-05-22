@@ -147,6 +147,7 @@ export interface BonusPoolTimelineEvent {
   employeeName: string | null;
   releaseType: string | null;
   releaseStatus: string | null;
+  releaseReason: string | null;
 }
 
 export interface BonusPoolTimelineResponse {
@@ -290,6 +291,21 @@ export const bonusesApi = {
     const resp = await api.get<BonusPoolTimelineResponse>('/api/bonus/products/pools/timeline', {
       params: { poolKey },
     });
+    return resp.data;
+  },
+
+  async triggerProductPoolAutoRelease(poolKey: string): Promise<{
+    poolKey: string;
+    orderIds: string[];
+    ordersProcessed: number;
+    releasesCreated: boolean;
+  }> {
+    const resp = await api.post<{
+      poolKey: string;
+      orderIds: string[];
+      ordersProcessed: number;
+      releasesCreated: boolean;
+    }>('/api/bonus/products/pools/auto-release', {}, { params: { poolKey } });
     return resp.data;
   },
 

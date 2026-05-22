@@ -23,6 +23,7 @@ export type BonusPoolTimelineEventDto = {
   employeeName: string | null;
   releaseType: string | null;
   releaseStatus: string | null;
+  releaseReason: string | null;
 };
 
 export type BonusPoolTimelineDto = {
@@ -90,6 +91,7 @@ export async function queryBonusPoolTimeline(
         id: true,
         amount: true,
         releaseType: true,
+        reason: true,
         status: true,
         createdAt: true,
         updatedAt: true,
@@ -130,6 +132,7 @@ export async function queryBonusPoolTimeline(
       employeeName: null,
       releaseType: null,
       releaseStatus: null,
+      releaseReason: null,
     };
   });
 
@@ -156,6 +159,7 @@ export async function queryBonusPoolTimeline(
       employeeName: name,
       releaseType: r.releaseType,
       releaseStatus: r.status,
+      releaseReason: r.reason,
     };
   });
 

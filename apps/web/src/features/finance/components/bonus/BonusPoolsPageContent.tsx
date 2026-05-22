@@ -115,8 +115,7 @@ export function BonusPoolsPageContent() {
     handleExportEmployeesCsv,
   } = useBonusProductPoolsCsvExport(filteredRows);
 
-  const previewCardsEnabled = view === 'project' || view === 'board';
-  const { linesByPoolKey } = useBonusPoolsEmployeePreviews(filteredRows, previewCardsEnabled);
+  const { linesByPoolKey } = useBonusPoolsEmployeePreviews(filteredRows, true);
 
   const openPoolSheet = useCallback((row: BonusProductPoolRow) => {
     setSheetPool(row);
@@ -202,6 +201,7 @@ export function BonusPoolsPageContent() {
             rows={filteredRows}
             totals={filteredTotals}
             onOpenPool={openPoolSheet}
+            linesByPoolKey={linesByPoolKey}
           />
         );
     }
@@ -250,6 +250,7 @@ export function BonusPoolsPageContent() {
           setSheetOpen(next);
           if (!next) setSheetPool(null);
         }}
+        onPoolsRefresh={load}
       />
     </div>
   );

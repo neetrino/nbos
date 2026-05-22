@@ -53,6 +53,7 @@ export function BonusPoolFundingTimeline({
               {formatEventDate(event.occurredAt)}
               {event.orderCode ? ` · ${event.orderCode}` : ''}
               {event.employeeName ? ` · ${event.employeeName}` : ''}
+              {event.releaseReason ? ` · ${event.releaseReason}` : ''}
             </p>
           </div>
           <span className="shrink-0 font-semibold tabular-nums">
