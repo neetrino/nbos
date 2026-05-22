@@ -7,6 +7,7 @@ export interface BonusReleaseForWalletRollup {
   bonusEntryId: string;
   amount: Decimal;
   kpiBurnedAmount: Decimal | null;
+  kpiBurnedReason: string | null;
   payrollCarryOverAmount: Decimal | null;
   status: BonusReleaseStatusEnum;
   updatedAt: Date;
@@ -18,6 +19,7 @@ export interface WalletReleaseRollup {
   paidAmount: Decimal;
   remainingAmount: Decimal;
   kpiBurnedAmount: Decimal;
+  kpiBurnedReason: string | null;
   payrollCarryOverAmount: Decimal;
   payrollMonth: string | null;
 }
@@ -53,12 +55,20 @@ function rollupOneEntry(
   const payrollHit = sorted.find(
     (r) => r.payrollRun != null && (r.status === 'INCLUDED_IN_PAYROLL' || r.status === 'PAID'),
   );
+  const burnedReasonHit = sorted.find(
+    (r) =>
+      r.kpiBurnedAmount != null &&
+      r.kpiBurnedAmount.gt(0) &&
+      r.kpiBurnedReason != null &&
+      r.kpiBurnedReason.trim() !== '',
+  );
 
   return {
     releasedAmount: released,
     paidAmount: paid,
     remainingAmount: remaining,
     kpiBurnedAmount: kpiBurned,
+    kpiBurnedReason: burnedReasonHit?.kpiBurnedReason?.trim() ?? null,
     payrollCarryOverAmount: carryOver,
     payrollMonth: payrollHit?.payrollRun?.payrollMonth ?? null,
   };

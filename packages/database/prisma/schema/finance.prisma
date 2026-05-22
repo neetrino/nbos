@@ -480,6 +480,8 @@ model BonusRelease {
   payrollIncludedAmount Decimal?               @map("payroll_included_amount") @db.Decimal(12, 2)
   /// `amount - payrollIncludedAmount` when SALES KPI reduces attach; cleared on detach.
   kpiBurnedAmount       Decimal?               @map("kpi_burned_amount") @db.Decimal(12, 2)
+  /// Plain-language audit when SALES KPI reduces attach (cleared on detach).
+  kpiBurnedReason       String?                @map("kpi_burned_reason")
   /// KPI-scaled amount not included this month because salary-line bonus cap was reached.
   payrollCarryOverAmount Decimal?              @map("payroll_carry_over_amount") @db.Decimal(12, 2)
   /// Balance still to apply on a later payroll month (decremented FIFO on attach).

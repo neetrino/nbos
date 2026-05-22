@@ -19,6 +19,7 @@ const baseRow = (overrides: Partial<SalaryLineMonthBonusRow>): SalaryLineMonthBo
   releaseAmount: '400',
   includedAmount: '400',
   kpiBurnedAmount: null,
+  kpiBurnedReason: null,
   payrollCarryOverAmount: null,
   paidAmount: '0',
   remainingAmount: '600',

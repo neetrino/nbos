@@ -133,8 +133,19 @@ function BonusReleaseLinesTable({ rows }: { rows: readonly SalaryLineMonthBonusR
                   ? formatAmount(parseAmount(row.includedAmount))
                   : formatAmount(parseAmount(row.releaseAmount))}
               </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {row.kpiBurnedAmount ? formatAmount(parseAmount(row.kpiBurnedAmount)) : '—'}
+              <TableCell className="text-right">
+                {row.kpiBurnedAmount ? (
+                  <div className="tabular-nums">
+                    <div>{formatAmount(parseAmount(row.kpiBurnedAmount))}</div>
+                    {row.kpiBurnedReason ? (
+                      <p className="text-muted-foreground mt-0.5 text-left text-xs leading-snug">
+                        {row.kpiBurnedReason}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  '—'
+                )}
               </TableCell>
               <TableCell className="text-right tabular-nums">
                 {row.payrollCarryOverAmount

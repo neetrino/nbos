@@ -157,6 +157,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
         payrollRunId: 'run1',
         payrollIncludedAmount: new Decimal(50),
         kpiBurnedAmount: null,
+        kpiBurnedReason: null,
         payrollCarryOverAmount: null,
         payrollCarryOverRemaining: null,
       },

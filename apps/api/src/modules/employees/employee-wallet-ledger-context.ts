@@ -45,6 +45,7 @@ export async function loadWalletBonusLedgerContext(
             bonusEntryId: true,
             amount: true,
             kpiBurnedAmount: true,
+            kpiBurnedReason: true,
             payrollCarryOverAmount: true,
             status: true,
             releaseType: true,

@@ -14,6 +14,7 @@ const base: EmployeeWalletBonusRow = {
   remainingAmount: '500',
   payrollMonth: '2026-04',
   kpiBurnedAmount: null,
+  kpiBurnedReason: null,
   payrollCarryOverAmount: null,
   orderPaymentType: null,
   salesAccrualHint: null,
@@ -37,5 +38,15 @@ describe('walletBonusEntryExplanation', () => {
       remainingAmount: '800',
     });
     expect(text).toContain('Partially paid');
+  });
+
+  it('uses persisted burned reason when present', () => {
+    const text = walletBonusEntryExplanation({
+      ...base,
+      type: 'SALES',
+      kpiBurnedAmount: '50.00',
+      kpiBurnedReason: 'Sales KPI: 60% of plan → 50% payout; 50.00 excluded',
+    });
+    expect(text).toContain('60% of plan');
   });
 });

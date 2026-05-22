@@ -37,17 +37,20 @@ export function walletBonusEntryExplanation(row: EmployeeWalletBonusRow): string
     return 'Partially paid — part went through payroll; the rest is still planned or awaiting release.';
   }
 
+  const burned = row.kpiBurnedAmount ? parseAmount(row.kpiBurnedAmount) : 0;
+  if (burned > 0) {
+    if (row.kpiBurnedReason?.trim()) {
+      return row.kpiBurnedReason.trim();
+    }
+    return `Sales KPI reduced payroll by ${burned.toFixed(2)} on a prior attach — see included vs released amounts.`;
+  }
+
   if (released > 0 && paid === 0 && row.payrollMonth) {
     return `Included in payroll ${row.payrollMonth} — payout when Finance records expense payments.`;
   }
 
   if (released > 0 && paid === 0) {
     return 'Released to payroll but not paid yet — follows Pay Now / expense payment timing.';
-  }
-
-  const burned = row.kpiBurnedAmount ? parseAmount(row.kpiBurnedAmount) : 0;
-  if (burned > 0) {
-    return `Sales KPI reduced payroll by ${burned.toFixed(2)} on a prior attach — see included vs released amounts.`;
   }
 
   const carryOver = row.payrollCarryOverAmount ? parseAmount(row.payrollCarryOverAmount) : 0;

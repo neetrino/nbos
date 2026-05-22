@@ -24,6 +24,8 @@ export interface EmployeeWalletBonusRow {
   payrollMonth: string | null;
   /** Sum of persisted SALES KPI burned on releases for this entry. */
   kpiBurnedAmount: string | null;
+  /** Latest persisted burned-KPI reason from a qualifying release. */
+  kpiBurnedReason: string | null;
   payrollCarryOverAmount: string | null;
   policyBreakdownStatuses: BonusPolicyBreakdownStatus[];
   orderPaymentType: string | null;

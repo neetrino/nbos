@@ -212,6 +212,7 @@ export class EmployeeWalletService {
       remainingAmount: r?.remainingAmount.toFixed(2) ?? plannedDecimalForEntry(b.amount).toFixed(2),
       payrollMonth: r?.payrollMonth ?? null,
       kpiBurnedAmount: kpiBurned ? kpiBurned.toFixed(2) : null,
+      kpiBurnedReason: r?.kpiBurnedReason ?? null,
       payrollCarryOverAmount: carryOver ? carryOver.toFixed(2) : null,
       orderPaymentType: b.order.paymentType,
       salesAccrualHint: employeeWalletSalesAccrualHint(

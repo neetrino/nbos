@@ -200,6 +200,7 @@ export interface SalaryLineMonthBonusRow {
   releaseAmount: string;
   includedAmount: string | null;
   kpiBurnedAmount: string | null;
+  kpiBurnedReason: string | null;
   payrollCarryOverAmount: string | null;
   paidAmount: string;
   remainingAmount: string;

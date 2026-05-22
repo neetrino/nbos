@@ -10,9 +10,11 @@ import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve
 import { computePayrollIncludedBonusAmount } from './sales-kpi-payroll-payout';
 import {
   assertSalesKpiForAttachEmployees,
+  resolveEmployeeSalesKpi,
   resolveSalesKpiFactorForEmployee,
   type SalesKpiAmountSnapshot,
 } from './resolve-employee-sales-kpi';
+import { formatSalesKpiBurnedReason } from './sales-kpi-burned-reason';
 
 const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
@@ -229,10 +231,18 @@ export async function attachBonusReleasesToPayrollRun(
       },
     });
 
+    const resolvedKpi = resolveEmployeeSalesKpi(line, runKpiSnapshot);
     const kpiBurnedAmount = computeSalesKpiBurnedAmount({
       releaseAmount: rel.amount,
       kpiScaledAmount: kpiScaled,
       bonusType: rel.bonusEntry.type,
+    });
+    const kpiBurnedReason = formatSalesKpiBurnedReason({
+      bonusType: rel.bonusEntry.type,
+      plan: resolvedKpi.kpiSalesPlanAmount,
+      actual: resolvedKpi.kpiSalesActualAmount,
+      payoutFactor: kpiFactor,
+      burnedAmount: kpiBurnedAmount,
     });
 
     await tx.bonusRelease.update({
@@ -242,6 +252,7 @@ export async function attachBonusReleasesToPayrollRun(
         payrollRunId,
         payrollIncludedAmount: included,
         kpiBurnedAmount,
+        kpiBurnedReason,
         payrollCarryOverAmount: capped.payrollCarryOverAmount,
         payrollCarryOverRemaining: capped.payrollCarryOverAmount,
       },

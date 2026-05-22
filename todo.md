@@ -65,15 +65,15 @@ UI must make the pool understandable without opening many pages.
 Backend + rules live in My Company policy templates; Finance executes. See `05-Bonus-and-Payroll.md` § Policy Engine.
 
 - ☑ **Bonus Policy Templates:** `bonus_policies` + profile FK + picker; seeds SALES / MANUAL / DELIVERY / MARKETING / SUPPORT.
-- ◐ **KPI Policy Templates:** `kpi_policies` DB + CRUD UI + profile picker; role-specific defaults / scorecard metrics pending.
+- ◐ **KPI Policy Templates:** `kpi_policies` DB + CRUD UI + picker; default + lenient sales gate seeds; scorecard metrics pending.
 - ☑ **Compensation Profile link:** create/activate profile + bonus & KPI policy dropdowns on `/my-company/compensation`.
 - ☑ **Employee-level KPI:** per-employee sales plan/actual on `salary_lines` + PATCH + payroll run UI; SALES attach uses line override with run fallback.
-- ◐ **Burned KPI:** persist `kpiBurnedAmount` on SALES attach + Finance/Wallet display; reason field / full policy templates still pending.
+- ☑ **Burned KPI:** `kpiBurnedAmount` + `kpiBurnedReason` on SALES attach; salary sheet, wallet, in-app notify.
 - ☑ **Cap:** default 200% of base on attach; per-policy multiplier via linked `kpi_policies`; excess → `payrollCarryOverAmount`.
 - ☑ **Carry-over:** FIFO auto-apply + `payrollCarryAppliedAmount` on line; detach restores release carry + reverses line carry when no releases remain.
 - ☑ **Bonus breakdown statuses:** `policyBreakdownStatuses` + month summary on salary sheet / wallet pipeline.
 - ☑ **Idempotency:** payroll re-attach + carry apply; SALES accrual `createMany` skipDuplicates + partial unique indexes.
-- ◐ **Tests:** sales accrual + payroll attach idempotency; delivery pool funding recalc tests (`product-bonus-pool-sync`).
+- ☑ **Tests:** sales accrual + payroll attach; delivery pool sync; burned-KPI reason formatter.
 - ☑ **Re-audit** API when Compensation Profile / policy schema changes (`12-Compensation-Roadmap-Implementation-Audit.md` § Policy engine).
 
 ---
@@ -84,7 +84,7 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 - ◐ **Salary month sheet:** burned KPI + carry-over columns (by-source + release lines).
 - ◐ **Employee wallet:** pipeline shows burned KPI and carry-over from attach.
 - ☑ **Pay Now:** preset links from salary board, payroll runs, month sheet (month + employee URL filters).
-- ◐ **Notifications:** KPI-reduced in-app notify on payroll attach + activity detail; carried push still pending.
+- ◐ **Notifications:** KPI-reduced in-app notify (includes burned reason); carried push still pending.
 
 ---
 

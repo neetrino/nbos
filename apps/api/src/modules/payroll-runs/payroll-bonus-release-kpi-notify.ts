@@ -36,6 +36,7 @@ export async function notifySalesKpiReductionsOnAttach(
       amount: true,
       payrollIncludedAmount: true,
       kpiBurnedAmount: true,
+      kpiBurnedReason: true,
       bonusEntry: { select: { type: true, order: { select: { code: true } } } },
       payrollRun: { select: { payrollMonth: true } },
     },
@@ -54,16 +55,22 @@ export async function notifySalesKpiReductionsOnAttach(
     const releaseLabel = rel.amount.toFixed(2);
     const includedLabel = included.toFixed(2);
 
+    const baseBody = formatBonusKpiReducedNotifyBody({
+      orderCode: rel.bonusEntry.order.code,
+      releaseAmount: releaseLabel,
+      includedAmount: includedLabel,
+      payrollMonth,
+    });
+    const reasonSuffix =
+      rel.kpiBurnedReason?.trim() != null && rel.kpiBurnedReason.trim() !== ''
+        ? ` ${rel.kpiBurnedReason.trim()}`
+        : '';
+
     await notifyBonusKpiReducedOnAttach(sink, {
       employeeId: rel.employeeId,
       releaseId: rel.id,
       orderCode: rel.bonusEntry.order.code,
-      body: formatBonusKpiReducedNotifyBody({
-        orderCode: rel.bonusEntry.order.code,
-        releaseAmount: releaseLabel,
-        includedAmount: includedLabel,
-        payrollMonth,
-      }),
+      body: `${baseBody}${reasonSuffix}`,
       burnedAmount: (rel.kpiBurnedAmount ?? rel.amount.minus(included)).toFixed(2),
     });
   }

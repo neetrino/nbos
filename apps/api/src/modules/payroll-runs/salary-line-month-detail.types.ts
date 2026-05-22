@@ -40,6 +40,7 @@ export interface SalaryLineMonthBonusRow {
   includedAmount: string | null;
   /** Persisted SALES KPI reduction at payroll attach. */
   kpiBurnedAmount: string | null;
+  kpiBurnedReason: string | null;
   payrollCarryOverAmount: string | null;
   paidAmount: string;
   remainingAmount: string;
