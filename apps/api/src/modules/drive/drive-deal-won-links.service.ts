@@ -61,10 +61,10 @@ export class DriveDealWonLinksService {
   }
 
   private buildLinkTargets(targets: DealWonDriveLinkTargets): LinkTarget[] {
-    const out: LinkTarget[] = [
-      { entityType: 'PROJECT', entityId: targets.projectId },
-      { entityType: 'CONTACT', entityId: targets.contactId },
-    ];
+    const out: LinkTarget[] = [{ entityType: 'PROJECT', entityId: targets.projectId }];
+    if (targets.contactId) {
+      out.push({ entityType: 'CONTACT', entityId: targets.contactId });
+    }
     if (targets.productId) {
       out.push({ entityType: 'PRODUCT', entityId: targets.productId });
     }

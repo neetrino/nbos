@@ -9,7 +9,7 @@ import {
   dealListInclude,
   dealUpdateInclude,
 } from './deal.includes';
-import type { CreateDealDto, DealQueryParams, UpdateDealDto } from './deal.types';
+import type { CreateDealDto, DealForHandoff, DealQueryParams, UpdateDealDto } from './deal.types';
 import { DealWonHandler } from './deal-won.handler';
 import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
@@ -461,9 +461,7 @@ export class DealsService {
     return notes ? `${notes}\n${line}` : line;
   }
 
-  private attachHandoffReferences<T extends Parameters<typeof attachDealHandoffReferences>[1]>(
-    deal: T,
-  ) {
+  private attachHandoffReferences<T extends DealForHandoff>(deal: T) {
     return attachDealHandoffReferences(this.prisma, deal);
   }
 

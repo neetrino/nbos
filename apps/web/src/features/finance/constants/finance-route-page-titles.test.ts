@@ -59,8 +59,8 @@ describe('finance route page titles', () => {
   });
 
   it('expensesListPageTitle', () => {
-    expect(expensesListPageTitle(false)).toBe('Expenses');
-    expect(expensesListPageTitle(true)).toBe('Expenses · project filter');
+    expect(expensesListPageTitle(false)).toBe('Pay now');
+    expect(expensesListPageTitle(true)).toBe('Pay now · project filter');
   });
 
   it('expensePlansListPageTitle', () => {

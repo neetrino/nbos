@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, Logger } from '@nestjs/common';
 import { syncProjectAdditionalContacts } from '../../projects/project-additional-contacts.ops';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
@@ -9,11 +9,11 @@ interface WonDealData {
   id: string;
   code: string;
   name: string | null;
-  type: string;
+  type: string | null;
   amount: unknown;
   paymentType: string | null;
   taxStatus: string | null;
-  contactId: string;
+  contactId: string | null;
   companyId: string | null;
   sellerId: string;
   projectId: string | null;
@@ -131,13 +131,19 @@ export class DealWonHandler {
 
   private async ensureProject(deal: WonDealData): Promise<string> {
     if (deal.projectId) return deal.projectId;
+    if (!deal.contactId) {
+      throw new BadRequestException(
+        `Deal ${deal.code} must have a contact before a project can be created`,
+      );
+    }
 
     const projectCode = await this.generateProjectCode();
+    const contactId = deal.contactId;
     const project = await this.prisma.project.create({
       data: {
         code: projectCode,
         name: deal.name ?? `Project from ${deal.code}`,
-        contactId: deal.contactId,
+        contactId,
         companyId: deal.companyId ?? undefined,
       },
     });
@@ -156,7 +162,7 @@ export class DealWonHandler {
         this.prisma,
         project.id,
         dealAdditional.map((row) => row.contactId),
-        deal.contactId,
+        contactId,
       );
     }
 

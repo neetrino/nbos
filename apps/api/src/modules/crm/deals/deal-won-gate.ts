@@ -7,7 +7,7 @@ export interface DealWonOverrideContext {
 }
 
 interface DealForWonValidation {
-  type: string;
+  type: string | null;
   source?: string | null;
   sourcePartnerId?: string | null;
   partnerReferralTerms?: { partnerPercent: unknown } | null;
@@ -44,7 +44,7 @@ export function validateDealWonGate(
     });
   }
 
-  if (!DEPOSIT_REQUIRED_TYPES.has(deal.type)) return;
+  if (!deal.type || !DEPOSIT_REQUIRED_TYPES.has(deal.type)) return;
 
   const errors = getDealWonErrors(deal);
   if (errors.length === 0) return;

@@ -4,5 +4,5 @@ export type DealWonDriveLinkTargets = {
   productId?: string | null;
   extensionId?: string | null;
   companyId?: string | null;
-  contactId: string;
+  contactId: string | null;
 };

@@ -162,26 +162,30 @@ export async function patchPartnerReferralTerms(
       'Partner referral terms apply only when source is Partner and a partner is set',
     );
   }
+  if (!deal.type) {
+    throw new BadRequestException('Deal type is required for partner referral terms');
+  }
+  const dealType = deal.type;
 
   if (body.mode === 'RESET') {
     const { percent, sourcePolicy } = await resolveSuggestedPartnerReferralPercent(
       prisma,
       deal.sourcePartnerId,
-      deal.type,
+      dealType,
     );
     await prisma.partnerReferralTerms.upsert({
       where: { dealId },
       create: {
         dealId,
         partnerId: deal.sourcePartnerId,
-        dealType: deal.type,
+        dealType,
         paymentType: deal.paymentType,
         partnerPercent: percent,
         sourcePolicy,
       },
       update: {
         partnerId: deal.sourcePartnerId,
-        dealType: deal.type,
+        dealType,
         paymentType: deal.paymentType,
         partnerPercent: percent,
         sourcePolicy,
@@ -204,7 +208,7 @@ export async function patchPartnerReferralTerms(
     create: {
       dealId,
       partnerId: deal.sourcePartnerId,
-      dealType: deal.type,
+      dealType,
       paymentType: deal.paymentType,
       partnerPercent: new Decimal(pct),
       sourcePolicy: 'OVERRIDE',
@@ -212,7 +216,7 @@ export async function patchPartnerReferralTerms(
     },
     update: {
       partnerId: deal.sourcePartnerId,
-      dealType: deal.type,
+      dealType,
       paymentType: deal.paymentType,
       partnerPercent: new Decimal(pct),
       sourcePolicy: 'OVERRIDE',

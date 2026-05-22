@@ -39,7 +39,11 @@ export async function fetchMeetingVisibilityIds(
   ]);
 
   const linkedDealIds = deals.map((d) => d.id);
-  const linkedContactIds = [...new Set(deals.map((d) => d.contactId))];
+  const linkedContactIds = [
+    ...new Set(
+      deals.map((d) => d.contactId).filter((id): id is string => id != null && id.length > 0),
+    ),
+  ];
   const linkedProjectIds = [
     ...new Set([...products.map((p) => p.projectId), ...extensions.map((e) => e.projectId)]),
   ];

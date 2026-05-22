@@ -74,7 +74,7 @@ export interface DealHandoffReferences {
 
 export interface DealForHandoff {
   id: string;
-  type: string;
+  type: string | null;
   projectId: string | null;
   existingProduct?: { id: string; name: string; productType: string; status?: string } | null;
 }
