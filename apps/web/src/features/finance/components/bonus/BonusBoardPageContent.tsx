@@ -7,7 +7,20 @@ import {
   IntegratedSearchFilters,
   LoadingState,
   useModuleHeroSlots,
+  ViewModeSwitch,
 } from '@/components/shared';
+import {
+  readBonusBoardViewMode,
+  writeBonusBoardViewMode,
+  type BonusBoardViewMode,
+} from '@/features/finance/constants/bonus-board-view';
+import { BONUS_BOARD_VIEW_OPTIONS } from '@/features/finance/components/bonus/bonus-board-view-options';
+import { BonusBoardListView } from '@/features/finance/components/bonus/bonus-board-list-view';
+import {
+  BonusBoardEmployeeView,
+  BonusBoardPayrollMonthView,
+  BonusBoardProductView,
+} from '@/features/finance/components/bonus/bonus-board-grouped-view';
 import {
   BONUS_BOARD_OPEN_ENTRY_QUERY,
   BONUS_BOARD_PROJECT_FILTER_QUERY,
@@ -56,6 +69,12 @@ export function BonusBoardPageContent() {
   const [typeFilter, setTypeFilter] = useState<BonusType | 'ALL'>('ALL');
   const [employeeFilter, setEmployeeFilter] = useState<string>('ALL');
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
+  const [view, setView] = useState<BonusBoardViewMode>(() => readBonusBoardViewMode());
+
+  const handleViewChange = useCallback((mode: BonusBoardViewMode) => {
+    setView(mode);
+    writeBonusBoardViewMode(mode);
+  }, []);
 
   useEffect(() => {
     const raw = searchParams.get(BONUS_BOARD_PROJECT_FILTER_QUERY)?.trim();
@@ -237,6 +256,13 @@ export function BonusBoardPageContent() {
           onClearAll={handleClearBonusFilters}
         />
       ),
+      viewMode: (
+        <ViewModeSwitch
+          value={view}
+          onChange={handleViewChange}
+          options={BONUS_BOARD_VIEW_OPTIONS}
+        />
+      ),
       trailing: (
         <BonusBoardPageSettingsSheet
           statsExportDisabled={loading || !stats}
@@ -256,11 +282,28 @@ export function BonusBoardPageContent() {
       handleClearBonusFilters,
       handleExportCsv,
       handleExportScopeStatsCsv,
+      handleViewChange,
       loading,
       search,
       stats,
+      view,
     ],
   );
+
+  const boardBody = useMemo(() => {
+    switch (view) {
+      case 'list':
+        return <BonusBoardListView rows={filtered} onOpenReleases={openReleaseLedger} />;
+      case 'employee':
+        return <BonusBoardEmployeeView rows={filtered} onOpenReleases={openReleaseLedger} />;
+      case 'product':
+        return <BonusBoardProductView rows={filtered} onOpenReleases={openReleaseLedger} />;
+      case 'payroll':
+        return <BonusBoardPayrollMonthView rows={filtered} onOpenReleases={openReleaseLedger} />;
+      default:
+        return <BonusBoardColumns filtered={filtered} onOpenReleases={openReleaseLedger} />;
+    }
+  }, [filtered, openReleaseLedger, view]);
 
   useModuleHeroSlots(moduleHeroSlots);
 
@@ -274,7 +317,7 @@ export function BonusBoardPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      <BonusBoardColumns filtered={filtered} onOpenReleases={openReleaseLedger} />
+      {boardBody}
 
       <BonusEntryReleasesSheet
         entry={ledgerEntry}

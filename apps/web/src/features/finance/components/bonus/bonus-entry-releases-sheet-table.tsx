@@ -9,6 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { StatusBadge } from '@/components/shared';
+import { BONUS_RELEASE_TYPE_UI } from '@/features/finance/constants/bonus-release-type-ui';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { BonusReleaseRow, BonusReleaseStatus } from '@/lib/api/bonus';
 
@@ -47,30 +49,35 @@ export function BonusEntryReleasesSheetTable({
               </TableCell>
             </TableRow>
           ) : (
-            rows.map((r) => (
-              <TableRow key={r.id}>
-                <TableCell className="text-xs font-medium">{r.status}</TableCell>
-                <TableCell className="text-xs">{r.releaseType}</TableCell>
-                <TableCell className="text-sm font-medium">
-                  {formatAmount(parseReleaseAmount(r.amount))}
-                </TableCell>
-                <TableCell className="text-right">
-                  {releaseIsAdjustable(r.status) ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => onAdjust(r)}
-                    >
-                      Adjust
-                    </Button>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
+            rows.map((r) => {
+              const typeUi = BONUS_RELEASE_TYPE_UI[r.releaseType];
+              return (
+                <TableRow key={r.id}>
+                  <TableCell className="text-xs font-medium">{r.status}</TableCell>
+                  <TableCell>
+                    <StatusBadge label={typeUi.label} variant={typeUi.variant} />
+                  </TableCell>
+                  <TableCell className="text-sm font-medium">
+                    {formatAmount(parseReleaseAmount(r.amount))}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {releaseIsAdjustable(r.status) ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => onAdjust(r)}
+                      >
+                        Adjust
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>

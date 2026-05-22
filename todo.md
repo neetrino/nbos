@@ -452,10 +452,10 @@ Design principles:
 
 ### Phase 5 - Bonus and Bonus pools UX
 
-- [ ] Upgrade Bonus Board views: Board / List / Employee / Product / Month / Payroll Preview.
-- [ ] Upgrade Bonus Pools with expandable rows and `Product Bonus Pool Sheet`.
-- [ ] Add release warnings: Early, Extra, Over Funding, Partial, Carry-over.
-- [ ] Ensure each bonus can be traced to project/product/extension/order and payroll inclusion.
+- [x] Upgrade Bonus Board views: Board / List / Employee / Product / Month / Payroll Preview (`ViewModeSwitch`, `bonus-board-view.ts`).
+- [x] Upgrade Bonus Pools with expandable rows and `Product Bonus Pool Sheet`.
+- [x] Add release warnings: Early, Extra, Over Funding, Partial, Carry-over (release type badges + pool ledger hints).
+- [x] Ensure each bonus can be traced to project/product/extension/order and payroll inclusion (board filters, pool sheet links, payroll month on cards).
 
 ### Phase 6 - Employee Wallet UX
 

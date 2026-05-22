@@ -150,6 +150,12 @@ export function BonusCard({
         </div>
       )}
 
+      {row.payoutMonth ? (
+        <p className="text-muted-foreground mt-1 text-[10px] tabular-nums">
+          Payroll month · {row.payoutMonth}
+        </p>
+      ) : null}
+
       {onOpenReleases ? (
         <p className="text-muted-foreground border-border mt-2.5 border-t pt-2 text-[10px]">
           Open release ledger — adjust APPROVED / DRAFT amounts before payroll.
