@@ -1,6 +1,7 @@
 'use client';
 
 import { Calendar, X } from 'lucide-react';
+import { DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 
 export interface NbosDatePickerTriggerProps {
@@ -36,8 +37,8 @@ export function NbosDatePickerTrigger({
         embedded
           ? 'h-8 min-h-8 border-0 bg-transparent px-0 py-0 shadow-none'
           : cn(
-              'border-border/60 bg-muted/20 rounded-xl border px-3 py-2 shadow-sm shadow-black/[0.04]',
-              'hover:border-border hover:bg-muted/30',
+              DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+              'rounded-xl px-3 py-2',
               'focus-visible:border-ring focus-visible:ring-ring/50 outline-none focus-visible:ring-3',
             ),
         disabled && 'pointer-events-none cursor-not-allowed opacity-50',

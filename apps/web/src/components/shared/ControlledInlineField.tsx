@@ -15,7 +15,7 @@ import {
 import { cn } from '@/lib/utils';
 import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
-  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_CLASS,
 } from './detail-sheet-classes';
 import { resolveSelectOptionLabel } from './select-option-label';
 
@@ -42,11 +42,6 @@ export interface ControlledInlineFieldProps {
   disabled?: boolean;
   datePickerVariant?: NbosDatePickerVariant;
 }
-
-const FIELD_SHELL_CLASS = cn(
-  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  'border-border/60 bg-muted/20 flex w-full min-h-10 items-center gap-1 rounded-xl border px-3 py-1.5 shadow-sm shadow-black/[0.04] transition-[border-color,background-color]',
-);
 
 const INNER_CONTROL_CLASS =
   'h-8 min-h-8 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0';
@@ -92,7 +87,7 @@ export function ControlledInlineField({
       </div>
 
       {type === 'select' && options ? (
-        <div className={FIELD_SHELL_CLASS}>
+        <div className={DETAIL_SHEET_FIELD_SHELL_CLASS}>
           <Select
             value={str}
             onValueChange={(v) => {
@@ -125,7 +120,7 @@ export function ControlledInlineField({
           {clearButton}
         </div>
       ) : type === 'textarea' ? (
-        <div className={cn(FIELD_SHELL_CLASS, 'min-h-[88px] items-start py-2')}>
+        <div className={cn(DETAIL_SHEET_FIELD_SHELL_CLASS, 'min-h-[88px] items-start py-2')}>
           <Textarea
             value={str}
             onChange={(e) => onValueChange(e.target.value)}
@@ -136,7 +131,7 @@ export function ControlledInlineField({
           />
         </div>
       ) : type === 'date' ? (
-        <div className={FIELD_SHELL_CLASS}>
+        <div className={DETAIL_SHEET_FIELD_SHELL_CLASS}>
           <NbosDatePicker
             value={str}
             onChange={onValueChange}
@@ -150,7 +145,7 @@ export function ControlledInlineField({
           />
         </div>
       ) : (
-        <div className={FIELD_SHELL_CLASS}>
+        <div className={DETAIL_SHEET_FIELD_SHELL_CLASS}>
           <Input
             type={type === 'number' ? 'number' : type === 'email' ? 'email' : 'text'}
             value={str}

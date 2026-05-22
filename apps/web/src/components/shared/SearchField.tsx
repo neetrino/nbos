@@ -8,6 +8,7 @@ import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
   DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS,
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
 } from './detail-sheet-classes';
 
 const DEFAULT_MAX_RESULTS = 5;
@@ -288,10 +289,9 @@ export function SearchField(props: SearchFieldProps) {
             }}
             className={cn(
               DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-              'border-border/60 bg-muted/20 text-foreground flex-1 rounded-xl border px-3 py-2 text-sm shadow-sm shadow-black/[0.04] transition-[border-color,box-shadow,background-color]',
-              disabled
-                ? 'cursor-not-allowed opacity-60'
-                : 'hover:border-border hover:bg-muted/30 dark:border-border/50 dark:bg-input/35 dark:hover:bg-input/45 cursor-pointer',
+              DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+              'text-foreground flex-1 rounded-xl px-3 py-2 text-sm',
+              disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
             )}
           >
             <div className="flex items-center justify-between">

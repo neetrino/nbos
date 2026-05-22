@@ -320,7 +320,7 @@ function ClosedRelationPicker({
         type="button"
         disabled={disabled}
         onClick={onOpen}
-        className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'bg-muted/20 hover:bg-muted/30')}
+        className={RELATION_PICKER_EMPTY_TRIGGER_CLASS}
       >
         <Search size={14} className="shrink-0 opacity-70" />
         <span>{placeholder}</span>

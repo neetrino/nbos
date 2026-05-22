@@ -76,6 +76,24 @@ export const DETAIL_SHEET_PERSON_AVATAR_CLASS =
 /** Scoped group on a field shell — action icons show when hovering the control. */
 export const DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS = 'group/field';
 
+/**
+ * Border/background on hover or focus only (Bitrix-style detail fields).
+ * Use on shells for inline fields, relation chips, and empty pickers.
+ */
+export const DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS = [
+  'border border-transparent bg-transparent shadow-none',
+  'transition-[border-color,background-color,box-shadow]',
+  'hover:border-border/60 hover:bg-muted/20 hover:shadow-sm hover:shadow-black/[0.04]',
+  'focus-within:border-border/60 focus-within:bg-muted/20 focus-within:shadow-sm focus-within:shadow-black/[0.04]',
+].join(' ');
+
+/** Controlled {@link InlineField} / date-in-shell wrapper. */
+export const DETAIL_SHEET_FIELD_SHELL_CLASS = [
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+  'flex w-full min-h-10 items-center gap-1 rounded-xl px-3 py-1.5',
+].join(' ');
+
 /** Fade-in for clear / edit affordances inside {@link DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS}. */
 export const DETAIL_SHEET_FIELD_ACTIONS_ON_HOVER_CLASS =
   'opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-within/field:opacity-100';
@@ -96,12 +114,16 @@ export const DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS = [
 /** Full-width selected-value shell for {@link RelationPickerField} (all entity kinds). */
 export const RELATION_PICKER_CHIP_SHELL_CLASS = [
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-  'border-border/60 bg-muted/30 flex w-full min-w-0 items-center gap-2 rounded-xl border py-1.5 pr-1 pl-2.5 text-sm shadow-sm shadow-black/[0.04]',
+  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+  'flex w-full min-w-0 items-center gap-2 rounded-xl py-1.5 pr-1 pl-2.5 text-sm',
 ].join(' ');
 
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
 export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
 
 /** Empty / add trigger aligned with relation chip width. */
-export const RELATION_PICKER_EMPTY_TRIGGER_CLASS =
-  'border-border/60 text-muted-foreground hover:border-border hover:text-foreground flex w-full items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors';
+export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+  'text-muted-foreground hover:text-foreground flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm',
+].join(' ');

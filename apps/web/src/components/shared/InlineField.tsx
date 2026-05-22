@@ -18,6 +18,7 @@ import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
   DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS,
   DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
 } from './detail-sheet-classes';
 import { resolveSelectOptionLabel } from './select-option-label';
 
@@ -260,10 +261,9 @@ function InlineFieldUncontrolled({
           onClick={editable && onSave ? startEdit : undefined}
           className={cn(
             DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
-            'rounded-lg px-3 py-2 text-sm transition-all',
-            editable && onSave
-              ? 'hover:bg-accent/5 hover:border-border cursor-pointer border border-transparent'
-              : 'cursor-default',
+            DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+            'rounded-xl px-3 py-2 text-sm',
+            editable && onSave ? 'cursor-pointer' : 'cursor-default',
           )}
         >
           <div className="flex items-center justify-between">
