@@ -44,24 +44,9 @@ export function isTaskUrgentPriority(priority: string): boolean {
   return TASK_URGENT_PRIORITIES.has(priority);
 }
 
-/** @deprecated Prefer {@link isTaskUrgentPriority}. */
-export function isTaskHighPriority(priority: string): boolean {
-  return isTaskUrgentPriority(priority);
-}
-
-export function getTaskPriority(value: string) {
-  const bucket = isTaskUrgentPriority(value) ? 'HIGH' : 'NORMAL';
-  return TASK_PRIORITIES.find((p) => p.value === bucket);
-}
-
 /** Toggle between NORMAL and HIGH (urgent). */
 export function toggleTaskUrgentPriority(priority: string): string {
   return isTaskUrgentPriority(priority) ? 'NORMAL' : 'HIGH';
-}
-
-/** @deprecated Prefer {@link toggleTaskUrgentPriority}. */
-export function toggleTaskHighPriority(priority: string): string {
-  return toggleTaskUrgentPriority(priority);
 }
 
 export function taskMatchesPriorityFilter(taskPriority: string, filterValue: string): boolean {

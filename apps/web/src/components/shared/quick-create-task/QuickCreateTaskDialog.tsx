@@ -75,8 +75,8 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
                   form.isHighPriority && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
                 )}
                 aria-pressed={form.isHighPriority}
-                aria-label={form.isHighPriority ? 'High priority on' : 'Mark as high priority'}
-                title={form.isHighPriority ? 'High priority' : 'Set high priority'}
+                aria-label={form.isHighPriority ? 'Urgent' : 'Mark as urgent'}
+                title={form.isHighPriority ? 'Urgent' : 'Mark as urgent'}
                 disabled={form.saving}
                 onClick={() => form.setIsHighPriority((value) => !value)}
               >

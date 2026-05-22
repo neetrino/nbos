@@ -14,9 +14,6 @@ export const TASK_SHEET_CARD_CLASS =
 export const TASK_SHEET_SECTION_SURFACE_CLASS =
   'rounded-xl bg-white/90 p-3.5 shadow-sm ring-1 ring-black/[0.04] dark:bg-card/80 dark:ring-white/[0.06]';
 
-export const TASK_SHEET_CARD_TITLE_CLASS =
-  'text-muted-foreground mb-2 text-[11px] font-semibold tracking-wide uppercase';
-
 /** Meta rows hug the left; value column shares one width (Bitrix task detail). */
 export const TASK_SHEET_META_BLOCK_CLASS = 'w-fit max-w-full space-y-1';
 

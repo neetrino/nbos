@@ -74,17 +74,6 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     };
   }, [hydrateTask, open, taskId]);
 
-  const refetchTask = useCallback(async () => {
-    if (!taskId) return;
-    try {
-      const nextTask = await tasksApi.getById(taskId);
-      await hydrateTask(nextTask);
-      setGeneralError(null);
-    } catch (caught) {
-      setGeneralError(getApiErrorMessage(caught, 'Task could not be refreshed.'));
-    }
-  }, [hydrateTask, taskId]);
-
   const setLocalTask = useCallback(
     (recipe: (current: Task) => Task) => {
       setTask((current) => {
@@ -296,22 +285,6 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     [setLocalTask],
   );
 
-  const handleRemoveLink = useCallback(
-    async (linkId: string) => {
-      if (!task) return;
-      try {
-        await tasksApi.removeLink(task.id, linkId);
-        setLocalTask((current) => ({
-          ...current,
-          links: current.links.filter((link) => link.id !== linkId),
-        }));
-      } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Link could not be removed.'));
-      }
-    },
-    [setLocalTask, task],
-  );
-
   const handleDeleteTask = useCallback(async () => {
     if (!task) return false;
     try {
@@ -377,10 +350,8 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     handleAddItem,
     handleToggleItem,
     handleDeleteItem,
-    handleRemoveLink,
     handleDeleteTask,
     handleSendMessage,
     searchEmployees,
-    refetchTask,
   };
 }
