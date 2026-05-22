@@ -9,14 +9,30 @@ interface TaskSheetCompactRowProps {
   label: string;
   children: ReactNode;
   className?: string;
+  /** When true, only the value column is shown (placeholder carries the role hint). */
+  hideLabel?: boolean;
+  /** Align label + field to the right (assistant / observer column). */
+  alignEnd?: boolean;
 }
 
 /** Bitrix-style label (left) + value (right) row inside task sheet cards. */
-export function TaskSheetCompactRow({ label, children, className }: TaskSheetCompactRowProps) {
+export function TaskSheetCompactRow({
+  label,
+  children,
+  className,
+  hideLabel = false,
+  alignEnd = false,
+}: TaskSheetCompactRowProps) {
   return (
-    <div className={cn('flex items-center gap-x-3 py-1', className)}>
-      <span className={TASK_SHEET_META_LABEL_CLASS}>{label}</span>
-      <div className={TASK_SHEET_META_VALUE_COLUMN_CLASS}>{children}</div>
+    <div
+      className={cn('flex items-center gap-x-3 py-1', alignEnd && 'w-full justify-end', className)}
+    >
+      {hideLabel ? null : <span className={TASK_SHEET_META_LABEL_CLASS}>{label}</span>}
+      <div
+        className={cn(TASK_SHEET_META_VALUE_COLUMN_CLASS, hideLabel && 'w-[15.5rem] max-w-full')}
+      >
+        {children}
+      </div>
     </div>
   );
 }

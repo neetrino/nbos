@@ -14,8 +14,17 @@ export const TASK_SHEET_CARD_CLASS =
 export const TASK_SHEET_SECTION_SURFACE_CLASS =
   'rounded-xl bg-white/90 p-3.5 shadow-sm ring-1 ring-black/[0.04] dark:bg-card/80 dark:ring-white/[0.06]';
 
-/** Meta rows hug the left; value column shares one width (Bitrix task detail). */
-export const TASK_SHEET_META_BLOCK_CLASS = 'w-fit max-w-full space-y-1';
+/** Meta block spans the card; value columns share one width (Bitrix task detail). */
+export const TASK_SHEET_META_BLOCK_CLASS = 'w-full max-w-full space-y-1';
+
+/** Creator/assignee | centered divider | assistant/observer (grid 1fr · auto · 1fr). */
+export const TASK_SHEET_TEAM_COLUMNS_CLASS =
+  'grid w-full max-w-full grid-cols-[1fr_auto_1fr] items-start';
+
+/** Assistant / observer column — flush to the card’s right edge. */
+export const TASK_SHEET_TEAM_RIGHT_COLUMN_CLASS = 'justify-self-end space-y-1';
+
+export const TASK_SHEET_TEAM_DIVIDER_CLASS = 'bg-border mx-auto w-px shrink-0 self-stretch';
 
 /** Label column width — aligned with quick-create task rows. */
 export const TASK_SHEET_META_LABEL_CLASS =
