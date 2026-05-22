@@ -23,6 +23,11 @@ const sample: BonusProductPoolRow = {
   ledgerOverFundingAmount: '0.00',
   ledgerReceivedAmount: '0.00',
   ledgerPoolStatus: 'ACTIVE',
+  orderIds: ['ord-1'],
+  orderCodes: ['ORD-1'],
+  employeeCount: 2,
+  fundingFillPercent: 0,
+  fundingHealth: 'EMPTY',
 };
 
 describe('buildBonusProductPoolsCsvContent', () => {

@@ -19,9 +19,14 @@ export const BONUS_POOL_BOARD_LANE_LABEL: Record<BonusPoolBoardLane, string> = {
 };
 
 export function bonusPoolBoardLane(row: BonusProductPoolRow): BonusPoolBoardLane {
-  if (bonusPoolHasOverFunding(row)) {
+  if (bonusPoolHasOverFunding(row) || row.fundingHealth === 'OVER') {
     return 'over';
   }
+  const health = row.fundingHealth;
+  if (health === 'EMPTY') return 'at_risk';
+  if (health === 'PARTIAL') return 'partial';
+  if (health === 'READY' || health === 'CLOSED') return 'ready';
+
   const status = row.ledgerPoolStatus?.toUpperCase() ?? '';
   const available = parseBonusPoolAmount(row.ledgerAvailableFunding);
   const remaining = parseBonusPoolAmount(row.ledgerRemainingAmount);

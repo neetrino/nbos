@@ -12,6 +12,8 @@ import {
   type BonusOrderPoolGroupRow,
   type BonusProductPoolRow,
 } from './bonus-product-pools';
+import { queryBonusPoolEmployeeLines } from './bonus-pool-employee-lines';
+import { deriveBonusPoolFundingMetrics, sumPoolLedgerFields } from './bonus-pool-funding-health';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 
 interface CreateBonusDto {
@@ -205,19 +207,23 @@ export class BonusService {
     if (folded.length === 0) {
       return [];
     }
-    const anchorIds = [...new Set(folded.map((r) => r.anchorOrderId))];
-    return this.mergeProductPoolLedgersWithIds(folded, anchorIds);
+    const withLedgers = await this.mergeProductPoolLedgers(folded);
+    return this.attachPoolEmployeeCounts(withLedgers);
   }
 
-  private async mergeProductPoolLedgersWithIds(
+  async getProductPoolEmployeeLines(poolKey: string) {
+    return queryBonusPoolEmployeeLines(this.prisma, poolKey);
+  }
+
+  private async mergeProductPoolLedgers(
     rows: BonusProductPoolRow[],
-    anchorIds: string[],
   ): Promise<BonusProductPoolRow[]> {
-    if (anchorIds.length === 0) {
+    const allOrderIds = [...new Set(rows.flatMap((r) => r.orderIds))];
+    if (allOrderIds.length === 0) {
       return rows;
     }
     const ledgers = await this.prisma.productBonusPool.findMany({
-      where: { orderId: { in: anchorIds } },
+      where: { orderId: { in: allOrderIds } },
       select: {
         orderId: true,
         totalPlannedAmount: true,
@@ -229,25 +235,67 @@ export class BonusService {
       },
     });
     const byOrder = new Map(ledgers.map((row) => [row.orderId, row] as const));
+
     return rows.map((row) => {
-      const ledger = byOrder.get(row.anchorOrderId);
-      if (!ledger) {
+      const poolLedgers = row.orderIds
+        .map((id) => byOrder.get(id))
+        .filter((l): l is NonNullable<typeof l> => l != null);
+      if (poolLedgers.length === 0) {
         return row;
       }
-      const received = ledger.availableFunding
-        .plus(ledger.totalReleasedAmount)
-        .minus(ledger.overFundingAmount);
+      const merged = sumPoolLedgerFields(poolLedgers);
+      const metrics = deriveBonusPoolFundingMetrics({
+        planned: merged.planned,
+        received: merged.received,
+        available: merged.available,
+        remaining: merged.remaining,
+        overFunding: merged.overFunding,
+        ledgerStatus: merged.ledgerStatus,
+      });
       return {
         ...row,
-        ledgerPlannedAmount: ledger.totalPlannedAmount.toFixed(2),
-        ledgerReleasedAmount: ledger.totalReleasedAmount.toFixed(2),
-        ledgerRemainingAmount: ledger.totalRemainingAmount.toFixed(2),
-        ledgerAvailableFunding: ledger.availableFunding.toFixed(2),
-        ledgerOverFundingAmount: ledger.overFundingAmount.toFixed(2),
-        ledgerReceivedAmount: received.toFixed(2),
-        ledgerPoolStatus: ledger.status,
+        ledgerPlannedAmount: merged.planned.toFixed(2),
+        ledgerReleasedAmount: merged.released.toFixed(2),
+        ledgerRemainingAmount: merged.remaining.toFixed(2),
+        ledgerAvailableFunding: merged.available.toFixed(2),
+        ledgerOverFundingAmount: merged.overFunding.toFixed(2),
+        ledgerReceivedAmount: merged.received.toFixed(2),
+        ledgerPoolStatus: merged.ledgerStatus,
+        fundingFillPercent: metrics.fundingFillPercent,
+        fundingHealth: metrics.fundingHealth,
       };
     });
+  }
+
+  private async attachPoolEmployeeCounts(
+    rows: BonusProductPoolRow[],
+  ): Promise<BonusProductPoolRow[]> {
+    const allOrderIds = [...new Set(rows.flatMap((r) => r.orderIds))];
+    if (allOrderIds.length === 0) {
+      return rows;
+    }
+    const entries = await this.prisma.bonusEntry.findMany({
+      where: { orderId: { in: allOrderIds } },
+      select: { orderId: true, employeeId: true },
+    });
+    const orderToPool = new Map<string, string>();
+    for (const row of rows) {
+      for (const orderId of row.orderIds) {
+        orderToPool.set(orderId, row.poolKey);
+      }
+    }
+    const employeesByPool = new Map<string, Set<string>>();
+    for (const entry of entries) {
+      const poolKey = orderToPool.get(entry.orderId);
+      if (!poolKey) continue;
+      const set = employeesByPool.get(poolKey) ?? new Set<string>();
+      set.add(entry.employeeId);
+      employeesByPool.set(poolKey, set);
+    }
+    return rows.map((row) => ({
+      ...row,
+      employeeCount: employeesByPool.get(row.poolKey)?.size ?? 0,
+    }));
   }
 
   private buildWhere(

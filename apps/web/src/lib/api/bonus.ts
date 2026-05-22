@@ -93,6 +93,38 @@ export interface BonusProductPoolRow {
   ledgerOverFundingAmount: string | null;
   ledgerReceivedAmount: string | null;
   ledgerPoolStatus: string | null;
+  orderIds: string[];
+  orderCodes: string[];
+  employeeCount: number;
+  fundingFillPercent: number | null;
+  fundingHealth: 'EMPTY' | 'PARTIAL' | 'READY' | 'OVER' | 'CLOSED' | 'UNKNOWN';
+}
+
+/** `GET /api/bonus/products/pools/lines?poolKey=` — per-employee pool breakdown. */
+export interface BonusPoolEmployeeLine {
+  employeeId: string;
+  employeeName: string;
+  role: string | null;
+  bonusTypes: string[];
+  entryCount: number;
+  plannedAmount: string;
+  pipelineAmount: string;
+  releasedAmount: string;
+  includedInPayrollAmount: string;
+  paidAmount: string;
+  remainingAmount: string;
+  burnedAmount: string | null;
+  carryOverAmount: string | null;
+  suggestedReleaseAmount: string | null;
+  kpiGatePassed: boolean | null;
+  primaryStatus: string | null;
+}
+
+export interface BonusPoolEmployeeLinesResponse {
+  poolKey: string;
+  orderIds: string[];
+  orderCodes: string[];
+  lines: BonusPoolEmployeeLine[];
 }
 
 /** Matches Prisma `BonusReleaseTypeEnum`. */
@@ -205,6 +237,13 @@ export const bonusesApi = {
 
   async getProductPools(): Promise<BonusProductPoolRow[]> {
     const resp = await api.get<BonusProductPoolRow[]>('/api/bonus/products/pools');
+    return resp.data;
+  },
+
+  async getProductPoolEmployeeLines(poolKey: string): Promise<BonusPoolEmployeeLinesResponse> {
+    const resp = await api.get<BonusPoolEmployeeLinesResponse>('/api/bonus/products/pools/lines', {
+      params: { poolKey },
+    });
     return resp.data;
   },
 

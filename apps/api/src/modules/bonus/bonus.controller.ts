@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import type { BonusReleaseStatusEnum, BonusReleaseTypeEnum } from '@nbos/database';
 import { BonusService } from './bonus.service';
@@ -78,6 +87,20 @@ export class BonusController {
   })
   async getProductPools() {
     return this.bonusService.getProductPools();
+  }
+
+  @Get('products/pools/lines')
+  @ApiOperation({
+    summary:
+      'Per-employee bonus breakdown for a product/extension/order pool (planned, released, paid, suggested release)',
+  })
+  @ApiQuery({ name: 'poolKey', required: true, description: 'e.g. product:{id}, extension:{id}' })
+  async getProductPoolLines(@Query('poolKey') poolKey?: string) {
+    const key = poolKey?.trim();
+    if (!key) {
+      throw new BadRequestException('poolKey query parameter is required');
+    }
+    return this.bonusService.getProductPoolEmployeeLines(key);
   }
 
   @Get('entries/:entryId/releases')

@@ -12,13 +12,17 @@ import {
 } from '@/components/ui/table';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
-  bonusPoolListRowClass,
-  bonusPoolStatusUi,
-} from '@/features/finance/constants/bonus-pool-status-ui';
+  bonusPoolFundingHealthUi,
+  formatPoolFillPercent,
+  resolveRowFundingHealth,
+} from '@/features/finance/constants/bonus-pool-funding-health-ui';
+import { bonusPoolListRowClass } from '@/features/finance/constants/bonus-pool-status-ui';
+import { StatusBadge } from '@/components/shared';
 import type { BonusPoolsFilteredTotals } from '@/features/finance/utils/bonus-pools-filtered-totals';
 import {
   BONUS_POOL_SCOPE_COLUMN_LABEL,
   bonusPoolKindLabel,
+  bonusPoolOrderCodesLabel,
   bonusPoolScopeTitle,
 } from '@/features/finance/utils/bonus-pool-display';
 import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
@@ -34,6 +38,7 @@ const LIST_SCOPE_COL_CLASS = 'min-w-[10rem]';
 const LIST_ORDER_COL_CLASS = 'min-w-[6rem]';
 const LIST_PROJECT_COL_CLASS = 'min-w-[9rem]';
 const LIST_IDENTITY_COLS = 3;
+const LIST_FILL_COL_CLASS = 'min-w-[4.5rem]';
 
 function handlePoolRowKeyDown(
   event: KeyboardEvent<HTMLTableRowElement>,
@@ -69,7 +74,8 @@ export function BonusPoolsListView({
             <TableHead className={`${LIST_HEAD_CELL} text-right`}>Released</TableHead>
             <TableHead className={`${LIST_HEAD_CELL} text-right`}>Available</TableHead>
             <TableHead className={`${LIST_HEAD_CELL} text-right`}>Remaining</TableHead>
-            <TableHead className={LIST_HEAD_CELL}>Status</TableHead>
+            <TableHead className={cn(LIST_HEAD_CELL, LIST_FILL_COL_CLASS)}>Fill</TableHead>
+            <TableHead className={LIST_HEAD_CELL}>Funding</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,6 +100,7 @@ export function BonusPoolsListView({
             </TableCell>
             <TableCell className={`${LIST_FOOTER_CELL} text-right`}>—</TableCell>
             <TableCell />
+            <TableCell />
           </TableRow>
         </tfoot>
       </Table>
@@ -108,7 +115,7 @@ function BonusPoolsListRow({
   row: BonusProductPoolRow;
   onOpenPool: (row: BonusProductPoolRow) => void;
 }) {
-  const statusUi = bonusPoolStatusUi(row.ledgerPoolStatus);
+  const fundingUi = bonusPoolFundingHealthUi(resolveRowFundingHealth(row));
   const scopeTitle = bonusPoolScopeTitle(row);
 
   return (
@@ -129,7 +136,12 @@ function BonusPoolsListRow({
         </div>
       </TableCell>
       <TableCell className={cn(LIST_ROW_CELL, LIST_ORDER_COL_CLASS)}>
-        <span className="font-mono text-sm font-semibold">{row.orderCode}</span>
+        <span className="font-mono text-sm font-semibold" title={row.orderCodes.join(', ')}>
+          {bonusPoolOrderCodesLabel(row)}
+        </span>
+        {row.employeeCount > 0 ? (
+          <span className="text-muted-foreground text-xs">{row.employeeCount} people</span>
+        ) : null}
       </TableCell>
       <TableCell className={cn(LIST_ROW_CELL, LIST_PROJECT_COL_CLASS)}>
         <Link
@@ -156,8 +168,13 @@ function BonusPoolsListRow({
       <TableCell className={`${LIST_ROW_CELL} text-right text-sm tabular-nums`}>
         {formatBonusPoolMoney(row.ledgerRemainingAmount)}
       </TableCell>
+      <TableCell className={cn(LIST_ROW_CELL, LIST_FILL_COL_CLASS)}>
+        <span className="text-sm font-bold tabular-nums">
+          {formatPoolFillPercent(row.fundingFillPercent)}
+        </span>
+      </TableCell>
       <TableCell className={LIST_ROW_CELL}>
-        <span className="text-xs font-semibold tracking-wide uppercase">{statusUi.label}</span>
+        <StatusBadge label={fundingUi.label} variant={fundingUi.variant} />
       </TableCell>
     </TableRow>
   );

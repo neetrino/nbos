@@ -17,3 +17,12 @@ export function bonusPoolKindLabel(kind: BonusProductPoolKind): string {
 export function bonusPoolScopeTitle(row: BonusProductPoolRow): string {
   return row.poolName;
 }
+
+/** Order column label — one code or count when pool spans multiple orders. */
+export function bonusPoolOrderCodesLabel(row: BonusProductPoolRow): string {
+  const codes = row.orderCodes?.length ? row.orderCodes : [row.orderCode];
+  if (codes.length <= 1) {
+    return codes[0] ?? row.orderCode;
+  }
+  return `${codes[0]} +${codes.length - 1}`;
+}

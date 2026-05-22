@@ -23,6 +23,11 @@ const base: BonusProductPoolRow = {
   ledgerOverFundingAmount: null,
   ledgerReceivedAmount: '60',
   ledgerPoolStatus: 'PARTIALLY_RELEASED',
+  orderIds: ['ord-1'],
+  orderCodes: ['ORD-1'],
+  employeeCount: 2,
+  fundingFillPercent: 60,
+  fundingHealth: 'PARTIAL',
 };
 
 describe('bonusPoolBoardLane', () => {

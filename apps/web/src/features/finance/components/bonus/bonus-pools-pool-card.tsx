@@ -2,11 +2,18 @@
 
 import Link from 'next/link';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { bonusPoolStatusUi } from '@/features/finance/constants/bonus-pool-status-ui';
+import {
+  bonusPoolFundingHealthUi,
+  formatPoolFillPercent,
+  resolveRowFundingHealth,
+} from '@/features/finance/constants/bonus-pool-funding-health-ui';
+import { StatusBadge } from '@/components/shared';
 import {
   bonusPoolKindLabel,
+  bonusPoolOrderCodesLabel,
   bonusPoolScopeTitle,
 } from '@/features/finance/utils/bonus-pool-display';
+import { BonusPoolFillBar } from '@/features/finance/components/bonus/bonus-pool-fill-bar';
 import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
@@ -20,7 +27,7 @@ export function BonusPoolsPoolCard({
   onOpen: (row: BonusProductPoolRow) => void;
   compact?: boolean;
 }) {
-  const statusUi = bonusPoolStatusUi(row.ledgerPoolStatus);
+  const fundingUi = bonusPoolFundingHealthUi(resolveRowFundingHealth(row));
   const planned = parseBonusPoolAmount(row.ledgerPlannedAmount);
   const available = parseBonusPoolAmount(row.ledgerAvailableFunding);
   const remaining = parseBonusPoolAmount(row.ledgerRemainingAmount);
@@ -44,7 +51,9 @@ export function BonusPoolsPoolCard({
       </div>
       <dl className="text-muted-foreground mt-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-xs">
         <dt>Order</dt>
-        <dd className="text-foreground font-mono font-medium">{row.orderCode}</dd>
+        <dd className="text-foreground font-mono font-medium">{bonusPoolOrderCodesLabel(row)}</dd>
+        <dt>Team</dt>
+        <dd className="text-foreground tabular-nums">{row.employeeCount}</dd>
         <dt>Project</dt>
         <dd>
           <Link
@@ -56,9 +65,15 @@ export function BonusPoolsPoolCard({
           </Link>
         </dd>
       </dl>
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-        <span className="font-semibold tracking-wide uppercase">{statusUi.label}</span>
-        <span className="tabular-nums">
+      <div className="mt-2">
+        <BonusPoolFillBar row={row} showLabel={false} />
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+        <StatusBadge label={fundingUi.label} variant={fundingUi.variant} />
+        <span className="font-semibold tabular-nums">
+          {formatPoolFillPercent(row.fundingFillPercent)}
+        </span>
+        <span className="text-muted-foreground tabular-nums">
           Avail {formatAmount(available)} · Rem {formatAmount(remaining)}
         </span>
       </div>
