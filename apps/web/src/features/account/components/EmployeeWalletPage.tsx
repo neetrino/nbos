@@ -1,10 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Download, Loader2, User, Wallet } from 'lucide-react';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
+import { WalletBonusPipelineSection } from '@/features/account/components/wallet-bonus-pipeline-section';
+import { WalletCompensationGlossary } from '@/features/account/components/wallet-compensation-glossary';
+import { WalletProjectBreakdownSection } from '@/features/account/components/wallet-project-breakdown-section';
 import { WalletSalaryMonthCards } from '@/features/account/components/wallet-salary-month-cards';
 import { WALLET_OPEN_SALARY_LINE_QUERY } from '@/features/account/constants/wallet-url';
 import { Button } from '@/components/ui/button';
@@ -18,19 +21,10 @@ import {
 } from '@/components/ui/table';
 import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import {
-  WALLET_BONUS_PIPELINE_LABEL,
-  WALLET_BONUS_PIPELINE_ORDER,
-} from '@/features/finance/constants/employee-wallet-ui';
 import { useEmployeeWalletCsvExport } from '@/features/finance/components/wallet/use-employee-wallet-csv-export';
 import { usePageDocumentTitle } from '@/features/account/hooks/use-page-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import {
-  meApi,
-  type EmployeeWalletBonusRow,
-  type EmployeeWalletSnapshot,
-  type WalletBonusPipelineGroup,
-} from '@/lib/api/me';
+import { meApi, type EmployeeWalletSnapshot } from '@/lib/api/me';
 
 function parseAmount(value: string | null): number {
   if (value == null || value === '') return 0;
@@ -43,19 +37,6 @@ function salaryLineInWallet(data: EmployeeWalletSnapshot, salaryLineId: string):
     return true;
   }
   return data.salaryHistory.some((row) => row.id === salaryLineId);
-}
-
-function groupBonuses(
-  rows: EmployeeWalletBonusRow[],
-): Map<WalletBonusPipelineGroup, EmployeeWalletBonusRow[]> {
-  const map = new Map<WalletBonusPipelineGroup, EmployeeWalletBonusRow[]>();
-  for (const g of WALLET_BONUS_PIPELINE_ORDER) {
-    map.set(g, []);
-  }
-  for (const row of rows) {
-    map.get(row.walletGroup)?.push(row);
-  }
-  return map;
 }
 
 export function EmployeeWalletPage() {
@@ -127,8 +108,6 @@ export function EmployeeWalletPage() {
       });
     }
   }, [data, loading, openSalaryLineId, replaceWalletUrl]);
-
-  const bonusGroups = useMemo(() => (data ? groupBonuses(data.bonuses) : null), [data]);
 
   const {
     bonusSubmitting,
@@ -243,6 +222,8 @@ export function EmployeeWalletPage() {
           </div>
         </PageHeader>
 
+        <WalletCompensationGlossary />
+
         <section className="border-border bg-card rounded-2xl border p-5">
           <h2 className="text-foreground text-sm font-semibold">Current compensation</h2>
           <p className="text-muted-foreground mt-1 text-xs">
@@ -335,6 +316,13 @@ export function EmployeeWalletPage() {
                   Payroll expense card is linked — see payment timeline in month details.
                 </p>
               ) : null}
+              {parseAmount(data.nextPayroll.paidAmount) > 0 &&
+              parseAmount(data.nextPayroll.remainingAmount) > 0 ? (
+                <p className="text-muted-foreground text-[11px] leading-snug">
+                  Partial pay — part of this month was paid via the payroll expense card; the rest
+                  stays on your salary line until Finance records further payments.
+                </p>
+              ) : null}
               {data.nextPayroll.partialPayments.length > 0 ? (
                 <div>
                   <h3 className="text-foreground mb-2 text-xs font-semibold">
@@ -412,68 +400,7 @@ export function EmployeeWalletPage() {
           )}
         </section>
 
-        <section>
-          <h2 className="text-foreground mb-3 text-sm font-semibold">Bonus pipeline</h2>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {WALLET_BONUS_PIPELINE_ORDER.map((group) => {
-              const rows = bonusGroups?.get(group) ?? [];
-              return (
-                <div key={group} className="border-border bg-card rounded-xl border p-4">
-                  <div className="flex items-center gap-2">
-                    <Wallet size={14} className="text-muted-foreground" />
-                    <h3 className="text-foreground text-xs font-semibold">
-                      {WALLET_BONUS_PIPELINE_LABEL[group]}
-                    </h3>
-                    <span className="bg-secondary text-muted-foreground ml-auto rounded px-1.5 py-0.5 text-[10px] font-medium">
-                      {rows.length}
-                    </span>
-                  </div>
-                  <ul className="mt-3 space-y-2">
-                    {rows.length === 0 ? (
-                      <li className="text-muted-foreground text-xs">No entries</li>
-                    ) : (
-                      rows.map((b) => (
-                        <li key={b.id} className="border-border rounded-lg border p-2.5 text-xs">
-                          <div className="text-foreground leading-snug font-semibold">
-                            {b.productLabel}
-                          </div>
-                          <div className="text-muted-foreground mt-1 text-[11px]">
-                            {b.project.code} · {b.order.code}
-                          </div>
-                          <div className="text-muted-foreground mt-0.5">{b.type}</div>
-                          <div className="text-foreground mt-1 font-semibold">
-                            Planned {formatAmount(parseAmount(b.amount))}
-                          </div>
-                          <div className="text-muted-foreground mt-1 leading-snug tabular-nums">
-                            Released {formatAmount(parseAmount(b.releasedAmount))} · Paid{' '}
-                            {formatAmount(parseAmount(b.paidAmount))} · Remaining{' '}
-                            {formatAmount(parseAmount(b.remainingAmount))}
-                          </div>
-                          {b.payrollMonth ? (
-                            <div className="text-muted-foreground mt-1 text-[10px]">
-                              Payroll (release): {b.payrollMonth}
-                            </div>
-                          ) : null}
-                          {b.salesAccrualHint ? (
-                            <div className="text-muted-foreground mt-1 text-[10px]">
-                              {b.salesAccrualHint}
-                            </div>
-                          ) : null}
-                          {b.orderPaymentType === 'SUBSCRIPTION' ? (
-                            <div className="text-muted-foreground mt-1 text-[10px] leading-snug">
-                              Subscription order — bonus releases may follow client invoice
-                              payments.
-                            </div>
-                          ) : null}
-                        </li>
-                      ))
-                    )}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        <WalletBonusPipelineSection bonuses={data.bonuses} />
 
         <section>
           <h2 className="text-foreground mb-3 text-sm font-semibold">Payroll salary lines</h2>
@@ -540,89 +467,7 @@ export function EmployeeWalletPage() {
           </div>
         </section>
 
-        <section>
-          <h2 className="text-foreground mb-3 text-sm font-semibold">Project breakdown</h2>
-          <p className="text-muted-foreground mb-3 text-xs leading-snug">
-            Per-order roll-up of your bonus entries with product pool funding context (read-only).
-          </p>
-          <div className="border-border overflow-x-auto rounded-xl border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Product scope</TableHead>
-                  <TableHead>Bonus types</TableHead>
-                  <TableHead className="text-right">Planned</TableHead>
-                  <TableHead className="text-right">Released</TableHead>
-                  <TableHead className="text-right">Paid</TableHead>
-                  <TableHead className="text-right">Remaining</TableHead>
-                  <TableHead>Funding</TableHead>
-                  <TableHead className="text-right">Pool available</TableHead>
-                  <TableHead>Payout</TableHead>
-                  <TableHead>Entry status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.projectBreakdown.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={12}
-                      className="text-muted-foreground py-8 text-center text-sm"
-                    >
-                      No bonus orders yet.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  data.projectBreakdown.map((row) => (
-                    <TableRow key={row.orderId}>
-                      <TableCell>
-                        <Link
-                          href={`/projects/${row.projectId}`}
-                          className="text-primary text-xs font-medium hover:underline"
-                        >
-                          {row.project.code}
-                        </Link>
-                        <div className="text-muted-foreground mt-0.5 max-w-[10rem] truncate text-[11px]">
-                          {row.project.name}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-xs font-medium">{row.order.code}</TableCell>
-                      <TableCell className="max-w-[12rem] text-xs">{row.productLabel}</TableCell>
-                      <TableCell className="text-muted-foreground max-w-[8rem] text-[11px]">
-                        {row.bonusTypesSummary}
-                      </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums">
-                        {formatAmount(parseAmount(row.plannedBonus))}
-                      </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums">
-                        {formatAmount(parseAmount(row.releasedBonus))}
-                      </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums">
-                        {formatAmount(parseAmount(row.paidBonus))}
-                      </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums">
-                        {formatAmount(parseAmount(row.remainingBonus))}
-                      </TableCell>
-                      <TableCell className="max-w-[14rem] text-[11px] leading-snug">
-                        {row.fundingStatusLabels.join(' · ')}
-                      </TableCell>
-                      <TableCell className="text-right text-xs tabular-nums">
-                        {row.poolAvailableFunding != null
-                          ? formatAmount(parseAmount(row.poolAvailableFunding))
-                          : '—'}
-                      </TableCell>
-                      <TableCell className="text-xs">{row.payoutState}</TableCell>
-                      <TableCell className="text-muted-foreground max-w-[10rem] text-[11px]">
-                        {row.entryStatusesSummary}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </section>
+        <WalletProjectBreakdownSection rows={data.projectBreakdown} />
       </div>
 
       <EmployeeMonthCompensationSheet

@@ -82,9 +82,9 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 
 - ◐ **Payroll attach:** SALES KPI scale at attach exists; full KPI/cap/carry-over amounts pending.
 - ◐ **Salary month sheet:** by-source rollup + release lines (planned/released/included/paid/remaining); burned/carry-over pending policy.
-- ☐ **Employee wallet:** explanations for partial / delayed / carried / burned / paid / clawback.
+- ◐ **Employee wallet:** glossary + pipeline/project payout copy + per-entry hints; burned/carry-over amounts pending policy.
 - ☑ **Pay Now:** preset links from salary board, payroll runs, month sheet (month + employee URL filters).
-- ◐ **Notifications:** wallet hints on release/paid exist; KPI reduced / carried copy pending.
+- ◐ **Notifications:** in-app wallet copy for KPI/partial; push templates for carried still pending.
 
 ---
 

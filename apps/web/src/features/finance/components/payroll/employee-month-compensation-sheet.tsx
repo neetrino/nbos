@@ -20,6 +20,7 @@ import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { EmployeeMonthCompensationKpiSection } from '@/features/finance/components/payroll/employee-month-compensation-kpi-section';
 import { SalaryMonthBonusBreakdown } from '@/features/finance/components/payroll/salary-month-bonus-breakdown';
+import { WalletMonthSheetHints } from '@/features/finance/components/payroll/wallet-month-sheet-hints';
 import {
   useSalaryLineMonthDetail,
   type SalaryLineMonthDetailScope,
@@ -215,6 +216,7 @@ export function EmployeeMonthCompensationSheet({
 
           {!loading && !loadError && detail ? (
             <>
+              {readOnly ? <WalletMonthSheetHints detail={detail} /> : null}
               <SummaryGrid detail={detail} readOnly={readOnly} />
               <EmployeeMonthCompensationKpiSection detail={detail} />
               <DetailSheetSection
