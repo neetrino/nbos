@@ -18,7 +18,7 @@ import {
 import { TaskSheetChatPanel } from './TaskSheetChatPanel';
 import { TaskChecklistSection } from './TaskChecklistSection';
 import { TaskCompletionRulesPanel } from './TaskCompletionRulesPanel';
-import { TaskCoAssigneesSection, TaskLinksSection } from './TaskDetailsSections';
+import { TaskCoAssigneesSection } from './TaskDetailsSections';
 import { TaskSubtasksSection } from './TaskSubtasksSection';
 import { TaskSheetGeneralSection } from './TaskSheetGeneralSection';
 import { TaskSheetHeader } from './TaskSheetHeader';
@@ -108,16 +108,6 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                       onPatchDraft={state.patchGeneralDraft}
                       onSearchEmployees={state.searchEmployees}
                     />
-
-                    <section className={TASK_SHEET_CARD_CLASS}>
-                      <div className={TASK_SHEET_META_BLOCK_CLASS}>
-                        <TaskLinksSection
-                          task={state.task}
-                          compact
-                          onRemoveLink={state.handleRemoveLink}
-                        />
-                      </div>
-                    </section>
 
                     <section className={TASK_SHEET_CARD_CLASS}>
                       <div className={TASK_SHEET_META_BLOCK_CLASS}>

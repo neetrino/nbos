@@ -13,6 +13,7 @@ const sprint = (id: string, status: WorkSpaceSprint['status']): WorkSpaceSprint 
   name: id,
   goal: null,
   status,
+  startDate: null,
   endDate: null,
   closedAt: null,
   sortOrder: 0,
