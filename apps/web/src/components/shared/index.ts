@@ -124,3 +124,12 @@ export {
   QuickCreateTaskDialog,
   type QuickCreateTaskDialogProps,
 } from './quick-create-task/QuickCreateTaskDialog';
+export {
+  EntityNotesField,
+  ENTITY_NOTE_ENTITY_TYPES,
+  editorHtmlToNotesValue,
+  isHtmlNotesValue,
+  notesValueToEditorHtml,
+  type EntityNoteEntityType,
+  type EntityNotesFieldProps,
+} from './entity-notes';

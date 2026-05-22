@@ -200,3 +200,25 @@ body {
 .nbos-document-editor .ProseMirror table th {
   vertical-align: top;
 }
+
+/* TipTap — entity notes field (detail sheets) */
+.nbos-entity-notes-editor .ProseMirror {
+  min-height: 5.5rem;
+  outline: none;
+}
+.nbos-entity-notes-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--muted-foreground);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.nbos-entity-notes-editor .ProseMirror ul,
+.nbos-entity-notes-editor .ProseMirror ol {
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+}
+.nbos-entity-notes-editor .ProseMirror a {
+  color: var(--primary);
+  text-decoration: underline;
+}
