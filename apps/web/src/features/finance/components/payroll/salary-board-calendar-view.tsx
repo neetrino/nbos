@@ -1,65 +1,72 @@
 'use client';
 
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { payrollRunStatusUi } from '@/features/finance/constants/payroll-run-status-ui';
 import {
-  payrollRunCalendarCellClass,
-  payrollRunStatusUi,
-} from '@/features/finance/constants/payroll-run-status-ui';
-import {
-  SalaryBoardCalendarEmptyCell,
-  SalaryBoardCalendarMonthCell,
-} from '@/features/finance/components/payroll/salary-board-calendar-month-cell';
-import { SalaryBoardCalendarYearControl } from '@/features/finance/components/payroll/salary-board-calendar-year-control';
+  salaryLineCalendarCellClass,
+  salaryLineStatusBoardUi,
+} from '@/features/finance/constants/salary-board-line-status';
 import {
   employeeDisplayName,
   employeeInitials,
 } from '@/features/finance/components/payroll/salary-board-entries';
-import type { SalaryBoardColumn, SalaryBoardResponse } from '@/lib/api/payroll-runs';
 import {
   formatPayrollMonthAbbrev,
+  parseSalaryBoardAmount,
   sumSalaryBoardColumn,
   sumSalaryBoardRow,
   sumSalaryBoardRowsTotal,
 } from '@/features/finance/utils/salary-board-month-utils';
+import type {
+  SalaryBoardCell,
+  SalaryBoardColumn,
+  SalaryBoardResponse,
+} from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
+
+const MIN_SALARY_BOARD_YEAR = 2020;
+const MAX_SALARY_BOARD_YEAR_OFFSET = 2;
+const SALARY_CALENDAR_SLOT_CLASS = 'h-16 w-full';
 
 const SALARY_CALENDAR_EMPLOYEE_COL_CLASS = 'w-44 min-w-[11rem]';
 const SALARY_CALENDAR_MONTH_COL_CLASS = 'w-[4.5rem]';
 const SALARY_CALENDAR_TOTAL_COL_CLASS = 'w-24 min-w-[6rem]';
 
 const STICKY_EMPLOYEE_HEADER_CLASS = cn(
-  'border-border text-muted-foreground sticky left-0 z-20 border-r border-b px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide',
+  'border-border text-muted-foreground sticky left-0 z-20 border-r border-b px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wide',
   'bg-muted/40',
   SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
 );
 
 const STICKY_EMPLOYEE_CELL_CLASS = cn(
-  'border-border sticky left-0 z-10 border-r border-b px-3 py-2',
-  'bg-background',
+  'border-border text-foreground sticky left-0 z-10 border-r border-b px-3 py-2',
+  'bg-muted/40',
   SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
 );
 
 const STICKY_TOTAL_HEADER_CLASS = cn(
-  'border-border text-muted-foreground sticky right-0 z-20 border-l border-b px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wide',
+  'border-border text-muted-foreground sticky right-0 z-20 border-l border-b px-3 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wide',
   'bg-muted/40',
   SALARY_CALENDAR_TOTAL_COL_CLASS,
 );
 
 const STICKY_TOTAL_CELL_CLASS = cn(
   'border-border text-foreground sticky right-0 z-10 border-l border-b px-3 py-2 text-right text-sm font-semibold tabular-nums',
-  'bg-background',
+  'bg-muted/40',
   SALARY_CALENDAR_TOTAL_COL_CLASS,
 );
 
 const STICKY_TOTAL_FOOTER_CLASS = cn(
-  'border-border text-foreground sticky right-0 z-10 border-l px-3 py-2.5 text-right text-sm font-bold tabular-nums',
-  'bg-muted/25',
+  'border-border text-foreground sticky right-0 z-10 border-l px-3 py-2 text-right text-sm font-bold tabular-nums',
+  'bg-muted/40',
   SALARY_CALENDAR_TOTAL_COL_CLASS,
 );
 
 const SALARY_CALENDAR_MONTH_HEAD_CLASS = cn(
-  'border-border border-b px-1 py-2 text-center',
+  'border-border border-b px-1 py-1.5 text-center text-[10px] font-semibold leading-tight',
   SALARY_CALENDAR_MONTH_COL_CLASS,
 );
 
@@ -85,19 +92,15 @@ export function SalaryBoardCalendarView({
   const filteredGrandTotal = sumSalaryBoardRowsTotal(rows, columnCount);
 
   return (
-    <section
-      className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border shadow-sm"
+    <div
+      className="flex min-h-0 flex-1 flex-col gap-3"
       aria-label={`Salary calendar ${calendarYear}`}
     >
-      <header className="border-border bg-muted/20 flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
-        <div>
-          <h2 className="text-foreground text-sm font-semibold">Salary calendar</h2>
-          <p className="text-muted-foreground text-xs">Team payouts · {calendarYear}</p>
-        </div>
+      <div className="flex items-center justify-end">
         <SalaryBoardCalendarYearControl year={calendarYear} onYearChange={onCalendarYearChange} />
-      </header>
+      </div>
 
-      <div className="min-h-0 flex-1 overflow-x-auto">
+      <div className="border-border min-h-0 flex-1 overflow-x-auto rounded-xl border">
         <table className="w-full table-fixed border-collapse text-sm">
           <colgroup>
             <col className={SALARY_CALENDAR_EMPLOYEE_COL_CLASS} />
@@ -121,11 +124,11 @@ export function SalaryBoardCalendarView({
             {rows.map((row) => {
               const rowTotal = sumSalaryBoardRow(row, columnCount);
               return (
-                <tr key={row.employee.id} className="group">
+                <tr key={row.employee.id} className="hover:bg-muted/15">
                   <td className={STICKY_EMPLOYEE_CELL_CLASS}>
                     <div className="flex items-center gap-2.5">
                       <span
-                        className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                        className="bg-muted/50 text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
                         aria-hidden
                       >
                         {employeeInitials(row.employee)}
@@ -160,11 +163,11 @@ export function SalaryBoardCalendarView({
             })}
           </tbody>
           <tfoot>
-            <tr className="border-border bg-muted/25 border-t-2 font-medium">
+            <tr className="bg-muted/30 font-medium">
               <td
                 className={cn(
-                  'border-border text-muted-foreground sticky left-0 z-10 border-r px-3 py-2.5 text-xs font-semibold tracking-wide uppercase',
-                  'bg-muted/25',
+                  'border-border text-muted-foreground sticky left-0 z-10 border-r px-3 py-2 text-xs font-semibold tracking-wide uppercase',
+                  'bg-muted/40',
                   SALARY_CALENDAR_EMPLOYEE_COL_CLASS,
                 )}
               >
@@ -183,7 +186,96 @@ export function SalaryBoardCalendarView({
           </tfoot>
         </table>
       </div>
-    </section>
+    </div>
+  );
+}
+
+function SalaryBoardCalendarYearControl({
+  year,
+  onYearChange,
+}: {
+  year: number;
+  onYearChange: (year: number) => void;
+}) {
+  const maxYear = new Date().getFullYear() + MAX_SALARY_BOARD_YEAR_OFFSET;
+
+  return (
+    <div
+      className="border-border bg-muted/30 inline-flex items-center gap-0.5 rounded-full border p-0.5"
+      role="group"
+      aria-label="Calendar year"
+    >
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="size-7 rounded-full"
+        aria-label="Previous year"
+        disabled={year <= MIN_SALARY_BOARD_YEAR}
+        onClick={() => onYearChange(year - 1)}
+      >
+        <ChevronLeft className="size-4" aria-hidden />
+      </Button>
+      <span className="text-foreground min-w-[3.25rem] px-1 text-center text-sm font-semibold tabular-nums">
+        {year}
+      </span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="size-7 rounded-full"
+        aria-label="Next year"
+        disabled={year >= maxYear}
+        onClick={() => onYearChange(year + 1)}
+      >
+        <ChevronRight className="size-4" aria-hidden />
+      </Button>
+    </div>
+  );
+}
+
+function SalaryBoardCalendarEmptyCell() {
+  return (
+    <div
+      className={cn(
+        'border-border bg-muted/20 text-muted-foreground flex items-center justify-center rounded-md border border-dashed text-xs',
+        SALARY_CALENDAR_SLOT_CLASS,
+      )}
+      aria-hidden
+    >
+      —
+    </div>
+  );
+}
+
+function SalaryBoardCalendarMonthCell({
+  cell,
+  onOpen,
+}: {
+  cell: SalaryBoardCell;
+  onOpen: (salaryLineId: string) => void;
+}) {
+  const statusUi = salaryLineStatusBoardUi(cell.lineStatus);
+  const payable = formatAmount(parseSalaryBoardAmount(cell.totalPayable));
+
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(cell.salaryLineId)}
+      className={cn(
+        'flex w-full flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border px-1 py-1.5 text-center transition-colors',
+        SALARY_CALENDAR_SLOT_CLASS,
+        salaryLineCalendarCellClass(cell.lineStatus),
+      )}
+      aria-label={`${statusUi.label} · ${payable}`}
+    >
+      <span className="max-w-full truncate text-[9px] font-semibold tracking-wide uppercase opacity-90">
+        {statusUi.label}
+      </span>
+      <span className="max-w-full truncate text-sm leading-tight font-bold tabular-nums">
+        {payable}
+      </span>
+    </button>
   );
 }
 
@@ -203,13 +295,8 @@ function SalaryBoardCalendarMonthHeader({ column }: { column: SalaryBoardColumn 
       ) : (
         <span className="text-muted-foreground text-xs font-semibold">{label}</span>
       )}
-      {runUi && column.runStatus ? (
-        <span
-          className={cn(
-            'max-w-full truncate rounded-md border px-1 py-0 text-[8px] leading-tight font-semibold',
-            payrollRunCalendarCellClass(column.runStatus),
-          )}
-        >
+      {runUi ? (
+        <span className="text-muted-foreground max-w-full truncate text-[8px] leading-tight">
           {runUi.label}
         </span>
       ) : (
