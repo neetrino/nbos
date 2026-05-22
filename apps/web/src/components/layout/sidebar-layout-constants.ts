@@ -1,5 +1,18 @@
+/** Expanded sidebar width — must match `AppLayout` grid column and `Sidebar` root width. */
 export const SIDEBAR_WIDTH_EXPANDED_PX = 260;
+
+/** Collapsed rail width — must match `AppLayout` grid column and `Sidebar` root width. */
 export const SIDEBAR_WIDTH_COLLAPSED_PX = 68;
+
+/** Matches `Topbar` (`h-16`) so the logo row and main header share one baseline. */
+export const SIDEBAR_HEADER_HEIGHT_CLASS = 'h-16';
+
+/** Logo + collapse control row; horizontal padding pairs with `SIDEBAR_NAV_LIST_CLASS`. */
+export const SIDEBAR_HEADER_CLASS =
+  'border-sidebar-border flex shrink-0 items-center border-b px-2 gap-2';
+
+/** Max rendered logo width inside the sidebar header (intrinsic SVG is wider). */
+export const SIDEBAR_LOGO_MAX_WIDTH_CLASS = 'max-w-[7.5rem]';
 
 /** Horizontal inset for sidebar nav rows (Bitrix-like breathing room from the edge). */
 export const SIDEBAR_NAV_INSET_CLASS = 'px-4';

@@ -16,12 +16,12 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <HeaderContextProvider>
-      <div className="bg-background flex h-screen overflow-hidden">
+      <div
+        className="bg-background grid h-screen overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
+        style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
+      >
         <Sidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} />
-        <div
-          className="flex min-w-0 flex-1 flex-col overflow-hidden transition-[margin-left] duration-300 ease-in-out"
-          style={{ marginLeft: mainOffsetPx }}
-        >
+        <div className="flex min-w-0 flex-col overflow-hidden">
           <Topbar />
           <main className="bg-background flex-1 overflow-y-auto overscroll-contain p-6">
             {children}

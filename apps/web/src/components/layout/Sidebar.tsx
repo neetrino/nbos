@@ -13,7 +13,14 @@ import { useSidebarNavigation } from '@/lib/navigation/use-sidebar-navigation';
 import { SidebarNavList } from './SidebarNavList';
 import { SidebarNavigationCustomizeSheet } from './SidebarNavigationCustomizeSheet';
 import { SidebarSettingsMenu } from './SidebarSettingsMenu';
-import { SIDEBAR_NAV_LIST_CLASS } from './sidebar-layout-constants';
+import {
+  SIDEBAR_HEADER_CLASS,
+  SIDEBAR_HEADER_HEIGHT_CLASS,
+  SIDEBAR_LOGO_MAX_WIDTH_CLASS,
+  SIDEBAR_NAV_LIST_CLASS,
+  SIDEBAR_WIDTH_COLLAPSED_PX,
+  SIDEBAR_WIDTH_EXPANDED_PX,
+} from './sidebar-layout-constants';
 
 type SidebarProps = {
   collapsed: boolean;
@@ -50,12 +57,12 @@ export function Sidebar({ collapsed, onCollapsedChange }: SidebarProps) {
     navigation.reorderPrimaryModules(visibleKeys, primaryKeys);
   };
 
+  const sidebarWidthPx = collapsed ? SIDEBAR_WIDTH_COLLAPSED_PX : SIDEBAR_WIDTH_EXPANDED_PX;
+
   return (
     <aside
-      className={cn(
-        'border-sidebar-border bg-sidebar fixed top-0 left-0 z-40 flex h-screen flex-col border-r transition-all duration-300',
-        collapsed ? 'w-[68px]' : 'w-[260px]',
-      )}
+      className="border-sidebar-border bg-sidebar z-40 flex h-screen min-w-0 shrink-0 flex-col overflow-x-hidden border-r"
+      style={{ width: sidebarWidthPx }}
     >
       <SidebarHeader collapsed={collapsed} onCollapsedChange={onCollapsedChange} />
 
@@ -101,8 +108,9 @@ function SidebarHeader({
   return (
     <div
       className={cn(
-        'border-sidebar-border flex h-14 shrink-0 items-center border-b px-3',
-        collapsed ? 'justify-center' : 'gap-2',
+        SIDEBAR_HEADER_CLASS,
+        SIDEBAR_HEADER_HEIGHT_CLASS,
+        collapsed && 'justify-center',
       )}
     >
       <button
@@ -114,14 +122,14 @@ function SidebarHeader({
         <Menu size={20} />
       </button>
       {!collapsed && (
-        <Link href="/dashboard" className="flex min-w-0 flex-1 items-center">
+        <Link href="/dashboard" className="flex min-w-0 flex-1 items-center overflow-hidden">
           <img
             src="/logo/logo.svg"
             alt="NBOS"
-            width={144}
-            height={24}
+            width={120}
+            height={20}
             fetchPriority="high"
-            className="h-6 w-auto max-w-full"
+            className={cn('h-5 w-auto', SIDEBAR_LOGO_MAX_WIDTH_CLASS)}
           />
         </Link>
       )}
