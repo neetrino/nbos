@@ -1,9 +1,8 @@
-import { Calendar, Copy, Flag, User, Users } from 'lucide-react';
+import { Calendar, Copy, User, Users } from 'lucide-react';
 import { EntityNotesField, InlineField, RelationPickerField } from '@/components/shared';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/lib/api/tasks';
-import { TASK_PRIORITIES } from '../constants/tasks';
 import type { TaskGeneralDraft } from '../task-general-form-state';
 import { TASK_SHEET_CARD_CLASS, TASK_SHEET_META_BLOCK_CLASS } from './task-sheet-classes';
 import { formatTaskSheetDateTime } from './task-sheet-format';
@@ -146,20 +145,6 @@ export function TaskSheetGeneralSection({
               disabled={saving}
               className={TASK_SHEET_COMPACT_FIELD_CLASS}
               onValueChange={(value) => onPatchDraft({ dueDate: value })}
-            />
-          </TaskSheetCompactRow>
-
-          <TaskSheetCompactRow label="Priority">
-            <InlineField
-              variant="controlled"
-              label="Priority"
-              value={draft.priority}
-              type="select"
-              icon={<Flag size={13} />}
-              options={TASK_PRIORITIES.map((item) => ({ value: item.value, label: item.label }))}
-              disabled={saving}
-              className={TASK_SHEET_COMPACT_FIELD_CLASS}
-              onValueChange={(value) => onPatchDraft({ priority: value })}
             />
           </TaskSheetCompactRow>
 

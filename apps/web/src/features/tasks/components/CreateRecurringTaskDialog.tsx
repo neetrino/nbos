@@ -1,5 +1,6 @@
 'use client';
 
+import { Flame } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -21,8 +22,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import {
+  TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
+  TASK_PRIORITY_FLAME_BUTTON_CLASS,
+} from '@/components/shared/quick-create-task/quick-create-task-constants';
+import { cn } from '@/lib/utils';
 import { recurringTasksApi, type RecurringTaskTemplate } from '@/lib/api/recurring-tasks';
-import { TASK_PRIORITIES } from '../constants/tasks';
 
 const RECURRING_FREQUENCIES = ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'] as const;
 
@@ -43,7 +48,7 @@ export function CreateRecurringTaskDialog({
   const [frequency, setFrequency] = useState<string>('WEEKLY');
   const [interval, setInterval] = useState('1');
   const [startDate, setStartDate] = useState('');
-  const [priority, setPriority] = useState('NORMAL');
+  const [isUrgent, setIsUrgent] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -56,7 +61,7 @@ export function CreateRecurringTaskDialog({
     setTitle('');
     setFrequency('WEEKLY');
     setInterval('1');
-    setPriority('NORMAL');
+    setIsUrgent(false);
   };
 
   const handleCreate = async () => {
@@ -74,7 +79,7 @@ export function CreateRecurringTaskDialog({
         frequency,
         interval: intervalNum,
         startDate: new Date(startDate).toISOString(),
-        priority,
+        priority: isUrgent ? 'HIGH' : 'NORMAL',
       });
       onCreated?.(template);
       reset();
@@ -96,12 +101,30 @@ export function CreateRecurringTaskDialog({
         <div className="grid gap-4 py-2">
           <div className="grid gap-2">
             <Label htmlFor="recurring-title">Title</Label>
-            <Input
-              id="recurring-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Monthly subscription check"
-            />
+            <div className="relative pr-10">
+              <Input
+                id="recurring-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Monthly subscription check"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className={cn(
+                  TASK_PRIORITY_FLAME_BUTTON_CLASS,
+                  'absolute top-1/2 right-0 -translate-y-1/2',
+                  isUrgent && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
+                )}
+                aria-pressed={isUrgent}
+                aria-label={isUrgent ? 'Urgent' : 'Mark as urgent'}
+                title={isUrgent ? 'Urgent' : 'Mark as urgent'}
+                onClick={() => setIsUrgent((current) => !current)}
+              >
+                <Flame size={20} strokeWidth={1.75} aria-hidden />
+              </Button>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-2">
@@ -135,36 +158,14 @@ export function CreateRecurringTaskDialog({
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-2">
-              <Label htmlFor="recurring-start">Start date</Label>
-              <NbosDatePicker
-                id="recurring-start"
-                value={startDate}
-                onChange={setStartDate}
-                aria-label="Start date"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label>Priority</Label>
-              <Select
-                value={priority}
-                onValueChange={(value) => {
-                  if (value) setPriority(value);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TASK_PRIORITIES.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>
-                      {p.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="grid gap-2">
+            <Label htmlFor="recurring-start">Start date</Label>
+            <NbosDatePicker
+              id="recurring-start"
+              value={startDate}
+              onChange={setStartDate}
+              aria-label="Start date"
+            />
           </div>
         </div>
         <DialogFooter>

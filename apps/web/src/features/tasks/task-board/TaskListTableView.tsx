@@ -2,7 +2,8 @@
 
 import { StatusBadge } from '@/components/shared';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
-import { getTaskPriority, getTaskStatus } from '@/features/tasks/constants/tasks';
+import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
+import { getTaskStatus } from '@/features/tasks/constants/tasks';
 import { formatPlanningStatus } from '@/features/tasks/work-spaces/work-space-utils';
 import type { Task } from '@/lib/api/tasks';
 
@@ -24,7 +25,7 @@ export function TaskListTableView({
             <th className="px-4 py-2 text-left font-medium">
               {boardScope === 'CLOSED' ? 'Closed' : 'Status'}
             </th>
-            <th className="px-4 py-2 text-left font-medium">Priority</th>
+            <th className="w-12 px-4 py-2 text-left font-medium" aria-label="Urgent" />
             <th className="px-4 py-2 text-left font-medium">Planning</th>
             <th className="px-4 py-2 text-left font-medium">Due</th>
             <th className="px-4 py-2 text-left font-medium">Assignee</th>
@@ -33,7 +34,6 @@ export function TaskListTableView({
         <tbody>
           {tasks.map((task) => {
             const st = getTaskStatus(task.status);
-            const pr = getTaskPriority(task.priority);
             return (
               <tr
                 key={task.id}
@@ -50,7 +50,7 @@ export function TaskListTableView({
                   {st && <StatusBadge label={st.label} variant={st.variant} />}
                 </td>
                 <td className="px-4 py-2">
-                  {pr && <StatusBadge label={pr.label} variant={pr.variant} />}
+                  <TaskUrgentFlameIndicator priority={task.priority} size={14} />
                 </td>
                 <td className="px-4 py-2">
                   <StatusBadge label={formatPlanningStatus(task.planningStatus)} variant="gray" />

@@ -46,7 +46,7 @@ const FILTER_CONFIGS = [
   },
   {
     key: 'priority',
-    label: 'Priority',
+    label: 'Urgency',
     options: TASK_PRIORITIES.map((p) => ({ value: p.value, label: p.label })),
   },
 ];

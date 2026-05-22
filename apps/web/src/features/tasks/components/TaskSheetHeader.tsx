@@ -2,20 +2,27 @@ import { Flame } from 'lucide-react';
 import {
   QUICK_CREATE_TASK_HEADER_ICONS_CLASS,
   QUICK_CREATE_TASK_TITLE_ROW_CLASS,
+  TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
 } from '@/components/shared/quick-create-task/quick-create-task-constants';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { isTaskHighPriority, toggleTaskHighPriority } from '../constants/tasks';
+import { isTaskUrgentPriority } from '../constants/tasks';
 import type { TaskGeneralDraft } from '../task-general-form-state';
 
 interface TaskSheetHeaderProps {
   draft: TaskGeneralDraft;
   saving: boolean;
   onPatchDraft: (partial: Partial<TaskGeneralDraft>) => void;
+  onToggleUrgent: () => void;
 }
 
-export function TaskSheetHeader({ draft, saving, onPatchDraft }: TaskSheetHeaderProps) {
-  const highPriority = isTaskHighPriority(draft.priority);
+export function TaskSheetHeader({
+  draft,
+  saving,
+  onPatchDraft,
+  onToggleUrgent,
+}: TaskSheetHeaderProps) {
+  const urgent = isTaskUrgentPriority(draft.priority);
 
   return (
     <header>
@@ -35,14 +42,13 @@ export function TaskSheetHeader({ draft, saving, onPatchDraft }: TaskSheetHeader
             size="icon-sm"
             className={cn(
               'text-muted-foreground/75 size-8 rounded-full hover:text-orange-600',
-              highPriority &&
-                'bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-950/40',
+              urgent && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
             )}
-            aria-pressed={highPriority}
-            aria-label={highPriority ? 'High priority on' : 'Mark as high priority'}
-            title={highPriority ? 'High priority' : 'Set high priority'}
+            aria-pressed={urgent}
+            aria-label={urgent ? 'Urgent' : 'Mark as urgent'}
+            title={urgent ? 'Urgent' : 'Mark as urgent'}
             disabled={saving}
-            onClick={() => onPatchDraft({ priority: toggleTaskHighPriority(draft.priority) })}
+            onClick={onToggleUrgent}
           >
             <Flame size={19} strokeWidth={1.75} aria-hidden />
           </Button>

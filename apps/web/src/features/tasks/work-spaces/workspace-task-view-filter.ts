@@ -3,6 +3,7 @@ import {
   type BoardLifecycleScope,
 } from '@/features/shared/board-lifecycle';
 import { taskMatchesTaskBoardScope } from '@/features/tasks/constants/task-board-lifecycle';
+import { taskMatchesPriorityFilter } from '@/features/tasks/constants/tasks';
 import type { Task } from '@/lib/api/tasks';
 
 /**
@@ -26,7 +27,7 @@ export function filterTasksForWorkspaceView(
       if (!blob.includes(q)) return false;
     }
     if (status && status !== 'all' && t.status !== status) return false;
-    if (priority && priority !== 'all' && t.priority !== priority) return false;
+    if (!taskMatchesPriorityFilter(t.priority, priority ?? 'all')) return false;
     if (!hasStatusFilter && !taskMatchesTaskBoardScope(t.status, boardScope)) return false;
     return true;
   });

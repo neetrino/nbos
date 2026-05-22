@@ -95,6 +95,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                       draft={state.generalDraft}
                       saving={state.saving}
                       onPatchDraft={state.patchGeneralDraft}
+                      onToggleUrgent={() => void state.handleToggleTaskUrgent()}
                     />
 
                     <TaskSheetGeneralSection

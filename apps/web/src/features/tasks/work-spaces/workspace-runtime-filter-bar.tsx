@@ -25,7 +25,7 @@ export const WORKSPACE_TASK_FILTER_CONFIGS: FilterConfig[] = [
   },
   {
     key: 'priority',
-    label: 'Priority',
+    label: 'Urgency',
     options: TASK_PRIORITIES.map((p) => ({ value: p.value, label: p.label })),
   },
 ];

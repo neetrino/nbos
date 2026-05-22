@@ -1,7 +1,7 @@
 'use client';
 
-import { CheckSquare, Flag, FolderKanban, Play, CheckCircle2, RotateCcw } from 'lucide-react';
-import { getTaskPriority } from '@/features/tasks/constants/tasks';
+import { CheckSquare, FolderKanban, Play, CheckCircle2, RotateCcw } from 'lucide-react';
+import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
 import type { Task } from '@/lib/api/tasks';
 import { cn } from '@/lib/utils';
 import { getDeadlineColumn } from './task-board-constants';
@@ -17,7 +17,6 @@ export function TaskMiniCard({
   onAction: (taskId: string, action: TaskBoardAction) => void;
   onClick: (task: Task) => void;
 }) {
-  const priority = getTaskPriority(task.priority);
   const checklistTotal = task.checklists.reduce((sum, cl) => sum + cl.items.length, 0);
   const checklistDone = task.checklists.reduce(
     (sum, cl) => sum + cl.items.filter((i) => i.checked).length,
@@ -35,9 +34,7 @@ export function TaskMiniCard({
         <p className="min-w-0 flex-1 truncate text-sm leading-tight font-medium" title={task.title}>
           {task.title}
         </p>
-        {priority ? (
-          <Flag size={12} className={cn(priority.color, 'mt-0.5 shrink-0')} aria-hidden />
-        ) : null}
+        <TaskUrgentFlameIndicator priority={task.priority} className="mt-0.5" />
       </div>
 
       {task.links.length > 0 && (

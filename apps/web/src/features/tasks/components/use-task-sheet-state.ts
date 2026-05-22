@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { employeesApi, type Employee } from '@/lib/api/employees';
 import { tasksApi, type Task } from '@/lib/api/tasks';
+import { toggleTaskUrgentPriority } from '../constants/tasks';
 import {
   buildTaskGeneralPatch,
   enrichTaskGeneralDraft,
@@ -99,6 +100,27 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
   const patchGeneralDraft = useCallback((partial: Partial<TaskGeneralDraft>) => {
     setGeneralDraft((current) => (current ? { ...current, ...partial } : null));
   }, []);
+
+  const handleToggleTaskUrgent = useCallback(async () => {
+    if (!task || !generalDraft) return;
+
+    const nextPriority = toggleTaskUrgentPriority(generalDraft.priority);
+    if (nextPriority === generalDraft.priority) return;
+
+    setSaving(true);
+    setGeneralError(null);
+    try {
+      const updated = await tasksApi.update(task.id, { priority: nextPriority });
+      await hydrateTask(updated);
+      onUpdate?.(updated);
+    } catch (caught) {
+      const message = getApiErrorMessage(caught, 'Priority could not be updated.');
+      setGeneralError(message);
+      toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  }, [generalDraft, hydrateTask, onUpdate, task]);
 
   const generalDirty =
     generalDraft != null && generalSnap != null && isTaskGeneralDirty(generalDraft, generalSnap);
@@ -346,6 +368,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     setNewChecklistTitle,
     setNewItemTexts,
     patchGeneralDraft,
+    handleToggleTaskUrgent,
     handleGeneralSave,
     handleGeneralCancel,
     handleAction,
