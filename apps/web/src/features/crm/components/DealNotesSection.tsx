@@ -41,7 +41,6 @@ export function DealNotesSection({
           onChange={(notes) => patchDraft({ notes })}
           disabled={disabled}
           placeholder="Add notes about this deal…"
-          label="Comment"
           shellClassName={cn(dealStageGateFieldClass(gateRequiredFields, 'notes', ''))}
         />
       </div>

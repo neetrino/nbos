@@ -15,7 +15,6 @@ import type { EntityNotesFieldProps } from './entity-notes-field.types';
 import { EntityNotesToolbar } from './entity-notes-toolbar';
 import { useEntityNotesEditor } from './use-entity-notes-editor';
 
-const DEFAULT_LABEL = 'Notes';
 const DEFAULT_PLACEHOLDER = 'Write a note…';
 
 function focusLeftShell(shell: HTMLElement | null): boolean {
@@ -32,7 +31,7 @@ export function EntityNotesField({
   disabled = false,
   loading = false,
   placeholder = DEFAULT_PLACEHOLDER,
-  label = DEFAULT_LABEL,
+  label,
   className,
   shellClassName,
 }: EntityNotesFieldProps) {
@@ -80,7 +79,7 @@ export function EntityNotesField({
 
   return (
     <div className={cn('w-full', className)}>
-      <span className={ENTITY_NOTES_LABEL_CLASS}>{label}</span>
+      {label ? <span className={ENTITY_NOTES_LABEL_CLASS}>{label}</span> : null}
       <div
         ref={shellRef}
         className={cn(

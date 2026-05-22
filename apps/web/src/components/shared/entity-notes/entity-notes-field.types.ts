@@ -13,6 +13,8 @@ import type { EntityNoteEntityType } from './entity-notes-contract';
  *   placeholder="Add notes about this lead…"
  * />
  * ```
+ *
+ * Omit `label` when the parent already provides a section title (e.g. DetailSheetSection).
  */
 export interface EntityNotesFieldProps {
   entityType: EntityNoteEntityType;

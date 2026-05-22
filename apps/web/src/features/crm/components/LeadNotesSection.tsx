@@ -37,7 +37,6 @@ export function LeadNotesSection({
           onChange={(notes) => patchDraft({ notes })}
           disabled={disabled}
           placeholder="Add notes about this lead…"
-          label="Comment"
           shellClassName={cn(leadStageGateFieldClass(gateRequiredFields, 'notes', ''))}
         />
       </div>
