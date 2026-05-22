@@ -9,16 +9,19 @@ import { employeesApi } from '@/lib/api/employees';
 import type { LeadGeneralDraft } from './lead-general-form-state';
 import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
 import { LeadGeneralMarketingSection } from './LeadGeneralMarketingSection';
+import { leadStageGateFieldClass } from '@/features/crm/lead-stage-gate-highlight';
 
 export interface LeadGeneralTabProps {
   lead: Lead;
   draft: LeadGeneralDraft;
   patchDraft: (partial: Partial<LeadGeneralDraft>) => void;
   formDisabled?: boolean;
+  gateRequiredFields?: ReadonlySet<string>;
   sectionIds: {
     contact: LeadSheetSectionId;
     marketing: LeadSheetSectionId;
     assignment: LeadSheetSectionId;
+    notes: LeadSheetSectionId;
   };
 }
 
@@ -27,6 +30,7 @@ export function LeadGeneralTab({
   draft,
   patchDraft,
   formDisabled = false,
+  gateRequiredFields = new Set(),
   sectionIds,
 }: LeadGeneralTabProps) {
   const searchEmployees = useCallback(async (query: string) => {
@@ -50,6 +54,7 @@ export function LeadGeneralTab({
               placeholder="Contact name…"
               icon={<User size={12} />}
               disabled={formDisabled}
+              className={leadStageGateFieldClass(gateRequiredFields, 'contactName')}
               onValueChange={(v) => patchDraft({ contactName: v })}
             />
             <InlineField
@@ -60,6 +65,7 @@ export function LeadGeneralTab({
               placeholder="+374…"
               icon={<Phone size={12} />}
               disabled={formDisabled}
+              className={leadStageGateFieldClass(gateRequiredFields, 'phone')}
               onValueChange={(v) => patchDraft({ phone: v || null })}
             />
             <InlineField
@@ -70,6 +76,7 @@ export function LeadGeneralTab({
               placeholder="email@example.com"
               icon={<Mail size={12} />}
               disabled={formDisabled}
+              className={leadStageGateFieldClass(gateRequiredFields, 'email')}
               onValueChange={(v) => patchDraft({ email: v || null })}
             />
           </div>
@@ -81,12 +88,14 @@ export function LeadGeneralTab({
           patchDraft={patchDraft}
           formDisabled={formDisabled}
           sectionId={sectionIds.marketing}
+          gateRequiredFields={gateRequiredFields}
         />
 
         <DetailSheetSection id={sectionIds.assignment} title="Team" icon={<Building2 size={12} />}>
           <SearchField
             selectionMode="stage"
             label="Seller"
+            className={leadStageGateFieldClass(gateRequiredFields, 'assignedTo')}
             value={draft.assignedTo}
             displayValue={
               draft.sellerDisplayLabel ? (
@@ -122,7 +131,11 @@ export function LeadGeneralTab({
           </DetailSheetSection>
         ) : null}
 
-        <DetailSheetSection title="Notes & activity" icon={<MessageSquare size={12} />}>
+        <DetailSheetSection
+          id={sectionIds.notes}
+          title="Notes & activity"
+          icon={<MessageSquare size={12} />}
+        >
           <div className="space-y-4">
             <InlineField
               variant="controlled"
@@ -131,6 +144,7 @@ export function LeadGeneralTab({
               value={draft.notes ?? ''}
               placeholder="Conversation notes…"
               disabled={formDisabled}
+              className={leadStageGateFieldClass(gateRequiredFields, 'notes')}
               onValueChange={(v) => patchDraft({ notes: v || null })}
             />
             <MetaRow

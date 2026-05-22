@@ -20,6 +20,8 @@ interface CrmSheetEntityHeaderProps {
   titleEditHint: string;
   onStartEditing: () => void;
   actions?: ReactNode;
+  /** Applied to the editable title row (stage gate highlight). */
+  titleClassName?: string;
 }
 
 export function CrmSheetEntityHeader({
@@ -38,12 +40,18 @@ export function CrmSheetEntityHeader({
   titleEditHint,
   onStartEditing,
   actions,
+  titleClassName,
 }: CrmSheetEntityHeaderProps) {
   return (
     <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+          <div
+            className={cn(
+              'inline-flex max-w-full min-w-0 flex-wrap items-center gap-2',
+              titleClassName,
+            )}
+          >
             <EntityIcon className={cn('size-5 shrink-0', headerIconClassName)} aria-hidden />
             {editing ? (
               <input

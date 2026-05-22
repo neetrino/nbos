@@ -15,6 +15,7 @@ import { marketingApi } from '@/lib/api/marketing';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
 import type { LeadGeneralDraft } from './lead-general-form-state';
 import type { LeadSheetSectionId } from '@/features/shared/crm-sheet-section-ids';
+import { leadStageGateFieldClass } from '@/features/crm/lead-stage-gate-highlight';
 
 interface LeadGeneralMarketingSectionProps {
   lead: Lead;
@@ -22,6 +23,7 @@ interface LeadGeneralMarketingSectionProps {
   patchDraft: (partial: Partial<LeadGeneralDraft>) => void;
   formDisabled: boolean;
   sectionId: LeadSheetSectionId;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function LeadGeneralMarketingSection({
@@ -30,6 +32,7 @@ export function LeadGeneralMarketingSection({
   patchDraft,
   formDisabled,
   sectionId,
+  gateRequiredFields = new Set(),
 }: LeadGeneralMarketingSectionProps) {
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
     draft.source === 'MARKETING',
@@ -93,6 +96,7 @@ export function LeadGeneralMarketingSection({
           icon={<Megaphone size={12} />}
           disabled={formDisabled || attributionLocked}
           clearable={!attributionLocked}
+          className={leadStageGateFieldClass(gateRequiredFields, 'source')}
           onValueChange={(value) =>
             patchDraft({
               source: value || null,
@@ -119,6 +123,7 @@ export function LeadGeneralMarketingSection({
             icon={<ExternalLink size={12} />}
             disabled={formDisabled || attributionLocked}
             clearable={!attributionLocked}
+            className={leadStageGateFieldClass(gateRequiredFields, 'sourceDetail')}
             onValueChange={(value) =>
               patchDraft({
                 sourceDetail: value || null,
@@ -134,6 +139,7 @@ export function LeadGeneralMarketingSection({
           <SearchField
             selectionMode="stage"
             label="Which one?"
+            className={leadStageGateFieldClass(gateRequiredFields, 'whichOne')}
             value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
             displayValue={
               draft.marketingPickLabel ? (
@@ -171,6 +177,7 @@ export function LeadGeneralMarketingSection({
           <SearchField
             selectionMode="stage"
             label="Which partner?"
+            className={leadStageGateFieldClass(gateRequiredFields, 'sourcePartnerId')}
             value={draft.sourcePartnerId}
             displayValue={
               draft.partnerPickLabel ? (
@@ -198,6 +205,7 @@ export function LeadGeneralMarketingSection({
           <SearchField
             selectionMode="stage"
             label="Which client?"
+            className={leadStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
             value={draft.sourceContactId}
             displayValue={
               draft.clientPickLabel ? (

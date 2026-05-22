@@ -145,7 +145,7 @@ const CRM_MARKETING_FIELDS = new Set([
   'whichOne',
 ]);
 
-const LEAD_CONTACT_FIELDS = new Set(['name', 'contactName', 'contactMethod']);
+const LEAD_CONTACT_FIELDS = new Set(['name', 'contactName', 'contact', 'contactMethod']);
 
 function normalizedErrorFields(errors: ApiFieldError[]): string[] {
   return errors.map((error) => normalizeField(error.field));
@@ -184,6 +184,9 @@ export function resolveLeadSheetSectionFromErrors(errors: ApiFieldError[]): Lead
   const fieldSet = new Set(normalizedErrorFields(errors));
   if ([...fieldSet].some((field) => CRM_MARKETING_FIELDS.has(field))) {
     return LEAD_SHEET_SECTION.MARKETING;
+  }
+  if (fieldSet.has('notes')) {
+    return LEAD_SHEET_SECTION.NOTES;
   }
   if ([...fieldSet].some((field) => LEAD_CONTACT_FIELDS.has(field))) {
     return LEAD_SHEET_SECTION.CONTACT;

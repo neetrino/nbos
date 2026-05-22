@@ -14,6 +14,7 @@ export const LEAD_SHEET_SECTION = {
   CONTACT: 'lead-sheet-section-contact',
   MARKETING: 'lead-sheet-section-marketing',
   ASSIGNMENT: 'lead-sheet-section-assignment',
+  NOTES: 'lead-sheet-section-notes',
 } as const;
 
 export type LeadSheetSectionId = (typeof LEAD_SHEET_SECTION)[keyof typeof LEAD_SHEET_SECTION];

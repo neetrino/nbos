@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react';
 import { ArrowRight, Trash2, LayoutGrid, History } from 'lucide-react';
 import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,6 +30,8 @@ import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
 import { getLeadDisplayTitle } from '../utils/crm-entity-display';
 import { LEAD_ENTITY_VISUAL } from '@/lib/lead-entity-visual';
 import type { ApiFieldError } from '@/lib/api-errors';
+import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
+import { cn } from '@/lib/utils';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -157,6 +159,16 @@ export function LeadSheet({
   }, [open, blockerNavigation, scrollToLeadSection, onBlockerNavigationConsumed]);
 
   useEffect(() => {
+    if (!open || !stageGateHighlight) return;
+    queueMicrotask(() => setActiveTab('general'));
+  }, [open, stageGateHighlight]);
+
+  const gateRequiredFields = useMemo(() => {
+    if (!stageGateHighlight) return new Set<string>();
+    return new Set(stageGateHighlight.errors.map((error) => error.field));
+  }, [stageGateHighlight]);
+
+  useEffect(() => {
     if (editingName && nameInputRef.current) {
       nameInputRef.current.focus();
       nameInputRef.current.select();
@@ -176,6 +188,7 @@ export function LeadSheet({
   const leadVisual = LEAD_ENTITY_VISUAL;
   const headerTitle = generalDraft?.name?.trim() || getLeadDisplayTitle(lead);
   const LeadIcon = leadVisual.Icon;
+  const nameGateRequired = gateRequiredFields.has('name');
 
   const startEditingName = () => {
     setNameValue(generalDraft?.name ?? lead.name ?? '');
@@ -221,6 +234,10 @@ export function LeadSheet({
           namePlaceholder="Inquiry title (product / service)…"
           titleEditHint="Click to edit inquiry title (product / service)"
           onStartEditing={startEditingName}
+          titleClassName={cn(
+            nameGateRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
+            'rounded-lg',
+          )}
           actions={
             <>
               {!isTerminal && lead.status === 'MQL' && onConvertToDeal ? (
@@ -285,10 +302,12 @@ export function LeadSheet({
                 lead={lead}
                 draft={generalDraft}
                 patchDraft={patchGeneralDraft}
+                gateRequiredFields={gateRequiredFields}
                 sectionIds={{
                   contact: LEAD_SHEET_SECTION.CONTACT,
                   marketing: LEAD_SHEET_SECTION.MARKETING,
                   assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
+                  notes: LEAD_SHEET_SECTION.NOTES,
                 }}
               />
             ) : null}
