@@ -13,6 +13,7 @@ describe('SalesBonusAccrualService', () => {
     prisma = createMockPrisma();
     prisma.bonusEntry.findMany.mockResolvedValue([]);
     prisma.bonusEntry.findFirst.mockResolvedValue(null);
+    prisma.bonusEntry.createMany.mockResolvedValue({ count: 1 });
     notifications = { create: vi.fn() } as unknown as NotificationService;
     service = new SalesBonusAccrualService(prisma as never, notifications);
   });
@@ -69,19 +70,21 @@ describe('SalesBonusAccrualService', () => {
 
     await service.onInvoicePaid('inv1');
 
-    expect(prisma.bonusEntry.create).toHaveBeenCalledTimes(1);
-    expect(prisma.bonusEntry.create).toHaveBeenCalledWith(
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          employeeId: 'emp-seller',
-          orderId: 'ord1',
-          projectId: 'proj1',
-          dealId: 'deal1',
-          type: 'SALES',
-          status: 'INCOMING',
-          salesBonusSlot: 'SELLER',
-          salesAccrualInvoiceId: 'inv1',
-        }),
+        skipDuplicates: true,
+        data: [
+          expect.objectContaining({
+            employeeId: 'emp-seller',
+            orderId: 'ord1',
+            projectId: 'proj1',
+            dealId: 'deal1',
+            type: 'SALES',
+            status: 'INCOMING',
+            salesBonusSlot: 'SELLER',
+            salesAccrualInvoiceId: 'inv1',
+          }),
+        ],
       }),
     );
     expect(prisma.productBonusPool.upsert).toHaveBeenCalled();
@@ -111,7 +114,7 @@ describe('SalesBonusAccrualService', () => {
 
     await service.onInvoicePaid('inv1');
 
-    expect(prisma.bonusEntry.create).not.toHaveBeenCalled();
+    expect(prisma.bonusEntry.createMany).not.toHaveBeenCalled();
     expect(prisma.salesBonusPolicy.findFirst).not.toHaveBeenCalled();
   });
 
@@ -158,15 +161,40 @@ describe('SalesBonusAccrualService', () => {
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_FIRST_MONTH' }),
       }),
     );
-    expect(prisma.bonusEntry.create).toHaveBeenCalledTimes(1);
-    expect(prisma.bonusEntry.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          salesBonusSlot: 'SELLER',
-          salesAccrualInvoiceId: 'inv-a',
-        }),
-      }),
-    );
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips recurring accrual when invoice employee rows already exist', async () => {
+    prisma.invoice.findUnique.mockResolvedValue({
+      id: 'inv-b',
+      moneyStatus: 'PAID',
+      amount: 50_000,
+      orderId: 'ord-sub',
+      order: {
+        id: 'ord-sub',
+        projectId: 'proj1',
+        totalAmount: 1_200_000,
+        paymentType: 'SUBSCRIPTION',
+        dealId: 'deal1',
+        deal: {
+          id: 'deal1',
+          source: 'CLIENT',
+          sellerId: 'emp-seller',
+          sellerAssistantId: 'emp-asst',
+        },
+      },
+    });
+    prisma.bonusEntry.findFirst
+      .mockResolvedValueOnce({ id: 'first-month-row' })
+      .mockResolvedValue({ id: 'existing' });
+    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
+      sellerPercent: 5,
+      assistantPercent: 1,
+    });
+
+    await service.onInvoicePaid('inv-b');
+
+    expect(prisma.bonusEntry.createMany).not.toHaveBeenCalled();
   });
 
   it('accrues recurring subscription bonus on later paid invoices', async () => {
@@ -191,7 +219,9 @@ describe('SalesBonusAccrualService', () => {
     });
     prisma.bonusEntry.findFirst
       .mockResolvedValueOnce({ id: 'first-month-row' })
+      .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(null);
+    prisma.bonusEntry.createMany.mockResolvedValue({ count: 2 });
     prisma.salesBonusPolicy.findFirst.mockResolvedValue({
       sellerPercent: 5,
       assistantPercent: 1,
@@ -215,23 +245,21 @@ describe('SalesBonusAccrualService', () => {
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_RECURRING' }),
       }),
     );
-    expect(prisma.bonusEntry.create).toHaveBeenCalledTimes(2);
-    expect(prisma.bonusEntry.create).toHaveBeenCalledWith(
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          salesBonusSlot: null,
-          salesAccrualInvoiceId: 'inv-b',
-          employeeId: 'emp-seller',
-        }),
-      }),
-    );
-    expect(prisma.bonusEntry.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          salesBonusSlot: null,
-          salesAccrualInvoiceId: 'inv-b',
-          employeeId: 'emp-asst',
-        }),
+        skipDuplicates: true,
+        data: expect.arrayContaining([
+          expect.objectContaining({
+            salesBonusSlot: null,
+            salesAccrualInvoiceId: 'inv-b',
+            employeeId: 'emp-seller',
+          }),
+          expect.objectContaining({
+            salesBonusSlot: null,
+            salesAccrualInvoiceId: 'inv-b',
+            employeeId: 'emp-asst',
+          }),
+        ]),
       }),
     );
   });

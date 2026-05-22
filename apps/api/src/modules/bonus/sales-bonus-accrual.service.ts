@@ -5,10 +5,11 @@ import { NotificationService } from '../notifications/notification.service';
 import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 import {
-  SALES_BONUS_TYPE,
-  buildSalesBonusAmountRows,
-  persistSalesBonusRows,
-} from './sales-bonus-accrual-rows';
+  hasRecurringSalesAccrualForInvoiceEmployee,
+  hasSalesAccrualForInvoice,
+  hasSlottedSalesBonusOnOrder,
+} from './sales-bonus-accrual-idempotency';
+import { buildSalesBonusAmountRows, persistSalesBonusRows } from './sales-bonus-accrual-rows';
 
 type SlottedPaymentModel = 'CLASSIC' | 'SUBSCRIPTION_FIRST_MONTH';
 type PolicyPaymentModel = SlottedPaymentModel | 'SUBSCRIPTION_RECURRING';
@@ -135,7 +136,7 @@ export class SalesBonusAccrualService {
     invoice: { id: string; amount: Decimal },
     order: AccrualOrder,
   ): Promise<boolean> {
-    const firstMonthDone = await this.hasSlottedSalesBonus(order.id);
+    const firstMonthDone = await hasSlottedSalesBonusOnOrder(this.prisma, order.id);
     if (!firstMonthDone) {
       return this.runSlottedAccrual(invoice, order, 'SUBSCRIPTION_FIRST_MONTH', {
         baseAmount: decimalFrom(invoice.amount),
@@ -145,30 +146,10 @@ export class SalesBonusAccrualService {
     return this.runSubscriptionRecurringAccrual(invoice, order);
   }
 
-  private async hasSlottedSalesBonus(orderId: string): Promise<boolean> {
-    const row = await this.prisma.bonusEntry.findFirst({
-      where: { orderId, type: SALES_BONUS_TYPE, salesBonusSlot: { not: null } },
-      select: { id: true },
-    });
-    return row != null;
-  }
-
   private async runSubscriptionRecurringAccrual(
     invoice: { id: string; amount: Decimal },
     order: AccrualOrder,
   ): Promise<boolean> {
-    const duplicate = await this.prisma.bonusEntry.findFirst({
-      where: {
-        orderId: order.id,
-        type: SALES_BONUS_TYPE,
-        salesAccrualInvoiceId: invoice.id,
-      },
-      select: { id: true },
-    });
-    if (duplicate) {
-      return false;
-    }
-
     const policy = await this.loadPolicy(order.deal.source, 'SUBSCRIPTION_RECURRING');
     if (!policy) {
       this.logger.warn(
@@ -196,21 +177,32 @@ export class SalesBonusAccrualService {
     };
 
     const rows = buildSalesBonusAmountRows(order.deal, policy, baseAmount);
-    if (rows.length === 0) {
+    const rowsToCreate = [];
+    for (const row of rows) {
+      const exists = await hasRecurringSalesAccrualForInvoiceEmployee(
+        this.prisma,
+        order.id,
+        invoice.id,
+        row.employeeId,
+      );
+      if (!exists) {
+        rowsToCreate.push(row);
+      }
+    }
+    if (rowsToCreate.length === 0) {
       return false;
     }
 
     const snapshotJson = snapshot as InputJsonValue;
-    await persistSalesBonusRows(
+    return persistSalesBonusRows(
       this.prisma,
       order,
       order.deal,
-      rows,
+      rowsToCreate,
       snapshotJson,
       invoice.id,
       null,
     );
-    return true;
   }
 
   private async loadPolicy(
@@ -239,8 +231,10 @@ export class SalesBonusAccrualService {
     paymentModel: SlottedPaymentModel,
     params: { baseAmount: Decimal; basis: AccrualBasis },
   ): Promise<boolean> {
-    const slottedExists = await this.hasSlottedSalesBonus(order.id);
-    if (slottedExists) {
+    if (await hasSalesAccrualForInvoice(this.prisma, order.id, invoice.id)) {
+      return false;
+    }
+    if (await hasSlottedSalesBonusOnOrder(this.prisma, order.id)) {
       return false;
     }
 
@@ -271,7 +265,7 @@ export class SalesBonusAccrualService {
     }
 
     const snapshotJson = snapshot as InputJsonValue;
-    await persistSalesBonusRows(
+    return persistSalesBonusRows(
       this.prisma,
       order,
       order.deal,
@@ -280,6 +274,5 @@ export class SalesBonusAccrualService {
       invoice.id,
       'slot',
     );
-    return true;
   }
 }

@@ -64,7 +64,7 @@ UI must make the pool understandable without opening many pages.
 
 Backend + rules live in My Company policy templates; Finance executes. See `05-Bonus-and-Payroll.md` § Policy Engine.
 
-- ◐ **Bonus Policy Templates:** `bonus_policies` + profile FK + picker; SALES seed uses `sales_bonus_policies` grid; delivery/marketing/manual templates pending.
+- ◐ **Bonus Policy Templates:** `bonus_policies` + profile FK + picker; SALES + MANUAL_ONLY seeds; delivery/marketing templates pending.
 - ◐ **KPI Policy Templates:** `kpi_policies` DB + CRUD UI + profile picker; role-specific defaults / scorecard metrics pending.
 - ☑ **Compensation Profile link:** create/activate profile + bonus & KPI policy dropdowns on `/my-company/compensation`.
 - ☐ **Employee-level KPI:** per employee/role, not only payroll-run sales KPI scale.
@@ -72,8 +72,8 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 - ☑ **Cap:** default 200% of base on attach; per-policy multiplier via linked `kpi_policies`; excess → `payrollCarryOverAmount`.
 - ☑ **Carry-over:** FIFO auto-apply + `payrollCarryAppliedAmount` on line; detach restores release carry + reverses line carry when no releases remain.
 - ☑ **Bonus breakdown statuses:** `policyBreakdownStatuses` + month summary on salary sheet / wallet pipeline.
-- ◐ **Idempotency:** re-attach same run skips included releases; skip duplicate carry apply per line; full recalc idempotency pending.
-- ◐ **Tests:** carry reverse + breakdown + attach idempotent tests; full recalc suite pending.
+- ☑ **Idempotency:** payroll re-attach + carry apply; SALES accrual `createMany` skipDuplicates + partial unique indexes.
+- ◐ **Tests:** sales accrual + payroll attach idempotency tests; delivery accrual recalc suite pending.
 - ☐ **Re-audit** API when Compensation Profile / policy schema changes.
 
 ---

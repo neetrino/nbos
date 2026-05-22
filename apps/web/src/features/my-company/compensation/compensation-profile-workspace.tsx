@@ -15,7 +15,10 @@ import { kpiPoliciesApi, type KpiPolicyRow } from '@/lib/api/kpi-policies';
 import type { Employee } from '@/lib/api/employees';
 import { DEFAULT_BONUS_POLICY_ID } from '@/lib/constants/default-bonus-policy-id';
 import { DEFAULT_KPI_POLICY_ID } from '@/lib/constants/default-kpi-policy-id';
-import { BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES } from '@/features/my-company/compensation/bonus-policy-template-codes';
+import {
+  BONUS_POLICY_TEMPLATE_MANUAL_ONLY,
+  BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES,
+} from '@/features/my-company/compensation/bonus-policy-template-codes';
 
 const STATUS_VARIANT: Record<string, StatusVariant> = {
   ACTIVE: 'green',
