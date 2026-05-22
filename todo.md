@@ -24,7 +24,7 @@ how much was released/paid, what is still underfunded, and what KPI/cap rules ch
 - ☑ **Pool fill indicators:** Empty, Partial, Ready, Over funded, Closed (list / board / sheet).
 - ◐ **Burned KPI display:** advisory KPI held in employee API/sheet/CSV when gate false; ledger burned pending policy engine.
 - ☐ **Cap / carry-over:** auto-apply in payroll vs advisory until policy engine ships.
-- ☐ **Current month forecast:** wallet card — earned-only vs incoming/predicted bonus.
+- ☑ **Current month forecast:** wallet Bonus outlook card — incoming/predicted vs earned/payout path (snapshot).
 - ☑ **Pay Now default:** `/finance/expenses` opens payroll-linked + current month; `/finance/expenses/pay` alias; clear shows all.
 
 ---

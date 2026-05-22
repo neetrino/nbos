@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Download, Loader2, User, Wallet } from 'lucide-react';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
+import { WalletBonusForecastCard } from '@/features/account/components/wallet-bonus-forecast-card';
 import { WalletBonusPipelineSection } from '@/features/account/components/wallet-bonus-pipeline-section';
 import { WalletCompensationGlossary } from '@/features/account/components/wallet-compensation-glossary';
 import { WalletProjectBreakdownSection } from '@/features/account/components/wallet-project-breakdown-section';
@@ -223,6 +224,8 @@ export function EmployeeWalletPage() {
         </PageHeader>
 
         <WalletCompensationGlossary />
+
+        <WalletBonusForecastCard data={data} />
 
         <section className="border-border bg-card rounded-2xl border p-5">
           <h2 className="text-foreground text-sm font-semibold">Current compensation</h2>
