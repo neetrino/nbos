@@ -206,6 +206,11 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'DASHBOARDS', action: 'VIEW' },
       },
       {
+        label: 'KPI gate policies',
+        href: '/my-company/kpi-policies',
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
         label: 'SOP & Templates',
         href: '/my-company/sop',
         permission: { module: 'COMPANY', action: 'VIEW' },

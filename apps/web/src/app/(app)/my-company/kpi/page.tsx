@@ -116,6 +116,12 @@ export default function KpiPage() {
             Reports Catalog
           </Link>
           <Link
+            href="/my-company/kpi-policies"
+            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
+          >
+            KPI gate policies (edit bands)
+          </Link>
+          <Link
             href="/finance/payroll"
             className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
           >

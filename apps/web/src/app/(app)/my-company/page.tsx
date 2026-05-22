@@ -73,6 +73,14 @@ const MY_COMPANY_SECTIONS: HubSection[] = [
     icon: Target,
   },
   {
+    title: 'KPI gate policies',
+    href: '/my-company/kpi-policies',
+    description:
+      'Attainment thresholds and payout % for payroll (linked via compensation profiles).',
+    icon: Target,
+    require: { module: 'COMPANY', action: 'VIEW' },
+  },
+  {
     title: 'SOP & Templates',
     href: '/my-company/sop',
     description: 'SOP documents, process templates, and operational runs.',
