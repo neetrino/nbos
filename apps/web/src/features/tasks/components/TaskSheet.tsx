@@ -167,8 +167,9 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
                   <TaskSheetStickyFooter
                     dirty={state.generalDirty}
                     workflowSaving={state.workflowSaving}
+                    workflowFooterStatus={state.workflowFooterStatus}
                     errorMessage={state.generalError}
-                    taskStatus={state.task.status}
+                    taskStatus={state.task?.status ?? 'OPEN'}
                     onSave={() => void state.handleGeneralSave()}
                     onCancel={state.handleGeneralCancel}
                     onTaskAction={state.handleAction}

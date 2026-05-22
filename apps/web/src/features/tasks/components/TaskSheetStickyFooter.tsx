@@ -11,24 +11,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { resolveTaskWorkflowFooterMode } from './task-sheet-workflow-footer';
-
-type TaskFooterAction =
-  | 'start'
-  | 'complete'
-  | 'reopen'
-  | 'hold'
-  | 'approveReview'
-  | 'requestReviewChanges';
+import type { TaskWorkflowFooterAction } from './task-workflow-optimistic';
 
 interface TaskSheetStickyFooterProps {
   dirty: boolean;
   /** Blocks workflow actions (start, complete, …) while a server transition runs. */
   workflowSaving: boolean;
+  /** Optimistic status for instant footer transitions (overrides taskStatus). */
+  workflowFooterStatus?: string | null;
   errorMessage?: string | null;
   taskStatus: string;
   onSave: () => void;
   onCancel: () => void;
-  onTaskAction: (action: TaskFooterAction) => void;
+  onTaskAction: (action: TaskWorkflowFooterAction) => void;
   onDelete: () => void;
 }
 
@@ -38,6 +33,7 @@ const FOOTER_SHELL_CLASS =
 export function TaskSheetStickyFooter({
   dirty,
   workflowSaving,
+  workflowFooterStatus,
   errorMessage,
   taskStatus,
   onSave,
@@ -45,7 +41,8 @@ export function TaskSheetStickyFooter({
   onTaskAction,
   onDelete,
 }: TaskSheetStickyFooterProps) {
-  const showSaveBar = dirty || Boolean(errorMessage);
+  const effectiveStatus = workflowFooterStatus ?? taskStatus;
+  const showSaveBar = (dirty || Boolean(errorMessage)) && workflowFooterStatus == null;
 
   if (showSaveBar) {
     return (
@@ -82,7 +79,7 @@ export function TaskSheetStickyFooter({
   return (
     <div className={FOOTER_SHELL_CLASS}>
       <TaskSheetWorkflowActions
-        taskStatus={taskStatus}
+        taskStatus={effectiveStatus}
         workflowSaving={workflowSaving}
         onTaskAction={onTaskAction}
         onDelete={onDelete}
@@ -94,7 +91,7 @@ export function TaskSheetStickyFooter({
 interface TaskSheetWorkflowActionsProps {
   taskStatus: string;
   workflowSaving: boolean;
-  onTaskAction: (action: TaskFooterAction) => void;
+  onTaskAction: (action: TaskWorkflowFooterAction) => void;
   onDelete: () => void;
 }
 
@@ -116,7 +113,6 @@ function TaskSheetWorkflowActions({
         <Button
           type="button"
           size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-          disabled={workflowSaving}
           onClick={() => onTaskAction('start')}
         >
           <Play size={14} /> Start
@@ -127,7 +123,6 @@ function TaskSheetWorkflowActions({
           type="button"
           variant={mode === 'complete-only' ? 'success' : 'outline'}
           size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-          disabled={workflowSaving}
           onClick={() => onTaskAction('complete')}
         >
           <CheckCircle2 size={14} /> Complete
@@ -138,7 +133,6 @@ function TaskSheetWorkflowActions({
           type="button"
           variant="secondary"
           size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-          disabled={workflowSaving}
           onClick={() => onTaskAction('reopen')}
         >
           <RotateCcw size={14} /> Resume

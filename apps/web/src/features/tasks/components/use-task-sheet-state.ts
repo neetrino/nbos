@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { employeesApi, type Employee } from '@/lib/api/employees';
@@ -8,6 +9,7 @@ import { tasksApi, type Task } from '@/lib/api/tasks';
 import { toggleTaskUrgentPriority } from '../constants/tasks';
 import {
   buildTaskGeneralPatch,
+  createTaskGeneralDraft,
   enrichTaskGeneralDraft,
   isTaskGeneralDirty,
   type TaskGeneralDraft,
@@ -17,6 +19,12 @@ import {
   type TaskCompletionBlocker,
 } from '../utils/task-completion-readiness';
 import type { TaskLocalMessage } from './TaskSheetChatPanel';
+import {
+  applyOptimisticTaskWorkflowAction,
+  type TaskWorkflowFooterAction,
+} from './task-workflow-optimistic';
+import { runTaskWorkflowApi } from './task-workflow-api';
+import { normalizeTaskStatusForDraft } from '../utils/task-status-draft';
 
 interface UseTaskSheetStateParams {
   taskId: string | null;
@@ -40,7 +48,14 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
   const [newItemTexts, setNewItemTexts] = useState<Record<string, string>>({});
   const [completionBlockers, setCompletionBlockers] = useState<TaskCompletionBlocker[]>([]);
   const [messagesByTask, setMessagesByTask] = useState<Record<string, TaskLocalMessage[]>>({});
+  /** Instant footer workflow mode — not affected by slow draft enrich. */
+  const [workflowFooterStatus, setWorkflowFooterStatus] = useState<string | null>(null);
   const generalDirtyRef = useRef(false);
+  const skipLayoutSyncRef = useRef(false);
+  const workflowSavingRef = useRef(false);
+  const workflowQueueRef = useRef<TaskWorkflowFooterAction[]>([]);
+  const isDrainingWorkflowRef = useRef(false);
+  const workflowTaskIdRef = useRef<string | null>(null);
 
   const applyTaskFromServer = useCallback(
     async (nextTask: Task, options?: { forceDraftReset?: boolean }) => {
@@ -53,6 +68,16 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     [],
   );
 
+  const syncGeneralDraftAfterWorkflow = useCallback(async (nextTask: Task) => {
+    if (generalDirtyRef.current) return;
+    const hasParticipants = nextTask.coAssignees.length > 0 || nextTask.observers.length > 0;
+    const nextDraft = hasParticipants
+      ? await enrichTaskGeneralDraft(nextTask)
+      : createTaskGeneralDraft(nextTask);
+    setGeneralDraft(nextDraft);
+    setGeneralSnap(nextDraft);
+  }, []);
+
   useEffect(() => {
     if (!taskId || !open) return;
     let cancelled = false;
@@ -62,7 +87,10 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
       try {
         const nextTask = await tasksApi.getById(taskId!);
         if (!cancelled) {
+          workflowQueueRef.current = [];
           await applyTaskFromServer(nextTask, { forceDraftReset: true });
+          workflowTaskIdRef.current = nextTask.id;
+          setWorkflowFooterStatus(null);
           setGeneralError(null);
           setCompletionBlockers([]);
           setNewChecklistTitle('');
@@ -83,17 +111,14 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     };
   }, [applyTaskFromServer, open, taskId]);
 
-  useLayoutEffect(() => {
-    if (!task) {
-      queueMicrotask(() => {
-        setGeneralDraft(null);
-        setGeneralSnap(null);
-      });
-      return;
-    }
-    if (generalDirtyRef.current) return;
-    void applyTaskFromServer(task);
-  }, [applyTaskFromServer, task?.id, task?.updatedAt]);
+  useEffect(() => {
+    if (open && taskId) return;
+    workflowQueueRef.current = [];
+    setTask(null);
+    setGeneralDraft(null);
+    setGeneralSnap(null);
+    setWorkflowFooterStatus(null);
+  }, [open, taskId]);
 
   const setLocalTask = useCallback(
     (recipe: (current: Task) => Task) => {
@@ -205,39 +230,92 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
     if (generalSnap) setGeneralDraft({ ...generalSnap });
   }, [generalSnap]);
 
-  const handleAction = useCallback(
-    async (
-      action: 'start' | 'complete' | 'reopen' | 'hold' | 'approveReview' | 'requestReviewChanges',
-    ) => {
-      if (!task) return;
-      setWorkflowSaving(true);
+  const syncDraftStatusFromTask = useCallback((nextTask: Task) => {
+    const status = normalizeTaskStatusForDraft(nextTask.status);
+    setGeneralDraft((current) => (current ? { ...current, status } : null));
+    setGeneralSnap((current) => (current ? { ...current, status } : null));
+  }, []);
+
+  const commitWorkflowTask = useCallback(
+    (nextTask: Task) => {
+      setTask(nextTask);
+      setWorkflowFooterStatus(normalizeTaskStatusForDraft(nextTask.status));
+      syncDraftStatusFromTask(nextTask);
+      queueMicrotask(() => onUpdate?.(nextTask));
+    },
+    [onUpdate, syncDraftStatusFromTask],
+  );
+
+  const drainWorkflowQueue = useCallback(async () => {
+    if (isDrainingWorkflowRef.current) return;
+    const activeTaskId = workflowTaskIdRef.current;
+    if (!activeTaskId) return;
+
+    isDrainingWorkflowRef.current = true;
+    skipLayoutSyncRef.current = true;
+    workflowSavingRef.current = true;
+    setWorkflowSaving(true);
+
+    while (workflowQueueRef.current.length > 0) {
+      const action = workflowQueueRef.current.shift();
+      if (!action) break;
+
       try {
-        const updated =
-          action === 'start'
-            ? await tasksApi.start(task.id)
-            : action === 'complete'
-              ? await tasksApi.complete(task.id)
-              : action === 'reopen'
-                ? await tasksApi.reopen(task.id)
-                : action === 'approveReview'
-                  ? await tasksApi.approveReview(task.id)
-                  : action === 'requestReviewChanges'
-                    ? await tasksApi.requestReviewChanges(task.id)
-                    : await tasksApi.setOnHold(task.id);
-        await applyTaskFromServer(updated, { forceDraftReset: true });
-        onUpdate?.(updated);
-        setGeneralError(null);
-        setCompletionBlockers([]);
+        const updated = await runTaskWorkflowApi(activeTaskId, action);
+        if (workflowQueueRef.current.length === 0) {
+          flushSync(() => commitWorkflowTask(updated));
+          void syncGeneralDraftAfterWorkflow(updated);
+        }
       } catch (caught) {
+        workflowQueueRef.current = [];
         const message = getApiErrorMessage(caught, 'Task action could not be completed.');
         setGeneralError(message);
         toast.error(message);
         if (action === 'complete') setCompletionBlockers(parseTaskCompletionBlockers(caught));
-      } finally {
-        setWorkflowSaving(false);
+
+        try {
+          const fresh = await tasksApi.getById(activeTaskId);
+          flushSync(() => commitWorkflowTask(fresh));
+          void syncGeneralDraftAfterWorkflow(fresh);
+        } catch {
+          toast.error('Task state could not be refreshed. Reload the sheet.');
+        }
+        break;
       }
+    }
+
+    skipLayoutSyncRef.current = false;
+    isDrainingWorkflowRef.current = false;
+    workflowSavingRef.current = false;
+    setWorkflowSaving(false);
+  }, [commitWorkflowTask, syncGeneralDraftAfterWorkflow]);
+
+  const handleAction = useCallback(
+    (action: TaskWorkflowFooterAction) => {
+      if (!task) return;
+
+      workflowTaskIdRef.current = task.id;
+      workflowQueueRef.current.push(action);
+
+      let optimisticTask: Task | null = null;
+      flushSync(() => {
+        setTask((current) => {
+          if (!current) return current;
+          optimisticTask = applyOptimisticTaskWorkflowAction(current, action);
+          return optimisticTask;
+        });
+        if (!optimisticTask) return;
+        setWorkflowFooterStatus(optimisticTask.status);
+        setGeneralError(null);
+        setCompletionBlockers([]);
+        syncDraftStatusFromTask(optimisticTask);
+      });
+
+      const taskForParent = optimisticTask;
+      if (taskForParent) queueMicrotask(() => onUpdate?.(taskForParent));
+      void drainWorkflowQueue();
     },
-    [applyTaskFromServer, onUpdate, task],
+    [drainWorkflowQueue, onUpdate, syncDraftStatusFromTask, task],
   );
 
   const handleAddChecklist = useCallback(async () => {
@@ -373,6 +451,7 @@ export function useTaskSheetState({ taskId, open, onUpdate, onDelete }: UseTaskS
 
   return {
     task,
+    workflowFooterStatus,
     loading,
     workflowSaving,
     generalDraft,
