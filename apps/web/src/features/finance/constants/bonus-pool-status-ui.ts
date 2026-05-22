@@ -71,3 +71,11 @@ export function bonusPoolListRowClass(row: BonusProductPoolRow): string {
   const status = normalizeBonusPoolLedgerStatus(row.ledgerPoolStatus);
   return BONUS_POOL_STATUS_LIST_ROW_CLASS[status];
 }
+
+/** Sheet badge: over funding takes precedence over ledger enum label. */
+export function bonusPoolSheetStatusUi(pool: BonusProductPoolRow) {
+  if (bonusPoolHasOverFunding(pool)) {
+    return { label: 'Over funding', variant: 'red' as StatusVariant };
+  }
+  return bonusPoolStatusUi(pool.ledgerPoolStatus);
+}

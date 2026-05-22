@@ -16,7 +16,7 @@ import {
   bonusPoolStatusUi,
 } from '@/features/finance/constants/bonus-pool-status-ui';
 import type { BonusPoolsFilteredTotals } from '@/features/finance/utils/bonus-pools-filtered-totals';
-import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
+import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
@@ -125,28 +125,23 @@ function BonusPoolsListRow({
         </Link>
       </TableCell>
       <TableCell className={`${LIST_ROW_CELL} text-right text-sm tabular-nums`}>
-        {formatPoolMoney(row.ledgerReceivedAmount)}
+        {formatBonusPoolMoney(row.ledgerReceivedAmount)}
       </TableCell>
       <TableCell className={`${LIST_ROW_CELL} text-right text-sm font-medium tabular-nums`}>
-        {formatPoolMoney(row.ledgerPlannedAmount)}
+        {formatBonusPoolMoney(row.ledgerPlannedAmount)}
       </TableCell>
       <TableCell className={`${LIST_ROW_CELL} text-right text-sm tabular-nums`}>
-        {formatPoolMoney(row.ledgerReleasedAmount)}
+        {formatBonusPoolMoney(row.ledgerReleasedAmount)}
       </TableCell>
       <TableCell className={`${LIST_ROW_CELL} text-right text-sm font-medium tabular-nums`}>
-        {formatPoolMoney(row.ledgerAvailableFunding)}
+        {formatBonusPoolMoney(row.ledgerAvailableFunding)}
       </TableCell>
       <TableCell className={`${LIST_ROW_CELL} text-right text-sm tabular-nums`}>
-        {formatPoolMoney(row.ledgerRemainingAmount)}
+        {formatBonusPoolMoney(row.ledgerRemainingAmount)}
       </TableCell>
       <TableCell className={LIST_ROW_CELL}>
         <span className="text-xs font-semibold tracking-wide uppercase">{statusUi.label}</span>
       </TableCell>
     </TableRow>
   );
-}
-
-function formatPoolMoney(value: string | null): string {
-  if (value == null) return '—';
-  return formatAmount(parseBonusPoolAmount(value));
 }

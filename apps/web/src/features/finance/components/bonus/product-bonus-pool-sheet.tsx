@@ -7,31 +7,22 @@ import { EntityDetailSheetContent, StatusBadge } from '@/components/shared';
 import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
 import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
-import { formatAmount } from '@/features/finance/constants/finance';
+import {
+  bonusPoolHasOverFunding,
+  bonusPoolSheetStatusUi,
+} from '@/features/finance/constants/bonus-pool-status-ui';
 import {
   employeeDisplayName,
   parseBonusAmount,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
+import { formatAmount } from '@/features/finance/constants/finance';
+import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   fetchAllBonusListRows,
   type BonusEntryListRow,
   type BonusProductPoolRow,
 } from '@/lib/api/bonus';
-
-function parsePoolAmount(value: string | null): number {
-  if (value == null) return 0;
-  const n = Number.parseFloat(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function poolFundingVariant(status: string | null): 'green' | 'amber' | 'red' | 'gray' {
-  const s = status?.toUpperCase() ?? '';
-  if (s.includes('OVER') || s.includes('EXCEEDED')) return 'red';
-  if (s.includes('PARTIAL') || s.includes('LOW')) return 'amber';
-  if (s.includes('FUNDED') || s.includes('OK')) return 'green';
-  return 'gray';
-}
 
 export function ProductBonusPoolSheet({
   pool,
@@ -69,6 +60,8 @@ export function ProductBonusPoolSheet({
     void loadEntries(pool.anchorOrderId);
   }, [loadEntries, open, pool]);
 
+  const statusUi = pool ? bonusPoolSheetStatusUi(pool) : null;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <EntityDetailSheetContent open={open} layout="auxiliary" className="gap-0">
@@ -83,77 +76,49 @@ export function ProductBonusPoolSheet({
 
         {pool ? (
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-6">
-            <DetailSheetSection title="Roll-up">
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <DetailSheetSection title="Order ledger">
+              {statusUi ? (
+                <StatusBadge label={statusUi.label} variant={statusUi.variant} />
+              ) : (
+                <span className="text-muted-foreground text-sm">No ledger status</span>
+              )}
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <dt className="text-muted-foreground">Entries</dt>
                 <dd className="text-right tabular-nums">{pool.entryCount}</dd>
-                <dt className="text-muted-foreground">Pipeline</dt>
+                <dt className="text-muted-foreground">Received</dt>
                 <dd className="text-right tabular-nums">
-                  {formatAmount(parsePoolAmount(pool.sumPipelineAmount))}
+                  {formatBonusPoolMoney(pool.ledgerReceivedAmount)}
                 </dd>
-                <dt className="text-muted-foreground">Paid</dt>
-                <dd className="text-right tabular-nums">
-                  {formatAmount(parsePoolAmount(pool.sumPaidAmount))}
-                </dd>
-                <dt className="text-muted-foreground">Total</dt>
-                <dd className="text-right font-medium tabular-nums">
-                  {formatAmount(parsePoolAmount(pool.sumTotalAmount))}
-                </dd>
-              </dl>
-            </DetailSheetSection>
-
-            <DetailSheetSection title="Order ledger">
-              <div className="flex flex-wrap items-center gap-2">
-                {pool.ledgerPoolStatus ? (
-                  <StatusBadge
-                    label={pool.ledgerPoolStatus}
-                    variant={poolFundingVariant(pool.ledgerPoolStatus)}
-                  />
-                ) : (
-                  <span className="text-muted-foreground text-sm">No ledger status</span>
-                )}
-              </div>
-              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <dt className="text-muted-foreground">Planned</dt>
                 <dd className="text-right tabular-nums">
-                  {pool.ledgerPlannedAmount != null
-                    ? formatAmount(parsePoolAmount(pool.ledgerPlannedAmount))
-                    : '—'}
+                  {formatBonusPoolMoney(pool.ledgerPlannedAmount)}
                 </dd>
                 <dt className="text-muted-foreground">Released</dt>
                 <dd className="text-right tabular-nums">
-                  {pool.ledgerReleasedAmount != null
-                    ? formatAmount(parsePoolAmount(pool.ledgerReleasedAmount))
-                    : '—'}
+                  {formatBonusPoolMoney(pool.ledgerReleasedAmount)}
                 </dd>
                 <dt className="text-muted-foreground">Remaining</dt>
                 <dd className="text-right tabular-nums">
-                  {pool.ledgerRemainingAmount != null
-                    ? formatAmount(parsePoolAmount(pool.ledgerRemainingAmount))
-                    : '—'}
-                </dd>
-                <dt className="text-muted-foreground">Received</dt>
-                <dd className="text-right tabular-nums">
-                  {pool.ledgerReceivedAmount != null
-                    ? formatAmount(parsePoolAmount(pool.ledgerReceivedAmount))
-                    : '—'}
+                  {formatBonusPoolMoney(pool.ledgerRemainingAmount)}
                 </dd>
                 <dt className="text-muted-foreground">Available funding</dt>
                 <dd className="text-right tabular-nums">
-                  {pool.ledgerAvailableFunding != null
-                    ? formatAmount(parsePoolAmount(pool.ledgerAvailableFunding))
-                    : '—'}
+                  {formatBonusPoolMoney(pool.ledgerAvailableFunding)}
                 </dd>
                 <dt className="text-muted-foreground">Over funding</dt>
                 <dd className="text-right tabular-nums">
-                  {pool.ledgerOverFundingAmount != null
-                    ? formatAmount(parsePoolAmount(pool.ledgerOverFundingAmount))
-                    : '—'}
+                  {formatBonusPoolMoney(pool.ledgerOverFundingAmount)}
+                </dd>
+                <dt className="text-muted-foreground">Pipeline</dt>
+                <dd className="text-right tabular-nums">
+                  {formatBonusPoolMoney(pool.sumPipelineAmount)}
+                </dd>
+                <dt className="text-muted-foreground">Paid (entries)</dt>
+                <dd className="text-right tabular-nums">
+                  {formatBonusPoolMoney(pool.sumPaidAmount)}
                 </dd>
               </dl>
-              {pool.ledgerPoolStatus?.toUpperCase().includes('OVER') ||
-              (pool.ledgerOverFundingAmount != null &&
-                parsePoolAmount(pool.ledgerOverFundingAmount) > 0) ? (
+              {bonusPoolHasOverFunding(pool) ? (
                 <p className="text-destructive mt-2 text-xs">
                   Over-funding on this order pool — review releases before payroll attach.
                 </p>

@@ -121,6 +121,7 @@ describe('BonusService', () => {
           totalReleasedAmount: new Decimal('0'),
           totalRemainingAmount: new Decimal('150'),
           availableFunding: new Decimal('0'),
+          overFundingAmount: new Decimal('0'),
           status: 'ACTIVE',
         },
       ]);
