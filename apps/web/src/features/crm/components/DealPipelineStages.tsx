@@ -1,7 +1,8 @@
 'use client';
 
 import { PipelineStagesBar } from '@/components/shared';
-import { ACTIVE_DEAL_STAGES } from '../constants/dealPipeline';
+import { toSheetPipelineStages } from '@/components/shared/pipeline-stage-config';
+import { DEAL_STAGES } from '../constants/dealPipeline';
 
 const STAGE_HEX: Record<string, string> = {
   START_CONVERSATION: '#56b5eb',
@@ -13,6 +14,8 @@ const STAGE_HEX: Record<string, string> = {
   WON: '#22c55e',
 };
 
+const SHEET_STAGES = toSheetPipelineStages(DEAL_STAGES);
+
 interface DealPipelineStagesProps {
   currentStatus: string;
   onStageClick: (stageKey: string) => void;
@@ -21,7 +24,7 @@ interface DealPipelineStagesProps {
 export function DealPipelineStages({ currentStatus, onStageClick }: DealPipelineStagesProps) {
   return (
     <PipelineStagesBar
-      stages={ACTIVE_DEAL_STAGES}
+      stages={SHEET_STAGES}
       stageColors={STAGE_HEX}
       currentStatus={currentStatus}
       fillToEndStatuses={['WON']}

@@ -18,12 +18,17 @@ export const INVOICE_MONEY_STAGES = [
   { value: 'CANCELLED', label: 'Cancelled', variant: 'red' as StatusVariant },
 ] as const;
 
-/** Chevron pipeline segments in invoice detail sheet (matches Deal pipeline UX). */
+/**
+ * Chevron pipeline segments in invoice detail sheet — active + terminal (sheet header canon).
+ * Kanban active columns use the first four keys only; PAID / CANCELLED are closed outcomes.
+ */
 export const INVOICE_PIPELINE_MONEY_STAGES = [
   { key: 'NEW', label: 'New', shortLabel: 'New' },
   { key: 'AWAITING_PAYMENT', label: 'Awaiting payment', shortLabel: 'Awaiting' },
   { key: 'OVERDUE', label: 'Overdue', shortLabel: 'Overdue' },
   { key: 'ON_HOLD', label: 'On hold', shortLabel: 'Hold' },
+  { key: 'PAID', label: 'Paid', shortLabel: 'Paid' },
+  { key: 'CANCELLED', label: 'Cancelled', shortLabel: 'Cancelled' },
 ] as const;
 
 export const INVOICE_TAX_STATUS_OPTIONS = [

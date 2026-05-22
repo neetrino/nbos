@@ -18,9 +18,11 @@ interface PipelineStagesBarProps {
   stages: readonly PipelineStageConfig[];
   stageColors: Record<string, string>;
   currentStatus: string;
-  /** Fills all segments through the last stage (e.g. WON, PAID). */
+  /** Fills all segments through the last stage (e.g. WON, PAID, Lead Won). */
   fillToEndStatuses?: readonly string[];
   disabled?: boolean;
+  /** When set, only matching segments accept clicks (terminal outcomes may stay visible but gated). */
+  canClickStage?: (stageKey: string, index: number) => boolean;
   onStageClick: (stageKey: string) => void;
 }
 
@@ -30,6 +32,7 @@ export function PipelineStagesBar({
   currentStatus,
   fillToEndStatuses = [],
   disabled = false,
+  canClickStage,
   onStageClick,
 }: PipelineStagesBarProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
@@ -37,7 +40,7 @@ export function PipelineStagesBar({
   const total = stages.length;
   const activeIdx = stages.findIndex((s) => s.key === currentStatus);
   const fillsToEnd = fillToEndStatuses.includes(currentStatus);
-  const currentIdx = activeIdx >= 0 ? activeIdx : fillsToEnd ? stages.length - 1 : -1;
+  const currentIdx = activeIdx >= 0 ? activeIdx : -1;
 
   const fillColor = useMemo(() => {
     if (fillsToEnd) {
@@ -63,22 +66,29 @@ export function PipelineStagesBar({
     >
       {stages.map((stage, index) => {
         const filled = isFilled(index);
+        const isCurrent = index === currentIdx;
         const isFuture = !filled;
         const ownColor = stageColors[stage.key] ?? DEFAULT_STAGE_COLOR;
         const bg = filled ? fillColor : INACTIVE_SEGMENT_FILL;
         const textColor = filled ? '#fff' : INACTIVE_TEXT_COLOR;
         const isFirst = index === 0;
         const isLast = index === total - 1;
+        const clickable = !disabled && (canClickStage == null || canClickStage(stage.key, index));
 
         return (
           <button
             key={stage.key}
             type="button"
-            disabled={disabled}
-            onClick={() => onStageClick(stage.key)}
+            aria-disabled={!clickable}
+            onClick={() => {
+              if (clickable) onStageClick(stage.key);
+            }}
             onMouseEnter={() => setHoverIdx(index)}
             title={stage.label}
-            className="relative flex-1 cursor-pointer active:scale-[0.98]"
+            className={
+              'relative flex-1 active:scale-[0.98] ' +
+              (clickable ? 'cursor-pointer' : isFuture ? 'cursor-not-allowed' : 'cursor-default')
+            }
             style={{
               height: BAR_HEIGHT_PX,
               marginLeft: isFirst ? 0 : -ARROW_W,
@@ -87,6 +97,7 @@ export function PipelineStagesBar({
           >
             <StageSegmentSvg
               filled={filled}
+              isCurrent={isCurrent}
               isFirst={isFirst}
               isLast={isLast}
               isFuture={isFuture}
@@ -108,6 +119,7 @@ export function PipelineStagesBar({
 
 function StageSegmentSvg({
   filled,
+  isCurrent,
   isFirst,
   isLast,
   isFuture,
@@ -115,6 +127,7 @@ function StageSegmentSvg({
   ownColor,
 }: {
   filled: boolean;
+  isCurrent: boolean;
   isFirst: boolean;
   isLast: boolean;
   isFuture: boolean;
@@ -141,8 +154,8 @@ function StageSegmentSvg({
       <path
         d={path}
         fill={bg}
-        stroke={filled ? 'rgba(255,255,255,0.3)' : '#ddd'}
-        strokeWidth="0.5"
+        stroke={isCurrent ? ownColor : filled ? 'rgba(255,255,255,0.3)' : '#ddd'}
+        strokeWidth={isCurrent ? '1.5' : '0.5'}
         vectorEffect="non-scaling-stroke"
         style={{ transition: 'fill 250ms ease' }}
       />
