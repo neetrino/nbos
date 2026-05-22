@@ -10,7 +10,10 @@ import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   EntityDetailSheetContent,
+  EntityRelationHost,
 } from '@/components/shared';
+import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
+import { applyLeadRelationCreated } from './apply-lead-relation-created';
 import { LeadPipelineStages } from './LeadPipelineStages';
 import { LEAD_STAGES } from '../constants/leadPipeline';
 import type { Lead } from '@/lib/api/leads';
@@ -212,123 +215,129 @@ export function LeadSheet({
     }
   };
 
+  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
+    setGeneralDraft((prev) => (prev ? applyLeadRelationCreated(prev, event) : prev));
+  }, []);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent
-        open={open}
-        layout="full"
-        width="medium"
-        sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(lead.id)}`}
-      >
-        <CrmSheetEntityHeader
-          title={headerTitle}
-          entityLabel={leadVisual.label}
-          EntityIcon={LeadIcon}
-          headerIconClassName={leadVisual.headerIconClassName}
-          headerBadgeClassName={leadVisual.headerBadgeClassName}
-          editing={editingName}
-          nameValue={nameValue}
-          onNameValueChange={setNameValue}
-          onCommitName={commitNameToDraft}
-          onNameKeyDown={handleNameKeyDown}
-          nameInputRef={nameInputRef}
-          namePlaceholder="Inquiry title (product / service)…"
-          titleEditHint="Click to edit inquiry title (product / service)"
-          onStartEditing={startEditingName}
-          titleClassName={cn(
-            nameGateRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
-            'rounded-lg',
-          )}
-          actions={
-            <>
-              {!isTerminal && lead.status === 'MQL' && onConvertToDeal ? (
-                <Button type="button" size="sm" onClick={() => onConvertToDeal(lead)}>
-                  <ArrowRight size={14} className="mr-1" />
-                  Convert to Deal
-                </Button>
-              ) : null}
-              {onDelete ? (
-                <DetailSheetSettingsMenu>
-                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(lead.id)}>
-                    <Trash2 />
-                    Delete
-                  </DropdownMenuItem>
-                </DetailSheetSettingsMenu>
-              ) : null}
-            </>
-          }
-        />
-
-        {/* ── Pipeline Stages ── */}
-        <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
-          <LeadPipelineStages
-            currentStatus={lead.status}
-            onStageClick={(key) => onStatusChange(lead.id, key)}
-          />
-        </div>
-
-        {/* ── Tabs ── */}
-        <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
-          <div className="flex gap-1">
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.value;
-              return (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => setActiveTab(tab.value)}
-                  className={
-                    'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
-                    (isActive
-                      ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
-                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300')
-                  }
-                >
-                  <tab.icon size={16} />
-                  {tab.label}
-                  {isActive && (
-                    <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── Content ── */}
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="px-5 py-4">
-            {activeTab === 'general' && generalDraft ? (
-              <LeadGeneralTab
-                lead={lead}
-                draft={generalDraft}
-                patchDraft={patchGeneralDraft}
-                gateRequiredFields={gateRequiredFields}
-                sectionIds={{
-                  contact: LEAD_SHEET_SECTION.CONTACT,
-                  marketing: LEAD_SHEET_SECTION.MARKETING,
-                  assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
-                  notes: LEAD_SHEET_SECTION.NOTES,
-                }}
-              />
-            ) : null}
-            {activeTab === 'history' && (
-              <div className="text-muted-foreground py-12 text-center text-sm">
-                History coming soon...
-              </div>
+      <EntityRelationHost onEntityChanged={onRefresh} onRelationCreated={handleRelationCreated}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          width="medium"
+          sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(lead.id)}`}
+        >
+          <CrmSheetEntityHeader
+            title={headerTitle}
+            entityLabel={leadVisual.label}
+            EntityIcon={LeadIcon}
+            headerIconClassName={leadVisual.headerIconClassName}
+            headerBadgeClassName={leadVisual.headerBadgeClassName}
+            editing={editingName}
+            nameValue={nameValue}
+            onNameValueChange={setNameValue}
+            onCommitName={commitNameToDraft}
+            onNameKeyDown={handleNameKeyDown}
+            nameInputRef={nameInputRef}
+            namePlaceholder="Inquiry title (product / service)…"
+            titleEditHint="Click to edit inquiry title (product / service)"
+            onStartEditing={startEditingName}
+            titleClassName={cn(
+              nameGateRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
+              'rounded-lg',
             )}
-          </div>
-        </ScrollArea>
+            actions={
+              <>
+                {!isTerminal && lead.status === 'MQL' && onConvertToDeal ? (
+                  <Button type="button" size="sm" onClick={() => onConvertToDeal(lead)}>
+                    <ArrowRight size={14} className="mr-1" />
+                    Convert to Deal
+                  </Button>
+                ) : null}
+                {onDelete ? (
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem variant="destructive" onClick={() => onDelete(lead.id)}>
+                      <Trash2 />
+                      Delete
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
+                ) : null}
+              </>
+            }
+          />
 
-        <DetailSheetFormFooter
-          visible={activeTab === 'general' && Boolean(generalDraft)}
-          dirty={generalDirty}
-          saving={false}
-          errorMessage={generalError}
-          onSave={handleGeneralSave}
-          onCancel={handleGeneralCancel}
-        />
-      </EntityDetailSheetContent>
+          {/* ── Pipeline Stages ── */}
+          <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
+            <LeadPipelineStages
+              currentStatus={lead.status}
+              onStageClick={(key) => onStatusChange(lead.id, key)}
+            />
+          </div>
+
+          {/* ── Tabs ── */}
+          <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
+            <div className="flex gap-1">
+              {TABS.map((tab) => {
+                const isActive = activeTab === tab.value;
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setActiveTab(tab.value)}
+                    className={
+                      'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
+                      (isActive
+                        ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
+                        : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300')
+                    }
+                  >
+                    <tab.icon size={16} />
+                    {tab.label}
+                    {isActive && (
+                      <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Content ── */}
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="px-5 py-4">
+              {activeTab === 'general' && generalDraft ? (
+                <LeadGeneralTab
+                  lead={lead}
+                  draft={generalDraft}
+                  patchDraft={patchGeneralDraft}
+                  gateRequiredFields={gateRequiredFields}
+                  sectionIds={{
+                    contact: LEAD_SHEET_SECTION.CONTACT,
+                    marketing: LEAD_SHEET_SECTION.MARKETING,
+                    assignment: LEAD_SHEET_SECTION.ASSIGNMENT,
+                    notes: LEAD_SHEET_SECTION.NOTES,
+                  }}
+                />
+              ) : null}
+              {activeTab === 'history' && (
+                <div className="text-muted-foreground py-12 text-center text-sm">
+                  History coming soon...
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+
+          <DetailSheetFormFooter
+            visible={activeTab === 'general' && Boolean(generalDraft)}
+            dirty={generalDirty}
+            saving={false}
+            errorMessage={generalError}
+            onSave={handleGeneralSave}
+            onCancel={handleGeneralCancel}
+          />
+        </EntityDetailSheetContent>
+      </EntityRelationHost>
     </Sheet>
   );
 }

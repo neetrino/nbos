@@ -2,7 +2,13 @@
 
 import { useCallback } from 'react';
 import { User, Megaphone, ExternalLink, Building2 } from 'lucide-react';
-import { DETAIL_SHEET_SECTION_BODY_CLASS, InlineField, SearchField } from '@/components/shared';
+import {
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  InlineField,
+  RelationPickerField,
+  SearchField,
+} from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
 import {
   isLeadAttributionLocked,
@@ -31,6 +37,8 @@ export function LeadMarketingFields({
   formDisabled,
   gateRequiredFields = new Set(),
 }: LeadMarketingFieldsProps) {
+  const partnerPicker = useRelationPickerActions('partner');
+  const sourceContactPicker = useRelationPickerActions('contact', 'lead-source-contact');
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
     draft.source === 'MARKETING',
   );
@@ -170,21 +178,17 @@ export function LeadMarketingFields({
       ) : null}
 
       {draft.source === 'PARTNER' ? (
-        <SearchField
-          selectionMode="stage"
+        <RelationPickerField
           label="Which partner?"
+          entityKind="partner"
           className={leadStageGateFieldClass(gateRequiredFields, 'sourcePartnerId')}
           value={draft.sourcePartnerId}
-          displayValue={
-            draft.partnerPickLabel ? (
-              <span className="text-foreground text-sm font-medium">{draft.partnerPickLabel}</span>
-            ) : undefined
-          }
+          selectionLabel={draft.partnerPickLabel}
           placeholder="Search partners…"
           icon={<Building2 size={12} />}
           disabled={formDisabled || attributionLocked}
           onSearch={searchPartners}
-          onStageSelect={(value, label) =>
+          onSelect={(value, label) =>
             patchDraft({ sourcePartnerId: value, partnerPickLabel: label })
           }
           onClear={
@@ -192,25 +196,22 @@ export function LeadMarketingFields({
               ? undefined
               : () => patchDraft({ sourcePartnerId: null, partnerPickLabel: null })
           }
+          {...partnerPicker}
         />
       ) : null}
 
       {draft.source === 'CLIENT' ? (
-        <SearchField
-          selectionMode="stage"
+        <RelationPickerField
           label="Which client?"
+          entityKind="contact"
           className={leadStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
           value={draft.sourceContactId}
-          displayValue={
-            draft.clientPickLabel ? (
-              <span className="text-foreground text-sm font-medium">{draft.clientPickLabel}</span>
-            ) : undefined
-          }
+          selectionLabel={draft.clientPickLabel}
           placeholder="Search contacts…"
           icon={<User size={12} />}
           disabled={formDisabled || attributionLocked}
           onSearch={searchContacts}
-          onStageSelect={(value, label) =>
+          onSelect={(value, label) =>
             patchDraft({ sourceContactId: value, clientPickLabel: label })
           }
           onClear={
@@ -218,6 +219,7 @@ export function LeadMarketingFields({
               ? undefined
               : () => patchDraft({ sourceContactId: null, clientPickLabel: null })
           }
+          {...sourceContactPicker}
         />
       ) : null}
     </div>

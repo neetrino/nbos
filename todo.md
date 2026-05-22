@@ -12,7 +12,7 @@ Unified UX for linking entities (Client, Partner, Project, Contact, …) across 
 
 ## Phase 1 — CRM sheets
 
-- [ ] Lead sheet — contact link fields where applicable
+- [x] Lead sheet — partner / client relation fields (marketing)
 - [ ] Deal — products / attribution pickers (optional `entityKind` extensions)
 - [ ] Migrate remaining `SearchField` relation usages in CRM
 
