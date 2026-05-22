@@ -4,7 +4,7 @@
 
 **Finance / Wallet compensation UX (Phases 1–7) is shipped.** Canonical flow, screens, exports, and tests are documented here:
 
-[`docs/NBOS/02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md`](docs/NBOS/02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md)
+`[docs/NBOS/02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md](docs/NBOS/02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md)`
 
 Product canon (full target behavior): `docs/NBOS/02-Modules/04-Finance/05-Bonus-and-Payroll.md`, UI spec: `docs/NBOS/05-UI-Specifications/04-Finance-Pages.md`.
 
@@ -36,7 +36,7 @@ Backend must expose pool data as product-level rollups plus employee-level break
 - ☑ **Pool rollup API:** scope, orders, project, received, planned, released, paid, remaining, available, over funding, fill %, status.
 - ☑ **Multi-order pools:** aggregate all orders per Product / Extension (not one `anchorOrderId` only).
 - ☑ **Employee breakdown API:** `GET /api/bonus/products/pools/lines?poolKey=` — planned, released, paid, remaining, suggested release, KPI hint.
-- ☐ **Ledger traceability:** payments/orders in, releases out (timeline in sheet).
+- ☑ **Ledger traceability:** payments in + releases out timeline in pool sheet (`GET …/pools/timeline`).
 - ◐ **Auto release suggestions:** proportional `suggestedReleaseAmount` per employee in API; full auto-release flow still pending.
 - ☐ **Manual override audit:** reason/approval for early / extra / over funding / cap override.
 - ◐ **Tests:** unit tests for fold, funding health, service merge, board lane, CSV — employee-lines + e2e cases still pending.
@@ -49,11 +49,11 @@ UI must make the pool understandable without opening many pages.
 
 - ☑ **Pools list view:** Product / Extension, Order(s), Project, money cols, Fill %, Funding badge, team count.
 - ☑ **Pools board view:** lanes + cards with fill bar, funding badge, team count, money summary.
-- ☐ **By project view:** project → products/extensions → employee summary on cards.
+- ☑ **By project view:** project summary bar (team, received, planned, remaining, over-funding pools).
 - ☑ **Pool detail sheet:** funding hero, fill bar, money grid, orders, traceability links.
 - ☑ **Employee breakdown table:** planned / released / paid / remaining / suggested + KPI gate badge.
-- ☐ **Funding timeline:** payments in, releases out, payroll attach, paid date, overrides.
-- ◐ **Risk indicators:** Over funding + funding health + KPI gate on sheet; full badge set (carry-over, early, extra) pending.
+- ◐ **Funding timeline:** payments + releases in sheet; payroll paid date / overrides on timeline still pending.
+- ☑ **Risk indicators:** Over funding, underfunded, KPI not passed, early/extra/over-funding release badges in sheet.
 - ◐ **CSV/export:** pool roll-up columns extended; employee breakdown export still pending.
 
 ---

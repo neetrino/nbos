@@ -7,6 +7,8 @@ import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/u
 import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
 import { BonusPoolEmployeeBreakdown } from '@/features/finance/components/bonus/bonus-pool-employee-breakdown';
 import { BonusPoolFillBar } from '@/features/finance/components/bonus/bonus-pool-fill-bar';
+import { BonusPoolFundingTimeline } from '@/features/finance/components/bonus/bonus-pool-funding-timeline';
+import { BonusPoolRiskBadges } from '@/features/finance/components/bonus/bonus-pool-risk-badges';
 import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import {
   bonusPoolFundingHealthUi,
@@ -23,7 +25,13 @@ import {
 } from '@/features/finance/utils/bonus-pool-display';
 import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { bonusesApi, type BonusPoolEmployeeLine, type BonusProductPoolRow } from '@/lib/api/bonus';
+import {
+  bonusesApi,
+  type BonusPoolEmployeeLine,
+  type BonusPoolRiskFlag,
+  type BonusPoolTimelineEvent,
+  type BonusProductPoolRow,
+} from '@/lib/api/bonus';
 
 function PoolMoneyGrid({ pool }: { pool: BonusProductPoolRow }) {
   const items = [
@@ -60,22 +68,35 @@ export function ProductBonusPoolSheet({
 }) {
   const [lines, setLines] = useState<BonusPoolEmployeeLine[]>([]);
   const [orderCodes, setOrderCodes] = useState<string[]>([]);
-  const [linesLoading, setLinesLoading] = useState(false);
+  const [timelineEvents, setTimelineEvents] = useState<BonusPoolTimelineEvent[]>([]);
+  const [riskFlags, setRiskFlags] = useState<BonusPoolRiskFlag[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [linesError, setLinesError] = useState<string | null>(null);
+  const [timelineError, setTimelineError] = useState<string | null>(null);
 
-  const loadLines = useCallback(async (poolKey: string) => {
-    setLinesLoading(true);
+  const loadPoolDetail = useCallback(async (poolKey: string) => {
+    setDetailLoading(true);
     setLinesError(null);
+    setTimelineError(null);
     try {
-      const data = await bonusesApi.getProductPoolEmployeeLines(poolKey);
-      setLines(data.lines);
-      setOrderCodes(data.orderCodes);
+      const [linesData, timelineData] = await Promise.all([
+        bonusesApi.getProductPoolEmployeeLines(poolKey),
+        bonusesApi.getProductPoolTimeline(poolKey),
+      ]);
+      setLines(linesData.lines);
+      setOrderCodes(linesData.orderCodes);
+      setTimelineEvents(timelineData.events);
+      setRiskFlags(timelineData.riskFlags);
     } catch (caught) {
       setLines([]);
       setOrderCodes([]);
-      setLinesError(getApiErrorMessage(caught, 'Employee breakdown could not be loaded.'));
+      setTimelineEvents([]);
+      setRiskFlags([]);
+      const message = getApiErrorMessage(caught, 'Pool detail could not be loaded.');
+      setLinesError(message);
+      setTimelineError(message);
     } finally {
-      setLinesLoading(false);
+      setDetailLoading(false);
     }
   }, []);
 
@@ -83,11 +104,14 @@ export function ProductBonusPoolSheet({
     if (!open || !pool) {
       setLines([]);
       setOrderCodes([]);
+      setTimelineEvents([]);
+      setRiskFlags([]);
       setLinesError(null);
+      setTimelineError(null);
       return;
     }
-    void loadLines(pool.poolKey);
-  }, [loadLines, open, pool]);
+    void loadPoolDetail(pool.poolKey);
+  }, [loadPoolDetail, open, pool]);
 
   const ledgerUi = pool ? bonusPoolSheetStatusUi(pool) : null;
   const fundingUi = pool ? bonusPoolFundingHealthUi(resolveRowFundingHealth(pool)) : null;
@@ -118,6 +142,11 @@ export function ProductBonusPoolSheet({
                   {pool.employeeCount} people · {pool.entryCount} entries
                 </span>
               </div>
+              {riskFlags.length > 0 ? (
+                <div className="mt-2">
+                  <BonusPoolRiskBadges flags={riskFlags} />
+                </div>
+              ) : null}
               <div className="mt-3">
                 <BonusPoolFillBar row={pool} />
               </div>
@@ -154,12 +183,24 @@ export function ProductBonusPoolSheet({
               </Link>
             </DetailSheetSection>
 
+            <DetailSheetSection title="Funding timeline">
+              <BonusPoolFundingTimeline
+                events={timelineEvents}
+                loading={detailLoading}
+                error={timelineError}
+              />
+            </DetailSheetSection>
+
             <DetailSheetSection title="By employee">
               <p className="text-muted-foreground mb-3 text-xs">
                 Planned vs released vs paid per person. Suggested release uses available pool
                 funding proportionally (policy engine will refine KPI / cap / carry-over).
               </p>
-              <BonusPoolEmployeeBreakdown lines={lines} loading={linesLoading} error={linesError} />
+              <BonusPoolEmployeeBreakdown
+                lines={lines}
+                loading={detailLoading}
+                error={linesError}
+              />
             </DetailSheetSection>
           </div>
         ) : null}

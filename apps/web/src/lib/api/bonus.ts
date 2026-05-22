@@ -127,6 +127,35 @@ export interface BonusPoolEmployeeLinesResponse {
   lines: BonusPoolEmployeeLine[];
 }
 
+export type BonusPoolTimelineEventKind = 'PAYMENT_IN' | 'RELEASE_OUT';
+
+export type BonusPoolRiskFlag =
+  | 'OVER_FUNDING'
+  | 'UNDERFUNDED'
+  | 'KPI_NOT_PASSED'
+  | 'EARLY_RELEASE'
+  | 'EXTRA_BONUS'
+  | 'OVER_FUNDING_RELEASE';
+
+export interface BonusPoolTimelineEvent {
+  id: string;
+  kind: BonusPoolTimelineEventKind;
+  occurredAt: string;
+  amount: string;
+  label: string;
+  orderCode: string | null;
+  employeeName: string | null;
+  releaseType: string | null;
+  releaseStatus: string | null;
+}
+
+export interface BonusPoolTimelineResponse {
+  poolKey: string;
+  orderIds: string[];
+  events: BonusPoolTimelineEvent[];
+  riskFlags: BonusPoolRiskFlag[];
+}
+
 /** Matches Prisma `BonusReleaseTypeEnum`. */
 export type BonusReleaseType =
   | 'AUTO'
@@ -242,6 +271,13 @@ export const bonusesApi = {
 
   async getProductPoolEmployeeLines(poolKey: string): Promise<BonusPoolEmployeeLinesResponse> {
     const resp = await api.get<BonusPoolEmployeeLinesResponse>('/api/bonus/products/pools/lines', {
+      params: { poolKey },
+    });
+    return resp.data;
+  },
+
+  async getProductPoolTimeline(poolKey: string): Promise<BonusPoolTimelineResponse> {
+    const resp = await api.get<BonusPoolTimelineResponse>('/api/bonus/products/pools/timeline', {
       params: { poolKey },
     });
     return resp.data;

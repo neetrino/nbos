@@ -103,6 +103,19 @@ export class BonusController {
     return this.bonusService.getProductPoolEmployeeLines(key);
   }
 
+  @Get('products/pools/timeline')
+  @ApiOperation({
+    summary: 'Funding timeline for a pool — client payments in and bonus releases out',
+  })
+  @ApiQuery({ name: 'poolKey', required: true })
+  async getProductPoolTimeline(@Query('poolKey') poolKey?: string) {
+    const key = poolKey?.trim();
+    if (!key) {
+      throw new BadRequestException('poolKey query parameter is required');
+    }
+    return this.bonusService.getProductPoolTimeline(key);
+  }
+
   @Get('entries/:entryId/releases')
   @ApiOperation({ summary: 'List bonus releases for a bonus entry (NBOS Bonus Release ledger)' })
   @ApiQuery({ name: 'page', required: false })

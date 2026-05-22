@@ -13,6 +13,7 @@ import {
   type BonusProductPoolRow,
 } from './bonus-product-pools';
 import { queryBonusPoolEmployeeLines } from './bonus-pool-employee-lines';
+import { queryBonusPoolTimeline } from './bonus-pool-timeline';
 import { deriveBonusPoolFundingMetrics, sumPoolLedgerFields } from './bonus-pool-funding-health';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 
@@ -213,6 +214,10 @@ export class BonusService {
 
   async getProductPoolEmployeeLines(poolKey: string) {
     return queryBonusPoolEmployeeLines(this.prisma, poolKey);
+  }
+
+  async getProductPoolTimeline(poolKey: string) {
+    return queryBonusPoolTimeline(this.prisma, poolKey);
   }
 
   private async mergeProductPoolLedgers(
