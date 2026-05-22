@@ -95,10 +95,16 @@ export default function CompensationPage() {
             Open Team
           </Link>
           <Link
+            href="/my-company/bonus-policies"
+            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
+          >
+            Bonus policies
+          </Link>
+          <Link
             href="/my-company/sales-bonus-policies"
             className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
           >
-            Open Sales Bonus Policies
+            Sales rate grid
           </Link>
           <Link
             href="/my-company/kpi-policies"

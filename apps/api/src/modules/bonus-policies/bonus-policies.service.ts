@@ -1,7 +1,22 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type BonusPolicyStatusEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import type { BonusPolicyDto } from './bonus-policies.types';
+import { parseBonusPolicyTemplateCode } from './parse-bonus-policy-template';
+import type {
+  BonusPolicyDto,
+  CreateBonusPolicyBody,
+  UpdateBonusPolicyBody,
+} from './bonus-policies.types';
+
+const STATUSES: BonusPolicyStatusEnum[] = ['DRAFT', 'ACTIVE', 'ARCHIVED'];
+
+function assertPolicyName(name: string): string {
+  const trimmed = name.trim();
+  if (trimmed.length < 2 || trimmed.length > 120) {
+    throw new BadRequestException('name must be between 2 and 120 characters');
+  }
+  return trimmed;
+}
 
 function serializeBonusPolicy(
   row: {
@@ -48,6 +63,45 @@ export class BonusPoliciesService {
     if (!row) {
       throw new NotFoundException(`Bonus policy ${id} not found`);
     }
+    const count = await this.prisma.compensationProfile.count({
+      where: { bonusPolicyId: id },
+    });
+    return serializeBonusPolicy(row, count);
+  }
+
+  async create(body: CreateBonusPolicyBody): Promise<BonusPolicyDto> {
+    const name = assertPolicyName(body.name);
+    const templateCode = parseBonusPolicyTemplateCode(body.templateCode);
+    const row = await this.prisma.bonusPolicy.create({
+      data: {
+        name,
+        templateCode,
+        status: 'ACTIVE',
+        scope: body.scope?.trim() || null,
+        notes: body.notes?.trim() || null,
+      },
+    });
+    return serializeBonusPolicy(row, 0);
+  }
+
+  async update(id: string, body: UpdateBonusPolicyBody): Promise<BonusPolicyDto> {
+    const existing = await this.prisma.bonusPolicy.findUnique({ where: { id } });
+    if (!existing) {
+      throw new NotFoundException(`Bonus policy ${id} not found`);
+    }
+    if (body.status != null && !STATUSES.includes(body.status)) {
+      throw new BadRequestException(`Invalid status: ${body.status}`);
+    }
+
+    const row = await this.prisma.bonusPolicy.update({
+      where: { id },
+      data: {
+        name: body.name != null ? assertPolicyName(body.name) : undefined,
+        status: body.status,
+        scope: body.scope === undefined ? undefined : body.scope?.trim() || null,
+        notes: body.notes === undefined ? undefined : body.notes?.trim() || null,
+      },
+    });
     const count = await this.prisma.compensationProfile.count({
       where: { bonusPolicyId: id },
     });

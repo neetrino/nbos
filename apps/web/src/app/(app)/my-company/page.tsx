@@ -60,6 +60,13 @@ const MY_COMPANY_SECTIONS: HubSection[] = [
     icon: BadgeDollarSign,
   },
   {
+    title: 'Bonus policies',
+    href: '/my-company/bonus-policies',
+    description: 'Bonus rule bundles (sales, delivery, manual) for compensation profiles.',
+    icon: BadgeDollarSign,
+    require: { module: 'COMPANY', action: 'VIEW' },
+  },
+  {
     title: 'Sales bonus policies',
     href: '/my-company/sales-bonus-policies',
     description:

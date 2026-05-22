@@ -53,7 +53,7 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 | Route                                                        | Purpose                                                             |
 | ------------------------------------------------------------ | ------------------------------------------------------------------- |
-| `GET /api/bonus-policies`                                    | List company bonus policy bundles                                   |
+| `GET/POST/PATCH /api/bonus-policies`                         | List, create, update bonus policy bundles                           |
 | `GET/POST/PATCH /api/compensation-profiles`                  | Profile versions + `bonusPolicyId` / `kpiPolicyId`                  |
 | `GET/POST/PATCH /api/kpi-policies`                           | KPI gate templates                                                  |
 | `GET /api/payroll-runs/:id`                                  | Run detail + scorecard metrics + payment KPI hints (run + per line) |
@@ -65,7 +65,7 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 - Marketing scorecard → automatic MARKETING accrual (template exists; engine pending).
 - Support SLA scorecard → automatic SUPPORT accrual (template exists; engine pending).
-- Full `Bonus Policy` CRUD UI (list/read today; create/archive later).
+- Bonus policy template parameters beyond name/notes (per-template config UI).
 - KPI scorecard metrics per non-sales role (sales plan/actual links ship on `kpi_policies`).
 
 ## Tests (automated)
@@ -88,7 +88,7 @@ Use after deploy or large UX change:
 
 Tracked in repo root [`todo.md`](../../../../todo.md). Summary:
 
-- **Policy engine:** marketing/support accrual automation; bonus policy CRUD.
+- **Policy engine:** marketing/support accrual automation; per-template bonus config UI.
 - **KPI:** `KPI Plan` / `KPI Result` entities; automated targets beyond prior-month + payment hints.
 - **Notifications:** separate mobile/web push channel (in-app wallet notify ships for KPI + carry).
 - **Ops:** manual visual QA checklist (§ above); staging deploy smoke.
