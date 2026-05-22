@@ -192,6 +192,12 @@ export function DealSheet({
     return new Set(stageGateHighlight.errors.map((error) => error.field));
   }, [stageGateHighlight]);
 
+  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
+    setGeneralDraft((prev) => (prev ? applyDealRelationCreated(prev, event) : prev));
+  }, []);
+
+  useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
+
   if (!deal) return null;
 
   const typeVisual = getDealTypePresentation(deal.type);
@@ -208,12 +214,6 @@ export function DealSheet({
     setEditingName(false);
     patchGeneralDraft({ name: trimmed || null });
   };
-
-  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
-    setGeneralDraft((prev) => (prev ? applyDealRelationCreated(prev, event) : prev));
-  }, []);
-
-  useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
 
   const handleNameKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {

@@ -184,6 +184,12 @@ export function LeadSheet({
     });
   }, [lead?.id]);
 
+  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
+    setGeneralDraft((prev) => (prev ? applyLeadRelationCreated(prev, event) : prev));
+  }, []);
+
+  useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
+
   if (!lead) return null;
 
   const currentStage = LEAD_STAGES.find((s) => s.key === lead.status);
@@ -214,12 +220,6 @@ export function LeadSheet({
       setNameValue(generalDraft?.name ?? lead.name ?? '');
     }
   };
-
-  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
-    setGeneralDraft((prev) => (prev ? applyLeadRelationCreated(prev, event) : prev));
-  }, []);
-
-  useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
