@@ -52,19 +52,27 @@ export function NbosDatePickerTrigger({
         {hasValue ? displayValue : placeholder}
       </span>
       {clearable && hasValue && onClear ? (
-        <button
-          type="button"
+        <span
+          role="button"
           tabIndex={-1}
+          aria-label="Clear date"
+          className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 shrink-0 cursor-pointer rounded-md p-0.5 outline-none focus-visible:ring-2"
+          onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
             onClear();
           }}
-          className="text-muted-foreground hover:text-foreground shrink-0 rounded-md p-0.5"
-          aria-label="Clear date"
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              event.stopPropagation();
+              onClear();
+            }
+          }}
         >
-          <X size={14} />
-        </button>
+          <X size={14} aria-hidden />
+        </span>
       ) : null}
       <Calendar size={16} className="text-muted-foreground shrink-0" aria-hidden />
     </span>
