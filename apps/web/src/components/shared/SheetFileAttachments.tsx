@@ -146,12 +146,6 @@ export function SheetFileAttachments({
         }}
       />
 
-      {!hasFiles && hint ? (
-        <p className="text-muted-foreground border-border/60 mt-2 border-t pt-2 text-xs leading-snug">
-          {hint}
-        </p>
-      ) : null}
-
       {hasFiles ? (
         loading && visibleFiles.length === 0 && pendingUploads.length === 0 ? (
           <p className="text-muted-foreground mt-3 flex min-h-[4.75rem] items-center gap-2 text-xs">

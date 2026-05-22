@@ -89,7 +89,7 @@ export function DealFilesBlock({ dealId, purpose }: DealFilesBlockProps) {
       files={files}
       pendingUploads={pending}
       loading={loading}
-      uploadBarLabel="You can drag a file here or click to browse"
+      emptyHint="You can drag a file here or click + to browse"
       onUpload={uploadFiles}
       onOpenFile={(file) => {
         const url = file.externalUrl;

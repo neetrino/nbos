@@ -89,7 +89,7 @@ export function TaskFilesBlock({ taskId }: TaskFilesBlockProps) {
       pendingUploads={pending}
       loading={loading}
       denseTiles
-      uploadBarLabel="You can drag a file here or click to browse"
+      emptyHint="You can drag a file here or click + to browse"
       onUpload={uploadFiles}
       onOpenFile={(file) => {
         const url = file.externalUrl;

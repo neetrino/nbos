@@ -100,7 +100,7 @@ export function EntityAttachmentBlock({
       files={files}
       pendingUploads={pending}
       loading={loading}
-      uploadBarLabel={emptyHint}
+      emptyHint={emptyHint}
       onUpload={uploadFiles}
       onOpenFile={(file) => {
         const url = file.externalUrl;

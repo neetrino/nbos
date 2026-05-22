@@ -190,9 +190,7 @@ export function TaskSheetGeneralSection({
         </div>
       </section>
 
-      <section className={TASK_SHEET_CARD_CLASS}>
-        <TaskFilesBlock taskId={taskId} />
-      </section>
+      <TaskFilesBlock taskId={taskId} />
     </>
   );
 }
