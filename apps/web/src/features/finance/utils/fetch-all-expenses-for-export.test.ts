@@ -18,7 +18,7 @@ const mockExpense = (id: string): Expense =>
     amount: '1',
     frequency: 'ONE_TIME',
     dueDate: null,
-    status: 'THIS_MONTH',
+    status: 'PLANNED',
     projectId: null,
     isPassThrough: false,
     taxStatus: 'TAX',

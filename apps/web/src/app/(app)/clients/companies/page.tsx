@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, RefreshCcw, Building2, User } from 'lucide-react';
+import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Plus, Building2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -12,8 +13,8 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import {
-  PageHeader,
-  FilterBar,
+  useModuleHeroSlots,
+  IntegratedSearchFilters,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -28,8 +29,14 @@ import {
   getTaxStatus,
 } from '@/features/clients/constants/clients';
 import { companiesApi, type Company } from '@/lib/api/clients';
+import { toast } from 'sonner';
 
-export default function CompaniesPage() {
+const OPEN_COMPANY_QUERY = 'openId';
+
+function CompaniesPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,8 +68,63 @@ export default function CompaniesPage() {
     fetchCompanies();
   }, [fetchCompanies]);
 
+  const openCompanyId = searchParams.get(OPEN_COMPANY_QUERY);
+  const deepLinkCompanyAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    deepLinkCompanyAttemptedRef.current = null;
+  }, [openCompanyId]);
+
+  const stripOpenCompanyFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has(OPEN_COMPANY_QUERY)) return;
+    params.delete(OPEN_COMPANY_QUERY);
+    const q = params.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const pushOpenCompanyToUrl = useCallback(
+    (id: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_COMPANY_QUERY, id);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  useEffect(() => {
+    if (!openCompanyId || loading) return;
+    const match = companies.find((c) => c.id === openCompanyId);
+    if (match) {
+      setSelectedCompany(match);
+      setSheetOpen(true);
+      return;
+    }
+    if (deepLinkCompanyAttemptedRef.current === openCompanyId) return;
+    deepLinkCompanyAttemptedRef.current = openCompanyId;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const company = await companiesApi.getById(openCompanyId);
+        if (cancelled) return;
+        setCompanies((prev) => (prev.some((c) => c.id === company.id) ? prev : [company, ...prev]));
+        setSelectedCompany(company);
+        setSheetOpen(true);
+      } catch {
+        if (!cancelled) {
+          toast.error('Company not found or you cannot open it.');
+          stripOpenCompanyFromUrl();
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openCompanyId, loading, companies, stripOpenCompanyFromUrl]);
+
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
-    await companiesApi.update(id, data);
+    const updated = await companiesApi.update(id, data);
+    setSelectedCompany(updated);
     await fetchCompanies();
   };
 
@@ -70,49 +132,59 @@ export default function CompaniesPage() {
     await companiesApi.delete(id);
     setSheetOpen(false);
     setSelectedCompany(null);
+    stripOpenCompanyFromUrl();
     await fetchCompanies();
   };
 
   const handleRowClick = (company: Company) => {
-    setSelectedCompany(company);
-    setSheetOpen(true);
+    pushOpenCompanyToUrl(company.id);
   };
 
-  const filterConfigs = [
-    {
-      key: 'type',
-      label: 'Type',
-      options: COMPANY_TYPES.map((t) => ({ value: t.value, label: t.label })),
-    },
-    {
-      key: 'taxStatus',
-      label: 'Tax Status',
-      options: TAX_STATUSES.map((s) => ({ value: s.value, label: s.label })),
-    },
-  ];
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'type',
+        label: 'Type',
+        options: COMPANY_TYPES.map((t) => ({ value: t.value, label: t.label })),
+      },
+      {
+        key: 'taxStatus',
+        label: 'Tax Status',
+        options: TAX_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+      },
+    ],
+    [],
+  );
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by name, tax ID…"
+          filters={filterConfigs}
+          filterValues={filters}
+          onFilterChange={(key: string, value: string) =>
+            setFilters((prev) => ({ ...prev, [key]: value }))
+          }
+          onClearAll={() => setFilters({})}
+        />
+      ),
+      trailing: (
+        <Button onClick={() => setShowCreate(true)}>
+          <Plus size={16} aria-hidden />
+          New Company
+        </Button>
+      ),
+    }),
+    [filterConfigs, filters, search],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Companies" description={`${companies.length} companies`}>
-        <Button variant="outline" size="icon" onClick={fetchCompanies}>
-          <RefreshCcw size={16} />
-        </Button>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus size={16} />
-          New Company
-        </Button>
-      </PageHeader>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by name, tax ID..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
-      />
-
       {loading ? (
         <LoadingState />
       ) : error ? (
@@ -207,10 +279,24 @@ export default function CompaniesPage() {
       <CompanySheet
         company={selectedCompany}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) {
+            setSelectedCompany(null);
+            stripOpenCompanyFromUrl();
+          }
+        }}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
       />
     </div>
+  );
+}
+
+export default function CompaniesPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CompaniesPageContent />
+    </Suspense>
   );
 }

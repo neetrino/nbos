@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+  BadRequestException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import type { BonusReleaseStatusEnum, BonusReleaseTypeEnum } from '@nbos/database';
 import { BonusService } from './bonus.service';
@@ -80,10 +89,84 @@ export class BonusController {
     return this.bonusService.getProductPools();
   }
 
+  @Get('products/pools/lines')
+  @ApiOperation({
+    summary:
+      'Per-employee bonus breakdown for a product/extension/order pool (planned, released, paid, suggested release)',
+  })
+  @ApiQuery({ name: 'poolKey', required: true, description: 'e.g. product:{id}, extension:{id}' })
+  async getProductPoolLines(@Query('poolKey') poolKey?: string) {
+    const key = poolKey?.trim();
+    if (!key) {
+      throw new BadRequestException('poolKey query parameter is required');
+    }
+    return this.bonusService.getProductPoolEmployeeLines(key);
+  }
+
+  @Get('products/pools/timeline')
+  @ApiOperation({
+    summary: 'Funding timeline for a pool — client payments in and bonus releases out',
+  })
+  @ApiQuery({ name: 'poolKey', required: true })
+  async getProductPoolTimeline(@Query('poolKey') poolKey?: string) {
+    const key = poolKey?.trim();
+    if (!key) {
+      throw new BadRequestException('poolKey query parameter is required');
+    }
+    return this.bonusService.getProductPoolTimeline(key);
+  }
+
+  @Get('products/pools/lines/batch')
+  @ApiOperation({ summary: 'Employee breakdown for multiple pools (comma-separated poolKeys)' })
+  @ApiQuery({
+    name: 'poolKeys',
+    required: true,
+    description: 'Comma-separated pool keys, max 30',
+  })
+  async getProductPoolLinesBatch(@Query('poolKeys') poolKeys?: string) {
+    return this.bonusService.getProductPoolEmployeeLinesBatch(poolKeys ?? '');
+  }
+
+  @Post('products/pools/auto-release')
+  @ApiOperation({
+    summary:
+      'Run proportional delivery AUTO releases for all orders in a pool (DONE + funded; NBOS)',
+  })
+  @ApiQuery({ name: 'poolKey', required: true })
+  async postProductPoolAutoRelease(@Query('poolKey') poolKey?: string) {
+    const key = poolKey?.trim();
+    if (!key) {
+      throw new BadRequestException('poolKey query parameter is required');
+    }
+    return this.bonusService.triggerProductPoolAutoRelease(key);
+  }
+
+  @Post('products/pools/sync')
+  @ApiOperation({
+    summary: 'Recompute product bonus pool ledger from live client payments for all pool orders',
+  })
+  @ApiQuery({ name: 'poolKey', required: true })
+  async postProductPoolSync(@Query('poolKey') poolKey?: string) {
+    const key = poolKey?.trim();
+    if (!key) {
+      throw new BadRequestException('poolKey query parameter is required');
+    }
+    return this.bonusService.syncProductPoolLedger(key);
+  }
+
   @Get('entries/:entryId/releases')
   @ApiOperation({ summary: 'List bonus releases for a bonus entry (NBOS Bonus Release ledger)' })
-  async listBonusReleases(@Param('entryId') entryId: string) {
-    return this.bonusReleaseService.listForEntry(entryId);
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'pageSize', required: false })
+  async listBonusReleases(
+    @Param('entryId') entryId: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.bonusReleaseService.listForEntry(entryId, {
+      page: page ? parseInt(page, 10) : undefined,
+      pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
+    });
   }
 
   @Post('entries/:entryId/releases')

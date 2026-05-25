@@ -1,8 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
+import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { buildInvoiceListApiParams } from '@/features/finance/utils/build-invoice-list-api-params';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import {
+  getLocalInvoiceMoneyStatusGateErrors,
+  mapInvoiceMoneyStatusApiMessage,
+} from '@/features/finance/constants/invoice-money-status-gate-client';
+import type { InvoiceSheetStageGateHighlight } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import { ApiError, getApiErrorMessage, isStageGateApiError } from '@/lib/api-errors';
 import {
   invoicesApi,
   paymentsApi,
@@ -10,6 +18,10 @@ import {
   type InvoiceListParams,
   type InvoiceStats,
 } from '@/lib/api/finance';
+import {
+  readInvoicesBoardViewMode,
+  writeInvoicesBoardViewMode,
+} from '@/features/finance/constants/invoices-board-view';
 import type { InvoiceViewMode } from './invoice-page-types';
 
 interface RecordPaymentInput {
@@ -23,11 +35,18 @@ interface RecordPaymentInput {
 interface UseInvoicesPageStateOptions {
   subscriptionIdFromUrl?: string | null;
   openInvoiceIdFromUrl?: string | null;
+  portfolioCreateInvoiceFromUrl?: boolean;
+  portfolioProjectIdFromUrl?: string | null;
 }
 
 export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const subscriptionIdFromUrl = options?.subscriptionIdFromUrl?.trim() || null;
   const openInvoiceIdFromUrl = options?.openInvoiceIdFromUrl?.trim() || null;
+  const portfolioProjectIdFromUrl = options?.portfolioProjectIdFromUrl?.trim() || null;
+  const portfolioCreateInvoiceFromUrl = options?.portfolioCreateInvoiceFromUrl === true;
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [stats, setStats] = useState<InvoiceStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,9 +54,15 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [view, setView] = useState<InvoiceViewMode>('kanban');
+  const [view, setViewState] = useState<InvoiceViewMode>(() => readInvoicesBoardViewMode());
+  const setView = useCallback((next: InvoiceViewMode) => {
+    setViewState(next);
+    writeInvoicesBoardViewMode(next);
+  }, []);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [stageGateHighlight, setStageGateHighlight] =
+    useState<InvoiceSheetStageGateHighlight | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [period, setPeriod] = useState<FinancePeriod>('month');
 
@@ -56,6 +81,14 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     setMutationError(null);
   }, []);
 
+  const stripOpenInvoiceFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (!p.has(OPEN_INVOICE_QUERY)) return;
+    p.delete(OPEN_INVOICE_QUERY);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
   const fetchInvoices = useFetchInvoices({
     search,
     filters,
@@ -67,7 +100,33 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     setLoading,
     setMutationError,
   });
-  const handleMoneyStatusChange = useInvoiceMoneyStatusChange(invoices, setInvoices);
+  const pushOpenInvoiceToUrl = useCallback(
+    (invoiceId: string) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(OPEN_INVOICE_QUERY, invoiceId);
+      router.push(`${pathname}?${p.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const showInvoiceStageGateRequirements = useCallback(
+    (invoice: Invoice, errors: InvoiceSheetStageGateHighlight['errors']) => {
+      setStageGateHighlight({ errors });
+      setSelectedInvoice(invoice);
+      setSheetOpen(true);
+      pushOpenInvoiceToUrl(invoice.id);
+    },
+    [pushOpenInvoiceToUrl],
+  );
+
+  const handleMoneyStatusChange = useInvoiceMoneyStatusChange({
+    invoices,
+    setInvoices,
+    selectedInvoice,
+    setSelectedInvoice,
+    showInvoiceStageGateRequirements,
+    onTransitionSuccess: () => setStageGateHighlight(null),
+  });
   const handlePaymentRecorded = usePaymentRecorder(
     fetchInvoices,
     setSelectedInvoice,
@@ -90,12 +149,65 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
         }
       } catch (caught) {
         toast.error(getApiErrorMessage(caught, 'Could not open invoice from link.'));
+        stripOpenInvoiceFromUrl();
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [openInvoiceIdFromUrl]);
+  }, [openInvoiceIdFromUrl, stripOpenInvoiceFromUrl]);
+
+  const portfolioCreateIntent = useMemo(
+    () => portfolioCreateInvoiceFromUrl && Boolean(portfolioProjectIdFromUrl),
+    [portfolioCreateInvoiceFromUrl, portfolioProjectIdFromUrl],
+  );
+
+  const createDialogOpen = createOpen || portfolioCreateIntent;
+
+  const stripPortfolioCreateFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    const had = p.has(PORTFOLIO_DEEP_LINK.createInvoice) || p.has(PORTFOLIO_DEEP_LINK.projectId);
+    if (!had) return;
+    p.delete(PORTFOLIO_DEEP_LINK.createInvoice);
+    p.delete(PORTFOLIO_DEEP_LINK.projectId);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const handleCreateDialogOpenChange = useCallback(
+    (open: boolean) => {
+      setCreateOpen(open);
+      if (!open) stripPortfolioCreateFromUrl();
+    },
+    [stripPortfolioCreateFromUrl],
+  );
+
+  const handleInvoiceSheetOpenChange = useCallback(
+    (open: boolean) => {
+      setSheetOpen(open);
+      if (!open) {
+        setSelectedInvoice(null);
+        setStageGateHighlight(null);
+        stripOpenInvoiceFromUrl();
+      }
+    },
+    [stripOpenInvoiceFromUrl],
+  );
+
+  const handleInvoiceClick = useCallback(
+    (invoice: Invoice) => {
+      setStageGateHighlight(null);
+      setSelectedInvoice(invoice);
+      setSheetOpen(true);
+      pushOpenInvoiceToUrl(invoice.id);
+    },
+    [pushOpenInvoiceToUrl],
+  );
+
+  const handleInvoiceUpdated = useCallback((updated: Invoice) => {
+    setSelectedInvoice(updated);
+    setInvoices((current) => replaceInvoice(current, updated));
+  }, []);
 
   return {
     invoices,
@@ -113,19 +225,21 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
     selectedInvoice,
     sheetOpen,
     setSheetOpen,
+    handleInvoiceSheetOpenChange,
+    createDialogOpen,
+    handleCreateDialogOpenChange,
     createOpen,
     setCreateOpen,
     period,
     setPeriod,
     fetchInvoices,
-    handleInvoiceClick: (invoice: Invoice) => {
-      setSelectedInvoice(invoice);
-      setSheetOpen(true);
-    },
+    handleInvoiceClick,
     handleMoneyStatusChange,
     handlePaymentRecorded,
+    handleInvoiceUpdated,
     handleInvoiceCreated: fetchInvoices,
     invoiceListExportParams,
+    stageGateHighlight,
   };
 }
 
@@ -194,27 +308,82 @@ function useFetchInvoices({
   ]);
 }
 
-function useInvoiceMoneyStatusChange(
-  invoices: Invoice[],
-  setInvoices: (updater: (current: Invoice[]) => Invoice[]) => void,
-) {
+function useInvoiceMoneyStatusChange({
+  invoices,
+  setInvoices,
+  selectedInvoice,
+  setSelectedInvoice,
+  showInvoiceStageGateRequirements,
+  onTransitionSuccess,
+}: {
+  invoices: Invoice[];
+  setInvoices: (updater: (current: Invoice[]) => Invoice[]) => void;
+  selectedInvoice: Invoice | null;
+  setSelectedInvoice: (invoice: Invoice | null) => void;
+  showInvoiceStageGateRequirements: (
+    invoice: Invoice,
+    errors: InvoiceSheetStageGateHighlight['errors'],
+  ) => void;
+  onTransitionSuccess: () => void;
+}) {
   return useCallback(
     async (id: string, moneyStatus: string) => {
+      const currentInvoice = invoices.find((invoice) => invoice.id === id);
+      if (currentInvoice) {
+        const localErrors = getLocalInvoiceMoneyStatusGateErrors(currentInvoice, moneyStatus);
+        if (localErrors.length > 0) {
+          showInvoiceStageGateRequirements(currentInvoice, localErrors);
+          return;
+        }
+      }
+
       const previousInvoices = invoices;
+      const previousSelected = selectedInvoice;
       setInvoices((current) =>
         current.map((invoice) => (invoice.id === id ? { ...invoice, moneyStatus } : invoice)),
       );
+      if (selectedInvoice?.id === id) {
+        setSelectedInvoice({ ...selectedInvoice, moneyStatus });
+      }
+
       try {
         const updated = await invoicesApi.updateMoneyStatus(id, moneyStatus);
         setInvoices((current) => replaceInvoice(current, updated));
+        if (selectedInvoice?.id === id) {
+          setSelectedInvoice(updated);
+        }
+        onTransitionSuccess();
       } catch (caught) {
         setInvoices(() => previousInvoices);
+        if (previousSelected?.id === id) {
+          setSelectedInvoice(previousSelected);
+        }
+        const blockedInvoice =
+          previousInvoices.find((invoice) => invoice.id === id) ?? previousSelected;
+        if (isStageGateApiError(caught) && blockedInvoice) {
+          showInvoiceStageGateRequirements(blockedInvoice, caught.errors);
+          return;
+        }
+        if (caught instanceof ApiError && blockedInvoice) {
+          const mapped = mapInvoiceMoneyStatusApiMessage(caught.message);
+          if (mapped.length > 0) {
+            showInvoiceStageGateRequirements(blockedInvoice, mapped);
+            return;
+          }
+        }
         toast.error(
           getApiErrorMessage(caught, 'Could not update invoice money status. Try again.'),
         );
       }
     },
-    [invoices, setInvoices],
+    [
+      invoices,
+      onTransitionSuccess,
+      selectedInvoice,
+      setInvoices,
+      setSelectedInvoice,
+      showInvoiceStageGateRequirements,
+    ],
   );
 }
 

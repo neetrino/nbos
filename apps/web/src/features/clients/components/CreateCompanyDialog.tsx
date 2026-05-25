@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { User } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,31 +20,58 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { RelationPickerField } from '@/components/shared';
+import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
+import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { useContactSearchOptions } from '../hooks/use-contact-search-options';
 import { COMPANY_TYPES, TAX_STATUSES } from '../constants/clients';
-import { companiesApi } from '@/lib/api/clients';
+import { companiesApi, type Company } from '@/lib/api/clients';
+import { applyCompanyRelationCreated } from './apply-company-relation-created';
 
 interface CreateCompanyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated?: (company?: Company) => void;
+  defaultName?: string;
 }
 
-export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCompanyDialogProps) {
+export function CreateCompanyDialog({
+  open,
+  onOpenChange,
+  onCreated,
+  defaultName = '',
+}: CreateCompanyDialogProps) {
   const [loading, setLoading] = useState(false);
+  const searchContacts = useContactSearchOptions();
+  const primaryContactPicker = useRelationPickerActions('contact', 'company-create-primary');
+  const billingContactPicker = useRelationPickerActions('contact', 'company-create-billing');
   const [form, setForm] = useState({
     name: '',
     type: 'LEGAL',
     taxStatus: 'TAX',
     taxId: '',
     legalAddress: '',
-    contactId: '',
+    primaryContactId: '',
+    primaryContactLabel: '',
+    billingContactId: '',
+    billingContactLabel: '',
     phone: '',
     email: '',
     country: '',
     notes: '',
   });
 
-  const canSubmit = form.name && form.type && form.taxStatus && form.contactId;
+  useEffect(() => {
+    if (!open || !defaultName.trim()) return;
+    setForm((prev) => ({ ...prev, name: defaultName.trim() }));
+  }, [open, defaultName]);
+
+  const canSubmit =
+    Boolean(form.name) &&
+    Boolean(form.type) &&
+    Boolean(form.taxStatus) &&
+    Boolean(form.primaryContactId);
 
   const reset = () => {
     setForm({
@@ -52,7 +80,10 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
       taxStatus: 'TAX',
       taxId: '',
       legalAddress: '',
-      contactId: '',
+      primaryContactId: '',
+      primaryContactLabel: '',
+      billingContactId: '',
+      billingContactLabel: '',
       phone: '',
       email: '',
       country: '',
@@ -65,18 +96,23 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
     if (!canSubmit) return;
     setLoading(true);
     try {
-      await companiesApi.create({
+      const created = await companiesApi.create({
         name: form.name,
         type: form.type,
         taxStatus: form.taxStatus,
         taxId: form.taxId || undefined,
         legalAddress: form.legalAddress || undefined,
-        contactId: form.contactId,
+        contactId: form.primaryContactId,
+        billingContactId:
+          form.billingContactId && form.billingContactId !== form.primaryContactId
+            ? form.billingContactId
+            : undefined,
         phone: form.phone || undefined,
         email: form.email || undefined,
+        country: form.country || undefined,
         notes: form.notes || undefined,
       });
-      onCreated();
+      onCreated?.(created);
       onOpenChange(false);
       reset();
     } finally {
@@ -84,9 +120,15 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
     }
   };
 
+  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
+    setForm((prev) => ({ ...prev, ...applyCompanyRelationCreated(prev, event) }));
+  }, []);
+
+  useRegisterRelationCreated(open ? handleRelationCreated : null);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>New Company</DialogTitle>
         </DialogHeader>
@@ -169,14 +211,57 @@ export function CreateCompanyDialog({ open, onOpenChange, onCreated }: CreateCom
             />
           </div>
 
-          <div>
-            <Label>Primary Contact ID *</Label>
-            <Input
-              value={form.contactId}
-              onChange={(e) => setForm({ ...form, contactId: e.target.value })}
-              placeholder="Contact ID"
-            />
-          </div>
+          <RelationPickerField
+            label="Primary Contact *"
+            entityKind="contact"
+            value={form.primaryContactId || null}
+            selectionLabel={form.primaryContactLabel || null}
+            placeholder="Search by name, phone, email…"
+            icon={<User size={12} />}
+            maxResults={25}
+            onSearch={searchContacts}
+            onSelect={(id, label) =>
+              setForm((prev) => ({
+                ...prev,
+                primaryContactId: id,
+                primaryContactLabel: label,
+              }))
+            }
+            onClear={() =>
+              setForm((prev) => ({
+                ...prev,
+                primaryContactId: '',
+                primaryContactLabel: '',
+              }))
+            }
+            {...primaryContactPicker}
+          />
+
+          <RelationPickerField
+            label="Billing Contact"
+            entityKind="contact"
+            value={form.billingContactId || null}
+            selectionLabel={form.billingContactLabel || null}
+            placeholder="Optional — defaults to primary when empty"
+            icon={<User size={12} />}
+            maxResults={25}
+            onSearch={searchContacts}
+            onSelect={(id, label) =>
+              setForm((prev) => ({
+                ...prev,
+                billingContactId: id,
+                billingContactLabel: label,
+              }))
+            }
+            onClear={() =>
+              setForm((prev) => ({
+                ...prev,
+                billingContactId: '',
+                billingContactLabel: '',
+              }))
+            }
+            {...billingContactPicker}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <div>

@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation';
+import { ModuleIndexRedirect } from '@/lib/navigation/ModuleIndexRedirect';
 
 export default function FinancePage() {
-  redirect('/finance/invoices');
+  return <ModuleIndexRedirect moduleKey="finance" />;
 }

@@ -1,4 +1,7 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { resolveCompensationPayoutPhase } from '../payroll-runs/compensation-payout-phase';
+import { querySalaryLineMonthDetail } from '../payroll-runs/salary-line-month-detail';
+import type { SalaryLineMonthDetailDto } from '../payroll-runs/salary-line-month-detail.types';
 import { Prisma, PrismaClient, type Decimal } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { fetchWalletActivity } from './employee-wallet-activity';
@@ -6,15 +9,12 @@ import {
   plannedDecimalForEntry,
   type WalletReleaseRollup,
 } from './employee-wallet-bonus-release-rollups';
-import {
-  mapBonusStatusToWalletGroup,
-  type WalletBonusPipelineGroup,
-} from './employee-wallet-bonus-group';
+import { mapBonusStatusToWalletGroup } from './employee-wallet-bonus-group';
+import { deriveBonusPolicyBreakdownStatuses } from '../payroll-runs/bonus-policy-breakdown-status';
 import { loadWalletBonusLedgerContext } from './employee-wallet-ledger-context';
 import { pickNextOpenPayrollSalaryLine } from './employee-wallet-next-payroll';
 import {
   buildEmployeeWalletProjectBreakdown,
-  type EmployeeWalletProjectBreakdownRow,
   type WalletPoolForBreakdown,
   walletBonusScopeLabel,
 } from './employee-wallet-project-breakdown';
@@ -63,6 +63,24 @@ type WalletBonusEntryDb = Prisma.BonusEntryGetPayload<{ include: typeof walletBo
 @Injectable()
 export class EmployeeWalletService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+
+  /** Read-only month detail for the signed-in employee (same DTO as Finance salary board). */
+  async getSalaryLineMonthDetail(
+    employeeId: string,
+    salaryLineId: string,
+  ): Promise<SalaryLineMonthDetailDto> {
+    const line = await this.prisma.salaryLine.findUnique({
+      where: { id: salaryLineId },
+      select: { employeeId: true },
+    });
+    if (!line) {
+      throw new NotFoundException(`Salary line ${salaryLineId} not found`);
+    }
+    if (line.employeeId !== employeeId) {
+      throw new ForbiddenException('Salary line does not belong to the current employee');
+    }
+    return querySalaryLineMonthDetail(this.prisma, salaryLineId);
+  }
 
   async getWallet(employeeId: string): Promise<EmployeeWalletSnapshot> {
     const employee = await this.loadEmployeeOrThrow(employeeId);
@@ -174,17 +192,28 @@ export class EmployeeWalletService {
     r: WalletReleaseRollup | undefined,
     pool: WalletPoolForBreakdown | undefined,
   ): EmployeeWalletBonusRow {
+    const kpiBurned = r != null && r.kpiBurnedAmount.gt(0) ? r.kpiBurnedAmount : null;
+    const carryOver = r != null && r.payrollCarryOverAmount.gt(0) ? r.payrollCarryOverAmount : null;
+
     return {
       id: b.id,
       type: b.type,
       status: b.status,
       walletGroup: mapBonusStatusToWalletGroup(b.status),
+      policyBreakdownStatuses: deriveBonusPolicyBreakdownStatuses({
+        entryStatus: b.status,
+        kpiBurnedAmount: kpiBurned,
+        payrollCarryOverAmount: carryOver,
+      }),
       amount: b.amount.toString(),
       percent: b.percent.toString(),
       releasedAmount: r?.releasedAmount.toFixed(2) ?? '0.00',
       paidAmount: r?.paidAmount.toFixed(2) ?? '0.00',
       remainingAmount: r?.remainingAmount.toFixed(2) ?? plannedDecimalForEntry(b.amount).toFixed(2),
       payrollMonth: r?.payrollMonth ?? null,
+      kpiBurnedAmount: kpiBurned ? kpiBurned.toFixed(2) : null,
+      kpiBurnedReason: r?.kpiBurnedReason ?? null,
+      payrollCarryOverAmount: carryOver ? carryOver.toFixed(2) : null,
       orderPaymentType: b.order.paymentType,
       salesAccrualHint: employeeWalletSalesAccrualHint(
         b.type,
@@ -232,6 +261,11 @@ export class EmployeeWalletService {
       id: s.id,
       payrollRunId: s.payrollRunId,
       payrollMonth: s.payrollRun.payrollMonth,
+      payoutPhase: resolveCompensationPayoutPhase({
+        payrollMonth: s.payrollRun.payrollMonth,
+        runStatus: s.payrollRun.status,
+        lineStatus: s.status,
+      }),
       runStatus: s.payrollRun.status,
       baseSalary: s.baseSalary.toString(),
       bonusesTotal: s.bonusesTotal.toString(),

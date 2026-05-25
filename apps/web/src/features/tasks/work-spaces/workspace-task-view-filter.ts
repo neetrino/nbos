@@ -1,3 +1,9 @@
+import {
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
+import { taskMatchesTaskBoardScope } from '@/features/tasks/constants/task-board-lifecycle';
+import { taskMatchesPriorityFilter } from '@/features/tasks/constants/tasks';
 import type { Task } from '@/lib/api/tasks';
 
 /**
@@ -11,6 +17,8 @@ export function filterTasksForWorkspaceView(
   const q = search.trim().toLowerCase();
   const status = filterValues.status;
   const priority = filterValues.priority;
+  const boardScope = resolveBoardLifecycleScope(filterValues.boardScope);
+  const hasStatusFilter = Boolean(status) && status !== 'all';
 
   return tasks.filter((t) => {
     if (q) {
@@ -19,7 +27,14 @@ export function filterTasksForWorkspaceView(
       if (!blob.includes(q)) return false;
     }
     if (status && status !== 'all' && t.status !== status) return false;
-    if (priority && priority !== 'all' && t.priority !== priority) return false;
+    if (!taskMatchesPriorityFilter(t.priority, priority ?? 'all')) return false;
+    if (!hasStatusFilter && !taskMatchesTaskBoardScope(t.status, boardScope)) return false;
     return true;
   });
+}
+
+export function resolveWorkspaceBoardScope(
+  filterValues: Record<string, string>,
+): BoardLifecycleScope {
+  return resolveBoardLifecycleScope(filterValues.boardScope);
 }

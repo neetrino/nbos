@@ -1,14 +1,20 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DealWonHandler } from './deal-won.handler';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
+
+function makeDriveDealWonLinksMock() {
+  return { linkApprovedDealMaterials: vi.fn().mockResolvedValue(0) };
+}
 
 describe('DealWonHandler', () => {
   let prisma: MockPrisma;
   let handler: DealWonHandler;
+  let driveDealWonLinks: ReturnType<typeof makeDriveDealWonLinksMock>;
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    handler = new DealWonHandler(prisma as never);
+    driveDealWonLinks = makeDriveDealWonLinksMock();
+    handler = new DealWonHandler(prisma as never, driveDealWonLinks as never);
   });
 
   it('creates project and product for PRODUCT deal without project', async () => {
@@ -30,6 +36,21 @@ describe('DealWonHandler', () => {
     expect(prisma.product.create).toHaveBeenCalledTimes(1);
   });
 
+  it('copies deal additional contacts onto auto-created project', async () => {
+    prisma.project.findFirst.mockResolvedValue(null);
+    prisma.project.create.mockResolvedValue({ id: 'proj-1', code: 'P-2026-0001' });
+    prisma.dealAdditionalContact.findMany.mockResolvedValue([{ contactId: 'c-extra' }]);
+    prisma.contact.count.mockResolvedValue(1);
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+
+    await handler.handle(productDeal({ projectId: null }));
+
+    expect(prisma.projectAdditionalContact.createMany).toHaveBeenCalledWith({
+      data: [{ projectId: 'proj-1', contactId: 'c-extra' }],
+      skipDuplicates: true,
+    });
+  });
+
   it('creates active subscription for PRODUCT subscription deal after paid invoice', async () => {
     prisma.product.create.mockResolvedValue({ id: 'product-1' });
     prisma.subscription.findFirst.mockResolvedValue(null);
@@ -43,7 +64,8 @@ describe('DealWonHandler', () => {
           projectId: 'proj-1',
           type: 'DEV_AND_MAINTENANCE',
           status: 'ACTIVE',
-          amount: 5000,
+          baseMonthlyAmount: 5000,
+          taxStatus: 'TAX',
         }),
       }),
     );
@@ -177,8 +199,9 @@ describe('DealWonHandler', () => {
           projectId: 'proj-1',
           type: 'MAINTENANCE_ONLY',
           status: 'PENDING',
-          amount: 80000,
+          baseMonthlyAmount: 80000,
           billingDay: 15,
+          taxStatus: 'TAX',
         }),
       }),
     );

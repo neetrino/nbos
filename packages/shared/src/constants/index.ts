@@ -1,9 +1,9 @@
 export const LEAD_STATUSES = [
   'NEW',
-  'ON_HOLD',
   'DIDNT_GET_THROUGH',
   'CONTACT_ESTABLISHED',
   'MQL',
+  'ON_HOLD',
   'SPAM',
   'SQL',
 ] as const;
@@ -11,8 +11,6 @@ export const LEAD_STATUSES = [
 export const DEAL_STATUSES = [
   'START_CONVERSATION',
   'DISCUSS_NEEDS',
-  'MEETING',
-  'CAN_WE_DO_IT',
   'SEND_OFFER',
   'GET_ANSWER',
   'DEPOSIT_AND_CONTRACT',
@@ -63,18 +61,12 @@ export const SUBSCRIPTION_TYPES = [
 /** Query param value for listing subscriptions with no linked partner (`partnerId IS NULL`). */
 export const SUBSCRIPTION_PARTNER_FILTER_UNLINKED = '__unlinked__' as const;
 
-export const TASK_STATUSES = [
-  'OPEN',
-  'IN_PROGRESS',
-  'REVIEW',
-  'COMPLETED',
-  'DEFERRED',
-  'CANCELLED',
-] as const;
+export const TASK_STATUSES = ['OPEN', 'IN_PROGRESS', 'REVIEW', 'ON_HOLD', 'COMPLETED'] as const;
 
 export const TASK_PRIORITIES = ['CRITICAL', 'HIGH', 'NORMAL', 'LOW'] as const;
 
 export const TICKET_CATEGORIES = [
+  'UNCLASSIFIED',
   'INCIDENT',
   'SERVICE_REQUEST',
   'CHANGE_REQUEST',
@@ -244,8 +236,11 @@ export const SLA_DEADLINES = {
   P3: { response: 24, resolve: 72 },
 } as const;
 
+export * from './sidebar-navigation';
 export * from './crm-attribution';
 export * from './messenger-ws';
+export * from './checklist-template-item-evidence';
+export * from './checklist-evidence-file-ids';
 
 export const BONUS_PERCENTAGES = {
   SALES: {

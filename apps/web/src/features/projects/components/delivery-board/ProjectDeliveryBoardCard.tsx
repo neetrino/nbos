@@ -1,15 +1,8 @@
-import {
-  ArrowRight,
-  Calendar,
-  CheckCircle2,
-  Package,
-  Play,
-  Puzzle,
-  User,
-  XCircle,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import type { PointerEvent as ReactPointerEvent } from 'react';
+import Link from 'next/link';
 import { StatusBadge } from '@/components/shared';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import type {
   DeliveryLifecycleProjection,
   ProjectExtensionSummary,
@@ -17,32 +10,59 @@ import type {
 } from '@/lib/api/projects';
 import {
   formatDeliveryLifecycleLabel,
-  formatDeliveryHoldUntil,
   getExtensionSize,
   getDeliveryLifecycleVariant,
   getProductType,
-  isDeliveryHoldExpired,
 } from '@/features/projects/constants/projects';
+import { DeliveryStageActionBar } from './DeliveryStageActionBar';
 import {
+  getItemId,
   getItemLifecycle,
   getNavigableProductId,
-  NEXT_DELIVERY_STAGE,
+  getProjectId,
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
 import {
   ProjectDeliveryBoardContextLinks,
   type ProductBoardTab,
 } from './ProjectDeliveryBoardContextLinks';
+import { DeliveryStageReadinessRing } from './DeliveryStageReadinessRing';
+import {
+  ClosedCompactCardActions,
+  ClosedCompactCardMeta,
+} from './ProjectDeliveryBoardClosedCompact';
+import { DeliveryCardMeta } from './ProjectDeliveryBoardCardMeta';
+import { getDealTypePresentation, type DealTypePresentation } from '@/lib/deal-type-visual';
 
 interface ProjectDeliveryBoardCardProps {
   item: DeliveryBoardItem;
   isActionBusy: boolean;
   onOpenProduct: (productId: string) => void;
   onOpenProductTab: (productId: string, tab: ProductBoardTab) => void;
-  onMoveNext: (item: DeliveryBoardItem) => void;
-  onResume: (item: DeliveryBoardItem) => void;
-  onComplete: (item: DeliveryBoardItem) => void;
-  onCancel: (item: DeliveryBoardItem) => void;
+  /** Opens in-board detail drawer when provided (global Delivery Board). */
+  onOpenDetails?: () => void;
+  /** Closed Board: compact outside card per canon §7.2 */
+  displayMode?: 'full' | 'closedCompact';
+  onMoveNext: () => void;
+  onResume: () => void;
+  onComplete: () => void;
+  onCancel: () => void;
+  /**
+   * When the card sits inside a kanban drag source, stop pointer propagation on
+   * action chrome so Move next / links / cancel remain clickable without starting a drag.
+   */
+  kanbanActionIsolation?: boolean;
+  /**
+   * Active delivery kanban: slimmer card — column already shows stage; stage moves via drag;
+   * Done / Cancel / deep links live in the detail drawer.
+   */
+  kanbanMinimal?: boolean;
+  /** Hide Project / Task hover row (e.g. drag overlay preview). */
+  suppressKanbanHoverInteractions?: boolean;
+  /** Opens quick-create task dialog with a PROJECT link (kanban host provides the dialog). */
+  onOpenQuickTaskForProject?: (projectId: string) => void;
+  /** When true, Task button is disabled (e.g. user has no employee / creator id). */
+  quickTaskDisabled?: boolean;
 }
 
 export function ProjectDeliveryBoardCard({
@@ -50,149 +70,118 @@ export function ProjectDeliveryBoardCard({
   isActionBusy,
   onOpenProduct,
   onOpenProductTab,
+  onOpenDetails,
+  displayMode = 'full',
   onMoveNext,
   onResume,
   onComplete,
   onCancel,
+  kanbanActionIsolation = false,
+  kanbanMinimal = false,
+  suppressKanbanHoverInteractions = false,
+  onOpenQuickTaskForProject,
+  quickTaskDisabled = false,
 }: ProjectDeliveryBoardCardProps) {
   const lifecycle = getItemLifecycle(item);
   const productId = getNavigableProductId(item);
   const isExtension = item.kind === 'EXTENSION';
+  const dealTypeVisual = getDealTypePresentation(isExtension ? 'EXTENSION' : 'PRODUCT');
   const title = isExtension ? item.extension.name : item.product.name;
   const metaLabel = isExtension ? getExtensionMeta(item.extension) : getProductMeta(item.product);
+  const isClosedCompact = displayMode === 'closedCompact' && Boolean(lifecycle?.isTerminal);
+  const stopKanbanPointerBubble = kanbanActionIsolation
+    ? (event: ReactPointerEvent) => {
+        event.stopPropagation();
+      }
+    : undefined;
+
+  const projectId = getProjectId(item);
 
   return (
-    <div className={getCardClassName(isExtension)}>
+    <div className={getCardClassName(dealTypeVisual.cardShellClassName, kanbanMinimal)}>
       <button
         type="button"
-        disabled={!productId}
-        onClick={() => productId && onOpenProduct(productId)}
-        className={getCardBodyClassName(Boolean(productId))}
+        disabled={!productId && !onOpenDetails}
+        onClick={() => {
+          if (onOpenDetails) {
+            onOpenDetails();
+            return;
+          }
+          if (productId) onOpenProduct(productId);
+        }}
+        className={getCardBodyClassName(Boolean(productId || onOpenDetails))}
       >
         <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 items-start gap-2">
-            <CardKindIcon isExtension={isExtension} />
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            <CardKindIcon visual={dealTypeVisual} />
             <div className="min-w-0 text-left">
               <p className="truncate text-sm font-semibold">{title}</p>
               {metaLabel && <p className="text-muted-foreground truncate text-xs">{metaLabel}</p>}
+              {!kanbanMinimal ? (
+                <StatusBadge
+                  label={dealTypeVisual.label}
+                  variant={dealTypeVisual.badgeVariant}
+                  className="mt-1.5 w-fit text-[9px]"
+                />
+              ) : null}
             </div>
           </div>
-          {lifecycle && <LifecycleBadge lifecycle={lifecycle} />}
+          <div className="flex shrink-0 items-start gap-2">
+            {lifecycle && !lifecycle.isTerminal && lifecycle.stage ? (
+              <DeliveryStageReadinessRing lifecycle={lifecycle} />
+            ) : null}
+            {lifecycle && !kanbanMinimal ? <LifecycleBadge lifecycle={lifecycle} /> : null}
+          </div>
         </div>
-        <DeliveryCardMeta item={item} />
+        {isClosedCompact ? (
+          <ClosedCompactCardMeta item={item} />
+        ) : (
+          <DeliveryCardMeta item={item} metaDensity={kanbanMinimal ? 'minimal' : 'full'} />
+        )}
       </button>
-      <ProjectDeliveryBoardContextLinks item={item} onOpenProductTab={onOpenProductTab} />
-      <DeliveryCardActions
-        item={item}
-        disabled={isActionBusy}
-        onOpenProduct={() => productId && onOpenProduct(productId)}
-        onMoveNext={() => onMoveNext(item)}
-        onResume={() => onResume(item)}
-        onComplete={() => onComplete(item)}
-        onCancel={() => onCancel(item)}
-      />
+      {kanbanMinimal && !isClosedCompact && !suppressKanbanHoverInteractions && projectId ? (
+        <DeliveryKanbanCardHoverActions
+          projectId={projectId}
+          onPointerDown={stopKanbanPointerBubble}
+          onOpenQuickTaskForProject={onOpenQuickTaskForProject}
+          quickTaskDisabled={quickTaskDisabled}
+        />
+      ) : null}
+      {!isClosedCompact && !kanbanMinimal ? (
+        <div onPointerDown={stopKanbanPointerBubble}>
+          <ProjectDeliveryBoardContextLinks item={item} onOpenProductTab={onOpenProductTab} />
+        </div>
+      ) : null}
+      {isClosedCompact ? (
+        <div onPointerDown={stopKanbanPointerBubble}>
+          <ClosedCompactCardActions
+            onOpenDetails={onOpenDetails}
+            onOpenProduct={() => productId && onOpenProduct(productId)}
+          />
+        </div>
+      ) : !kanbanMinimal ? (
+        <div onPointerDown={stopKanbanPointerBubble}>
+          <DeliveryStageActionBar
+            variant="card"
+            item={item}
+            lifecycle={lifecycle}
+            busyItemId={isActionBusy ? getItemId(item) : null}
+            onMoveNext={onMoveNext}
+            onResume={onResume}
+            onComplete={onComplete}
+            onCancel={onCancel}
+            onOpenProduct={() => productId && onOpenProduct(productId)}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function DeliveryCardActions({
-  item,
-  disabled,
-  onOpenProduct,
-  onMoveNext,
-  onResume,
-  onComplete,
-  onCancel,
-}: {
-  item: DeliveryBoardItem;
-  disabled: boolean;
-  onOpenProduct: () => void;
-  onMoveNext: () => void;
-  onResume: () => void;
-  onComplete: () => void;
-  onCancel: () => void;
-}) {
-  const lifecycle = getItemLifecycle(item);
-  if (lifecycle?.isTerminal) {
-    return (
-      <div className="border-border mt-3 flex justify-end border-t pt-2">
-        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onOpenProduct}>
-          Open <ArrowRight size={12} className="ml-1" />
-        </Button>
-      </div>
-    );
-  }
-
+function CardKindIcon({ visual }: { visual: DealTypePresentation }) {
+  const Icon = visual.Icon;
   return (
-    <div className="border-border mt-3 flex flex-wrap justify-end gap-1.5 border-t pt-2">
-      {lifecycle?.workStatus === 'ON_HOLD' ? (
-        <Button
-          variant="secondary"
-          size="sm"
-          className="h-7 text-xs"
-          disabled={disabled}
-          onClick={onResume}
-        >
-          <Play size={12} /> Resume
-        </Button>
-      ) : (
-        <NextStageButton lifecycle={lifecycle} disabled={disabled} onMoveNext={onMoveNext} />
-      )}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-7 text-xs"
-        disabled={disabled}
-        onClick={onComplete}
-      >
-        <CheckCircle2 size={12} /> Done
-      </Button>
-      <Button
-        variant="destructive"
-        size="sm"
-        className="h-7 text-xs"
-        disabled={disabled}
-        onClick={onCancel}
-      >
-        <XCircle size={12} /> Cancel
-      </Button>
-    </div>
-  );
-}
-
-function NextStageButton({
-  lifecycle,
-  disabled,
-  onMoveNext,
-}: {
-  lifecycle: DeliveryLifecycleProjection | undefined;
-  disabled: boolean;
-  onMoveNext: () => void;
-}) {
-  const nextStage = lifecycle?.stage ? NEXT_DELIVERY_STAGE[lifecycle.stage] : null;
-  if (!nextStage) return null;
-
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="h-7 text-xs"
-      disabled={disabled}
-      onClick={onMoveNext}
-    >
-      Move next
-    </Button>
-  );
-}
-
-function CardKindIcon({ isExtension }: { isExtension: boolean }) {
-  const iconClassName = isExtension
-    ? 'bg-orange-500/10 text-orange-500'
-    : 'bg-purple-500/10 text-purple-500';
-  const Icon = isExtension ? Puzzle : Package;
-
-  return (
-    <span className={`rounded-lg p-1.5 ${iconClassName}`}>
+    <span className={`rounded-lg p-1.5 ${visual.iconWrapClassName}`} title={visual.label}>
       <Icon size={14} />
     </span>
   );
@@ -207,71 +196,6 @@ function LifecycleBadge({ lifecycle }: { lifecycle: DeliveryLifecycleProjection 
   );
 }
 
-function DeliveryCardMeta({ item }: { item: DeliveryBoardItem }) {
-  if (item.kind === 'PRODUCT') return <ProductCardMeta product={item.product} />;
-  return <ExtensionCardMeta extension={item.extension} />;
-}
-
-function ProductCardMeta({ product }: { product: ProjectProductSummary }) {
-  const holdCopy = getHoldCopy(product.deliveryLifecycle);
-  return (
-    <div className="mt-3 space-y-1.5 text-left">
-      {product.pm && (
-        <MetaLine icon={User} label={`${product.pm.firstName} ${product.pm.lastName}`} />
-      )}
-      {product.deadline && (
-        <MetaLine icon={Calendar} label={new Date(product.deadline).toLocaleDateString()} />
-      )}
-      <p className="text-muted-foreground text-xs">
-        {product._count.tasks} Work Space tasks · {product._count.extensions} ext. ·{' '}
-        {product._count.tickets} tickets
-      </p>
-      {holdCopy && <p className={getHoldCopyClassName(product.deliveryLifecycle)}>{holdCopy}</p>}
-    </div>
-  );
-}
-
-function ExtensionCardMeta({ extension }: { extension: ProjectExtensionSummary }) {
-  const holdCopy = getHoldCopy(extension.deliveryLifecycle);
-  return (
-    <div className="mt-3 space-y-1.5 text-left">
-      {extension.assignee && (
-        <MetaLine
-          icon={User}
-          label={`${extension.assignee.firstName} ${extension.assignee.lastName}`}
-        />
-      )}
-      <p className="text-muted-foreground text-xs">
-        {extension.product?.name ?? 'No linked product'} · {extension._count.tasks} Work Space tasks
-      </p>
-      {holdCopy && <p className={getHoldCopyClassName(extension.deliveryLifecycle)}>{holdCopy}</p>}
-    </div>
-  );
-}
-
-function getHoldCopy(lifecycle: DeliveryLifecycleProjection | undefined) {
-  if (lifecycle?.workStatus !== 'ON_HOLD') return null;
-  const date = formatDeliveryHoldUntil(lifecycle.onHoldUntil);
-  if (isDeliveryHoldExpired(lifecycle)) return date ? `Hold expired on ${date}` : 'Hold expired';
-  return date ? `On hold until ${date}` : 'On hold';
-}
-
-function getHoldCopyClassName(lifecycle: DeliveryLifecycleProjection | undefined) {
-  const base = 'text-xs font-medium';
-  return lifecycle && isDeliveryHoldExpired(lifecycle)
-    ? `${base} text-amber-600`
-    : `${base} text-muted-foreground`;
-}
-
-function MetaLine({ icon: Icon, label }: { icon: typeof User; label: string }) {
-  return (
-    <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
-      <Icon size={12} />
-      <span className="truncate">{label}</span>
-    </p>
-  );
-}
-
 function getProductMeta(product: ProjectProductSummary) {
   return getProductType(product.productType)?.label ?? product.productType;
 }
@@ -280,10 +204,51 @@ function getExtensionMeta(extension: ProjectExtensionSummary) {
   return getExtensionSize(extension.size)?.label ?? extension.size;
 }
 
-function getCardClassName(isExtension: boolean) {
-  const base = 'bg-card border-border w-full rounded-xl border p-3 text-left transition-colors';
-  const accent = isExtension ? ' border-l-4 border-l-orange-400' : '';
-  return `${base}${accent}`;
+function getCardClassName(cardShellClassName: string, kanbanMinimal: boolean) {
+  const groupKanban = kanbanMinimal ? 'group/kanban-card ' : 'group ';
+  const base = `${groupKanban}w-full rounded-xl border p-4 text-left shadow-sm transition-all duration-200 hover:shadow-md`;
+  return `${base} ${cardShellClassName}`;
+}
+
+const QUICK_TASK_DISABLED_TITLE = 'Employee profile required to create tasks';
+
+function DeliveryKanbanCardHoverActions({
+  projectId,
+  onPointerDown,
+  onOpenQuickTaskForProject,
+  quickTaskDisabled,
+}: {
+  projectId: string;
+  onPointerDown?: (event: ReactPointerEvent) => void;
+  onOpenQuickTaskForProject?: (projectId: string) => void;
+  quickTaskDisabled: boolean;
+}) {
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      className="border-border pointer-events-none flex flex-wrap justify-end gap-1.5 border-t pt-2 opacity-0 transition-opacity duration-150 group-focus-within/kanban-card:pointer-events-auto group-focus-within/kanban-card:opacity-100 group-hover/kanban-card:pointer-events-auto group-hover/kanban-card:opacity-100"
+    >
+      <Link
+        href={`/projects/${projectId}`}
+        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-7 text-xs')}
+      >
+        Project
+      </Link>
+      {onOpenQuickTaskForProject ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="h-7 text-xs"
+          disabled={quickTaskDisabled}
+          title={quickTaskDisabled ? QUICK_TASK_DISABLED_TITLE : undefined}
+          onClick={() => onOpenQuickTaskForProject(projectId)}
+        >
+          Task
+        </Button>
+      ) : null}
+    </div>
+  );
 }
 
 function getCardBodyClassName(canOpen: boolean) {

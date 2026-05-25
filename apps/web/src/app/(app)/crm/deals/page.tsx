@@ -1,35 +1,54 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Plus, RefreshCcw, LayoutGrid, List, Handshake } from 'lucide-react';
+import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Plus, LayoutGrid, List, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  PageHeader,
-  FilterBar,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+  IntegratedSearchFilters,
   KanbanBoard,
+  KanbanColumnMoneyTotal,
   EmptyState,
   ErrorState,
   LoadingState,
   StatusBadge,
   type KanbanColumn,
+  type ViewModeOption,
 } from '@/components/shared';
 import { DealCard } from '@/features/crm/components/DealCard';
-import { DealSheet, type DealSheetBlockerNavigation } from '@/features/crm/components/DealSheet';
-import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
-import { DealTransitionInlineEditor } from '@/features/crm/components/DealTransitionInlineEditor';
-import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
 import {
-  TransitionBlockerDialog,
-  type TransitionBlockerState,
-} from '@/features/crm/components/TransitionBlockerDialog';
+  DealSheet,
+  type DealSheetBlockerNavigation,
+  type DealSheetStageGateHighlight,
+} from '@/features/crm/components/DealSheet';
+import { CreateDealDialog } from '@/features/crm/components/CreateDealDialog';
+import { createDealKanbanQuickCreateConfig } from '@/features/crm/kanban/crm-kanban-quick-create';
+import { StageTransitionConfirmDialog } from '@/features/crm/components/StageTransitionConfirmDialog';
+import { CrmPipelineScopeBanner } from '@/features/crm/components/CrmPipelineScopeBanner';
+import { getLocalDealStageGateErrors } from '@/features/crm/deal-stage-gate';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import {
   DEAL_STAGES,
   DEAL_TYPES,
   getDealStage,
   formatAmount,
 } from '@/features/crm/constants/dealPipeline';
+import {
+  BOARD_LIFECYCLE_SCOPE_OPTIONS,
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  matchesBoardLifecycleScope,
+  resolveBoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
+import {
+  buildScopedKanbanColumns,
+  buildTerminalDropZones,
+  reorderCrmKanbanColumn,
+  shouldShowTerminalDropBar,
+} from '@/features/crm/hooks/buildCrmKanban';
 import { dealsApi, type Deal } from '@/lib/api/deals';
+import { getDealTypePresentation } from '@/lib/deal-type-visual';
 import {
   getApiErrorMessage,
   isBusinessTransitionApiError,
@@ -49,9 +68,26 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
+import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 
 type ViewMode = 'kanban' | 'list';
 type ConfirmVariant = 'success' | 'danger';
+
+const DEAL_VIEW_OPTIONS: ViewModeOption<ViewMode>[] = [
+  {
+    value: 'kanban',
+    label: 'Board',
+    icon: <LayoutGrid className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'Kanban board view',
+  },
+  {
+    value: 'list',
+    label: 'List',
+    icon: <List className="size-3.5 shrink-0" aria-hidden />,
+    ariaLabel: 'List view',
+  },
+];
 
 interface PendingDealTransition {
   id: string;
@@ -62,7 +98,9 @@ interface PendingDealTransition {
   variant: ConfirmVariant;
 }
 
-export default function DealsPipelinePage() {
+function DealsPipelinePageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,13 +111,11 @@ export default function DealsPipelinePage() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [transitionBlocker, setTransitionBlocker] = useState<TransitionBlockerState<Deal> | null>(
+  const [stageGateHighlight, setStageGateHighlight] = useState<DealSheetStageGateHighlight | null>(
     null,
   );
   const [pendingTransition, setPendingTransition] = useState<PendingDealTransition | null>(null);
   const [dealBlockerNav, setDealBlockerNav] = useState<DealSheetBlockerNavigation | null>(null);
-  const [inlineSaving, setInlineSaving] = useState(false);
-  const [blockerEditorRevision, setBlockerEditorRevision] = useState(0);
   const dealNavTokenRef = useRef(0);
 
   const pushDealBlockerNav = useCallback((intent: DealSheetBlockerIntent) => {
@@ -88,6 +124,23 @@ export default function DealsPipelinePage() {
   }, []);
 
   const clearDealBlockerNav = useCallback(() => setDealBlockerNav(null), []);
+
+  const stripOpenDealFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (!p.has(CRM_OPEN_DEAL_QUERY)) return;
+    p.delete(CRM_OPEN_DEAL_QUERY);
+    const q = p.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const pushOpenDealToUrl = useCallback(
+    (id: string) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(CRM_OPEN_DEAL_QUERY, id);
+      router.push(`${pathname}?${p.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
 
   const fetchDeals = useCallback(async () => {
     setLoading(true);
@@ -107,11 +160,38 @@ export default function DealsPipelinePage() {
     }
   }, [search, filters]);
 
+  const handleDealCreated = async (deal: Deal, options?: { openFull?: boolean }) => {
+    setDeals((prev) => [deal, ...prev.filter((item) => item.id !== deal.id)]);
+    setError(null);
+
+    if (options?.openFull) {
+      setSelectedDeal(deal);
+      setDealBlockerNav(null);
+      pushOpenDealToUrl(deal.id);
+      setSheetOpen(true);
+    }
+
+    await fetchDeals();
+  };
+
   useEffect(() => {
     fetchDeals();
   }, [fetchDeals]);
 
-  const openDealId = searchParams.get('openDealId');
+  const openDealId = searchParams.get(CRM_OPEN_DEAL_QUERY)?.trim() || null;
+  const portfolioContactId = searchParams.get(PORTFOLIO_DEEP_LINK.contactId)?.trim() ?? null;
+  const createDealFromPortfolio = searchParams.get(PORTFOLIO_DEEP_LINK.createDeal) === '1';
+  const dealPrefill = useMemo(() => {
+    if (!createDealFromPortfolio || !portfolioContactId) return undefined;
+    return { contactId: portfolioContactId };
+  }, [createDealFromPortfolio, portfolioContactId]);
+
+  useEffect(() => {
+    if (createDealFromPortfolio && portfolioContactId) {
+      setShowCreate(true);
+    }
+  }, [createDealFromPortfolio, portfolioContactId]);
+
   const deepLinkDealAttemptedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -141,17 +221,43 @@ export default function DealsPipelinePage() {
       } catch {
         if (!cancelled) {
           toast.error('Deal not found or you cannot open it.');
+          stripOpenDealFromUrl();
         }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [openDealId, loading, deals]);
+  }, [openDealId, loading, deals, stripOpenDealFromUrl]);
+
+  const showStageGateRequirements = useCallback(
+    (deal: Deal, errors: ReturnType<typeof getLocalDealStageGateErrors>) => {
+      setStageGateHighlight({ errors });
+      setSelectedDeal(deal);
+      pushOpenDealToUrl(deal.id);
+      setSheetOpen(true);
+
+      const actions = resolveBlockerDirectActions({ context: 'crm', errors });
+      const firstAction = actions[0];
+      if (firstAction) {
+        pushDealBlockerNav(resolveDealSheetIntentFromBlockerAction(firstAction, errors));
+      }
+    },
+    [pushDealBlockerNav, pushOpenDealToUrl],
+  );
 
   const handleStatusChange = async (id: string, status: string) => {
     const previousDeals = deals;
     const previousSelected = selectedDeal;
+    const currentDeal = previousDeals.find((deal) => deal.id === id) ?? previousSelected ?? null;
+
+    if (currentDeal) {
+      const localErrors = getLocalDealStageGateErrors(currentDeal, status);
+      if (localErrors.length > 0) {
+        showStageGateRequirements(currentDeal, localErrors);
+        return;
+      }
+    }
 
     setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, status } : d)));
     if (selectedDeal?.id === id) {
@@ -162,6 +268,7 @@ export default function DealsPipelinePage() {
       const updated = await dealsApi.updateStatus(id, status);
       setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
       setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
+      setStageGateHighlight(null);
     } catch (err) {
       setDeals(previousDeals);
       if (selectedDeal?.id === id) {
@@ -170,13 +277,7 @@ export default function DealsPipelinePage() {
       if (isStageGateApiError(err)) {
         const blockedDeal = previousDeals.find((deal) => deal.id === id) ?? previousSelected;
         if (blockedDeal) {
-          setTransitionBlocker({
-            item: blockedDeal,
-            targetStatus: status,
-            targetLabel: getDealStage(status)?.label ?? status,
-            errors: err.errors,
-            message: err.message,
-          });
+          showStageGateRequirements(blockedDeal, err.errors);
           return;
         }
       }
@@ -226,123 +327,6 @@ export default function DealsPipelinePage() {
     await handleStatusChange(id, status);
   };
 
-  const openDealFromBlocker = useCallback(
-    (intent?: DealSheetBlockerIntent, options?: { keepBlockerDialogOpen?: boolean }) => {
-      if (!transitionBlocker) return;
-      const currentDeal =
-        deals.find((deal) => deal.id === transitionBlocker.item.id) ?? transitionBlocker.item;
-      setSelectedDeal(currentDeal);
-      if (intent) {
-        pushDealBlockerNav(intent);
-      } else {
-        setDealBlockerNav(null);
-      }
-      setSheetOpen(true);
-      if (!options?.keepBlockerDialogOpen) {
-        setTransitionBlocker(null);
-      }
-    },
-    [deals, transitionBlocker, pushDealBlockerNav],
-  );
-
-  const handleOpenBlockedDeal = () => {
-    openDealFromBlocker(undefined, { keepBlockerDialogOpen: true });
-  };
-
-  const blockerActions = transitionBlocker
-    ? resolveBlockerDirectActions({ context: 'crm', errors: transitionBlocker.errors }).map(
-        (action) => ({
-          key: action.key,
-          label: action.label,
-          onClick: () => {
-            const intent = resolveDealSheetIntentFromBlockerAction(
-              action,
-              transitionBlocker.errors,
-            );
-            openDealFromBlocker(intent);
-          },
-        }),
-      )
-    : [];
-
-  const hasInvoiceOrPaymentGate = useMemo(
-    () =>
-      transitionBlocker?.errors.some((error) => {
-        const field = error.field.toLowerCase();
-        return field.includes('invoice') || field.includes('payment');
-      }) ?? false,
-    [transitionBlocker],
-  );
-
-  const handleRetryBlockedMove = async () => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-    await handleStatusChange(blocker.item.id, blocker.targetStatus);
-    setTransitionBlocker((current) => (current === blocker ? null : current));
-  };
-
-  const handleOverrideBlockedMove = async (reason: string) => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-    const updated = await dealsApi.updateStatus(blocker.item.id, blocker.targetStatus, {
-      overrideReason: reason,
-    });
-    setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
-    setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
-    setTransitionBlocker(null);
-    await fetchDeals();
-  };
-
-  const handleSaveBlockedDealOnly = async (data: Partial<Deal>) => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-
-    if (Object.keys(data).length === 0) {
-      toast.info('No changes to save.');
-      return;
-    }
-
-    setInlineSaving(true);
-    try {
-      const updated = await dealsApi.update(blocker.item.id, data);
-      setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
-      setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
-      setTransitionBlocker((current) =>
-        current && current.item.id === updated.id ? { ...current, item: updated } : current,
-      );
-      setBlockerEditorRevision((n) => n + 1);
-      toast.success('Deal saved. You can continue stage move when ready.');
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not save deal.'));
-    } finally {
-      setInlineSaving(false);
-    }
-  };
-
-  const handleSaveBlockedDealAndMove = async (data: Partial<Deal>) => {
-    const blocker = transitionBlocker;
-    if (!blocker) return;
-
-    setInlineSaving(true);
-    try {
-      const updated = await dealsApi.update(blocker.item.id, data);
-      setDeals((prev) => prev.map((deal) => (deal.id === updated.id ? updated : deal)));
-      setSelectedDeal((prev) => (prev?.id === updated.id ? updated : prev));
-      setTransitionBlocker((current) => (current ? { ...current, item: updated } : current));
-      await handleStatusChange(updated.id, blocker.targetStatus);
-      setTransitionBlocker(null);
-    } catch (err) {
-      if (isStageGateApiError(err)) {
-        setTransitionBlocker((current) => (current ? { ...current, errors: err.errors } : current));
-        toast.error(getApiErrorMessage(err, 'Could not save deal.'));
-        return;
-      }
-      toast.error(err instanceof Error ? err.message : 'Deal update failed.');
-    } finally {
-      setInlineSaving(false);
-    }
-  };
-
   const handleUpdate = async (id: string, data: Partial<Deal>) => {
     const previousDeals = deals;
     const previousSelected = selectedDeal;
@@ -355,9 +339,10 @@ export default function DealsPipelinePage() {
       const updated = await dealsApi.update(id, data);
       setDeals((prev) => prev.map((d) => (d.id === id ? updated : d)));
       setSelectedDeal((prev) => (prev?.id === id ? updated : prev));
-    } catch {
+    } catch (err) {
       setDeals(previousDeals);
       setSelectedDeal(previousSelected);
+      throw err;
     }
   };
 
@@ -366,6 +351,7 @@ export default function DealsPipelinePage() {
 
     setSheetOpen(false);
     setSelectedDeal(null);
+    stripOpenDealFromUrl();
     setDeals((prev) => prev.filter((d) => d.id !== id));
 
     try {
@@ -376,12 +362,13 @@ export default function DealsPipelinePage() {
   };
 
   const handleCardClick = (deal: Deal) => {
-    setSelectedDeal(deal);
     clearDealBlockerNav();
-    setSheetOpen(true);
+    setStageGateHighlight(null);
+    pushOpenDealToUrl(deal.id);
   };
 
   const handleOpenDealById = async (id: string) => {
+    pushOpenDealToUrl(id);
     const existingDeal = deals.find((deal) => deal.id === id);
     setSelectedDeal(existingDeal ?? null);
     clearDealBlockerNav();
@@ -399,81 +386,108 @@ export default function DealsPipelinePage() {
     requestStatusChange(itemId, toColumn);
   };
 
-  const kanbanColumns: KanbanColumn<Deal>[] = DEAL_STAGES.map((stage) => ({
-    key: stage.key,
-    label: stage.label,
-    color: stage.color,
-    items: deals.filter((d) => d.status === stage.key),
-  }));
+  const handleReorder = useCallback((itemId: string, columnKey: string, toIndex: number) => {
+    setDeals((prev) => reorderCrmKanbanColumn(prev, itemId, columnKey, toIndex));
+  }, []);
 
-  const totalCount = deals.length;
-  const activeCount = deals.filter((d) => d.status !== 'FAILED' && d.status !== 'WON').length;
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
 
-  const filterConfigs = [
-    {
-      key: 'type',
-      label: 'Type',
-      options: DEAL_TYPES.map((t) => ({ value: t.value, label: t.label })),
-    },
-    {
-      key: 'status',
-      label: 'Stage',
-      options: DEAL_STAGES.map((s) => ({ value: s.key, label: s.label })),
-    },
-  ];
+  const displayDeals = useMemo(() => {
+    return deals.filter((deal) => {
+      if (filters.status && filters.status !== 'all') {
+        return deal.status === filters.status;
+      }
+      return matchesBoardLifecycleScope(deal.status, DEAL_STAGES, boardScope);
+    });
+  }, [deals, filters.status, boardScope]);
+
+  const kanbanColumns = useMemo(
+    () =>
+      buildScopedKanbanColumns({
+        items: displayDeals,
+        stages: DEAL_STAGES,
+        scopeValue: boardScope,
+      }),
+    [displayDeals, boardScope],
+  );
+
+  const dealTerminalZones = useMemo(() => buildTerminalDropZones(DEAL_STAGES), []);
+
+  const dealKanbanQuickCreate = useMemo(
+    () => createDealKanbanQuickCreateConfig(() => setShowCreate(true)),
+    [],
+  );
+
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'boardScope',
+        label: 'Status',
+        includeAllOption: false,
+        defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
+        options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
+          value: option.value,
+          label: option.label,
+        })),
+      },
+      {
+        key: 'type',
+        label: 'Type',
+        options: DEAL_TYPES.map((t) => ({ value: t.value, label: t.label })),
+      },
+      {
+        key: 'status',
+        label: 'Stage',
+        options: DEAL_STAGES.map((s) => ({ value: s.key, label: s.label })),
+      },
+    ],
+    [],
+  );
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search deals by code, name, contact, company, orders, marketing…"
+          filters={filterConfigs}
+          filterValues={{
+            boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+            ...filters,
+          }}
+          onFilterChange={(key: string, value: string) =>
+            setFilters((prev) => {
+              if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+                const { boardScope: _, ...rest } = prev;
+                return rest;
+              }
+              return { ...prev, [key]: value };
+            })
+          }
+          onClearAll={() => setFilters({})}
+        />
+      ),
+      viewMode: <ViewModeSwitch value={view} onChange={setView} options={DEAL_VIEW_OPTIONS} />,
+      trailing: (
+        <Button onClick={() => setShowCreate(true)}>
+          <Plus size={16} aria-hidden />
+          New Deal
+        </Button>
+      ),
+    }),
+    [filterConfigs, filters, search, view],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <div className="shrink-0">
-        <PageHeader
-          title="Deal Pipeline"
-          description={`${totalCount} deals · ${activeCount} active`}
-        >
-          <Button variant="outline" size="icon" onClick={fetchDeals}>
-            <RefreshCcw size={16} />
-          </Button>
-          <div className="border-border flex rounded-lg border">
-            <Button
-              variant={view === 'kanban' ? 'secondary' : 'ghost'}
-              size="icon-sm"
-              onClick={() => setView('kanban')}
-              className="rounded-r-none"
-            >
-              <LayoutGrid size={14} />
-            </Button>
-            <Button
-              variant={view === 'list' ? 'secondary' : 'ghost'}
-              size="icon-sm"
-              onClick={() => setView('list')}
-              className="rounded-l-none"
-            >
-              <List size={14} />
-            </Button>
-          </div>
-          <Button onClick={() => setShowCreate(true)}>
-            <Plus size={16} />
-            New Deal
-          </Button>
-        </PageHeader>
-      </div>
-
-      <div className="shrink-0">
-        <FilterBar
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search deals by contact, company, amount..."
-          filters={filterConfigs}
-          filterValues={filters}
-          onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-          onClearFilters={() => setFilters({})}
-        />
-      </div>
-
       {loading ? (
         <LoadingState variant="cards" count={3} />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchDeals} />
-      ) : deals.length === 0 ? (
+      ) : displayDeals.length === 0 ? (
         <EmptyState
           icon={Handshake}
           title="No deals yet"
@@ -486,7 +500,8 @@ export default function DealsPipelinePage() {
           }
         />
       ) : view === 'kanban' ? (
-        <div className="min-h-0 flex-1">
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
           <KanbanBoard
             columns={kanbanColumns}
             renderCard={(deal) => (
@@ -498,79 +513,109 @@ export default function DealsPipelinePage() {
             )}
             getItemId={(deal) => deal.id}
             onMove={handleMove}
+            onReorderWithinColumn={handleReorder}
             columnWidth={270}
             emptyMessage="No deals"
+            terminalDropZones={
+              shouldShowTerminalDropBar(boardScope) ? dealTerminalZones : undefined
+            }
+            columnQuickCreate={dealKanbanQuickCreate}
+            renderColumnHeader={(column) => (
+              <KanbanColumnMoneyTotal column={column} getAmount={(deal) => deal.amount} />
+            )}
           />
         </div>
       ) : (
-        <div className="border-border min-h-0 flex-1 overflow-auto rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Stage</TableHead>
-                <TableHead>Seller</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {deals.map((deal) => {
-                const stage = getDealStage(deal.status);
-                return (
-                  <TableRow
-                    key={deal.id}
-                    className="cursor-pointer"
-                    onClick={() => handleCardClick(deal)}
-                  >
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{deal.name || deal.code}</p>
-                        <p className="text-muted-foreground text-xs">{deal.code}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : '—'}
-                    </TableCell>
-                    <TableCell className="font-semibold">{formatAmount(deal.amount)}</TableCell>
-                    <TableCell>
-                      <StatusBadge
-                        label={deal.type.replace(/_/g, ' ')}
-                        variant={deal.type === 'EXTENSION' ? 'blue' : 'default'}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {stage && (
+        <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <CrmPipelineScopeBanner scope={boardScope as BoardLifecycleScope} pipeline="deal" />
+          <div className="border-border min-h-0 flex-1 overflow-auto rounded-xl border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Stage</TableHead>
+                  {boardScope === 'CLOSED' ? <TableHead>Closed</TableHead> : null}
+                  <TableHead>Seller</TableHead>
+                  <TableHead>Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {displayDeals.map((deal) => {
+                  const stage = getDealStage(deal.status);
+                  const dealTypeVisual = getDealTypePresentation(deal.type);
+                  return (
+                    <TableRow
+                      key={deal.id}
+                      className="cursor-pointer"
+                      onClick={() => handleCardClick(deal)}
+                    >
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{deal.name || deal.code}</p>
+                          <p className="text-muted-foreground text-xs">{deal.code}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {deal.contact ? `${deal.contact.firstName} ${deal.contact.lastName}` : '—'}
+                      </TableCell>
+                      <TableCell className="font-semibold">{formatAmount(deal.amount)}</TableCell>
+                      <TableCell>
                         <StatusBadge
-                          label={stage.label}
-                          variant={stage.variant}
-                          dot
-                          dotColor={stage.color}
+                          label={dealTypeVisual.label}
+                          variant={dealTypeVisual.badgeVariant}
                         />
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : '—'}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(deal.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      </TableCell>
+                      <TableCell>
+                        {stage && (
+                          <StatusBadge
+                            label={stage.label}
+                            variant={stage.variant}
+                            dot
+                            dotColor={stage.color}
+                          />
+                        )}
+                      </TableCell>
+                      {boardScope === 'CLOSED' ? (
+                        <TableCell className="text-muted-foreground text-xs">
+                          {new Date(deal.updatedAt).toLocaleDateString()}
+                        </TableCell>
+                      ) : null}
+                      <TableCell className="text-muted-foreground">
+                        {deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : '—'}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(deal.createdAt).toLocaleDateString()}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 
-      <CreateDealDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchDeals} />
+      <CreateDealDialog
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        onCreated={handleDealCreated}
+        prefill={dealPrefill}
+      />
 
       <DealSheet
         deal={selectedDeal}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) {
+            setSelectedDeal(null);
+            setStageGateHighlight(null);
+            stripOpenDealFromUrl();
+          }
+        }}
         onUpdate={handleUpdate}
         onStatusChange={requestStatusChange}
         onDelete={handleDelete}
@@ -578,45 +623,7 @@ export default function DealsPipelinePage() {
         onOpenDeal={handleOpenDealById}
         blockerNavigation={dealBlockerNav}
         onBlockerNavigationConsumed={clearDealBlockerNav}
-      />
-
-      <TransitionBlockerDialog
-        open={Boolean(transitionBlocker)}
-        blocker={transitionBlocker}
-        entityLabel="Deal"
-        itemLabel={transitionBlocker?.item.name ?? transitionBlocker?.item.code ?? ''}
-        onOpenChange={(open) => {
-          if (!open) setTransitionBlocker(null);
-        }}
-        onOpenDetails={handleOpenBlockedDeal}
-        onRetry={handleRetryBlockedMove}
-        directActions={blockerActions}
-        onOverride={handleOverrideBlockedMove}
-        inlineOnly
-        inlineEditor={
-          transitionBlocker ? (
-            <DealTransitionInlineEditor
-              key={`${transitionBlocker.item.id}-${transitionBlocker.targetStatus}-${blockerEditorRevision}`}
-              deal={transitionBlocker.item}
-              errors={transitionBlocker.errors}
-              saving={inlineSaving}
-              onSaveOnly={handleSaveBlockedDealOnly}
-              onSaveAndMove={handleSaveBlockedDealAndMove}
-            />
-          ) : null
-        }
-        businessActionLabel={hasInvoiceOrPaymentGate ? 'Create invoice' : undefined}
-        onBusinessAction={
-          hasInvoiceOrPaymentGate
-            ? () =>
-                openDealFromBlocker(
-                  { kind: 'invoice-tab-expand-create' },
-                  {
-                    keepBlockerDialogOpen: true,
-                  },
-                )
-            : undefined
-        }
+        stageGateHighlight={selectedDeal && stageGateHighlight ? stageGateHighlight : null}
       />
 
       <StageTransitionConfirmDialog
@@ -636,6 +643,14 @@ export default function DealsPipelinePage() {
         }}
       />
     </div>
+  );
+}
+
+export default function DealsPipelinePage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <DealsPipelinePageContent />
+    </Suspense>
   );
 }
 

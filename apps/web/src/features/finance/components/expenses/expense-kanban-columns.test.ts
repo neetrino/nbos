@@ -11,7 +11,7 @@ function mockExpense(overrides: Partial<Expense>): Expense {
     amount: '100.00',
     frequency: 'ONE_TIME',
     dueDate: null,
-    status: 'THIS_MONTH',
+    status: 'PLANNED',
     projectId: null,
     isPassThrough: false,
     taxStatus: 'TAX',
@@ -23,9 +23,9 @@ function mockExpense(overrides: Partial<Expense>): Expense {
 }
 
 describe('buildExpenseKanbanColumns', () => {
-  it('places UNPAID without due date in Due Now and omits PAID from NBOS board columns', () => {
+  it('places DUE_NOW without due date in Due Now and omits PAID from NBOS board columns', () => {
     const columns = buildExpenseKanbanColumns([
-      mockExpense({ id: 'a', status: 'UNPAID', dueDate: null }),
+      mockExpense({ id: 'a', status: 'DUE_NOW', dueDate: null }),
       mockExpense({ id: 'b', status: 'PAID' }),
     ]);
     const dueNow = columns.find((c) => c.key === 'DUE_NOW');

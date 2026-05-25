@@ -85,7 +85,7 @@ export class SupportController {
     body: {
       title: string;
       projectId: string;
-      category: string;
+      category?: string;
       description?: string;
       productId?: string;
       coverageDecision?: string | null;

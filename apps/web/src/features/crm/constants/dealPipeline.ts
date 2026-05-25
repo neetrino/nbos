@@ -6,6 +6,7 @@ export interface DealStage {
   shortLabel: string;
   variant: StatusVariant;
   color: string;
+  hexColor: string;
   terminal?: boolean;
 }
 
@@ -16,6 +17,7 @@ export const DEAL_STAGES: DealStage[] = [
     shortLabel: 'Start',
     variant: 'blue',
     color: 'bg-blue-400',
+    hexColor: '#60A5FA',
   },
   {
     key: 'DISCUSS_NEEDS',
@@ -23,20 +25,7 @@ export const DEAL_STAGES: DealStage[] = [
     shortLabel: 'Discuss',
     variant: 'blue',
     color: 'bg-blue-500',
-  },
-  {
-    key: 'MEETING',
-    label: 'Meeting',
-    shortLabel: 'Meeting',
-    variant: 'indigo',
-    color: 'bg-indigo-500',
-  },
-  {
-    key: 'CAN_WE_DO_IT',
-    label: 'Can We Do It?',
-    shortLabel: 'Can We?',
-    variant: 'purple',
-    color: 'bg-purple-500',
+    hexColor: '#3B82F6',
   },
   {
     key: 'SEND_OFFER',
@@ -44,6 +33,7 @@ export const DEAL_STAGES: DealStage[] = [
     shortLabel: 'Offer',
     variant: 'violet',
     color: 'bg-violet-500',
+    hexColor: '#8B5CF6',
   },
   {
     key: 'GET_ANSWER',
@@ -51,6 +41,7 @@ export const DEAL_STAGES: DealStage[] = [
     shortLabel: 'Answer',
     variant: 'fuchsia',
     color: 'bg-fuchsia-500',
+    hexColor: '#D946EF',
   },
   {
     key: 'DEPOSIT_AND_CONTRACT',
@@ -58,6 +49,7 @@ export const DEAL_STAGES: DealStage[] = [
     shortLabel: 'Deposit',
     variant: 'amber',
     color: 'bg-amber-500',
+    hexColor: '#F59E0B',
   },
   {
     key: 'FAILED',
@@ -65,6 +57,7 @@ export const DEAL_STAGES: DealStage[] = [
     shortLabel: 'Failed',
     variant: 'red',
     color: 'bg-red-500',
+    hexColor: '#EF4444',
     terminal: true,
   },
   {
@@ -73,6 +66,7 @@ export const DEAL_STAGES: DealStage[] = [
     shortLabel: 'Won',
     variant: 'green',
     color: 'bg-green-600',
+    hexColor: '#16A34A',
     terminal: true,
   },
 ];
@@ -141,11 +135,4 @@ export function getDealStage(key: string): DealStage | undefined {
   return DEAL_STAGES.find((s) => s.key === key);
 }
 
-export function formatAmount(amount: number | null): string {
-  if (!amount) return '—';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'AMD',
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+export { AMD_CURRENCY_SYMBOL, formatMoneyDramOrDash as formatAmount } from '@/lib/format/money';

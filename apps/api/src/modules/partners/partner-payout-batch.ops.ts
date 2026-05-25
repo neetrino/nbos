@@ -136,7 +136,7 @@ export async function approvePartnerPayoutBatch(
         amount: existing.totalAmount,
         frequency: 'ONE_TIME',
         dueDate: payoutDate,
-        status: 'UNPAID',
+        status: 'DUE_NOW',
         notes: formatExpenseNotes(existing.id, approvedNotes),
       },
     });

@@ -1,11 +1,17 @@
 import { api } from '../api';
-import type { DeliveryLifecycleProjection } from './projects';
+import type { ChecklistStageProgress, DeliveryLifecycleProjection } from './projects';
 
 export interface ProductEmployee {
   id: string;
   firstName: string;
   lastName: string;
   email?: string;
+}
+
+export interface ProductClosedByRef {
+  id: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface Product {
@@ -17,17 +23,48 @@ export interface Product {
   status: string;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   pmId: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline: string | null;
   description: string | null;
   checklistTemplateId: string | null;
+  /** ISO-like language codes (e.g. hy, en, ru). */
+  languages?: string[];
   clientAcceptedAt: string | null;
   clientAcceptedBy: string | null;
   clientAcceptanceNote: string | null;
+  closedAt?: string | null;
+  closedBy?: ProductClosedByRef | null;
   createdAt: string;
   updatedAt: string;
-  project: { id: string; name: string; code: string };
+  project: {
+    id: string;
+    name: string;
+    code: string;
+    companyId?: string | null;
+    company?: { id: string; name: string } | null;
+    contactId?: string | null;
+    contact?: { id: string; firstName: string; lastName: string } | null;
+  };
   pm: ProductEmployee | null;
+  order?: {
+    id: string;
+    code?: string;
+    status?: string;
+    invoices?: Array<{ moneyStatus: string }>;
+  } | null;
   _count: { extensions: number; tasks: number; tickets: number };
+  checklistStageProgress?: ChecklistStageProgress | null;
+}
+
+export interface ProductTechnicalProfileRef {
+  productionUrl: string | null;
+  stagingUrl: string | null;
+  repositoryUrl: string | null;
+  hostingProvider: string | null;
+  technicalOwnerId: string | null;
 }
 
 export interface FullProduct extends Product {
@@ -36,6 +73,11 @@ export interface FullProduct extends Product {
   tickets: ProductTicketRef[];
   order: ProductOrderRef | null;
   doneReadiness?: ProductDoneReadiness;
+  technicalProfiles?: ProductTechnicalProfileRef[];
+  developer?: ProductEmployee | null;
+  designer?: ProductEmployee | null;
+  technicalSpecialist?: ProductEmployee | null;
+  qaLead?: ProductEmployee | null;
 }
 
 export interface ProductDoneReadiness {
@@ -100,9 +142,18 @@ export interface ProductOrderRef {
   id: string;
   code: string;
   type: string;
+  paymentType: string;
   totalAmount: string;
   currency: string;
   status: string;
+  deal?: {
+    id: string;
+    code: string;
+    offerFileUrl?: string | null;
+    contractFileUrl?: string | null;
+    seller?: ProductEmployee | null;
+  } | null;
+  invoices?: Array<{ moneyStatus: string }>;
 }
 
 export interface ProductStats {
@@ -125,6 +176,7 @@ export interface CreateProductData {
   deadline?: string;
   description?: string;
   checklistTemplateId?: string;
+  languages?: string[];
 }
 
 export interface UpdateProductData {
@@ -132,9 +184,14 @@ export interface UpdateProductData {
   productCategory?: string;
   productType?: string;
   pmId?: string | null;
+  developerId?: string | null;
+  designerId?: string | null;
+  technicalSpecialistId?: string | null;
+  qaLeadId?: string | null;
   deadline?: string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
+  languages?: string[];
 }
 
 export interface PauseDeliveryData {
@@ -154,6 +211,45 @@ export interface ConfirmAcceptanceData {
   acceptedBy?: string;
   note?: string;
 }
+
+export interface ProductAccessSlotBoundCredential {
+  id: string;
+  name: string;
+  category: string;
+  credentialType: string;
+  login: string | null;
+  url: string | null;
+}
+
+export interface ProductAccessSlotBindingItem {
+  bindingId: string;
+  boundCredential: ProductAccessSlotBoundCredential | null;
+}
+
+export interface ProductAccessSlotRow {
+  slotKey: string;
+  label: string;
+  required: boolean;
+  kind: 'credential';
+  allowedCategories: string[];
+  defaultCredentialType: string | null;
+  bindings: ProductAccessSlotBindingItem[];
+}
+
+export interface ProductAccessSlotsResponse {
+  productId: string;
+  slots: ProductAccessSlotRow[];
+}
+
+export interface ProductAccessSlotBindMeta {
+  requestedSlotKey: string;
+  effectiveSlotKey: string;
+  effectiveSlotLabel: string;
+}
+
+export type ProductAccessSlotsBindResponse = ProductAccessSlotsResponse & {
+  bindMeta?: ProductAccessSlotBindMeta;
+};
 
 export const productsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData> {
@@ -219,6 +315,34 @@ export const productsApi = {
     const resp = await api.get<ProductStats>('/api/projects/products/stats', {
       params: projectId ? { projectId } : undefined,
     });
+    return resp.data;
+  },
+
+  async getAccessSlots(productId: string): Promise<ProductAccessSlotsResponse> {
+    const resp = await api.get<ProductAccessSlotsResponse>(
+      `/api/projects/products/${productId}/access-slots`,
+    );
+    return resp.data;
+  },
+
+  async bindAccessSlot(
+    productId: string,
+    body: { slotKey: string; credentialId: string },
+  ): Promise<ProductAccessSlotsBindResponse> {
+    const resp = await api.put<ProductAccessSlotsBindResponse>(
+      `/api/projects/products/${productId}/access-slots`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async unbindAccessSlotBinding(
+    productId: string,
+    bindingId: string,
+  ): Promise<ProductAccessSlotsResponse> {
+    const resp = await api.delete<ProductAccessSlotsResponse>(
+      `/api/projects/products/${productId}/access-slots/bindings/${encodeURIComponent(bindingId)}`,
+    );
     return resp.data;
   },
 };

@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import type { KpiScorecardMetric } from '@/features/my-company/kpi-policies/kpi-scorecard-metrics.types';
+import { payrollFieldLabel } from '@/features/finance/utils/payroll-sales-kpi-scorecard-labels';
 import { payrollRunsApi, type PayrollRunDetail } from '@/lib/api/payroll-runs';
 
 const KPI_HELP =
@@ -43,9 +45,12 @@ function validateKpiInputs(plan: string, actual: string): string | null {
 
 export function PayrollRunSalesKpiSection(props: {
   run: PayrollRunDetail;
+  scorecardMetrics?: KpiScorecardMetric[];
   onUpdated: (next: PayrollRunDetail) => void;
 }) {
-  const { run, onUpdated } = props;
+  const { run, scorecardMetrics = [], onUpdated } = props;
+  const planLabel = payrollFieldLabel(scorecardMetrics, 'kpiSalesPlanAmount');
+  const actualLabel = payrollFieldLabel(scorecardMetrics, 'kpiSalesActualAmount');
   const [plan, setPlan] = useState('');
   const [actual, setActual] = useState('');
   const [saving, setSaving] = useState(false);
@@ -116,7 +121,9 @@ export function PayrollRunSalesKpiSection(props: {
       ) : null}
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="payroll-kpi-plan">Monthly sales plan</Label>
+          <Label htmlFor="payroll-kpi-plan">
+            {planLabel ? `${planLabel} (plan)` : 'Monthly sales plan'}
+          </Label>
           <Input
             id="payroll-kpi-plan"
             type="text"
@@ -127,9 +134,19 @@ export function PayrollRunSalesKpiSection(props: {
             placeholder="e.g. 5000000"
             autoComplete="off"
           />
+          {run.kpiSalesPlanSuggestedAmount != null ? (
+            <p className="text-muted-foreground text-xs">
+              Prior month run plan:{' '}
+              <span className="text-foreground font-medium tabular-nums">
+                {moneyStringOrEmpty(run.kpiSalesPlanSuggestedAmount)}
+              </span>
+            </p>
+          ) : null}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="payroll-kpi-actual">Sales actual (same month)</Label>
+          <Label htmlFor="payroll-kpi-actual">
+            {actualLabel ? `${actualLabel} (actual)` : 'Sales actual (same month)'}
+          </Label>
           <Input
             id="payroll-kpi-actual"
             type="text"
@@ -154,6 +171,20 @@ export function PayrollRunSalesKpiSection(props: {
           <Button type="button" size="sm" disabled={saving} onClick={() => void handleSave()}>
             Save KPI inputs
           </Button>
+          {run.kpiSalesPlanSuggestedAmount != null ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={saving}
+              onClick={() => {
+                setPlan(moneyStringOrEmpty(run.kpiSalesPlanSuggestedAmount));
+                setError(null);
+              }}
+            >
+              Use prior month plan
+            </Button>
+          ) : null}
           <Button
             type="button"
             size="sm"

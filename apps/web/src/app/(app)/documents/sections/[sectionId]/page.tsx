@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, FileText, Plus, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, FileText, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import { PageHero, EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
@@ -114,21 +114,20 @@ export default function DocumentSectionPage() {
         >
           <ArrowLeft size={14} /> Documents
         </Link>
-        <PageHeader
+        <PageHero
           title={section?.name ?? 'Section'}
-          description={section?.description ?? 'Documents in this section.'}
-        >
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="gap-1" onClick={load} disabled={loading}>
-              <RefreshCcw size={14} /> Refresh
-            </Button>
-            {canAdd ? (
-              <Button size="sm" className="gap-1" onClick={() => setCreateOpen(true)}>
-                <Plus size={14} /> New in section
+          trailing={
+            canAdd ? (
+              <Button type="button" size="sm" className="gap-1" onClick={() => setCreateOpen(true)}>
+                <Plus size={14} aria-hidden />
+                New in section
               </Button>
-            ) : null}
-          </div>
-        </PageHeader>
+            ) : null
+          }
+        />
+        <p className="text-muted-foreground text-sm">
+          {section?.description ?? 'Documents in this section.'}
+        </p>
       </div>
 
       {!loading && !error && section && canManageSections ? (

@@ -1,7 +1,8 @@
+import { EXPENSE_BACKLOG_FIXED_STATUS } from '../../constants/project-expenses-drilldown';
 import {
-  EXPENSE_BACKLOG_FIXED_STATUS,
-  EXPENSE_CLOSED_FIXED_STATUS,
-} from '../../constants/project-expenses-drilldown';
+  clearPayrollPayNowFilters,
+  payNowDefaultExpenseFilters,
+} from '../../constants/expense-payroll-filter';
 
 export type ExpensesPageVariant = 'default' | 'backlog' | 'closed';
 
@@ -10,9 +11,9 @@ export function initialExpenseFilterRecord(variant: ExpensesPageVariant): Record
     return { status: EXPENSE_BACKLOG_FIXED_STATUS };
   }
   if (variant === 'closed') {
-    return { status: EXPENSE_CLOSED_FIXED_STATUS };
+    return {};
   }
-  return {};
+  return payNowDefaultExpenseFilters();
 }
 
 export function clearedExpenseFilterRecord(
@@ -25,11 +26,9 @@ export function clearedExpenseFilterRecord(
       : { status: EXPENSE_BACKLOG_FIXED_STATUS };
   }
   if (variant === 'closed') {
-    return projectIdFromUrl
-      ? { status: EXPENSE_CLOSED_FIXED_STATUS, project: projectIdFromUrl }
-      : { status: EXPENSE_CLOSED_FIXED_STATUS };
+    return projectIdFromUrl ? { project: projectIdFromUrl } : {};
   }
-  return {};
+  return payNowDefaultExpenseFilters();
 }
 
 export function expenseFiltersWithoutProjectDrilldown(
@@ -41,7 +40,7 @@ export function expenseFiltersWithoutProjectDrilldown(
   if (variant === 'backlog') {
     next.status = EXPENSE_BACKLOG_FIXED_STATUS;
   } else if (variant === 'closed') {
-    next.status = EXPENSE_CLOSED_FIXED_STATUS;
+    delete next.status;
   }
   return next;
 }

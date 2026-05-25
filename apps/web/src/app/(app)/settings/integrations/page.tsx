@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Cable, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState, PageHero } from '@/components/shared';
 import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
 
 const PROVIDERS_KEY = 'INTEGRATION_PROVIDER';
@@ -160,10 +160,10 @@ export default function IntegrationsPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <PageHeader
-          title="Integrations"
-          description="Provider registry, readiness statuses, and required setup lists."
-        />
+        <PageHero title="Integrations" />
+        <p className="text-muted-foreground text-sm">
+          Provider registry, readiness statuses, and required setup lists.
+        </p>
         <LoadingState />
       </div>
     );
@@ -176,10 +176,10 @@ export default function IntegrationsPage() {
   if (providers.length === 0) {
     return (
       <div className="space-y-4">
-        <PageHeader
-          title="Integrations"
-          description="Provider registry, readiness statuses, and required setup lists."
-        />
+        <PageHero title="Integrations" />
+        <p className="text-muted-foreground text-sm">
+          Provider registry, readiness statuses, and required setup lists.
+        </p>
         <EmptyState
           icon={Cable}
           title="Integration registry is empty"
@@ -199,22 +199,28 @@ export default function IntegrationsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHero
         title="Integrations"
-        description="Registry of providers with explicit setup checklist and current readiness status."
-      >
-        <Button size="sm" variant="outline" onClick={() => void loadAll()}>
-          <RefreshCcw size={14} />
-          Refresh
-        </Button>
-        <Button
-          size="sm"
-          onClick={() => void bootstrapDefaults()}
-          disabled={savingProvider === '__bootstrap__'}
-        >
-          Bootstrap defaults
-        </Button>
-      </PageHeader>
+        trailing={
+          <>
+            <Button type="button" size="sm" variant="outline" onClick={() => void loadAll()}>
+              <RefreshCcw size={14} aria-hidden />
+              Refresh
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => void bootstrapDefaults()}
+              disabled={savingProvider === '__bootstrap__'}
+            >
+              Bootstrap defaults
+            </Button>
+          </>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        Registry of providers with explicit setup checklist and current readiness status.
+      </p>
 
       <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
         <p className="text-muted-foreground text-sm">

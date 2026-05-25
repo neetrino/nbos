@@ -91,6 +91,11 @@ model Invoice {
   paidDate              DateTime?              @map("paid_date")
   govInvoiceId          String?                @map("gov_invoice_id")
   paymentLink           String?                @map("payment_link")
+  /// Accountant WhatsApp request sent (Tax invoices); see `02-Invoices-and-Payments.md`.
+  officialInvoiceRequestSent Boolean            @default(false) @map("official_invoice_request_sent")
+  officialInvoiceSentAt      DateTime?          @map("official_invoice_sent_at")
+  officialInvoiceCancelledAt DateTime?          @map("official_invoice_cancelled_at")
+  notificationsEnabled       Boolean            @default(true) @map("notifications_enabled")
   createdAt             DateTime               @default(now()) @map("created_at")
   updatedAt             DateTime               @updatedAt @map("updated_at")
 
@@ -117,8 +122,8 @@ model Payment {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  invoice   Invoice   @relation(fields: [invoiceId], references: [id])
-  confirmer Employee? @relation("PaymentConfirmer", fields: [confirmedBy], references: [id])
+  invoice        Invoice         @relation(fields: [invoiceId], references: [id])
+  confirmer      Employee?       @relation("PaymentConfirmer", fields: [confirmedBy], references: [id])
   partnerAccrual PartnerAccrual?
 
   @@map("payments")
@@ -222,15 +227,23 @@ enum SubscriptionStatusEnum {
   COMPLETED
 }
 
+enum SubscriptionBillingFrequencyEnum {
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
 model Subscription {
   id         String                 @id @default(uuid())
   code       String                 @unique
   projectId  String                 @map("project_id")
   type       SubscriptionTypeEnum
-  amount     Decimal                @db.Decimal(12, 2)
+  baseMonthlyAmount Decimal                         @map("base_monthly_amount") @db.Decimal(12, 2)
+  billingFrequency  SubscriptionBillingFrequencyEnum @default(MONTHLY) @map("billing_frequency")
   billingDay Int                    @map("billing_day")
   taxStatus  TaxStatus              @default(TAX) @map("tax_status")
-  startDate  DateTime               @map("start_date")
+  billingStartDate DateTime         @map("billing_start_date")
+  notificationsEnabled Boolean      @default(true) @map("notifications_enabled")
   endDate    DateTime?              @map("end_date")
   status     SubscriptionStatusEnum @default(ACTIVE)
   partnerId  String?                @map("partner_id")
@@ -272,12 +285,14 @@ enum ExpenseFrequency {
 }
 
 enum ExpenseStatusEnum {
-  THIS_MONTH
-  PAY_NOW
-  DELAYED
+  PLANNED
+  DUE_SOON
+  DUE_NOW
+  OVERDUE
   ON_HOLD
+  BACKLOG
   PAID
-  UNPAID
+  CANCELLED
 }
 
 enum ExpenseBacklogReasonEnum {
@@ -320,7 +335,7 @@ model Expense {
   amount                Decimal                   @db.Decimal(12, 2)
   frequency             ExpenseFrequency          @default(ONE_TIME)
   dueDate               DateTime?                 @map("due_date")
-  status                ExpenseStatusEnum         @default(THIS_MONTH)
+  status                ExpenseStatusEnum         @default(PLANNED)
   projectId             String?                   @map("project_id")
   expensePlanId         String?                   @map("expense_plan_id")
   clientServiceRecordId String?                   @map("client_service_record_id")
@@ -447,6 +462,7 @@ model BonusEntry {
 
   @@index([orderId, salesBonusSlot])
   @@index([orderId, salesAccrualInvoiceId])
+  /// Partial unique indexes: `bonus_entries_sales_slotted_unique`, `bonus_entries_sales_invoice_employee_unique`.
   @@map("bonus_entries")
 }
 
@@ -462,6 +478,14 @@ model BonusRelease {
   amount                Decimal                @db.Decimal(12, 2)
   /// Amount applied to `SalaryLine.bonusesTotal` when INCLUDED_IN_PAYROLL (may differ from `amount` for SALES + KPI).
   payrollIncludedAmount Decimal?               @map("payroll_included_amount") @db.Decimal(12, 2)
+  /// `amount - payrollIncludedAmount` when SALES KPI reduces attach; cleared on detach.
+  kpiBurnedAmount       Decimal?               @map("kpi_burned_amount") @db.Decimal(12, 2)
+  /// Plain-language audit when SALES KPI reduces attach (cleared on detach).
+  kpiBurnedReason       String?                @map("kpi_burned_reason")
+  /// KPI-scaled amount not included this month because salary-line bonus cap was reached.
+  payrollCarryOverAmount Decimal?              @map("payroll_carry_over_amount") @db.Decimal(12, 2)
+  /// Balance still to apply on a later payroll month (decremented FIFO on attach).
+  payrollCarryOverRemaining Decimal?           @map("payroll_carry_over_remaining") @db.Decimal(12, 2)
   releaseType           BonusReleaseTypeEnum   @map("release_type")
   reason                String?
   approvedById          String?                @map("approved_by_id")
@@ -563,11 +587,17 @@ model PayrollRun {
 }
 
 model SalaryLine {
-  id               String               @id @default(uuid())
-  payrollRunId     String               @map("payroll_run_id")
-  employeeId       String               @map("employee_id")
-  baseSalary       Decimal              @default(0) @map("base_salary") @db.Decimal(12, 2)
+  id                    String               @id @default(uuid())
+  payrollRunId          String               @map("payroll_run_id")
+  employeeId            String               @map("employee_id")
+  compensationProfileId String?              @map("compensation_profile_id")
+  baseSalary            Decimal              @default(0) @map("base_salary") @db.Decimal(12, 2)
   bonusesTotal     Decimal              @default(0) @map("bonuses_total") @db.Decimal(12, 2)
+  /// Prior-month cap carry included in `bonuses_total` this run (FIFO apply at attach).
+  payrollCarryAppliedAmount Decimal?     @map("payroll_carry_applied_amount") @db.Decimal(12, 2)
+  /// Employee sales KPI override; null uses payroll run-level plan/actual at attach.
+  kpiSalesPlanAmount        Decimal?     @map("kpi_sales_plan_amount") @db.Decimal(14, 2)
+  kpiSalesActualAmount      Decimal?     @map("kpi_sales_actual_amount") @db.Decimal(14, 2)
   adjustmentsTotal Decimal              @default(0) @map("adjustments_total") @db.Decimal(12, 2)
   deductionsTotal  Decimal              @default(0) @map("deductions_total") @db.Decimal(12, 2)
   totalPayable     Decimal              @default(0) @map("total_payable") @db.Decimal(12, 2)
@@ -578,9 +608,10 @@ model SalaryLine {
   createdAt        DateTime             @default(now()) @map("created_at")
   updatedAt        DateTime             @updatedAt @map("updated_at")
 
-  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
-  employee   Employee   @relation(fields: [employeeId], references: [id])
-  expense    Expense?   @relation(fields: [expenseId], references: [id])
+  payrollRun            PayrollRun             @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee              Employee               @relation(fields: [employeeId], references: [id])
+  compensationProfile   CompensationProfile?   @relation(fields: [compensationProfileId], references: [id])
+  expense               Expense?               @relation(fields: [expenseId], references: [id])
 
   @@unique([payrollRunId, employeeId])
   @@index([payrollRunId])

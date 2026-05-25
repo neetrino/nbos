@@ -60,7 +60,7 @@ Unavailable module -> do not crash the current module.
 - **Vision/Traction Organizer (V/TO):** Core Focus, 10-year target, 3-year picture, 1-year plan
 - **OKR-lite:** 3–5 годовых Objectives с измеримыми Key Results
 - **Pricing Rules:** типы оплаты (Classic 50/50, Classic 30/30/40, Subscription), правила расчёта бонусов
-- **Product Taxonomy:** типы проектов (White Label / Mix / Custom Code), типы продуктов (Website, App, CRM, Logo, SMM), типы заказов (Product, Extension, Subscription)
+- **Product Taxonomy:** product category, product type, extension size, technical profile, payment model, типы заказов (Product, Extension, Subscription)
 - **RBAC Rules:** матрица доступов по ролям (CEO, Seller, PM, Dev, Finance, Ops, Junior)
 - **Bonus Rules:** формулы начисления, KPI-gates, caps, product bonus pool releases, clawback
 - **Partner Rules:** процент партнёра (30%), условия выплат, типы партнёров

@@ -1,11 +1,12 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import {
-  assertAttributionUpdateAllowed,
-  type AttributionForValidation,
-  validateAttributionGate,
-} from '../attribution-gate';
+import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
+import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
+import { validateLeadStageGate } from './lead-stage-gate';
+import { resolveLeadCreateDefaults } from './lead-create-defaults.op';
+import { leadDetailInclude } from './lead.includes';
+import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
 
 const ACTIVE_LEAD_STATUSES = new Set([
   'NEW',
@@ -45,6 +46,7 @@ interface UpdateLeadDto {
   status?: string;
   assignedTo?: string;
   notes?: string;
+  contactIds?: string[];
 }
 
 interface LeadQueryParams {
@@ -126,15 +128,7 @@ export class LeadsService {
   async findById(id: string) {
     const lead = await this.prisma.lead.findUnique({
       where: { id },
-      include: {
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-        sourcePartner: { select: { id: true, name: true } },
-        sourceContact: { select: { id: true, firstName: true, lastName: true } },
-        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
-        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
-        contact: true,
-        deal: true,
-      },
+      include: leadDetailInclude,
     });
     if (!lead) {
       throw new NotFoundException(`Lead ${id} not found`);
@@ -142,22 +136,33 @@ export class LeadsService {
     return lead;
   }
 
-  async create(data: CreateLeadDto) {
+  async create(data: CreateLeadDto, meta: { actorId?: string; actorRoleLevel?: number } = {}) {
+    const resolved = resolveLeadCreateDefaults(data, meta);
+    if (resolved.source === 'PARTNER' || resolved.sourcePartnerId) {
+      await assertPartnerAssignableForInboundCrm(
+        this.prisma,
+        resolved.source ?? null,
+        resolved.sourcePartnerId,
+        meta.actorRoleLevel,
+      );
+    }
     const code = await this.generateCode();
     const createData: Prisma.LeadUncheckedCreateInput = {
       code,
-      name: data.name,
-      contactName: data.contactName ?? '',
-      phone: data.phone,
-      email: data.email,
-      source: data.source ? (data.source as Prisma.LeadUncheckedCreateInput['source']) : undefined,
-      sourceDetail: data.sourceDetail,
-      sourcePartnerId: data.sourcePartnerId,
-      sourceContactId: data.sourceContactId,
-      marketingAccountId: data.marketingAccountId,
-      marketingActivityId: data.marketingActivityId,
-      assignedTo: data.assignedTo,
-      notes: data.notes,
+      name: resolved.name,
+      contactName: resolved.contactName ?? '',
+      phone: resolved.phone,
+      email: resolved.email,
+      source: resolved.source
+        ? (resolved.source as Prisma.LeadUncheckedCreateInput['source'])
+        : undefined,
+      sourceDetail: resolved.sourceDetail,
+      sourcePartnerId: resolved.sourcePartnerId,
+      sourceContactId: resolved.sourceContactId,
+      marketingAccountId: resolved.marketingAccountId,
+      marketingActivityId: resolved.marketingActivityId,
+      assignedTo: resolved.assignedTo,
+      notes: resolved.notes,
     };
 
     return this.prisma.lead.create({
@@ -173,9 +178,24 @@ export class LeadsService {
     });
   }
 
-  async update(id: string, data: UpdateLeadDto) {
+  async update(id: string, data: UpdateLeadDto, meta: { actorRoleLevel?: number } = {}) {
     const existing = await this.findById(id);
+    const nextSource = data.source !== undefined ? data.source : existing.source;
+    const nextPartnerId =
+      data.sourcePartnerId !== undefined ? data.sourcePartnerId : existing.sourcePartnerId;
+    if (data.source !== undefined || data.sourcePartnerId !== undefined) {
+      await assertPartnerAssignableForInboundCrm(
+        this.prisma,
+        nextSource,
+        nextPartnerId,
+        meta.actorRoleLevel,
+      );
+    }
     const nextStatus = data.status ?? existing.status;
+    if (data.status && data.status !== existing.status) {
+      this.assertStatusTransitionAllowed(existing.status, data.status);
+      validateLeadStageGate(mergeLeadForStageGate(existing, data), data.status);
+    }
     const attributionLocked = this.requiresAttribution(nextStatus);
     const attributionPatch = buildLeadAttributionPatch(data);
     assertAttributionUpdateAllowed({
@@ -185,7 +205,19 @@ export class LeadsService {
       locked: attributionLocked,
     });
 
-    return this.prisma.lead.update({
+    let resolvedContactId = existing.contactId;
+
+    if (data.contactIds !== undefined) {
+      const { primaryContactId } = await syncEntityContactLinks(
+        this.prisma,
+        'lead',
+        id,
+        data.contactIds,
+      );
+      resolvedContactId = primaryContactId;
+    }
+
+    const lead = await this.prisma.lead.update({
       where: { id },
       data: {
         ...(data.name !== undefined && { name: data.name }),
@@ -207,16 +239,16 @@ export class LeadsService {
         ...(data.status && { status: data.status as Prisma.LeadUpdateInput['status'] }),
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
         ...(data.notes !== undefined && { notes: data.notes }),
+        ...(data.contactIds !== undefined && { contactId: resolvedContactId }),
       },
-      include: {
-        assignee: { select: { id: true, firstName: true, lastName: true } },
-        sourcePartner: { select: { id: true, name: true } },
-        sourceContact: { select: { id: true, firstName: true, lastName: true } },
-        marketingAccount: { select: { id: true, name: true, channel: true, phone: true } },
-        marketingActivity: { select: { id: true, title: true, channel: true, status: true } },
-        deal: { select: { id: true, code: true, status: true } },
-      },
+      include: leadDetailInclude,
     });
+
+    if (data.contactIds !== undefined) {
+      return this.findById(id);
+    }
+
+    return lead;
   }
 
   async delete(id: string) {
@@ -227,9 +259,7 @@ export class LeadsService {
   async updateStatus(id: string, status: string) {
     const lead = await this.findById(id);
     this.assertStatusTransitionAllowed(lead.status, status);
-    if (this.requiresAttribution(status)) {
-      validateAttributionGate(lead, 'Lead', status);
-    }
+    validateLeadStageGate(lead, status);
     return this.update(id, { status });
   }
 
@@ -312,6 +342,43 @@ function pickLeadAttribution(lead: {
     sourceContactId: lead.sourceContactId,
     marketingAccountId: lead.marketingAccountId,
     marketingActivityId: lead.marketingActivityId,
+  };
+}
+
+function mergeLeadForStageGate(
+  existing: {
+    contactName: string;
+    phone: string | null;
+    email: string | null;
+    assignedTo: string | null;
+    notes: string | null;
+    source: string | null;
+    sourceDetail: string | null;
+    sourcePartnerId: string | null;
+    sourceContactId: string | null;
+    marketingAccountId: string | null;
+    marketingActivityId: string | null;
+  },
+  data: UpdateLeadDto,
+) {
+  return {
+    contactName: data.contactName ?? existing.contactName,
+    phone: data.phone !== undefined ? data.phone : existing.phone,
+    email: data.email !== undefined ? data.email : existing.email,
+    assignedTo: data.assignedTo !== undefined ? data.assignedTo : existing.assignedTo,
+    notes: data.notes !== undefined ? data.notes : existing.notes,
+    source: data.source !== undefined ? data.source : existing.source,
+    sourceDetail: data.sourceDetail !== undefined ? data.sourceDetail : existing.sourceDetail,
+    sourcePartnerId:
+      data.sourcePartnerId !== undefined ? data.sourcePartnerId : existing.sourcePartnerId,
+    sourceContactId:
+      data.sourceContactId !== undefined ? data.sourceContactId : existing.sourceContactId,
+    marketingAccountId:
+      data.marketingAccountId !== undefined ? data.marketingAccountId : existing.marketingAccountId,
+    marketingActivityId:
+      data.marketingActivityId !== undefined
+        ? data.marketingActivityId
+        : existing.marketingActivityId,
   };
 }
 

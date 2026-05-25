@@ -1,9 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ExternalLink, GitBranch, RefreshCcw } from 'lucide-react';
-import { EmptyState, ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { marketingApi } from '@/lib/api/marketing';
@@ -20,7 +26,7 @@ export default function AttributionReviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReview = async () => {
+  const fetchReview = useCallback(async () => {
     setLoading(true);
     try {
       setReview((await marketingApi.getAttributionReview()) as AttributionReview);
@@ -30,20 +36,15 @@ export default function AttributionReviewPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchReview();
   }, []);
 
-  const totalIssues = review.leads.length + review.deals.length;
+  useEffect(() => {
+    void fetchReview();
+  }, [fetchReview]);
 
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Attribution Review"
-        description={`${totalIssues} CRM records need source cleanup or Which one attribution. Open a record in CRM to fix From / Where / Which one.`}
-      >
+  const moduleHeroSlots = useMemo(
+    () => ({
+      trailing: (
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/crm/leads"
@@ -65,12 +66,27 @@ export default function AttributionReviewPage() {
             Deals pipeline
             <ExternalLink className="size-3 shrink-0" aria-hidden />
           </Link>
-          <Button variant="outline" size="icon" onClick={fetchReview} aria-label="Refresh review">
-            <RefreshCcw size={16} />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            onClick={() => void fetchReview()}
+            aria-label="Refresh review"
+          >
+            <RefreshCcw size={16} aria-hidden />
           </Button>
         </div>
-      </PageHeader>
+      ),
+    }),
+    [fetchReview],
+  );
 
+  useModuleHeroSlots(moduleHeroSlots);
+
+  const totalIssues = review.leads.length + review.deals.length;
+
+  return (
+    <div className="space-y-6">
       {loading ? (
         <LoadingState variant="list" count={5} />
       ) : error ? (

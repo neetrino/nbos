@@ -16,11 +16,13 @@ export interface Subscription {
   code: string;
   projectId: string;
   type: string;
-  amount: string;
+  baseMonthlyAmount: string;
+  billingFrequency: string;
   billingDay: number;
   taxStatus: string;
   status: string;
-  startDate: string;
+  billingStartDate: string;
+  notificationsEnabled: boolean;
   endDate: string | null;
   createdAt: string;
   project: { id: string; code: string; name: string };
@@ -38,12 +40,27 @@ export interface Subscription {
   coverage?: SubscriptionCoverageSummary;
 }
 
+export interface CreateSubscriptionPayload {
+  projectId: string;
+  type: string;
+  baseMonthlyAmount: number;
+  billingDay: number;
+  billingFrequency?: string;
+  taxStatus?: string;
+  billingStartDate: string;
+  notificationsEnabled?: boolean;
+  endDate?: string;
+  partnerId?: string;
+}
+
 export interface UpdateSubscriptionPayload {
   type?: string;
-  amount?: number;
+  baseMonthlyAmount?: number;
+  billingFrequency?: string;
   billingDay?: number;
   taxStatus?: string;
-  startDate?: string;
+  billingStartDate?: string;
+  notificationsEnabled?: boolean;
   endDate?: string;
   partnerId?: string | null;
 }
@@ -77,6 +94,7 @@ export interface SubscriptionGridRow {
   subscriptionId: string;
   projectId: string;
   projectName: string;
+  subscriptionType: string;
   amountMonthly: number;
   subscriptionStatus: string;
   months: SubscriptionGridCell[];
@@ -104,12 +122,12 @@ export interface SubscriptionStats {
   byStatus: Array<{
     status: string;
     _count: number;
-    _sum: { amount: number | null };
+    _sum: { baseMonthlyAmount: number | null };
   }>;
   byType: Array<{
     type: string;
     _count: number;
-    _sum: { amount: number | null };
+    _sum: { baseMonthlyAmount: number | null };
   }>;
   activeSubscriptions: number;
   monthlyRevenue: number | null;
@@ -124,7 +142,7 @@ export const subscriptionsApi = {
     const resp = await api.get<Subscription>(`/api/finance/subscriptions/${id}`);
     return resp.data;
   },
-  async create(data: Record<string, unknown>): Promise<Subscription> {
+  async create(data: CreateSubscriptionPayload): Promise<Subscription> {
     const resp = await api.post<Subscription>('/api/finance/subscriptions', data);
     return resp.data;
   },

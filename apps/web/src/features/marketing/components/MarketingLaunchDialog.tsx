@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -118,19 +119,19 @@ export function MarketingLaunchDialog({
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label>Start date</Label>
-              <Input
-                type="date"
+              <NbosDatePicker
                 value={form.startDate}
-                onChange={(event) => setForm({ ...form, startDate: event.target.value })}
-                required
+                onChange={(startDate) => setForm({ ...form, startDate })}
+                aria-label="Start date"
               />
             </div>
             <div>
               <Label>End date</Label>
-              <Input
-                type="date"
+              <NbosDatePicker
                 value={form.endDate}
-                onChange={(event) => setForm({ ...form, endDate: event.target.value })}
+                onChange={(endDate) => setForm({ ...form, endDate })}
+                clearable
+                aria-label="End date"
               />
               <p className="text-muted-foreground mt-1 text-xs">
                 For Meta-style ads, expected payment often follows the flight; set end date
@@ -148,10 +149,11 @@ export function MarketingLaunchDialog({
             </div>
             <div>
               <Label>Expected payment date</Label>
-              <Input
-                type="date"
+              <NbosDatePicker
                 value={form.expectedPayAt}
-                onChange={(event) => setForm({ ...form, expectedPayAt: event.target.value })}
+                onChange={(expectedPayAt) => setForm({ ...form, expectedPayAt })}
+                clearable
+                aria-label="Expected payment date"
               />
             </div>
           </div>

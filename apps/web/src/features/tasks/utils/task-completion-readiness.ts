@@ -67,7 +67,7 @@ function buildChecklistBlockers(rule: TaskCompletionRule, task: Task): TaskCompl
 
 function buildSubtaskBlockers(rule: TaskCompletionRule, task: Task): TaskCompletionBlocker[] {
   const openSubtasks = task.subtasks.filter(
-    (subtask) => !['COMPLETED', 'DONE', 'CANCELLED'].includes(subtask.status),
+    (subtask) => !['COMPLETED', 'DONE'].includes(subtask.status),
   );
   if (openSubtasks.length === 0) return [];
   return [buildBlocker(rule, 'SUBTASKS_OPEN', `${openSubtasks.length} subtask(s) remain open.`)];

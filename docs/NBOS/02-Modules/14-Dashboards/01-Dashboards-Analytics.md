@@ -52,7 +52,7 @@ Dashboard
 - `New Lead`;
 - `New Task`;
 - `Open My Work Space`;
-- `Open Product Board`;
+- `Open Delivery Board`;
 - `Open Invoices`;
 - `Open Salary Board`;
 - `Open Messenger`;

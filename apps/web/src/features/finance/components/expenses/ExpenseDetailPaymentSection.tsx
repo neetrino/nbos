@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
-import { StatusBadge } from '@/components/shared';
+import { DetailSheetSection, StatusBadge } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -16,6 +16,10 @@ import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/const
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { expensesApi, type Expense, type ExpensePaymentEntry } from '@/lib/api/finance';
+import {
+  EXPENSE_GATE_FIELD_PAYMENTS,
+  expenseStageGateSectionClass,
+} from '@/features/finance/constants/expense-stage-gate-highlight';
 import { DeleteExpensePaymentDialog } from './DeleteExpensePaymentDialog';
 
 function formatPaymentDate(iso: string | null): string {
@@ -30,11 +34,13 @@ function formatPaymentDate(iso: string | null): string {
 interface ExpenseDetailPaymentSectionProps {
   expense: Expense;
   onExpenseUpdated: (expense: Expense) => void;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function ExpenseDetailPaymentSection({
   expense,
   onExpenseUpdated,
+  gateRequiredFields = new Set(),
 }: ExpenseDetailPaymentSectionProps) {
   const [paymentToRemove, setPaymentToRemove] = useState<ExpensePaymentEntry | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
@@ -66,42 +72,27 @@ export function ExpenseDetailPaymentSection({
   };
 
   return (
-    <>
-      {expense.paidAmount !== undefined && expense.remainingAmount !== undefined ? (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="border-border bg-card rounded-xl border p-4">
-            <p className="text-muted-foreground text-xs">Paid amount</p>
-            <p className="mt-2 text-lg font-semibold tabular-nums">
-              {formatAmount(parseFloat(expense.paidAmount))}
-            </p>
-          </div>
-          <div className="border-border bg-card rounded-xl border p-4">
-            <p className="text-muted-foreground text-xs">Remaining</p>
-            <p className="mt-2 text-lg font-semibold tabular-nums">
-              {formatAmount(parseFloat(expense.remainingAmount))}
-            </p>
-          </div>
-          <div className="border-border bg-card rounded-xl border p-4">
-            <p className="text-muted-foreground text-xs">Payment status</p>
-            <div className="mt-2">
-              {ledgerPresentation ? (
-                <StatusBadge
-                  label={ledgerPresentation.label}
-                  variant={ledgerPresentation.variant}
-                />
-              ) : (
-                '—'
-              )}
-            </div>
-          </div>
-        </div>
+    <div
+      className={expenseStageGateSectionClass(
+        gateRequiredFields,
+        EXPENSE_GATE_FIELD_PAYMENTS,
+        'flex flex-col gap-4',
+      )}
+    >
+      {expense.paidAmount !== undefined &&
+      expense.remainingAmount !== undefined &&
+      ledgerPresentation ? (
+        <p className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs tabular-nums">
+          <span>
+            {formatAmount(parseFloat(expense.paidAmount))} /{' '}
+            {formatAmount(parseFloat(expense.remainingAmount!))}
+          </span>
+          <StatusBadge label={ledgerPresentation.label} variant={ledgerPresentation.variant} />
+        </p>
       ) : null}
 
       {expense.payments !== undefined ? (
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground mb-3 text-xs font-medium tracking-wide uppercase">
-            Payment history
-          </p>
+        <DetailSheetSection title="Payment history">
           {expense.payments.length === 0 ? (
             <p className="text-muted-foreground text-sm">No payments recorded yet.</p>
           ) : (
@@ -146,7 +137,7 @@ export function ExpenseDetailPaymentSection({
               </TableBody>
             </Table>
           )}
-        </div>
+        </DetailSheetSection>
       ) : null}
 
       <DeleteExpensePaymentDialog
@@ -162,6 +153,6 @@ export function ExpenseDetailPaymentSection({
         }}
         onConfirm={handleConfirmRemovePayment}
       />
-    </>
+    </div>
   );
 }

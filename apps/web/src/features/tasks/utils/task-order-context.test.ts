@@ -9,9 +9,10 @@ const taskBase = {
   description: null,
   status: 'OPEN',
   priority: 'NORMAL',
-  startDate: null,
   dueDate: null,
   completedAt: null,
+  reviewRequestedAt: null,
+  reviewApprovedAt: null,
   completionRules: null,
   parentId: null,
   workspaceId: null,
@@ -31,7 +32,7 @@ const taskBase = {
   checklists: [],
   subtasks: [],
   _count: { subtasks: 0, checklists: 0 },
-} satisfies Partial<Task> as Task;
+} satisfies Task;
 
 describe('resolveTaskOrderContext', () => {
   it('returns product order and name', () => {

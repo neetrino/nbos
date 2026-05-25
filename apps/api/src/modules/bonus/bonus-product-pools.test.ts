@@ -51,4 +51,26 @@ describe('foldBonusProductPools', () => {
     expect(rows[0].poolKey).toBe('extension:ex1');
     expect(rows[0].poolKind).toBe('EXTENSION');
   });
+
+  it('merges two orders under one product pool', () => {
+    const order2: OrderForBonusPool = {
+      id: 'o2',
+      code: 'ORD-2',
+      projectId: 'p1',
+      productId: 'prod1',
+      extensionId: null,
+      project: { id: 'p1', code: 'PR-1', name: 'Alpha' },
+      product: { id: 'prod1', name: 'Website' },
+      extension: null,
+    };
+    const orderGroups: BonusOrderPoolGroupRow[] = [
+      { orderId: 'o1', status: 'ACTIVE', _sum: { amount: new Decimal('40') }, _count: 1 },
+      { orderId: 'o2', status: 'ACTIVE', _sum: { amount: new Decimal('60') }, _count: 1 },
+    ];
+    const rows = foldBonusProductPools(orderGroups, [order, order2]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].orderIds).toEqual(['o1', 'o2']);
+    expect(rows[0].orderCodes).toEqual(['ORD-1', 'ORD-2']);
+    expect(rows[0].sumPipelineAmount).toBe('100.00');
+  });
 });

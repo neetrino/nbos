@@ -73,19 +73,36 @@ export class OrdersService {
       dateFrom,
       dateTo,
     } = params;
-    const where: Prisma.OrderWhereInput = {};
+    const parts: Prisma.OrderWhereInput[] = [];
 
-    if (status) where.status = status as OrderStatusEnum;
-    if (projectId) where.projectId = projectId;
-    if (partnerId) where.partnerId = partnerId;
-    if (search) {
-      where.code = { contains: search, mode: 'insensitive' };
+    if (status) parts.push({ status: status as OrderStatusEnum });
+    if (projectId) parts.push({ projectId });
+    if (partnerId) parts.push({ partnerId: partnerId });
+    const searchTrimmed = search?.trim();
+    if (searchTrimmed) {
+      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
+      parts.push({
+        OR: [
+          { code: ic },
+          { project: { name: ic } },
+          { project: { code: ic } },
+          { project: { company: { name: ic } } },
+          { deal: { code: ic } },
+          { deal: { name: ic } },
+          { product: { name: ic } },
+          { extension: { name: ic } },
+          { partner: { name: ic } },
+        ],
+      });
     }
 
     const createdAt = this.buildDateRange(dateFrom, dateTo);
     if (createdAt) {
-      where.createdAt = createdAt;
+      parts.push({ createdAt });
     }
+
+    const where: Prisma.OrderWhereInput =
+      parts.length === 0 ? {} : parts.length === 1 ? parts[0]! : { AND: parts };
 
     const [orders, total] = await Promise.all([
       this.prisma.order.findMany({

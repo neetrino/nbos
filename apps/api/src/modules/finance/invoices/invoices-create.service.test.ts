@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { InvoicesService } from './invoices.service';
 
@@ -7,9 +7,19 @@ describe('InvoicesService create', () => {
   let service: InvoicesService;
   let prisma: MockPrisma;
 
+  const operationalJournal = {
+    appendInvoiceCardAccrualLine: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new InvoicesService(prisma as never);
+    prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
+    operationalJournal.appendInvoiceCardAccrualLine.mockClear();
+    service = new InvoicesService(
+      prisma as never,
+      { handle: vi.fn() } as never,
+      operationalJournal as never,
+    );
   });
 
   it('generates code INV-YYYY-NNNN', async () => {
@@ -137,7 +147,10 @@ describe('InvoicesService create', () => {
   });
 
   it('rejects first subscription invoice below monthly amount', async () => {
-    prisma.subscription.findUnique.mockResolvedValue({ taxStatus: 'TAX', amount: 50000 });
+    prisma.subscription.findUnique.mockResolvedValue({
+      taxStatus: 'TAX',
+      baseMonthlyAmount: 50000,
+    });
     prisma.invoice.count.mockResolvedValue(0);
 
     await expect(

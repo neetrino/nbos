@@ -59,7 +59,7 @@
 
 **Бонусная система:**
 
-- Процент по Product / Extension в зависимости от типа: WL — 7%, Mix — 10%, Custom Code — 15%
+- Процент по Product / Extension зависит от Product/Extension bonus policy: category/type, complexity, role и configured rate
 - Выпускается через Product Bonus Pool после сдачи Product / Extension и по доступному funding
 
 **Временная функция:** Пока нет отдельного специалиста поддержки, PM выполняет triage Support Tickets.
@@ -79,7 +79,7 @@
 
 **Бонусная система:**
 
-- Процент по Product / Extension: WL — 7%, Mix — 10%, Custom Code — 15%
+- Процент по Product / Extension зависит от Product/Extension bonus policy: category/type, complexity, role и configured rate
 - Выпускается через Product Bonus Pool (Classic — по оплате Product / Extension, Subscription — по доступному funding первого/следующих платежей)
 
 ---

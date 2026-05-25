@@ -1,14 +1,20 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import type { FullProduct } from '@/lib/api/products';
 import { productsApi } from '@/lib/api/products';
 import { type ApiFieldError, isStageGateApiError } from '@/lib/api-errors';
 import { PRODUCT_STATUSES } from '@/features/projects/constants/projects';
 import { resolveBlockerDirectActions } from '@/features/shared/blocker-actions';
+import {
+  getLocalProductStageGateErrors,
+  getProductNextStatuses,
+} from '@/features/projects/product-stage-gate-client';
+import {
+  resolveProductTabFromBlockerActionKey,
+  splitProductStageGateErrors,
+} from '@/features/projects/product-stage-gate-highlight';
 import {
   DeliveryLifecycleActionDialog,
   type DeliveryLifecycleAction,
@@ -18,7 +24,8 @@ import { ProductLifecycleActions } from './ProductLifecycleActions';
 import { ProductAcceptanceAction } from './ProductAcceptanceAction';
 import { ProductDoneReadinessPanel } from './ProductDoneReadinessPanel';
 import { ProductStageGateSummary } from './ProductStageGateSummary';
-import { resolveProductStageGateActionHref } from '@/features/projects/utils/projects-hub-stage-gate-blocker-hrefs';
+import type { ProductTabForGate } from '@/features/projects/product-stage-gate-highlight';
+import type { SheetStageGateHighlight } from '@/lib/stage-gate-highlight';
 
 const PRODUCT_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER'> = {
   NEW: 'STARTING',
@@ -28,38 +35,40 @@ const PRODUCT_STAGE_BY_STATUS: Record<string, 'STARTING' | 'DEVELOPMENT' | 'QA' 
   TRANSFER: 'TRANSFER',
 };
 
-const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-  NEW: ['CREATING'],
-  CREATING: ['DEVELOPMENT'],
-  DEVELOPMENT: ['QA'],
-  QA: ['TRANSFER', 'DEVELOPMENT'],
-  TRANSFER: ['DONE', 'QA'],
-  ON_HOLD: [],
-  DONE: [],
-  LOST: [],
-};
-
-interface StageGateBlocker {
-  message: string;
-  errors: ApiFieldError[];
-}
-
 interface ProductStageGateCardProps {
   product: FullProduct;
+  gateRequiredFields: ReadonlySet<string>;
+  stageGateHighlight: SheetStageGateHighlight | null;
   onStatusChange: () => void;
+  onStageGateBlocked: (errors: ApiFieldError[]) => void;
+  onStageGateClear: () => void;
+  onNavigateTab: (tab: ProductTabForGate) => void;
 }
 
-export function ProductStageGateCard({ product, onStatusChange }: ProductStageGateCardProps) {
+export function ProductStageGateCard({
+  product,
+  gateRequiredFields,
+  stageGateHighlight,
+  onStatusChange,
+  onStageGateBlocked,
+  onStageGateClear,
+  onNavigateTab,
+}: ProductStageGateCardProps) {
   const [updating, setUpdating] = useState(false);
-  const [blocker, setBlocker] = useState<StageGateBlocker | null>(null);
   const [dialogAction, setDialogAction] = useState<DeliveryLifecycleAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [acceptanceError, setAcceptanceError] = useState<string | null>(null);
-  const nextStatuses = ALLOWED_TRANSITIONS[product.status] ?? [];
+  const nextStatuses = getProductNextStatuses(product.status);
 
   const handleStatusChange = async (newStatus: string) => {
+    const localErrors = getLocalProductStageGateErrors(product, newStatus);
+    if (localErrors.length > 0) {
+      onStageGateBlocked(localErrors);
+      return;
+    }
+
     setUpdating(true);
-    setBlocker(null);
+    onStageGateClear();
     try {
       const stage = PRODUCT_STAGE_BY_STATUS[newStatus];
       if (stage) {
@@ -71,7 +80,16 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
       }
       onStatusChange();
     } catch (error) {
-      setBlocker(toStageGateBlocker(error));
+      if (isStageGateApiError(error)) {
+        onStageGateBlocked(error.errors);
+        return;
+      }
+      onStageGateBlocked([
+        {
+          field: 'status',
+          message: error instanceof Error ? error.message : 'Failed to update product status.',
+        },
+      ]);
     } finally {
       setUpdating(false);
     }
@@ -82,6 +100,7 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
     setActionError(null);
     try {
       await productsApi.resume(product.id);
+      onStageGateClear();
       onStatusChange();
     } catch (error) {
       setActionError(toActionError(error, 'Failed to resume product.'));
@@ -95,6 +114,7 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
     setAcceptanceError(null);
     try {
       await productsApi.confirmAcceptance(product.id, {});
+      onStageGateClear();
       onStatusChange();
     } catch (error) {
       setAcceptanceError(toActionError(error, 'Failed to record client acceptance.'));
@@ -117,6 +137,7 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
         await productsApi.cancel(product.id, { reason: payload.reason });
       }
       setDialogAction(null);
+      onStageGateClear();
       onStatusChange();
     } catch (error) {
       setActionError(toActionError(error, 'Failed to update product delivery.'));
@@ -134,6 +155,7 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
         product={product}
         disabled={updating}
         error={acceptanceError}
+        highlightRequired={gateRequiredFields.has('clientAcceptance')}
         onConfirm={handleConfirmAcceptance}
       />
       <ProductStageActions
@@ -149,13 +171,10 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
         onResume={handleResume}
         onCancel={() => setDialogAction('cancel')}
       />
-      {blocker && (
-        <StageGateBlockerPanel
-          blocker={blocker}
-          projectId={product.project.id}
-          productId={product.id}
-        />
-      )}
+      <ProductStageGateActionBlockers
+        highlight={stageGateHighlight}
+        onNavigateTab={onNavigateTab}
+      />
       <DeliveryLifecycleActionDialog
         action={dialogAction}
         entityLabel={product.name}
@@ -168,6 +187,46 @@ export function ProductStageGateCard({ product, onStatusChange }: ProductStageGa
         onConfirm={handleLifecycleAction}
       />
     </section>
+  );
+}
+
+function ProductStageGateActionBlockers({
+  highlight,
+  onNavigateTab,
+}: {
+  highlight: SheetStageGateHighlight | null;
+  onNavigateTab: (tab: ProductTabForGate) => void;
+}) {
+  if (!highlight) return null;
+
+  const { actionBlockers } = splitProductStageGateErrors(highlight.errors);
+  if (actionBlockers.length === 0) return null;
+
+  const directActions = resolveBlockerDirectActions({ context: 'product', errors: actionBlockers });
+
+  return (
+    <div className="border-destructive/30 bg-destructive/5 mt-4 space-y-2 rounded-xl border p-3">
+      <p className="text-destructive text-xs font-semibold">Action required</p>
+      <ul className="text-muted-foreground space-y-1 text-xs">
+        {actionBlockers.map((error) => (
+          <li key={error.field}>{error.message || `Resolve ${error.field}.`}</li>
+        ))}
+      </ul>
+      <div className="flex flex-wrap gap-2">
+        {directActions.map((action) => (
+          <Button
+            key={action.key}
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => onNavigateTab(resolveProductTabFromBlockerActionKey(action.key))}
+          >
+            {action.label}
+          </Button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -226,86 +285,6 @@ function StageButton({
       {option?.label ?? status}
     </Button>
   );
-}
-
-function StageGateBlockerPanel({
-  blocker,
-  projectId,
-  productId,
-}: {
-  blocker: StageGateBlocker;
-  projectId: string;
-  productId: string;
-}) {
-  const directActions = resolveBlockerDirectActions({
-    context: 'product',
-    errors: blocker.errors,
-  });
-
-  return (
-    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
-      <div className="flex items-start gap-2">
-        <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-            {blocker.message}
-          </p>
-          <ul className="mt-2 space-y-1 text-xs text-amber-800 dark:text-amber-300">
-            {blocker.errors.map((error) => (
-              <li key={error.field}>- {error.message}</li>
-            ))}
-          </ul>
-          <ProductBlockerActions
-            actions={directActions}
-            projectId={projectId}
-            productId={productId}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProductBlockerActions({
-  actions,
-  projectId,
-  productId,
-}: {
-  actions: Array<{ key: string; label: string }>;
-  projectId: string;
-  productId: string;
-}) {
-  const visibleActions =
-    actions.length > 0 ? actions : [{ key: 'pm-intake', label: 'Open product overview' }];
-
-  return (
-    <div className="mt-3 flex flex-wrap gap-2">
-      {visibleActions.map((action) => (
-        <Link
-          key={action.key}
-          href={resolveProductStageGateActionHref({
-            projectId,
-            productId,
-            action,
-          })}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
-        >
-          {action.label}
-        </Link>
-      ))}
-    </div>
-  );
-}
-
-function toStageGateBlocker(error: unknown): StageGateBlocker {
-  if (isStageGateApiError(error)) {
-    return { message: error.message, errors: error.errors };
-  }
-
-  return {
-    message: error instanceof Error ? error.message : 'Failed to update product status.',
-    errors: [],
-  };
 }
 
 function toActionError(error: unknown, fallback: string) {

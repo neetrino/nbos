@@ -10,6 +10,9 @@ describe('CompaniesService', () => {
   beforeEach(() => {
     prisma = createMockPrisma();
     service = new CompaniesService(prisma as never);
+    prisma.contact.findUnique.mockImplementation(({ where }) =>
+      Promise.resolve(where && 'id' in where && where.id ? { id: String(where.id) } : null),
+    );
   });
 
   describe('findAll', () => {
@@ -89,7 +92,11 @@ describe('CompaniesService', () => {
 
   describe('update', () => {
     it('updates company fields', async () => {
-      prisma.company.findUnique.mockResolvedValue({ id: '1' });
+      prisma.company.findUnique.mockResolvedValue({
+        id: '1',
+        taxStatus: 'NO_TAX',
+        contactId: 'c1',
+      });
       prisma.company.update.mockResolvedValue({ id: '1', name: 'Updated' });
       const result = await service.update('1', {
         name: 'Updated',
@@ -97,7 +104,6 @@ describe('CompaniesService', () => {
         type: 'INDIVIDUAL',
         taxId: '123',
         legalAddress: 'Address',
-        taxStatus: 'NO_TAX',
         notes: 'note',
       });
       expect(result.name).toBe('Updated');

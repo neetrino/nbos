@@ -1,4 +1,5 @@
 import { Decimal, type BonusStatusEnum } from '@nbos/database';
+import type { BonusPoolFundingHealth } from './bonus-pool-funding-health';
 
 /** One cell from `bonusEntry.groupBy({ by: ['orderId', 'status'] })`. */
 export interface BonusOrderPoolGroupRow {
@@ -31,7 +32,14 @@ export interface BonusProductPoolRow {
   ledgerReleasedAmount: string | null;
   ledgerRemainingAmount: string | null;
   ledgerAvailableFunding: string | null;
+  ledgerOverFundingAmount: string | null;
+  ledgerReceivedAmount: string | null;
   ledgerPoolStatus: string | null;
+  orderIds: string[];
+  orderCodes: string[];
+  employeeCount: number;
+  fundingFillPercent: number | null;
+  fundingHealth: BonusPoolFundingHealth;
 }
 
 export type OrderForBonusPool = {
@@ -125,11 +133,19 @@ type PoolMeta = {
   poolKind: BonusProductPoolKind;
   anchorOrderId: string;
   poolName: string;
-  orderCode: string;
+  orderIds: string[];
+  orderCodes: string[];
   projectId: string;
   projectCode: string;
   projectName: string;
 };
+
+function pushOrderToMeta(meta: PoolMeta, order: OrderForBonusPool): void {
+  if (!meta.orderIds.includes(order.id)) {
+    meta.orderIds.push(order.id);
+    meta.orderCodes.push(order.code);
+  }
+}
 
 /**
  * Remaps order×status groups to product/extension/order pool keys, then folds pipeline/paid/clawback.
@@ -150,16 +166,20 @@ export function foldBonusProductPools(
     const order = orderById.get(row.orderId);
     if (!order) continue;
     const { poolKey, poolKind } = resolvePoolKey(order);
-    if (!poolMeta.has(poolKey)) {
+    const existingMeta = poolMeta.get(poolKey);
+    if (!existingMeta) {
       poolMeta.set(poolKey, {
         poolKind,
         anchorOrderId: order.id,
         poolName: resolvePoolName(order),
-        orderCode: order.code,
+        orderIds: [order.id],
+        orderCodes: [order.code],
         projectId: order.project.id,
         projectCode: order.project.code,
         projectName: order.project.name,
       });
+    } else {
+      pushOrderToMeta(existingMeta, order);
     }
     const byStatus = cells.get(poolKey) ?? new Map();
     const prev = byStatus.get(row.status) ?? { count: 0, sum: ZERO };
@@ -183,12 +203,13 @@ export function foldBonusProductPools(
       });
     }
     const sumTotal = acc.pipeline.plus(acc.paid).plus(acc.clawback);
+    const primaryOrderCode = meta.orderCodes[0] ?? '';
     result.push({
       poolKey,
       poolKind: meta.poolKind,
       anchorOrderId: meta.anchorOrderId,
       poolName: meta.poolName,
-      orderCode: meta.orderCode,
+      orderCode: primaryOrderCode,
       projectId: meta.projectId,
       projectCode: meta.projectCode,
       projectName: meta.projectName,
@@ -201,7 +222,14 @@ export function foldBonusProductPools(
       ledgerReleasedAmount: null,
       ledgerRemainingAmount: null,
       ledgerAvailableFunding: null,
+      ledgerOverFundingAmount: null,
+      ledgerReceivedAmount: null,
       ledgerPoolStatus: null,
+      orderIds: [...meta.orderIds],
+      orderCodes: [...meta.orderCodes],
+      employeeCount: 0,
+      fundingFillPercent: null,
+      fundingHealth: 'UNKNOWN',
     });
   }
 

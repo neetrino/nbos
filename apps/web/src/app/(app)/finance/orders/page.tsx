@@ -5,11 +5,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  FilterBar,
   EmptyState,
   ErrorState,
+  IntegratedSearchFilters,
   ListMutationErrorBanner,
   LoadingState,
+  useModuleHeroSlots,
 } from '@/components/shared';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import {
@@ -19,14 +20,14 @@ import {
 } from '@/features/finance/constants/order-reconciliation-drilldown';
 import { ordersListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { PARTNER_ORDERS_DRILLDOWN_QUERY } from '@/features/finance/constants/partner-orders-drilldown';
+import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
-import { ORDER_STATUSES } from '@/features/finance/components/orders/order-statuses';
+import { ORDER_FILTER_CONFIGS } from '@/features/finance/components/orders/order-filter-configs';
+import { ReconciliationGapBanner } from '@/features/finance/components/orders/orders-page-helpers';
 import {
-  buildOrdersDescription,
-  ReconciliationGapBanner,
-} from '@/features/finance/components/orders/orders-page-helpers';
-import { OrdersPageHeader } from '@/features/finance/components/orders/OrdersPageHeader';
-import { OrdersStatsCards } from '@/features/finance/components/orders/OrdersStatsCards';
+  FINANCE_PERIOD_FILTER_KEY,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import { OrdersTable } from '@/features/finance/components/orders/OrdersTable';
 import { useOrdersCsvExport } from '@/features/finance/components/orders/use-orders-csv-export';
 import { useOrdersScopeStatsCsvExport } from '@/features/finance/components/orders/use-orders-scope-stats-csv-export';
@@ -152,18 +153,26 @@ function OrdersPageContent() {
     }
   }, [fetchOrders]);
 
-  const filterConfigs = [
-    {
-      key: 'status',
-      label: 'Status',
-      options: Object.entries(ORDER_STATUSES).map(([value, cfg]) => ({
-        value,
-        label: cfg.label,
-      })),
-    },
-  ];
+  const orderFilterValues = useMemo(
+    () => ({
+      [FINANCE_PERIOD_FILTER_KEY]: period,
+      ...filters,
+    }),
+    [filters, period],
+  );
 
-  const description = buildOrdersDescription(orders.length, listMeta, gap);
+  const handleOrderFilterChange = useCallback((key: string, value: string) => {
+    if (key === FINANCE_PERIOD_FILTER_KEY) {
+      setPeriod(parseFinancePeriodFilterValue(value));
+      return;
+    }
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleClearOrderFilters = useCallback(() => {
+    setFilters({});
+    setPeriod('month');
+  }, []);
 
   const clearReconciliationGap = () => {
     router.replace('/finance/orders');
@@ -176,39 +185,57 @@ function OrdersPageContent() {
     router.replace(q ? `/finance/orders?${q}` : '/finance/orders');
   };
 
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by order, project, product, deal, partner…"
+          filters={ORDER_FILTER_CONFIGS}
+          filterValues={orderFilterValues}
+          onFilterChange={handleOrderFilterChange}
+          onClearAll={handleClearOrderFilters}
+        />
+      ),
+      trailing: (
+        <>
+          <FinanceListPageSettingsSheet
+            title="Orders — settings"
+            description="Exports for the current list scope. Period and status follow filters in the search bar."
+            triggerAriaLabel="Orders settings"
+            statsExportDisabled={loading || !stats}
+            exportCsvDisabled={loading || exportCsvSubmitting}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            onExportCsv={handleExportCsv}
+            exportCsvLabel="Export orders (CSV)"
+          />
+          <Button type="button">
+            <Plus size={16} aria-hidden />
+            New Order
+          </Button>
+        </>
+      ),
+    }),
+    [
+      exportCsvSubmitting,
+      orderFilterValues,
+      handleClearOrderFilters,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      handleOrderFilterChange,
+      loading,
+      search,
+      stats,
+    ],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   return (
-    <div className="flex h-full flex-col gap-5">
-      <OrdersPageHeader
-        description={description}
-        period={period}
-        onPeriodChange={setPeriod}
-        onRefresh={fetchOrders}
-        onExportCsv={handleExportCsv}
-        exportDisabled={loading || exportCsvSubmitting}
-        exportInProgress={exportCsvSubmitting}
-        statsExportDisabled={loading || !stats}
-        onExportScopeStatsCsv={handleExportScopeStatsCsv}
-      />
-
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {gap ? <ReconciliationGapBanner gap={gap} onClear={clearReconciliationGap} /> : null}
-
-      <OrdersStatsCards
-        stats={stats}
-        statsScopeNote={
-          gap || partnerIdFromUrl
-            ? [
-                gap
-                  ? 'Totals match the reconciliation filter, selected period, and list filters.'
-                  : '',
-                partnerIdFromUrl
-                  ? 'Partner scope: counts include only orders linked to this partner.'
-                  : '',
-              ]
-                .filter(Boolean)
-                .join(' ')
-            : undefined
-        }
-      />
 
       {partnerIdFromUrl ? (
         <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
@@ -220,16 +247,6 @@ function OrdersPageContent() {
           </Button>
         </div>
       ) : null}
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by order code, project..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
-      />
 
       {loading ? (
         <LoadingState />

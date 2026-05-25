@@ -3,6 +3,7 @@ import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { subscriptionBillingPausedForLateDelivery } from './billing-subscription-delivery-pause';
 import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
+import { subscriptionChargeAmount } from '../subscriptions/subscription-billing-amount';
 
 export interface BillingRunResult {
   generatedInvoices: number;
@@ -35,7 +36,7 @@ export class BillingService {
       where: {
         status: 'ACTIVE',
         billingDay: day,
-        startDate: { lte: now },
+        billingStartDate: { lte: now },
         OR: [{ endDate: null }, { endDate: { gte: now } }],
       },
       include: {
@@ -105,24 +106,28 @@ export class BillingService {
         const code = await this.generateInvoiceCode(now);
         const dueDate = new Date(now.getFullYear(), now.getMonth(), day + 14);
         const coverageStartMonth = financeCalendarMonthKey(now);
+        const charge = subscriptionChargeAmount(
+          Number(sub.baseMonthlyAmount),
+          sub.billingFrequency,
+        );
 
         await this.prisma.invoice.create({
           data: {
             code,
             subscriptionId: sub.id,
             projectId: sub.projectId,
-            amount: sub.amount,
+            amount: charge.amount,
             taxStatus: sub.taxStatus,
             type: 'SUBSCRIPTION' as Prisma.InvoiceCreateInput['type'],
             dueDate,
             moneyStatus: 'NEW',
             coverageStartMonth,
-            coverageMonthCount: 1,
+            coverageMonthCount: charge.coverageMonthCount,
           },
         });
 
         generatedInvoices++;
-        totalAmount += Number(sub.amount);
+        totalAmount += charge.amount;
         this.logger.log(`Generated invoice ${code} for subscription ${sub.code}`);
       } catch (err) {
         const message = `Failed to generate invoice for subscription ${sub.code}: ${(err as Error).message}`;

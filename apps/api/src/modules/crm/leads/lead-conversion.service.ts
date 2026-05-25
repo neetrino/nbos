@@ -3,6 +3,9 @@ import { PrismaClient, DealTypeEnum, PaymentTypeEnum, LeadSourceEnum } from '@nb
 import { PRISMA_TOKEN } from '../../../database.module';
 import { LeadsService } from './leads.service';
 import { validateAttributionGate } from '../attribution-gate';
+import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
+import { mergeEntityContactIds } from '@nbos/shared';
+import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
 
 interface ConvertLeadDto {
   dealType?: string;
@@ -29,9 +32,6 @@ interface LeadForConversion {
   deal?: { id: string } | null;
 }
 
-const DEFAULT_LEAD_DEAL_TYPE = 'PRODUCT';
-const DEFAULT_LEAD_PAYMENT_TYPE = 'CLASSIC';
-
 interface ConversionFieldError {
   field: string;
   message: string;
@@ -44,7 +44,7 @@ export class LeadConversionService {
     private readonly leadsService: LeadsService,
   ) {}
 
-  async convertToDeal(leadId: string, data: ConvertLeadDto) {
+  async convertToDeal(leadId: string, data: ConvertLeadDto, opts?: { actorRoleLevel?: number }) {
     const lead = await this.leadsService.findById(leadId);
 
     if (lead.status !== 'SQL') {
@@ -58,10 +58,10 @@ export class LeadConversionService {
       throw new BadRequestException('Lead already has an associated deal');
     }
 
-    return this.createDealFromLead(lead, data, false);
+    return this.createDealFromLead(lead, data, false, opts?.actorRoleLevel);
   }
 
-  async qualifyLeadAsSql(leadId: string) {
+  async qualifyLeadAsSql(leadId: string, opts?: { actorRoleLevel?: number }) {
     const lead = await this.leadsService.findById(leadId);
 
     validateAttributionGate(lead, 'Lead', 'SQL');
@@ -78,12 +78,9 @@ export class LeadConversionService {
 
     return this.createDealFromLead(
       lead,
-      {
-        dealType: DEFAULT_LEAD_DEAL_TYPE,
-        paymentType: DEFAULT_LEAD_PAYMENT_TYPE,
-        sellerId: lead.assignedTo ?? undefined,
-      },
+      { sellerId: lead.assignedTo ?? undefined },
       true,
+      opts?.actorRoleLevel,
     );
   }
 
@@ -91,6 +88,7 @@ export class LeadConversionService {
     lead: LeadForConversion,
     data: ConvertLeadDto,
     markLeadAsSql: boolean,
+    actorRoleLevel?: number,
   ) {
     const sellerId = data.sellerId ?? lead.assignedTo ?? undefined;
     const errors = getLeadConversionErrors(lead, sellerId);
@@ -128,15 +126,22 @@ export class LeadConversionService {
 
     const inquiryTitle = lead.name?.trim() ?? '';
 
+    await assertPartnerAssignableForInboundCrm(
+      this.prisma,
+      lead.source ?? null,
+      lead.sourcePartnerId,
+      actorRoleLevel,
+    );
+
     const deal = await this.prisma.deal.create({
       data: {
         code: dealCode,
         leadId: lead.id,
         contactId,
         name: inquiryTitle || undefined,
-        type: (data.dealType ?? DEFAULT_LEAD_DEAL_TYPE) as DealTypeEnum,
+        ...(data.dealType && { type: data.dealType as DealTypeEnum }),
         amount: data.amount,
-        paymentType: data.paymentType ? (data.paymentType as PaymentTypeEnum) : undefined,
+        ...(data.paymentType && { paymentType: data.paymentType as PaymentTypeEnum }),
         sellerId: confirmedSellerId,
         source: lead.source ? (lead.source as LeadSourceEnum) : undefined,
         sourceDetail: lead.sourceDetail,
@@ -158,6 +163,20 @@ export class LeadConversionService {
         ...(markLeadAsSql && { status: 'SQL' }),
       },
     });
+
+    const leadAdditional = await this.prisma.leadAdditionalContact.findMany({
+      where: { leadId: lead.id },
+      select: { contactId: true },
+    });
+    const additionalIds = leadAdditional.map((row) => row.contactId);
+    if (additionalIds.length > 0) {
+      await syncEntityContactLinks(
+        this.prisma,
+        'deal',
+        deal.id,
+        mergeEntityContactIds(contactId, additionalIds),
+      );
+    }
 
     return deal;
   }

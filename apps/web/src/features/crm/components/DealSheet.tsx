@@ -1,10 +1,20 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useLayoutEffect, useMemo } from 'react';
 import { Trash2, LayoutGrid, History, FileText, Phone, CheckSquare } from 'lucide-react';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import {
+  DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
+  DetailSheetTabBar,
+  EntityDetailSheetContent,
+  EntityItemHost,
+} from '@/components/shared';
+import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
+import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
+import { applyDealRelationCreated } from './apply-deal-relation-created';
+import { Sheet } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { DealPipelineStages } from './DealPipelineStages';
 import { DealGeneralTab } from './DealGeneralTab';
 import { DealHistoryTab } from './DealHistoryTab';
@@ -12,7 +22,18 @@ import { DealInvoiceTab } from './DealInvoiceTab';
 import { DealCallsTab } from './DealCallsTab';
 import { DealTasksTab } from './DealTasksTab';
 import type { Deal } from '@/lib/api/deals';
+import { CRM_OPEN_DEAL_QUERY } from '@/features/crm/constants/crm-list-sheet-url';
 import type { DealSheetBlockerIntent } from '@/features/shared/blocker-actions';
+import type { ApiFieldError } from '@/lib/api-errors';
+import {
+  buildDealGeneralPatch,
+  createDealGeneralDraft,
+  isDealGeneralDirty,
+  type DealGeneralDraft,
+} from './deal-general-form-state';
+import { CrmSheetEntityHeader } from './CrmSheetEntityHeader';
+import { getDealDisplayTitle } from '../utils/crm-entity-display';
+import { getDealTypePresentation } from '@/lib/deal-type-visual';
 
 const TABS = [
   { value: 'general', label: 'General', icon: LayoutGrid },
@@ -27,6 +48,10 @@ export interface DealSheetBlockerNavigation {
   intent: DealSheetBlockerIntent;
 }
 
+export interface DealSheetStageGateHighlight {
+  errors: ApiFieldError[];
+}
+
 interface DealSheetProps {
   deal: Deal | null;
   open: boolean;
@@ -39,6 +64,12 @@ interface DealSheetProps {
   /** One-shot navigation from CRM stage gate shortcuts; consumed via callback. */
   blockerNavigation?: DealSheetBlockerNavigation | null;
   onBlockerNavigationConsumed?: () => void;
+  stageGateHighlight?: DealSheetStageGateHighlight | null;
+}
+
+function dealGeneralSaveErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message) return err.message;
+  return 'Could not save changes.';
 }
 
 export function DealSheet({
@@ -52,12 +83,17 @@ export function DealSheet({
   onOpenDeal,
   blockerNavigation = null,
   onBlockerNavigationConsumed,
+  stageGateHighlight = null,
 }: DealSheetProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [invoiceCreateNonce, setInvoiceCreateNonce] = useState(0);
+  const [generalDraft, setGeneralDraft] = useState<DealGeneralDraft | null>(null);
+  const [generalSnap, setGeneralSnap] = useState<DealGeneralDraft | null>(null);
+  const [generalError, setGeneralError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const generalDirtyRef = useRef(false);
 
   const applyBlockerIntent = useCallback((intent: DealSheetBlockerIntent) => {
     if (intent.kind === 'tab') {
@@ -77,6 +113,60 @@ export function DealSheet({
     setInvoiceCreateNonce((previous) => previous + 1);
   }, []);
 
+  useLayoutEffect(() => {
+    if (!deal) {
+      queueMicrotask(() => {
+        setGeneralDraft(null);
+        setGeneralSnap(null);
+      });
+      return;
+    }
+    if (generalDirtyRef.current) return;
+    const next = createDealGeneralDraft(deal);
+    queueMicrotask(() => {
+      setGeneralDraft(next);
+      setGeneralSnap(next);
+    });
+  }, [deal?.id, deal?.updatedAt]);
+
+  const patchGeneralDraft = useCallback((partial: Partial<DealGeneralDraft>) => {
+    setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));
+  }, []);
+
+  const generalDirty =
+    generalDraft != null && generalSnap != null && isDealGeneralDirty(generalDraft, generalSnap);
+
+  useEffect(() => {
+    generalDirtyRef.current = generalDirty;
+  }, [generalDirty]);
+
+  const handleGeneralSave = useCallback(() => {
+    if (!deal || !generalDraft || !generalSnap) return;
+    setGeneralError(null);
+    const patch = buildDealGeneralPatch(generalSnap, generalDraft);
+    if (Object.keys(patch).length === 0) return;
+
+    const draftAtSave = generalDraft;
+    const snapAtSave = generalSnap;
+    setGeneralSnap({ ...draftAtSave });
+
+    void (async () => {
+      try {
+        await onUpdate(deal.id, patch);
+        onRefresh?.();
+      } catch (err) {
+        setGeneralSnap(snapAtSave);
+        setGeneralDraft(draftAtSave);
+        setGeneralError(dealGeneralSaveErrorMessage(err));
+      }
+    })();
+  }, [deal, generalDraft, generalSnap, onUpdate, onRefresh]);
+
+  const handleGeneralCancel = useCallback(() => {
+    setGeneralError(null);
+    if (generalSnap) setGeneralDraft({ ...generalSnap });
+  }, [generalSnap]);
+
   useEffect(() => {
     if (!open || !blockerNavigation) return;
     const { intent } = blockerNavigation;
@@ -93,140 +183,136 @@ export function DealSheet({
     }
   }, [editingName]);
 
+  useEffect(() => {
+    queueMicrotask(() => {
+      setEditingName(false);
+    });
+  }, [deal?.id]);
+
+  const gateRequiredFields = useMemo(() => {
+    if (!stageGateHighlight) return new Set<string>();
+    return new Set(stageGateHighlight.errors.map((error) => error.field));
+  }, [stageGateHighlight]);
+
+  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
+    setGeneralDraft((prev) => (prev ? applyDealRelationCreated(prev, event) : prev));
+  }, []);
+
+  useRegisterRelationCreated(open && generalDraft ? handleRelationCreated : null);
+
   if (!deal) return null;
 
-  const dealName = deal.name || deal.code;
+  const typeVisual = getDealTypePresentation(deal.type);
+  const headerTitle = generalDraft?.name?.trim() || getDealDisplayTitle(deal);
+  const TypeIcon = typeVisual.Icon;
 
   const startEditing = () => {
-    setNameValue(deal.name ?? '');
+    setNameValue(generalDraft?.name ?? deal.name ?? '');
     setEditingName(true);
   };
 
-  const saveName = () => {
+  const commitNameToDraft = () => {
     const trimmed = nameValue.trim();
     setEditingName(false);
-    if (trimmed !== (deal.name ?? '')) {
-      onUpdate(deal.id, { name: trimmed || null } as Partial<Deal>);
-    }
+    patchGeneralDraft({ name: trimmed || null });
   };
 
   const handleNameKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      saveName();
+      commitNameToDraft();
     }
     if (e.key === 'Escape') {
       setEditingName(false);
+      setNameValue(generalDraft?.name ?? deal.name ?? '');
     }
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        showCloseButton={false}
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:w-[90vw] sm:max-w-none"
-      >
-        {/* ── Header ── */}
-        <div className="shrink-0 border-b border-stone-100 bg-gradient-to-br from-amber-50/50 via-white to-white px-7 pt-5 pb-3 dark:border-stone-800 dark:from-amber-950/10 dark:via-transparent dark:to-transparent">
-          {editingName ? (
-            <input
-              ref={nameInputRef}
-              value={nameValue}
-              onChange={(e) => setNameValue(e.target.value)}
-              onBlur={saveName}
-              onKeyDown={handleNameKeyDown}
-              placeholder="Deal name..."
-              className="text-foreground w-full border-0 border-b-2 border-amber-400 bg-transparent text-xl font-bold tracking-tight outline-none placeholder:text-stone-300"
-            />
-          ) : (
-            <h2
-              onClick={startEditing}
-              className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
-              title="Click to edit deal name"
-            >
-              {dealName}
-            </h2>
-          )}
-          <p className="text-muted-foreground mt-0.5 font-mono text-xs tracking-wider">
-            {deal.code}
-          </p>
-        </div>
-
-        {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
-        <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
-          <DealPipelineStages
-            currentStatus={deal.status}
-            onStageClick={(key) => onStatusChange(deal.id, key)}
+    <EntityItemHost nested onEntityChanged={onRefresh}>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`}
+        >
+          <CrmSheetEntityHeader
+            title={headerTitle}
+            entityLabel={typeVisual.label}
+            EntityIcon={TypeIcon}
+            headerIconClassName={typeVisual.headerIconClassName}
+            headerBadgeClassName={typeVisual.headerBadgeClassName}
+            editing={editingName}
+            nameValue={nameValue}
+            onNameValueChange={setNameValue}
+            onCommitName={commitNameToDraft}
+            onNameKeyDown={handleNameKeyDown}
+            nameInputRef={nameInputRef}
+            namePlaceholder="Deal name..."
+            titleEditHint="Click to edit deal name"
+            onStartEditing={startEditing}
+            actions={
+              onDelete ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(deal.id)}>
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              ) : null
+            }
           />
-        </div>
 
-        {/* ── Tabs ── */}
-        <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
-          <div className="flex gap-1">
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.value;
-              return (
-                <button
-                  key={tab.value}
-                  onClick={() => setActiveTab(tab.value)}
-                  className={
-                    'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
-                    (isActive
-                      ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
-                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300')
-                  }
-                >
-                  <tab.icon size={16} />
-                  {tab.label}
-                  {isActive && (
-                    <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
-                  )}
-                </button>
-              );
-            })}
+          {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
+          <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
+            <DealPipelineStages
+              currentStatus={deal.status}
+              onStageClick={(key) => onStatusChange(deal.id, key)}
+            />
           </div>
-        </div>
 
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="px-7 py-5">
-            {activeTab === 'general' && (
-              <DealGeneralTab
-                deal={deal}
-                onUpdate={onUpdate}
-                onRefresh={onRefresh}
-                onOpenTaskTab={() => setActiveTab('task')}
-                onOpenDeal={onOpenDeal}
-              />
-            )}
-            {activeTab === 'history' && <DealHistoryTab />}
-            {activeTab === 'invoice' && (
-              <DealInvoiceTab
-                deal={deal}
-                onRefresh={onRefresh}
-                expandCreateFormNonce={invoiceCreateNonce}
-              />
-            )}
-            {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
-            {activeTab === 'calls' && <DealCallsTab />}
-          </div>
-        </ScrollArea>
+          <DetailSheetTabBar
+            tabs={TABS}
+            activeTab={activeTab}
+            onTabChange={(value) => setActiveTab(value as (typeof TABS)[number]['value'])}
+          />
 
-        {/* ── Footer (only Delete) ── */}
-        {onDelete && (
-          <div className="shrink-0 border-t border-stone-100 bg-stone-50/50 px-7 py-3 dark:border-stone-800 dark:bg-stone-900/20">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive text-xs"
-              onClick={() => onDelete(deal.id)}
-            >
-              <Trash2 size={13} className="mr-1.5" />
-              Delete
-            </Button>
-          </div>
-        )}
-      </SheetContent>
-    </Sheet>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="px-7 py-5">
+              {activeTab === 'general' && generalDraft ? (
+                <DealGeneralTab
+                  deal={deal}
+                  draft={generalDraft}
+                  patchDraft={patchGeneralDraft}
+                  onRefresh={onRefresh}
+                  onOpenTaskTab={() => setActiveTab('task')}
+                  onOpenDeal={onOpenDeal}
+                  gateRequiredFields={gateRequiredFields}
+                />
+              ) : null}
+              {activeTab === 'history' && <DealHistoryTab />}
+              {activeTab === 'invoice' && (
+                <DealInvoiceTab
+                  deal={deal}
+                  onRefresh={onRefresh}
+                  expandCreateFormNonce={invoiceCreateNonce}
+                />
+              )}
+              {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
+              {activeTab === 'calls' && <DealCallsTab />}
+            </div>
+          </ScrollArea>
+
+          <DetailSheetFormFooter
+            visible={activeTab === 'general' && Boolean(generalDraft)}
+            dirty={generalDirty}
+            saving={false}
+            errorMessage={generalError}
+            onSave={handleGeneralSave}
+            onCancel={handleGeneralCancel}
+          />
+        </EntityDetailSheetContent>
+      </Sheet>
+    </EntityItemHost>
   );
 }

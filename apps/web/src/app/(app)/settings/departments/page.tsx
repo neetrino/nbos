@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Building2, Plus, Users, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/shared';
+import { PageHero } from '@/components/shared';
 import {
   Dialog,
   DialogContent,
@@ -136,14 +136,18 @@ export default function DepartmentsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Departments" description="Manage company departments and their members">
-        <PermissionGate module="COMPANY" action="ADD">
-          <Button onClick={openCreateDialog}>
-            <Plus className="mr-2 size-4" />
-            Create Department
-          </Button>
-        </PermissionGate>
-      </PageHeader>
+      <PageHero
+        title="Departments"
+        trailing={
+          <PermissionGate module="COMPANY" action="ADD">
+            <Button type="button" onClick={openCreateDialog}>
+              <Plus className="mr-2 size-4" aria-hidden />
+              Create Department
+            </Button>
+          </PermissionGate>
+        }
+      />
+      <p className="text-muted-foreground text-sm">Manage company departments and their members</p>
 
       {loading ? (
         <div className="text-muted-foreground border-border rounded-lg border p-8 text-center">

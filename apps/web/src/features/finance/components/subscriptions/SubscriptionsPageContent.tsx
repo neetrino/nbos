@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import type { Subscription, SubscriptionGridPayload } from '@/lib/api/finance';
 import { SubscriptionCoverageGrid } from './SubscriptionCoverageGrid';
-import { SubscriptionsTable } from './SubscriptionsTable';
 
 interface SubscriptionsPageContentProps {
   gridYear: number;
@@ -13,18 +12,18 @@ interface SubscriptionsPageContentProps {
   gridError: string | null;
   onGridRetry: () => void;
   subscriptions: Subscription[];
-  loading: boolean;
-  error: string | null;
+  listLoading: boolean;
+  listError: string | null;
   mutationError: string | null;
   onDismissMutationError: () => void;
+  onListRetry: () => void;
   activatingId: string | null;
   cancellingId: string | null;
   holdingId: string | null;
-  onRetry: () => void;
   onActivate: (subscription: Subscription) => void;
   onCancel: (subscription: Subscription) => Promise<void>;
   onHold: (subscription: Subscription) => Promise<void>;
-  onPartnerLinked: (subscription: Subscription) => void;
+  onOpenSubscription: (subscriptionId: string) => void;
 }
 
 export function SubscriptionsPageContent({
@@ -35,47 +34,52 @@ export function SubscriptionsPageContent({
   gridError,
   onGridRetry,
   subscriptions,
-  loading,
-  error,
+  listLoading,
+  listError,
   mutationError,
   onDismissMutationError,
+  onListRetry,
   activatingId,
   cancellingId,
   holdingId,
-  onRetry,
   onActivate,
   onCancel,
   onHold,
-  onPartnerLinked,
+  onOpenSubscription,
 }: SubscriptionsPageContentProps) {
-  if (loading) return <LoadingState count={4} />;
-  if (error) return <ErrorState description={error} onRetry={onRetry} />;
+  if (listError) return <ErrorState description={listError} onRetry={onListRetry} />;
+
+  const showEmpty =
+    !listLoading &&
+    !gridLoading &&
+    subscriptions.length === 0 &&
+    (!gridPayload || gridPayload.rows.length === 0);
 
   return (
     <>
       {mutationError ? (
         <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
       ) : null}
-      <SubscriptionCoverageGrid
-        year={gridYear}
-        onYearChange={onGridYearChange}
-        payload={gridPayload}
-        loading={gridLoading}
-        error={gridError}
-        onRetry={onGridRetry}
-      />
-      {subscriptions.length === 0 ? (
+      {listLoading && subscriptions.length === 0 ? (
+        <LoadingState count={4} />
+      ) : showEmpty ? (
         <SubscriptionsEmptyState />
       ) : (
-        <SubscriptionsTable
+        <SubscriptionCoverageGrid
+          year={gridYear}
+          onYearChange={onGridYearChange}
+          payload={gridPayload}
           subscriptions={subscriptions}
+          loading={gridLoading || (listLoading && subscriptions.length === 0)}
+          error={gridError}
+          onRetry={onGridRetry}
           activatingId={activatingId}
           cancellingId={cancellingId}
           holdingId={holdingId}
           onActivate={onActivate}
           onCancel={onCancel}
           onHold={onHold}
-          onPartnerLinked={onPartnerLinked}
+          onOpenSubscription={onOpenSubscription}
         />
       )}
     </>

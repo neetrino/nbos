@@ -2,12 +2,63 @@ import { extensionsApi } from '@/lib/api/extensions';
 import { productsApi } from '@/lib/api/products';
 import { type DeliveryLifecycleActionPayload } from '@/features/projects/components/DeliveryLifecycleActionDialog';
 import {
+  ACTIVE_DELIVERY_STAGES,
+  getItemId,
   getItemLifecycle,
   NEXT_DELIVERY_STAGE,
   type DeliveryBoardItem,
 } from './project-delivery-board-model';
 
 export type BoardAction = 'MOVE_NEXT' | 'RESUME' | 'COMPLETE' | 'CANCEL';
+
+export type DeliveryActiveStage = (typeof ACTIVE_DELIVERY_STAGES)[number];
+
+const MAX_STAGE_ADVANCE_STEPS = 8;
+
+/**
+ * Moves forward along the delivery pipeline until `target` is reached (or server rejects a gate).
+ */
+export async function advanceDeliveryItemToStage(
+  item: DeliveryBoardItem,
+  target: DeliveryActiveStage,
+): Promise<void> {
+  const id = getItemId(item);
+  const isProduct = item.kind === 'PRODUCT';
+
+  for (let step = 0; step < MAX_STAGE_ADVANCE_STEPS; step++) {
+    const entity = isProduct ? await productsApi.getById(id) : await extensionsApi.getById(id);
+    const lc = entity.deliveryLifecycle;
+    if (!lc || lc.isTerminal) {
+      return;
+    }
+    if (lc.workStatus === 'ON_HOLD') {
+      throw new Error('Resume delivery before changing stages.');
+    }
+    const cur = lc.stage;
+    if (!cur || cur === target) {
+      return;
+    }
+
+    const curI = ACTIVE_DELIVERY_STAGES.indexOf(cur);
+    const targetI = ACTIVE_DELIVERY_STAGES.indexOf(target);
+    if (curI < 0 || targetI < 0 || curI >= targetI) {
+      return;
+    }
+
+    const next = NEXT_DELIVERY_STAGE[cur];
+    if (!next || ACTIVE_DELIVERY_STAGES.indexOf(next) > targetI) {
+      throw new Error('Cannot move to that stage.');
+    }
+
+    if (isProduct) {
+      await productsApi.moveStage(id, { stage: next });
+    } else {
+      await extensionsApi.moveStage(id, { stage: next });
+    }
+  }
+
+  throw new Error('Stage advance exceeded maximum steps.');
+}
 
 export async function runBoardAction(
   item: DeliveryBoardItem,

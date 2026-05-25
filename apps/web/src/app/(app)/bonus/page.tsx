@@ -1,23 +1,29 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { FINANCE_BONUS_BOARD_PATH } from '@/features/finance/constants/bonus-board-url';
 
-import { Suspense } from 'react';
-import { LoadingState } from '@/components/shared';
-import { BonusBoardPageContent } from '@/features/finance/components/bonus/BonusBoardPageContent';
-
-export default function BonusPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex h-full flex-col">
-          <div className="mb-4">
-            <h1 className="text-foreground text-2xl font-semibold">Bonus Board</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Loading…</p>
-          </div>
-          <LoadingState />
-        </div>
+function legacyBonusRedirectTarget(query: Record<string, string | string[] | undefined>): string {
+  const q = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (typeof value === 'string') {
+      q.set(key, value);
+      continue;
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        q.append(key, item);
       }
-    >
-      <BonusBoardPageContent />
-    </Suspense>
-  );
+    }
+  }
+  const suffix = q.toString();
+  return suffix ? `${FINANCE_BONUS_BOARD_PATH}?${suffix}` : FINANCE_BONUS_BOARD_PATH;
+}
+
+/** Legacy `/bonus` → canonical `/finance/bonuses` (query preserved). */
+export default async function BonusLegacyRedirectPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const query = await searchParams;
+  redirect(legacyBonusRedirectTarget(query));
 }

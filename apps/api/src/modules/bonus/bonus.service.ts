@@ -12,6 +12,16 @@ import {
   type BonusOrderPoolGroupRow,
   type BonusProductPoolRow,
 } from './bonus-product-pools';
+import { queryBonusPoolEmployeeLines } from './bonus-pool-employee-lines';
+import {
+  parsePoolKeysQuery,
+  queryBonusPoolEmployeeLinesBatch,
+  type BonusPoolEmployeeLinesBatchDto,
+} from './bonus-pool-lines-batch';
+import { queryBonusPoolTimeline } from './bonus-pool-timeline';
+import { triggerPoolProportionalAutoRelease } from './bonus-pool-auto-release-trigger';
+import { syncProductBonusPoolForPoolKey } from './bonus-pool-sync-trigger';
+import { deriveBonusPoolFundingMetrics, sumPoolLedgerFields } from './bonus-pool-funding-health';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 
 interface CreateBonusDto {
@@ -48,8 +58,8 @@ export class BonusService {
 
   async findAll(params: BonusQueryParams) {
     const {
-      page = 1,
-      pageSize = 20,
+      page: rawPage,
+      pageSize: rawPageSize,
       employeeId,
       orderId,
       projectId,
@@ -59,11 +69,46 @@ export class BonusService {
       sortOrder = 'desc',
     } = params;
 
+    const page =
+      typeof rawPage === 'number' && Number.isFinite(rawPage) && rawPage >= 1
+        ? Math.min(10_000, Math.floor(rawPage))
+        : 1;
+    const pageSize =
+      typeof rawPageSize === 'number' && Number.isFinite(rawPageSize) && rawPageSize >= 1
+        ? Math.min(200, Math.floor(rawPageSize))
+        : 20;
+
     const where = this.buildWhere({ employeeId, orderId, projectId, status, type });
+    const searchTrimmed = params.search?.trim();
+    const listWhere: Prisma.BonusEntryWhereInput = searchTrimmed
+      ? {
+          AND: [
+            where,
+            {
+              OR: [
+                {
+                  employee: {
+                    firstName: { contains: searchTrimmed, mode: 'insensitive' },
+                  },
+                },
+                {
+                  employee: {
+                    lastName: { contains: searchTrimmed, mode: 'insensitive' },
+                  },
+                },
+                { employee: { email: { contains: searchTrimmed, mode: 'insensitive' } } },
+                { order: { code: { contains: searchTrimmed, mode: 'insensitive' } } },
+                { project: { name: { contains: searchTrimmed, mode: 'insensitive' } } },
+                { project: { code: { contains: searchTrimmed, mode: 'insensitive' } } },
+              ],
+            },
+          ],
+        }
+      : where;
 
     const [items, total] = await Promise.all([
       this.prisma.bonusEntry.findMany({
-        where,
+        where: listWhere,
         include: {
           employee: { select: { id: true, firstName: true, lastName: true } },
           order: { select: { id: true, code: true, totalAmount: true } },
@@ -73,7 +118,7 @@ export class BonusService {
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      this.prisma.bonusEntry.count({ where }),
+      this.prisma.bonusEntry.count({ where: listWhere }),
     ]);
 
     return {
@@ -170,43 +215,115 @@ export class BonusService {
     if (folded.length === 0) {
       return [];
     }
-    const anchorIds = [...new Set(folded.map((r) => r.anchorOrderId))];
-    return this.mergeProductPoolLedgersWithIds(folded, anchorIds);
+    const withLedgers = await this.mergeProductPoolLedgers(folded);
+    return this.attachPoolEmployeeCounts(withLedgers);
   }
 
-  private async mergeProductPoolLedgersWithIds(
+  async getProductPoolEmployeeLines(poolKey: string) {
+    return queryBonusPoolEmployeeLines(this.prisma, poolKey);
+  }
+
+  async getProductPoolTimeline(poolKey: string) {
+    return queryBonusPoolTimeline(this.prisma, poolKey);
+  }
+
+  async triggerProductPoolAutoRelease(poolKey: string) {
+    return triggerPoolProportionalAutoRelease(this.prisma, poolKey);
+  }
+
+  async syncProductPoolLedger(poolKey: string) {
+    return syncProductBonusPoolForPoolKey(this.prisma, poolKey);
+  }
+
+  async getProductPoolEmployeeLinesBatch(poolKeysRaw: string): Promise<{
+    items: BonusPoolEmployeeLinesBatchDto[];
+  }> {
+    const poolKeys = parsePoolKeysQuery(poolKeysRaw);
+    const items = await queryBonusPoolEmployeeLinesBatch(this.prisma, poolKeys);
+    return { items };
+  }
+
+  private async mergeProductPoolLedgers(
     rows: BonusProductPoolRow[],
-    anchorIds: string[],
   ): Promise<BonusProductPoolRow[]> {
-    if (anchorIds.length === 0) {
+    const allOrderIds = [...new Set(rows.flatMap((r) => r.orderIds))];
+    if (allOrderIds.length === 0) {
       return rows;
     }
     const ledgers = await this.prisma.productBonusPool.findMany({
-      where: { orderId: { in: anchorIds } },
+      where: { orderId: { in: allOrderIds } },
       select: {
         orderId: true,
         totalPlannedAmount: true,
         totalReleasedAmount: true,
         totalRemainingAmount: true,
         availableFunding: true,
+        overFundingAmount: true,
         status: true,
       },
     });
     const byOrder = new Map(ledgers.map((row) => [row.orderId, row] as const));
+
     return rows.map((row) => {
-      const ledger = byOrder.get(row.anchorOrderId);
-      if (!ledger) {
+      const poolLedgers = row.orderIds
+        .map((id) => byOrder.get(id))
+        .filter((l): l is NonNullable<typeof l> => l != null);
+      if (poolLedgers.length === 0) {
         return row;
       }
+      const merged = sumPoolLedgerFields(poolLedgers);
+      const metrics = deriveBonusPoolFundingMetrics({
+        planned: merged.planned,
+        received: merged.received,
+        available: merged.available,
+        remaining: merged.remaining,
+        overFunding: merged.overFunding,
+        ledgerStatus: merged.ledgerStatus,
+      });
       return {
         ...row,
-        ledgerPlannedAmount: ledger.totalPlannedAmount.toFixed(2),
-        ledgerReleasedAmount: ledger.totalReleasedAmount.toFixed(2),
-        ledgerRemainingAmount: ledger.totalRemainingAmount.toFixed(2),
-        ledgerAvailableFunding: ledger.availableFunding.toFixed(2),
-        ledgerPoolStatus: ledger.status,
+        ledgerPlannedAmount: merged.planned.toFixed(2),
+        ledgerReleasedAmount: merged.released.toFixed(2),
+        ledgerRemainingAmount: merged.remaining.toFixed(2),
+        ledgerAvailableFunding: merged.available.toFixed(2),
+        ledgerOverFundingAmount: merged.overFunding.toFixed(2),
+        ledgerReceivedAmount: merged.received.toFixed(2),
+        ledgerPoolStatus: merged.ledgerStatus,
+        fundingFillPercent: metrics.fundingFillPercent,
+        fundingHealth: metrics.fundingHealth,
       };
     });
+  }
+
+  private async attachPoolEmployeeCounts(
+    rows: BonusProductPoolRow[],
+  ): Promise<BonusProductPoolRow[]> {
+    const allOrderIds = [...new Set(rows.flatMap((r) => r.orderIds))];
+    if (allOrderIds.length === 0) {
+      return rows;
+    }
+    const entries = await this.prisma.bonusEntry.findMany({
+      where: { orderId: { in: allOrderIds } },
+      select: { orderId: true, employeeId: true },
+    });
+    const orderToPool = new Map<string, string>();
+    for (const row of rows) {
+      for (const orderId of row.orderIds) {
+        orderToPool.set(orderId, row.poolKey);
+      }
+    }
+    const employeesByPool = new Map<string, Set<string>>();
+    for (const entry of entries) {
+      const poolKey = orderToPool.get(entry.orderId);
+      if (!poolKey) continue;
+      const set = employeesByPool.get(poolKey) ?? new Set<string>();
+      set.add(entry.employeeId);
+      employeesByPool.set(poolKey, set);
+    }
+    return rows.map((row) => ({
+      ...row,
+      employeeCount: employeesByPool.get(row.poolKey)?.size ?? 0,
+    }));
   }
 
   private buildWhere(

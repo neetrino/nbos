@@ -33,7 +33,7 @@ export async function publishBonusEntryWalletHints(
         recipientId: h.employeeId,
         title: 'Bonus moved to payroll pipeline',
         body: `Order ${h.orderCode}: your bonus is now active for payroll.`,
-        link: '/finance/wallet',
+        link: '/my-account/wallet',
         entityType: 'BonusEntry',
         entityId: h.entryId,
         sourceModule: 'finance',
@@ -60,7 +60,7 @@ export async function notifyBonusReleasePaid(
       recipientId: input.employeeId,
       title: 'Bonus payout recorded',
       body: `Order ${input.orderCode}: ${input.amountLabel} marked paid${month}.`,
-      link: '/finance/wallet',
+      link: '/my-account/wallet',
       entityType: 'BonusRelease',
       entityId: input.releaseId,
       sourceModule: 'finance',
@@ -144,11 +144,86 @@ export async function notifyBonusReleaseCorrected(
       recipientId: input.employeeId,
       title: 'Bonus release adjusted',
       body: `Order ${input.orderCode}: release updated to ${input.amountLabel}.`,
-      link: '/finance/wallet',
+      link: '/my-account/wallet',
       entityType: 'BonusRelease',
       entityId: input.releaseId,
       sourceModule: 'finance',
       idempotencyKey: `wallet:bonus_corrected:${input.releaseId}:${input.amountLabel}`,
+    }),
+  );
+}
+
+export async function notifyBonusCarryApplied(
+  sink: WalletInAppNotifySink | undefined,
+  input: {
+    employeeId: string;
+    payrollRunId: string;
+    payrollMonth: string;
+    amountLabel: string;
+  },
+): Promise<void> {
+  await safeNotify(sink, (s) =>
+    s.create({
+      type: WALLET_NOTIFY_TYPES.BONUS_CARRY_APPLIED,
+      recipientId: input.employeeId,
+      title: 'Prior bonus carry applied',
+      body: `Payroll ${input.payrollMonth}: ${input.amountLabel} from earlier months was added to your salary line.`,
+      link: `/finance/payroll/${input.payrollRunId}`,
+      entityType: 'PayrollRun',
+      entityId: input.payrollRunId,
+      sourceModule: 'finance',
+      idempotencyKey: `wallet:bonus_carry_applied:${input.payrollRunId}:${input.employeeId}:${input.amountLabel}`,
+    }),
+  );
+}
+
+export async function notifyBonusCarryDeferred(
+  sink: WalletInAppNotifySink | undefined,
+  input: {
+    employeeId: string;
+    releaseId: string;
+    orderCode: string;
+    payrollMonth: string;
+    amountLabel: string;
+  },
+): Promise<void> {
+  const month = input.payrollMonth ? ` (${input.payrollMonth})` : '';
+  await safeNotify(sink, (s) =>
+    s.create({
+      type: WALLET_NOTIFY_TYPES.BONUS_CARRY_DEFERRED,
+      recipientId: input.employeeId,
+      title: 'Bonus deferred to a later payroll',
+      body: `Order ${input.orderCode}: ${input.amountLabel} exceeds this month's bonus cap and carries to a later payroll${month}.`,
+      link: '/my-account/wallet',
+      entityType: 'BonusRelease',
+      entityId: input.releaseId,
+      sourceModule: 'finance',
+      idempotencyKey: `wallet:bonus_carry_deferred:${input.releaseId}:${input.amountLabel}`,
+    }),
+  );
+}
+
+export async function notifyBonusKpiReducedOnAttach(
+  sink: WalletInAppNotifySink | undefined,
+  input: {
+    employeeId: string;
+    releaseId: string;
+    orderCode: string;
+    body: string;
+    burnedAmount: string;
+  },
+): Promise<void> {
+  await safeNotify(sink, (s) =>
+    s.create({
+      type: WALLET_NOTIFY_TYPES.BONUS_KPI_REDUCED,
+      recipientId: input.employeeId,
+      title: 'Sales bonus reduced by KPI',
+      body: input.body,
+      link: '/my-account/wallet',
+      entityType: 'BonusRelease',
+      entityId: input.releaseId,
+      sourceModule: 'finance',
+      idempotencyKey: `wallet:bonus_kpi_reduced:${input.releaseId}:${input.burnedAmount}`,
     }),
   );
 }

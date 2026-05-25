@@ -3,6 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import { validateDealStageGate } from './deal-stage-gate';
 
 const baseDeal = {
+  contactId: 'contact-1',
   type: 'PRODUCT',
   amount: null as unknown,
   paymentType: null as string | null,
@@ -17,7 +18,6 @@ const baseDeal = {
   offerLink: null as string | null,
   offerFileUrl: null as string | null,
   offerScreenshotUrl: null as string | null,
-  responseDueAt: null as Date | null,
   contractSignedAt: null as Date | null,
   contractFileUrl: null as string | null,
   orders: [] as Array<{ invoices: unknown[] }>,
@@ -32,12 +32,28 @@ const baseDeal = {
 describe('validateDealStageGate', () => {
   it('allows early stages without validation', () => {
     expect(() => validateDealStageGate(baseDeal, 'DISCUSS_NEEDS')).not.toThrow();
-    expect(() => validateDealStageGate(baseDeal, 'MEETING')).not.toThrow();
-    expect(() => validateDealStageGate(baseDeal, 'CAN_WE_DO_IT')).not.toThrow();
   });
 
-  it('always allows FAILED', () => {
-    expect(() => validateDealStageGate(baseDeal, 'FAILED')).not.toThrow();
+  it('requires lost reason in notes for FAILED', () => {
+    expect(() => validateDealStageGate(baseDeal, 'FAILED')).toThrow(BadRequestException);
+    expect(() => validateDealStageGate({ ...baseDeal, notes: 'Budget' }, 'FAILED')).not.toThrow();
+  });
+
+  it('accepts linked Drive contract files at DEPOSIT_AND_CONTRACT', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerLink: 'https://example.com/offer',
+      companyId: 'company-1',
+      pmId: 'pm-1',
+      deadline: new Date(),
+      linkedContractAssetCount: 1,
+      orders: [{ invoices: [{ id: 'invoice-1' }] }],
+    };
+    expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).not.toThrow();
   });
 
   it('requires attribution before meaningful deal movement', () => {
@@ -52,15 +68,26 @@ describe('validateDealStageGate', () => {
     expect(() => validateDealStageGate(withFinance, 'SEND_OFFER')).toThrow(BadRequestException);
   });
 
-  it('requires productCategory, productType, sent date, and proof for PRODUCT at SEND_OFFER', () => {
+  it('requires productCategory, productType, and offer proof for PRODUCT at SEND_OFFER', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
-      offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
+    };
+    expect(() => validateDealStageGate(deal, 'SEND_OFFER')).not.toThrow();
+  });
+
+  it('accepts linked Drive offer files at SEND_OFFER', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      linkedOfferAssetCount: 1,
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).not.toThrow();
   });
@@ -72,7 +99,6 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
-      offerSentAt: new Date(),
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
   });
@@ -84,23 +110,21 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
-      offerSentAt: new Date(),
       offerFileUrl: '   ',
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
   });
 
-  it('requires response deadline at GET_ANSWER', () => {
+  it('allows GET_ANSWER without response due date', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
-      offerSentAt: new Date(),
-      offerFileUrl: 'https://example.com/offer.pdf',
+      offerLink: 'https://example.com/offer.pdf',
     };
-    expect(() => validateDealStageGate(deal, 'GET_ANSWER')).toThrow(BadRequestException);
+    expect(() => validateDealStageGate(deal, 'GET_ANSWER')).not.toThrow();
   });
 
   it('requires pmId + deadline for PRODUCT at DEPOSIT_AND_CONTRACT', () => {
@@ -112,7 +136,6 @@ describe('validateDealStageGate', () => {
       productType: 'COMPANY_WEBSITE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
     };
     expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).toThrow(BadRequestException);
 
@@ -121,7 +144,7 @@ describe('validateDealStageGate', () => {
       companyId: 'company-1',
       pmId: 'pm-1',
       deadline: new Date(),
-      contractSignedAt: new Date(),
+      linkedContractAssetCount: 1,
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
     expect(() => validateDealStageGate(complete, 'DEPOSIT_AND_CONTRACT')).not.toThrow();
@@ -136,7 +159,6 @@ describe('validateDealStageGate', () => {
       productType: 'COMPANY_WEBSITE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
       companyId: 'company-1',
       pmId: 'pm-1',
       deadline: new Date(),
@@ -153,7 +175,6 @@ describe('validateDealStageGate', () => {
       productType: 'COMPANY_WEBSITE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
       companyId: 'company-1',
       pmId: 'pm-1',
       deadline: new Date(),
@@ -172,7 +193,6 @@ describe('validateDealStageGate', () => {
       taxStatus: 'TAX_FREE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
       contractFileUrl: 'https://example.com/contract.pdf',
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
@@ -206,8 +226,7 @@ describe('validateDealStageGate', () => {
       deadline: new Date(),
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
-      responseDueAt: new Date(),
-      contractSignedAt: new Date(),
+      linkedContractAssetCount: 1,
       orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
     expect(() => validateDealStageGate(complete, 'WON')).not.toThrow();

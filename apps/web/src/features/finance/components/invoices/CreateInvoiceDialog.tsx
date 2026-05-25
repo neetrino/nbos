@@ -11,6 +11,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { RelationPickerField } from '@/components/shared';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -19,6 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { FolderKanban } from 'lucide-react';
+import { useProjectRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { INVOICE_TYPES, formatAmount } from '@/features/finance/constants/finance';
 import type { Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
@@ -34,6 +39,7 @@ interface CreateInvoiceDialogProps {
   onCreated: () => Promise<void> | void;
   order?: Order | null;
   subscriptionId?: string | null;
+  initialProjectId?: string | null;
 }
 
 export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
@@ -146,25 +152,27 @@ function InvoiceContextFields({
     return <SubscriptionInvoiceContext subscription={state.subscriptionDetail} />;
   }
 
+  return <InvoiceProjectPicker state={state} />;
+}
+
+function InvoiceProjectPicker({ state }: { state: CreateInvoiceDialogState }) {
+  const searchProjects = useProjectRelationSearch();
+  const projectPicker = useRelationPickerActions('project');
+  const linked = state.projects.find((p) => p.id === state.form.projectId);
+  const selectionLabel = linked ? `${linked.code} · ${linked.name}` : null;
+
   return (
-    <div>
-      <Label>Project *</Label>
-      <Select
-        value={state.form.projectId || undefined}
-        onValueChange={(value) => state.setForm({ ...state.form, projectId: value ?? '' })}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select project" />
-        </SelectTrigger>
-        <SelectContent>
-          {state.projects.map((project) => (
-            <SelectItem key={project.id} value={project.id}>
-              {project.code} · {project.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <RelationPickerField
+      label="Project"
+      entityKind="project"
+      value={state.form.projectId || null}
+      selectionLabel={selectionLabel}
+      placeholder="Search projects…"
+      icon={<FolderKanban size={12} />}
+      onSearch={searchProjects}
+      onSelect={(id) => state.setForm({ ...state.form, projectId: id })}
+      {...projectPicker}
+    />
   );
 }
 
@@ -191,7 +199,7 @@ function SubscriptionInvoiceContext({ subscription }: { subscription: Subscripti
         {subscription.company?.name ? ` · ${subscription.company.name}` : ''}
       </p>
       <p className="text-muted-foreground mt-1">
-        Monthly amount: {formatAmount(parseFloat(subscription.amount))}
+        Monthly amount: {formatAmount(parseFloat(subscription.baseMonthlyAmount))}
       </p>
     </div>
   );
@@ -218,10 +226,11 @@ function InvoiceAmountFields({
       </div>
       <div>
         <Label>Due Date</Label>
-        <Input
-          type="date"
+        <NbosDatePicker
           value={form.dueDate}
-          onChange={(event) => setForm({ ...form, dueDate: event.target.value })}
+          onChange={(dueDate) => setForm({ ...form, dueDate })}
+          variant="extended"
+          aria-label="Due date"
         />
       </div>
       <div className="col-span-2">

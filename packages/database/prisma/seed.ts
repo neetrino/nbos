@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { seedMessenger } from './seed-messenger';
 import { seedMail } from './seed-mail';
+import { seedRichDemo } from './seed-rich-demo';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
@@ -24,6 +25,7 @@ async function main() {
   await prisma.savedReportView.deleteMany();
   await prisma.reportSchedule.deleteMany();
   await prisma.reportExportJob.deleteMany();
+  await prisma.driveZipExportJob.deleteMany();
   await prisma.documentActivityEvent.deleteMany();
   await prisma.documentTagOnDocument.deleteMany();
   await prisma.documentAttachment.deleteMany();
@@ -41,6 +43,18 @@ async function main() {
   await prisma.taskLink.deleteMany();
   await prisma.taskChecklistItem.deleteMany();
   await prisma.taskChecklist.deleteMany();
+  await prisma.operationalJournalEntry.deleteMany();
+  await prisma.financePostingPeriod.deleteMany();
+  await prisma.partnerAccrual.deleteMany();
+  await prisma.partnerPayoutBatch.deleteMany();
+  await prisma.bonusRelease.deleteMany();
+  await prisma.productBonusPool.deleteMany();
+  await prisma.salaryLine.deleteMany();
+  await prisma.payrollRun.deleteMany();
+  await prisma.expensePayment.deleteMany();
+  await prisma.expensePlan.deleteMany();
+  await prisma.clientServiceRecord.deleteMany();
+  await prisma.compensationProfile.deleteMany();
   await prisma.bonusEntry.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.invoice.deleteMany();
@@ -146,7 +160,19 @@ async function main() {
       status: 'ACTIVE',
     },
   });
-  console.log('  ✓ Employees (6)');
+  await prisma.employee.upsert({
+    where: { email: 'owner@neetrino.com' },
+    update: { roleId: 'role-owner' },
+    create: {
+      firstName: 'Company',
+      lastName: 'Owner',
+      email: 'owner@neetrino.com',
+      roleId: 'role-owner',
+      level: 'HEAD',
+      status: 'ACTIVE',
+    },
+  });
+  console.log('  ✓ Employees (7)');
 
   await seedMessenger(prisma, { ceo, seller, pm, pm2, dev, designer });
   console.log('  ✓ Messenger (channels + sample messages + DM threads)');
@@ -503,7 +529,50 @@ async function main() {
     },
   });
 
-  console.log('  ✓ Products (12)');
+  // Delivery Board QA: on hold, cancelled, transfer stage
+  await prisma.product.create({
+    data: {
+      id: '00000000-0000-0000-0000-000000000032',
+      projectId: project1.id,
+      name: 'ACME Newsletter Module',
+      productCategory: 'MARKETING',
+      productType: 'OTHER',
+      status: 'ON_HOLD',
+      deliveryStage: 'DEVELOPMENT',
+      deliveryWorkStatus: 'ON_HOLD',
+      onHoldReason: 'Waiting for brand guidelines from client',
+      onHoldUntil: new Date('2026-06-15'),
+      pmId: pm.id,
+      deadline: new Date('2026-07-01'),
+    },
+  });
+  await prisma.product.create({
+    data: {
+      id: '00000000-0000-0000-0000-000000000033',
+      projectId: project2.id,
+      name: 'TechStart Wearables Integration',
+      productCategory: 'CODE',
+      productType: 'OTHER',
+      status: 'LOST',
+      cancellationReason: 'Client paused wearable initiative',
+      pmId: pm2.id,
+    },
+  });
+  await prisma.product.create({
+    data: {
+      id: '00000000-0000-0000-0000-000000000034',
+      projectId: project4.id,
+      name: 'Patient Portal Handoff Package',
+      productCategory: 'CODE',
+      productType: 'WEB_APP',
+      status: 'TRANSFER',
+      deliveryStage: 'TRANSFER',
+      pmId: pm.id,
+      deadline: new Date('2026-10-01'),
+    },
+  });
+
+  console.log('  ✓ Products (15)');
 
   // ── Extensions ─────────────────────────────────────────────
   const ext1 = await prisma.extension.create({
@@ -554,7 +623,62 @@ async function main() {
       assignedTo: dev.id,
     },
   });
-  console.log('  ✓ Extensions (5)');
+  await prisma.extension.create({
+    data: {
+      projectId: project4.id,
+      productId: prod9.id,
+      name: 'Blog GDPR banner',
+      size: 'SMALL',
+      status: 'QA',
+      deliveryStage: 'QA',
+      assignedTo: dev.id,
+    },
+  });
+  await prisma.extension.create({
+    data: {
+      projectId: project1.id,
+      productId: prod1.id,
+      name: 'Production deploy checklist',
+      size: 'MICRO',
+      status: 'TRANSFER',
+      deliveryStage: 'TRANSFER',
+      assignedTo: pm.id,
+    },
+  });
+  await prisma.extension.create({
+    data: {
+      projectId: project3.id,
+      productId: prod6.id,
+      name: 'Integration spike (abandoned)',
+      size: 'SMALL',
+      status: 'LOST',
+      cancellationReason: 'API vendor discontinued sandbox',
+      assignedTo: dev.id,
+    },
+  });
+  console.log('  ✓ Extensions (8)');
+
+  // Closed-tab filters: deadline on-time vs late (uses product.updatedAt as closed-at proxy)
+  await prisma.product.update({
+    where: { id: prod2.id },
+    data: {
+      deadline: new Date('2026-06-30'),
+      clientAcceptedAt: new Date('2026-05-01T14:00:00.000Z'),
+      clientAcceptanceNote: 'Signed PDF in Drive — Marketing folder',
+    },
+  });
+  await prisma.product.update({
+    where: { id: prod5.id },
+    data: { deadline: new Date('2026-04-01') },
+  });
+  await prisma.$executeRaw`
+    UPDATE products SET updated_at = ${new Date('2026-05-01T10:00:00.000Z')}
+    WHERE id = ${prod2.id}
+  `;
+  await prisma.$executeRaw`
+    UPDATE products SET updated_at = ${new Date('2026-05-15T10:00:00.000Z')}
+    WHERE id = ${prod5.id}
+  `;
 
   // ── Leads ──────────────────────────────────────────────────
   await prisma.lead.upsert({
@@ -1047,9 +1171,9 @@ async function main() {
       code: 'SUB-2026-0001',
       projectId: project1.id,
       type: 'DEV_AND_MAINTENANCE',
-      amount: 150000,
+      baseMonthlyAmount: 150000,
       billingDay: 1,
-      startDate: new Date('2026-02-01'),
+      billingStartDate: new Date('2026-02-01'),
       status: 'ACTIVE',
       taxStatus: 'TAX',
     },
@@ -1061,9 +1185,9 @@ async function main() {
       code: 'SUB-2026-0002',
       projectId: project2.id,
       type: 'MAINTENANCE_ONLY',
-      amount: 80000,
+      baseMonthlyAmount: 80000,
       billingDay: 15,
-      startDate: new Date('2026-01-15'),
+      billingStartDate: new Date('2026-01-15'),
       status: 'ACTIVE',
       partnerId: partner1.id,
       taxStatus: 'TAX_FREE',
@@ -1093,7 +1217,7 @@ async function main() {
       title: 'Design homepage layout',
       creatorId: pm.id,
       assigneeId: designer.id,
-      status: 'DONE',
+      status: 'COMPLETED',
       priority: 'HIGH',
       productId: prod1.id,
       projectId: project1.id,
@@ -1113,7 +1237,7 @@ async function main() {
       title: 'Setup CI/CD pipeline',
       creatorId: ceo.id,
       assigneeId: dev.id,
-      status: 'NEW',
+      status: 'OPEN',
       priority: 'NORMAL',
       productId: prod1.id,
       projectId: project1.id,
@@ -1133,7 +1257,7 @@ async function main() {
       title: 'Build landing page',
       creatorId: pm.id,
       assigneeId: dev.id,
-      status: 'DONE',
+      status: 'COMPLETED',
       priority: 'NORMAL',
       productId: prod5.id,
       projectId: project2.id,
@@ -1163,7 +1287,7 @@ async function main() {
       title: 'WordPress blog setup',
       creatorId: pm.id,
       assigneeId: dev.id,
-      status: 'DONE',
+      status: 'COMPLETED',
       priority: 'NORMAL',
       productId: prod9.id,
       projectId: project4.id,
@@ -1173,7 +1297,7 @@ async function main() {
       title: 'Fleet dashboard map integration',
       creatorId: pm2.id,
       assigneeId: dev.id,
-      status: 'NEW',
+      status: 'OPEN',
       priority: 'HIGH',
       productId: prod11.id,
       projectId: project5.id,
@@ -1183,7 +1307,7 @@ async function main() {
       title: 'SEO audit report',
       creatorId: pm.id,
       assigneeId: designer.id,
-      status: 'NEW',
+      status: 'OPEN',
       priority: 'LOW',
       productId: prod3.id,
       projectId: project1.id,
@@ -1283,14 +1407,14 @@ async function main() {
     },
     {
       code: 'T-2026-WS-0005',
-      title: 'Demo WS — Deferred',
-      status: 'DEFERRED' as const,
+      title: 'Demo WS — On hold',
+      status: 'ON_HOLD' as const,
       priority: 'LOW' as const,
     },
     {
       code: 'T-2026-WS-0006',
-      title: 'Demo WS — Cancelled',
-      status: 'CANCELLED' as const,
+      title: 'Demo WS — Closed (no longer active)',
+      status: 'COMPLETED' as const,
       priority: 'LOW' as const,
     },
   ];
@@ -1403,7 +1527,7 @@ async function main() {
       name: 'acme.am domain renewal',
       amount: 15000,
       frequency: 'YEARLY',
-      status: 'THIS_MONTH',
+      status: 'PLANNED',
       projectId: project1.id,
       isPassThrough: true,
     },
@@ -1483,6 +1607,24 @@ async function main() {
     },
   });
   console.log('  ✓ Bonus entries (3)');
+
+  await seedRichDemo(prisma, {
+    ceo,
+    seller,
+    pm,
+    pm2,
+    dev,
+    designer,
+    partner1,
+    contactIds: [contact1.id, contact2.id, contact3.id, contact5.id, contact6.id],
+    companyIds: [company1.id, company2.id, company3.id, company4.id, null],
+    existing: {
+      projectIds: [project1.id, project2.id, project3.id, project4.id, project5.id],
+      orderIds: [order1.id, order2.id, order3.id, order5.id, order6.id, order7.id],
+      productIds: [prod1.id, prod2.id, prod4.id, prod6.id, prod8.id, prod11.id],
+      subscriptionCodes: ['SUB-2026-0001', 'SUB-2026-0002'],
+    },
+  });
 
   // ── Credentials ────────────────────────────────────────────
   await prisma.credential.create({
@@ -1966,9 +2108,10 @@ async function main() {
   console.log('  ✓ System list options (21)');
 
   console.log('\n✅ Seed completed successfully!');
-  console.log('   5 projects, 12 products, 5 extensions');
-  console.log('   10 deals (7 WON), 8 orders, 9 invoices');
-  console.log('   10 tasks, 5 tickets, 6 credentials');
+  console.log('   20 projects (half archived), 15+ products per baseline + rich bundle');
+  console.log('   Finance: orders, invoices, payments, subscriptions, payroll, bonus pools');
+  console.log('   Client services, expense plans, compensation profiles');
+  console.log('   10 tasks, 5 tickets, 6 credentials (baseline)');
   await prisma.$disconnect();
 }
 

@@ -22,6 +22,8 @@
 
 Файл не должен копироваться в несколько мест только потому, что он нужен в Deal, Product и Client Portfolio. Физически файл хранится один раз, а в NBOS он виден через разные `Libraries / Библиотеки` и связи.
 
+Навигация Library vs Project hub, deep links и целевая модель папок под проектом: **`08-Drive-Navigation-Project-Hub-and-Folders.md`**.
+
 ---
 
 ## 2. Граница модуля
@@ -48,11 +50,74 @@ Drive может хранить документы этих модулей, но
 
 ---
 
-## 3. Два слоя Drive
+## 3. Три рабочих пространства Drive
+
+Drive должен ощущаться как полноценный рабочий файловый модуль, а не только как
+вложения в карточках. Внутри одного Drive-модуля есть **три пространства** (вкладки UI):
+
+1. **System Library Drive** — бизнес-библиотеки (Deals, Projects, Products, …);
+2. **Company Drive** — свободное общее дерево компании;
+3. **Personal Drive** — личное дерево сотрудника.
+
+Плюс view **Shared with me**. Детальная навигация, scoped-папки и Project hub: [`08-Drive-Navigation-Project-Hub-and-Folders.md`](./08-Drive-Navigation-Project-Hub-and-Folders.md).
+
+### 3.1. System Library Drive / Системные библиотеки
+
+Это автоматическая структура NBOS (входы внутри вкладки Library):
+
+- Deals Library;
+- Project Library;
+- Product Library;
+- Extension Library;
+- Client Library;
+- Finance Library;
+- Partner Library;
+- Task / Work Space Files;
+- Support Files;
+- All Files (глобальный фильтр).
+
+Системные библиотеки строятся по `FileAsset` + `FileLink` + permissions. На корне библиотеки — **виртуальная сетка сущностей** (Deal, Project, …); внутри сущности — **scoped folder tree** (целевая модель) и/или список файлов по линкам. Пункты Library **не** вкладывают Deals внутрь Projects в одно дерево.
+
+**Company Shared Library** в смысле templates/SOP — зона **Company Drive** (`company-library` в R2), не отдельная вкладка Library.
+
+### 3.2. Company Drive / Свободный общий Drive компании
+
+Это свободная Google Drive-like зона для компании:
+
+- пользовательские папки и подпапки;
+- общие рабочие материалы;
+- templates, brand, training, shared files;
+- файлы без обязательной привязки к Project / Product / Deal.
+
+Создание, переименование, перемещение, удаление папок и файлов доступно по RBAC и
+folder permissions. Но даже в свободной зоне права файла и confidentiality остаются
+важнее папки.
+
+### 3.3. Personal Drive / Личный Drive сотрудника
+
+Личная зона сотрудника:
+
+- private-by-default файлы;
+- личные рабочие черновики;
+- свои папки и подпапки;
+- возможность поделиться файлом или папкой с другим сотрудником / командой.
+
+Personal Drive не должен становиться способом обхода business permissions. Если файл
+связан с Finance / Legal / Credentials-adjacent context, confidentiality restrictions
+продолжают действовать.
+
+### 3.4. Shared With Me
+
+Отдельный view для файлов и папок, к которым пользователь получил доступ. Это не
+копия файла, а доступ к тому же `FileAsset` или folder placement.
+
+---
+
+## 4. Два технических слоя Drive
 
 Drive должен иметь две стороны.
 
-### 3.1. Logical Drive / Логический Drive в NBOS
+### 4.1. Logical Drive / Логический Drive в NBOS
 
 Это то, что видит пользователь:
 
@@ -71,7 +136,7 @@ Drive должен иметь две стороны.
 
 Это не обязательно физические папки. Это views, собранные по metadata и связям.
 
-### 3.2. Physical Storage / Физическое хранение в R2
+### 4.2. Physical Storage / Физическое хранение в R2
 
 Это понятная структура в Cloudflare R2, чтобы owner мог:
 
@@ -84,13 +149,15 @@ Drive должен иметь две стороны.
 
 ---
 
-## 4. Основные сущности
+## 5. Основные сущности
 
 | Сущность            | Назначение                                                                   |
 | ------------------- | ---------------------------------------------------------------------------- |
 | `File Asset`        | Один физический файл или external link                                       |
 | `File Version`      | Версия файла, если документ обновлялся                                       |
 | `File Link`         | Связь файла с Deal, Product, Invoice, Task и т.д.                            |
+| `Drive Folder`      | Пользовательская папка в Company Drive / Personal Drive                      |
+| `Folder Placement`  | Размещение файла или папки внутри пользовательской папки                     |
 | `Library`           | Логическое представление файлов по контексту                                 |
 | `Storage Object`    | Physical object in R2 / S3-compatible storage                                |
 | `File Permission`   | Явное ограничение доступа поверх inherited permissions                       |
@@ -100,7 +167,7 @@ Drive должен иметь две стороны.
 
 ---
 
-## 5. Главные правила
+## 6. Главные правила
 
 1. Любой файл в NBOS должен иметь business context или быть явно `Personal / Draft / Company Shared`.
 2. Файл, загруженный из карточки сущности, автоматически получает связь с этой сущностью.
@@ -112,10 +179,73 @@ Drive должен иметь две стороны.
 8. Approved / final документы должны жить дольше draft-файлов.
 9. Finance, legal, partner и credentials-adjacent документы требуют более строгого доступа и audit.
 10. Secrets не хранятся в Drive.
+11. System Libraries не являются пользовательскими папками и не удаляются вручную.
+12. Company Drive и Personal Drive поддерживают свободные пользовательские папки.
+13. Move в пользовательских папках меняет `FolderPlacement`, а не физический объект.
+14. Share даёт доступ к тому же `FileAsset`; Copy создаёт новый независимый `FileAsset`.
+15. Remove from folder удаляет только placement; Delete file everywhere переводит сам файл в Trash, если это разрешено.
 
 ---
 
-## 6. Типовой пример
+## 7. Move, Share, Copy And Delete
+
+### 7.1. Move
+
+`Move` доступен для пользовательских папок в Company Drive / Personal Drive. Move
+перемещает `FolderPlacement` файла или папки:
+
+```text
+Personal Drive / Design / logo.png
+  -> Personal Drive / Archive / logo.png
+```
+
+Это тот же `FileAsset`. В старой пользовательской папке он больше не показывается.
+Business links к Deal / Project / Product / Finance не удаляются.
+
+### 7.2. Share
+
+`Share` даёт доступ к тому же файлу:
+
+```text
+FileAsset f_123
+  owner: Employee A
+  shared with: Employee B can view
+```
+
+Если пользователь получил только view/download, он не меняет оригинал. Если получил
+edit/version permission, новая версия меняет общий файл и должна быть audited.
+
+### 7.3. Copy
+
+`Copy` создаёт независимый новый `FileAsset`:
+
+```text
+Original: FileAsset f_123
+Copy:     FileAsset f_999 copiedFrom f_123
+```
+
+Удаление или изменение оригинала не влияет на копию. Copy нужен, когда пользователь
+передаёт материал другому человеку как самостоятельный файл.
+
+### 7.4. Delete
+
+UI должен различать три действия:
+
+| Действие                  | Что происходит                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| `Remove from this folder` | Удаляется только `FolderPlacement`; сам `FileAsset` и business links остаются  |
+| `Move file to trash`      | Сам файл скрывается из активного Drive везде, если нет защитных business rules |
+| `Delete forever`          | Только из Trash / cleanup, только с permission, audit и retention checks       |
+
+Если файл имеет несколько placements, основное действие в папке — `Remove from this
+folder`. Если это единственное placement и нет защищающих business links, UI должен
+честно предупреждать, что файл будет перемещён в Trash. Если есть `FileLink` к
+Approved / Finance / Legal / Project-critical context, обычное удаление файла должно
+быть заблокировано или заменено на Archive / request delete.
+
+---
+
+## 8. Типовой пример
 
 Seller прикрепил КП в Deal:
 
@@ -150,7 +280,7 @@ File Asset
 
 ---
 
-## 7. Документы модуля
+## 9. Документы модуля
 
 | Документ                                 | Назначение                                              |
 | ---------------------------------------- | ------------------------------------------------------- |

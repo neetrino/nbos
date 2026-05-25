@@ -13,6 +13,7 @@ describe('DealsService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
+    prisma.fileLink.count.mockResolvedValue(1);
     wonHandler = { handle: vi.fn().mockResolvedValue(undefined) };
     auditService = { log: vi.fn().mockResolvedValue({ id: 'audit-1' }) };
     service = new DealsService(
@@ -39,11 +40,11 @@ describe('DealsService', () => {
     });
 
     it('applies status and type filters', async () => {
-      await service.findAll({ status: 'MEETING', type: 'NEW_PROJECT' });
+      await service.findAll({ status: 'DISCUSS_NEEDS', type: 'NEW_PROJECT' });
       expect(prisma.deal.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: 'MEETING',
+            status: 'DISCUSS_NEEDS',
             type: 'NEW_PROJECT',
           }),
         }),
@@ -217,7 +218,60 @@ describe('DealsService', () => {
       );
     });
 
+    it('creates draft deal with title and seller only', async () => {
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          id: '1',
+          code: data.code,
+          projectId: null,
+          type: null,
+          source: null,
+          sourcePartnerId: null,
+          paymentType: null,
+        }),
+      );
+      prisma.deal.findUnique.mockImplementation(({ where }) =>
+        Promise.resolve({
+          id: where.id,
+          code: 'D-2026-0010',
+          projectId: null,
+          type: null,
+          source: null,
+          sourcePartnerId: null,
+          paymentType: null,
+        }),
+      );
+
+      await service.create({ name: 'Draft only' }, { actorId: 'user-1' });
+
+      expect(prisma.deal.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            name: 'Draft only',
+            sellerId: 'user-1',
+          }),
+        }),
+      );
+      const createData = prisma.deal.create.mock.calls[0][0].data;
+      expect(createData).not.toHaveProperty('type');
+      expect(createData).not.toHaveProperty('contactId');
+      expect(createData).not.toHaveProperty('taxStatus');
+    });
+
     it('allows minimal payload when leadId is present', async () => {
+      prisma.lead.findUnique.mockResolvedValue({
+        id: 'lead-1',
+        name: 'Lead title',
+        contactId: 'c-1',
+        assignedTo: 's-1',
+        source: 'SALES',
+        sourceDetail: 'COLD_CALL',
+        sourcePartnerId: null,
+        sourceContactId: null,
+        marketingAccountId: null,
+        marketingActivityId: null,
+      });
       prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
       prisma.deal.findFirst.mockResolvedValue(null);
       prisma.deal.create.mockResolvedValue({
@@ -253,17 +307,37 @@ describe('DealsService', () => {
       expect(prisma.deal.create).toHaveBeenCalled();
     });
 
-    it('rejects direct deal without attribution', async () => {
-      prisma.contact.findUnique.mockResolvedValue({ id: 'c-1' });
-      await expect(
-        service.create({
-          contactId: 'c-1',
-          type: 'PRODUCT',
-          paymentType: 'CLASSIC',
-          sellerId: 's-1',
-          name: 'Needs attribution',
+    it('allows draft direct deal without attribution at create', async () => {
+      prisma.deal.findFirst.mockResolvedValue(null);
+      prisma.deal.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          id: '1',
+          code: data.code,
+          projectId: null,
+          type: null,
+          source: null,
+          sourcePartnerId: null,
+          paymentType: null,
         }),
-      ).rejects.toThrow(BadRequestException);
+      );
+      prisma.deal.findUnique.mockImplementation(({ where }) =>
+        Promise.resolve({
+          id: where.id,
+          code: 'D-2026-0004',
+          projectId: null,
+          type: null,
+          source: null,
+          sourcePartnerId: null,
+          paymentType: null,
+        }),
+      );
+
+      await service.create(
+        { name: 'Needs attribution later', sellerId: 's-1' },
+        { actorId: 's-1' },
+      );
+
+      expect(prisma.deal.create).toHaveBeenCalled();
     });
 
     it('skips DEAL_CREATED audit when actorId is omitted', async () => {
@@ -332,7 +406,7 @@ describe('DealsService', () => {
     it('rejects clearing source when deal attribution is locked', async () => {
       prisma.deal.findUnique.mockResolvedValue({
         id: '1',
-        status: 'MEETING',
+        status: 'DISCUSS_NEEDS',
         type: 'EXTENSION',
         projectId: null,
         existingProduct: null,
@@ -426,7 +500,6 @@ describe('DealsService', () => {
         offerLink: 'https://example.com/offer',
         offerFileUrl: null,
         offerScreenshotUrl: null,
-        responseDueAt: new Date(),
         contractSignedAt: new Date(),
         contractFileUrl: null,
         ...attribution,
@@ -465,13 +538,12 @@ describe('DealsService', () => {
         offerLink: 'https://example.com/offer',
         offerFileUrl: null,
         offerScreenshotUrl: null,
-        responseDueAt: new Date(),
         contractSignedAt: new Date(),
         contractFileUrl: null,
         ...attribution,
       });
 
-      await expect(service.updateStatus('1', 'MEETING')).rejects.toMatchObject({
+      await expect(service.updateStatus('1', 'DISCUSS_NEEDS')).rejects.toMatchObject({
         response: {
           code: 'BUSINESS_TRANSITION_UNAVAILABLE',
         },
@@ -483,6 +555,7 @@ describe('DealsService', () => {
     it('updates deal status for early stage (no gate)', async () => {
       const before = {
         id: '1',
+        contactId: 'contact-1',
         status: 'START_CONVERSATION',
         type: 'PRODUCT',
         amount: null,
@@ -498,19 +571,18 @@ describe('DealsService', () => {
         offerLink: null,
         offerFileUrl: null,
         offerScreenshotUrl: null,
-        responseDueAt: null,
         contractSignedAt: null,
         contractFileUrl: null,
         ...attribution,
       };
-      const after = { ...before, status: 'MEETING' };
+      const after = { ...before, status: 'DISCUSS_NEEDS' };
       prisma.deal.findUnique
         .mockResolvedValueOnce(before)
         .mockResolvedValueOnce(before)
         .mockResolvedValueOnce(after);
-      prisma.deal.update.mockResolvedValue({ id: '1', status: 'MEETING' });
-      const result = await service.updateStatus('1', 'MEETING');
-      expect(result.status).toBe('MEETING');
+      prisma.deal.update.mockResolvedValue({ id: '1', status: 'DISCUSS_NEEDS' });
+      const result = await service.updateStatus('1', 'DISCUSS_NEEDS');
+      expect(result.status).toBe('DISCUSS_NEEDS');
     });
 
     it('blocks WON when required fields missing', async () => {
@@ -530,7 +602,6 @@ describe('DealsService', () => {
         offerLink: null,
         offerFileUrl: null,
         offerScreenshotUrl: null,
-        responseDueAt: null,
         contractSignedAt: null,
         contractFileUrl: null,
         ...attribution,
@@ -665,6 +736,7 @@ describe('DealsService', () => {
 function completeProductDeal(invoiceMoneyStatus: 'PAID' | 'AWAITING_PAYMENT' = 'PAID') {
   return {
     id: '1',
+    contactId: 'contact-1',
     status: 'DEPOSIT_AND_CONTRACT',
     type: 'PRODUCT',
     amount: 5000,
@@ -680,7 +752,6 @@ function completeProductDeal(invoiceMoneyStatus: 'PAID' | 'AWAITING_PAYMENT' = '
     offerLink: 'https://example.com/offer',
     offerFileUrl: null,
     offerScreenshotUrl: null,
-    responseDueAt: new Date(),
     contractSignedAt: new Date(),
     contractFileUrl: null,
     notes: null,

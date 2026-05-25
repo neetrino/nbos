@@ -41,15 +41,15 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        'flex w-fit min-w-0 items-center justify-between gap-2 whitespace-nowrap outline-none select-none',
-        'border-border/50 bg-background text-foreground rounded-xl border text-sm font-medium shadow-sm shadow-black/[0.05]',
+        'flex w-full min-w-0 items-center justify-between gap-2 whitespace-nowrap outline-none select-none',
+        'border-border/60 bg-muted/20 text-foreground rounded-xl border text-sm font-medium shadow-sm shadow-black/[0.04]',
         'transition-[box-shadow,background-color,border-color]',
-        'hover:border-border/70 hover:bg-muted/35',
+        'hover:border-border hover:bg-muted/30 dark:border-border/50 dark:bg-input/35 dark:hover:bg-input/45',
         'focus-visible:ring-ring/45 focus-visible:ring-offset-background focus-visible:ring-2 focus-visible:ring-offset-2',
         'data-placeholder:text-muted-foreground',
         'aria-invalid:border-destructive aria-invalid:ring-destructive/25',
         'disabled:cursor-not-allowed disabled:opacity-50',
-        'data-[size=default]:h-10 data-[size=default]:min-h-10 data-[size=default]:px-3 data-[size=default]:pr-2.5',
+        'data-[size=default]:h-10 data-[size=default]:min-h-10 data-[size=default]:px-3 data-[size=default]:py-2 data-[size=default]:pr-2.5',
         'data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:rounded-lg data-[size=sm]:px-2.5 data-[size=sm]:pr-2 data-[size=sm]:text-xs',
         '*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5',
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",

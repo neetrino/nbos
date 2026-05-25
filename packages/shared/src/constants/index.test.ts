@@ -16,20 +16,26 @@ import {
   PRODUCT_TYPES,
   PAYMENT_TYPES,
   SUBSCRIPTION_STATUSES,
+  CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES,
 } from './index';
 
 describe('Constants', () => {
+  it('CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES includes TEXT_ONLY', () => {
+    expect(CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES).toContain('TEXT_ONLY');
+    expect(CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES).toContain('URL');
+  });
+
   it('LEAD_STATUSES has 7 statuses', () => {
     expect(LEAD_STATUSES).toHaveLength(7);
     expect(LEAD_STATUSES[0]).toBe('NEW');
-    expect(LEAD_STATUSES[1]).toBe('ON_HOLD');
+    expect(LEAD_STATUSES[4]).toBe('ON_HOLD');
     expect(LEAD_STATUSES[6]).toBe('SQL');
   });
 
-  it('DEAL_STATUSES has 9 statuses', () => {
-    expect(DEAL_STATUSES).toHaveLength(9);
+  it('DEAL_STATUSES has 7 statuses', () => {
+    expect(DEAL_STATUSES).toHaveLength(7);
     expect(DEAL_STATUSES[0]).toBe('START_CONVERSATION');
-    expect(DEAL_STATUSES[8]).toBe('WON');
+    expect(DEAL_STATUSES[6]).toBe('WON');
   });
 
   it('PRODUCT_STATUSES has 8 statuses', () => {
@@ -69,9 +75,11 @@ describe('Constants', () => {
 
   it('TASK_STATUSES follows canonical workflow values', () => {
     expect(TASK_STATUSES).toContain('OPEN');
+    expect(TASK_STATUSES).toContain('IN_PROGRESS');
     expect(TASK_STATUSES).toContain('REVIEW');
+    expect(TASK_STATUSES).toContain('ON_HOLD');
     expect(TASK_STATUSES).toContain('COMPLETED');
-    expect(TASK_STATUSES).toHaveLength(6);
+    expect(TASK_STATUSES).toHaveLength(5);
   });
 
   it('TICKET_PRIORITIES has P1 P2 P3', () => {

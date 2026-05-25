@@ -72,13 +72,13 @@ export class DealsController {
     body: {
       name?: string;
       leadId?: string;
-      contactId: string;
-      type: string;
+      contactId?: string;
+      type?: string;
       amount?: number;
       paymentType?: string;
       taxStatus?: string;
       companyId?: string | null;
-      sellerId: string;
+      sellerId?: string;
       sellerAssistantId?: string | null;
       projectId?: string;
       source?: string;
@@ -92,13 +92,12 @@ export class DealsController {
       offerLink?: string | null;
       offerFileUrl?: string | null;
       offerScreenshotUrl?: string | null;
-      responseDueAt?: string | null;
       contractSignedAt?: string | null;
       contractFileUrl?: string | null;
       maintenanceStartAt?: string | null;
     },
   ) {
-    return this.dealsService.create(body, { actorId: user?.id });
+    return this.dealsService.create(body, { actorId: user?.id, actorRoleLevel: user?.roleLevel });
   }
 
   @Patch(':id/partner-referral-terms')
@@ -116,6 +115,7 @@ export class DealsController {
   @ApiOperation({ summary: 'Update deal' })
   async update(
     @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload | undefined,
     @Body()
     body: {
       name?: string;
@@ -140,13 +140,13 @@ export class DealsController {
       offerLink?: string | null;
       offerFileUrl?: string | null;
       offerScreenshotUrl?: string | null;
-      responseDueAt?: string | null;
       contractSignedAt?: string | null;
       contractFileUrl?: string | null;
       maintenanceStartAt?: string | null;
+      contactIds?: string[];
     },
   ) {
-    return this.dealsService.update(id, body);
+    return this.dealsService.update(id, body, { actorRoleLevel: user?.roleLevel });
   }
 
   @Patch(':id/status')

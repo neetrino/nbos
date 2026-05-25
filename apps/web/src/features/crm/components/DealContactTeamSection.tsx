@@ -1,65 +1,119 @@
 'use client';
 
-import { Building2, Calendar, Clock, User } from 'lucide-react';
-import { InlineField, SearchField } from '@/components/shared';
+import { Building2, Calendar, Clock, User, UserCog } from 'lucide-react';
+import {
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetSection,
+  InlineField,
+  RelationPickerField,
+} from '@/components/shared';
+import {
+  useContactRelationSearch,
+  useRelationPickerActions,
+} from '@/components/shared/relation-picker';
 import type { Deal } from '@/lib/api/deals';
-import type { SaveField, SearchLoader } from './deal-general-tab.types';
+import type { DealGeneralDraft } from './deal-general-form-state';
+import type { SearchLoader } from './deal-general-tab.types';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
+import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 
 interface DealContactTeamSectionProps {
   deal: Deal;
-  searchContacts: SearchLoader;
+  draft: DealGeneralDraft;
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   searchEmployees: SearchLoader;
-  saveField: SaveField;
+  disabled?: boolean;
+  sectionClassName?: string;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function DealContactTeamSection({
   deal,
-  searchContacts,
+  draft,
+  patchDraft,
   searchEmployees,
-  saveField,
+  disabled = false,
+  sectionClassName,
+  gateRequiredFields = new Set(),
 }: DealContactTeamSectionProps) {
+  const contactsPicker = useRelationPickerActions('contact', 'deal-contacts');
+  const contactRelationSearch = useContactRelationSearch();
+  const employeePicker = useRelationPickerActions('employee');
+
   return (
-    <section
+    <DetailSheetSection
       id={DEAL_SHEET_SECTION.CONTACT_TEAM}
-      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent"
+      title="Contact & team"
+      icon={<User size={12} />}
+      className={sectionClassName}
     >
-      <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
-        <User size={12} />
-        Contact & Team
-      </h4>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-        <SearchField
-          label="Contact"
-          value={deal.contact?.id ?? null}
-          displayValue={deal.contact ? <ContactDisplay deal={deal} /> : undefined}
-          placeholder="Search contacts..."
+      <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+        <RelationPickerField
+          label="Contacts"
+          entityKind="contact"
+          multiple
+          value={draft.contactIds}
+          selectionLabels={draft.contactLabels}
+          placeholder="Search or create contact…"
           icon={<User size={12} />}
-          onSearch={searchContacts}
-          onSave={(value) => saveField('contactId', value)}
+          disabled={disabled}
+          onSearch={contactRelationSearch}
+          onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
+          {...contactsPicker}
         />
 
-        <SearchField
+        <RelationPickerField
           label="Seller"
-          value={deal.seller?.id ?? null}
-          displayValue={deal.seller ? <SellerDisplay deal={deal} /> : undefined}
+          entityKind="employee"
+          value={draft.sellerId}
+          selectionLabel={
+            draft.sellerDisplayLabel ??
+            (deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null)
+          }
           placeholder="Select seller…"
           icon={<Building2 size={12} />}
+          disabled={disabled}
           onSearch={searchEmployees}
-          onSave={(value) => saveField('sellerId', value)}
+          onSelect={(value, label) => patchDraft({ sellerId: value, sellerDisplayLabel: label })}
+          {...employeePicker}
         />
 
-        <SearchField
+        <RelationPickerField
           label="Sales assistant"
-          value={deal.sellerAssistant?.id ?? null}
-          displayValue={
-            deal.sellerAssistant ? <AssistantDisplay assistant={deal.sellerAssistant} /> : undefined
+          entityKind="employee"
+          value={draft.sellerAssistantId}
+          selectionLabel={
+            draft.sellerAssistantDisplayLabel ??
+            (deal.sellerAssistant
+              ? `${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`
+              : null)
           }
           placeholder="Optional — search employee…"
           icon={<Building2 size={12} />}
+          disabled={disabled}
           onSearch={searchEmployees}
-          onSave={(value) => saveField('sellerAssistantId', value)}
-          onClear={() => saveField('sellerAssistantId', null)}
+          onSelect={(value, label) =>
+            patchDraft({ sellerAssistantId: value, sellerAssistantDisplayLabel: label })
+          }
+          onClear={() => patchDraft({ sellerAssistantId: null, sellerAssistantDisplayLabel: null })}
+          {...employeePicker}
+        />
+
+        <RelationPickerField
+          label="PM assigned"
+          entityKind="employee"
+          value={draft.pmId}
+          selectionLabel={
+            draft.pmDisplayLabel ?? (deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null)
+          }
+          className={dealStageGateFieldClass(gateRequiredFields, 'pmId')}
+          placeholder="Select project manager…"
+          icon={<UserCog size={12} />}
+          disabled={disabled}
+          onSearch={searchEmployees}
+          onSelect={(value, label) => patchDraft({ pmId: value, pmDisplayLabel: label })}
+          onClear={() => patchDraft({ pmId: null, pmDisplayLabel: null })}
+          {...employeePicker}
         />
 
         <InlineField
@@ -76,54 +130,7 @@ export function DealContactTeamSection({
           editable={false}
         />
       </div>
-    </section>
-  );
-}
-
-function ContactDisplay({ deal }: { deal: Deal }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-xs font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-        {deal.contact.firstName[0]}
-        {deal.contact.lastName[0]}
-      </div>
-      <div>
-        <p className="text-foreground text-sm leading-tight font-medium">
-          {deal.contact.firstName} {deal.contact.lastName}
-        </p>
-        {deal.contact.email && (
-          <p className="text-muted-foreground text-[11px]">{deal.contact.email}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function SellerDisplay({ deal }: { deal: Deal }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-xs font-bold text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
-        {deal.seller.firstName[0]}
-        {deal.seller.lastName[0]}
-      </div>
-      <span className="text-foreground text-sm font-medium">
-        {deal.seller.firstName} {deal.seller.lastName}
-      </span>
-    </div>
-  );
-}
-
-function AssistantDisplay({ assistant }: { assistant: NonNullable<Deal['sellerAssistant']> }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-50 text-xs font-bold text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
-        {assistant.firstName[0]}
-        {assistant.lastName[0]}
-      </div>
-      <span className="text-foreground text-sm font-medium">
-        {assistant.firstName} {assistant.lastName}
-      </span>
-    </div>
+    </DetailSheetSection>
   );
 }
 

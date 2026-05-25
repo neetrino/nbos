@@ -13,6 +13,16 @@ function mockPartnerRow(overrides: Record<string, unknown> = {}) {
     defaultPercent: new Decimal('30.00'),
     status: 'ACTIVE',
     contactId: null,
+    notes: null,
+    startDate: null,
+    agreementStatus: 'NO_AGREEMENT',
+    agreementStartDate: null,
+    agreementEndDate: null,
+    agreementSpecialTerms: null,
+    agreementFileAssetId: null,
+    agreementOwnerId: null,
+    agreementFileAsset: null,
+    agreementOwner: null,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-02T00:00:00.000Z'),
     contact: null,
@@ -53,7 +63,10 @@ describe('PartnersService', () => {
       expect(prisma.partner.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            name: { contains: 'acme', mode: 'insensitive' },
+            OR: expect.arrayContaining([
+              { name: { contains: 'acme', mode: 'insensitive' } },
+              { notes: { contains: 'acme', mode: 'insensitive' } },
+            ]),
           }),
         }),
       );

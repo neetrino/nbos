@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, LayoutGrid } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
+import { planExpensesDrilldownHref } from '@/features/finance/constants/project-expenses-drilldown';
 import { cn } from '@/lib/utils';
 
 interface ExpensePlanDrilldownBannerProps {
@@ -27,14 +29,24 @@ export function ExpensePlanDrilldownBanner({
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <Link
-          href={`/finance/expenses/plans/${expensePlanId}`}
+          href={planExpensesDrilldownHref(expensePlanId)}
+          className={cn(
+            buttonVariants({ variant: 'outline', size: 'sm' }),
+            'inline-flex items-center gap-1',
+          )}
+        >
+          <LayoutGrid size={14} className="opacity-70" aria-hidden />
+          Board (filtered)
+        </Link>
+        <Link
+          href={expensePlansListWithOpenPlanHref(expensePlanId)}
           className={cn(
             buttonVariants({ variant: 'outline', size: 'sm' }),
             'inline-flex items-center gap-1',
           )}
         >
           <ClipboardList size={14} className="opacity-70" aria-hidden />
-          Plan
+          Plan detail
         </Link>
         <Button variant="outline" size="sm" type="button" onClick={onClearPlanFilter}>
           Clear filter

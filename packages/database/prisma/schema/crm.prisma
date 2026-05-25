@@ -144,15 +144,26 @@ model Lead {
   marketingAccount  MarketingAccount?  @relation(fields: [marketingAccountId], references: [id])
   marketingActivity MarketingActivity? @relation(fields: [marketingActivityId], references: [id])
   deal              Deal?
+  additionalContacts LeadAdditionalContact[]
 
   @@map("leads")
+}
+
+/// Extra client contacts on a lead (v1 list; primary person stays `contactName` / `contactId`).
+model LeadAdditionalContact {
+  leadId    String @map("lead_id")
+  contactId String @map("contact_id")
+
+  lead    Lead    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  contact Contact @relation("LeadAdditionalContact", fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([leadId, contactId])
+  @@map("lead_additional_contacts")
 }
 
 enum DealStatusEnum {
   START_CONVERSATION
   DISCUSS_NEEDS
-  MEETING
-  CAN_WE_DO_IT
   SEND_OFFER
   GET_ANSWER
   DEPOSIT_AND_CONTRACT
@@ -172,14 +183,14 @@ model Deal {
   code                String               @unique
   name                String?
   leadId              String?              @unique @map("lead_id")
-  contactId           String               @map("contact_id")
+  contactId           String?              @map("contact_id")
   projectId           String?              @map("project_id")
   companyId           String?              @map("company_id")
-  type                DealTypeEnum
+  type                DealTypeEnum?
   status              DealStatusEnum       @default(START_CONVERSATION)
   amount              Decimal?             @db.Decimal(12, 2)
   paymentType         PaymentTypeEnum?     @map("payment_type")
-  taxStatus           TaxStatus            @default(TAX) @map("tax_status")
+  taxStatus           TaxStatus?           @map("tax_status")
   sellerId            String               @map("seller_id")
   sellerAssistantId   String?              @map("seller_assistant_id")
   source              LeadSourceEnum?
@@ -198,28 +209,40 @@ model Deal {
   offerLink           String?              @map("offer_link")
   offerFileUrl        String?              @map("offer_file_url")
   offerScreenshotUrl  String?              @map("offer_screenshot_url")
-  responseDueAt       DateTime?            @map("response_due_at")
   contractSignedAt    DateTime?            @map("contract_signed_at")
   contractFileUrl     String?              @map("contract_file_url")
   maintenanceStartAt  DateTime?            @map("maintenance_start_at")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
 
-  lead              Lead?              @relation(fields: [leadId], references: [id])
-  contact           Contact            @relation(fields: [contactId], references: [id])
-  company           Company?           @relation(fields: [companyId], references: [id])
-  seller            Employee           @relation("DealSeller", fields: [sellerId], references: [id])
-  sellerAssistant   Employee?          @relation("DealSellerAssistant", fields: [sellerAssistantId], references: [id])
-  pm                Employee?          @relation("DealPM", fields: [pmId], references: [id])
-  existingProduct   Product?           @relation("DealExistingProduct", fields: [existingProductId], references: [id])
-  sourcePartner     Partner?           @relation("DealSourcePartner", fields: [sourcePartnerId], references: [id])
-  sourceContact     Contact?           @relation("DealSourceContact", fields: [sourceContactId], references: [id])
-  marketingAccount  MarketingAccount?  @relation(fields: [marketingAccountId], references: [id])
-  marketingActivity MarketingActivity? @relation(fields: [marketingActivityId], references: [id])
-  orders            Order[]
-  supportTickets    SupportTicket[]
-  salesBonusEntries BonusEntry[]       @relation("DealSalesBonusEntries")
+  lead                 Lead?                 @relation(fields: [leadId], references: [id])
+  contact              Contact?              @relation(fields: [contactId], references: [id])
+  company              Company?              @relation(fields: [companyId], references: [id])
+  seller               Employee              @relation("DealSeller", fields: [sellerId], references: [id])
+  sellerAssistant      Employee?             @relation("DealSellerAssistant", fields: [sellerAssistantId], references: [id])
+  pm                   Employee?             @relation("DealPM", fields: [pmId], references: [id])
+  existingProduct      Product?              @relation("DealExistingProduct", fields: [existingProductId], references: [id])
+  sourcePartner        Partner?              @relation("DealSourcePartner", fields: [sourcePartnerId], references: [id])
+  sourceContact        Contact?              @relation("DealSourceContact", fields: [sourceContactId], references: [id])
+  marketingAccount     MarketingAccount?     @relation(fields: [marketingAccountId], references: [id])
+  marketingActivity    MarketingActivity?    @relation(fields: [marketingActivityId], references: [id])
+  orders               Order[]
+  supportTickets       SupportTicket[]
+  salesBonusEntries    BonusEntry[]          @relation("DealSalesBonusEntries")
   partnerReferralTerms PartnerReferralTerms?
+  additionalContacts   DealAdditionalContact[]
 
   @@map("deals")
+}
+
+/// Extra client contacts on a deal (v1 list; primary remains `Deal.contactId`).
+model DealAdditionalContact {
+  dealId    String @map("deal_id")
+  contactId String @map("contact_id")
+
+  deal    Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  contact Contact @relation("DealAdditionalContact", fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([dealId, contactId])
+  @@map("deal_additional_contacts")
 }

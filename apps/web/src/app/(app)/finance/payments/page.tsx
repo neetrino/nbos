@@ -10,13 +10,25 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  StatusBadge,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import {
   getFinancePeriodParams,
   type FinancePeriod,
   formatAmount,
 } from '@/features/finance/constants/finance';
-import { PaymentsPageHeader } from '@/features/finance/components/payments/PaymentsPageHeader';
+import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
+import {
+  buildFinancePeriodFilterConfig,
+  FINANCE_PERIOD_FILTER_KEY,
+  parseFinancePeriodFilterValue,
+} from '@/features/finance/constants/finance-period-filter';
 import { usePaymentsCsvExport } from '@/features/finance/components/payments/use-payments-csv-export';
 import { usePaymentsScopeStatsCsvExport } from '@/features/finance/components/payments/use-payments-scope-stats-csv-export';
 import { buildPaymentListApiParams } from '@/features/finance/utils/build-payment-list-api-params';
@@ -86,49 +98,66 @@ export default function PaymentsPage() {
     fetchPayments();
   }, [fetchPayments]);
 
-  const totalCollected = Number(stats?.totalCollected ?? 0);
-  const thisMonthTotal = Number(stats?.thisMonthCollected ?? 0);
-  const totalPayments = stats?.totalPayments ?? payments.length;
+  const paymentFilterConfigs = useMemo(() => [buildFinancePeriodFilterConfig()], []);
+
+  const paymentFilterValues = useMemo(() => ({ [FINANCE_PERIOD_FILTER_KEY]: period }), [period]);
+
+  const handlePaymentFilterChange = useCallback((key: string, value: string) => {
+    if (key === FINANCE_PERIOD_FILTER_KEY) {
+      setPeriod(parseFinancePeriodFilterValue(value));
+    }
+  }, []);
+
+  const handleClearPaymentFilters = useCallback(() => {
+    setSearch('');
+    setPeriod('month');
+  }, []);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by invoice, company, order, project, notes…"
+          filters={paymentFilterConfigs}
+          filterValues={paymentFilterValues}
+          onFilterChange={handlePaymentFilterChange}
+          onClearAll={handleClearPaymentFilters}
+        />
+      ),
+      trailing: (
+        <FinanceListPageSettingsSheet
+          title="Payments — settings"
+          description="Exports for the current list scope. Period follows filters in the search bar."
+          triggerAriaLabel="Payments settings"
+          statsExportDisabled={loading || !stats}
+          exportCsvDisabled={loading || exportCsvSubmitting}
+          exportCsvInProgress={exportCsvSubmitting}
+          onExportScopeStatsCsv={handleExportScopeStatsCsv}
+          onExportCsv={handleExportCsv}
+          exportCsvLabel="Export payments (CSV)"
+        />
+      ),
+    }),
+    [
+      exportCsvSubmitting,
+      handleClearPaymentFilters,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      handlePaymentFilterChange,
+      loading,
+      paymentFilterConfigs,
+      paymentFilterValues,
+      search,
+      stats,
+    ],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   return (
-    <div className="flex h-full flex-col gap-5">
-      <PaymentsPageHeader
-        visiblePaymentCount={payments.length}
-        period={period}
-        onPeriodChange={setPeriod}
-        onRefresh={fetchPayments}
-        onExportCsv={handleExportCsv}
-        exportDisabled={loading || exportCsvSubmitting}
-        exportInProgress={exportCsvSubmitting}
-        statsExportDisabled={loading || !stats}
-        onExportScopeStatsCsv={handleExportScopeStatsCsv}
-      />
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Collected</p>
-          <p className="mt-1 text-xl font-bold text-green-600">{formatAmount(totalCollected)}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">This Month</p>
-          <p className="mt-1 text-xl font-bold">{formatAmount(thisMonthTotal)}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Total Payments</p>
-          <p className="mt-1 text-xl font-bold">{totalPayments}</p>
-        </div>
-      </div>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by invoice, project..."
-        filters={[]}
-        filterValues={{}}
-        onFilterChange={() => {}}
-        onClearFilters={() => {}}
-      />
-
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {loading ? (
         <LoadingState />
       ) : error ? (

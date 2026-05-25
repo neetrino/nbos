@@ -121,8 +121,13 @@ describe('BonusService', () => {
           totalReleasedAmount: new Decimal('0'),
           totalRemainingAmount: new Decimal('150'),
           availableFunding: new Decimal('0'),
+          overFundingAmount: new Decimal('0'),
           status: 'ACTIVE',
         },
+      ]);
+      prisma.bonusEntry.findMany.mockResolvedValue([
+        { orderId: 'o1', employeeId: 'e1' },
+        { orderId: 'o1', employeeId: 'e2' },
       ]);
       const rows = await service.getProductPools();
       expect(rows).toHaveLength(1);
@@ -130,6 +135,8 @@ describe('BonusService', () => {
       expect(rows[0].sumPaidAmount).toBe('50.00');
       expect(rows[0].sumPipelineAmount).toBe('100.00');
       expect(rows[0].ledgerPlannedAmount).toBe('150.00');
+      expect(rows[0].employeeCount).toBe(2);
+      expect(rows[0].fundingHealth).toBe('EMPTY');
     });
   });
 });

@@ -1,22 +1,38 @@
 'use client';
 
-import { useState } from 'react';
-import { User, Calendar, FileText, FolderKanban, Trash2, MessageCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet } from '@/components/ui/sheet';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { EntitySheet, StatusBadge } from '@/components/shared';
-import { COMPANY_TYPES, getCompanyType, getTaxStatus } from '../constants/clients';
+  DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
+  EntityDetailSheetContent,
+  StatusBadge,
+} from '@/components/shared';
+import { getCompanyType, getTaxStatus } from '../constants/clients';
+import { useContactSearchOptions } from '../hooks/use-contact-search-options';
 import type { Company } from '@/lib/api/clients';
+import {
+  buildCompanyGeneralPatch,
+  createCompanyGeneralDraft,
+  isCompanyGeneralDirty,
+  type CompanyGeneralDraft,
+} from './company-general-form-state';
+import { CompanySheetScrollBody } from './CompanySheetScrollBody';
+import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
+import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
+import { applyCompanyRelationCreated } from './apply-company-relation-created';
+import {
+  ClientDetailTabBar,
+  ClientPortfolioPanel,
+  useClientPortfolioData,
+} from './client-portfolio/ClientPortfolioEmbedded';
+import type {
+  ClientDetailTabId,
+  ClientEmbeddedPortfolioTabId,
+} from './client-portfolio/client-portfolio-tabs';
 
 interface CompanySheetProps {
   company: Company | null;
@@ -26,6 +42,11 @@ interface CompanySheetProps {
   onDelete?: (id: string) => void;
 }
 
+function companySaveErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message) return err.message;
+  return 'Could not save changes.';
+}
+
 export function CompanySheet({
   company,
   open,
@@ -33,227 +54,199 @@ export function CompanySheet({
   onUpdate,
   onDelete,
 }: CompanySheetProps) {
-  const [editing, setEditing] = useState(false);
+  const searchContacts = useContactSearchOptions();
+  const [draft, setDraft] = useState<CompanyGeneralDraft | null>(null);
+  const [snap, setSnap] = useState<CompanyGeneralDraft | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    name: '',
-    type: 'LEGAL',
-    taxId: '',
-    legalAddress: '',
-    notes: '',
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<ClientDetailTabId>('general');
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const portfolio = useClientPortfolioData({
+    variant: 'company',
+    entityId: company?.id ?? null,
   });
 
-  if (!company) return null;
+  useLayoutEffect(() => {
+    if (!company) {
+      setDraft(null);
+      setSnap(null);
+      return;
+    }
+    const next = createCompanyGeneralDraft(company);
+    setDraft(next);
+    setSnap(next);
+  }, [company]);
 
-  const compType = getCompanyType(company.type);
-  const taxStatus = getTaxStatus(company.taxStatus);
+  useEffect(() => {
+    if (!open) {
+      setEditingName(false);
+      setGeneralError(null);
+    }
+  }, [open]);
 
-  const startEdit = () => {
-    setForm({
-      name: company.name,
-      type: company.type,
-      taxId: company.taxId ?? '',
-      legalAddress: company.legalAddress ?? '',
-      notes: company.notes ?? '',
-    });
-    setEditing(true);
-  };
+  useEffect(() => {
+    if (editingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingName]);
 
-  const handleSave = async () => {
+  useEffect(() => {
+    setEditingName(false);
+    setActiveTab('general');
+  }, [company?.id]);
+
+  useEffect(() => {
+    const allowedTabs = new Set(portfolio.tabs.map((tab) => tab.id));
+    if (!allowedTabs.has(activeTab)) setActiveTab('general');
+  }, [activeTab, portfolio.tabs]);
+
+  const patchDraft = useCallback((partial: Partial<CompanyGeneralDraft>) => {
+    setDraft((prev) => (prev ? { ...prev, ...partial } : null));
+  }, []);
+
+  const generalDirty = draft != null && snap != null && isCompanyGeneralDirty(draft, snap);
+
+  const handleGeneralSave = useCallback(async () => {
+    if (!company || !draft || !snap) return;
+    setGeneralError(null);
+    const patch = buildCompanyGeneralPatch(snap, draft);
+    if (Object.keys(patch).length === 0) return;
+    if (!draft.name.trim() || !draft.primaryContactId) {
+      setGeneralError('Company name and primary contact are required.');
+      return;
+    }
     setSaving(true);
     try {
-      await onUpdate(company.id, {
-        name: form.name,
-        type: form.type,
-        taxId: form.taxId || null,
-        legalAddress: form.legalAddress || null,
-        notes: form.notes || null,
-      });
-      setEditing(false);
+      await onUpdate(company.id, patch);
+    } catch (err) {
+      setGeneralError(companySaveErrorMessage(err));
     } finally {
       setSaving(false);
     }
+  }, [company, draft, snap, onUpdate]);
+
+  const handleGeneralCancel = useCallback(() => {
+    setGeneralError(null);
+    if (snap) setDraft({ ...snap });
+  }, [snap]);
+
+  const handleRelationCreated = useCallback((event: RelationCreatedEvent) => {
+    setDraft((prev) => (prev ? { ...prev, ...applyCompanyRelationCreated(prev, event) } : null));
+  }, []);
+
+  useRegisterRelationCreated(open && draft ? handleRelationCreated : null);
+
+  const startEditingName = () => {
+    setNameValue(draft?.name ?? company?.name ?? '');
+    setEditingName(true);
   };
 
+  const commitNameToDraft = () => {
+    const trimmed = nameValue.trim();
+    setEditingName(false);
+    patchDraft({ name: trimmed });
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      commitNameToDraft();
+    }
+    if (e.key === 'Escape') {
+      setEditingName(false);
+      setNameValue(draft?.name ?? company?.name ?? '');
+    }
+  };
+
+  if (!company || !draft || !snap) return null;
+
+  const compType = getCompanyType(draft.type);
+  const taxStatus = getTaxStatus(company.taxStatus);
+  const sourcePageHref = `/clients/companies?openId=${encodeURIComponent(company.id)}`;
+
   return (
-    <EntitySheet
-      open={open}
-      onOpenChange={onOpenChange}
-      title={editing ? 'Edit Company' : company.name}
-      badge={
-        <div className="flex gap-1.5">
-          {compType && <StatusBadge label={compType.label} variant={compType.variant} />}
-          {taxStatus && <StatusBadge label={taxStatus.label} variant={taxStatus.variant} />}
-        </div>
-      }
-      footer={
-        <div className="flex items-center justify-between">
-          <div>
-            {onDelete && (
-              <Button variant="destructive" size="sm" onClick={() => onDelete(company.id)}>
-                <Trash2 size={14} />
-                Delete
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {!editing && (
-              <Button variant="outline" size="sm" onClick={startEdit}>
-                Edit
-              </Button>
-            )}
-          </div>
-        </div>
-      }
-    >
-      {editing ? (
-        <div className="space-y-4">
-          <div>
-            <Label>Company Name *</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Type</Label>
-              <Select
-                value={form.type}
-                onValueChange={(v) => setForm({ ...form, type: v as string })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {COMPANY_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Tax ID</Label>
-              <Input
-                value={form.taxId}
-                onChange={(e) => setForm({ ...form, taxId: e.target.value })}
-                placeholder="Tax ID / VOEN"
-              />
-            </div>
-          </div>
-          <div>
-            <Label>Legal Address</Label>
-            <Input
-              value={form.legalAddress}
-              onChange={(e) => setForm({ ...form, legalAddress: e.target.value })}
-              placeholder="Legal address..."
-            />
-          </div>
-          <div>
-            <Label>Notes</Label>
-            <Textarea
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              rows={3}
-            />
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={handleSave} disabled={saving || !form.name}>
-              {saving ? 'Saving...' : 'Save'}
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <section className="space-y-3">
-            <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Company Details
-            </h4>
-            <div className="grid grid-cols-2 gap-y-3 text-sm">
-              <div className="text-muted-foreground">Type</div>
-              <div>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <EntityDetailSheetContent open={open} layout="full" sourcePageHref={sourcePageHref}>
+        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+          <div className="flex flex-wrap items-start gap-2">
+            <div className="min-w-0 flex-1">
+              {editingName ? (
+                <input
+                  ref={nameInputRef}
+                  value={nameValue}
+                  onChange={(e) => setNameValue(e.target.value)}
+                  onBlur={commitNameToDraft}
+                  onKeyDown={handleNameKeyDown}
+                  placeholder="Company name…"
+                  className="border-primary text-foreground placeholder:text-muted-foreground/70 w-full border-0 border-b-2 bg-transparent text-xl font-bold tracking-tight outline-none"
+                />
+              ) : (
+                <h2
+                  onClick={startEditingName}
+                  className="text-foreground -mx-1 cursor-text truncate rounded px-1 text-xl font-bold tracking-tight transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
+                  title="Click to edit company name"
+                >
+                  {draft.name.trim() || company.name}
+                </h2>
+              )}
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 {compType && <StatusBadge label={compType.label} variant={compType.variant} />}
-              </div>
-              <div className="text-muted-foreground">Tax Status</div>
-              <div>
                 {taxStatus && <StatusBadge label={taxStatus.label} variant={taxStatus.variant} />}
               </div>
-              {company.taxId && (
-                <>
-                  <div className="text-muted-foreground">Tax ID</div>
-                  <div className="font-mono font-medium">{company.taxId}</div>
-                </>
-              )}
-              {company.legalAddress && (
-                <>
-                  <div className="text-muted-foreground">Address</div>
-                  <div className="font-medium">{company.legalAddress}</div>
-                </>
-              )}
-              <div className="text-muted-foreground">Created</div>
-              <div className="flex items-center gap-1.5 font-medium">
-                <Calendar size={13} />
-                {new Date(company.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </div>
             </div>
-          </section>
-
-          <Separator />
-
-          <section className="space-y-3">
-            <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Primary Contact
-            </h4>
-            <div className="border-border flex items-center gap-3 rounded-lg border p-3 text-sm">
-              <User size={14} className="text-muted-foreground" />
-              <span className="font-medium">
-                {company.contact.firstName} {company.contact.lastName}
-              </span>
+            <div className="flex shrink-0 flex-wrap items-center gap-1.5 pt-0.5">
+              {onDelete ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(company.id)}>
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              ) : null}
             </div>
-          </section>
-
-          <Separator />
-
-          <section className="space-y-2">
-            <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Activity
-            </h4>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-secondary/50 rounded-lg p-3 text-center">
-                <FolderKanban size={16} className="text-muted-foreground mx-auto" />
-                <p className="mt-1 text-lg font-bold">{company._count.projects}</p>
-                <p className="text-muted-foreground text-[10px]">Projects</p>
-              </div>
-              <div className="bg-secondary/50 rounded-lg p-3 text-center">
-                <FileText size={16} className="text-muted-foreground mx-auto" />
-                <p className="mt-1 text-lg font-bold">{company._count.invoices}</p>
-                <p className="text-muted-foreground text-[10px]">Invoices</p>
-              </div>
-            </div>
-          </section>
-
-          {company.notes && (
-            <>
-              <Separator />
-              <section className="space-y-2">
-                <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                  Notes
-                </h4>
-                <div className="bg-secondary rounded-lg p-3 text-sm">
-                  <MessageCircle size={13} className="text-muted-foreground mb-1 inline" />{' '}
-                  {company.notes}
-                </div>
-              </section>
-            </>
-          )}
+          </div>
         </div>
-      )}
-    </EntitySheet>
+
+        <ClientDetailTabBar activeTab={activeTab} tabs={portfolio.tabs} onSelect={setActiveTab} />
+
+        <ScrollArea className="min-h-0 flex-1">
+          {activeTab === 'general' ? (
+            <CompanySheetScrollBody
+              company={company}
+              draft={draft}
+              patchDraft={patchDraft}
+              saving={saving}
+              generalError={generalError}
+              portfolioData={portfolio.data}
+              portfolioLoading={portfolio.loading}
+              portfolioError={portfolio.error}
+              searchContacts={searchContacts}
+              onPortfolioRetry={portfolio.reload}
+            />
+          ) : (
+            <ClientPortfolioPanel
+              tab={activeTab as ClientEmbeddedPortfolioTabId}
+              data={portfolio.data}
+              loading={portfolio.loading}
+              error={portfolio.error}
+              variant="company"
+              onRetry={portfolio.reload}
+            />
+          )}
+        </ScrollArea>
+
+        <DetailSheetFormFooter
+          visible={activeTab === 'general' && Boolean(draft)}
+          dirty={generalDirty}
+          saving={saving}
+          errorMessage={generalError}
+          onSave={() => void handleGeneralSave()}
+          onCancel={handleGeneralCancel}
+        />
+      </EntityDetailSheetContent>
+    </Sheet>
   );
 }

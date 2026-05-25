@@ -110,7 +110,7 @@ describe('MarketingService', () => {
       expect.objectContaining({
         type: 'PLANNED',
         category: 'MARKETING',
-        status: 'THIS_MONTH',
+        status: 'PLANNED',
         amount: 100,
       }),
     );

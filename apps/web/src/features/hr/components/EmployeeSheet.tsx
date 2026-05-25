@@ -1,7 +1,9 @@
 'use client';
 
 import { Mail, Phone, Calendar, Building2, Send } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { EntityDetailSheetContent } from '@/components/shared';
+import { Sheet, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { TEAM_OPEN_EMPLOYEE_QUERY } from '@/features/hr/constants/team-open-query';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/shared';
@@ -58,9 +60,10 @@ export function EmployeeSheet({ employee, open, onOpenChange }: EmployeeSheetPro
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
+      <EntityDetailSheetContent
+        open={open}
+        layout="auxiliary"
+        sourcePageHref={`/team?${TEAM_OPEN_EMPLOYEE_QUERY}=${encodeURIComponent(employee.id)}`}
       >
         <SheetHeader className="border-border shrink-0 border-b px-6 py-5">
           <div className="flex items-start gap-4">
@@ -183,7 +186,7 @@ export function EmployeeSheet({ employee, open, onOpenChange }: EmployeeSheetPro
             </div>
           </ScrollArea>
         </Tabs>
-      </SheetContent>
+      </EntityDetailSheetContent>
     </Sheet>
   );
 }

@@ -37,3 +37,11 @@ export function resolveExpensePayrollMonthLabel(expense: ExpensePayrollLinkSourc
   const month = expense.linkedPayrollRun?.payrollMonth?.trim();
   return month || null;
 }
+
+export function resolveExpenseSalaryLineId(
+  expense: ExpensePayrollLinkSource & { linkedPayrollRun?: { salaryLineId?: string } | null },
+): string | null {
+  const fromApi = expense.linkedPayrollRun?.salaryLineId?.trim();
+  if (fromApi) return fromApi;
+  return parsePayrollLinkFromExpenseNotes(expense.notes)?.salaryLineId ?? null;
+}

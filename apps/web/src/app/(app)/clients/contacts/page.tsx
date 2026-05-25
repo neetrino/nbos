@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, RefreshCcw, Users, Phone, Mail, Building2 } from 'lucide-react';
+import { Suspense, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Plus, Users, Phone, Mail, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -12,8 +13,8 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import {
-  PageHeader,
-  FilterBar,
+  useModuleHeroSlots,
+  IntegratedSearchFilters,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -23,8 +24,14 @@ import { ContactSheet } from '@/features/clients/components/ContactSheet';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
 import { CONTACT_ROLES, getContactRole } from '@/features/clients/constants/clients';
 import { contactsApi, type Contact } from '@/lib/api/clients';
+import { toast } from 'sonner';
 
-export default function ContactsPage() {
+const OPEN_CONTACT_QUERY = 'openId';
+
+function ContactsPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,8 +63,63 @@ export default function ContactsPage() {
     fetchContacts();
   }, [fetchContacts]);
 
+  const openContactId = searchParams.get(OPEN_CONTACT_QUERY);
+  const deepLinkContactAttemptedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    deepLinkContactAttemptedRef.current = null;
+  }, [openContactId]);
+
+  const stripOpenContactFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has(OPEN_CONTACT_QUERY)) return;
+    params.delete(OPEN_CONTACT_QUERY);
+    const q = params.toString();
+    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const pushOpenContactToUrl = useCallback(
+    (id: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_CONTACT_QUERY, id);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  useEffect(() => {
+    if (!openContactId || loading) return;
+    const match = contacts.find((c) => c.id === openContactId);
+    if (match) {
+      setSelectedContact(match);
+      setSheetOpen(true);
+      return;
+    }
+    if (deepLinkContactAttemptedRef.current === openContactId) return;
+    deepLinkContactAttemptedRef.current = openContactId;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const contact = await contactsApi.getById(openContactId);
+        if (cancelled) return;
+        setContacts((prev) => (prev.some((c) => c.id === contact.id) ? prev : [contact, ...prev]));
+        setSelectedContact(contact);
+        setSheetOpen(true);
+      } catch {
+        if (!cancelled) {
+          toast.error('Contact not found or you cannot open it.');
+          stripOpenContactFromUrl();
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openContactId, loading, contacts, stripOpenContactFromUrl]);
+
   const handleUpdate = async (id: string, data: Record<string, unknown>) => {
-    await contactsApi.update(id, data);
+    const updated = await contactsApi.update(id, data);
+    setSelectedContact(updated);
     await fetchContacts();
   };
 
@@ -65,44 +127,54 @@ export default function ContactsPage() {
     await contactsApi.delete(id);
     setSheetOpen(false);
     setSelectedContact(null);
+    stripOpenContactFromUrl();
     await fetchContacts();
   };
 
   const handleRowClick = (contact: Contact) => {
-    setSelectedContact(contact);
-    setSheetOpen(true);
+    pushOpenContactToUrl(contact.id);
   };
 
-  const filterConfigs = [
-    {
-      key: 'contactType',
-      label: 'Contact Type',
-      options: CONTACT_ROLES.map((r) => ({ value: r.value, label: r.label })),
-    },
-  ];
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'contactType',
+        label: 'Contact Type',
+        options: CONTACT_ROLES.map((r) => ({ value: r.value, label: r.label })),
+      },
+    ],
+    [],
+  );
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by name, email, phone…"
+          filters={filterConfigs}
+          filterValues={filters}
+          onFilterChange={(key: string, value: string) =>
+            setFilters((prev) => ({ ...prev, [key]: value }))
+          }
+          onClearAll={() => setFilters({})}
+        />
+      ),
+      trailing: (
+        <Button onClick={() => setShowCreate(true)}>
+          <Plus size={16} aria-hidden />
+          New Contact
+        </Button>
+      ),
+    }),
+    [filterConfigs, filters, search],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PageHeader title="Contacts" description={`${contacts.length} contacts`}>
-        <Button variant="outline" size="icon" onClick={fetchContacts}>
-          <RefreshCcw size={16} />
-        </Button>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus size={16} />
-          New Contact
-        </Button>
-      </PageHeader>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by name, email, phone..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
-      />
-
       {loading ? (
         <LoadingState />
       ) : error ? (
@@ -214,10 +286,24 @@ export default function ContactsPage() {
       <ContactSheet
         contact={selectedContact}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) {
+            setSelectedContact(null);
+            stripOpenContactFromUrl();
+          }
+        }}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
       />
     </div>
+  );
+}
+
+export default function ContactsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <ContactsPageContent />
+    </Suspense>
   );
 }

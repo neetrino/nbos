@@ -20,15 +20,24 @@ const sample: BonusProductPoolRow = {
   ledgerReleasedAmount: '0.00',
   ledgerRemainingAmount: '150.00',
   ledgerAvailableFunding: '0.00',
+  ledgerOverFundingAmount: '0.00',
+  ledgerReceivedAmount: '0.00',
   ledgerPoolStatus: 'ACTIVE',
+  orderIds: ['ord-1'],
+  orderCodes: ['ORD-1'],
+  employeeCount: 2,
+  fundingFillPercent: 0,
+  fundingHealth: 'EMPTY',
 };
 
 describe('buildBonusProductPoolsCsvContent', () => {
-  it('includes header and pool columns', () => {
+  it('includes header, pool columns, and bonus-scale metrics', () => {
     const csv = buildBonusProductPoolsCsvContent([sample]);
     expect(csv).toContain('poolKey');
     expect(csv).toContain('product:p1');
     expect(csv).toContain('Website');
+    expect(csv).toContain('fundedPoolAmount');
+    expect(csv).toContain('releasableAmount');
   });
 
   it('returns header only when no rows', () => {

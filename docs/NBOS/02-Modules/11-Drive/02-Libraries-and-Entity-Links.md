@@ -21,7 +21,7 @@
 | Library              | Что показывает                                                 |
 | -------------------- | -------------------------------------------------------------- |
 | `Deals Library`      | Offer materials, messenger proofs, commercial documents по CRM |
-| `Project Library`    | Все файлы проекта как бизнес-контейнера                        |
+| `Project Library`    | Project hub: Project shell files + секции Deal/Product/Finance |
 | `Product Library`    | Рабочие и финальные файлы конкретного Product                  |
 | `Extension Library`  | Файлы конкретной доработки                                     |
 | `Client Library`     | Документы Contact / Company / Client Portfolio                 |
@@ -48,10 +48,7 @@ CRM не должен хранить файлы отдельно от Drive.
 
 Типы файлов:
 
-- `OFFER_DRAFT`;
-- `OFFER_SENT`;
-- `OFFER_APPROVED`;
-- `MESSENGER_PROOF`;
+- `OFFER`;
 - `CONTRACT`;
 - `CLIENT_BRIEF`;
 - `COMMERCIAL_NOTE`.
@@ -62,9 +59,11 @@ CRM не должен хранить файлы отдельно от Drive.
 
 ## 4. Project Library
 
-Project Library показывает все файлы, относящиеся к бизнесу / бренду клиента.
+Project Library — это hub проекта, а не единая папка для всех файлов.
 
-Project Library не должна смешивать всё в одну кучу. Минимальные секции:
+Навигация, scoped-папки (`PROJECT` / `DEAL` / …), Project hub и отличие от Company/Personal Drive: [`08-Drive-Navigation-Project-Hub-and-Folders.md`](./08-Drive-Navigation-Project-Hub-and-Folders.md).
+
+Project Library не должна смешивать всё в одну кучу. Файл показывается в самой конкретной секции по своим `FileLink`:
 
 - Commercial;
 - Handoff;
@@ -74,6 +73,8 @@ Project Library не должна смешивать всё в одну кучу
 - Support;
 - Client Documents;
 - Archive.
+
+Project shell files (только `FileLink(PROJECT)`, без Deal/Product/Task/Finance/Client links) показываются на **корне Folders** внутри Project Library, не отдельной вкладкой.
 
 Project Library нужна CEO, PM, Seller и Finance как общий вход.
 

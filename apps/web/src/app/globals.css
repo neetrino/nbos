@@ -11,8 +11,8 @@
   --card-foreground: oklch(0.178 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.178 0 0);
-  --primary: oklch(0.178 0 0);
-  --primary-foreground: oklch(1 0 0);
+  --primary: #2e3192;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.949 0.004 80);
   --secondary-foreground: oklch(0.178 0 0);
   --muted: oklch(0.949 0.004 80);
@@ -21,22 +21,23 @@
   --accent-foreground: #ffffff;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: #ffffff;
-  --border: oklch(0.922 0.003 80);
-  --input: oklch(0.922 0.003 80);
+  --border: oklch(0.93 0.002 85);
+  --input: oklch(0.93 0.002 85);
   --ring: #2e3192;
-  --radius: 0.75rem;
+  --radius: 0.875rem;
   --sidebar: oklch(0.978 0.001 80);
   --sidebar-foreground: oklch(0.178 0 0);
   --sidebar-border: oklch(0.922 0.003 80);
   --sidebar-accent: #eef0ff;
   --sidebar-muted: oklch(0.488 0 0);
-  --sidebar-primary: oklch(0.178 0 0);
-  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-primary: #2e3192;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent-foreground: #1f2268;
   --sidebar-ring: #2e3192;
   --success: oklch(0.648 0.15 145);
   --warning: #2e3192;
   --info: oklch(0.631 0.098 240);
+  --calendar-weekend: oklch(0.58 0.14 25);
   --chart-1: #2e3192;
   --chart-2: oklch(0.648 0.15 145);
   --chart-3: oklch(0.631 0.098 240);
@@ -51,8 +52,8 @@
   --card-foreground: oklch(0.922 0.003 80);
   --popover: oklch(0.22 0 0);
   --popover-foreground: oklch(0.922 0.003 80);
-  --primary: oklch(0.922 0.003 80);
-  --primary-foreground: oklch(0.178 0 0);
+  --primary: #4d51b8;
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.28 0 0);
   --secondary-foreground: oklch(0.922 0.003 80);
   --muted: oklch(0.28 0 0);
@@ -76,6 +77,7 @@
   --success: oklch(0.7 0.15 145);
   --warning: #4d51b8;
   --info: oklch(0.68 0.1 240);
+  --calendar-weekend: oklch(0.72 0.12 25);
   --chart-1: #4d51b8;
   --chart-2: oklch(0.7 0.15 145);
   --chart-3: oklch(0.68 0.1 240);
@@ -115,6 +117,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-info: var(--info);
+  --color-calendar-weekend: var(--calendar-weekend);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -196,4 +199,83 @@ body {
 .nbos-document-editor .ProseMirror table td,
 .nbos-document-editor .ProseMirror table th {
   vertical-align: top;
+}
+
+/* TipTap — entity notes field (detail sheets) */
+.nbos-entity-notes-editor .ProseMirror {
+  min-height: 5.5rem;
+  padding: 0.625rem 0.75rem;
+  outline: none;
+}
+[data-entity-notes-active='false'][data-entity-notes-empty='true']
+  .nbos-entity-notes-editor
+  .ProseMirror {
+  /* ~2× prior empty track (1.75rem → 3.5rem) */
+  min-height: 3.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+[data-entity-notes-active='false'][data-entity-notes-empty='false']
+  .nbos-entity-notes-editor
+  .ProseMirror {
+  min-height: 2.5rem;
+}
+[data-entity-notes-active='false'][data-entity-notes-empty='true']
+  .nbos-entity-notes-editor
+  .ProseMirror
+  p.is-editor-empty:first-child::before {
+  content: none;
+}
+.nbos-entity-notes-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--muted-foreground);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+.nbos-entity-notes-editor .ProseMirror p {
+  margin: 0.15rem 0;
+}
+.nbos-entity-notes-editor .ProseMirror ul {
+  list-style-type: disc;
+  list-style-position: inside;
+  margin: 0.35rem 0;
+  padding-left: 0.25rem;
+}
+.nbos-entity-notes-editor .ProseMirror ol {
+  list-style-type: decimal;
+  list-style-position: inside;
+  margin: 0.35rem 0;
+  padding-left: 0.25rem;
+}
+.nbos-entity-notes-editor .ProseMirror ul ul {
+  list-style-type: circle;
+}
+.nbos-entity-notes-editor .ProseMirror ol ol {
+  list-style-type: lower-alpha;
+}
+.nbos-entity-notes-editor .ProseMirror li {
+  display: list-item;
+  margin: 0.1rem 0;
+  padding-left: 0.125rem;
+}
+.nbos-entity-notes-editor .ProseMirror li > p {
+  margin: 0;
+  display: inline;
+}
+.nbos-entity-notes-editor .ProseMirror strong {
+  font-weight: 600;
+}
+.nbos-entity-notes-editor .ProseMirror em {
+  font-style: italic;
+}
+.nbos-entity-notes-editor .ProseMirror u {
+  text-decoration: underline;
+}
+.nbos-entity-notes-editor .ProseMirror s {
+  text-decoration: line-through;
+}
+.nbos-entity-notes-editor .ProseMirror a {
+  color: var(--primary);
+  text-decoration: underline;
 }

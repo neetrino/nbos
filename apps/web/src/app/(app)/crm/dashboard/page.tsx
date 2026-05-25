@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useModuleHeroSlots } from '@/components/shared';
 import {
   UserPlus,
   TrendingUp,
@@ -15,7 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
-import { PageHeader } from '@/components/shared';
 import { leadsApi, type LeadStats } from '@/lib/api/leads';
 import { dealsApi, type DealStats } from '@/lib/api/deals';
 import { useCrmDashboardScopeStatsCsvExport } from '@/features/crm/hooks/use-crm-dashboard-scope-stats-csv-export';
@@ -59,6 +59,27 @@ export default function CrmDashboardPage() {
     load();
   }, []);
 
+  const moduleHeroSlots = useMemo(
+    () => ({
+      trailing: (
+        <Button
+          type="button"
+          variant="outline"
+          size="icon-sm"
+          disabled={loading || !leadStats || !dealStats}
+          onClick={() => handleExportScopeStatsCsv()}
+          aria-label="Export CRM dashboard scope statistics as CSV"
+          title="UTF-8 CSV from GET /api/crm/leads/stats and GET /api/crm/deals/stats (workspace-wide; see scope_note)"
+        >
+          <TableProperties size={16} aria-hidden />
+        </Button>
+      ),
+    }),
+    [dealStats, handleExportScopeStatsCsv, leadStats, loading],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   const kpis: KpiData[] = [
     {
       label: 'Total Leads',
@@ -96,20 +117,6 @@ export default function CrmDashboardPage() {
 
   return (
     <div className="min-h-0 flex-1 space-y-6 overflow-y-auto">
-      <PageHeader title="Sales Overview" description="Leads, deals, and conversion analytics">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          disabled={loading || !leadStats || !dealStats}
-          onClick={() => handleExportScopeStatsCsv()}
-          aria-label="Export CRM dashboard scope statistics as CSV"
-          title="UTF-8 CSV from GET /api/crm/leads/stats and GET /api/crm/deals/stats (workspace-wide; see scope_note)"
-        >
-          <TableProperties size={16} aria-hidden />
-        </Button>
-      </PageHeader>
-
       {loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (

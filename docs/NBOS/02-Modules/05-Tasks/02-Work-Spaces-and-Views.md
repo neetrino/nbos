@@ -138,10 +138,51 @@
 
 ### 6.2. Поведение задач
 
-- задача в `Backlog` видна только в scrum planning area
-- задача в `Future Sprint` не должна попадать в ежедневный active board
-- задача в `Active Sprint` появляется в daily execution board
-- после закрытия спринта задача сохраняет историю принадлежности
+- задача в `Backlog` видна только в scrum planning area (`sprint_id = null`, planning layer = backlog)
+- задача в planning sprint не должна попадать в ежедневный active board
+- задача в active sprint появляется в daily execution board
+- после закрытия спринта задача сохраняет историю принадлежности через `sprint_id` на closed sprint record
+
+### 6.3. Sprint как first-class сущность
+
+`Sprint` — отдельная запись внутри scrum-enabled `Work Space`, а не только enum на задаче.
+
+| Поле / правило           | Смысл                                |
+| ------------------------ | ------------------------------------ |
+| `workspace_id`           | Спринт принадлежит одному Work Space |
+| `name`, `goal`           | Название и цель спринта              |
+| `status`                 | `Planning` → `Active` → `Closed`     |
+| `start_date`, `end_date` | Плановые даты итерации               |
+| `closed_at`              | Фактическое закрытие                 |
+
+Инварианты:
+
+1. В scrum-enabled workspace одновременно может быть **только один** `Active` sprint.
+2. Backlog-задачи: `sprint_id = null`.
+3. Задачи в planning sprint: `sprint_id` указывает на sprint со статусом `Planning`.
+4. Задачи в active sprint: `sprint_id` указывает на sprint со статусом `Active`.
+5. После `Close sprint` sprint переходит в `Closed`; задачи остаются привязанными к нему для истории.
+
+`TaskPlanningStatusEnum` остаётся compatibility/derived слоем для фильтров и миграции, но source of truth для sprint membership — `Task.sprint_id` + `Sprint.status`.
+
+### 6.4. Close sprint — незавершённые задачи
+
+При закрытии active sprint пользователь выбирает политику для незавершённых задач (`status != Completed`):
+
+| Действие                       | Поведение                                             |
+| ------------------------------ | ----------------------------------------------------- |
+| `Move to backlog`              | `sprint_id = null`, planning = backlog                |
+| `Move to next planning sprint` | перенос в выбранный или автосозданный planning sprint |
+| `Keep on closed sprint`        | задача остаётся на closed sprint record (история)     |
+
+### 6.5. Scrum Planning surface (layout)
+
+В scrum-enabled workspace отдельный режим **Planning** — не «ещё одна kanban-доска», а полноценный Scrum planner:
+
+- **Слева (широкая колонка):** Backlog — создание задач, поиск, сортировка, drag source.
+- **Справа:** блоки спринтов — planning sprints, active sprint (развёрнут), placeholder «начать новый спринт», accordion завершённых спринтов.
+
+Execution views (`Kanban`, `List`) в Scrum mode показывают **только задачи active sprint** (по `sprint_id` активного спринта).
 
 ## 7. Kanban-enabled Work Space
 
@@ -178,16 +219,18 @@ Kanban-enabled workspace подходит для:
 
 Если workspace scrum-enabled, kanban по умолчанию показывает только задачи `Active Sprint`, а backlog/future sprint не мусорят рабочую доску.
 
-### 8.2. Scrum
+### 8.2. Scrum Planning
 
-Показывает:
+Отдельная вкладка **Planning** в scrum-enabled workspace (рядом с Deadline / My Plan / Board / List).
 
-- backlog
-- future sprints
-- active sprint
-- closed sprints
+**Layout (Bitrix-like):**
 
-Это planning/work execution view для продуктовой команды.
+| Зона       | Содержимое                                                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Left ~40%  | Backlog: счётчик задач, `+ Task`, список, DnD source                                                                              |
+| Right ~60% | Sprint blocks: active sprint header (progress, dates, goal, Finish), planning sprints, create sprint, completed sprints accordion |
+
+**Не входит в v1:** story points, burndown, velocity, epics, capacity — только структурно корректный sprint lifecycle.
 
 ### 8.3. List
 
@@ -203,13 +246,15 @@ PM-oriented вид по срокам, зависимостям и critical path.
 
 ## 9. Контексты отображения
 
-| Контекст             | Что открывается                                     |
-| -------------------- | --------------------------------------------------- |
-| `Product`            | connected `Work Space` продукта                     |
-| `Extension`          | `Product Work Space` родительского продукта         |
-| `Project`            | агрегированный просмотр задач и work spaces проекта |
-| top-level `Tasks`    | глобальные списки и personal views                  |
-| standalone workspace | самостоятельное operational пространство            |
+| Контекст          | Что открывается                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------- |
+| `Product`         | connected `Work Space` продукта                                                         |
+| `Extension`       | `Product Work Space` родительского продукта                                             |
+| `Project`         | compact task counters and links only; no full task execution block on main Project page |
+| top-level `Tasks` | глобальные списки и personal views                                                      |
+
+Project-level task aggregation может существовать только как отдельный lazy-loaded filtered view, если это понадобится позже. Основная Project page не должна дублировать Product Work Space.
+| standalone workspace | самостоятельное operational пространство |
 
 ## 10. Базовые правила отображения
 

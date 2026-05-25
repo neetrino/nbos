@@ -8,6 +8,17 @@ export interface PartnerContactSummary {
   lastName: string;
 }
 
+export interface PartnerAgreementFileSummary {
+  id: string;
+  displayName: string;
+}
+
+export interface PartnerAgreementOwnerSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface Partner {
   id: string;
   name: string;
@@ -17,10 +28,32 @@ export interface Partner {
   defaultPercent: string;
   status: string;
   contactId: string | null;
+  notes: string | null;
+  startDate: string | null;
+  agreementStatus: string;
+  agreementStartDate: string | null;
+  agreementEndDate: string | null;
+  agreementSpecialTerms: string | null;
+  agreementFileAssetId: string | null;
+  agreementFileAsset: PartnerAgreementFileSummary | null;
+  agreementOwnerId: string | null;
+  agreementOwner: PartnerAgreementOwnerSummary | null;
   createdAt: string;
   updatedAt: string;
   contact?: PartnerContactSummary | null;
   _count?: { orders: number; subscriptions: number };
+}
+
+/** `GET /api/partners/:id/analytics` — funnel and money rollups. */
+export interface PartnerAnalytics {
+  referredLeadCount: number;
+  partnerDealCount: number;
+  wonDealCount: number;
+  dealConversionRate: string | null;
+  referredClientRevenue: string;
+  accruedPartnerPayouts: string;
+  paidPartnerPayouts: string;
+  outboundPartnerRevenue: string;
 }
 
 export interface PartnerStats {
@@ -175,6 +208,14 @@ export interface CreatePartnerPayload {
   defaultPercent?: number;
   status?: string;
   contactId?: string;
+  notes?: string;
+  startDate?: string;
+  agreementStatus?: string;
+  agreementStartDate?: string;
+  agreementEndDate?: string;
+  agreementSpecialTerms?: string;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
 }
 
 export interface UpdatePartnerPayload {
@@ -186,6 +227,14 @@ export interface UpdatePartnerPayload {
   defaultPercent?: number;
   status?: string;
   contactId?: string | null;
+  notes?: string | null;
+  startDate?: string | null;
+  agreementStatus?: string;
+  agreementStartDate?: string | null;
+  agreementEndDate?: string | null;
+  agreementSpecialTerms?: string | null;
+  agreementFileAssetId?: string | null;
+  agreementOwnerId?: string | null;
 }
 
 export const partnersApi = {
@@ -195,6 +244,11 @@ export const partnersApi = {
   },
   async getById(id: string): Promise<Partner> {
     const resp = await api.get<Partner>(`/api/partners/${id}`);
+    return resp.data;
+  },
+
+  async getAnalytics(id: string): Promise<PartnerAnalytics> {
+    const resp = await api.get<PartnerAnalytics>(`/api/partners/${id}/analytics`);
     return resp.data;
   },
   async create(data: CreatePartnerPayload): Promise<Partner> {

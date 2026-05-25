@@ -51,7 +51,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
     };
 
-    for (const key of ['code', 'errors', 'blockers', 'details']) {
+    for (const key of ['code', 'errors', 'blockers', 'details', 'conflicts']) {
       if (exceptionDetails[key] !== undefined) {
         body[key] = exceptionDetails[key];
       }

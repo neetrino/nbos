@@ -23,13 +23,14 @@ export interface TaskCompletionBlocker {
 }
 
 interface TaskForCompletionRules {
+  status: string;
+  reviewApprovedAt?: Date | string | null;
   completionRules?: unknown;
   checklists: Array<{ items: Array<{ checked: boolean }> }>;
   subtasks: Array<{ code: string; title: string; status: string }>;
 }
 
 const RUNTIME_PENDING_RULES = new Set<TaskCompletionRuleType>([
-  'requires_review',
   'requires_attachment',
   'requires_creator_approval',
   'requires_specific_field',
@@ -69,6 +70,7 @@ function buildRuleBlockers(
 ): TaskCompletionBlocker[] {
   if (rule.type === 'requires_checklist_complete') return buildChecklistBlockers(rule, task);
   if (rule.type === 'requires_subtasks_complete') return buildSubtaskBlockers(rule, task);
+  if (rule.type === 'requires_review') return buildReviewBlockers(rule, task);
   if (RUNTIME_PENDING_RULES.has(rule.type)) return [buildRuntimePendingBlocker(rule)];
   return [];
 }
@@ -90,13 +92,26 @@ function buildChecklistBlockers(
   ];
 }
 
+function buildReviewBlockers(
+  rule: TaskCompletionRule,
+  task: TaskForCompletionRules,
+): TaskCompletionBlocker[] {
+  if (task.reviewApprovedAt) return [];
+  if (task.status !== 'REVIEW') {
+    return [
+      buildBlocker(rule, 'REVIEW_NOT_REQUESTED', 'Submit the task for review before completing.'),
+    ];
+  }
+  return [
+    buildBlocker(rule, 'REVIEW_NOT_APPROVED', 'Review approval is required before completing.'),
+  ];
+}
+
 function buildSubtaskBlockers(
   rule: TaskCompletionRule,
   task: TaskForCompletionRules,
 ): TaskCompletionBlocker[] {
-  const openSubtasks = task.subtasks.filter(
-    (subtask) => !['COMPLETED', 'DONE', 'CANCELLED'].includes(subtask.status),
-  );
+  const openSubtasks = task.subtasks.filter((subtask) => subtask.status !== 'COMPLETED');
   if (openSubtasks.length === 0) return [];
   return [buildBlocker(rule, 'SUBTASKS_OPEN', `${openSubtasks.length} subtask(s) remain open.`)];
 }

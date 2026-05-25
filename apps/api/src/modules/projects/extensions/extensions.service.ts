@@ -7,9 +7,12 @@ import {
   type DeliveryResolutionEnum,
   type DeliveryStageEnum,
   type DeliveryWorkStatusEnum,
+  type InputJsonValue,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { NotificationService } from '../../notifications/notification.service';
+import { batchExtensionOpenTaskCounts } from './batch-extension-open-task-counts';
+import { buildExtensionCurrentStageReadiness } from './extension-current-stage-readiness';
 import {
   attachExtensionReadiness,
   validateExtensionStageGate,
@@ -25,6 +28,17 @@ import {
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 import { SupportService } from '../../support/support.service';
+import { AuditService } from '../../audit/audit.service';
+import {
+  DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+  isLegacyPatchStatusTerminalOutcome,
+} from '../delivery-status-deprecation';
+import {
+  loadStageChecklistProgressByOwner,
+  pickProgressForEntity,
+} from '../../checklist-templates/checklist-instance-stage-progress';
+import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
+import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -60,6 +74,8 @@ interface ExtensionQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
+  /** Filter by project's billing company (CRM). */
+  companyId?: string;
   productId?: string;
   status?: string;
   deliveryStage?: string;
@@ -78,6 +94,9 @@ export class ExtensionsService {
     private readonly notifications: NotificationService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
     private readonly supportService: SupportService,
+    private readonly audit: AuditService,
+    private readonly deliveryStageChecklistSync: DeliveryStageChecklistSyncService,
+    private readonly checklistTemplates: ChecklistTemplatesService,
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
@@ -85,6 +104,7 @@ export class ExtensionsService {
       page = 1,
       pageSize = 20,
       projectId,
+      companyId,
       productId,
       status,
       deliveryStage,
@@ -97,6 +117,9 @@ export class ExtensionsService {
     const where: Prisma.ExtensionWhereInput = {};
 
     if (projectId) where.projectId = projectId;
+    if (companyId) {
+      where.project = { is: { companyId } };
+    }
     if (productId) where.productId = productId;
     if (status) where.status = status as ExtensionStatusEnum;
     if (deliveryStage) where.deliveryStage = deliveryStage as DeliveryStageEnum;
@@ -116,10 +139,25 @@ export class ExtensionsService {
       this.prisma.extension.findMany({
         where,
         include: {
-          project: { select: { id: true, code: true, name: true } },
+          project: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              companyId: true,
+              company: { select: { id: true, name: true } },
+            },
+          },
           product: { select: { id: true, name: true, productType: true } },
           assignee: { select: { id: true, firstName: true, lastName: true } },
-          order: { select: { id: true, code: true, status: true } },
+          order: {
+            select: {
+              id: true,
+              code: true,
+              status: true,
+              invoices: { select: { moneyStatus: true } },
+            },
+          },
           _count: { select: { tasks: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -129,8 +167,49 @@ export class ExtensionsService {
       this.prisma.extension.count({ where }),
     ]);
 
+    const openTasksByExt = await batchExtensionOpenTaskCounts(
+      this.prisma,
+      items.map((e) => e.id),
+    );
+
+    const lifecycleByExtension = new Map(
+      items.map((extension) => [extension.id, attachExtensionReadiness(extension)]),
+    );
+    const checklistProgressMap = await loadStageChecklistProgressByOwner(
+      this.prisma,
+      items.map((extension) => ({
+        ownerEntityType: 'EXTENSION' as const,
+        ownerEntityId: extension.id,
+        stage: lifecycleByExtension.get(extension.id)?.deliveryLifecycle.stage ?? null,
+      })),
+    );
+
     return {
-      items: items.map(attachExtensionReadiness),
+      items: items.map((extension) => {
+        const base = lifecycleByExtension.get(extension.id) ?? attachExtensionReadiness(extension);
+        const openTasks = openTasksByExt.get(extension.id) ?? 0;
+        const readiness = buildExtensionCurrentStageReadiness(extension, base.deliveryLifecycle, {
+          openTasks,
+        });
+        const checklistStageProgress = pickProgressForEntity(
+          checklistProgressMap,
+          'EXTENSION',
+          extension.id,
+          base.deliveryLifecycle.stage,
+        );
+        const currentStageReadiness = mergeChecklistIntoReadiness(
+          readiness,
+          checklistStageProgress,
+        );
+        return {
+          ...base,
+          deliveryLifecycle: {
+            ...base.deliveryLifecycle,
+            ...(currentStageReadiness ? { currentStageReadiness } : {}),
+          },
+          checklistStageProgress,
+        };
+      }),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
@@ -139,11 +218,48 @@ export class ExtensionsService {
     const extension = await this.prisma.extension.findUnique({
       where: { id },
       include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true, productType: true, status: true } },
+        project: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            contactId: true,
+            companyId: true,
+            company: { select: { id: true, name: true } },
+            contact: { select: { id: true, firstName: true, lastName: true } },
+          },
+        },
+        product: {
+          select: {
+            id: true,
+            name: true,
+            productType: true,
+            status: true,
+            languages: true,
+            technicalProfiles: {
+              select: {
+                productionUrl: true,
+                stagingUrl: true,
+                repositoryUrl: true,
+                hostingProvider: true,
+                technicalOwnerId: true,
+              },
+            },
+          },
+        },
         assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
+        closedBy: { select: { id: true, firstName: true, lastName: true } },
         order: {
           include: {
+            deal: {
+              select: {
+                id: true,
+                code: true,
+                offerFileUrl: true,
+                contractFileUrl: true,
+                seller: { select: { id: true, firstName: true, lastName: true } },
+              },
+            },
             invoices: {
               select: { id: true, code: true, moneyStatus: true, amount: true, dueDate: true },
             },
@@ -157,7 +273,23 @@ export class ExtensionsService {
       },
     });
     if (!extension) throw new NotFoundException(`Extension ${id} not found`);
-    return attachExtensionReadiness(extension);
+    const base = attachExtensionReadiness(extension);
+    const checklistProgressMap = await loadStageChecklistProgressByOwner(this.prisma, [
+      {
+        ownerEntityType: 'EXTENSION',
+        ownerEntityId: extension.id,
+        stage: attachExtensionReadiness(extension).deliveryLifecycle.stage,
+      },
+    ]);
+    return {
+      ...base,
+      checklistStageProgress: pickProgressForEntity(
+        checklistProgressMap,
+        'EXTENSION',
+        extension.id,
+        base.deliveryLifecycle.stage,
+      ),
+    };
   }
 
   async create(data: CreateExtensionDto) {
@@ -171,6 +303,9 @@ export class ExtensionsService {
         size: (data.size as ExtensionSizeEnum) ?? 'SMALL',
         assignedTo: data.assignedTo,
         description: data.description,
+        deliveryStage: 'STARTING',
+        deliveryWorkStatus: 'ACTIVE',
+        deliveryResolution: null,
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
@@ -178,6 +313,7 @@ export class ExtensionsService {
         assignee: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(extension.id);
     return attachExtensionReadiness(extension);
   }
 
@@ -206,7 +342,7 @@ export class ExtensionsService {
     return attachExtensionReadiness(extension);
   }
 
-  async updateStatus(id: string, newStatus: string) {
+  async updateStatus(id: string, newStatus: string, actorId: string) {
     const extension = await this.findById(id);
     const current = extension.status as ExtensionStatusEnum;
     const target = newStatus as ExtensionStatusEnum;
@@ -223,6 +359,22 @@ export class ExtensionsService {
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
+    if (isLegacyPatchStatusTerminalOutcome(target)) {
+      await this.audit.log({
+        entityType: 'EXTENSION',
+        entityId: id,
+        action: DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+        userId: actorId,
+        projectId: extension.projectId,
+        changes: {
+          deprecatedApiPath: 'PATCH /projects/extensions/:id/status',
+          previousStatus: current,
+          targetStatus: target,
+          deliveryResolution: target === 'DONE' ? 'DONE' : 'CANCELLED',
+        } as InputJsonValue,
+      });
+    }
     return attachExtensionReadiness(updated);
   }
 
@@ -234,6 +386,7 @@ export class ExtensionsService {
 
     validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
     validateExtensionStageGate(extension, target);
+    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(extension.id);
 
     const updated = await this.prisma.extension.update({
       where: { id },
@@ -244,6 +397,7 @@ export class ExtensionsService {
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
     return attachExtensionReadiness(updated);
   }
 
@@ -280,25 +434,38 @@ export class ExtensionsService {
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
     return attachExtensionReadiness(updated);
   }
 
-  async cancel(id: string, data: CancelDeliveryDto) {
+  async cancel(id: string, data: CancelDeliveryDto, actorId: string) {
     const extension = await this.findById(id);
     this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
     const reason = requireText(data.reason, 'reason');
+    const closedAt = new Date();
     const updated = await this.prisma.extension.update({
       where: { id },
       data: {
         status: 'LOST',
         ...buildDeliveryLifecycleWrite('LOST', extension),
         cancellationReason: reason,
+        closedAt,
+        closedById: actorId,
       },
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true } },
         order: { select: { id: true, code: true, status: true } },
+        closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
+    });
+    await this.audit.log({
+      entityType: 'EXTENSION',
+      entityId: id,
+      action: 'delivery.cancelled',
+      userId: actorId,
+      projectId: extension.projectId,
+      changes: { reason } as InputJsonValue,
     });
     return attachExtensionReadiness(updated);
   }
@@ -310,14 +477,22 @@ export class ExtensionsService {
 
     validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
     validateExtensionStageGate(extension, target);
+    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(extension.id);
 
+    const closedAt = new Date();
     const updated = await this.prisma.extension.update({
       where: { id },
-      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
+      data: {
+        status: target,
+        ...buildDeliveryLifecycleWrite(target, extension),
+        closedAt,
+        closedById: actorId,
+      },
       include: {
         project: { select: { id: true, code: true, name: true } },
         product: { select: { id: true, name: true } },
         order: { select: { id: true, code: true, status: true } },
+        closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
     const linkedOrder = await this.prisma.order.findUnique({
@@ -329,6 +504,14 @@ export class ExtensionsService {
       await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
     }
     await this.supportService.closeLinkedTicketsAfterExtensionDelivered(id, actorId);
+    await this.audit.log({
+      entityType: 'EXTENSION',
+      entityId: id,
+      action: 'delivery.completed',
+      userId: actorId,
+      projectId: extension.projectId,
+      changes: { deliveryResolution: 'DONE' } as InputJsonValue,
+    });
     return attachExtensionReadiness(updated);
   }
 
@@ -371,6 +554,15 @@ export class ExtensionsService {
     }
   }
 
+  private async validateDevelopmentGate(extensionId: string) {
+    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(extensionId);
+    await this.checklistTemplates.assertStageInstancesCompleted({
+      ownerEntityType: 'EXTENSION',
+      ownerEntityId: extensionId,
+      deliveryStage: 'STARTING',
+    });
+  }
+
   private async ensureProductBelongsToProject(productId: string, projectId: string) {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
@@ -395,4 +587,18 @@ function parseDate(value: string | undefined, field: string) {
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) throw new BadRequestException(`${field} is invalid`);
   return date;
+}
+
+function mergeChecklistIntoReadiness(
+  readiness: { completed: number; total: number } | undefined,
+  checklist: { completedChecklists?: number; totalChecklists?: number } | null,
+) {
+  if (!checklist?.totalChecklists) return readiness;
+  const base = readiness ?? { completed: 0, total: 0 };
+  const completedChecklists = checklist.completedChecklists ?? 0;
+  const totalChecklists = checklist.totalChecklists;
+  return {
+    completed: base.completed + (completedChecklists >= totalChecklists ? totalChecklists : 0),
+    total: base.total + totalChecklists,
+  };
 }

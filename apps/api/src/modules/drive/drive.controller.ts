@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Param,
   Query,
@@ -16,13 +17,26 @@ import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../c
 import { buildDocumentsReadAccess } from '../documents/documents-read-access.dto';
 import { DriveService } from './drive.service';
 import { DriveUploadSessionService } from './drive-upload-session.service';
+import { DriveFolderService } from './drive-folder.service';
+import { DriveZipExportService } from './drive-zip-export.service';
+import { DriveProjectHubService } from './drive-project-hub.service';
+import { DriveCleanupCandidatesService } from './drive-cleanup-candidates.service';
+import { DriveCleanupApplyService } from './drive-cleanup-apply.service';
+import { ApplyDriveCleanupDto } from './apply-drive-cleanup.dto';
+import { CreateDriveZipExportBodyDto } from './create-drive-zip-export.dto';
 import type {
   CompleteUploadSessionDto,
   CompleteFileVersionDto,
   CreateFileAssetDto,
+  CreateFileAssetGrantDto,
   CreateFileVersionUploadDto,
   CreateFileLinkDto,
   CreateUploadSessionDto,
+  CreateDriveFolderDto,
+  CopyFolderFileDto,
+  MoveFolderFileDto,
+  RenameDriveFolderDto,
+  AddFolderFileDto,
 } from './drive.types';
 
 @ApiTags('Drive')
@@ -32,7 +46,203 @@ export class DriveController {
   constructor(
     private readonly driveService: DriveService,
     private readonly driveUploadSessions: DriveUploadSessionService,
+    private readonly driveFolders: DriveFolderService,
+    private readonly driveZipExports: DriveZipExportService,
+    private readonly driveProjectHub: DriveProjectHubService,
+    private readonly driveCleanupCandidates: DriveCleanupCandidatesService,
+    private readonly driveCleanupApply: DriveCleanupApplyService,
   ) {}
+
+  @Get('folders')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List user-created Drive folders and files' })
+  @ApiQuery({
+    name: 'space',
+    required: false,
+    description: 'COMPANY | PERSONAL (required without entity scope)',
+  })
+  @ApiQuery({ name: 'parentId', required: false, description: 'Folder id or root' })
+  @ApiQuery({ name: 'scopeEntityType', required: false, description: 'DEAL | PROJECT | …' })
+  @ApiQuery({ name: 'scopeEntityId', required: false })
+  async listFolders(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Query('space') space?: string,
+    @Query('parentId') parentId?: string,
+    @Query('scopeEntityType') scopeEntityType?: string,
+    @Query('scopeEntityId') scopeEntityId?: string,
+  ) {
+    return this.driveFolders.listFolder(
+      { space, parentId, scopeEntityType, scopeEntityId },
+      user.id,
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+    );
+  }
+
+  @Get('folders/tree')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List all Drive folders in a space (flat list for tree UI)' })
+  @ApiQuery({ name: 'space', required: false, description: 'COMPANY | PERSONAL' })
+  @ApiQuery({ name: 'scopeEntityType', required: false })
+  @ApiQuery({ name: 'scopeEntityId', required: false })
+  async listFolderTree(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Query('space') space?: string,
+    @Query('scopeEntityType') scopeEntityType?: string,
+    @Query('scopeEntityId') scopeEntityId?: string,
+  ) {
+    return this.driveFolders.listFolderTree(
+      space ?? '',
+      user.id,
+      { scopeEntityType, scopeEntityId },
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+    );
+  }
+
+  @Post('folders')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Create a user folder in Company or Personal Drive' })
+  async createFolder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: CreateDriveFolderDto,
+  ) {
+    return this.driveFolders.createFolder(body, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Patch('folders/:folderId')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Rename a user Drive folder' })
+  async renameFolder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('folderId') folderId: string,
+    @Body() body: RenameDriveFolderDto,
+  ) {
+    return this.driveFolders.renameFolder(folderId, body, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Delete('folders/:folderId')
+  @RequirePermission('DRIVE', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Soft-delete an empty Drive folder' })
+  async deleteFolder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('folderId') folderId: string,
+  ) {
+    await this.driveFolders.deleteFolder(folderId, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('folders/:folderId/files/:fileId/move')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Move a file placement between user folders' })
+  async moveFolderFile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('folderId') folderId: string,
+    @Param('fileId') fileId: string,
+    @Body() body: MoveFolderFileDto,
+  ) {
+    return this.driveFolders.moveFile(
+      body.sourceFolderId ?? folderId,
+      body.targetFolderId,
+      fileId,
+      user.id,
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+    );
+  }
+
+  @Post('folders/:folderId/files/:fileId/copy')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Copy a file into a user folder as an independent FileAsset' })
+  async copyFolderFile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('fileId') fileId: string,
+    @Body() body: CopyFolderFileDto,
+  ) {
+    return this.driveFolders.copyFile(body.targetFolderId, fileId, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Delete('folders/:folderId/files/:fileId')
+  @RequirePermission('DRIVE', 'DELETE')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remove a file from a user folder without deleting the FileAsset' })
+  async removeFolderFile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('folderId') folderId: string,
+    @Param('fileId') fileId: string,
+  ) {
+    await this.driveFolders.removeFile(folderId, fileId, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('folders/:folderId/files')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Add an existing FileAsset to a folder (new placement)' })
+  async addFileToFolder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('folderId') folderId: string,
+    @Body() body: AddFolderFileDto,
+  ) {
+    return this.driveFolders.addFileToFolder(folderId, body.fileAssetId.trim(), user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Get('project-hub/:projectId')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Project Library hub section counts (project files, deals, products, …)',
+  })
+  async getProjectDriveHubSummary(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('projectId') projectId: string,
+  ) {
+    return this.driveProjectHub.getSummary(projectId.trim(), {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
 
   @Get('files')
   @RequirePermission('DRIVE', 'VIEW')
@@ -43,6 +253,24 @@ export class DriveController {
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'sourceModule', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({
+    name: 'projectHubProjectFiles',
+    required: false,
+    description:
+      'When true with projectId, list files linked only to the Project shell, not child contexts.',
+  })
+  @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({
+    name: 'sharedWithMe',
+    required: false,
+    description:
+      'When true, list files shared with the viewer (not originated as sole owner/uploader).',
+  })
+  @ApiQuery({
+    name: 'trash',
+    required: false,
+    description: 'When true, list soft-deleted files in Trash.',
+  })
   async listFileAssets(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
@@ -52,6 +280,10 @@ export class DriveController {
     @Query('status') status?: string,
     @Query('sourceModule') sourceModule?: string,
     @Query('search') search?: string,
+    @Query('projectHubProjectFiles') projectHubProjectFiles?: string,
+    @Query('projectId') projectId?: string,
+    @Query('sharedWithMe') sharedWithMe?: string,
+    @Query('trash') trash?: string,
   ) {
     return this.driveService.listFileAssets(
       {
@@ -61,6 +293,10 @@ export class DriveController {
         status,
         sourceModule,
         search,
+        projectHubProjectFiles: projectHubProjectFiles === 'true',
+        projectId: projectId?.trim() || undefined,
+        sharedWithMe: sharedWithMe === 'true',
+        trash: trash === 'true' || trash === '1',
       },
       {
         employeeId: user.id,
@@ -68,6 +304,135 @@ export class DriveController {
         driveScope: request.permissionScope,
       },
     );
+  }
+
+  @Get('files/context-summary')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Count Drive files linked to an entity, grouped by purpose' })
+  @ApiQuery({ name: 'entityType', required: true })
+  @ApiQuery({ name: 'entityId', required: true })
+  async getLibraryContextSummary(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
+  ) {
+    return this.driveService.getLibraryContextSummary(entityType, entityId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+      documentsAccess: buildDocumentsReadAccess(user),
+    });
+  }
+
+  @Get('files/library-link-aggregates')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Aggregate other entity links for files in a library context',
+    description:
+      'Counts FileLink rows grouped by entityType/entityId for files linked to the given context, excluding the context anchor link.',
+  })
+  @ApiQuery({ name: 'entityType', required: true })
+  @ApiQuery({ name: 'entityId', required: true })
+  async getLibraryRelatedLinkAggregates(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
+  ) {
+    return this.driveService.getLibraryRelatedLinkAggregates(entityType, entityId, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+      documentsAccess: buildDocumentsReadAccess(user),
+    });
+  }
+
+  @Get('cleanup-summary')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Drive maintenance counters (upload sessions)' })
+  async getDriveCleanupSummary() {
+    return this.driveService.getDriveCleanupSummary();
+  }
+
+  @Get('cleanup/candidates')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Review cleanup candidates (no destructive action)',
+    description:
+      'Lists orphan files, failed/expired upload sessions, duplicate checksum groups, old export artifacts, trash retention, and aged task attachments for operator review.',
+  })
+  async listDriveCleanupCandidates() {
+    return this.driveCleanupCandidates.listCandidates();
+  }
+
+  @Post('cleanup/apply')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({
+    summary: 'Apply reviewed Drive cleanup for selected candidate ids',
+    description:
+      'Runs a confirmed cleanup action for one candidate category. Use ids from GET /drive/cleanup/candidates, or applyAll for failed/expired sessions and expired export artifacts (capped).',
+  })
+  async applyDriveCleanup(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: ApplyDriveCleanupDto,
+  ) {
+    return this.driveCleanupApply.applyCleanup(user.id, body.kind, body.ids, body.applyAll);
+  }
+
+  @Post('cleanup/purge/:kind')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Delete failed or expired pending upload session rows' })
+  async purgeDriveUploadSessions(@Param('kind') kind: string) {
+    return this.driveService.purgeDriveUploadSessions(kind);
+  }
+
+  @Get('zip-exports')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List Drive ZIP export jobs for the current user' })
+  async listDriveZipExports(@CurrentUser() user: CurrentUserPayload) {
+    return this.driveZipExports.listZipExportJobs(user.id);
+  }
+
+  @Post('zip-exports')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({
+    summary: 'Queue ZIP export for selected Drive files',
+    description:
+      'Creates an asynchronous job. R2-backed FileAssets are packed under `files/`; `_manifest/export-manifest.json` lists included and skipped ids. Requires REDIS_URL or DRIVE_ZIP_EXPORT_SYNC_FALLBACK=true (dev only).',
+  })
+  async createDriveZipExport(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: CreateDriveZipExportBodyDto,
+  ) {
+    return this.driveZipExports.createZipExportJob(
+      user.id,
+      {
+        fileIds: body.fileIds,
+        exportKind: body.exportKind,
+        exportParams: body.exportParams,
+      },
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+    );
+  }
+
+  @Post('zip-exports/:id/cancel')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Cancel a queued Drive ZIP export job' })
+  async cancelDriveZipExport(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.driveZipExports.cancelZipExportJob(id, user.id);
+  }
+
+  @Get('zip-exports/:id')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Get a Drive ZIP export job by id (requester only)' })
+  async getDriveZipExport(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.driveZipExports.getZipExportJob(id, user.id);
   }
 
   @Get('files/:id/preview-url')
@@ -100,6 +465,37 @@ export class DriveController {
     );
   }
 
+  @Get('lifecycle-counts')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'Counts for Archive and Trash lifecycle views' })
+  async getLifecycleCounts(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+  ) {
+    return this.driveService.getLifecycleCounts({
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/:id/permanent-delete')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({
+    summary: 'Move an archived file to Trash (soft delete; requires no active business links)',
+  })
+  async permanentlyDeleteFileAsset(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+  ) {
+    return this.driveService.permanentlyDeleteFileAsset(id, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
   @Get('files/:id')
   @RequirePermission('DRIVE', 'VIEW')
   @ApiOperation({ summary: 'Get DB-backed Drive file asset detail' })
@@ -125,10 +521,21 @@ export class DriveController {
   })
   @ApiQuery({ name: 'contextId', required: true })
   async listDriveLibrary(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
     @Query('contextType') contextType?: string,
     @Query('contextId') contextId?: string,
   ) {
-    return this.driveUploadSessions.listDriveLibrary(contextType, contextId);
+    return this.driveUploadSessions.listDriveLibrary(
+      contextType,
+      contextId,
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+      buildDocumentsReadAccess(user),
+    );
   }
 
   @Post('upload-sessions')
@@ -136,9 +543,19 @@ export class DriveController {
   @ApiOperation({ summary: 'Create upload session and presigned PUT URL for R2' })
   async createUploadSession(
     @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
     @Body() body: CreateUploadSessionDto,
   ) {
-    return this.driveUploadSessions.createUploadSession(body, user.id);
+    return this.driveUploadSessions.createUploadSession(
+      body,
+      user.id,
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+      buildDocumentsReadAccess(user),
+    );
   }
 
   @Post('upload-sessions/:sessionId/complete')
@@ -146,10 +563,21 @@ export class DriveController {
   @ApiOperation({ summary: 'Complete upload session after R2 PUT — creates FileAsset + link' })
   async completeUploadSession(
     @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
     @Param('sessionId') sessionId: string,
     @Body() body: CompleteUploadSessionDto,
   ) {
-    return this.driveUploadSessions.completeUploadSession(sessionId, user.id, body);
+    return this.driveUploadSessions.completeUploadSession(
+      sessionId,
+      user.id,
+      body,
+      {
+        employeeId: user.id,
+        departmentIds: user.departmentIds,
+        driveScope: request.permissionScope,
+      },
+      buildDocumentsReadAccess(user),
+    );
   }
 
   @Post('upload-sessions/:sessionId/fail')
@@ -180,6 +608,54 @@ export class DriveController {
     @Body() body: CreateFileLinkDto,
   ) {
     return this.driveService.linkFileAsset(id, body, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+      documentsAccess: buildDocumentsReadAccess(user),
+    });
+  }
+
+  @Post('files/:id/grants')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Grant another employee view access to a Drive file (Shared with me)' })
+  async createFileAssetGrant(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Body() body: CreateFileAssetGrantDto,
+  ) {
+    return this.driveService.createFileAssetGrant(id, body, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Get('files/:id/grants')
+  @RequirePermission('DRIVE', 'VIEW')
+  @ApiOperation({ summary: 'List active grants on a Drive file' })
+  async listFileAssetGrants(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+  ) {
+    return this.driveService.listFileAssetGrants(id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Delete('files/:id/grants/:grantId')
+  @RequirePermission('DRIVE', 'ADD')
+  @ApiOperation({ summary: 'Revoke an active grant on a Drive file' })
+  async revokeFileAssetGrant(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+    @Param('grantId') grantId: string,
+  ) {
+    return this.driveService.revokeFileAssetGrant(id, grantId, user.id, {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,
@@ -242,9 +718,8 @@ export class DriveController {
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
-    @Body() body: { actorId?: string },
   ) {
-    return this.driveService.archiveFileAsset(id, body.actorId, {
+    return this.driveService.archiveFileAsset(id, user.id, {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,
@@ -258,9 +733,8 @@ export class DriveController {
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
-    @Body() body: { actorId?: string },
   ) {
-    return this.driveService.restoreFileAsset(id, body.actorId, {
+    return this.driveService.restoreFileAsset(id, user.id, {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,
@@ -273,9 +747,9 @@ export class DriveController {
   async archiveFileAssets(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
-    @Body() body: { ids: string[]; actorId?: string },
+    @Body() body: { ids: string[] },
   ) {
-    return this.driveService.archiveFileAssets(body.ids ?? [], body.actorId, {
+    return this.driveService.archiveFileAssets(body.ids ?? [], user.id, {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,
@@ -288,54 +762,57 @@ export class DriveController {
   async restoreFileAssets(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
-    @Body() body: { ids: string[]; actorId?: string },
+    @Body() body: { ids: string[] },
   ) {
-    return this.driveService.restoreFileAssets(body.ids ?? [], body.actorId, {
+    return this.driveService.restoreFileAssets(body.ids ?? [], user.id, {
       employeeId: user.id,
       departmentIds: user.departmentIds,
       driveScope: request.permissionScope,
     });
   }
 
-  @Get(':projectId')
-  @RequirePermission('DRIVE', 'VIEW')
-  @ApiOperation({ summary: 'List files in project folder' })
-  @ApiQuery({ name: 'prefix', required: false, description: 'Subfolder prefix to list' })
-  async listFiles(@Param('projectId') projectId: string, @Query('prefix') prefix?: string) {
-    return this.driveService.listFiles(projectId, prefix);
-  }
-
-  @Get(':projectId/structure')
-  @RequirePermission('DRIVE', 'VIEW')
-  @ApiOperation({ summary: 'Get full folder structure for a project' })
-  async getStructure(@Param('projectId') projectId: string) {
-    return this.driveService.getProjectStructure(projectId);
-  }
-
-  @Post(':projectId/upload-url')
-  @RequirePermission('DRIVE', 'ADD')
-  @ApiOperation({ summary: 'Get presigned upload URL' })
-  async getUploadUrl(
-    @Param('projectId') projectId: string,
-    @Body() body: { fileName: string; contentType: string },
-  ) {
-    return this.driveService.getUploadUrl(projectId, body.fileName, body.contentType);
-  }
-
-  @Get(':projectId/download-url')
-  @RequirePermission('DRIVE', 'VIEW')
-  @ApiOperation({ summary: 'Get presigned download URL' })
-  @ApiQuery({ name: 'path', required: true, description: 'File path within the project' })
-  async getDownloadUrl(@Param('projectId') projectId: string, @Query('path') filePath: string) {
-    return this.driveService.getDownloadUrl(projectId, filePath);
-  }
-
-  @Delete(':projectId')
+  @Post('files/:id/restore-from-trash')
   @RequirePermission('DRIVE', 'DELETE')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete a file from project storage' })
-  @ApiQuery({ name: 'path', required: true, description: 'File path to delete' })
-  async deleteFile(@Param('projectId') projectId: string, @Query('path') filePath: string) {
-    await this.driveService.deleteFile(projectId, filePath);
+  @ApiOperation({ summary: 'Restore a Trash file back to Active' })
+  async restoreTrashFileAsset(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Param('id') id: string,
+  ) {
+    return this.driveService.restoreTrashFileAsset(id, user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/restore-trash-batch')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Restore multiple Trash files back to Active' })
+  async restoreTrashFileAssets(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: { ids: string[] },
+  ) {
+    return this.driveService.restoreTrashFileAssets(body.ids ?? [], user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
+  }
+
+  @Post('files/move-to-trash-batch')
+  @RequirePermission('DRIVE', 'DELETE')
+  @ApiOperation({ summary: 'Move multiple archived files to Trash' })
+  async moveFileAssetsToTrash(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: Request & { permissionScope?: string },
+    @Body() body: { ids: string[] },
+  ) {
+    return this.driveService.moveFileAssetsToTrash(body.ids ?? [], user.id, {
+      employeeId: user.id,
+      departmentIds: user.departmentIds,
+      driveScope: request.permissionScope,
+    });
   }
 }

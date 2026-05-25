@@ -211,6 +211,14 @@ export class PartnersController {
     return this.partnersService.createFinanceFromPartnerServiceTerm(id, termId, body);
   }
 
+  @Get(':id/analytics')
+  @ApiOperation({
+    summary: 'Partner analytics (inbound funnel, client cash, accruals, outbound revenue)',
+  })
+  async getPartnerAnalytics(@Param('id') id: string) {
+    return this.partnersService.getPartnerAnalytics(id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get partner by ID' })
   async findOne(@Param('id') id: string) {
@@ -230,6 +238,14 @@ export class PartnersController {
       defaultPercent?: number;
       status?: string;
       contactId?: string;
+      notes?: string;
+      startDate?: string;
+      agreementStatus?: string;
+      agreementStartDate?: string;
+      agreementEndDate?: string;
+      agreementSpecialTerms?: string;
+      agreementFileAssetId?: string | null;
+      agreementOwnerId?: string | null;
     },
   ) {
     return this.partnersService.create(body);
@@ -248,7 +264,15 @@ export class PartnersController {
       direction?: string;
       defaultPercent?: number;
       status?: string;
-      contactId?: string;
+      contactId?: string | null;
+      notes?: string | null;
+      startDate?: string | null;
+      agreementStatus?: string;
+      agreementStartDate?: string | null;
+      agreementEndDate?: string | null;
+      agreementSpecialTerms?: string | null;
+      agreementFileAssetId?: string | null;
+      agreementOwnerId?: string | null;
     },
   ) {
     return this.partnersService.update(id, body);

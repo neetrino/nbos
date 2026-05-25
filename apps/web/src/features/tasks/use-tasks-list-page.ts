@@ -1,8 +1,25 @@
 'use client';
 
-import { createElement, useCallback, useEffect, useState } from 'react';
+import { createElement, useCallback, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { TASK_STATUSES, TASK_PRIORITIES } from '@/features/tasks/constants/tasks';
-import { KANBAN_STATUS_MAP, getDueDateForDeadlineColumn } from '@/features/tasks/task-board';
+import { taskMatchesTaskBoardScope } from '@/features/tasks/constants/task-board-lifecycle';
+import {
+  BOARD_LIFECYCLE_SCOPE_OPTIONS,
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
+import { TASK_OPEN_QUERY } from '@/features/tasks/constants/task-open-query';
+import {
+  applyTaskToKanbanColumn,
+  KANBAN_STATUS_MAP,
+  getDueDateForDeadlineColumn,
+  reorderTasksInColumn,
+  taskMatchesDeadlineColumn,
+  taskMatchesKanbanStatusColumn,
+  taskMatchesMyPlanColumn,
+} from '@/features/tasks/task-board';
 import { TasksListKanbanViews } from '@/features/tasks/tasks-list-kanban-views';
 import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 import { tasksApi, type Task, type TaskBoardStage, type TaskStats } from '@/lib/api/tasks';
@@ -13,18 +30,33 @@ export type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
 const FILTER_CONFIGS = [
   {
-    key: 'status',
+    key: 'boardScope',
     label: 'Status',
+    includeAllOption: false,
+    defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
+    options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
+      value: option.value,
+      label: option.label,
+    })),
+  },
+  {
+    key: 'status',
+    label: 'Stage',
     options: TASK_STATUSES.map((s) => ({ value: s.value, label: s.label })),
   },
   {
     key: 'priority',
-    label: 'Priority',
+    label: 'Urgency',
     options: TASK_PRIORITIES.map((p) => ({ value: p.value, label: p.label })),
   },
 ];
 
 export function useTasksListPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const openTaskId = searchParams.get(TASK_OPEN_QUERY)?.trim() || null;
+
   const { creatorId, creatorReady } = useTaskCreatorId();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<TaskStats | null>(null);
@@ -34,27 +66,53 @@ export function useTasksListPage() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [boardView, setBoardView] = useState<TasksListBoardView>('kanban');
   const [myPlanStages, setMyPlanStages] = useState<TaskBoardStage[]>([]);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [defaultCreateDueDate, setDefaultCreateDueDate] = useState<string | null>(null);
+  const [quickCreateColumnKey, setQuickCreateColumnKey] = useState<string | null>(null);
+
+  const stripTaskOpenFromUrl = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (!p.has(TASK_OPEN_QUERY)) return;
+    p.delete(TASK_OPEN_QUERY);
+    const qs = p.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }, [router, pathname, searchParams]);
+
+  const handleTaskSheetOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) stripTaskOpenFromUrl();
+    },
+    [stripTaskOpenFromUrl],
+  );
 
   const { handleExportScopeStatsCsv } = useTasksScopeStatsCsvExport(stats);
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
+      if (!creatorReady) {
+        setError(null);
+        return;
+      }
+      if (!creatorId) {
+        setTasks([]);
+        setStats(null);
+        setError(null);
+        return;
+      }
+
       const resp = await tasksApi.getAll({
         pageSize: 200,
         search: search || undefined,
         status: filters.status && filters.status !== 'all' ? filters.status : undefined,
         priority: filters.priority && filters.priority !== 'all' ? filters.priority : undefined,
         hasParent: false,
+        involvesEmployeeId: creatorId,
       });
       setTasks(resp.items);
       setError(null);
       try {
-        setStats(await tasksApi.getStats());
+        setStats(await tasksApi.getStats({ involvesEmployeeId: creatorId }));
       } catch {
         setStats(null);
       }
@@ -64,7 +122,7 @@ export function useTasksListPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, filters]);
+  }, [search, filters, creatorId, creatorReady]);
 
   const fetchMyPlanStages = useCallback(async () => {
     if (!creatorId) {
@@ -95,17 +153,63 @@ export function useTasksListPage() {
     }
   };
 
-  const handleTaskClick = (task: Task) => {
-    setSelectedTaskId(task.id);
-    setSheetOpen(true);
-  };
+  const handleTaskClick = useCallback(
+    (task: Task) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(TASK_OPEN_QUERY, task.id);
+      const qs = p.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [router, pathname, searchParams],
+  );
 
   const handleTaskUpdate = (updated: Task) => {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   };
 
-  const handleTaskCreated = (task: Task) => {
-    setTasks((prev) => [task, ...prev]);
+  const handleTaskDelete = useCallback(
+    (taskId: string) => {
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
+      if (openTaskId === taskId) stripTaskOpenFromUrl();
+    },
+    [openTaskId, stripTaskOpenFromUrl],
+  );
+
+  const handleTaskCreated = async (task: Task) => {
+    let next = task;
+    if (quickCreateColumnKey) {
+      try {
+        next = await applyTaskToKanbanColumn(task, quickCreateColumnKey, boardView);
+      } catch {
+        next = task;
+      }
+    }
+    setTasks((prev) => [next, ...prev.filter((t) => t.id !== next.id)]);
+    setQuickCreateColumnKey(null);
+  };
+
+  const handleKanbanReorder = (taskId: string, columnKey: string, toIndex: number) => {
+    setTasks((prev) =>
+      reorderTasksInColumn(prev, taskId, toIndex, (task) =>
+        taskMatchesKanbanStatusColumn(task, columnKey),
+      ),
+    );
+  };
+
+  const handleDeadlineReorder = (taskId: string, columnKey: string, toIndex: number) => {
+    setTasks((prev) =>
+      reorderTasksInColumn(prev, taskId, toIndex, (task) =>
+        taskMatchesDeadlineColumn(task, columnKey),
+      ),
+    );
+  };
+
+  const handleMyPlanReorder = (taskId: string, columnKey: string, toIndex: number) => {
+    setTasks((prev) =>
+      reorderTasksInColumn(prev, taskId, toIndex, (task) =>
+        taskMatchesMyPlanColumn(task, columnKey),
+      ),
+    );
   };
 
   const handleKanbanMove = async (taskId: string, _from: string, toColumn: string) => {
@@ -121,7 +225,10 @@ export function useTasksListPage() {
     setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: targetStatus } : t)));
 
     try {
-      if (targetStatus === 'IN_PROGRESS' && (task.status === 'OPEN' || task.status === 'NEW')) {
+      if (
+        targetStatus === 'IN_PROGRESS' &&
+        (task.status === 'OPEN' || task.status === 'NEW' || task.status === 'ON_HOLD')
+      ) {
         await tasksApi.start(taskId);
       } else if (targetStatus === 'COMPLETED' || targetStatus === 'DONE') {
         await tasksApi.complete(taskId);
@@ -147,6 +254,7 @@ export function useTasksListPage() {
   };
 
   const handleAddTaskInColumn = (columnKey: string) => {
+    setQuickCreateColumnKey(columnKey);
     setDefaultCreateDueDate(
       boardView === 'deadline' ? (getDueDateForDeadlineColumn(columnKey) ?? null) : null,
     );
@@ -223,6 +331,29 @@ export function useTasksListPage() {
     }
   };
 
+  const boardScope = resolveBoardLifecycleScope(filters.boardScope);
+  const hasStatusFilter = Boolean(filters.status) && filters.status !== 'all';
+
+  const displayTasks = useMemo(() => {
+    if (hasStatusFilter) return tasks;
+    return tasks.filter((task) => taskMatchesTaskBoardScope(task.status, boardScope));
+  }, [tasks, boardScope, hasStatusFilter]);
+
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    setFilters((prev) => {
+      if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+        const next = { ...prev };
+        delete next.boardScope;
+        return next;
+      }
+      return { ...prev, [key]: value };
+    });
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setFilters({});
+  }, []);
+
   const handleDeleteMyPlanStage = async (columnKey: string) => {
     const prev = myPlanStages;
     setMyPlanStages((s) => s.filter((st) => st.id !== columnKey));
@@ -236,13 +367,17 @@ export function useTasksListPage() {
   const renderBoard = () =>
     createElement(TasksListKanbanViews, {
       boardView,
-      tasks,
+      boardScope: boardScope as BoardLifecycleScope,
+      tasks: displayTasks,
       myPlanStages,
       onTaskAction: handleAction,
       onTaskClick: handleTaskClick,
       onKanbanMove: handleKanbanMove,
+      onKanbanReorder: handleKanbanReorder,
       onMyPlanMove: handleMyPlanMove,
+      onMyPlanReorder: handleMyPlanReorder,
       onDeadlineMove: handleDeadlineMove,
+      onDeadlineReorder: handleDeadlineReorder,
       onAddTaskInColumn: handleAddTaskInColumn,
       onAddMyPlanStage: handleAddMyPlanStage,
       onRenameMyPlanStage: handleRenameMyPlanStage,
@@ -258,21 +393,27 @@ export function useTasksListPage() {
     error,
     search,
     setSearch,
+    boardScope: boardScope as BoardLifecycleScope,
+    displayTasks,
     filters,
     setFilters,
+    handleFilterChange,
+    handleClearFilters,
     boardView,
     setBoardView,
     fetchTasks,
     filterConfigs: FILTER_CONFIGS,
     handleExportScopeStatsCsv,
-    selectedTaskId,
-    sheetOpen,
-    setSheetOpen,
+    selectedTaskId: openTaskId,
+    sheetOpen: Boolean(openTaskId),
+    handleTaskSheetOpenChange,
     quickCreateOpen,
     setQuickCreateOpen,
     defaultCreateDueDate,
     setDefaultCreateDueDate,
+    setQuickCreateColumnKey,
     handleTaskUpdate,
+    handleTaskDelete,
     handleTaskCreated,
     renderBoard,
   };

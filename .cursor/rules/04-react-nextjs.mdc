@@ -14,6 +14,10 @@ alwaysApply: false
 - **Metadata** (`generateMetadata` / static) for SEO where applicable.
 - **Loading / error / not-found** UI for route segments.
 
+## UI craft (cards, drawers, dense screens)
+
+Ship **professional, product-grade** layouts — not “works is enough.” For kanban cards, slide-out details, CRM headers, and form-heavy pages: use **consistent spacing scale**, clear **label vs value vs action** hierarchy, **section grouping** (tinted blocks or dividers where it helps scan), and tokens for **radius / border / shadow** from the theme. Avoid cramped stacks, flat everything-the-same-weight type, and random rainbow accents; when Figma is silent, **match** the best existing surfaces in the repo and `09-figma-design.mdc`.
+
 ## Forbidden
 
 - Fetching secrets or DB in client components.

@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Calendar, DollarSign, FileText, FolderKanban, Handshake } from 'lucide-react';
 import {
@@ -35,6 +34,7 @@ interface SubscriptionsTableProps {
   onCancel: (subscription: Subscription) => Promise<void>;
   onHold: (subscription: Subscription) => Promise<void>;
   onPartnerLinked: (subscription: Subscription) => void;
+  onOpenSubscription: (subscriptionId: string) => void;
 }
 
 export function SubscriptionsTable({
@@ -46,6 +46,7 @@ export function SubscriptionsTable({
   onCancel,
   onHold,
   onPartnerLinked,
+  onOpenSubscription,
 }: SubscriptionsTableProps) {
   const [cancelTarget, setCancelTarget] = useState<Subscription | null>(null);
   const [holdTarget, setHoldTarget] = useState<Subscription | null>(null);
@@ -82,6 +83,7 @@ export function SubscriptionsTable({
                 onOpenCancelDialog={() => setCancelTarget(subscription)}
                 onOpenHoldDialog={() => setHoldTarget(subscription)}
                 onOpenPartnerDialog={() => setPartnerTarget(subscription)}
+                onOpenSubscription={onOpenSubscription}
               />
             ))}
           </TableBody>
@@ -142,6 +144,7 @@ function SubscriptionTableRow({
   onOpenCancelDialog,
   onOpenHoldDialog,
   onOpenPartnerDialog,
+  onOpenSubscription,
 }: {
   subscription: Subscription;
   activatingId: string | null;
@@ -151,8 +154,8 @@ function SubscriptionTableRow({
   onOpenCancelDialog: () => void;
   onOpenHoldDialog: () => void;
   onOpenPartnerDialog: () => void;
+  onOpenSubscription: (subscriptionId: string) => void;
 }) {
-  const router = useRouter();
   const subscriptionType = getSubscriptionType(subscription.type);
   const subscriptionStatus = getSubscriptionStatus(subscription.status);
   const opLock = activatingId ?? cancellingId ?? holdingId;
@@ -164,7 +167,7 @@ function SubscriptionTableRow({
   return (
     <TableRow
       className="hover:bg-muted/40 cursor-pointer"
-      onClick={() => router.push(`/finance/subscriptions/${subscription.id}`)}
+      onClick={() => onOpenSubscription(subscription.id)}
     >
       <TableCell>
         <div className="flex items-center gap-2">
@@ -194,14 +197,14 @@ function SubscriptionTableRow({
         </div>
       </TableCell>
       <SubscriptionTypeCell subscriptionType={subscriptionType} />
-      <SubscriptionAmountCell amount={subscription.amount} />
+      <SubscriptionAmountCell amount={subscription.baseMonthlyAmount} />
       <SubscriptionStatusCell subscriptionStatus={subscriptionStatus} />
       <TableCell className="text-muted-foreground text-xs">
         {subscription.coverage?.activeMonthCount ?? 0} months
       </TableCell>
       <SubscriptionBillingCell billingDay={subscription.billingDay} />
       <TableCell className="text-muted-foreground text-xs">
-        {new Date(subscription.startDate).toLocaleDateString()}
+        {new Date(subscription.billingStartDate).toLocaleDateString()}
       </TableCell>
       <TableCell onClick={(event) => event.stopPropagation()}>
         <Link

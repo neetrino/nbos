@@ -5,6 +5,7 @@ import { Camera, LogOut, Monitor } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { api } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { toast } from 'sonner';
 
 interface ProfileData {
@@ -30,6 +31,15 @@ function InputField({
   type?: string;
   disabled?: boolean;
 }) {
+  if (type === 'date' && onChange) {
+    return (
+      <div>
+        <label className="text-foreground mb-1.5 block text-sm font-medium">{label}</label>
+        <NbosDatePicker value={value} onChange={onChange} disabled={disabled} aria-label={label} />
+      </div>
+    );
+  }
+
   return (
     <div>
       <label className="text-foreground mb-1.5 block text-sm font-medium">{label}</label>

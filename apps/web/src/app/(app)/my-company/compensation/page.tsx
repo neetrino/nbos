@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { CircleDollarSign, ShieldCheck, Users } from 'lucide-react';
-import { PageHeader, StatusBadge } from '@/components/shared';
+import { PageHero, StatusBadge } from '@/components/shared';
 import { employeesApi, type Employee } from '@/lib/api/employees';
+import { CompensationProfileWorkspace } from '@/features/my-company/compensation/compensation-profile-workspace';
 import { bonusesApi, type SalesBonusPolicyRow } from '@/lib/api/bonus';
 
 function fullName(employee: Employee): string {
@@ -43,10 +44,11 @@ export default function CompensationPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Compensation"
-        description="Compensation profiles runtime view: base salary coverage, active sales bonus policies, and links to payroll controls."
-      />
+      <PageHero title="Compensation" />
+      <p className="text-muted-foreground text-sm">
+        Compensation profiles runtime view: base salary coverage, active sales bonus policies, and
+        links to payroll controls.
+      </p>
 
       <div className="grid gap-3 md:grid-cols-3">
         <div className="border-border bg-card rounded-2xl border p-4">
@@ -68,10 +70,12 @@ export default function CompensationPage() {
         <div className="border-border bg-card rounded-2xl border p-4">
           <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
             <ShieldCheck size={16} />
-            Active bonus policies
+            Active sales rate rows
           </div>
           <p className="text-foreground text-2xl font-semibold">{activePolicyCount}</p>
-          <p className="text-muted-foreground text-xs">Sales policy rows with `isActive=true`</p>
+          <p className="text-muted-foreground text-xs">
+            Rows in sales_bonus_policies with isActive
+          </p>
         </div>
       </div>
 
@@ -91,10 +95,22 @@ export default function CompensationPage() {
             Open Team
           </Link>
           <Link
+            href="/my-company/bonus-policies"
+            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
+          >
+            Bonus policies
+          </Link>
+          <Link
             href="/my-company/sales-bonus-policies"
             className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
           >
-            Open Sales Bonus Policies
+            Sales rate grid
+          </Link>
+          <Link
+            href="/my-company/kpi-policies"
+            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
+          >
+            KPI gate policies
           </Link>
           <Link
             href="/finance/payroll"
@@ -105,9 +121,11 @@ export default function CompensationPage() {
         </div>
       </div>
 
+      <CompensationProfileWorkspace employees={employees} />
+
       <div className="border-border bg-card overflow-hidden rounded-2xl border">
         <div className="border-border flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-sm font-semibold">Compensation Profiles (current read model)</h2>
+          <h2 className="text-sm font-semibold">Team registry (base salary on employee)</h2>
           {loading ? <span className="text-muted-foreground text-xs">Loading…</span> : null}
         </div>
         <div className="overflow-x-auto">

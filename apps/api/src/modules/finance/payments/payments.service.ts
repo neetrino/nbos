@@ -7,8 +7,10 @@ import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-syn
 import { getLatestPaymentDate, resolveOrderStatus, sumAmounts } from '../finance-status.utils';
 import { syncInvoiceMoneyStatusFromPayments } from '../invoices/invoice-money-status';
 import { OperationalJournalService } from '../journal/operational-journal.service';
+import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-guard';
 import { PartnerAccrualClassicService } from '../partner-accrual/partner-accrual-classic.service';
 import { PartnerAccrualSubscriptionService } from '../partner-accrual/partner-accrual-subscription.service';
+import { ClientPaidInvoiceAutomationService } from '../../client-services/client-paid-invoice-automation.service';
 
 interface CreatePaymentDto {
   invoiceId: string;
@@ -38,22 +40,52 @@ export class PaymentsService {
     private readonly operationalJournal: OperationalJournalService,
     private readonly partnerAccrualClassic: PartnerAccrualClassicService,
     private readonly partnerAccrualSubscription: PartnerAccrualSubscriptionService,
+    private readonly clientPaidInvoiceAutomation: ClientPaidInvoiceAutomationService,
   ) {}
 
   async findAll(params: PaymentQueryParams) {
     const { page = 1, pageSize = 20, invoiceId, search, dateFrom, dateTo } = params;
-    const where: Prisma.PaymentWhereInput = {};
+    const parts: Prisma.PaymentWhereInput[] = [];
 
-    if (invoiceId) where.invoiceId = invoiceId;
-    if (search) {
-      where.invoice = { code: { contains: search, mode: 'insensitive' } };
+    if (invoiceId) parts.push({ invoiceId });
+    const searchTrimmed = search?.trim();
+    if (searchTrimmed) {
+      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
+      parts.push({
+        OR: [
+          { notes: ic },
+          {
+            invoice: {
+              OR: [
+                { code: ic },
+                { company: { name: ic } },
+                {
+                  order: {
+                    OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
+                  },
+                },
+                {
+                  subscription: {
+                    OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
     }
     if (dateFrom || dateTo) {
-      where.paymentDate = {
-        ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
-        ...(dateTo ? { lte: new Date(dateTo) } : {}),
-      };
+      parts.push({
+        paymentDate: {
+          ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+          ...(dateTo ? { lte: new Date(dateTo) } : {}),
+        },
+      });
     }
+
+    const where: Prisma.PaymentWhereInput =
+      parts.length === 0 ? {} : parts.length === 1 ? parts[0]! : { AND: parts };
 
     const [items, total] = await Promise.all([
       this.prisma.payment.findMany({
@@ -169,6 +201,7 @@ export class PaymentsService {
     }
 
     const paymentDate = new Date(data.paymentDate);
+    await assertPostingPeriodOpenForBookedAt(this.prisma, paymentDate);
     const created = await this.prisma.payment.create({
       data: {
         invoiceId: data.invoiceId,
@@ -219,6 +252,10 @@ export class PaymentsService {
         invoiceId: data.invoiceId,
         paymentId: created.id,
       });
+      await this.clientPaidInvoiceAutomation.onInvoiceFullyPaid({
+        invoiceId: data.invoiceId,
+        actorEmployeeId: data.confirmedBy,
+      });
     }
 
     return this.findById(created.id);
@@ -226,6 +263,7 @@ export class PaymentsService {
 
   async delete(id: string) {
     const payment = await this.findById(id);
+    await assertPostingPeriodOpenForBookedAt(this.prisma, payment.paymentDate);
     await this.prisma.payment.delete({ where: { id } });
 
     await this.syncInvoiceStatus(payment.invoiceId);

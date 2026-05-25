@@ -1,14 +1,9 @@
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DeliveryBoardKindSegmented } from './DeliveryBoardKindSegmented';
 import type {
   DeliveryBoardKindFilter,
   DeliveryBoardStatusFilter,
 } from './project-delivery-board-model';
-
-const KIND_FILTERS: Array<{ value: DeliveryBoardKindFilter; label: string }> = [
-  { value: 'ALL', label: 'All' },
-  { value: 'PRODUCT', label: 'Products' },
-  { value: 'EXTENSION', label: 'Extensions' },
-];
 
 const STATUS_FILTERS: Array<{ value: DeliveryBoardStatusFilter; label: string }> = [
   { value: 'ACTIVE', label: 'Active' },
@@ -24,6 +19,8 @@ interface ProjectDeliveryBoardHeaderProps {
   statusFilter: DeliveryBoardStatusFilter;
   onKindFilterChange: (filter: DeliveryBoardKindFilter) => void;
   onStatusFilterChange: (filter: DeliveryBoardStatusFilter) => void;
+  /** When set, status chips are hidden (global Active tab locks to active pipeline). */
+  hideStatusFilters?: boolean;
 }
 
 export function ProjectDeliveryBoardHeader({
@@ -33,55 +30,45 @@ export function ProjectDeliveryBoardHeader({
   statusFilter,
   onKindFilterChange,
   onStatusFilterChange,
+  hideStatusFilters = false,
 }: ProjectDeliveryBoardHeaderProps) {
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold">Delivery Board</h2>
-          <p className="text-muted-foreground text-xs">
-            Product and Extension cards grouped by canonical delivery stage.
-          </p>
-        </div>
-        <div className="flex gap-2 text-xs">
-          <span className="bg-secondary rounded-full px-2 py-1">{activeCount} active</span>
-          <span className="bg-secondary rounded-full px-2 py-1">{closedCount} closed</span>
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <FilterGroup
-          filters={STATUS_FILTERS}
-          value={statusFilter}
-          onChange={onStatusFilterChange}
-        />
-        <FilterGroup filters={KIND_FILTERS} value={kindFilter} onChange={onKindFilterChange} />
-      </div>
+  const toolbar = (
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <span className="bg-secondary rounded-full px-2 py-1 text-xs">{activeCount} active</span>
+      <span className="bg-secondary rounded-full px-2 py-1 text-xs">{closedCount} closed</span>
+      <DeliveryBoardKindSegmented value={kindFilter} onValueChange={onKindFilterChange} />
     </div>
   );
-}
 
-function FilterGroup<T extends string>({
-  filters,
-  value,
-  onChange,
-}: {
-  filters: Array<{ value: T; label: string }>;
-  value: T;
-  onChange: (value: T) => void;
-}) {
   return (
-    <div className="flex gap-1">
-      {filters.map((filter) => (
-        <Button
-          key={filter.value}
-          variant={value === filter.value ? 'secondary' : 'ghost'}
-          size="sm"
-          className="h-7 text-xs"
-          onClick={() => onChange(filter.value)}
+    <div className="space-y-3">
+      {hideStatusFilters ? (
+        toolbar
+      ) : (
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold">Delivery Board</h2>
+            <p className="text-muted-foreground text-xs">
+              Product and Extension cards grouped by canonical delivery stage.
+            </p>
+          </div>
+          {toolbar}
+        </div>
+      )}
+      {!hideStatusFilters ? (
+        <Tabs
+          value={statusFilter}
+          onValueChange={(next) => onStatusFilterChange(next as DeliveryBoardStatusFilter)}
         >
-          {filter.label}
-        </Button>
-      ))}
+          <TabsList variant="segmented" className="w-fit">
+            {STATUS_FILTERS.map((filter) => (
+              <TabsTrigger key={filter.value} value={filter.value} className="px-3 py-2 text-xs">
+                {filter.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      ) : null}
     </div>
   );
 }

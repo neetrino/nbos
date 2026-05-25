@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { CalendarDays, ExternalLink } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
+import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import { cn } from '@/lib/utils';
 
 export interface ExpensePlanLinkBannerProps {
@@ -10,41 +11,27 @@ export interface ExpensePlanLinkBannerProps {
   planName: string;
 }
 
+/** Compact plan link row for expense detail sheet (no prose block). */
 export function ExpensePlanLinkBanner({ planId, planName }: ExpensePlanLinkBannerProps) {
   return (
-    <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
-      <p className="text-foreground max-w-prose">
-        <span className="inline-flex items-center gap-1.5 font-medium">
-          <CalendarDays size={14} className="shrink-0 opacity-80" aria-hidden />
-          Expense plan
-        </span>
-        <span className="text-muted-foreground">
-          {' '}
-          — this card was generated from plan{' '}
-          <span className="text-foreground font-medium">{planName}</span>.
-        </span>
-      </p>
-      <div className="flex flex-wrap items-center gap-2">
-        <Link
-          href={`/finance/expenses/plans/${planId}`}
-          className={cn(
-            buttonVariants({ variant: 'default', size: 'sm' }),
-            'inline-flex items-center gap-1',
-          )}
-        >
-          View plan
-          <ExternalLink size={12} className="opacity-70" aria-hidden />
-        </Link>
-        <Link
-          href="/finance/expenses/plans"
-          className={cn(
-            buttonVariants({ variant: 'outline', size: 'sm' }),
-            'inline-flex items-center gap-1',
-          )}
-        >
-          All plans
-        </Link>
-      </div>
+    <div className="border-border/80 bg-muted/25 flex items-center gap-2 rounded-lg border px-2 py-1.5 text-xs">
+      <CalendarDays size={12} className="text-muted-foreground shrink-0" aria-hidden />
+      <Link
+        href={expensePlansListWithOpenPlanHref(planId)}
+        className="text-primary min-w-0 flex-1 truncate font-medium hover:underline"
+        title={planName}
+      >
+        {planName}
+      </Link>
+      <Link
+        href="/finance/expenses/plans"
+        className={cn(
+          buttonVariants({ variant: 'ghost', size: 'sm' }),
+          'h-6 shrink-0 px-2 text-xs',
+        )}
+      >
+        Plans
+      </Link>
     </div>
   );
 }

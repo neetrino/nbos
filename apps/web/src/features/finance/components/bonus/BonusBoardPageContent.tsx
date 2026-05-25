@@ -1,29 +1,63 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Download, Hash, Loader2, TableProperties, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Gift, Plus } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ErrorState, LoadingState } from '@/components/shared';
-import { BONUS_BOARD_PROJECT_FILTER_QUERY } from '@/features/finance/constants/bonus-board-url';
-import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
 import {
-  BonusBoardColumns,
-  BonusBoardToolbar,
-  SummaryCard,
-  countBonusEntriesWithStatus,
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+} from '@/components/shared';
+import { Button } from '@/components/ui/button';
+import { BonusBoardFilteredTotalsBar } from '@/features/finance/components/bonus/bonus-board-filtered-totals-bar';
+import { computeBonusBoardFilteredTotals } from '@/features/finance/utils/bonus-board-filtered-totals';
+import {
+  readBonusBoardViewMode,
+  writeBonusBoardViewMode,
+  type BonusBoardViewMode,
+} from '@/features/finance/constants/bonus-board-view';
+import { BONUS_BOARD_VIEW_OPTIONS } from '@/features/finance/components/bonus/bonus-board-view-options';
+import { BonusBoardListView } from '@/features/finance/components/bonus/bonus-board-list-view';
+import {
+  BonusBoardEmployeeView,
+  BonusBoardPayrollMonthView,
+  BonusBoardProductView,
+} from '@/features/finance/components/bonus/bonus-board-grouped-view';
+import {
+  BONUS_BOARD_OPEN_ENTRY_QUERY,
+  BONUS_BOARD_PROJECT_FILTER_QUERY,
+} from '@/features/finance/constants/bonus-board-url';
+import { CreateManualBonusDialog } from '@/features/finance/components/bonus/create-manual-bonus-dialog';
+import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
+import { BonusBoardPageSettingsSheet } from '@/features/finance/components/bonus/BonusBoardPageSettingsSheet';
+import {
+  buildBonusBoardIntegratedFilterConfigs,
+  BONUS_FILTER_BOARD_SCOPE_KEY,
+  BONUS_FILTER_EMPLOYEE_KEY,
+  BONUS_FILTER_PROJECT_KEY,
+  BONUS_FILTER_TYPE_KEY,
+} from '@/features/finance/components/bonus/build-bonus-board-integrated-filter-configs';
+import {
   employeeDisplayName,
-  parseBonusAmount,
   projectLabel,
-  sumBonusEntryAmounts,
   uniqueEmployeesFromRows,
   uniqueProjectsFromRows,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
+import { BonusBoardKanbanView } from '@/features/finance/components/bonus/bonus-board-kanban-view';
 import { useBonusBoardCsvExport } from '@/features/finance/components/bonus/use-bonus-board-csv-export';
 import { useBonusScopeStatsCsvExport } from '@/features/finance/components/bonus/use-bonus-scope-stats-csv-export';
+import { bonusBoardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { matchesBonusBoardLifecycleScope } from '@/features/finance/constants/bonus-board-lifecycle';
+import {
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
 import {
   bonusesApi,
   fetchAllBonusListRows,
@@ -33,7 +67,7 @@ import {
 } from '@/lib/api/bonus';
 
 export function BonusBoardPageContent() {
-  useFinanceDocumentTitle('Bonus Board');
+  useFinanceDocumentTitle(bonusBoardPageTitle());
 
   const router = useRouter();
   const pathname = usePathname();
@@ -48,12 +82,13 @@ export function BonusBoardPageContent() {
   const [typeFilter, setTypeFilter] = useState<BonusType | 'ALL'>('ALL');
   const [employeeFilter, setEmployeeFilter] = useState<string>('ALL');
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
-  const [ledgerEntry, setLedgerEntry] = useState<BonusEntryListRow | null>(null);
-  const [ledgerOpen, setLedgerOpen] = useState(false);
+  const [boardScopeFilter, setBoardScopeFilter] = useState<string>(DEFAULT_BOARD_LIFECYCLE_SCOPE);
+  const [view, setView] = useState<BonusBoardViewMode>(() => readBonusBoardViewMode());
+  const [createOpen, setCreateOpen] = useState(false);
 
-  const openReleaseLedger = useCallback((row: BonusEntryListRow) => {
-    setLedgerEntry(row);
-    setLedgerOpen(true);
+  const handleViewChange = useCallback((mode: BonusBoardViewMode) => {
+    setView(mode);
+    writeBonusBoardViewMode(mode);
   }, []);
 
   useEffect(() => {
@@ -70,6 +105,33 @@ export function BonusBoardPageContent() {
     },
     [pathname, router, searchParams],
   );
+
+  const openBonusEntryId = searchParams.get(BONUS_BOARD_OPEN_ENTRY_QUERY)?.trim() || null;
+
+  const ledgerEntry = useMemo(() => {
+    if (!openBonusEntryId) return null;
+    return rows.find((r) => r.id === openBonusEntryId) ?? null;
+  }, [openBonusEntryId, rows]);
+
+  const ledgerOpen = Boolean(openBonusEntryId && ledgerEntry);
+
+  const openReleaseLedger = useCallback(
+    (row: BonusEntryListRow) => {
+      replaceBonusUrl((params) => {
+        params.set(BONUS_BOARD_OPEN_ENTRY_QUERY, row.id);
+      });
+    },
+    [replaceBonusUrl],
+  );
+
+  useEffect(() => {
+    if (loading || !openBonusEntryId) return;
+    if (!rows.some((r) => r.id === openBonusEntryId)) {
+      replaceBonusUrl((params) => {
+        params.delete(BONUS_BOARD_OPEN_ENTRY_QUERY);
+      });
+    }
+  }, [loading, openBonusEntryId, rows, replaceBonusUrl]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -130,6 +192,8 @@ export function BonusBoardPageContent() {
     [replaceBonusUrl],
   );
 
+  const boardScope: BoardLifecycleScope = resolveBoardLifecycleScope(boardScopeFilter);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((row) => {
@@ -140,9 +204,10 @@ export function BonusBoardPageContent() {
       const matchesType = typeFilter === 'ALL' || row.type === typeFilter;
       const matchesEmployee = employeeFilter === 'ALL' || row.employee.id === employeeFilter;
       const matchesProject = projectFilter === 'ALL' || row.projectId === projectFilter;
-      return matchesSearch && matchesType && matchesEmployee && matchesProject;
+      const matchesScope = matchesBonusBoardLifecycleScope(row.status, boardScope);
+      return matchesSearch && matchesType && matchesEmployee && matchesProject && matchesScope;
     });
-  }, [rows, search, typeFilter, employeeFilter, projectFilter]);
+  }, [rows, search, typeFilter, employeeFilter, projectFilter, boardScope]);
 
   const serverProjectScope =
     projectFilter !== 'ALL' && projectFilter.trim().length > 0 ? projectFilter : undefined;
@@ -154,133 +219,178 @@ export function BonusBoardPageContent() {
 
   const { handleExportScopeStatsCsv } = useBonusScopeStatsCsvExport(stats);
 
-  const canUseGlobalBonusStats = useMemo(
+  const bonusFilterConfigs = useMemo(
     () =>
-      search.trim() === '' &&
-      typeFilter === 'ALL' &&
-      employeeFilter === 'ALL' &&
-      projectFilter === 'ALL',
-    [search, typeFilter, employeeFilter, projectFilter],
+      buildBonusBoardIntegratedFilterConfigs(
+        projectSelectOptions.map((p) => ({ id: p.id, label: p.label })),
+        uniqueEmployees,
+      ),
+    [projectSelectOptions, uniqueEmployees],
   );
 
-  const totalAmountDisplay = useMemo(() => {
-    if (canUseGlobalBonusStats && stats?.totalAmount != null && stats.totalAmount !== '') {
-      return formatAmount(parseBonusAmount(stats.totalAmount));
-    }
-    return formatAmount(sumBonusEntryAmounts(filtered));
-  }, [canUseGlobalBonusStats, stats, filtered]);
+  const bonusFilterValues = useMemo(
+    () => ({
+      [BONUS_FILTER_BOARD_SCOPE_KEY]: boardScopeFilter,
+      [BONUS_FILTER_TYPE_KEY]: typeFilter === 'ALL' ? 'all' : typeFilter,
+      [BONUS_FILTER_PROJECT_KEY]: projectFilter === 'ALL' ? 'all' : projectFilter,
+      [BONUS_FILTER_EMPLOYEE_KEY]: employeeFilter === 'ALL' ? 'all' : employeeFilter,
+    }),
+    [boardScopeFilter, employeeFilter, projectFilter, typeFilter],
+  );
 
-  const paidCountDisplay = useMemo(() => {
-    if (canUseGlobalBonusStats && stats) {
-      const fromStats = stats.byStatus.find((s) => s.status === 'PAID')?._count;
-      if (typeof fromStats === 'number') return String(fromStats);
-    }
-    return String(countBonusEntriesWithStatus(filtered, 'PAID'));
-  }, [canUseGlobalBonusStats, stats, filtered]);
+  const handleBonusFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (key === BONUS_FILTER_BOARD_SCOPE_KEY) {
+        setBoardScopeFilter(
+          value === DEFAULT_BOARD_LIFECYCLE_SCOPE ? DEFAULT_BOARD_LIFECYCLE_SCOPE : value,
+        );
+        return;
+      }
+      if (key === BONUS_FILTER_TYPE_KEY) {
+        setTypeFilter(value === 'all' ? 'ALL' : (value as BonusType));
+        return;
+      }
+      if (key === BONUS_FILTER_PROJECT_KEY) {
+        handleProjectFilterChange(value === 'all' ? 'ALL' : value);
+        return;
+      }
+      if (key === BONUS_FILTER_EMPLOYEE_KEY) {
+        setEmployeeFilter(value === 'all' ? 'ALL' : value);
+      }
+    },
+    [handleProjectFilterChange],
+  );
 
-  const visibleEmployeeCount = useMemo(() => uniqueEmployeesFromRows(filtered).length, [filtered]);
+  const handleClearBonusFilters = useCallback(() => {
+    setSearch('');
+    setTypeFilter('ALL');
+    setEmployeeFilter('ALL');
+    setBoardScopeFilter(DEFAULT_BOARD_LIFECYCLE_SCOPE);
+    handleProjectFilterChange('ALL');
+  }, [handleProjectFilterChange]);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by employee, project, or order…"
+          filters={bonusFilterConfigs}
+          filterValues={bonusFilterValues}
+          onFilterChange={handleBonusFilterChange}
+          onClearAll={handleClearBonusFilters}
+        />
+      ),
+      viewMode: (
+        <ViewModeSwitch
+          value={view}
+          onChange={handleViewChange}
+          options={BONUS_BOARD_VIEW_OPTIONS}
+        />
+      ),
+      trailing: (
+        <>
+          <BonusBoardPageSettingsSheet
+            statsExportDisabled={loading || !stats}
+            exportCsvDisabled={exportCsvSubmitting || filtered.length === 0}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            onExportCsv={handleExportCsv}
+          />
+          <Button type="button" onClick={() => setCreateOpen(true)}>
+            <Plus size={16} aria-hidden />
+            Create bonus
+          </Button>
+        </>
+      ),
+    }),
+    [
+      bonusFilterConfigs,
+      bonusFilterValues,
+      exportCsvSubmitting,
+      filtered.length,
+      handleBonusFilterChange,
+      handleClearBonusFilters,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      handleViewChange,
+      loading,
+      search,
+      stats,
+      view,
+    ],
+  );
+
+  const filteredTotals = useMemo(() => computeBonusBoardFilteredTotals(filtered), [filtered]);
+
+  const boardBody = useMemo(() => {
+    switch (view) {
+      case 'list':
+        return (
+          <BonusBoardListView
+            rows={filtered}
+            boardScope={boardScope}
+            onOpenReleases={openReleaseLedger}
+          />
+        );
+      case 'employee':
+        return <BonusBoardEmployeeView rows={filtered} onOpenReleases={openReleaseLedger} />;
+      case 'product':
+        return <BonusBoardProductView rows={filtered} onOpenReleases={openReleaseLedger} />;
+      case 'payroll':
+        return <BonusBoardPayrollMonthView rows={filtered} onOpenReleases={openReleaseLedger} />;
+      default:
+        return (
+          <BonusBoardKanbanView
+            rows={filtered}
+            boardScope={boardScope}
+            onOpenReleases={openReleaseLedger}
+          />
+        );
+    }
+  }, [boardScope, filtered, openReleaseLedger, view]);
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   if (loading) {
-    return (
-      <div className="flex h-full flex-col">
-        <div className="mb-4">
-          <h1 className="text-foreground text-2xl font-semibold">Bonus Board</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Loading…</p>
-        </div>
-        <LoadingState />
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (error) {
-    return (
-      <div className="flex h-full flex-col">
-        <div className="mb-4">
-          <h1 className="text-foreground text-2xl font-semibold">Bonus Board</h1>
-        </div>
-        <ErrorState description={error} onRetry={() => void load()} />
-      </div>
-    );
+    return <ErrorState description={error} onRetry={() => void load()} />;
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-foreground text-2xl font-semibold">Bonus Board</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {filtered.length === rows.length ? (
-              <>
-                {rows.length} bonuses &middot; {visibleEmployeeCount} employees
-              </>
-            ) : (
-              <>
-                {filtered.length} visible of {rows.length} &middot; {visibleEmployeeCount} employees
-              </>
-            )}
-            {projectFilter !== 'ALL' ? (
-              <span className="text-foreground"> &middot; project scope (server filter)</span>
-            ) : null}
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            disabled={loading || !stats}
-            onClick={() => handleExportScopeStatsCsv()}
-            aria-label="Export bonus scope statistics as CSV"
-            title="UTF-8 CSV from GET /api/bonus/stats (global workspace totals; board filters not applied—see scope_note). Unavailable when list uses server ?projectId=."
-          >
-            <TableProperties size={16} aria-hidden />
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            disabled={exportCsvSubmitting || filtered.length === 0}
-            onClick={() => handleExportCsv()}
-            title="UTF-8 CSV of visible rows plus a final amount total row (same filters as the board)"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={14} className="animate-spin" aria-hidden />
-            ) : (
-              <Download size={14} aria-hidden />
-            )}
-            Export CSV
-          </Button>
-        </div>
-      </div>
-
-      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <SummaryCard label="Total Bonuses" value={String(filtered.length)} icon={Hash} />
-        <SummaryCard label="Total Amount" value={totalAmountDisplay} icon={TrendingUp} accent />
-        <SummaryCard label="Paid" value={paidCountDisplay} icon={CheckCircle2} />
-      </div>
-
-      <BonusBoardToolbar
-        search={search}
-        onSearchChange={setSearch}
-        typeFilter={typeFilter}
-        onTypeFilterChange={setTypeFilter}
-        projectFilter={projectFilter}
-        onProjectFilterChange={handleProjectFilterChange}
-        uniqueProjects={projectSelectOptions}
-        employeeFilter={employeeFilter}
-        onEmployeeFilterChange={setEmployeeFilter}
-        uniqueEmployees={uniqueEmployees}
+    <div className="flex h-full min-h-0 flex-col gap-5">
+      <CreateManualBonusDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={() => void load()}
       />
-
-      <BonusBoardColumns filtered={filtered} onOpenReleases={openReleaseLedger} />
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={Gift}
+          title="No matching bonuses"
+          description="Adjust search or filters, or create a manual bonus."
+          action={null}
+        />
+      ) : (
+        <>
+          <BonusBoardFilteredTotalsBar totals={filteredTotals} />
+          {boardBody}
+        </>
+      )}
 
       <BonusEntryReleasesSheet
         entry={ledgerEntry}
         open={ledgerOpen}
         onOpenChange={(next) => {
-          setLedgerOpen(next);
-          if (!next) setLedgerEntry(null);
+          if (!next) {
+            replaceBonusUrl((params) => {
+              params.delete(BONUS_BOARD_OPEN_ENTRY_QUERY);
+            });
+          }
         }}
         onAfterPatch={() => void load()}
       />

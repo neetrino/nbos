@@ -39,8 +39,14 @@ model Employee {
   createdAt    DateTime             @default(now()) @map("created_at")
   updatedAt    DateTime             @updatedAt @map("updated_at")
 
-  productsManaging         Product[]               @relation("ProductPM")
+  productsManaging              Product[]               @relation("ProductPM")
+  productsAsDeveloper           Product[]               @relation("ProductDeveloper")
+  productsAsDesigner            Product[]               @relation("ProductDesigner")
+  productsAsTechnicalSpecialist Product[]               @relation("ProductTechnicalSpecialist")
+  productsAsQaLead              Product[]               @relation("ProductQaLead")
+  productsClosed                Product[]               @relation("ProductClosedBy")
   extensionsAssigned       Extension[]             @relation("ExtensionAssignee")
+  extensionsClosed         Extension[]             @relation("ExtensionClosedBy")
   leadsAssigned            Lead[]                  @relation("LeadAssignee")
   dealsSelling             Deal[]                  @relation("DealSeller")
   dealsAsSellerAssistant   Deal[]                  @relation("DealSellerAssistant")
@@ -48,6 +54,7 @@ model Employee {
   paymentsConfirmed        Payment[]               @relation("PaymentConfirmer")
   tasksCreated             Task[]                  @relation("TaskCreator")
   tasksAssigned            Task[]                  @relation("TaskAssignee")
+  tasksReviewing           Task[]                  @relation("TaskReviewer")
   ticketsAssigned          SupportTicket[]         @relation("TicketAssignee")
   bonusEntries             BonusEntry[]
   bonusReleases            BonusRelease[]          @relation("BonusReleaseEmployee")
@@ -55,6 +62,8 @@ model Employee {
   payrollRunsCreated       PayrollRun[]            @relation("PayrollRunCreator")
   payrollRunsApproved      PayrollRun[]            @relation("PayrollRunApprover")
   salaryLines              SalaryLine[]
+  compensationProfiles     CompensationProfile[]
+  compensationProfilesApproved CompensationProfile[] @relation("CompensationProfileApprover")
   recurringTasksCreated    RecurringTaskTemplate[] @relation("RecurringTaskCreator")
   recurringTasksAssigned   RecurringTaskTemplate[] @relation("RecurringTaskAssignee")
   invitationsSent          Invitation[]            @relation("InvitedBy")
@@ -63,25 +72,29 @@ model Employee {
   marketingAccountsOwned   MarketingAccount[]      @relation("MarketingAccountOwner")
   marketingActivitiesOwned MarketingActivity[]     @relation("MarketingActivityOwner")
 
-  messengerChannelMessagesSent MessengerChannelMessage[]           @relation("MessengerChannelMessageSender")
-  messengerDirectMessagesSent  MessengerDirectMessage[]            @relation("MessengerDirectMessageSender")
-  messengerChannelAttachments  MessengerChannelMessageAttachment[] @relation("MessengerChannelAttachmentActor")
-  messengerDirectAttachments   MessengerDirectMessageAttachment[]  @relation("MessengerDirectAttachmentActor")
-  messengerDmThreadsAsA        MessengerDirectThread[]             @relation("MessengerDmThreadParticipantA")
-  messengerDmThreadsAsB        MessengerDirectThread[]             @relation("MessengerDmThreadParticipantB")
-  messengerChannelReadStates   MessengerChannelReadState[]
-  messengerDmThreadReadStates  MessengerDirectThreadReadState[]
-  mailAccountsOwned            MailAccount[]                       @relation("MailAccountOwner")
-  mailAccountsCreated          MailAccount[]                       @relation("MailAccountCreatedBy")
-  mailDeliveryLogsActed        MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
-  inAppNotificationsReceived   InAppNotification[]
-  dashboardPreference          DashboardPreference?
-  reportExportJobsRequested    ReportExportJob[]
-  reportSchedulesOwned         ReportSchedule[]
-  savedReportViews             SavedReportView[]
-  personalLinks                PersonalLink[]
-  dashboardNotes               DashboardNote[]
-  operationalJournalEntries    OperationalJournalEntry[]
+  messengerChannelMessagesSent     MessengerChannelMessage[]           @relation("MessengerChannelMessageSender")
+  messengerDirectMessagesSent      MessengerDirectMessage[]            @relation("MessengerDirectMessageSender")
+  messengerChannelAttachments      MessengerChannelMessageAttachment[] @relation("MessengerChannelAttachmentActor")
+  messengerDirectAttachments       MessengerDirectMessageAttachment[]  @relation("MessengerDirectAttachmentActor")
+  messengerDmThreadsAsA            MessengerDirectThread[]             @relation("MessengerDmThreadParticipantA")
+  messengerDmThreadsAsB            MessengerDirectThread[]             @relation("MessengerDmThreadParticipantB")
+  messengerChannelReadStates       MessengerChannelReadState[]
+  messengerDmThreadReadStates      MessengerDirectThreadReadState[]
+  mailAccountsOwned                MailAccount[]                       @relation("MailAccountOwner")
+  mailAccountsCreated              MailAccount[]                       @relation("MailAccountCreatedBy")
+  mailDeliveryLogsActed            MailDeliveryLog[]                   @relation("MailDeliveryLogActor")
+  inAppNotificationsReceived       InAppNotification[]
+  dashboardPreference              DashboardPreference?
+  reportExportJobsRequested        ReportExportJob[]
+  driveZipExportJobsRequested      DriveZipExportJob[]
+  reportSchedulesOwned             ReportSchedule[]
+  savedReportViews                 SavedReportView[]
+  personalLinks                    PersonalLink[]
+  dashboardNotes                   DashboardNote[]
+  operationalJournalEntries        OperationalJournalEntry[]
+  checklistTemplateVersionsCreated ChecklistTemplateVersion[]          @relation("ChecklistTemplateVersionCreatedBy")
+  checklistInstancesCompleted      ChecklistInstance[]                 @relation("ChecklistInstanceCompletedBy")
+  partnerAgreementsOwned             Partner[]                           @relation("PartnerAgreementOwner")
 
   @@map("employees")
 }
@@ -94,6 +107,8 @@ model DashboardPreference {
   visibleWidgets       String[] @map("visible_widgets")
   hiddenWidgets        String[] @map("hidden_widgets")
   compactWidgets       String[] @map("compact_widgets")
+  sidebarModuleOrder   String[] @default([]) @map("sidebar_module_order")
+  hiddenSidebarModules String[] @default([]) @map("hidden_sidebar_modules")
   defaultDashboardMode String   @default("control_center") @map("default_dashboard_mode")
   updatedAt            DateTime @updatedAt @map("updated_at")
   createdAt            DateTime @default(now()) @map("created_at")

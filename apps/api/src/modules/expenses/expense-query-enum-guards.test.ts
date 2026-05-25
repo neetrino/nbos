@@ -13,7 +13,8 @@ describe('expense-query-enum-guards', () => {
     expect(pickExpenseTypeFilter('PLANNED')).toBe('PLANNED');
     expect(pickExpenseCategoryFilter('HOSTING')).toBe('HOSTING');
     expect(pickExpenseFrequencyFilter('MONTHLY')).toBe('MONTHLY');
-    expect(pickExpenseStatusFilter('DELAYED')).toBe('DELAYED');
+    expect(pickExpenseStatusFilter('BACKLOG')).toBe('BACKLOG');
+    expect(pickExpenseStatusFilter('PLANNED')).toBe('PLANNED');
   });
 
   it('returns undefined for unknown or empty values', () => {

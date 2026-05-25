@@ -49,24 +49,28 @@ export async function persistSalesBonusRows(
   snapshotJson: InputJsonValue,
   invoiceId: string,
   slotMode: 'slot' | null,
-): Promise<void> {
-  await prisma.$transaction(
-    rows.map((row) =>
-      prisma.bonusEntry.create({
-        data: {
-          employeeId: row.employeeId,
-          orderId: order.id,
-          projectId: order.projectId,
-          dealId: deal.id,
-          type: SALES_BONUS_TYPE,
-          amount: row.amount,
-          percent: row.percent,
-          status: BONUS_STATUS_INCOMING,
-          salesBonusSlot: slotMode ? row.slot : null,
-          salesAccrualInvoiceId: invoiceId,
-          calculationSnapshot: snapshotJson,
-        },
-      }),
-    ),
-  );
+): Promise<boolean> {
+  if (rows.length === 0) {
+    return false;
+  }
+
+  const data = rows.map((row) => ({
+    employeeId: row.employeeId,
+    orderId: order.id,
+    projectId: order.projectId,
+    dealId: deal.id,
+    type: SALES_BONUS_TYPE,
+    amount: row.amount,
+    percent: row.percent,
+    status: BONUS_STATUS_INCOMING,
+    salesBonusSlot: slotMode ? row.slot : null,
+    salesAccrualInvoiceId: invoiceId,
+    calculationSnapshot: snapshotJson,
+  }));
+
+  const result = await prisma.bonusEntry.createMany({
+    data,
+    skipDuplicates: true,
+  });
+  return result.count > 0;
 }

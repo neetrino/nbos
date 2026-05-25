@@ -1,13 +1,15 @@
 export interface CreateDealDto {
   name?: string;
   leadId?: string;
-  contactId: string;
-  type: string;
+  /** Optional at create; required before DISCUSS_NEEDS (stage gate). From lead when leadId is set. */
+  contactId?: string;
+  type?: string;
   amount?: number;
   paymentType?: string;
   taxStatus?: string;
   companyId?: string | null;
-  sellerId: string;
+  /** Defaults to the authenticated employee when omitted. */
+  sellerId?: string;
   sellerAssistantId?: string | null;
   projectId?: string;
   source?: string | null;
@@ -26,7 +28,6 @@ export interface CreateDealDto {
   offerLink?: string | null;
   offerFileUrl?: string | null;
   offerScreenshotUrl?: string | null;
-  responseDueAt?: string | null;
   contractSignedAt?: string | null;
   contractFileUrl?: string | null;
   maintenanceStartAt?: string | null;
@@ -36,6 +37,8 @@ export interface UpdateDealDto extends Partial<Omit<CreateDealDto, 'projectId'>>
   status?: string;
   contactId?: string;
   projectId?: string | null;
+  /** Full client contact list (first = primary `contactId`, rest = junction). */
+  contactIds?: string[];
 }
 
 export interface DealQueryParams {
@@ -71,7 +74,7 @@ export interface DealHandoffReferences {
 
 export interface DealForHandoff {
   id: string;
-  type: string;
+  type: string | null;
   projectId: string | null;
   existingProduct?: { id: string; name: string; productType: string; status?: string } | null;
 }

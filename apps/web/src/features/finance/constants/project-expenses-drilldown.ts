@@ -1,4 +1,5 @@
 import type { ExpenseListSortField } from '@/lib/api/finance';
+import { OPEN_EXPENSE_QUERY } from './expense-deep-link';
 import { setExpenseListSortParams } from './expenses-list-query';
 
 /** Must match `GET /expenses?projectId=` (ExpensesController). */
@@ -16,8 +17,8 @@ export const EXPENSE_BACKLOG_LIST_PATH = '/finance/expenses/backlog' as const;
 /** NBOS: paid cards live off the active board (`04-Finance-Pages` Closed scope). */
 export const EXPENSE_CLOSED_LIST_PATH = '/finance/expenses/closed' as const;
 
-/** Backlog list uses `DELAYED` + `backlogReason` in API/UI (NBOS Expense Backlog path). */
-export const EXPENSE_BACKLOG_FIXED_STATUS = 'DELAYED' as const;
+/** Backlog list uses `BACKLOG` + `backlogReason` in API/UI (NBOS Expense Backlog path). */
+export const EXPENSE_BACKLOG_FIXED_STATUS = 'BACKLOG' as const;
 
 /** Closed list filters by paid status (ledger may still show partial history on older rows). */
 export const EXPENSE_CLOSED_FIXED_STATUS = 'PAID' as const;
@@ -30,8 +31,40 @@ export interface ExpenseListNavigationSort {
 export interface ExpenseListHrefOptions {
   /** When true, list URL targets the deferred/backlog route (canon UI path). */
   fromBacklog?: boolean;
+  /** When true, list URL targets the closed board route. */
+  closed?: boolean;
   /** Preserve plan drill-down when navigating list ↔ detail. */
   expensePlanId?: string | null;
+}
+
+function expenseListBasePath(options?: ExpenseListHrefOptions): string {
+  if (options?.fromBacklog === true) return EXPENSE_BACKLOG_LIST_PATH;
+  if (options?.closed === true) return EXPENSE_CLOSED_LIST_PATH;
+  return EXPENSE_LIST_PATH;
+}
+
+function appendExpenseListQuery(base: string, params: URLSearchParams): string {
+  const q = params.toString();
+  return q ? `${base}?${q}` : base;
+}
+
+function buildExpenseListSearchParams(
+  projectId?: string | null,
+  listSort?: ExpenseListNavigationSort,
+  options?: ExpenseListHrefOptions,
+): URLSearchParams {
+  const params = new URLSearchParams();
+  if (projectId) {
+    params.set(PROJECT_EXPENSES_DRILLDOWN_QUERY, projectId);
+  }
+  const planId = options?.expensePlanId?.trim();
+  if (planId) {
+    params.set(EXPENSE_PLAN_DRILLDOWN_QUERY, planId);
+  }
+  if (listSort) {
+    setExpenseListSortParams(params, listSort.sortBy, listSort.sortOrder);
+  }
+  return params;
 }
 
 export function projectExpensesDrilldownHref(projectId: string): string {
@@ -65,24 +98,24 @@ export function financeExpensesListHref(
   listSort?: ExpenseListNavigationSort,
   options?: ExpenseListHrefOptions,
 ): string {
-  const base = options?.fromBacklog === true ? EXPENSE_BACKLOG_LIST_PATH : EXPENSE_LIST_PATH;
-  const params = new URLSearchParams();
-  if (projectId) {
-    params.set(PROJECT_EXPENSES_DRILLDOWN_QUERY, projectId);
-  }
-  const planId = options?.expensePlanId?.trim();
-  if (planId) {
-    params.set(EXPENSE_PLAN_DRILLDOWN_QUERY, planId);
-  }
-  if (listSort) {
-    setExpenseListSortParams(params, listSort.sortBy, listSort.sortOrder);
-  }
-  const q = params.toString();
-  return q ? `${base}?${q}` : base;
+  const params = buildExpenseListSearchParams(projectId, listSort, options);
+  return appendExpenseListQuery(expenseListBasePath(options), params);
+}
+
+/** Open expense card sheet on the list route (invoice / expense-plan parity). */
+export function expenseListWithOpenExpenseHref(
+  expenseId: string,
+  listProjectId?: string | null,
+  listSort?: ExpenseListNavigationSort,
+  options?: ExpenseListHrefOptions,
+): string {
+  const params = buildExpenseListSearchParams(listProjectId, listSort, options);
+  params.set(OPEN_EXPENSE_QUERY, expenseId);
+  return appendExpenseListQuery(expenseListBasePath(options), params);
 }
 
 /**
- * Detail URL preserving list context (project drill-down + sort) for back-navigation parity.
+ * Deep link to open the expense detail sheet on the board/list route.
  */
 export function expenseDetailHref(
   expenseId: string,
@@ -90,20 +123,5 @@ export function expenseDetailHref(
   listSort?: ExpenseListNavigationSort,
   options?: ExpenseListHrefOptions,
 ): string {
-  const params = new URLSearchParams();
-  if (options?.fromBacklog === true) {
-    params.set(EXPENSE_FROM_BACKLOG_QUERY, EXPENSE_FROM_BACKLOG_VALUE);
-  }
-  if (listProjectId) {
-    params.set(PROJECT_EXPENSES_DRILLDOWN_QUERY, listProjectId);
-  }
-  const planFromOptions = options?.expensePlanId?.trim();
-  if (planFromOptions) {
-    params.set(EXPENSE_PLAN_DRILLDOWN_QUERY, planFromOptions);
-  }
-  if (listSort) {
-    setExpenseListSortParams(params, listSort.sortBy, listSort.sortOrder);
-  }
-  const q = params.toString();
-  return q ? `/finance/expenses/${expenseId}?${q}` : `/finance/expenses/${expenseId}`;
+  return expenseListWithOpenExpenseHref(expenseId, listProjectId, listSort, options);
 }

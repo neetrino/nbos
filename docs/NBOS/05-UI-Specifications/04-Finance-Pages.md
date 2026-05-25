@@ -11,6 +11,17 @@ Finance-модуль NBOS обеспечивает полное управлен
 - Seller — просмотр бонусной доски (только свои бонусы)
 - Остальные роли — нет доступа
 
+### 1.1. Навигация модуля (IA)
+
+- **Сайдбар:** **4 зоны** — Overview, Revenue, Expenses, Payroll (без плоского списка всех URL). Клик по зоне открывает **последнюю** страницу зоны (`localStorage`, как Board/List); первый заход — default (Overview → Dashboard, Revenue → Orders, …).
+- **Page hero (как CRM):** карточка `Finance` + pill-tabs **внутри текущей зоны**:
+  - Overview: Dashboard | Reports | Journal — hero: поиск + Settings; период (Dashboard/Reports) в фильтрах; Journal — month filter + поиск записей; **Dashboard** — блок «Finance zones» (4 карточки зон + ссылки, last-visited)
+  - Revenue: Orders | Invoices | Payments | Subscriptions
+  - Expenses: Pay Now | Expenses Plan | Client services
+  - Payroll: Payroll | Salary | Bonus | Bonus pools
+- **Employee Wallet:** не в Finance sidebar; маршрут `/my-account/wallet`, пункт в account menu (данные только текущего пользователя, `/api/me/wallet`).
+- **Поиск / фильтры / Board|List:** в hero через `useModuleHeroSlots` (эталон — CRM Leads). **Поиск** — по центру карточки hero (`PageHero` middle column, `max-w-3xl`), слева title + zone tabs, справа view/actions. Суммы по колонкам Kanban — под заголовком колонки (как Deals), не отдельная аналитическая полоса на странице.
+
 ---
 
 ## 2. Страница счетов (Invoices)
@@ -93,13 +104,17 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 ### 3.1. Матричный вид (Grid)
 
-Основной и единственный вид — матрица:
+Основной и **единственный** вид списка — одна матрица (отдельная таблица-список под гридом не используется).
 
-**Структура:**
+**Структура строки:**
 
-- **Строки** — проекты с активными подписками (сортировка по алфавиту или сумме)
-- **Колонки** — месяцы: Jan, Feb, Mar, ..., Dec
-- **Ячейки** — сумма подписки + цветовой индикатор статуса
+- **Subscription (левая колонка, две строки)** — сверху название **проекта** (клик → sheet); снизу ряд иконок (тип, billing day, partner, overdue/pending). Справа — кнопка **статуса** (меню смены; без «Open details»). Цвет полосы слева = status
+- **Jan … Dec** — `150,000֏` + цвет ячейки (полный `AMD` в tooltip при наведении)
+- **Annual** — тот же формат `150,000֏`
+
+**В Sheet:** type label, partner, company, /mo, coverage, start/end, invoices, полное редактирование billing.
+
+**Канон строки:** одна запись = одна подписка (`subscription_id`) с одним `type`; у проекта может быть несколько подписок разных типов (отдельные строки). `DEV_AND_MAINTENANCE` — один тип договора, не «две подписки в одной».
 
 **Цветовая кодировка ячеек:**
 | Цвет | Значение |
@@ -111,10 +126,10 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 ### 3.2. Навигация по гриду
 
-- **Левая колонка:** название проекта (кликабельно → переход к проекту)
-- **Правая колонка:** годовой итог по проекту (сумма за 12 месяцев)
-- **Нижняя строка:** месячные итоги (сумма по всем проектам за месяц)
-- **Клик по ячейке:** переход к конкретному счёту
+- **Клик по строке (кроме ячейки-счёта):** Subscription Detail Sheet
+- **Правая колонка Annual:** годовой итог по подписке
+- **Нижняя строка Total:** месячные итоги по всем подпискам
+- **Клик по ячейке месяца с invoice:** переход к Invoice Card (deep link)
 
 ### 3.3. Верхняя сводная панель (Summary Bar)
 
@@ -151,7 +166,7 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 ### 4.1. Expense Plans / Плановые расходы
 
-**Путь:** `/finance/expenses/plans`
+**Путь:** `/finance/expenses/plans` (Finance top tab **Expense plans**, отдельно от доски карточек)
 
 Default view: `Calendar Grid / Календарная сетка`.
 
@@ -163,14 +178,16 @@ Default view: `Calendar Grid / Календарная сетка`.
 Дополнительные виды:
 
 - `List / Список`;
-- `Board / Доска`;
+- `Board / Доска` (колонки по частоте: Monthly, Quarterly, Yearly, …);
 - `Calendar/Grid / Календарная сетка`.
+
+Web: переключатель **Grid | Board | List**; выбор сохраняется в `localStorage`.
 
 ### 4.2. Expense Board / Доска расходов
 
-**Путь:** `/finance/expenses/board`
+**Путь:** `/finance/expenses` (Finance top tab **Expense board**; sub-nav: Active / Backlog / Closed)
 
-Default view: `Board / Доска`.
+Default view: `Board / Доска` (kanban; переключатель Board/List, выбор в `localStorage`).
 
 Колонки:
 
@@ -238,25 +255,38 @@ Backlog должен показывать отдельную сумму нако
 
 ### 5.1. Виды отображения
 
-Доступные виды:
+Доступные виды (реализовано, `localStorage`):
 
-- `List / Список`;
-- `Board / Доска`;
-- `Calendar/Grid / История по месяцам`.
+- `Board` — kanban по статусу бонуса;
+- `List` — плоская таблица;
+- `Employee` — группировка по сотруднику;
+- `Product` — группировка по проекту;
+- `Payroll` — preview по `payoutMonth` (месяц payroll / «No payroll month»).
 
-Последний выбранный пользователем вид должен запоминаться.
+Legacy URL `/bonus` редиректит на `/finance/bonuses` с сохранением query.
+
+Сверху фильтрованного набора — счётчики: visible entries, pipeline total.
 
 ### 5.2. Kanban-доска
 
-Колонки:
+Переключатель scope в фильтрах hero: **Active** (default) | **All statuses** | **Closed** — меняет набор данных, не отдельный UI.
 
-| Колонка     | Описание                              |
+**Active board** — упрощённые колонки (общий `KanbanBoard`, суммы под заголовком колонки):
+
+| Колонка     | Full statuses                         |
 | ----------- | ------------------------------------- |
-| Incoming    | Прогнозные бонусы                     |
+| Incoming    | Incoming                              |
 | In Progress | Earned / Pending Eligibility / Vested |
 | Active      | Войдут в ближайший payroll            |
-| Paid        | Выплачены                             |
-| Clawback    | Отзывы и корректировки                |
+
+**Closed board** — терминальные исходы (288px колонки):
+
+| Колонка  | Описание               |
+| -------- | ---------------------- |
+| Paid     | Выплачены              |
+| Clawback | Отзывы и корректировки |
+
+На карточке показывается **full status** badge (Incoming / Earned / …), тип бонуса, сумма, процент (если есть), проект, payroll month.
 
 ### 5.3. Карточка бонуса
 
@@ -297,14 +327,18 @@ Backlog должен показывать отдельную сумму нако
 
 ### 6.1. Основной вид
 
-Default view:
+Default view: `Calendar` (сотрудники × месяцы). Переключатель видов (`localStorage`):
 
-`Calendar/Grid / сотрудники x месяцы`
+- `Calendar` — матрица employee × month (карточка с годом, цветные ячейки по **line status**, итог по сотруднику справа);
+- `List` — плоская таблица с footer totals;
+- `Board` — kanban по payout phase (`Fully paid` / `Active payout` / `Accumulating`).
 
 - строки: сотрудники;
 - колонки: месяцы;
-- ячейка: зарплата сотрудника за месяц;
-- цвет ячейки: Pending / Approved / Partially Paid / Paid / Held.
+- ячейка calendar: статус line + payable в цвете статуса;
+- панель totals над видом: visible lines, payable, paid, remaining (по активным фильтрам).
+
+**Список payroll runs** (`/finance/payroll`): виды `List` (строка целиком в цвете статуса run) и `Calendar` (год × 12 месяцев, ячейка в цвете статуса).
 
 Клик по заголовку месяца открывает:
 

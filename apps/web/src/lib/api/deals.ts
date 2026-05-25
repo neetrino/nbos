@@ -55,7 +55,7 @@ export interface Deal {
   code: string;
   name: string | null;
   status: string;
-  type: string;
+  type: string | null;
   amount: number | null;
   paymentType: string | null;
   projectId: string | null;
@@ -81,14 +81,18 @@ export interface Deal {
   offerLink: string | null;
   offerFileUrl: string | null;
   offerScreenshotUrl: string | null;
-  responseDueAt: string | null;
   contractSignedAt: string | null;
   contractFileUrl: string | null;
+  linkedOfferAssetCount?: number;
+  linkedContractAssetCount?: number;
   maintenanceStartAt: string | null;
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
-  contact: { id: string; firstName: string; lastName: string; email: string | null };
+  contact: { id: string; firstName: string; lastName: string; email: string | null } | null;
+  additionalContacts?: Array<{
+    contact: { id: string; firstName: string; lastName: string; email: string | null };
+  }>;
   seller: { id: string; firstName: string; lastName: string };
   sellerAssistant?: { id: string; firstName: string; lastName: string } | null;
   orders: DealOrder[];
@@ -162,11 +166,11 @@ export const dealsApi = {
   async create(data: {
     name?: string;
     leadId?: string;
-    contactId: string;
-    type: string;
+    contactId?: string;
+    type?: string;
     amount?: number;
     paymentType?: string;
-    sellerId: string;
+    sellerId?: string;
     sellerAssistantId?: string | null;
     source?: string;
     sourceDetail?: string;
@@ -184,7 +188,6 @@ export const dealsApi = {
     offerLink?: string;
     offerFileUrl?: string;
     offerScreenshotUrl?: string;
-    responseDueAt?: string;
     contractSignedAt?: string;
     contractFileUrl?: string;
     maintenanceStartAt?: string;

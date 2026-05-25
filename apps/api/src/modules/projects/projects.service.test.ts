@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ProjectsService } from './projects.service';
-import { ProjectKickoffChecklistService } from './project-kickoff-checklist.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { NotFoundException } from '@nestjs/common';
 
@@ -10,10 +9,7 @@ describe('ProjectsService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new ProjectsService(
-      prisma as never,
-      new ProjectKickoffChecklistService(prisma as never),
-    );
+    service = new ProjectsService(prisma as never);
   });
 
   describe('findAll', () => {
@@ -74,13 +70,11 @@ describe('ProjectsService', () => {
 
       expect(result.products).toHaveLength(1);
       expect(result.extensions).toHaveLength(1);
-      expect(result.products[0].deliveryLifecycle).toMatchObject({
-        entityKind: 'PRODUCT',
-        stage: 'DEVELOPMENT',
+      expect(result.products?.[0]).toMatchObject({
+        deliveryLifecycle: { entityKind: 'PRODUCT', stage: 'DEVELOPMENT' },
       });
-      expect(result.extensions[0].deliveryLifecycle).toMatchObject({
-        entityKind: 'EXTENSION',
-        stage: 'QA',
+      expect(result.extensions?.[0]).toMatchObject({
+        deliveryLifecycle: { entityKind: 'EXTENSION', stage: 'QA' },
       });
       expect(result.intake).toMatchObject({
         hasProduct: true,
@@ -96,7 +90,6 @@ describe('ProjectsService', () => {
         entityKind: 'PRODUCT',
         stage: 'DEVELOPMENT',
       });
-      expect(result.kickoffChecklist).toEqual([]);
       expect(result._count).toMatchObject({ products: 1, extensions: 1 });
       expect(prisma.project.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -170,7 +163,32 @@ describe('ProjectsService', () => {
 
   describe('update', () => {
     it('updates project fields', async () => {
-      prisma.project.findUnique.mockResolvedValue({ id: '1' });
+      const detailRow = {
+        id: '1',
+        contactId: 'c1',
+        name: 'Updated',
+        products: [],
+        extensions: [],
+        orders: [],
+        tickets: [],
+        credentials: [],
+        subscriptions: [],
+        domains: [],
+        expenses: [],
+        auditLogs: [],
+        _count: {
+          products: 0,
+          extensions: 0,
+          orders: 0,
+          tickets: 0,
+          credentials: 0,
+          expenses: 0,
+        },
+      };
+      prisma.project.findUnique.mockImplementation((args: { select?: { contactId?: boolean } }) => {
+        if (args?.select?.contactId) return Promise.resolve({ contactId: 'c1' });
+        return Promise.resolve(detailRow);
+      });
       prisma.project.update.mockResolvedValue({ id: '1', name: 'Updated' });
       const result = await service.update('1', {
         name: 'Updated',

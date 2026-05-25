@@ -1,13 +1,31 @@
 'use client';
 
-import { useState } from 'react';
-import { FileText, TrendingUp } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { CheckSquare, ExternalLink, FileText, TrendingUp } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { QuickCreateTaskDialog } from '@/components/shared';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import {
+  DETAIL_SHEET_SECTION_SURFACE_CLASS,
+  DETAIL_SHEET_SECTION_TITLE_CLASS,
+} from '@/components/shared/detail-sheet-classes';
+import { cn } from '@/lib/utils';
+import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
 import type { Deal } from '@/lib/api/deals';
 import { invoicesApi, ordersApi } from '@/lib/api/finance';
-import { tasksApi } from '@/lib/api/tasks';
 import { formatAmount } from '../constants/dealPipeline';
-import { DisabledInvoiceAction, InvoiceAction, TaskAction } from './DealActionControls';
+import { DisabledInvoiceAction, InvoiceAction } from './DealActionControls';
 import { computeFinance } from './deal-general-tab.helpers';
+
+const FINANCE_PANEL_SURFACE_CLASS =
+  'rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white p-5 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-transparent';
+
+const FINANCE_VALUE_TOTAL_CLASS = 'font-bold text-emerald-600 dark:text-emerald-400';
+const FINANCE_VALUE_PARTNER_CLASS = 'font-bold text-orange-500 dark:text-orange-400';
+const FINANCE_VALUE_REVENUE_CLASS = 'font-bold text-sky-600 dark:text-sky-400';
+const FINANCE_VALUE_TO_RECEIVE_DUE_CLASS = 'font-bold text-amber-600 dark:text-amber-400';
+const FINANCE_VALUE_TO_RECEIVE_CLEAR_CLASS = 'font-bold text-emerald-600 dark:text-emerald-400';
 
 interface DealFinanceActionsPanelProps {
   deal: Deal;
@@ -31,10 +49,13 @@ export function DealFinanceActionsPanel({
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [invoiceAmount, setInvoiceAmount] = useState('');
   const [creatingInvoice, setCreatingInvoice] = useState(false);
-  const [showTaskForm, setShowTaskForm] = useState(false);
-  const [taskTitle, setTaskTitle] = useState('');
-  const [creatingTask, setCreatingTask] = useState(false);
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const finance = computeFinance(deal);
+  const defaultLinks = useMemo(
+    () => (projectId ? getTaskLinks(deal.id, projectId) : undefined),
+    [deal.id, projectId],
+  );
 
   const handleCreateInvoice = async () => {
     const amount = Number(invoiceAmount);
@@ -73,61 +94,45 @@ export function DealFinanceActionsPanel({
     return order.id;
   };
 
-  const handleCreateTask = async () => {
-    const title = taskTitle.trim();
-    if (!title || !projectId || !deal.seller?.id) return;
-    setCreatingTask(true);
-    try {
-      await tasksApi.create({
-        title,
-        creatorId: deal.seller.id,
-        description: `Deal: ${deal.code} — ${deal.name ?? ''}`.trim(),
-        links: getTaskLinks(deal.id, projectId),
-      });
-      setShowTaskForm(false);
-      setTaskTitle('');
-      onOpenTaskTab?.();
-      onRefresh?.();
-    } finally {
-      setCreatingTask(false);
-    }
-  };
-
   return (
     <>
-      <section className="rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white p-4 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-transparent">
-        <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
+      <section className={FINANCE_PANEL_SURFACE_CLASS}>
+        <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
           <TrendingUp size={12} />
           Finance
         </h4>
         <div className="space-y-2.5 text-sm">
-          <FinanceRow label="Total" value={finance.total > 0 ? formatAmount(finance.total) : '—'} />
+          <FinanceRow
+            label="Total"
+            value={finance.total > 0 ? formatAmount(finance.total) : '—'}
+            valueClassName={FINANCE_VALUE_TOTAL_CLASS}
+          />
           {finance.isFromPartner && (
             <FinanceRow
               label={`Partner ${finance.commissionPercentUsed}%`}
               value={`-${formatAmount(finance.partnerAmount)}`}
-              valueClassName="text-orange-500 dark:text-orange-400"
+              valueClassName={FINANCE_VALUE_PARTNER_CLASS}
             />
           )}
           <FinanceRow
             label="Revenue"
             value={finance.revenue > 0 ? formatAmount(finance.revenue) : '—'}
-            valueClassName="text-sky-600 dark:text-sky-400"
+            valueClassName={FINANCE_VALUE_REVENUE_CLASS}
           />
           <FinanceRow
             label="To Receive"
             value={formatAmount(finance.toReceive)}
             valueClassName={
               finance.toReceive > 0
-                ? 'text-amber-600 dark:text-amber-400'
-                : 'text-emerald-600 dark:text-emerald-400'
+                ? FINANCE_VALUE_TO_RECEIVE_DUE_CLASS
+                : FINANCE_VALUE_TO_RECEIVE_CLEAR_CLASS
             }
           />
         </div>
       </section>
 
-      <section className="rounded-2xl border-2 border-stone-300 bg-stone-100/80 p-4 dark:border-stone-600 dark:bg-stone-800/50">
-        <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
+      <section className={DETAIL_SHEET_SECTION_SURFACE_CLASS}>
+        <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
           <FileText size={12} />
           Actions
         </h4>
@@ -145,18 +150,41 @@ export function DealFinanceActionsPanel({
             <DisabledInvoiceAction />
           )}
 
-          {projectId && deal.seller && (
-            <TaskAction
-              showForm={showTaskForm}
-              taskTitle={taskTitle}
-              creatingTask={creatingTask}
-              setTaskTitle={setTaskTitle}
-              setShowTaskForm={setShowTaskForm}
-              handleCreateTask={handleCreateTask}
-            />
-          )}
+          {projectId ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-center gap-1.5 border-sky-300 text-sky-700 hover:bg-sky-50 dark:border-sky-700 dark:text-sky-400 dark:hover:bg-sky-950/30"
+              disabled={creatorReady && !creatorId}
+              title={creatorReady && !creatorId ? 'Employee profile required' : undefined}
+              onClick={() => setQuickCreateOpen(true)}
+            >
+              <CheckSquare size={14} />
+              Create Task
+            </Button>
+          ) : null}
+
+          <Link
+            href={buildDriveHrefWithDeal(deal.id)}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full gap-1.5')}
+          >
+            <ExternalLink className="size-4" aria-hidden />
+            Open Drive
+          </Link>
         </div>
       </section>
+
+      <QuickCreateTaskDialog
+        open={quickCreateOpen}
+        onOpenChange={setQuickCreateOpen}
+        creatorId={creatorId ?? ''}
+        creatorReady={creatorReady}
+        defaultLinks={defaultLinks}
+        onCreated={() => {
+          onOpenTaskTab?.();
+          onRefresh?.();
+        }}
+      />
     </>
   );
 }
@@ -164,7 +192,7 @@ export function DealFinanceActionsPanel({
 function FinanceRow({
   label,
   value,
-  valueClassName = 'text-emerald-600 dark:text-emerald-400',
+  valueClassName = FINANCE_VALUE_TOTAL_CLASS,
 }: {
   label: string;
   value: string;
@@ -173,7 +201,7 @@ function FinanceRow({
   return (
     <div className="flex justify-between gap-2">
       <span className="text-muted-foreground">{label}</span>
-      <span className={`font-bold tabular-nums ${valueClassName}`}>{value}</span>
+      <span className={cn('tabular-nums', valueClassName)}>{value}</span>
     </div>
   );
 }

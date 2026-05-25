@@ -6,9 +6,10 @@ const NOW = new Date('2026-06-15T12:00:00.000Z');
 function baseSub(overrides: Partial<SubscriptionGridRowInput> = {}): SubscriptionGridRowInput {
   return {
     id: 'sub-1',
+    type: 'MAINTENANCE_ONLY',
     status: 'ACTIVE',
-    amount: 80000,
-    startDate: new Date('2026-01-01'),
+    baseMonthlyAmount: 80000,
+    billingStartDate: new Date('2026-01-01'),
     endDate: null,
     project: { id: 'p1', name: 'Alpha' },
     invoices: [],
@@ -90,7 +91,10 @@ describe('buildSubscriptionGridPayload', () => {
 
   it('aggregates month totals', () => {
     const payload = buildSubscriptionGridPayload(
-      [baseSub(), baseSub({ id: 'sub-2', project: { id: 'p2', name: 'Beta' }, amount: 20000 })],
+      [
+        baseSub(),
+        baseSub({ id: 'sub-2', project: { id: 'p2', name: 'Beta' }, baseMonthlyAmount: 20000 }),
+      ],
       2026,
       NOW,
     );

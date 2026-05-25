@@ -18,17 +18,42 @@ Use it before building or changing any module together with:
 
 These rules apply to all modules unless a module-specific decision explicitly says otherwise.
 
-| Area                 | Decision                                                                                                          | Reason                                                                                          |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Realtime             | Use Socket.io through NestJS Gateway. Do not use raw WebSocket directly.                                          | Rooms, reconnects, auth handshake and Redis adapter support matter more than low-level control. |
-| Source of truth      | PostgreSQL DB is the source of truth. Realtime only delivers events.                                              | Prevents lost or inconsistent messages, statuses, notifications and money states.               |
-| API                  | Use REST + OpenAPI for commands, reads and history.                                                               | Keeps web, future mobile and integrations on stable contracts.                                  |
-| Async work           | Use BullMQ for external, long-running, scheduled or retryable work.                                               | HTTP requests must not block on WhatsApp, email, billing, SLA, exports or webhook retries.      |
-| Internal events      | Use synchronous domain events only for local in-process reactions; use queues when retry/idempotency is required. | Keeps module boundaries clear without losing reliability for critical flows.                    |
-| Files                | Drive owns files; modules link `FileAsset` records.                                                               | Prevents each module from inventing its own storage model.                                      |
-| Audit                | Use one Audit Log for sensitive and business-critical actions.                                                    | Finance, credentials, permissions, payments and external sends require traceability.            |
-| Missing dependencies | Missing linked modules, data or integrations must not crash the current module.                                   | NBOS is built module by module and must degrade gracefully.                                     |
-| Fake data            | Never fake financial, payment, payroll, credential, audit or report data.                                         | Missing data must be visible, not hidden behind misleading values.                              |
+| Area                 | Decision                                                                                                                                                                                                                           | Reason                                                                                                                                                                             |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Realtime             | Use Socket.io through NestJS Gateway. Do not use raw WebSocket directly.                                                                                                                                                           | Rooms, reconnects, auth handshake and Redis adapter support matter more than low-level control.                                                                                    |
+| Source of truth      | PostgreSQL DB is the source of truth. Realtime only delivers events.                                                                                                                                                               | Prevents lost or inconsistent messages, statuses, notifications and money states.                                                                                                  |
+| API                  | Use REST + OpenAPI for commands, reads and history.                                                                                                                                                                                | Keeps web, future mobile and integrations on stable contracts.                                                                                                                     |
+| Async work           | Use BullMQ for external, long-running, scheduled or retryable work.                                                                                                                                                                | HTTP requests must not block on WhatsApp, email, billing, SLA, exports or webhook retries.                                                                                         |
+| Internal events      | Use synchronous domain events only for local in-process reactions; use queues when retry/idempotency is required.                                                                                                                  | Keeps module boundaries clear without losing reliability for critical flows.                                                                                                       |
+| Files                | Drive owns files; modules link `FileAsset` records.                                                                                                                                                                                | Prevents each module from inventing its own storage model.                                                                                                                         |
+| Audit                | Use one Audit Log for sensitive and business-critical actions.                                                                                                                                                                     | Finance, credentials, permissions, payments and external sends require traceability.                                                                                               |
+| Missing dependencies | Missing linked modules, data or integrations must not crash the current module.                                                                                                                                                    | NBOS is built module by module and must degrade gracefully.                                                                                                                        |
+| Fake data            | Never fake financial, payment, payroll, credential, audit or report data.                                                                                                                                                          | Missing data must be visible, not hidden behind misleading values.                                                                                                                 |
+| Build vs integrate   | NBOS owns core business logic and source-of-truth records; external products/services are allowed only behind adapters or embeds where they do not replace NBOS domain state.                                                      | Prevents CRM, Finance, Delivery, Support, Drive, Mail or Messenger from becoming split-brain systems while still avoiding custom infrastructure where it is not the product value. |
+| Web entity links     | Use global `RelationPickerField` + `EntityRelationHost` for Contact, Company, Project, Partner, Product (create needs `projectId`), Employee (no inline create). Canon: `docs/NBOS/03-Business-Logic/07-Relation-Field-Picker.md`. | One UX for search/create/open across modules; reuse shared create dialogs.                                                                                                         |
+
+## Build Vs Integrate Policy
+
+NBOS is not a white-label shell over separate CRM, project, finance and support products. The product value is the shared operating model around Lead, Deal, Order, Project, Product/Extension, Invoice, Payment, Task, Credential, Support Ticket, Partner and Audit.
+
+Build inside NBOS:
+
+- CRM pipeline, stage gates and Lead-to-Cash transitions.
+- Projects Hub, Delivery Board, Product/Extension lifecycle and Work Spaces.
+- Finance operational journal, invoices, payments, subscriptions, expenses, payroll, bonus and partner payouts.
+- Support lifecycle, SLA, change-control and links to delivery/technical assets.
+- Credentials permission, encryption, reveal/export and audit flows.
+- Reports formulas that depend on NBOS domain rules.
+
+Integrate or embed through adapters:
+
+- WhatsApp, Telegram and other external message channels.
+- Gmail, IMAP/SMTP and external mail sync/send providers.
+- Google Calendar / Google Drive / Google Workspace sync when explicitly approved.
+- Payment, bank statement, government invoice and accounting-system bridges.
+- Heavy BI, collaborative office editing or other commodity capabilities when native NBOS depth is not the current product value.
+
+Any proposal to replace a core NBOS module with an open-source or SaaS product requires an explicit architecture decision because it changes the source of truth and migration model.
 
 ## Module Decisions
 
@@ -46,7 +71,8 @@ These rules apply to all modules unless a module-specific decision explicitly sa
 
 | Area          | Decision                                                                                                       |
 | ------------- | -------------------------------------------------------------------------------------------------------------- |
-| Stage gates   | Enforce Lead/Deal gates in backend services, not only in UI.                                                   |
+| Stage gates   | Enforce Lead/Deal gates in `@nbos/shared` + backend services; web runs local pre-check before API.             |
+| Deal terminal | `WON` and `FAILED` are terminal closed outcomes; neither can be moved back via pipeline (create new Deal).     |
 | Attribution   | Marketing attribution is manual in MVP.                                                                        |
 | Finance link  | Marketing spend may link to Finance Expense, but attribution must still work when the finance link is missing. |
 | External APIs | Meta/Google Ads APIs are not MVP.                                                                              |
@@ -65,23 +91,32 @@ These rules apply to all modules unless a module-specific decision explicitly sa
 
 ### Projects Hub, Tasks And Support
 
-| Area            | Decision                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------ |
-| Delivery source | Product and Extension lifecycle are the delivery source of truth.                                      |
-| Gates           | Lifecycle gates live in backend services.                                                              |
-| Realtime        | Use Socket.io only for live updates such as status/comment/task changes.                               |
-| SLA             | Use scheduler/BullMQ for SLA timers and reminders.                                                     |
-| Support links   | Support may link to tasks or extension requests, but must not break when those modules are incomplete. |
+| Area             | Decision                                                                                                                                                                                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Delivery source  | Product and Extension lifecycle are the delivery source of truth.                                                                                                                               |
+| Gates            | Lifecycle gates live in `@nbos/shared` and are enforced in NestJS services (API is final authority).                                                                                            |
+| Stage-gate UX    | Blockers open the entity surface with field highlights — no duplicate modal forms for the same fields.                                                                                          |
+| Delivery Board   | `Active/Closed` + `Board/List` share one visual family; see `01-Platform-Overview/04-Stage-Gate-UX-and-Validation-Standard.md` and `05-UI-Specifications/09-Kanban-Board-and-List-Standard.md`. |
+| Realtime         | Use Socket.io only for live updates such as status/comment/task changes.                                                                                                                        |
+| SLA              | Use scheduler/BullMQ for SLA timers and reminders.                                                                                                                                              |
+| Support links    | Support may link to tasks or extension requests, but must not break when those modules are incomplete.                                                                                          |
+| Scrum sprints    | First-class `Sprint` under `WorkSpace`; `Task.sprint_id` is membership source of truth.                                                                                                         |
+| Scrum UI         | Planning tab: wide backlog left, sprint blocks right; execution board = active sprint tasks only.                                                                                               |
+| Sprint invariant | At most one `ACTIVE` sprint per scrum-enabled workspace.                                                                                                                                        |
 
 ### Drive
 
-| Area      | Decision                                                                   |
-| --------- | -------------------------------------------------------------------------- |
-| Storage   | Use Cloudflare R2 as the object store.                                     |
-| Ownership | Drive owns file metadata and storage references.                           |
-| Linking   | Modules link Drive file assets instead of storing independent file models. |
-| Exports   | Reports, snapshots and large exports write files through Drive.            |
-| Truth     | Bucket paths are not business truth; DB metadata and links are.            |
+| Area      | Decision                                                                                                                                               |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Storage   | Use Cloudflare R2 as the object store.                                                                                                                 |
+| Ownership | Drive owns file metadata and storage references.                                                                                                       |
+| Linking   | Modules link Drive file assets instead of storing independent file models.                                                                             |
+| Exports   | Reports, snapshots and large exports write files through Drive.                                                                                        |
+| Truth     | Bucket paths are not business truth; DB metadata and links are.                                                                                        |
+| R2 prefix | `nbos/tenants/{organizationId}/files/...` per org; stable org id, not marketing slug.                                                                  |
+| UI spaces | Three: System Library Drive, Company Drive, Personal Drive (+ Shared view).                                                                            |
+| Folders   | Company/Personal: `DriveFolder` tree; Library: **scoped** trees per entity (`DEAL`, `PROJECT`, …) + Project hub virtual sections — see `11-Drive/08-`. |
+| Lifecycle | Files often start on `DEAL`; `Deal Won` adds `FileLink` to PROJECT/PRODUCT/CLIENT without copying the object.                                          |
 
 ### Credentials
 

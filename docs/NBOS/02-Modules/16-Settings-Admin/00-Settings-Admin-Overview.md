@@ -41,6 +41,7 @@ My Company управляет компанией.
 | Bonus policies             | `My Company`, используется Finance |
 | Compensation profiles      | `My Company`, используется Finance |
 | SOP / Process templates    | `My Company`                       |
+| Checklist templates        | `My Company / SOP & Templates`     |
 | My Account                 | Header user menu / личный кабинет  |
 | Deal stages and gates      | CRM                                |
 | Product lifecycle stages   | Projects Hub / Delivery            |

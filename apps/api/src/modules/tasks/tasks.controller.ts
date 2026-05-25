@@ -35,6 +35,7 @@ export class TasksController {
   @ApiQuery({ name: 'projectId', required: false })
   @ApiQuery({ name: 'orderId', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'involvesEmployeeId', required: false })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -53,6 +54,7 @@ export class TasksController {
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('involvesEmployeeId') involvesEmployeeId?: string,
   ) {
     return this.tasksService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -72,13 +74,15 @@ export class TasksController {
       search,
       sortBy,
       sortOrder,
+      involvesEmployeeId,
     });
   }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get task statistics' })
-  async getStats() {
-    return this.tasksService.getStats();
+  @ApiQuery({ name: 'involvesEmployeeId', required: false })
+  async getStats(@Query('involvesEmployeeId') involvesEmployeeId?: string) {
+    return this.tasksService.getStats(involvesEmployeeId);
   }
 
   @Get('by-entity/:entityType/:entityId')
@@ -108,7 +112,6 @@ export class TasksController {
       workspaceId?: string;
       planningStatus?: string;
       completionRules?: unknown;
-      startDate?: string;
       dueDate?: string;
       parentId?: string;
       links?: Array<{ entityType: string; entityId: string }>;
@@ -125,11 +128,11 @@ export class TasksController {
     body: {
       title?: string;
       description?: string;
+      creatorId?: string;
       assigneeId?: string | null;
       coAssignees?: string[];
       observers?: string[];
       priority?: string;
-      startDate?: string | null;
       dueDate?: string | null;
       parentId?: string | null;
       myPlanStageId?: string | null;
@@ -161,10 +164,28 @@ export class TasksController {
     return this.tasksService.reopen(id);
   }
 
-  @Patch(':id/defer')
-  @ApiOperation({ summary: 'Defer task' })
-  async defer(@Param('id') id: string) {
-    return this.tasksService.defer(id);
+  @Patch(':id/on-hold')
+  @ApiOperation({ summary: 'Set task status to On hold' })
+  async setOnHold(@Param('id') id: string) {
+    return this.tasksService.setOnHold(id);
+  }
+
+  @Patch(':id/submit-review')
+  @ApiOperation({ summary: 'Submit task for review' })
+  async submitForReview(@Param('id') id: string, @Body() body: { reviewerId?: string }) {
+    return this.tasksService.submitForReview(id, body.reviewerId);
+  }
+
+  @Patch(':id/approve-review')
+  @ApiOperation({ summary: 'Approve task review' })
+  async approveReview(@Param('id') id: string) {
+    return this.tasksService.approveReview(id);
+  }
+
+  @Patch(':id/request-review-changes')
+  @ApiOperation({ summary: 'Return task from review to in progress' })
+  async requestReviewChanges(@Param('id') id: string) {
+    return this.tasksService.requestReviewChanges(id);
   }
 
   @Delete(':id')

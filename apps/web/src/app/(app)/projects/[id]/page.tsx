@@ -3,19 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  projectsApi,
-  type FullProject,
-  type UpdateKickoffChecklistItemInput,
-} from '@/lib/api/projects';
+import { projectsApi, type FullProject } from '@/lib/api/projects';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';
-import { ProjectDeliveryBoard } from '@/features/projects/components/ProjectDeliveryBoard';
 import { ProjectExtensionsSnapshot } from '@/features/projects/components/ProjectExtensionsSnapshot';
 import { ProjectHeader } from '@/features/projects/components/ProjectHeader';
+import { ProjectContactsSection } from '@/features/projects/components/ProjectContactsSection';
 import { ProjectInfoCard } from '@/features/projects/components/ProjectInfoCard';
-import { ProjectIntakePanel } from '@/features/projects/components/ProjectIntakePanel';
 import { ProjectProductsSection } from '@/features/projects/components/ProjectProductsSection';
-import { ProjectTasksSection } from '@/features/projects/components/ProjectTasksSection';
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
@@ -42,15 +36,6 @@ export default function ProjectDetailPage() {
     fetchProject();
   }, [fetchProject]);
 
-  const handleKickoffChecklistItemUpdate = useCallback(
-    async (itemId: string, data: UpdateKickoffChecklistItemInput) => {
-      const updated = await projectsApi.updateKickoffChecklistItem(params.id, itemId, data);
-      setProject((current) => updateProjectChecklist(current, updated));
-      return updated;
-    },
-    [params.id],
-  );
-
   if (loading) {
     return <ProjectDetailLoading />;
   }
@@ -63,30 +48,13 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="flex h-full flex-col gap-6">
-      <ProjectHeader
-        project={project}
-        onBack={() => router.push('/projects')}
-        onRefresh={() => {
-          fetchProject();
-        }}
-      />
+      <ProjectHeader project={project} onBack={() => router.push('/projects')} />
+
+      <ProjectContactsSection project={project} onProjectUpdated={setProject} />
 
       <ProjectInfoCard project={project} />
-      <ProjectIntakePanel
-        project={project}
-        onKickoffChecklistItemUpdate={handleKickoffChecklistItemUpdate}
-      />
-      <ProjectExtensionsSnapshot project={project} />
-      <ProjectDeliveryBoard
-        project={project}
-        onOpenProduct={(productId) => router.push(`/projects/${params.id}/products/${productId}`)}
-        onOpenProductTab={(productId, tab) =>
-          router.push(`/projects/${params.id}/products/${productId}?tab=${tab}`)
-        }
-        onRefresh={fetchProject}
-      />
 
-      <ProjectTasksSection projectId={project.id} orders={project.orders} />
+      <ProjectExtensionsSnapshot project={project} />
 
       <ProjectProductsSection
         project={project}
@@ -105,19 +73,6 @@ export default function ProjectDetailPage() {
       />
     </div>
   );
-}
-
-function updateProjectChecklist(
-  project: FullProject | null,
-  updated: NonNullable<FullProject['kickoffChecklist']>[number],
-) {
-  if (!project) return project;
-  const checklist = project.kickoffChecklist ?? [];
-  const nextChecklist = checklist
-    .map((item) => (item.id === updated.id ? updated : item))
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-
-  return { ...project, kickoffChecklist: nextChecklist };
 }
 
 function ProjectDetailLoading() {

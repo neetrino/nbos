@@ -43,7 +43,26 @@ export function buildOrdersReconciliationWhereSql(params: OrdersWhereSqlParams) 
   const trimmedSearch = params.search?.trim();
   if (trimmedSearch) {
     const pattern = `%${escapeLikePattern(trimmedSearch)}%`;
-    conditions.push(sql`o.code ILIKE ${pattern} ESCAPE '\\'`);
+    conditions.push(sql`(
+      o.code ILIKE ${pattern} ESCAPE '\\'
+      OR EXISTS (
+        SELECT 1 FROM projects p
+        WHERE p.id = o.project_id
+        AND (p.name ILIKE ${pattern} ESCAPE '\\' OR p.code ILIKE ${pattern} ESCAPE '\\')
+      )
+      OR EXISTS (
+        SELECT 1 FROM products pr
+        WHERE pr.id = o.product_id AND pr.name ILIKE ${pattern} ESCAPE '\\'
+      )
+      OR EXISTS (
+        SELECT 1 FROM extensions e
+        WHERE e.id = o.extension_id AND e.name ILIKE ${pattern} ESCAPE '\\'
+      )
+      OR EXISTS (
+        SELECT 1 FROM partners par
+        WHERE par.id = o.partner_id AND par.name ILIKE ${pattern} ESCAPE '\\'
+      )
+    )`);
   }
 
   conditions.push(buildGapConditionSql(params.gap));

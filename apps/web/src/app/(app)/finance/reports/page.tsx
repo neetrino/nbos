@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
-import { ArrowUpRight, BarChart3, RefreshCw } from 'lucide-react';
-import { ErrorState, LoadingState, PageHeader } from '@/components/shared';
-import { Button } from '@/components/ui/button';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowUpRight, BarChart3 } from 'lucide-react';
+import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
+import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   financeReportStatusClass,
   financeReportStatusLabel,
@@ -17,6 +17,8 @@ import {
   PayrollReportSnapshot,
   ProjectPnlSnapshot,
 } from '@/features/finance/components/reports/FinanceReportSnapshots';
+import { buildFinanceOverviewHeroSearch } from '@/features/finance/components/overview/build-finance-overview-hero-search';
+import { FinanceOverviewPageSettingsSheet } from '@/features/finance/components/overview/FinanceOverviewPageSettingsSheet';
 import { financeReportsPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import {
@@ -26,6 +28,7 @@ import {
   type ExpensePlanVsActualReport,
   type FinanceReportDefinition,
   type FinanceReportDefinitionsResponse,
+  type FinanceReportQueryParams,
   type MrrSubscriptionRevenueReport,
   type PayrollReport,
   type ProjectPnlReport,
@@ -47,6 +50,16 @@ export default function FinanceReportsPage() {
   const [projectPnl, setProjectPnl] = useState<ProjectPnlReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [period, setPeriod] = useState<FinancePeriod>('month');
+
+  const reportQueryParams = useMemo((): FinanceReportQueryParams => {
+    const periodParams = getFinancePeriodParams(period);
+    return {
+      dateFrom: periodParams?.dateFrom,
+      dateTo: periodParams?.dateTo,
+    };
+  }, [period]);
 
   const fetchDefinitions = useCallback(async () => {
     setLoading(true);
@@ -61,12 +74,12 @@ export default function FinanceReportsPage() {
         projectPnlReport,
       ] = await Promise.all([
         financeReportsApi.getDefinitions(),
-        financeReportsApi.getCompanyPnl(),
-        financeReportsApi.getCashFlow(),
-        financeReportsApi.getExpensePlanVsActual(),
-        financeReportsApi.getMrrSubscriptionRevenue(),
-        financeReportsApi.getPayrollReport(),
-        financeReportsApi.getProjectPnl(),
+        financeReportsApi.getCompanyPnl(reportQueryParams),
+        financeReportsApi.getCashFlow(reportQueryParams),
+        financeReportsApi.getExpensePlanVsActual(reportQueryParams),
+        financeReportsApi.getMrrSubscriptionRevenue(reportQueryParams),
+        financeReportsApi.getPayrollReport(reportQueryParams),
+        financeReportsApi.getProjectPnl(reportQueryParams),
       ]);
       setData(definitions);
       setCompanyPnl(companyPnlReport);
@@ -82,11 +95,53 @@ export default function FinanceReportsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [reportQueryParams]);
 
   useEffect(() => {
     void fetchDefinitions();
   }, [fetchDefinitions]);
+
+  const handleClearFilters = useCallback(() => {
+    setSearch('');
+    setPeriod('month');
+  }, []);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: buildFinanceOverviewHeroSearch({
+        search,
+        onSearchChange: setSearch,
+        searchPlaceholder: 'Search reports by title or description…',
+        period,
+        onPeriodChange: setPeriod,
+        onClearAll: handleClearFilters,
+      }),
+      trailing: (
+        <FinanceOverviewPageSettingsSheet
+          title="Finance reports — settings"
+          description="Reload report definitions and snapshots for the selected period."
+          triggerAriaLabel="Finance reports settings"
+          refreshDisabled={loading}
+          onRefresh={() => void fetchDefinitions()}
+        />
+      ),
+    }),
+    [fetchDefinitions, handleClearFilters, loading, period, search],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
+  const query = search.trim().toLowerCase();
+
+  const filteredDefinitions = useMemo(() => {
+    if (!data || !query) return data?.items ?? [];
+    return data.items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        item.id.toLowerCase().includes(query),
+    );
+  }, [data, query]);
 
   if (loading) return <LoadingState variant="cards" count={6} />;
 
@@ -102,16 +157,6 @@ export default function FinanceReportsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Finance reports"
-        description="Phase 3 v1 catalog for Finance-owned read-only report definitions."
-      >
-        <Button variant="outline" onClick={() => void fetchDefinitions()}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
-        </Button>
-      </PageHeader>
-
       <section className="border-border bg-card rounded-2xl border p-5">
         <div className="flex items-start gap-3">
           <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">
@@ -125,20 +170,51 @@ export default function FinanceReportsPage() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        {companyPnl ? <CompanyPnlSnapshot report={companyPnl} /> : null}
-        {cashFlow ? <CashFlowSnapshot report={cashFlow} /> : null}
-        {expensePlanVsActual ? <ExpensePlanVsActualSnapshot report={expensePlanVsActual} /> : null}
-        {mrrSubscriptionRevenue ? (
+        {companyPnl && reportMatchesSearch(companyPnl.title, query) ? (
+          <CompanyPnlSnapshot report={companyPnl} />
+        ) : null}
+        {cashFlow && reportMatchesSearch(cashFlow.title, query) ? (
+          <CashFlowSnapshot report={cashFlow} />
+        ) : null}
+        {expensePlanVsActual && reportMatchesSearch(expensePlanVsActual.title, query) ? (
+          <ExpensePlanVsActualSnapshot report={expensePlanVsActual} />
+        ) : null}
+        {mrrSubscriptionRevenue && reportMatchesSearch(mrrSubscriptionRevenue.title, query) ? (
           <MrrSubscriptionRevenueSnapshot report={mrrSubscriptionRevenue} />
         ) : null}
-        {payrollReport ? <PayrollReportSnapshot report={payrollReport} /> : null}
-        {projectPnl ? <ProjectPnlSnapshot report={projectPnl} /> : null}
-        {data.items.map((definition) => (
+        {payrollReport && reportMatchesSearch(payrollReport.title, query) ? (
+          <PayrollReportSnapshot report={payrollReport} />
+        ) : null}
+        {projectPnl && reportMatchesSearch(projectPnl.title, query) ? (
+          <ProjectPnlSnapshot report={projectPnl} />
+        ) : null}
+        {filteredDefinitions.map((definition) => (
           <ReportDefinitionCard key={definition.id} definition={definition} />
         ))}
       </section>
+
+      {query && filteredDefinitions.length === 0 && !hasSnapshotMatch(query) ? (
+        <p className="text-muted-foreground text-sm">No reports match your search.</p>
+      ) : null}
     </div>
   );
+}
+
+function reportMatchesSearch(title: string, query: string): boolean {
+  if (!query) return true;
+  return title.toLowerCase().includes(query);
+}
+
+function hasSnapshotMatch(query: string): boolean {
+  const titles = [
+    'Company P&L',
+    'Cash Flow',
+    'Expense Plan vs Actual',
+    'MRR / Subscription Revenue',
+    'Payroll Report',
+    'Project P&L',
+  ];
+  return titles.some((title) => reportMatchesSearch(title, query));
 }
 
 function ReportDefinitionCard({ definition }: { definition: FinanceReportDefinition }) {

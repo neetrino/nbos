@@ -1,8 +1,9 @@
+'use client';
+
 import { useState, type FormEvent } from 'react';
+import { Banknote, Calendar, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { InlineField } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Invoice } from '@/lib/api/finance';
@@ -50,56 +51,46 @@ export function RecordPaymentForm({ invoice, onRecordPayment }: RecordPaymentFor
 
   return (
     <form className="space-y-3" onSubmit={handleSubmit}>
-      <div className="flex items-center justify-between">
-        <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-          Record Payment
-        </h4>
-        <span className="text-muted-foreground text-xs">
-          Outstanding {formatAmount(outstanding, invoice.currency)}
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <PaymentInput label="Amount" value={amount} onChange={setAmount} type="number" />
-        <PaymentInput
-          label="Payment Date"
-          value={paymentDate}
-          onChange={setPaymentDate}
-          type="date"
-        />
-      </div>
-      <PaymentInput label="Method" value={paymentMethod} onChange={setPaymentMethod} />
-      <div className="space-y-1">
-        <Label htmlFor="payment-notes">Notes</Label>
-        <Textarea
-          id="payment-notes"
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-        />
-      </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      <p className="text-muted-foreground text-xs">
+        Outstanding {formatAmount(outstanding, invoice.currency)}
+      </p>
+      <InlineField
+        variant="controlled"
+        label="Amount"
+        type="number"
+        value={amount}
+        icon={<Banknote size={12} />}
+        onValueChange={setAmount}
+      />
+      <InlineField
+        variant="controlled"
+        label="Payment date"
+        type="date"
+        value={paymentDate}
+        icon={<Calendar size={12} />}
+        onValueChange={setPaymentDate}
+      />
+      <InlineField
+        variant="controlled"
+        label="Method"
+        type="text"
+        value={paymentMethod}
+        placeholder="Optional"
+        onValueChange={setPaymentMethod}
+      />
+      <InlineField
+        variant="controlled"
+        label="Notes"
+        type="textarea"
+        value={notes}
+        placeholder="Optional"
+        onValueChange={setNotes}
+      />
+      {error ? <p className="text-xs text-red-500">{error}</p> : null}
       <Button type="submit" size="sm" disabled={submitting || Number(amount) <= 0}>
-        {submitting ? 'Recording...' : 'Record Payment'}
+        {submitting ? <Loader2 className="mr-1 size-3.5 animate-spin" /> : null}
+        Record payment
       </Button>
     </form>
-  );
-}
-
-function PaymentInput({
-  label,
-  value,
-  onChange,
-  type = 'text',
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-}) {
-  const id = `payment-${label.toLowerCase().replace(/\s+/g, '-')}`;
-  return (
-    <div className="space-y-1">
-      <Label htmlFor={id}>{label}</Label>
-      <Input id={id} type={type} value={value} onChange={(event) => onChange(event.target.value)} />
-    </div>
   );
 }

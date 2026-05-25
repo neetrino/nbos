@@ -115,7 +115,7 @@ export class FinanceSummaryService {
     const expenses = await this.prisma.expense.findMany({
       where: {
         ...(createdAt ? { createdAt } : {}),
-        status: { in: [...ACTIVE_EXPENSE_STATUSES, 'PAID', 'UNPAID'] },
+        status: { in: [...ACTIVE_EXPENSE_STATUSES, 'PAID'] },
       },
       select: {
         amount: true,
@@ -136,22 +136,22 @@ export class FinanceSummaryService {
       this.prisma.subscription.aggregate({
         where: {
           status: 'ACTIVE',
-          startDate: { lte: snapshotDate },
+          billingStartDate: { lte: snapshotDate },
           OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
         },
-        _sum: { amount: true },
+        _sum: { baseMonthlyAmount: true },
       }),
       this.prisma.subscription.count({
         where: {
           status: 'ACTIVE',
-          startDate: { lte: snapshotDate },
+          billingStartDate: { lte: snapshotDate },
           OR: [{ endDate: null }, { endDate: { gte: snapshotDate } }],
         },
       }),
     ]);
 
     return {
-      monthlyRevenue: monthlyRevenue._sum.amount,
+      monthlyRevenue: monthlyRevenue._sum?.baseMonthlyAmount ?? null,
       activeSubscriptions,
     };
   }

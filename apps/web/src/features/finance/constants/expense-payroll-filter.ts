@@ -1,0 +1,98 @@
+/** Integrated filter keys for Pay Now payroll expense scope. */
+export const EXPENSE_PAYROLL_SOURCE_FILTER_KEY = 'payrollSource' as const;
+export const EXPENSE_PAYROLL_MONTH_FILTER_KEY = 'payrollMonth' as const;
+export const EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY = 'payrollEmployee' as const;
+
+export const EXPENSE_PAYROLL_SOURCE_PAYROLL = 'payroll' as const;
+export const EXPENSE_PAYROLL_SOURCE_ALL = 'all' as const;
+
+/** UTC calendar month for Pay Now payroll month filter default (YYYY-MM). */
+export function defaultPayrollMonthIso(reference = new Date()): string {
+  const y = reference.getUTCFullYear();
+  const m = String(reference.getUTCMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+/** Default integrated filters on `/finance/expenses` (Pay Now landing). */
+export function payNowDefaultExpenseFilters(reference = new Date()): Record<string, string> {
+  return {
+    [EXPENSE_PAYROLL_SOURCE_FILTER_KEY]: EXPENSE_PAYROLL_SOURCE_PAYROLL,
+    [EXPENSE_PAYROLL_MONTH_FILTER_KEY]: defaultPayrollMonthIso(reference),
+    [EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY]: 'all',
+  };
+}
+
+/** Clears payroll scope filters to show all expense types and months. */
+export function clearPayrollPayNowFilters(): Record<string, string> {
+  return {
+    [EXPENSE_PAYROLL_SOURCE_FILTER_KEY]: EXPENSE_PAYROLL_SOURCE_ALL,
+    [EXPENSE_PAYROLL_MONTH_FILTER_KEY]: 'all',
+    [EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY]: 'all',
+  };
+}
+
+/** URL preset: open Pay Now with payroll salary filter applied. */
+export const EXPENSE_PAYROLL_PRESET_QUERY = 'payrollPreset' as const;
+
+const EXPENSE_LIST_PATH = '/finance/expenses' as const;
+
+/** URL query for payroll month filter on Pay Now (YYYY-MM). */
+export const EXPENSE_PAYROLL_MONTH_URL_QUERY = 'payrollMonth' as const;
+
+/** URL query for payroll employee filter on Pay Now (`Employee.id`). */
+export const EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY = 'payrollEmployee' as const;
+
+export function expensesPayrollPresetHref(options?: {
+  payrollMonth?: string;
+  employeeId?: string;
+  /** When true, omit month query so Pay Now applies server-side default month. */
+  useDefaultMonth?: boolean;
+}): string {
+  const q = new URLSearchParams({ [EXPENSE_PAYROLL_PRESET_QUERY]: '1' });
+  const month = options?.useDefaultMonth
+    ? defaultPayrollMonthIso()
+    : (options?.payrollMonth?.trim() ?? defaultPayrollMonthIso());
+  if (month) {
+    q.set(EXPENSE_PAYROLL_MONTH_URL_QUERY, month);
+  }
+  const employeeId = options?.employeeId?.trim();
+  if (employeeId) {
+    q.set(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY, employeeId);
+  }
+  return `${EXPENSE_LIST_PATH}?${q.toString()}`;
+}
+
+export function buildRecentPayrollMonthFilterOptions(count = 18): Array<{
+  value: string;
+  label: string;
+}> {
+  const options: Array<{ value: string; label: string }> = [];
+  const cursor = new Date();
+  cursor.setUTCDate(1);
+  for (let i = 0; i < count; i += 1) {
+    const y = cursor.getUTCFullYear();
+    const m = String(cursor.getUTCMonth() + 1).padStart(2, '0');
+    const value = `${y}-${m}`;
+    options.push({ value, label: value });
+    cursor.setUTCMonth(cursor.getUTCMonth() - 1);
+  }
+  return options;
+}
+
+export function resolveExpensePayrollListParams(filters: Record<string, string>): {
+  payrollLinked?: boolean;
+  payrollMonth?: string;
+  payrollEmployeeId?: string;
+} {
+  const source = filters[EXPENSE_PAYROLL_SOURCE_FILTER_KEY] ?? EXPENSE_PAYROLL_SOURCE_ALL;
+  const monthRaw = filters[EXPENSE_PAYROLL_MONTH_FILTER_KEY];
+  const employeeRaw = filters[EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY];
+  const payrollMonth = monthRaw && monthRaw !== 'all' ? monthRaw : undefined;
+  const payrollEmployeeId = employeeRaw && employeeRaw !== 'all' ? employeeRaw : undefined;
+  const payrollLinked =
+    source === EXPENSE_PAYROLL_SOURCE_PAYROLL || Boolean(payrollMonth || payrollEmployeeId)
+      ? true
+      : undefined;
+
+  return { payrollLinked, payrollMonth, payrollEmployeeId };
+}

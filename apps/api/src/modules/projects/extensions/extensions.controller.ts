@@ -31,6 +31,7 @@ export class ExtensionsController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'companyId', required: false, description: "Project's billing company (CRM)" })
   @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'deliveryStage', required: false })
@@ -43,6 +44,7 @@ export class ExtensionsController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
+    @Query('companyId') companyId?: string,
     @Query('productId') productId?: string,
     @Query('status') status?: string,
     @Query('deliveryStage') deliveryStage?: string,
@@ -56,6 +58,7 @@ export class ExtensionsController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
+      companyId,
       productId,
       status,
       deliveryStage,
@@ -119,8 +122,12 @@ export class ExtensionsController {
     description: GENERIC_STATUS_DEPRECATION_DESCRIPTION,
     deprecated: true,
   })
-  async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
-    return this.extensionsService.updateStatus(id, body.status);
+  async updateStatus(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { status: string },
+  ) {
+    return this.extensionsService.updateStatus(id, body.status, user.id);
   }
 
   @Patch(':id/stage')
@@ -143,8 +150,12 @@ export class ExtensionsController {
 
   @Patch(':id/cancel')
   @ApiOperation({ summary: 'Cancel extension delivery with reason' })
-  async cancel(@Param('id') id: string, @Body() body: { reason: string }) {
-    return this.extensionsService.cancel(id, body);
+  async cancel(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { reason: string },
+  ) {
+    return this.extensionsService.cancel(id, body, user.id);
   }
 
   @Patch(':id/complete')

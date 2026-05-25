@@ -36,6 +36,7 @@ import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
 import { createExpensePaymentRecord, type AddExpensePaymentInput } from './expense-payment-create';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { toExpenseLedgerJson } from './expense-detail-mapper';
+import { applyPayrollExpenseListScope } from './expense-payroll-list-scope';
 import { mapSalaryLineToLinkedPayrollRun } from './expense-payroll-link-map';
 import { mapExpensePlanToLinkedPlan } from './expense-plan-link-map';
 import {
@@ -44,6 +45,13 @@ import {
 } from './expense-list-ledger';
 import { assertExpenseAmountCoversRecordedPayments } from './expense-amount-update-guard';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
+import {
+  refreshExpenseWorkflowStatus,
+  EXPENSE_BOARD_SCOPE_EXCLUDE,
+  EXPENSE_CLOSED_SCOPE_STATUSES,
+} from './expense-workflow';
+import { OperationalJournalService } from '../finance/journal/operational-journal.service';
+import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
 import type {
   CreateExpenseDto,
   ExpenseQueryParams,
@@ -58,6 +66,7 @@ export class ExpensesService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
+    private readonly operationalJournal: OperationalJournalService,
   ) {}
 
   async findAll(params: ExpenseQueryParams) {
@@ -77,6 +86,10 @@ export class ExpensesService {
       sortBy,
       sortOrder,
       activeBoard,
+      closedBoard,
+      payrollLinked,
+      payrollMonth,
+      payrollEmployeeId,
     } = params;
 
     const page = normalizeExpenseListPage(pageIn);
@@ -102,6 +115,10 @@ export class ExpensesService {
       dateFrom,
       dateTo,
       activeBoard: activeBoard === true,
+      closedBoard: closedBoard === true,
+      payrollLinked: payrollLinked === true,
+      payrollMonth,
+      payrollEmployeeId,
     });
 
     const [items, total] = await Promise.all([
@@ -132,6 +149,7 @@ export class ExpensesService {
       const { salaryLine, expensePlan, ...rest } = row;
       return {
         ...rest,
+        status: refreshExpenseWorkflowStatus(rest.status, rest.dueDate),
         linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
         linkedExpensePlan: mapExpensePlanToLinkedPlan(expensePlan),
       };
@@ -161,7 +179,8 @@ export class ExpensesService {
     });
     if (!row) throw new NotFoundException(`Expense ${id} not found`);
     const { salaryLine, expensePlan, ...expense } = row;
-    const ledger = toExpenseLedgerJson(expense);
+    const presentedStatus = refreshExpenseWorkflowStatus(expense.status, expense.dueDate);
+    const ledger = toExpenseLedgerJson({ ...expense, status: presentedStatus });
     return {
       ...ledger,
       linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
@@ -170,7 +189,10 @@ export class ExpensesService {
   }
 
   async addPayment(id: string, input: AddExpensePaymentInput) {
-    await createExpensePaymentRecord(this.prisma, id, input, { notify: this.notifications });
+    await createExpensePaymentRecord(this.prisma, id, input, {
+      notify: this.notifications,
+      journal: this.operationalJournal,
+    });
     return this.findById(id);
   }
 
@@ -181,6 +203,7 @@ export class ExpensesService {
     if (!row) {
       throw new NotFoundException(`Expense payment ${paymentId} not found`);
     }
+    await assertPostingPeriodOpenForBookedAt(this.prisma, row.paymentDate);
     await this.prisma.expensePayment.delete({ where: { id: paymentId } });
     await syncExpenseStatusWithPaymentLedger(this.prisma, expenseId);
     await syncSalaryLinePaidFromExpenseLedger(this.prisma, expenseId, this.notifications);
@@ -201,6 +224,13 @@ export class ExpensesService {
       }
     }
 
+    const dueDate = data.dueDate ? new Date(data.dueDate) : undefined;
+    const requestedStatus = resolveExpenseStatus(data.status) as ExpenseStatusEnum;
+    const workflowStatus = refreshExpenseWorkflowStatus(requestedStatus, dueDate ?? null);
+
+    const bookedAt = dueDate ?? new Date();
+    await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
+
     const created = await this.prisma.expense.create({
       data: {
         name: data.name,
@@ -208,8 +238,8 @@ export class ExpensesService {
         category: requireExpenseCategory(data.category) as ExpenseCategoryEnum,
         amount: data.amount,
         frequency: resolveExpenseFrequency(data.frequency) as ExpenseFrequency,
-        dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-        status: resolveExpenseStatus(data.status) as ExpenseStatusEnum,
+        dueDate,
+        status: workflowStatus,
         projectId: data.projectId,
         ...(data.expensePlanId ? { expensePlanId: data.expensePlanId } : {}),
         ...(data.clientServiceRecordId
@@ -227,11 +257,26 @@ export class ExpensesService {
         notes: data.notes,
       },
     });
+
+    await this.operationalJournal.appendExpenseCardAccrualLine({
+      expenseId: created.id,
+      expenseName: created.name,
+      amount: new Decimal(created.amount).toNumber(),
+      bookedAt,
+      projectId: created.projectId,
+    });
+
     return this.findById(created.id);
   }
 
   async update(id: string, data: UpdateExpenseDto) {
-    await this.findById(id);
+    const existing = await this.prisma.expense.findUnique({
+      where: { id },
+      select: { dueDate: true },
+    });
+    if (!existing) {
+      throw new NotFoundException(`Expense ${id} not found`);
+    }
 
     const typePatch = data.type !== undefined ? requireExpenseTypeIfPresent(data.type) : undefined;
     const categoryPatch =
@@ -250,6 +295,14 @@ export class ExpensesService {
     if (data.amount !== undefined) {
       await assertExpenseAmountCoversRecordedPayments(this.prisma, id, new Decimal(data.amount));
     }
+
+    const bookedAtForGuard =
+      data.dueDate !== undefined
+        ? data.dueDate
+          ? new Date(data.dueDate)
+          : new Date()
+        : (existing.dueDate ?? new Date());
+    await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAtForGuard);
 
     await this.prisma.expense.update({
       where: { id },
@@ -277,6 +330,9 @@ export class ExpensesService {
         ...(data.notes !== undefined && { notes: data.notes }),
       },
     });
+    if (statusPatch === undefined) {
+      await this.persistRefreshedWorkflowStatus(id);
+    }
     if (data.amount !== undefined) {
       await syncExpenseStatusWithPaymentLedger(this.prisma, id);
     }
@@ -296,13 +352,15 @@ export class ExpensesService {
     const planWhere = planIdTrimmed ? { expensePlanId: planIdTrimmed } : {};
     const statusWhere = safeStatus
       ? { status: safeStatus as ExpenseStatusEnum }
-      : params.activeBoard === true
-        ? {
-            status: {
-              notIn: [ExpenseStatusEnum.PAID, ExpenseStatusEnum.DELAYED],
-            },
-          }
-        : {};
+      : params.closedBoard === true
+        ? { status: { in: EXPENSE_CLOSED_SCOPE_STATUSES } }
+        : params.activeBoard === true
+          ? {
+              status: {
+                notIn: EXPENSE_BOARD_SCOPE_EXCLUDE,
+              },
+            }
+          : {};
 
     const scopeWhere: Prisma.ExpenseWhereInput = {
       ...projectWhere,
@@ -310,8 +368,25 @@ export class ExpensesService {
       ...statusWhere,
       ...(createdAt ? { createdAt } : {}),
     };
+    applyPayrollExpenseListScope(scopeWhere, {
+      payrollLinked: params.payrollLinked === true,
+      payrollMonth: params.payrollMonth,
+      payrollEmployeeId: params.payrollEmployeeId,
+    });
 
     return fetchExpenseStatsAggregates(this.prisma, scopeWhere);
+  }
+
+  private async persistRefreshedWorkflowStatus(id: string): Promise<void> {
+    const row = await this.prisma.expense.findUnique({
+      where: { id },
+      select: { status: true, dueDate: true },
+    });
+    if (!row) return;
+    const next = refreshExpenseWorkflowStatus(row.status, row.dueDate);
+    if (next !== row.status) {
+      await this.prisma.expense.update({ where: { id }, data: { status: next } });
+    }
   }
 
   private buildExpenseListOrderBy(
@@ -331,9 +406,11 @@ export class ExpensesService {
     if (filters.category) where.category = filters.category as ExpenseCategoryEnum;
     if (filters.status) {
       where.status = filters.status as ExpenseStatusEnum;
+    } else if (filters.closedBoard) {
+      where.status = { in: EXPENSE_CLOSED_SCOPE_STATUSES };
     } else if (filters.activeBoard) {
       where.status = {
-        notIn: [ExpenseStatusEnum.PAID, ExpenseStatusEnum.DELAYED],
+        notIn: EXPENSE_BOARD_SCOPE_EXCLUDE,
       };
     }
     if (filters.backlogReason) {
@@ -343,13 +420,32 @@ export class ExpensesService {
     const planId = filters.expensePlanId?.trim();
     if (planId) where.expensePlanId = planId;
     if (filters.frequency) where.frequency = filters.frequency as ExpenseFrequency;
-    if (filters.search) {
-      where.name = { contains: filters.search, mode: 'insensitive' };
+    const searchTrimmed = filters.search?.trim();
+    if (searchTrimmed) {
+      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: [
+            { name: ic },
+            { notes: ic },
+            { project: { name: ic } },
+            { project: { code: ic } },
+            { expensePlan: { name: ic } },
+            { expensePlan: { provider: ic } },
+          ],
+        },
+      ];
     }
     const createdAt = this.buildDateRange(filters.dateFrom, filters.dateTo);
     if (createdAt) {
       where.createdAt = createdAt;
     }
+    applyPayrollExpenseListScope(where, {
+      payrollLinked: filters.payrollLinked === true,
+      payrollMonth: filters.payrollMonth,
+      payrollEmployeeId: filters.payrollEmployeeId,
+    });
     return where;
   }
 

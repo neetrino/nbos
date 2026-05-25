@@ -17,6 +17,20 @@ import {
 import { assertFirstInvoiceMinimums } from './invoice-first-payment-minimums';
 import { deriveBaseInvoiceMoneyStatus, parseInvoiceMoneyStatus } from './invoice-money-status';
 import { financeCalendarMonthKey } from '../subscriptions/subscription-coverage-month';
+import { DealWonHandler } from '../../crm/deals/deal-won.handler';
+import { dealDetailInclude } from '../../crm/deals/deal.includes';
+import {
+  cancelOfficialInvoiceRequest,
+  sendOfficialInvoiceRequest,
+  updateOfficialInvoiceGovId,
+} from './invoice-official-request';
+import { OperationalJournalService } from '../journal/operational-journal.service';
+import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-guard';
+import {
+  applyInvoiceGeneralUpdate,
+  parseUpdateInvoiceGeneralInput,
+  type UpdateInvoiceGeneralInput,
+} from './invoice-general-update';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -50,7 +64,11 @@ interface InvoiceStatsParams {
 
 @Injectable()
 export class InvoicesService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly dealWonHandler: DealWonHandler,
+    private readonly operationalJournal: OperationalJournalService,
+  ) {}
 
   async findAll(params: InvoiceQueryParams) {
     const {
@@ -74,8 +92,47 @@ export class InvoicesService {
     if (type) where.type = type as InvoiceTypeEnum;
     if (projectId) where.projectId = projectId;
     if (subscriptionId) where.subscriptionId = subscriptionId;
-    if (search) {
-      where.code = { contains: search, mode: 'insensitive' };
+
+    const searchTrimmed = search?.trim();
+    if (searchTrimmed) {
+      const projectMatches = await this.prisma.project.findMany({
+        where: {
+          OR: [
+            { name: { contains: searchTrimmed, mode: 'insensitive' } },
+            { code: { contains: searchTrimmed, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true },
+      });
+      const matchedProjectIds = projectMatches.map((p) => p.id);
+      const ic = { contains: searchTrimmed, mode: 'insensitive' as const };
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: [
+            { code: ic },
+            { govInvoiceId: ic },
+            { company: { name: ic } },
+            {
+              order: {
+                OR: [
+                  { code: ic },
+                  { project: { name: ic } },
+                  { project: { code: ic } },
+                  { product: { name: ic } },
+                  { extension: { name: ic } },
+                ],
+              },
+            },
+            {
+              subscription: {
+                OR: [{ code: ic }, { project: { name: ic } }, { project: { code: ic } }],
+              },
+            },
+            ...(matchedProjectIds.length > 0 ? [{ projectId: { in: matchedProjectIds } }] : []),
+          ],
+        },
+      ];
     }
 
     const createdAt = buildDateRange(dateFrom, dateTo);
@@ -141,6 +198,9 @@ export class InvoicesService {
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
 
     const due = data.dueDate ? new Date(data.dueDate) : undefined;
+    const bookedAt = due ?? new Date();
+    await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
+
     const invoice = await this.prisma.invoice.create({
       data: {
         code,
@@ -161,7 +221,33 @@ export class InvoicesService {
           : {}),
       },
     });
+
+    const order = data.orderId
+      ? await this.prisma.order.findUnique({
+          where: { id: data.orderId },
+          select: { productId: true },
+        })
+      : null;
+
+    await this.operationalJournal.appendInvoiceCardAccrualLine({
+      invoiceId: invoice.id,
+      invoiceCode: invoice.code,
+      amount: data.amount,
+      bookedAt,
+      companyId: data.companyId ?? null,
+      projectId: data.projectId,
+      productId: order?.productId ?? null,
+      orderId: data.orderId ?? null,
+    });
+
     return this.findById(invoice.id);
+  }
+
+  /** Updates invoice amount and/or tax status on the card. */
+  async updateGeneral(id: string, body: UpdateInvoiceGeneralInput) {
+    const input = parseUpdateInvoiceGeneralInput(body);
+    await applyInvoiceGeneralUpdate(this.prisma, id, input);
+    return this.findById(id);
   }
 
   /**
@@ -244,16 +330,37 @@ export class InvoicesService {
     const dealAmount = Number(order.deal.amount ?? 0);
 
     if (dealAmount > 0 && paidTotal >= dealAmount) {
-      await this.prisma.deal.update({
+      const deal = await this.prisma.deal.findUnique({
         where: { id: order.deal.id },
+        include: dealDetailInclude,
+      });
+      if (!deal) return;
+      await this.prisma.deal.update({
+        where: { id: deal.id },
         data: { status: 'WON' },
       });
+      await this.dealWonHandler.handle(deal);
     }
   }
 
   async delete(id: string) {
     await this.findById(id);
     return this.prisma.invoice.delete({ where: { id } });
+  }
+
+  async sendOfficialInvoiceRequest(id: string) {
+    await sendOfficialInvoiceRequest(this.prisma, id);
+    return this.findById(id);
+  }
+
+  async cancelOfficialInvoiceRequest(id: string) {
+    await cancelOfficialInvoiceRequest(this.prisma, id);
+    return this.findById(id);
+  }
+
+  async updateOfficialInvoiceGovId(id: string, govInvoiceId: string | null) {
+    await updateOfficialInvoiceGovId(this.prisma, id, govInvoiceId);
+    return this.findById(id);
   }
 
   private assertManualMoneyStatusAllowed(

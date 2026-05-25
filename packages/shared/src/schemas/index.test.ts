@@ -162,8 +162,8 @@ describe('Schemas', () => {
     });
 
     it('validates deal status', () => {
-      const result = updateDealSchema.parse({ status: 'MEETING' });
-      expect(result.status).toBe('MEETING');
+      const result = updateDealSchema.parse({ status: 'SEND_OFFER' });
+      expect(result.status).toBe('SEND_OFFER');
     });
 
     it('validates payment type', () => {

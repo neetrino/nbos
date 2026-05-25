@@ -16,11 +16,15 @@ const bonusRow: EmployeeWalletBonusRow = {
   paidAmount: '40.00',
   remainingAmount: '60.00',
   payrollMonth: '2026-05',
+  kpiBurnedAmount: null,
+  kpiBurnedReason: null,
+  payrollCarryOverAmount: null,
   orderPaymentType: 'CLASSIC',
   salesAccrualHint: 'Seller · Classic',
   productLabel: 'Product Alpha',
   project: { code: 'P', name: 'Proj' },
   order: { code: 'O-1' },
+  policyBreakdownStatuses: [],
   createdAt: '2026-04-01T00:00:00.000Z',
 };
 
@@ -36,6 +40,7 @@ const salaryRow: EmployeeWalletSalaryRow = {
   remainingAmount: '1000',
   lineStatus: 'APPROVED',
   expenseId: 'exp-1',
+  payoutPhase: 'active_payout',
 };
 
 describe('buildWalletBonusesCsvContent', () => {

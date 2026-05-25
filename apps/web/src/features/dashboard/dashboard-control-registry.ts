@@ -94,12 +94,12 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-products',
-    label: 'Product board',
-    href: '/projects/products',
+    label: 'Delivery Board',
+    href: '/delivery-board',
     icon: FolderKanban,
     module: 'PRODUCTS',
     action: 'VIEW',
-    description: 'Track product and extension delivery.',
+    description: 'Track Product and Extension delivery lifecycle and stage gates.',
   },
   {
     key: 'open-invoices',
@@ -112,7 +112,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-expenses',
-    label: 'Expense board',
+    label: 'Pay now',
     href: '/finance/expenses',
     icon: ReceiptText,
     module: 'EXPENSES',
@@ -121,7 +121,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
   },
   {
     key: 'open-payroll',
-    label: 'Salary board',
+    label: 'Salary',
     href: '/finance/payroll',
     icon: FileText,
     module: 'PAYROLL',

@@ -4,21 +4,42 @@
 
 ## 1. Current State Summary
 
-Текущий runtime Drive реализован как простой R2 project folder browser:
+**2026-05-18:** Drive runtime — DB-backed `FileAsset` + `FileLink` + scoped `DriveFolder` trees, главный UI в `DriveWorkspace` (System Library / Company / Personal / Shared with me).
 
-- API работает с `Drive/projects/{projectId}/`;
-- UI показывает список проектов слева;
-- можно list/upload/download/delete files;
-- database-backed `File Asset` foundation exists;
-- entity links foundation exists;
-- version metadata foundation exists;
-- purpose metadata foundation exists;
-- нет logical libraries;
-- нет cleanup/export/backup;
-- list/get/preview и связанные DB-backed операции учитывают **entity-level RBAC scope** (`OWN` / `DEPARTMENT` / `ALL`) поверх module permissions — см. **2026-05-06** в §3.2;
-- batch archive/restore для multi-select — shipped (см. IMPLEMENTATION_PROGRESS / Drive slice).
+**Shipped:**
 
-Это уже ближе к канону, но **Libraries navigation, export jobs, cleanup dashboard, богатый preview** остаются в backlog §3 / §5.
+- Upload sessions → presigned R2 → `FileAsset` + `FileLink` + optional `DriveFolderItem`;
+- storage home для **новых** загрузок: `nbos/tenants/{organizationId}/files/...` (`NBOS_TENANT_ORGANIZATION_ID` в env API);
+- scoped folders: `DriveFolder.scopeEntityType` / `scopeEntityId` для Library-сущностей;
+- Project Library hub: Folders (PROJECT tree + project shell files), виртуальные секции Deals / Products (+ nested Extensions) / Client (Company + Contact) / Tasks / Finance;
+- Company/Personal folder trees: create, rename, move placement, copy `FileAsset`, remove placement;
+- library actions UX: folder vs FileLink capabilities, scoped move/copy picker, unlink;
+- TASK / WORKSPACE library: deep links, pinned rows, entity root merge, entry from Work Space;
+- Deal Won auto-`FileLink` policy (`DriveDealWonLinksService`);
+- file grants API (`FileAssetGrant`), version upload, archive/batch restore;
+- ZIP export job (selection → async/sync job, manifest);
+- maintenance: `GET cleanup-summary`, purge failed/expired upload sessions;
+- entity-level RBAC scope на list/get (`OWN` / `DEPARTMENT` / `ALL`);
+- Phase 1 hardening: legacy raw-R2 HTTP routes disabled, `/drive/library` uses common file access filtering, folder placements enforce file-level access, upload session create/complete re-check target context, lifecycle audit actor is server-owned.
+
+**Still backlog:** полная матрица Share/Move/Copy по канону §3 permissions, canonical layered entity/confidentiality/grants resolver, расширенные export types / TTL / cancel, cleanup candidates dashboard, rich preview, reusable card upload widget.
+
+**Legacy:** raw `GET/POST/DELETE /drive/:projectId...` routes disabled on `2026-05-18` and are no longer an active Drive surface.
+
+### 1.0. Architecture alignment (2026-05-18)
+
+Сверка с [`08-Drive-Navigation-Project-Hub-and-Folders.md`](./08-Drive-Navigation-Project-Hub-and-Folders.md) и [`06-Drive-Storage-Export-and-Cleanup.md`](./06-Drive-Storage-Export-and-Cleanup.md):
+
+| Topic           | Target                                    | Status (2026-05-18)                                                           |
+| --------------- | ----------------------------------------- | ----------------------------------------------------------------------------- |
+| Three UI spaces | System Library / Company / Personal       | **DONE** — `DriveWorkspace` + space tabs                                      |
+| Scoped folders  | `DEAL`, `PROJECT`, `TASK`, … per entity   | **DONE** — `scopeEntityType` / `scopeEntityId` on `DriveFolder`               |
+| Project hub     | Virtual sections + PROJECT tree           | **DONE** — hub nav + Client + Extensions under Products                       |
+| R2 layout       | `nbos/tenants/{organizationId}/files/...` | **DONE** for new uploads; legacy `Drive/uploads/...` may remain until removed |
+| TASK/WORKSPACE  | Library entry + deep links                | **DONE** — see `drive-deep-link.ts`, pinned rows                              |
+| Library actions | Folder vs link semantics                  | **DONE** — `drive-action-capabilities.ts`                                     |
+
+`DriveFolder` / `DriveFolderItem` for Company/Personal and scoped Library entities: **shipped**.
 
 ### 1.1. Что важно не потерять
 
@@ -49,46 +70,76 @@
 
 ### 3.1. Database / Prisma
 
-| Gap                         | Status    | Needed                                                          |
-| --------------------------- | --------- | --------------------------------------------------------------- |
-| `FileAsset` model           | `DONE`    | Central file metadata, status, visibility, purpose              |
-| `FileVersion` model         | `DONE`    | Version metadata with storage key and checksum                  |
-| `FileLink` model            | `DONE`    | Links to Deal/Product/Invoice/Task/Work Space/etc.              |
-| `FilePermission` model      | `MISSING` | Explicit grants and restrictions                                |
-| `FileAuditEvent` model      | `PARTIAL` | File-specific creation/archive audit events exist               |
-| `ExportJob` model           | `MISSING` | ZIP/backup/export lifecycle                                     |
-| `CleanupCandidate` model    | `MISSING` | Cleanup review queue                                            |
-| File relations on core data | `MISSING` | Employee uploaded files, Project/Product/Deal/Task linked files |
+| Gap                         | Status    | Needed                                                                        |
+| --------------------------- | --------- | ----------------------------------------------------------------------------- |
+| `FileAsset` model           | `DONE`    | Central file metadata, status, visibility, purpose                            |
+| `FileVersion` model         | `DONE`    | Version metadata with storage key and checksum                                |
+| `FileLink` model            | `DONE`    | Links to Deal/Product/Invoice/Task/Work Space/etc.                            |
+| `FilePermission` model      | `MISSING` | Explicit grants and restrictions                                              |
+| `DriveFolder` model         | `DONE`    | Company/Personal + scoped Library (`scopeEntityType` / `scopeEntityId`)       |
+| `FolderPlacement` model     | `DONE`    | `DriveFolderItem` for file/folder placement (Company/Personal + scoped trees) |
+| `FileAssetGrant` model      | `DONE`    | Per-employee grants on `FileAsset`                                            |
+| `DriveZipExportJob` model   | `PARTIAL` | Selection ZIP + manifest; not full export catalog from doc 06 §5              |
+| `FileUploadSession` model   | `DONE`    | Presign → complete → `FileAsset`                                              |
+| `FileAuditEvent` model      | `PARTIAL` | File-specific creation/archive audit events exist                             |
+| `ExportJob` model           | `MISSING` | ZIP/backup/export lifecycle                                                   |
+| `CleanupCandidate` model    | `MISSING` | Cleanup review queue                                                          |
+| File relations on core data | `MISSING` | Employee uploaded files, Project/Product/Deal/Task linked files               |
 
 ### 3.2. Backend API
 
-| Gap                  | Status    | Needed                                                                                                                                                                                                         |
-| -------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Upload session       | `DONE`    | `POST /drive/upload-sessions`, presign, complete, fail, `HeadObject` gate                                                                                                                                      |
-| Entity-aware upload  | `PARTIAL` | Session carries `entityType`/`entityId`; card UX still missing                                                                                                                                                 |
-| File list by library | `PARTIAL` | `GET /drive/library?contextType=&contextId=` maps to linked File Assets                                                                                                                                        |
-| File detail          | `DONE`    | Metadata, versions, active links and recent audit are exposed in Drive UI                                                                                                                                      |
-| Version upload       | `DONE`    | Existing R2 File Asset can receive a new current version                                                                                                                                                       |
-| Link/unlink API      | `DONE`    | Connect file to additional entities without copying                                                                                                                                                            |
-| Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later                                                                                                                                                           |
-| Export API           | `MISSING` | Create export job, generate ZIP + manifest                                                                                                                                                                     |
-| Cleanup API          | `MISSING` | Find candidates, approve archive/delete                                                                                                                                                                        |
-| Permission resolver  | `PARTIAL` | **2026-05-06:** Drive DB-backed file APIs now enforce entity-level RBAC scope (`OWN/DEPARTMENT/ALL`) via file owner/creator + department colleagues; project/entity graph-depth resolver can be expanded later |
+| Gap                  | Status    | Needed                                                                                                                                                                                      |
+| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Upload session       | `DONE`    | `POST /drive/upload-sessions`, presign, complete, fail, `HeadObject` gate                                                                                                                   |
+| Entity-aware upload  | `PARTIAL` | Session + storage home path resolver; reusable upload on CRM/Product **cards** still missing                                                                                                |
+| File list by library | `DONE`    | `GET /drive/library`, `GET /drive/files` with entity filters; Project hub sections via `GET /drive/project-hub/:projectId`; common file access filter applied across list/get/library flows |
+| Scoped folders API   | `DONE`    | `GET/POST /drive/folders` with `scopeEntityType` / `scopeEntityId`; listFolder scope guard                                                                                                  |
+| Folder placement API | `DONE`    | add/move/copy/remove placement; copy creates new `FileAsset` in R2 storage home                                                                                                             |
+| File detail          | `DONE`    | Metadata, versions, active links and recent audit are exposed in Drive UI                                                                                                                   |
+| Version upload       | `DONE`    | Existing R2 File Asset can receive a new current version                                                                                                                                    |
+| Link/unlink API      | `DONE`    | Connect file to additional entities without copying                                                                                                                                         |
+| Safe delete API      | `PARTIAL` | Unlink/archive exists; soft-delete/hard-delete later                                                                                                                                        |
+| Folder move/copy API | `PARTIAL` | Move/copy placement + copy `FileAsset` shipped; full Share/Move/Copy matrix + trash lifecycle per doc 03 **MISSING**                                                                        |
+| Export API           | `PARTIAL` | `POST /drive/zip-exports` — selection + typed kinds (`project`/`product`/`client`/`finance`/`task_attachments`); cancel queued job; Offer/Meeting/Call/Partner/Full backup **MISSING**      |
+| Cleanup API          | `PARTIAL` | `GET /drive/cleanup/candidates` (review only) + upload-session purge; confirmed destructive cleanup actions **MISSING**                                                                     |
+| Deal Won link policy | `DONE`    | `DriveDealWonLinksService` — auto `FileLink` to PROJECT/PRODUCT/CONTACT/COMPANY/EXTENSION                                                                                                   |
+| Permission resolver  | `PARTIAL` | **2026-05-18:** layered scope + sensitivity + action grants + entity context gates on library/folders/upload/link; inherited access по всем FileLink graphs — backlog                       |
+
+### 3.2.1. Phase 1 hardening closed
+
+- legacy raw-R2 project routes are disabled and no longer serve data;
+- `/drive/library` now applies the same file access filter as list/get/preview/export flows;
+- общий file access filter now blocks `PERSONAL` / `RESTRICTED` / sensitive confidentiality files for non-owner, non-uploader, non-granted viewers;
+- folder list/add/move/copy/remove now require file-level access, not only folder access;
+- upload session create and complete re-check `entityType` / `entityId` before writing `FileAsset` / `FileLink`;
+- `PROJECT` context access no longer depends on pre-existing linked files; direct project delivery/sales membership is checked first;
+- `WORK_SPACE` context access no longer depends on pre-existing linked files; direct workspace delivery graph membership is checked first;
+- `INVOICE` / `PAYMENT` / `EXPENSE` contexts now require an accessible project anchor instead of passing on entity existence alone;
+- `COMPANY` / `CONTACT` / `PARTNER` / `CLIENT_SERVICE_RECORD` scoped access now resolves through related project/deal/partner graphs instead of entity existence alone;
+- grant-only users now need action-specific permissions for version/share/delete/export; visibility alone is no longer enough for mutating or exporting files;
+- sensitive file grants are locked to `VIEW`, support optional `expiresAt`, and carry `reason` in audit metadata;
+- scoped folder `copy` now creates a new `FileAsset` plus the target entity `FileLink`; restricted/sensitive files cannot be copied as independent assets; business-linked files cannot be copied into Personal Drive;
+- archive/restore/trash audit actor is always `CurrentUser.id`;
+- batch archive/restore audit writes only for реально изменённых файлов.
 
 ### 3.3. Frontend UI
 
-| Gap                  | Status    | Needed                                                    |
-| -------------------- | --------- | --------------------------------------------------------- |
-| Libraries navigation | `MISSING` | Deals, Projects, Products, Clients, Finance, Partners...  |
-| File detail drawer   | `DONE`    | Links, versions, visibility/confidentiality badges, audit |
-| Entity quick attach  | `MISSING` | Reusable upload component for cards                       |
-| Purpose selector     | `MISSING` | Offer, Proof, Design, Delivery, Task Attachment, etc.     |
-| Contextual file tabs | `MISSING` | Files tab in Product, Client Portfolio, Finance cards     |
-| Export UI            | `MISSING` | Export by project/client/purpose/period                   |
-| Cleanup dashboard    | `MISSING` | Orphans, old task files, drafts, storage usage            |
-| Preview support      | `MISSING` | PDF/image/video/code previews                             |
-| Permission badges    | `DONE`    | Visibility/confidentiality badges in detail/list          |
-| Last selected view   | `MISSING` | Remember grid/list/table per user where useful            |
+| Gap                  | Status    | Needed                                                                                                                                    |
+| -------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Libraries navigation | `DONE`    | `DriveWorkspace` — System Library grid, entity scoped folder trees, Company/Personal trees, filters, bulk archive/restore                 |
+| Project hub UI       | `DONE`    | Folders + Deals / Products (+ Extensions) / Client / Tasks / Finance virtual sections (`DriveProjectHubNav`)                              |
+| Library actions UX   | `DONE`    | Capabilities by context (hub virtual vs folder vs link); scoped folder picker for move/copy; unlink                                       |
+| TASK/WORKSPACE entry | `DONE`    | Deep links, pinned library rows, Work Space → Drive buttons                                                                               |
+| File detail drawer   | `DONE`    | Links, versions, visibility/confidentiality badges, audit                                                                                 |
+| Entity quick attach  | `MISSING` | Reusable upload component for cards                                                                                                       |
+| Purpose selector     | `MISSING` | Offer, Proof, Design, Delivery, Task Attachment, etc.                                                                                     |
+| Contextual file tabs | `MISSING` | Files tab in Product, Client Portfolio, Finance cards                                                                                     |
+| Export UI            | `MISSING` | Export by project/client/purpose/period                                                                                                   |
+| Cleanup dashboard    | `MISSING` | Orphans, old task files, drafts, storage usage                                                                                            |
+| Preview support      | `MISSING` | PDF/image/video/code previews                                                                                                             |
+| Permission badges    | `DONE`    | Visibility/confidentiality badges in detail/list                                                                                          |
+| Last selected view   | `PARTIAL` | Main Drive page remembers cards/list/table view in local browser storage; per-user server preference can be added later if needed         |
+| Compact first screen | `PARTIAL` | Drive top area is compact and insights are hidden behind an action; heavy analytics should move to a dedicated Insights/Analytics surface |
 
 ---
 
@@ -181,50 +232,64 @@ Recommended endpoint family:
 | `POST /drive/exports`                      | Create export job                                        |
 | `GET /drive/cleanup/candidates`            | Review cleanup candidates                                |
 
-The old endpoints can remain temporarily as legacy wrappers:
-
-- `GET /drive/:projectId`
-- `POST /drive/:projectId/upload-url`
-- `GET /drive/:projectId/download-url`
-
-But they should call the new service layer or be marked deprecated.
+The old endpoints are now disabled and should not be reintroduced as compatibility wrappers. Any future compatibility layer must delegate into DB-backed `FileAsset` authorization instead of raw R2 path access.
 
 ### Phase 3 - Libraries UI
 
 1. Replace project-only Drive UI with Libraries navigation.
-2. Add Project/Product/Client/Finance/Partner/Work Space views.
+2. Split navigation into System Libraries, Company Drive, Personal Drive, Shared with me and Maintenance.
 3. Add file detail drawer.
 4. Add links list on file detail.
 5. Add version history.
 6. Add filters by purpose/type/entity/date/uploader.
+7. Keep the default Drive screen focused on folders/files; large explanations and analytics must be hidden behind actions or moved to an Insights tab.
 
 Recommended Drive page layout:
 
 ```text
 Drive
   Sidebar:
-    All Files
-    Deals
-    Projects
-    Products
-    Clients
-    Finance
-    Partners
-    Tasks
-    Work Spaces
-    Support
-    Company Library
-    Personal
-    Storage Admin
+    System Libraries
+      All Files
+      Deals
+      Projects
+      Products
+      Clients
+      Finance
+      Partners
+      Tasks
+      Work Spaces
+      Support
+    Free Drive
+      Company Drive
+      Personal Drive
+      Shared with me
+    Maintenance
+      Archive
+      Storage Admin
 
   Main:
-    Library header
+    Compact library header
     Filters
     Grid/List/Table
-    File detail drawer
+    File detail drawer on demand
+    Insights/Analytics on demand
 ```
 
 The current page can be refactored from `ProjectFolder[]` to `Library[]`.
+
+### Phase 3.5 - User Folder System
+
+1. Add `DriveFolder` for user-created folders in `COMPANY` and `PERSONAL` spaces.
+2. Add `FolderPlacement` for file/folder location inside user-created folders.
+3. System Libraries are not folders and cannot be moved/deleted by users.
+4. Move changes placement only.
+5. Share grants access to the same `FileAsset`.
+6. Copy creates a new independent `FileAsset` with copied-from metadata.
+7. Remove from folder removes only placement.
+8. Move to Trash hides the FileAsset everywhere when allowed.
+9. Delete forever is only from Trash / cleanup with audit and retention checks.
+10. Business-linked approved, finance-sensitive, legal-sensitive or project-critical files are protected from ordinary delete.
 
 ### Phase 4 - Module Integrations
 
@@ -261,119 +326,51 @@ Cleanup must never start from R2 object listing alone. It must start from DB met
 
 ## 6. Current Code References
 
-Runtime areas to refactor:
+Primary runtime (2026-05-18):
 
-- `apps/api/src/modules/drive/drive.service.ts`
-- `apps/api/src/modules/drive/drive.controller.ts`
-- `apps/web/src/lib/api/drive.ts`
-- `apps/web/src/app/(app)/drive/page.tsx`
-- `packages/database/prisma/schema.prisma`
+| Area          | Paths                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| API core      | `drive.service.ts`, `drive.controller.ts`, `drive-upload-session.service.ts`                            |
+| Folders / hub | `drive-folder.service.ts`, `drive-project-hub.service.ts`, `drive-folder-scope.ts`                      |
+| Storage home  | `drive-storage-home-*.ts`, `drive-tenant.ts`, `drive-upload-path.ts`                                    |
+| Policies      | `drive-deal-won-links.service.ts`, `drive-asset-access.where.ts`, `drive-action-capabilities.ts` (web)  |
+| Export        | `drive-zip-export.service.ts`, `drive-export-zip.worker.ts`                                             |
+| Web UI        | `apps/web/src/features/drive/DriveWorkspace.tsx`, `DriveProjectHubNav.tsx`, `drive-project-hub-view.ts` |
+| Schema        | `packages/database/prisma/schema/drive.prisma`                                                          |
 
-These files currently implement project-folder behavior and should be treated as `PARTIAL`, not final Drive architecture.
+**Legacy adapter (keep until R2 migration):** `DriveService.listFiles` / `getProjectStructure` — R2 prefix `Drive/projects/{projectId}/`.
 
 ---
 
 ## 7. Detailed Code Findings
 
-### 7.1. Backend service
+> **Note:** §7.1–7.5 describe the **pre-2025 DB migration spike** baseline. Current runtime matches §1 and §3; do not use §7 alone for implementation status.
 
-Current file: `apps/api/src/modules/drive/drive.service.ts`.
+### 7.1. Backend service (historical baseline)
 
-Findings:
+File: `apps/api/src/modules/drive/drive.service.ts`.
 
-- `DriveService` depends only on `ConfigService`, not database.
-- `listFiles(projectId, prefix)` lists R2 objects by prefix.
-- `getUploadUrl(projectId, fileName, contentType)` creates key directly as `Drive/projects/{projectId}/{fileName}`.
-- `getDownloadUrl(projectId, filePath)` creates presigned URL without checking FileAsset ownership or links.
-- `deleteFile(projectId, filePath)` physically deletes R2 object immediately.
-- `getProjectStructure(projectId)` builds folder tree from R2 keys.
+**Was (spike):** R2-only project prefix browser, no DB.
 
-Required change:
+**Now (2026-05-18):** DB-backed `listFileAssets`, grants, versions, archive, ZIP export helper, entity RBAC; R2 list/delete methods retained as **legacy** for old `Drive/projects/` keys. New uploads go through `DriveUploadSessionService` + storage home builder.
 
-- split into `StorageAdapter` and `DriveDomainService`;
-- keep R2 logic in adapter;
-- move business logic to DB-backed service;
-- replace physical delete with unlink/archive/soft-delete flow;
-- generate storage keys from canonical path policy;
-- add audit writes for every meaningful action.
+### 7.2. Backend controller (historical baseline)
 
-### 7.2. Backend controller
+**Was:** project-only routes.
 
-Current file: `apps/api/src/modules/drive/drive.controller.ts`.
+**Now:** upload sessions, files CRUD, folders (scoped), library, project-hub summary, zip-exports, cleanup-summary, grants, legacy `GET :projectId` R2 listing.
 
-Findings:
+### 7.3. Frontend API client (historical baseline)
 
-- route shape assumes every Drive operation belongs to one `projectId`;
-- permissions are only `DRIVE VIEW/ADD/DELETE`;
-- no entity context in upload;
-- no purpose/visibility/confidentiality;
-- no file detail, versioning, links, export, cleanup.
+**Now:** `apps/web/src/lib/api/drive.ts` — `FileAsset`, upload sessions, folders, library, project-hub, zip-exports, grants; legacy R2 project methods optional.
 
-Required change:
+### 7.4. Frontend page (historical baseline)
 
-- introduce entity-aware endpoints;
-- keep legacy project endpoints only during migration;
-- add request DTOs for upload session and file links;
-- pass current user into service for audit and permission checks;
-- add entity-level access guard/resolver.
+**Now:** `drive/page.tsx` hosts `DriveWorkspace` — full libraries cockpit (see §1). Not project-only sidebar.
 
-### 7.3. Frontend API client
+### 7.5. Prisma schema (historical baseline)
 
-Current file: `apps/web/src/lib/api/drive.ts`.
-
-Findings:
-
-- client types describe R2 entries, not File Assets;
-- methods are project-scoped;
-- no metadata, links, versions, audit or library query.
-
-Required change:
-
-- create types `FileAsset`, `FileVersion`, `FileLink`, `LibraryKey`, `UploadSession`;
-- replace `listFiles(projectId)` with `listLibraryFiles(query)`;
-- add upload session complete flow;
-- add link/unlink/version/export/cleanup methods.
-
-### 7.4. Frontend page
-
-Current file: `apps/web/src/app/(app)/drive/page.tsx`.
-
-Findings:
-
-- sidebar loads projects and displays them as folders;
-- `All Files` is empty and not a real all-files query;
-- upload is only allowed after selecting project;
-- no entity context;
-- no file drawer;
-- no version history;
-- no purpose;
-- no cleanup/export.
-
-Required change:
-
-- replace project sidebar with Library navigation;
-- add context filters and search;
-- add reusable `FileGrid`, `FileTable`, `FileDetailDrawer`;
-- add `UploadFileDialog` with purpose and visibility;
-- add Storage Admin view for cleanup/export.
-
-### 7.5. Prisma schema
-
-Current file: `packages/database/prisma/schema.prisma`.
-
-Findings:
-
-- no Drive/File models exist;
-- existing `AuditLog` can record file actions, but file-specific audit may need richer fields;
-- `TaskLink` already shows pattern for polymorphic entity links; `FileLink` can follow similar pattern;
-- core entities have no reverse file relations.
-
-Required change:
-
-- add Drive enums and models near Credentials/Domains or a new Drive section;
-- add Employee relation for uploaded/owned files;
-- add indexes on `entityType/entityId`, `purpose`, `status`, `createdAt`, `checksum`;
-- decide whether to reuse `AuditLog` or add `FileAuditEvent`.
+**Now:** `packages/database/prisma/schema/drive.prisma` — `FileAsset`, `FileVersion`, `FileLink`, `DriveFolder`, `DriveFolderItem`, `FileUploadSession`, `FileAuditEvent`, `FileAssetGrant`, `DriveZipExportJob`.
 
 ---
 
@@ -404,20 +401,16 @@ This avoids breaking existing uploaded files.
 
 ## 9. Implementation Priority
 
-Recommended practical order:
+**Completed through 2026-05-18 (Drive slice):** items 1–3, 5–7 (partial export), hub/scoped folders/storage home/TASK library UX — see §1.
 
-1. Data foundation + migration of existing R2 project files.
-2. Upload session + FileAsset creation.
-3. Project Library view using DB, not R2 listing.
-4. Deal Offer Materials integration.
-5. Product Library + Deal Won auto-links.
-6. Task/Work Space attachments.
-7. Safe delete/archive.
-8. Export by Project/Product/Client/Offer.
-9. Cleanup candidates for task-only and orphan files.
-10. Finance restricted documents.
+**Next recommended order:**
 
-This gives business value quickly while moving safely away from the old folder-only model.
+1. Reusable upload + purpose selector on CRM/Product/Task cards (module integrations §4).
+2. Full Share/Move/Copy permission matrix (`03-Permissions-Sharing-and-Audit.md`).
+3. Export catalog (Project/Product/Client/Offer types, TTL, cancel) per doc 06 §5.
+4. Cleanup candidates dashboard (DB-first orphan review, not R2 listing).
+5. Rich preview (PDF/image/video).
+6. Optional: migrate legacy `Drive/projects/` R2 keys to storage home (bulk, separate migration).
 
 ---
 

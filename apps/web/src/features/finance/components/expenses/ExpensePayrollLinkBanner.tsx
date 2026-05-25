@@ -1,48 +1,49 @@
 'use client';
 
 import Link from 'next/link';
-import { Banknote, ExternalLink } from 'lucide-react';
+import { Banknote } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
+import { salaryBoardMonthSheetHref } from '@/features/finance/constants/expense-payroll-deep-link';
 import { cn } from '@/lib/utils';
 
 export interface ExpensePayrollLinkBannerProps {
   payrollRunId: string;
-  /** Payroll run month label (YYYY-MM) when known from the API. */
   payrollMonth?: string | null;
+  salaryLineId?: string | null;
 }
 
+/** Compact payroll link row for expense detail sheet (Pay Now ↔ payroll ↔ month sheet). */
 export function ExpensePayrollLinkBanner({
   payrollRunId,
   payrollMonth,
+  salaryLineId,
 }: ExpensePayrollLinkBannerProps) {
+  const label = payrollMonth?.trim() || 'Payroll run';
+  const lineId = salaryLineId?.trim() || null;
+
   return (
-    <div className="border-border bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm">
-      <p className="text-foreground max-w-prose">
-        <span className="inline-flex items-center gap-1.5 font-medium">
-          <Banknote size={14} className="shrink-0 opacity-80" aria-hidden />
-          Payroll materialization
-        </span>
-        <span className="text-muted-foreground">
-          {' '}
-          — this expense was created from an approved payroll run (see run for salary lines and
-          audit).
-          {payrollMonth ? (
-            <>
-              {' '}
-              <span className="text-foreground/80 font-mono text-xs">({payrollMonth})</span>
-            </>
-          ) : null}
-        </span>
-      </p>
+    <div className="border-border/80 bg-muted/25 flex flex-wrap items-center gap-2 rounded-lg border px-2 py-1.5 text-xs">
+      <Banknote size={12} className="text-muted-foreground shrink-0" aria-hidden />
+      <span className="text-muted-foreground min-w-0 flex-1 truncate">Payroll · {label}</span>
+      {lineId ? (
+        <Link
+          href={salaryBoardMonthSheetHref(lineId)}
+          className={cn(
+            buttonVariants({ variant: 'ghost', size: 'sm' }),
+            'h-6 shrink-0 px-2 text-xs',
+          )}
+        >
+          Month
+        </Link>
+      ) : null}
       <Link
         href={`/finance/payroll/${payrollRunId}`}
         className={cn(
-          buttonVariants({ variant: 'outline', size: 'sm' }),
-          'inline-flex items-center gap-1',
+          buttonVariants({ variant: 'ghost', size: 'sm' }),
+          'h-6 shrink-0 px-2 text-xs',
         )}
       >
-        Open payroll run
-        <ExternalLink size={12} className="opacity-70" aria-hidden />
+        Run
       </Link>
     </div>
   );

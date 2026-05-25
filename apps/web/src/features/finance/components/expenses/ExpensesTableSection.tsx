@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Banknote, DollarSign, MoreHorizontal } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,10 +21,6 @@ import {
 import { StatusBadge } from '@/components/shared';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
 import { getExpenseStage, formatAmount } from '@/features/finance/constants/finance';
-import {
-  type ExpenseListNavigationSort,
-  expenseDetailHref,
-} from '@/features/finance/constants/project-expenses-drilldown';
 import type { Expense } from '@/lib/api/finance';
 import {
   resolveExpensePayrollMonthLabel,
@@ -32,22 +29,13 @@ import {
 
 interface ExpensesTableSectionProps {
   expenses: Expense[];
-  /** When set, row links include `?projectId=` for back-navigation parity. */
-  listProjectId?: string | null;
-  /** When set, row links include `?expensePlanId=` for back-navigation parity. */
-  listExpensePlanId?: string | null;
-  /** When set, detail links include the current list sort for back navigation. */
-  listSort?: ExpenseListNavigationSort;
-  fromBacklog?: boolean;
+  onOpen: (expense: Expense) => void;
   onRequestDelete: (expense: Expense) => void;
 }
 
 export function ExpensesTableSection({
   expenses,
-  listProjectId,
-  listExpensePlanId = null,
-  listSort,
-  fromBacklog = false,
+  onOpen,
   onRequestDelete,
 }: ExpensesTableSectionProps) {
   return (
@@ -83,15 +71,16 @@ export function ExpensesTableSection({
             return (
               <TableRow key={expense.id}>
                 <TableCell>
-                  <Link
-                    href={expenseDetailHref(expense.id, listProjectId, listSort, {
-                      fromBacklog,
-                      expensePlanId: listExpensePlanId?.trim() || undefined,
-                    })}
-                    className="text-primary font-medium hover:underline"
+                  <button
+                    type="button"
+                    onClick={() => onOpen(expense)}
+                    className={cn(
+                      'text-primary text-left font-medium hover:underline',
+                      'focus-visible:ring-ring rounded-sm focus-visible:ring-2 focus-visible:outline-none',
+                    )}
                   >
                     {expense.name}
-                  </Link>
+                  </button>
                   {expense.notes && (
                     <p className="text-muted-foreground max-w-[200px] truncate text-xs">
                       {expense.notes}

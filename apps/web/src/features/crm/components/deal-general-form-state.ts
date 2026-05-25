@@ -1,0 +1,161 @@
+import { contactIdListsEqual } from '@nbos/shared';
+import type { Deal } from '@/lib/api/deals';
+import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
+import { toDateInputValue } from './deal-general-tab.helpers';
+
+/** Editable General tab state (includes UI labels for search fields). */
+export interface DealGeneralDraft {
+  name: string | null;
+  amount: number | null;
+  paymentType: string | null;
+  taxStatus: string | null;
+  projectId: string | null;
+  linkedProjectLabel: string | null;
+  type: string | null;
+  maintenanceStartAt: string | null;
+  productCategory: string | null;
+  productType: string | null;
+  existingProductId: string | null;
+  existingProductPickLabel: string | null;
+  companyId: string | null;
+  companyPickLabel: string | null;
+  source: string | null;
+  sourceDetail: string | null;
+  sourcePartnerId: string | null;
+  sourceContactId: string | null;
+  marketingAccountId: string | null;
+  marketingActivityId: string | null;
+  marketingPickLabel: string | null;
+  partnerPickLabel: string | null;
+  clientPickLabel: string | null;
+  notes: string | null;
+  contactIds: string[];
+  contactLabels: Record<string, string>;
+  sellerId: string | null;
+  sellerDisplayLabel: string | null;
+  sellerAssistantId: string | null;
+  sellerAssistantDisplayLabel: string | null;
+  pmId: string | null;
+  pmDisplayLabel: string | null;
+  deadline: string | null;
+}
+
+/** Payload allowed by PUT /deals/:id (includes ids not on Deal view model). */
+export type DealGeneralUpdatePayload = Partial<Deal> & {
+  contactIds?: string[];
+  sellerId?: string | null;
+};
+
+export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
+  const { contactIds, contactLabels } = contactIdsAndLabelsFromRows(
+    deal.contact ?? null,
+    deal.additionalContacts,
+  );
+
+  return {
+    name: deal.name,
+    amount: deal.amount,
+    paymentType: deal.paymentType,
+    taxStatus: deal.taxStatus ?? null,
+    projectId: deal.projectId,
+    linkedProjectLabel: deal.handoff?.project?.name ?? null,
+    type: deal.type ?? null,
+    maintenanceStartAt: toDateInputValue(deal.maintenanceStartAt),
+    productCategory: deal.productCategory,
+    productType: deal.productType,
+    existingProductId: deal.existingProductId,
+    existingProductPickLabel: deal.existingProduct?.name ?? null,
+    companyId: deal.companyId ?? null,
+    companyPickLabel: deal.company?.name ?? null,
+    source: deal.source,
+    sourceDetail: deal.sourceDetail,
+    sourcePartnerId: deal.sourcePartnerId,
+    sourceContactId: deal.sourceContactId,
+    marketingAccountId: deal.marketingAccountId,
+    marketingActivityId: deal.marketingActivityId,
+    marketingPickLabel: deal.marketingAccount?.name ?? deal.marketingActivity?.title ?? null,
+    partnerPickLabel: deal.sourcePartner?.name ?? null,
+    clientPickLabel: deal.sourceContact
+      ? `${deal.sourceContact.firstName} ${deal.sourceContact.lastName}`
+      : null,
+    notes: deal.notes,
+    contactIds,
+    contactLabels,
+    sellerId: deal.seller?.id ?? null,
+    sellerDisplayLabel: deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null,
+    sellerAssistantId: deal.sellerAssistant?.id ?? null,
+    sellerAssistantDisplayLabel: deal.sellerAssistant
+      ? `${deal.sellerAssistant.firstName} ${deal.sellerAssistant.lastName}`
+      : null,
+    pmId: deal.pmId,
+    pmDisplayLabel: deal.pm ? `${deal.pm.firstName} ${deal.pm.lastName}` : null,
+    deadline: toDateInputValue(deal.deadline),
+  };
+}
+
+function dateOrNull(v: string | null): string | null {
+  if (!v || !String(v).trim()) return null;
+  return v;
+}
+
+export function buildDealGeneralPatch(
+  snap: DealGeneralDraft,
+  draft: DealGeneralDraft,
+): DealGeneralUpdatePayload {
+  const out: DealGeneralUpdatePayload = {};
+
+  if (draft.name !== snap.name) out.name = draft.name;
+  if (draft.amount !== snap.amount) out.amount = draft.amount;
+  if (draft.paymentType !== snap.paymentType) out.paymentType = draft.paymentType;
+  if (draft.taxStatus !== snap.taxStatus) out.taxStatus = draft.taxStatus ?? undefined;
+  if (draft.projectId !== snap.projectId) out.projectId = draft.projectId;
+  if (draft.type !== snap.type) out.type = draft.type;
+  if (dateOrNull(draft.maintenanceStartAt) !== dateOrNull(snap.maintenanceStartAt)) {
+    out.maintenanceStartAt = dateOrNull(draft.maintenanceStartAt);
+  }
+  if (draft.productCategory !== snap.productCategory) {
+    out.productCategory = draft.productCategory;
+    out.productType = draft.productType;
+  } else if (draft.productType !== snap.productType) {
+    out.productType = draft.productType;
+  }
+  if (draft.existingProductId !== snap.existingProductId) {
+    out.existingProductId = draft.existingProductId;
+  }
+  if (draft.companyId !== snap.companyId) out.companyId = draft.companyId;
+
+  if (draft.source !== snap.source) out.source = draft.source;
+  if (draft.sourceDetail !== snap.sourceDetail) out.sourceDetail = draft.sourceDetail;
+  if (draft.sourcePartnerId !== snap.sourcePartnerId) {
+    out.sourcePartnerId = draft.sourcePartnerId;
+  }
+  if (draft.sourceContactId !== snap.sourceContactId) {
+    out.sourceContactId = draft.sourceContactId;
+  }
+  if (draft.marketingAccountId !== snap.marketingAccountId) {
+    out.marketingAccountId = draft.marketingAccountId;
+  }
+  if (draft.marketingActivityId !== snap.marketingActivityId) {
+    out.marketingActivityId = draft.marketingActivityId;
+  }
+
+  if (draft.notes !== snap.notes) out.notes = draft.notes;
+
+  if (!contactIdListsEqual(draft.contactIds, snap.contactIds)) {
+    out.contactIds = draft.contactIds;
+  }
+  if (draft.sellerId !== snap.sellerId) out.sellerId = draft.sellerId;
+  if (draft.sellerAssistantId !== snap.sellerAssistantId) {
+    out.sellerAssistantId = draft.sellerAssistantId;
+  }
+  if (draft.pmId !== snap.pmId) out.pmId = draft.pmId;
+  if (dateOrNull(draft.deadline) !== dateOrNull(snap.deadline)) {
+    out.deadline = dateOrNull(draft.deadline);
+  }
+
+  return out;
+}
+
+export function isDealGeneralDirty(a: DealGeneralDraft, b: DealGeneralDraft): boolean {
+  return JSON.stringify(a) !== JSON.stringify(b);
+}

@@ -49,6 +49,20 @@ export interface CreateFileLinkDto {
   linkedById?: string;
 }
 
+export interface CreateFileAssetGrantDto {
+  granteeEmployeeId: string;
+  /** Defaults to VIEW. See `FILE_GRANT_PERMISSIONS` in drive-grant-permissions. */
+  permission?: string;
+  /** Optional ISO date for temporary access. */
+  expiresAt?: string;
+  /** Optional audit reason for explicit sharing. */
+  reason?: string;
+}
+
+export interface AddFolderFileDto {
+  fileAssetId: string;
+}
+
 export interface FileAssetQueryParams {
   entityType?: string;
   entityId?: string;
@@ -56,13 +70,21 @@ export interface FileAssetQueryParams {
   status?: string;
   sourceModule?: string;
   search?: string;
+  /** When true, exclude files the viewer owns as sole uploader (NBOS Shared with me). */
+  sharedWithMe?: boolean;
+  /** When true, list soft-deleted files (Trash) instead of active library files. */
+  trash?: boolean;
+  /** Project hub: files linked only to PROJECT shell, not Deal/Product/Task/etc. */
+  projectHubProjectFiles?: boolean;
+  projectId?: string;
 }
 
 export interface CreateUploadSessionDto {
   fileName: string;
   contentType: string;
-  entityType: string;
-  entityId: string;
+  entityType?: string;
+  entityId?: string;
+  folderId?: string;
   displayName?: string;
   purpose?: string;
   sourceModule?: string;
@@ -90,6 +112,7 @@ export interface CompleteFileVersionDto {
 
 /** Snapshot of `FileUploadSession` fields needed to materialize a File Asset after R2 upload. */
 export interface FileUploadSessionCompleteRow {
+  fileAssetId?: string | null;
   displayName: string;
   originalName: string | null;
   mimeType: string | null;
@@ -101,4 +124,33 @@ export interface FileUploadSessionCompleteRow {
   visibility: string;
   confidentiality: string;
   linkType: string;
+}
+
+export interface CreateDriveFolderDto {
+  name: string;
+  /** Required for Company/Personal; optional when scopeEntityType + scopeEntityId are set (defaults to COMPANY). */
+  space?: string;
+  parentId?: string;
+  scopeEntityType?: string;
+  scopeEntityId?: string;
+}
+
+export interface DriveFolderQueryParams {
+  space?: string;
+  parentId?: string;
+  scopeEntityType?: string;
+  scopeEntityId?: string;
+}
+
+export interface MoveFolderFileDto {
+  sourceFolderId: string;
+  targetFolderId: string;
+}
+
+export interface CopyFolderFileDto {
+  targetFolderId: string;
+}
+
+export interface RenameDriveFolderDto {
+  name: string;
 }

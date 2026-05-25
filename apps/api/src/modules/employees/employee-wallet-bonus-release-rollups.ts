@@ -6,6 +6,9 @@ import { BONUS_RELEASE_COUNTING_STATUSES } from '../bonus/product-bonus-pool.con
 export interface BonusReleaseForWalletRollup {
   bonusEntryId: string;
   amount: Decimal;
+  kpiBurnedAmount: Decimal | null;
+  kpiBurnedReason: string | null;
+  payrollCarryOverAmount: Decimal | null;
   status: BonusReleaseStatusEnum;
   updatedAt: Date;
   payrollRun: { payrollMonth: string } | null;
@@ -15,6 +18,9 @@ export interface WalletReleaseRollup {
   releasedAmount: Decimal;
   paidAmount: Decimal;
   remainingAmount: Decimal;
+  kpiBurnedAmount: Decimal;
+  kpiBurnedReason: string | null;
+  payrollCarryOverAmount: Decimal;
   payrollMonth: string | null;
 }
 
@@ -26,6 +32,8 @@ function rollupOneEntry(
 ): WalletReleaseRollup {
   let released = BONUS_POOL_ZERO;
   let paid = BONUS_POOL_ZERO;
+  let kpiBurned = BONUS_POOL_ZERO;
+  let carryOver = BONUS_POOL_ZERO;
 
   for (const r of releases) {
     if (COUNTING.has(r.status)) {
@@ -34,6 +42,12 @@ function rollupOneEntry(
     if (r.status === 'PAID') {
       paid = paid.add(r.amount);
     }
+    if (r.kpiBurnedAmount != null && r.kpiBurnedAmount.gt(0)) {
+      kpiBurned = kpiBurned.add(r.kpiBurnedAmount);
+    }
+    if (r.payrollCarryOverAmount != null && r.payrollCarryOverAmount.gt(0)) {
+      carryOver = carryOver.add(r.payrollCarryOverAmount);
+    }
   }
 
   const remaining = Decimal.max(BONUS_POOL_ZERO, planned.minus(paid));
@@ -41,11 +55,21 @@ function rollupOneEntry(
   const payrollHit = sorted.find(
     (r) => r.payrollRun != null && (r.status === 'INCLUDED_IN_PAYROLL' || r.status === 'PAID'),
   );
+  const burnedReasonHit = sorted.find(
+    (r) =>
+      r.kpiBurnedAmount != null &&
+      r.kpiBurnedAmount.gt(0) &&
+      r.kpiBurnedReason != null &&
+      r.kpiBurnedReason.trim() !== '',
+  );
 
   return {
     releasedAmount: released,
     paidAmount: paid,
     remainingAmount: remaining,
+    kpiBurnedAmount: kpiBurned,
+    kpiBurnedReason: burnedReasonHit?.kpiBurnedReason?.trim() ?? null,
+    payrollCarryOverAmount: carryOver,
     payrollMonth: payrollHit?.payrollRun?.payrollMonth ?? null,
   };
 }

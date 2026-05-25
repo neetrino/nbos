@@ -17,10 +17,10 @@ describe('resolveBlockerDirectActions', () => {
     ]);
   });
 
-  it('normalizes kickoff checklist item fields for product blockers', () => {
+  it('normalizes checklist instance fields for product blockers', () => {
     const actions = resolveBlockerDirectActions({
       context: 'product',
-      errors: [{ field: 'kickoffChecklist.scope', message: 'Scope approved' }],
+      errors: [{ field: 'checklist.instance-1', message: 'Starting checklist must be completed' }],
     });
 
     expect(actions).toEqual([

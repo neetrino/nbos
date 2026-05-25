@@ -15,6 +15,10 @@ import { SupportModule } from './modules/support/support.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { BonusModule } from './modules/bonus/bonus.module';
 import { PayrollRunsModule } from './modules/payroll-runs/payroll-runs.module';
+import { CompensationProfilesModule } from './modules/compensation-profiles/compensation-profiles.module';
+import { KpiPoliciesModule } from './modules/kpi-policies/kpi-policies.module';
+import { BonusPoliciesModule } from './modules/bonus-policies/bonus-policies.module';
+import { DomainsModule } from './modules/domains/domains.module';
 import { ClientServicesModule } from './modules/client-services/client-services.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { CredentialsModule } from './modules/credentials/credentials.module';
@@ -35,6 +39,7 @@ import { TechnicalModule } from './modules/technical/technical.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
+import { ChecklistTemplatesModule } from './modules/checklist-templates/checklist-templates.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AuthGuard } from './common/guards/auth.guard';
@@ -62,6 +67,10 @@ import { PermissionGuard } from './common/guards/permission.guard';
     ExpensesModule,
     BonusModule,
     PayrollRunsModule,
+    CompensationProfilesModule,
+    KpiPoliciesModule,
+    BonusPoliciesModule,
+    DomainsModule,
     ClientServicesModule,
     AuditModule,
     CredentialsModule,
@@ -82,6 +91,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
     RolesModule,
     DepartmentsModule,
     InvitationsModule,
+    ChecklistTemplatesModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -46,6 +46,8 @@ export interface CreateCalendarMeetingDto {
   productId?: string | null;
   dealId?: string | null;
   contactId?: string | null;
+  /** Required when overlap checks find conflicts; stored in audit. */
+  conflictOverrideReason?: string | null;
 }
 
 export type UpdateCalendarMeetingDto = Partial<CreateCalendarMeetingDto>;

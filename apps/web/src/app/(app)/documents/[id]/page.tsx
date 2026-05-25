@@ -7,7 +7,7 @@ import { ArrowLeft, Archive, Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PageHeader, ErrorState, LoadingState } from '@/components/shared';
+import { PageHero, ErrorState, LoadingState } from '@/components/shared';
 import { formatDocumentActivityDetail } from '@/features/documents/document-activity-format';
 import { DocumentAttachmentsPanel } from '@/features/documents/document-attachments-panel';
 import { DocumentHtmlViewer } from '@/features/documents/DocumentHtmlViewer';
@@ -152,35 +152,47 @@ export default function DocumentDetailPage() {
 
       {doc ? (
         <>
-          <PageHeader title={doc.title} description={doc.description ?? undefined}>
-            {canDelete && doc.status === 'ARCHIVED' ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={() => void handleRestore()}
-                disabled={restoring}
-              >
-                {restoring ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <RotateCcw size={14} />
-                )}
-                Restore
-              </Button>
-            ) : canDelete && doc.status !== 'ARCHIVED' ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={handleArchive}
-                disabled={archiving}
-              >
-                {archiving ? <Loader2 size={14} className="animate-spin" /> : <Archive size={14} />}
-                Archive
-              </Button>
-            ) : null}
-          </PageHeader>
+          <PageHero
+            title={doc.title}
+            trailing={
+              canDelete && doc.status === 'ARCHIVED' ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => void handleRestore()}
+                  disabled={restoring}
+                >
+                  {restoring ? (
+                    <Loader2 size={14} className="animate-spin" aria-hidden />
+                  ) : (
+                    <RotateCcw size={14} aria-hidden />
+                  )}
+                  Restore
+                </Button>
+              ) : canDelete && doc.status !== 'ARCHIVED' ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={handleArchive}
+                  disabled={archiving}
+                >
+                  {archiving ? (
+                    <Loader2 size={14} className="animate-spin" aria-hidden />
+                  ) : (
+                    <Archive size={14} aria-hidden />
+                  )}
+                  Archive
+                </Button>
+              ) : null
+            }
+          />
+          {doc.description ? (
+            <p className="text-muted-foreground text-sm">{doc.description}</p>
+          ) : null}
 
           <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
             <DocumentStatusBadge status={doc.status} />

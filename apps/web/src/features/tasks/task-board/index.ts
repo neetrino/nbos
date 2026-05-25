@@ -3,18 +3,22 @@ export {
   KANBAN_STATUS_MAP,
   getDeadlineColumn,
   getDueDateForDeadlineColumn,
+  taskMatchesDeadlineColumn,
+  taskMatchesKanbanStatusColumn,
+  taskMatchesMyPlanColumn,
 } from './task-board-constants';
+export { reorderTasksInColumn } from './reorder-tasks-in-column';
 export { TaskMiniCard, type TaskBoardAction } from './TaskMiniCard';
 export {
   WORKSPACE_KANBAN_COLUMN_DEFS,
+  buildDeadlineKanbanColumns,
   buildWorkspaceKanbanColumns,
-  isDeferredOrCancelledStatus,
-  partitionWorkspaceSecondaryTasks,
-  taskBelongsInWorkspacePrimaryKanban,
 } from './workspace-kanban';
-export { buildMyPlanColumns } from './my-plan-columns';
-export { TaskListTableView } from './TaskListTableView';
 export {
-  TaskOffPrimaryBoardSection,
-  type TaskOffPrimaryBoardSectionProps,
-} from './TaskOffPrimaryBoardSection';
+  WORKSPACE_PLANNING_COLUMN_DEFS,
+  buildWorkspacePlanningColumns,
+  resolvePlanningColumnKey,
+} from './workspace-planning-kanban';
+export { buildMyPlanColumns } from './my-plan-columns';
+export { applyTaskToKanbanColumn } from './apply-task-to-kanban-column';
+export { TaskListTableView } from './TaskListTableView';

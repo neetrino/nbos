@@ -64,6 +64,7 @@ Sidebar содержит top-level модули, а не все возможны
 Dashboard
 CRM
 Marketing
+Delivery Board
 Project Hub
 Tasks
 Finance
@@ -162,12 +163,28 @@ CRM processes leads/deals.
 ```text
 Project Hub
   Projects
-  Products / Delivery Board
+  Products
   Extensions
   Closed / Archived
 ```
 
 Project Hub - продуктово-центричный центр проектов, продуктов и extensions.
+
+### Delivery Board
+
+- Путь: `/delivery-board`
+- Назначение: главный operational board процесса разработки и передачи.
+- Доступ: CEO / Head of Delivery / PM / участники delivery по RBAC.
+
+`Delivery Board` показывает все активные `Product` и `Extension` на одной доске:
+
+```text
+Starting | Development | QA | Transfer
+```
+
+Она не является отдельным хранилищем данных. Board строится как view над `Product`, `Extension`, stage gates, blockers, tasks, credentials, finance dependencies and technical readiness.
+
+Project page не должна дублировать тяжёлую Delivery Board. Если в будущем потребуется project-level delivery block, он должен переиспользовать core components Delivery Board с фильтром по `projectId`.
 
 ### Tasks
 
@@ -425,15 +442,40 @@ PersonalLink -> Dashboard Pinned Actions
 
 ## Header / Topbar canon
 
-Header должен быть лёгким и глобальным.
+Header делится на две зоны:
 
-Содержит:
+```text
+[ Module context bar (left) ]     [ Global actions (right) ]
+```
+
+### Global actions (right)
 
 - global search / quick switcher;
+- quick note (если включено);
 - notifications;
 - messenger shortcut, если включено;
 - user profile / My Account;
 - session menu.
+
+### Module context bar (left)
+
+Опциональная **per-route** зона. Не обязана совпадать с sidebar.
+
+Типы контента:
+
+- `nav` — section pills / links (например Finance: Overview, Revenue, Expenses, Payroll & bonus);
+- `actions` — кнопки процесса (`New Invoice`, `Start import`, …);
+- `custom` — редкие составные блоки.
+
+Регистрация:
+
+- **layout** задаёт default (`useHeaderContextLayout`);
+- **page** может переопределить (`useHeaderContext`);
+- resolved = page ?? layout ?? empty.
+
+Sidebar и module context bar — независимые источники; совпадение (Finance zones) — продуктовое решение, не техническое правило.
+
+Второй уровень навигации внутри зоны (Orders / Invoices / …) остаётся в **Module Header (PageHero)**, не дублируется в Topbar.
 
 Header не содержит постоянную глобальную кнопку `Create`.
 

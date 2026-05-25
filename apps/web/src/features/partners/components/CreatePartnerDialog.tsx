@@ -27,19 +27,26 @@ import {
   PARTNER_DEFAULT_PERCENT_MAX,
 } from '@/features/partners/constants/partners';
 import { parsePartnerDefaultPercentInput } from '@/features/partners/utils/partner-default-percent';
-import { partnersApi } from '@/lib/api/partners';
+import { PartnerNotesStartFields } from '@/features/partners/components/PartnerNotesStartFields';
+import { partnersApi, type Partner } from '@/lib/api/partners';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
-const CONTACTS_PAGE_SIZE = 200;
+import { PARTNER_CONTACTS_PAGE_SIZE } from '@/features/partners/constants/partner-contacts-page-size';
 
 interface CreatePartnerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated?: (partner?: Partner) => void;
+  defaultName?: string;
 }
 
-export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePartnerDialogProps) {
+export function CreatePartnerDialog({
+  open,
+  onOpenChange,
+  onCreated,
+  defaultName = '',
+}: CreatePartnerDialogProps) {
   const [loading, setLoading] = useState(false);
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -52,7 +59,14 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
     defaultPercent: String(DEFAULT_PARTNER_DEFAULT_PERCENT),
     status: 'ACTIVE',
     contactId: 'none',
+    notes: '',
+    startDate: '',
   });
+
+  useEffect(() => {
+    if (!open || !defaultName.trim()) return;
+    setForm((prev) => ({ ...prev, name: defaultName.trim() }));
+  }, [open, defaultName]);
 
   useEffect(() => {
     if (!open) return;
@@ -60,7 +74,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
     setContactsLoading(true);
     setContactsError(null);
     contactsApi
-      .getAll({ page: 1, pageSize: CONTACTS_PAGE_SIZE })
+      .getAll({ page: 1, pageSize: PARTNER_CONTACTS_PAGE_SIZE })
       .then((res) => {
         if (!cancelled) {
           setContacts(res.items);
@@ -94,6 +108,8 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
       defaultPercent: String(DEFAULT_PARTNER_DEFAULT_PERCENT),
       status: 'ACTIVE',
       contactId: 'none',
+      notes: '',
+      startDate: '',
     });
     setFormError(null);
     setContactsError(null);
@@ -111,15 +127,17 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
     setLoading(true);
     setFormError(null);
     try {
-      await partnersApi.create({
+      const created = await partnersApi.create({
         name: form.name.trim(),
         level: form.level,
         direction: form.direction,
         defaultPercent: pct,
         status: form.status,
         ...(form.contactId !== 'none' ? { contactId: form.contactId } : {}),
+        ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
+        ...(form.startDate.trim() ? { startDate: form.startDate.trim() } : {}),
       });
-      onCreated();
+      onCreated?.(created);
       onOpenChange(false);
       reset();
     } catch (caught) {
@@ -142,7 +160,7 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>New Partner</DialogTitle>
         </DialogHeader>
@@ -241,6 +259,13 @@ export function CreatePartnerDialog({ open, onOpenChange, onCreated }: CreatePar
               </Select>
             </div>
           </div>
+
+          <PartnerNotesStartFields
+            notes={form.notes}
+            startDate={form.startDate}
+            onNotesChange={(notes) => setForm({ ...form, notes })}
+            onStartDateChange={(startDate) => setForm({ ...form, startDate })}
+          />
 
           <div>
             <Label>Primary contact</Label>

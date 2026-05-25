@@ -1,47 +1,65 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
-import { Plus, CheckSquare, FolderKanban } from 'lucide-react';
+import { Plus, CheckSquare } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
-  PageHeader,
-  FilterBar,
+  PageHero,
+  ViewModeSwitch,
+  IntegratedSearchFilters,
   EmptyState,
   ErrorState,
   LoadingState,
-  SegmentedControl,
+  type ViewModeOption,
 } from '@/components/shared';
 import { TASKS_BOARD_VIEW_SEGMENTS } from '@/features/tasks/tasks-board-view-segments';
+import { TasksWorkflowScopeBanner } from '@/features/tasks/components/TasksWorkflowScopeBanner';
 import { useTasksListPage } from '@/features/tasks/use-tasks-list-page';
+import { DEFAULT_BOARD_LIFECYCLE_SCOPE } from '@/features/shared/board-lifecycle';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { QuickCreateTaskDialog } from '@/features/tasks/components/QuickCreateTaskDialog';
-import { TasksPageSettingsDialog } from '@/features/tasks/components/TasksPageSettingsDialog';
+import { TasksPageSettingsSheet } from '@/features/tasks/components/TasksPageSettingsSheet';
+import type { TasksListBoardView } from '@/features/tasks/tasks-list-types';
 
-export default function TasksPage() {
+const TASKS_VIEW_OPTIONS: ViewModeOption<TasksListBoardView>[] = TASKS_BOARD_VIEW_SEGMENTS.map(
+  (segment) => ({
+    value: segment.value,
+    label: typeof segment.label === 'string' ? segment.label : String(segment.value),
+    icon: segment.icon,
+    ariaLabel: segment.ariaLabel,
+  }),
+);
+
+function TasksPageContent() {
   const {
-    tasks,
     stats,
     loading,
     error,
     search,
     setSearch,
+    boardScope,
+    displayTasks,
     filters,
-    setFilters,
+    handleFilterChange,
+    handleClearFilters,
     boardView,
     setBoardView,
     fetchTasks,
     filterConfigs,
     handleExportScopeStatsCsv,
     sheetOpen,
-    setSheetOpen,
+    handleTaskSheetOpenChange,
     quickCreateOpen,
     setQuickCreateOpen,
     defaultCreateDueDate,
     setDefaultCreateDueDate,
+    setQuickCreateColumnKey,
     creatorId,
     creatorReady,
     selectedTaskId,
     handleTaskUpdate,
+    handleTaskDelete,
     handleTaskCreated,
     renderBoard,
   } = useTasksListPage();
@@ -50,58 +68,65 @@ export default function TasksPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <div className="shrink-0">
-        <PageHeader title="Tasks" description={`${tasks.length} tasks`}>
-          <Link href="/work-spaces" className={buttonVariants({ variant: 'outline' })}>
-            <FolderKanban size={16} />
-            Work Spaces
-          </Link>
-          <TasksPageSettingsDialog
-            exportDisabled={loading || !stats}
-            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+      <PageHero
+        title="Tasks"
+        search={
+          <IntegratedSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by task, project, product, workspace…"
+            filters={filterConfigs}
+            filterValues={{
+              boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+              ...filters,
+            }}
+            onFilterChange={handleFilterChange}
+            onClearAll={handleClearFilters}
           />
-          <SegmentedControl
-            value={boardView}
-            onValueChange={setBoardView}
-            items={TASKS_BOARD_VIEW_SEGMENTS}
-          />
-          <Button
-            onClick={() => setQuickCreateOpen(true)}
-            disabled={newTaskDisabled}
-            title={newTaskDisabled ? 'Employee profile required' : undefined}
-          >
-            <Plus size={16} />
-            New Task
-          </Button>
-        </PageHeader>
-      </div>
+        }
+        viewMode={
+          <ViewModeSwitch value={boardView} onChange={setBoardView} options={TASKS_VIEW_OPTIONS} />
+        }
+        trailing={
+          <>
+            <TasksPageSettingsSheet
+              exportDisabled={loading || !stats}
+              onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            />
+            <Button
+              onClick={() => setQuickCreateOpen(true)}
+              disabled={newTaskDisabled}
+              title={newTaskDisabled ? 'Employee profile required' : undefined}
+            >
+              <Plus size={16} aria-hidden />
+              New Task
+            </Button>
+          </>
+        }
+      />
 
-      <div className="shrink-0">
-        <FilterBar
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search tasks..."
-          filters={filterConfigs}
-          filterValues={filters}
-          onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-          onClearFilters={() => setFilters({})}
-        />
-      </div>
+      <TasksWorkflowScopeBanner scope={boardScope} />
 
       {loading ? (
         <LoadingState />
       ) : error ? (
         <ErrorState description={error} onRetry={fetchTasks} />
-      ) : tasks.length === 0 && boardView !== 'list' ? (
+      ) : creatorReady && !creatorId ? (
         <EmptyState
           icon={CheckSquare}
-          title="No tasks yet"
-          description="Create your first task to get started"
+          title="Employee profile required"
+          description="Complete your employee profile to load tasks you participate in and use My Plan."
           action={
-            <Button onClick={() => setQuickCreateOpen(true)} disabled={newTaskDisabled}>
-              <Plus size={16} /> Create First Task
-            </Button>
+            <Link href="/my-account" className={buttonVariants({ variant: 'default' })}>
+              Open My Account
+            </Link>
           }
+        />
+      ) : displayTasks.length === 0 ? (
+        <EmptyState
+          icon={CheckSquare}
+          title="No tasks in this view"
+          description="Try another status scope or clear filters."
         />
       ) : (
         renderBoard()
@@ -110,15 +135,19 @@ export default function TasksPage() {
       <TaskSheet
         taskId={selectedTaskId}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={handleTaskSheetOpenChange}
         onUpdate={handleTaskUpdate}
+        onDelete={handleTaskDelete}
       />
 
       <QuickCreateTaskDialog
         open={quickCreateOpen}
         onOpenChange={(open) => {
           setQuickCreateOpen(open);
-          if (!open) setDefaultCreateDueDate(null);
+          if (!open) {
+            setDefaultCreateDueDate(null);
+            setQuickCreateColumnKey(null);
+          }
         }}
         creatorId={creatorId ?? ''}
         creatorReady={creatorReady}
@@ -126,5 +155,13 @@ export default function TasksPage() {
         onCreated={handleTaskCreated}
       />
     </div>
+  );
+}
+
+export default function TasksPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <TasksPageContent />
+    </Suspense>
   );
 }

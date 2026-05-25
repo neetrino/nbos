@@ -57,14 +57,7 @@ const CRM_ACTION_RULES = [
     key: 'contract',
     label: 'Go to contract',
     target: 'details',
-    fields: [
-      'responseDueAt',
-      'companyId',
-      'contractProof',
-      'pmId',
-      'deadline',
-      'existingProductId',
-    ],
+    fields: ['companyId', 'contractProof', 'pmId', 'deadline', 'existingProductId'],
   },
   {
     key: 'finance',
@@ -79,7 +72,7 @@ const PRODUCT_ACTION_RULES = [
     key: 'pm-intake',
     label: 'Open product overview',
     target: 'project',
-    fields: ['kickoffChecklist', 'description', 'deadline', 'order'],
+    fields: ['checklist', 'description', 'deadline'],
   },
   {
     key: 'product-workspace-tasks',
@@ -99,6 +92,12 @@ const PRODUCT_ACTION_RULES = [
     target: 'project',
     fields: ['extensions'],
   },
+  {
+    key: 'product-finance',
+    label: 'Open Finance',
+    target: 'project',
+    fields: ['order', 'finance'],
+  },
 ] as const;
 
 const EXTENSION_ACTION_RULES = [
@@ -112,7 +111,7 @@ const EXTENSION_ACTION_RULES = [
     key: 'extension-intake',
     label: 'Open extension on product',
     target: 'project',
-    fields: ['description', 'assignedTo', 'order'],
+    fields: ['checklist', 'description', 'assignedTo'],
   },
 ] as const;
 
@@ -134,7 +133,7 @@ export function resolveBlockerDirectActions({
 }
 
 function normalizeField(field: string): string {
-  if (field.startsWith('kickoffChecklist.')) return 'kickoffChecklist';
+  if (field.startsWith('checklist.')) return 'checklist';
   return field;
 }
 
@@ -146,7 +145,7 @@ const CRM_MARKETING_FIELDS = new Set([
   'whichOne',
 ]);
 
-const LEAD_CONTACT_FIELDS = new Set(['name', 'contactName', 'contactMethod']);
+const LEAD_CONTACT_FIELDS = new Set(['name', 'contactName', 'contact', 'contactMethod']);
 
 function normalizedErrorFields(errors: ApiFieldError[]): string[] {
   return errors.map((error) => normalizeField(error.field));
@@ -185,6 +184,9 @@ export function resolveLeadSheetSectionFromErrors(errors: ApiFieldError[]): Lead
   const fieldSet = new Set(normalizedErrorFields(errors));
   if ([...fieldSet].some((field) => CRM_MARKETING_FIELDS.has(field))) {
     return LEAD_SHEET_SECTION.MARKETING;
+  }
+  if (fieldSet.has('notes')) {
+    return LEAD_SHEET_SECTION.NOTES;
   }
   if ([...fieldSet].some((field) => LEAD_CONTACT_FIELDS.has(field))) {
     return LEAD_SHEET_SECTION.CONTACT;

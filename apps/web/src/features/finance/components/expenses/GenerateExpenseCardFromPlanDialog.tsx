@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import { expensePlansApi } from '@/lib/api/expense-plans';
@@ -92,11 +93,11 @@ export function GenerateExpenseCardFromPlanDialog({
           </p>
           <div>
             <Label htmlFor="card-due">Due date</Label>
-            <Input
+            <NbosDatePicker
               id="card-due"
-              type="date"
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              onChange={setDueDate}
+              aria-label="Due date"
             />
           </div>
           <DialogFooter>

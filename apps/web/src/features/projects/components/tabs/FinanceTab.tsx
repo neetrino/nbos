@@ -1,8 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { DollarSign, TrendingUp, TrendingDown, CreditCard, ExternalLink } from 'lucide-react';
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  CreditCard,
+  ExternalLink,
+  HardDrive,
+} from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
+import { buttonVariants } from '@/components/ui/button';
+import { useState } from 'react';
+import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
+import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
+import { buildDriveHrefWithFinanceProject } from '@/features/drive/drive-deep-link';
+import { cn } from '@/lib/utils';
 import {
   projectExpensesBacklogDrilldownHref,
   projectExpensesDrilldownHref,
@@ -21,6 +34,8 @@ interface FinanceTabProps {
   domains: ProjectDomain[];
   /** When set, Finance expenses section links to filtered expenses (main list + backlog). */
   projectId?: string;
+  /** Called after Drive quick-attach uploads (e.g. refresh parent project payload). */
+  onAfterDriveUpload?: () => void;
 }
 
 function formatAmount(amount: number | string): string {
@@ -66,7 +81,9 @@ export function FinanceTab({
   expenses,
   domains,
   projectId,
+  onAfterDriveUpload,
 }: FinanceTabProps) {
+  const [driveFilesRefreshKey, setDriveFilesRefreshKey] = useState(0);
   const totalRevenue = orders.reduce((s, o) => s + Number(o.totalAmount), 0);
   const paidInvoices = orders.flatMap((o) => o.invoices).filter((i) => i.moneyStatus === 'PAID');
   const totalPaid = paidInvoices.reduce((s, i) => s + Number(i.amount), 0);
@@ -77,6 +94,35 @@ export function FinanceTab({
 
   return (
     <div className="space-y-6">
+      {projectId ? (
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <EntityDriveQuickAttach
+              libraryKey="finance"
+              entityType="PROJECT"
+              entityId={projectId}
+              onUploaded={() => {
+                setDriveFilesRefreshKey((key) => key + 1);
+                onAfterDriveUpload?.();
+              }}
+            />
+            <Link
+              href={buildDriveHrefWithFinanceProject(projectId)}
+              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+            >
+              <HardDrive className="size-4" aria-hidden />
+              Drive files
+            </Link>
+          </div>
+          <EntityDriveFilesPanel
+            entityType="PROJECT"
+            entityId={projectId}
+            driveHref={buildDriveHrefWithFinanceProject(projectId)}
+            refreshKey={driveFilesRefreshKey}
+          />
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <div className="bg-card border-border rounded-xl border p-4">
           <div className="flex items-center gap-2">
@@ -273,6 +319,14 @@ export function FinanceTab({
                       ? `Expires ${new Date(dom.expiryDate).toLocaleDateString()}`
                       : 'No expiry'}
                   </p>
+                  {dom.clientServiceRecordId ? (
+                    <Link
+                      href={`/finance/client-services?open=${dom.clientServiceRecordId}`}
+                      className={cn(buttonVariants({ variant: 'link', size: 'sm' }), 'h-auto px-0')}
+                    >
+                      Client service record
+                    </Link>
+                  ) : null}
                 </div>
                 <StatusBadge
                   label={dom.status.replace(/_/g, ' ')}

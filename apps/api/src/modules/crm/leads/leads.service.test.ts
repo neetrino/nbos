@@ -100,6 +100,19 @@ describe('LeadsService', () => {
       const createCall = prisma.lead.create.mock.calls[0][0];
       expect(createCall.data.code).toBe('L-2026-0006');
     });
+
+    it('defaults assignedTo to creator when actorId is provided', async () => {
+      prisma.lead.findFirst.mockResolvedValue(null);
+      prisma.lead.create.mockImplementation(({ data }) => Promise.resolve({ id: '1', ...data }));
+
+      await service.create({ name: 'Quick lead' }, { actorId: 'emp-1' });
+
+      expect(prisma.lead.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ assignedTo: 'emp-1' }),
+        }),
+      );
+    });
   });
 
   describe('update', () => {
@@ -185,6 +198,12 @@ describe('LeadsService', () => {
     it('updates status', async () => {
       prisma.lead.findUnique.mockResolvedValue({
         id: '1',
+        status: 'CONTACT_ESTABLISHED',
+        contactName: 'Jane Doe',
+        phone: '+37400000000',
+        email: null,
+        assignedTo: 'emp-1',
+        notes: 'Qualified',
         source: 'SALES',
         sourceDetail: 'COLD_CALL',
         sourcePartnerId: null,
@@ -201,6 +220,12 @@ describe('LeadsService', () => {
     it('blocks meaningful movement without attribution', async () => {
       prisma.lead.findUnique.mockResolvedValue({
         id: '1',
+        status: 'CONTACT_ESTABLISHED',
+        contactName: 'Jane Doe',
+        phone: '+37400000000',
+        email: null,
+        assignedTo: 'emp-1',
+        notes: 'Reached out',
         source: 'MARKETING',
         sourceDetail: null,
         sourcePartnerId: null,
@@ -216,6 +241,11 @@ describe('LeadsService', () => {
       prisma.lead.findUnique.mockResolvedValue({
         id: '1',
         status: 'SPAM',
+        contactName: 'Jane Doe',
+        phone: '+37400000000',
+        email: null,
+        assignedTo: null,
+        notes: 'Spam duplicate',
         source: 'PARTNER',
         sourceDetail: null,
         sourcePartnerId: null,
@@ -274,6 +304,11 @@ describe('LeadsService', () => {
       prisma.lead.findUnique.mockResolvedValue({
         id: '1',
         status: 'NEW',
+        contactName: 'Jane Doe',
+        phone: '+37400000000',
+        email: null,
+        assignedTo: null,
+        notes: null,
         source: null,
         sourceDetail: null,
         sourcePartnerId: null,

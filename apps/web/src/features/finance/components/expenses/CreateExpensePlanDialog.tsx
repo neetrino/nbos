@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -211,10 +212,10 @@ export function CreateExpensePlanDialog({
             </div>
             <div>
               <Label>Next due</Label>
-              <Input
-                type="date"
+              <NbosDatePicker
                 value={form.nextDueDate}
-                onChange={(e) => setForm({ ...form, nextDueDate: e.target.value })}
+                onChange={(nextDueDate) => setForm({ ...form, nextDueDate })}
+                aria-label="Next due"
               />
             </div>
           </div>

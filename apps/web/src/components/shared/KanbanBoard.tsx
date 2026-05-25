@@ -1,10 +1,27 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { Fragment, useState, useCallback, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { KanbanColorPicker } from './kanban/KanbanColorPicker';
 import { KanbanColumnHeader } from './kanban/KanbanColumnHeader';
+import {
+  KanbanColumnInsertPlaceholder,
+  KanbanInsertPlaceholderAfterList,
+  KanbanInsertPlaceholderBeforeItem,
+} from './kanban/KanbanColumnInsertPlaceholder';
+import { measureKanbanCardRowHeight } from './kanban/kanban-drag-metrics';
+import {
+  findKanbanColumnList,
+  KANBAN_CARD_ROW_DATA_ATTR,
+  KANBAN_COLUMN_DROP_ZONE_DATA_ATTR,
+  KANBAN_COLUMN_LIST_DATA_ATTR,
+  resolveKanbanInsertIndex,
+} from './kanban/kanban-insert-index';
+import { isReorderNoop, mapFilteredInsertToFullIndex } from './kanban/kanban-reorder';
+import { KANBAN_COLUMN_LEFT_RULE_CLASS } from './kanban/kanban-column-surface';
+import { KanbanTerminalDropBar } from './kanban/KanbanTerminalDropBar';
+import { KanbanColumnQuickCreate } from './kanban/KanbanColumnQuickCreate';
 import {
   SCROLL_SPEED,
   EDGE_ZONE_WIDTH,
@@ -19,7 +36,9 @@ export function KanbanBoard<T>({
   columns,
   renderCard,
   renderColumnHeader,
+  columnQuickCreate,
   onMove,
+  onReorderWithinColumn,
   getItemId,
   columnWidth = 280,
   emptyMessage = 'No items',
@@ -28,11 +47,25 @@ export function KanbanBoard<T>({
   onDeleteColumn,
   onAddItemInColumn,
   addButtonLabel = 'Quick',
+  terminalDropZones,
 }: KanbanBoardProps<T>) {
   const editable = !!(onAddColumn || onRenameColumn || onDeleteColumn);
 
+  const resolvedQuickCreate =
+    columnQuickCreate ??
+    (onAddItemInColumn
+      ? {
+          isEnabled: () => true,
+          buttonLabel: addButtonLabel.replace(/^\+\s*/, ''),
+          onOpenDialog: onAddItemInColumn,
+        }
+      : undefined);
+
   const [dragItem, setDragItem] = useState<{ id: string; fromColumn: string } | null>(null);
+  const [dragCardHeightPx, setDragCardHeightPx] = useState<number | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const [dropInsert, setDropInsert] = useState<{ columnKey: string; index: number } | null>(null);
+  const [terminalDropTarget, setTerminalDropTarget] = useState<string | null>(null);
   const [recentlyMoved, setRecentlyMoved] = useState<Set<string>>(new Set());
   const prevItemsRef = useRef<Map<string, string>>(new Map());
 
@@ -112,21 +145,86 @@ export function KanbanBoard<T>({
 
   /* ── Drag handlers ── */
   const handleDragStart = useCallback(
-    (id: string, col: string) => setDragItem({ id, fromColumn: col }),
+    (id: string, col: string, event: React.DragEvent<HTMLDivElement>) => {
+      setDragCardHeightPx(measureKanbanCardRowHeight(event.currentTarget));
+      setDragItem({ id, fromColumn: col });
+      setTerminalDropTarget(null);
+    },
     [],
   );
-  const handleDragOver = useCallback((e: React.DragEvent, col: string) => {
-    e.preventDefault();
-    setDropTarget(col);
+
+  const clearDragState = useCallback(() => {
+    setDragItem(null);
+    setDragCardHeightPx(null);
+    setDropTarget(null);
+    setDropInsert(null);
+    setTerminalDropTarget(null);
   }, []);
-  const handleDragLeave = useCallback(() => setDropTarget(null), []);
-  const handleDrop = useCallback(
-    (col: string) => {
-      if (dragItem && dragItem.fromColumn !== col) onMove?.(dragItem.id, dragItem.fromColumn, col);
-      setDragItem(null);
-      setDropTarget(null);
+
+  const handleColumnDragOver = useCallback(
+    (event: React.DragEvent<HTMLDivElement>, col: string) => {
+      event.preventDefault();
+      if (!dragItem) {
+        setDropTarget(null);
+        setDropInsert(null);
+        return;
+      }
+      const list = findKanbanColumnList(event.currentTarget);
+      if (!list) return;
+
+      setDropTarget(col);
+      const excludeId = dragItem.fromColumn === col ? dragItem.id : undefined;
+      const index = resolveKanbanInsertIndex(list, event.clientY, excludeId, event.currentTarget);
+      setDropInsert({ columnKey: col, index });
     },
-    [dragItem, onMove],
+    [dragItem],
+  );
+
+  const resolveColumnDropIndex = useCallback(
+    (col: string, columnItems: T[]): number => {
+      if (dropInsert?.columnKey === col) return dropInsert.index;
+      return columnItems.length;
+    },
+    [dropInsert],
+  );
+
+  const handleDrop = useCallback(
+    (col: string, columnItems: T[]) => {
+      if (!dragItem) {
+        clearDragState();
+        return;
+      }
+
+      const filteredInsert = resolveColumnDropIndex(col, columnItems);
+
+      if (dragItem.fromColumn === col) {
+        if (filteredInsert !== undefined && onReorderWithinColumn) {
+          const fromIndex = columnItems.findIndex((item) => getItemId(item) === dragItem.id);
+          if (fromIndex >= 0) {
+            const toIndex = mapFilteredInsertToFullIndex(fromIndex, filteredInsert);
+            if (!isReorderNoop(fromIndex, toIndex)) {
+              onReorderWithinColumn(dragItem.id, col, toIndex);
+            }
+          }
+        }
+        clearDragState();
+        return;
+      }
+
+      onMove?.(dragItem.id, dragItem.fromColumn, col, filteredInsert);
+      clearDragState();
+    },
+    [dragItem, onMove, onReorderWithinColumn, getItemId, clearDragState, resolveColumnDropIndex],
+  );
+
+  const handleTerminalDrop = useCallback(
+    (zoneKey: string) => {
+      if (dragItem && dragItem.fromColumn !== zoneKey) {
+        onMove?.(dragItem.id, dragItem.fromColumn, zoneKey);
+      }
+      clearDragState();
+    },
+    [dragItem, onMove, clearDragState],
   );
 
   /* ── Add column ── */
@@ -242,86 +340,120 @@ export function KanbanBoard<T>({
       {edgeZone('left', canScrollLeft)}
       {edgeZone('right', canScrollRight)}
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2">
+      <div
+        ref={scrollRef}
+        className={cn(
+          'min-h-0 flex-1 overflow-x-auto overflow-y-hidden pb-2',
+          dragItem && terminalDropZones?.length && 'pb-28',
+        )}
+      >
         <div
           className="flex h-full gap-0"
           style={{ minWidth: `${(columns.length + (editable ? 1 : 0)) * (columnWidth + 16)}px` }}
         >
-          {columns.map((column, idx) => (
-            <div key={column.key} className="flex h-full">
-              {/* "+" between columns (before this column, except first) */}
-              {idx > 0 &&
-                addingAfter !== columns[idx - 1]?.key &&
-                addBetweenBtn(columns[idx - 1]!.key)}
+          {columns.map((column, idx) => {
+            const isDropTarget = dropTarget === column.key && dragItem !== null;
+            const canReorderInColumn = Boolean(onReorderWithinColumn);
+            const showDropPreview =
+              isDropTarget &&
+              (dragItem.fromColumn !== column.key ||
+                (dragItem.fromColumn === column.key && canReorderInColumn));
+            const insertIndex =
+              showDropPreview && dropInsert?.columnKey === column.key ? dropInsert.index : null;
 
-              {/* Inline form if adding after the previous column */}
-              {idx > 0 && addingAfter === columns[idx - 1]?.key && addForm}
+            return (
+              <div key={column.key} className="flex h-full">
+                {/* "+" between columns (before this column, except first) */}
+                {idx > 0 &&
+                  addingAfter !== columns[idx - 1]?.key &&
+                  addBetweenBtn(columns[idx - 1]!.key)}
 
-              {/* Column */}
-              <div
-                className={cn(
-                  'mx-2 flex h-full flex-shrink-0 flex-col rounded-xl transition-colors duration-200',
-                  dropTarget === column.key && 'bg-accent/10 ring-accent/20 ring-2 ring-inset',
-                )}
-                style={{ width: columnWidth }}
-                onDragOver={(e) => handleDragOver(e, column.key)}
-                onDragLeave={handleDragLeave}
-                onDrop={() => handleDrop(column.key)}
-              >
-                <div className="group/header mb-3 shrink-0 space-y-2">
-                  <KanbanColumnHeader
-                    column={column}
-                    editable={editable}
-                    onRenameColumn={onRenameColumn}
-                    onDeleteColumn={onDeleteColumn}
-                  />
-                  {renderColumnHeader?.(column)}
-                </div>
+                {/* Inline form if adding after the previous column */}
+                {idx > 0 && addingAfter === columns[idx - 1]?.key && addForm}
 
-                <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-                  <div className="space-y-3">
-                    {onAddItemInColumn && (
-                      <div className="group/add-btn flex justify-center">
-                        <button
-                          type="button"
-                          onClick={() => onAddItemInColumn(column.key)}
-                          className="border-border hover:bg-muted text-muted-foreground hover:text-foreground flex h-8 min-w-[2rem] items-center justify-center gap-1.5 rounded-lg border border-dashed px-3 text-xs font-medium transition-colors"
-                        >
-                          <Plus size={14} />
-                          <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity] duration-200 group-hover/add-btn:max-w-[5rem] group-hover/add-btn:opacity-100">
-                            {addButtonLabel}
-                          </span>
-                        </button>
-                      </div>
-                    )}
-                    {column.items.map((item) => {
-                      const id = getItemId(item);
-                      return (
-                        <div
-                          key={id}
-                          draggable
-                          onDragStart={() => handleDragStart(id, column.key)}
-                          className={cn(
-                            'cursor-grab transition-all duration-300 active:cursor-grabbing',
-                            dragItem?.id === id && 'scale-[0.97] opacity-50',
-                            recentlyMoved.has(id) &&
-                              'animate-in fade-in slide-in-from-left-3 duration-300',
-                          )}
-                        >
-                          {renderCard(item, column.key)}
+                {/* Column */}
+                <div
+                  className="relative mx-2 flex h-full flex-shrink-0 flex-col"
+                  style={{ width: columnWidth }}
+                >
+                  {idx > 0 ? <div className={KANBAN_COLUMN_LEFT_RULE_CLASS} aria-hidden /> : null}
+                  <div className="group/header mb-3 shrink-0 space-y-2">
+                    <KanbanColumnHeader
+                      column={column}
+                      editable={editable}
+                      onRenameColumn={onRenameColumn}
+                      onDeleteColumn={onDeleteColumn}
+                    />
+                    {renderColumnHeader?.(column)}
+                    {resolvedQuickCreate ? (
+                      <KanbanColumnQuickCreate column={column} config={resolvedQuickCreate} />
+                    ) : null}
+                  </div>
+
+                  <div
+                    className="min-h-0 flex-1 overflow-y-auto pr-1"
+                    {...{ [KANBAN_COLUMN_DROP_ZONE_DATA_ATTR]: column.key }}
+                    onDragOver={(event) => handleColumnDragOver(event, column.key)}
+                    onDrop={() => handleDrop(column.key, column.items)}
+                  >
+                    <div
+                      className="flex min-h-full min-w-0 flex-col space-y-3 pb-3"
+                      {...{ [KANBAN_COLUMN_LIST_DATA_ATTR]: column.key }}
+                    >
+                      <KanbanColumnInsertPlaceholder
+                        insertIndex={insertIndex}
+                        itemCount={column.items.length}
+                        isDropTarget={showDropPreview}
+                        heightPx={dragCardHeightPx}
+                      />
+                      {column.items.map((item, itemIdx) => {
+                        const id = getItemId(item);
+                        return (
+                          <Fragment key={id}>
+                            <KanbanInsertPlaceholderBeforeItem
+                              insertIndex={insertIndex}
+                              itemIdx={itemIdx}
+                              isDropTarget={showDropPreview}
+                              heightPx={dragCardHeightPx}
+                            />
+                            <div
+                              draggable
+                              onDragStart={(event) => handleDragStart(id, column.key, event)}
+                              onDragEnd={clearDragState}
+                              {...{ [KANBAN_CARD_ROW_DATA_ATTR]: true }}
+                              data-item-id={id}
+                              className={cn(
+                                'min-w-0 cursor-grab transition-all duration-300 active:cursor-grabbing',
+                                dragItem?.id === id && 'scale-[0.97] opacity-50',
+                                recentlyMoved.has(id) &&
+                                  'animate-in fade-in slide-in-from-left-3 duration-300',
+                              )}
+                            >
+                              {renderCard(item, column.key)}
+                            </div>
+                          </Fragment>
+                        );
+                      })}
+                      <KanbanInsertPlaceholderAfterList
+                        insertIndex={insertIndex}
+                        itemCount={column.items.length}
+                        isDropTarget={showDropPreview}
+                        heightPx={dragCardHeightPx}
+                      />
+                      {column.items.length === 0 && !showDropPreview ? (
+                        <div className="border-border rounded-xl border border-dashed p-6 text-center">
+                          <p className="text-muted-foreground text-xs">{emptyMessage}</p>
                         </div>
-                      );
-                    })}
-                    {column.items.length === 0 && (
-                      <div className="border-border rounded-xl border border-dashed p-6 text-center">
-                        <p className="text-muted-foreground text-xs">{emptyMessage}</p>
-                      </div>
-                    )}
+                      ) : null}
+                      {showDropPreview ? (
+                        <div className="min-h-[3rem] flex-1 shrink-0" aria-hidden />
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* "+" after the last column */}
           {columns.length > 0 &&
@@ -346,6 +478,16 @@ export function KanbanBoard<T>({
           {columns.length === 0 && addingAfter === '__end' && addForm}
         </div>
       </div>
+
+      {dragItem && terminalDropZones && terminalDropZones.length > 0 ? (
+        <KanbanTerminalDropBar
+          zones={terminalDropZones}
+          activeZoneKey={terminalDropTarget}
+          onDragOver={setTerminalDropTarget}
+          onDragLeave={() => setTerminalDropTarget(null)}
+          onDrop={handleTerminalDrop}
+        />
+      ) : null}
     </div>
   );
 }

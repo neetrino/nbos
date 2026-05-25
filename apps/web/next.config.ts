@@ -7,8 +7,27 @@ const MONOREPO_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '.
 
 const API_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
 
+/** Hostnames from CORS_ORIGIN so LAN IP dev (e.g. 192.168.x.x) can load client JS/HMR. */
+function parseAllowedDevOrigins(): string[] {
+  const hosts = new Set<string>(['localhost', '127.0.0.1']);
+  const raw = process.env.CORS_ORIGIN;
+  if (!raw) return [...hosts];
+
+  for (const part of raw.split(',')) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    try {
+      hosts.add(new URL(trimmed).hostname);
+    } catch {
+      /* skip invalid entries */
+    }
+  }
+  return [...hosts];
+}
+
 const nextConfig: NextConfig = {
   outputFileTracingRoot: MONOREPO_ROOT,
+  allowedDevOrigins: parseAllowedDevOrigins(),
   turbopack: {
     root: MONOREPO_ROOT,
   },

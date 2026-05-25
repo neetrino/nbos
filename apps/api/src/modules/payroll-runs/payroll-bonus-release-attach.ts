@@ -2,18 +2,27 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbos/database';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
+import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
+import { applyPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
+import { applyPayrollBonusCap } from './payroll-bonus-cap';
+import { computeSalesKpiBurnedAmount } from './sales-kpi-burned-amount';
+import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
+import { computePayrollIncludedBonusAmount } from './sales-kpi-payroll-payout';
 import {
-  assertSalesKpiInputsComplete,
-  computePayrollIncludedBonusAmount,
-  resolveSalesKpiPayoutFactorFromRun,
-} from './sales-kpi-payroll-payout';
+  assertSalesKpiForAttachEmployees,
+  resolveEmployeeSalesKpi,
+  resolveSalesKpiFactorForEmployee,
+  type SalesKpiAmountSnapshot,
+} from './resolve-employee-sales-kpi';
+import { formatSalesKpiBurnedReason } from './sales-kpi-burned-reason';
+import type { PayrollAttachNotifyEvent } from './payroll-attach-notify.types';
 
 const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
 /** Minimal DB surface for attaching bonus releases (transaction or full client). */
 export type BonusReleaseAttachTx = Pick<
   TransactionClient,
-  'payrollRun' | 'bonusRelease' | 'salaryLine'
+  'payrollRun' | 'bonusRelease' | 'salaryLine' | 'compensationProfile' | 'kpiPolicy'
 >;
 
 export interface AttachBonusReleasesParams {
@@ -40,7 +49,8 @@ function computeLineTotalPayable(line: {
 export async function attachBonusReleasesToPayrollRun(
   tx: BonusReleaseAttachTx,
   params: AttachBonusReleasesParams,
-): Promise<void> {
+): Promise<PayrollAttachNotifyEvent[]> {
+  const notifyEvents: PayrollAttachNotifyEvent[] = [];
   const { payrollRunId, releaseIds } = params;
   if (releaseIds.length === 0) {
     throw new BadRequestException('releaseIds must be non-empty');
@@ -53,6 +63,7 @@ export async function attachBonusReleasesToPayrollRun(
     select: {
       id: true,
       status: true,
+      payrollMonth: true,
       kpiSalesPlanAmount: true,
       kpiSalesActualAmount: true,
     },
@@ -74,7 +85,7 @@ export async function attachBonusReleasesToPayrollRun(
       amount: true,
       status: true,
       payrollRunId: true,
-      bonusEntry: { select: { type: true } },
+      bonusEntry: { select: { type: true, order: { select: { code: true } } } },
     },
   });
   if (releases.length !== uniqueIds.length) {
@@ -82,6 +93,9 @@ export async function attachBonusReleasesToPayrollRun(
   }
 
   for (const rel of releases) {
+    if (rel.status === 'INCLUDED_IN_PAYROLL' && rel.payrollRunId === payrollRunId) {
+      continue;
+    }
     if (rel.status !== 'APPROVED') {
       throw new BadRequestException(
         `Bonus release ${rel.id} is not in APPROVED status (current: ${rel.status}).`,
@@ -92,14 +106,39 @@ export async function attachBonusReleasesToPayrollRun(
     }
   }
 
-  const hasSalesRelease = releases.some((r) => r.bonusEntry.type === 'SALES');
-  assertSalesKpiInputsComplete(run, hasSalesRelease);
-  const kpiFactor = resolveSalesKpiPayoutFactorFromRun(run);
+  const releasesToAttach = releases.filter(
+    (r) => !(r.status === 'INCLUDED_IN_PAYROLL' && r.payrollRunId === payrollRunId),
+  );
+  if (releasesToAttach.length === 0) {
+    await recalculatePayrollRunTotalsFromSalaryLines(tx, payrollRunId);
+    return notifyEvents;
+  }
 
-  for (const rel of releases) {
-    const line = await tx.salaryLine.findUnique({
+  const runKpiSnapshot: SalesKpiAmountSnapshot = {
+    kpiSalesPlanAmount: run.kpiSalesPlanAmount,
+    kpiSalesActualAmount: run.kpiSalesActualAmount,
+  };
+  await assertSalesKpiForAttachEmployees(tx, payrollRunId, releasesToAttach, runKpiSnapshot);
+
+  const payrollPolicyByEmployee = new Map<string, CompensationPayrollPolicy>();
+  const salesKpiFactorByEmployee = new Map<string, Decimal>();
+  const carryAppliedEmployees = new Set<string>();
+
+  for (const rel of releasesToAttach) {
+    let line = await tx.salaryLine.findUnique({
       where: {
         payrollRunId_employeeId: { payrollRunId, employeeId: rel.employeeId },
+      },
+      select: {
+        id: true,
+        baseSalary: true,
+        bonusesTotal: true,
+        adjustmentsTotal: true,
+        deductionsTotal: true,
+        paidAmount: true,
+        payrollCarryAppliedAmount: true,
+        kpiSalesPlanAmount: true,
+        kpiSalesActualAmount: true,
       },
     });
     if (!line) {
@@ -108,11 +147,79 @@ export async function attachBonusReleasesToPayrollRun(
       );
     }
 
-    const included = computePayrollIncludedBonusAmount({
+    let payrollPolicy = payrollPolicyByEmployee.get(rel.employeeId);
+    if (payrollPolicy == null) {
+      payrollPolicy = await resolveCompensationPayrollPolicyForEmployee(
+        tx,
+        rel.employeeId,
+        run.payrollMonth,
+      );
+      payrollPolicyByEmployee.set(rel.employeeId, payrollPolicy);
+    }
+
+    if (!carryAppliedEmployees.has(rel.employeeId)) {
+      const carryAlreadyApplied =
+        line.payrollCarryAppliedAmount != null && line.payrollCarryAppliedAmount.gt(0);
+      if (!carryAlreadyApplied) {
+        const carryApplied = await applyPendingPayrollCarryOver(tx, {
+          employeeId: rel.employeeId,
+          payrollMonth: run.payrollMonth,
+          line,
+          bonusCapBaseSalaryMultiplier: payrollPolicy.bonusCapBaseSalaryMultiplier,
+        });
+        if (carryApplied.gt(0)) {
+          notifyEvents.push({
+            kind: 'CARRY_APPLIED',
+            employeeId: rel.employeeId,
+            payrollRunId,
+            payrollMonth: run.payrollMonth,
+            amount: carryApplied,
+          });
+        }
+      }
+      carryAppliedEmployees.add(rel.employeeId);
+      const refreshed = await tx.salaryLine.findUnique({
+        where: {
+          payrollRunId_employeeId: { payrollRunId, employeeId: rel.employeeId },
+        },
+        select: {
+          id: true,
+          baseSalary: true,
+          bonusesTotal: true,
+          adjustmentsTotal: true,
+          deductionsTotal: true,
+          paidAmount: true,
+          payrollCarryAppliedAmount: true,
+          kpiSalesPlanAmount: true,
+          kpiSalesActualAmount: true,
+        },
+      });
+      if (refreshed) {
+        line = refreshed;
+      }
+    }
+
+    const kpiFactor = resolveSalesKpiFactorForEmployee({
+      employeeId: rel.employeeId,
+      bonusType: rel.bonusEntry.type,
+      line,
+      runKpiSnapshot,
+      payrollPolicy,
+      cache: salesKpiFactorByEmployee,
+    });
+
+    const kpiScaled = computePayrollIncludedBonusAmount({
       releaseAmount: rel.amount,
       bonusType: rel.bonusEntry.type,
       kpiFactor,
     });
+    const capped = applyPayrollBonusCap({
+      kpiScaledAmount: kpiScaled,
+      currentBonusesTotal: line.bonusesTotal,
+      baseSalary: line.baseSalary,
+      bonusCapBaseSalaryMultiplier: payrollPolicy.bonusCapBaseSalaryMultiplier,
+    });
+    const included = capped.payrollIncludedAmount;
 
     const nextBonuses = line.bonusesTotal.plus(included);
     const nextTotal = computeLineTotalPayable({
@@ -135,15 +242,46 @@ export async function attachBonusReleasesToPayrollRun(
       },
     });
 
+    const resolvedKpi = resolveEmployeeSalesKpi(line, runKpiSnapshot);
+    const kpiBurnedAmount = computeSalesKpiBurnedAmount({
+      releaseAmount: rel.amount,
+      kpiScaledAmount: kpiScaled,
+      bonusType: rel.bonusEntry.type,
+    });
+    const kpiBurnedReason = formatSalesKpiBurnedReason({
+      bonusType: rel.bonusEntry.type,
+      plan: resolvedKpi.kpiSalesPlanAmount,
+      actual: resolvedKpi.kpiSalesActualAmount,
+      payoutFactor: kpiFactor,
+      burnedAmount: kpiBurnedAmount,
+    });
+
     await tx.bonusRelease.update({
       where: { id: rel.id },
       data: {
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId,
         payrollIncludedAmount: included,
+        kpiBurnedAmount,
+        kpiBurnedReason,
+        payrollCarryOverAmount: capped.payrollCarryOverAmount,
+        payrollCarryOverRemaining: capped.payrollCarryOverAmount,
       },
     });
+
+    const deferred = capped.payrollCarryOverAmount;
+    if (deferred != null && deferred.gt(0)) {
+      notifyEvents.push({
+        kind: 'CARRY_DEFERRED',
+        employeeId: rel.employeeId,
+        releaseId: rel.id,
+        orderCode: rel.bonusEntry.order.code,
+        payrollMonth: run.payrollMonth,
+        amount: deferred,
+      });
+    }
   }
 
   await recalculatePayrollRunTotalsFromSalaryLines(tx, payrollRunId);
+  return notifyEvents;
 }

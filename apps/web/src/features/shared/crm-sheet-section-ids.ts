@@ -2,6 +2,7 @@
 
 export const DEAL_SHEET_SECTION = {
   INFO: 'deal-sheet-section-info',
+  BILLING: 'deal-sheet-section-billing',
   OFFER_CONTRACT: 'deal-sheet-section-offer-contract',
   MARKETING: 'deal-sheet-section-marketing',
   CONTACT_TEAM: 'deal-sheet-section-contact',
@@ -13,6 +14,7 @@ export const LEAD_SHEET_SECTION = {
   CONTACT: 'lead-sheet-section-contact',
   MARKETING: 'lead-sheet-section-marketing',
   ASSIGNMENT: 'lead-sheet-section-assignment',
+  NOTES: 'lead-sheet-section-notes',
 } as const;
 
 export type LeadSheetSectionId = (typeof LEAD_SHEET_SECTION)[keyof typeof LEAD_SHEET_SECTION];

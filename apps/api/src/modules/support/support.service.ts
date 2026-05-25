@@ -87,7 +87,7 @@ const SUPPORT_TASK_INCLUDE = {
 interface CreateTicketDto {
   title: string;
   projectId: string;
-  category: string;
+  category?: string;
   description?: string;
   productId?: string;
   coverageDecision?: string | null;
@@ -216,6 +216,7 @@ export class SupportService {
     const priority = (data.priority as TicketPriorityEnum) ?? 'P3';
     const sla = this.calculateSlaDeadlines(priority);
     const productId = data.productId ?? null;
+    const category = (data.category as TicketCategoryEnum | undefined) ?? 'UNCLASSIFIED';
 
     await assertSupportTechnicalLinksValid(this.prisma, {
       projectId: data.projectId,
@@ -230,7 +231,7 @@ export class SupportService {
         title: data.title,
         projectId: data.projectId,
         productId: data.productId,
-        category: data.category as TicketCategoryEnum,
+        category,
         coverageDecision: data.coverageDecision as SupportCoverageEnum | undefined,
         description: data.description,
         contactId: data.contactId,
@@ -765,10 +766,16 @@ export class SupportService {
       where.waitingState = filters.waitingState as TicketWaitingStateEnum;
     }
     if (filters.search) {
-      where.OR = [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { code: { contains: filters.search, mode: 'insensitive' } },
-      ];
+      const q = filters.search.trim();
+      if (q.length > 0) {
+        where.OR = [
+          { title: { contains: q, mode: 'insensitive' } },
+          { code: { contains: q, mode: 'insensitive' } },
+          { project: { name: { contains: q, mode: 'insensitive' } } },
+          { project: { code: { contains: q, mode: 'insensitive' } } },
+          { product: { name: { contains: q, mode: 'insensitive' } } },
+        ];
+      }
     }
     return where;
   }

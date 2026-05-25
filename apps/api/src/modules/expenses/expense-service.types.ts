@@ -49,8 +49,16 @@ export interface ExpenseQueryParams {
   dateTo?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-  /** When true and `status` is unset: exclude PAID + DELAYED (NBOS Expense Board scope). */
+  /** When true and `status` is unset: exclude PAID + BACKLOG (NBOS Expense Board scope). */
   activeBoard?: boolean;
+  /** When true and `status` is unset: only PAID + CANCELLED (NBOS Closed expenses scope). */
+  closedBoard?: boolean;
+  /** When true: only expenses materialized from payroll salary lines (`salary_line_id` set). */
+  payrollLinked?: boolean;
+  /** Filter by payroll run month YYYY-MM (via salary line). */
+  payrollMonth?: string;
+  /** Filter by salary line employee id. */
+  payrollEmployeeId?: string;
 }
 
 export interface ExpenseStatsParams {
@@ -64,4 +72,9 @@ export interface ExpenseStatsParams {
   status?: string;
   /** When true and `status` is unset: same scope as `findAll` with `activeBoard`. */
   activeBoard?: boolean;
+  /** When true and `status` is unset: same scope as `findAll` with `closedBoard`. */
+  closedBoard?: boolean;
+  payrollLinked?: boolean;
+  payrollMonth?: string;
+  payrollEmployeeId?: string;
 }

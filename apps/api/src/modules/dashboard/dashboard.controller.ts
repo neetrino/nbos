@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
 import { CreateDashboardNoteDto } from './dto/create-dashboard-note.dto';
@@ -21,7 +21,10 @@ export class DashboardController {
     description:
       'Lightweight action-center projection. Dashboard does not own source business data.',
   })
-  getControlCenter(@CurrentUser() user: CurrentUserPayload) {
+  getControlCenter(@CurrentUser() user: CurrentUserPayload, @Query('scope') scope?: string) {
+    if (scope === 'metrics') {
+      return this.dashboardService.getMetricsProjection();
+    }
     return this.dashboardService.getControlCenterProjection(user.id);
   }
 

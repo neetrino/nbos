@@ -2,16 +2,31 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FilterBar } from '@/components/shared';
 import { INVOICE_MONEY_STAGES, INVOICE_TYPES } from '@/features/finance/constants/finance';
+import {
+  BOARD_LIFECYCLE_SCOPE_OPTIONS,
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+} from '@/features/shared/board-lifecycle';
 
 interface InvoiceFiltersProps {
   search: string;
   filters: Record<string, string>;
   onSearchChange: (search: string) => void;
-  onFilterChange: (updater: (current: Record<string, string>) => Record<string, string>) => void;
+  onFilterChange: (key: string, value: string) => void;
+  onClearFilters: () => void;
   onCreateInvoice: () => void;
 }
 
 const FILTER_CONFIGS = [
+  {
+    key: 'boardScope',
+    label: 'Status',
+    includeAllOption: false,
+    defaultOptionValue: DEFAULT_BOARD_LIFECYCLE_SCOPE,
+    options: BOARD_LIFECYCLE_SCOPE_OPTIONS.map((option) => ({
+      value: option.value,
+      label: option.label,
+    })),
+  },
   {
     key: 'moneyStatus',
     label: 'Money status',
@@ -29,6 +44,7 @@ export function InvoiceFilters({
   filters,
   onSearchChange,
   onFilterChange,
+  onClearFilters,
   onCreateInvoice,
 }: InvoiceFiltersProps) {
   return (
@@ -37,13 +53,14 @@ export function InvoiceFilters({
         <FilterBar
           search={search}
           onSearchChange={onSearchChange}
-          searchPlaceholder="Search by invoice number, company..."
+          searchPlaceholder="Search by invoice, company, order, project…"
           filters={FILTER_CONFIGS}
-          filterValues={filters}
-          onFilterChange={(key, value) =>
-            onFilterChange((current) => ({ ...current, [key]: value }))
-          }
-          onClearFilters={() => onFilterChange(() => ({}))}
+          filterValues={{
+            boardScope: filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
+            ...filters,
+          }}
+          onFilterChange={onFilterChange}
+          onClearFilters={onClearFilters}
         />
       </div>
       <Button className="shrink-0" onClick={onCreateInvoice}>

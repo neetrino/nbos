@@ -1,38 +1,38 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  CalendarDays,
-  Download,
-  FileOutput,
-  Loader2,
-  Plus,
-  RefreshCcw,
-  Trash2,
-  Wand2,
-} from 'lucide-react';
+import { CalendarDays, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+} from '@/components/shared';
 import {
   EXPENSE_PLANS_LIST_CATEGORY_QUERY,
   EXPENSE_PLANS_LIST_PROJECT_QUERY,
   EXPENSE_PLANS_LIST_SEARCH_QUERY,
+  EXPENSE_PLANS_LIST_YEAR_QUERY,
 } from '@/features/finance/constants/expense-plans-list-url';
+import {
+  useExpensePlansViewMode,
+  type ExpensePlansViewMode,
+} from '@/features/finance/constants/expense-plans-view';
 import { expensePlansListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { CreateExpensePlanDialog } from '@/features/finance/components/expenses/CreateExpensePlanDialog';
-import { ExpensePlansListToolbar } from '@/features/finance/components/expenses/ExpensePlansListToolbar';
+import { ExpensePlanCoverageGrid } from '@/features/finance/components/expenses/ExpensePlanCoverageGrid';
+import { ExpensePlansBoard } from '@/features/finance/components/expenses/ExpensePlansBoard';
+import { ExpensePlansListTable } from '@/features/finance/components/expenses/ExpensePlansListTable';
+import { buildExpensePlanIntegratedFilterConfigs } from '@/features/finance/components/expenses/build-expense-plan-integrated-filter-configs';
+import { ExpensePlansPageSettingsSheet } from '@/features/finance/components/expenses/ExpensePlansPageSettingsSheet';
+import { EXPENSE_PLANS_VIEW_OPTIONS } from '@/features/finance/components/expenses/expense-plans-view-options';
+import { ExpensePlanDetailSheet } from '@/features/finance/components/expenses/ExpensePlanDetailSheet';
 import { GenerateExpenseCardFromPlanDialog } from '@/features/finance/components/expenses/GenerateExpenseCardFromPlanDialog';
+import { OPEN_EXPENSE_PLAN_QUERY } from '@/features/finance/constants/expense-plan-deep-link';
 import { useExpensePlansCsvExport } from '@/features/finance/components/expenses/use-expense-plans-csv-export';
 import { PROJECTS_PAGE_SIZE } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -45,15 +45,21 @@ import {
   parseExpensePlansListSearchParam,
 } from '@/features/finance/utils/build-expense-plan-list-api-params';
 import {
-  expensePlanFrequencyLabel,
-  formatExpensePlanShortDate,
-} from '@/features/finance/utils/expense-plan-display';
-import { expensePlansApi, type ExpensePlan } from '@/lib/api/expense-plans';
+  expensePlansApi,
+  type ExpensePlan,
+  type ExpensePlanGridPayload,
+} from '@/lib/api/expense-plans';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
 
 const SEARCH_DEBOUNCE_MS = 450;
+const DEFAULT_GRID_YEAR = new Date().getFullYear();
+
+function parseGridYearParam(raw: string | null): number {
+  const n = raw ? parseInt(raw, 10) : NaN;
+  return Number.isFinite(n) ? n : DEFAULT_GRID_YEAR;
+}
 
 export function ExpensePlansPageContent() {
   useFinanceDocumentTitle(expensePlansListPageTitle());
@@ -71,12 +77,17 @@ export function ExpensePlansPageContent() {
   const projectId = parseExpensePlansListProjectIdParam(
     searchParams.get(EXPENSE_PLANS_LIST_PROJECT_QUERY),
   );
+  const gridYear = parseGridYearParam(searchParams.get(EXPENSE_PLANS_LIST_YEAR_QUERY));
 
+  const [view, setView] = useExpensePlansViewMode();
   const [searchDraft, setSearchDraft] = useState(urlSearch);
   const [plans, setPlans] = useState<ExpensePlan[]>([]);
+  const [gridPayload, setGridPayload] = useState<ExpensePlanGridPayload | null>(null);
   const [totalInScope, setTotalInScope] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [gridLoading, setGridLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [gridError, setGridError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
   const [generatePlan, setGeneratePlan] = useState<ExpensePlan | null>(null);
@@ -92,6 +103,22 @@ export function ExpensePlansPageContent() {
       router.replace(q ? `${pathname}?${q}` : pathname);
     },
     [pathname, router, searchParams],
+  );
+
+  const handleViewChange = useCallback(
+    (next: ExpensePlansViewMode) => {
+      setView(next);
+    },
+    [setView],
+  );
+
+  const handleGridYearChange = useCallback(
+    (year: number) => {
+      replaceListUrl((next) => {
+        next.set(EXPENSE_PLANS_LIST_YEAR_QUERY, String(year));
+      });
+    },
+    [replaceListUrl],
   );
 
   useEffect(() => {
@@ -122,6 +149,16 @@ export function ExpensePlansPageContent() {
         pageSize: 100,
       }),
     [urlSearch, category, projectId],
+  );
+
+  const gridParams = useMemo(
+    () => ({
+      year: gridYear,
+      search: urlSearch || undefined,
+      category: category || undefined,
+      projectId: projectId || undefined,
+    }),
+    [gridYear, urlSearch, category, projectId],
   );
 
   const exportParams = useMemo(
@@ -158,9 +195,32 @@ export function ExpensePlansPageContent() {
     }
   }, [listParams]);
 
+  const fetchGrid = useCallback(async () => {
+    setGridLoading(true);
+    try {
+      const payload = await expensePlansApi.getGrid(gridParams);
+      setGridPayload(payload);
+      setGridError(null);
+    } catch (caught) {
+      setGridError(
+        getApiErrorMessage(caught, 'Plan calendar could not be loaded. Check your connection.'),
+      );
+    } finally {
+      setGridLoading(false);
+    }
+  }, [gridParams]);
+
   useEffect(() => {
     void fetchPlans();
   }, [fetchPlans]);
+
+  useEffect(() => {
+    void fetchGrid();
+  }, [fetchGrid]);
+
+  const refreshAll = useCallback(async () => {
+    await Promise.all([fetchPlans(), fetchGrid()]);
+  }, [fetchPlans, fetchGrid]);
 
   useEffect(() => {
     let cancelled = false;
@@ -190,7 +250,7 @@ export function ExpensePlansPageContent() {
       toast.success(
         `Processed ${res.eligibleCount} due plan(s): ${res.created.length} card(s) created.${failNote}`,
       );
-      await fetchPlans();
+      await refreshAll();
     } catch (caught) {
       toast.error(
         getApiErrorMessage(
@@ -201,23 +261,7 @@ export function ExpensePlansPageContent() {
     } finally {
       setAutoRunning(false);
     }
-  }, [fetchPlans]);
-
-  const handleDelete = async (id: string, name: string) => {
-    if (
-      !window.confirm(
-        `Delete expense plan “${name}”? Linked cards keep running; plan link is cleared.`,
-      )
-    ) {
-      return;
-    }
-    try {
-      await expensePlansApi.delete(id);
-      await fetchPlans();
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Could not delete expense plan.'));
-    }
-  };
+  }, [refreshAll]);
 
   const handleCategoryChange = useCallback(
     (value: string) => {
@@ -245,6 +289,32 @@ export function ExpensePlansPageContent() {
     [replaceListUrl],
   );
 
+  const planFilterConfigs = useMemo(
+    () => buildExpensePlanIntegratedFilterConfigs(projects),
+    [projects],
+  );
+
+  const planFilterValues = useMemo(
+    () => ({
+      category: category ?? 'all',
+      project: projectId ?? 'all',
+    }),
+    [category, projectId],
+  );
+
+  const handlePlanFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (key === 'category') {
+        handleCategoryChange(value === 'all' ? '' : value);
+        return;
+      }
+      if (key === 'project') {
+        handleProjectIdChange(value === 'all' ? '' : value);
+      }
+    },
+    [handleCategoryChange, handleProjectIdChange],
+  );
+
   const handleClearFilters = useCallback(() => {
     setSearchDraft('');
     replaceListUrl((next) => {
@@ -254,160 +324,148 @@ export function ExpensePlansPageContent() {
     });
   }, [replaceListUrl]);
 
-  return (
-    <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title="Expense plans"
-        description="Recurring or expected outgoing spend (NBOS Expense Plan). Filter by search, category, or project (URL-synced); CSV export uses the same scope as the list (paged fetch-all, name sort, UTF-8 BOM, grand totals)."
-      >
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={loading || exportCsvSubmitting}
-            onClick={() => void handleExportCsv()}
-            title="UTF-8 CSV for the current list filters (same query as the table)"
-          >
-            {exportCsvSubmitting ? (
-              <Loader2 size={16} className="mr-1 animate-spin" aria-hidden />
-            ) : (
-              <Download size={16} className="mr-1" aria-hidden />
-            )}
-            Export CSV
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void fetchPlans()}>
-            <RefreshCcw size={16} className="mr-1" />
-            Refresh
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={loading || autoRunning}
-            onClick={() => void handleRunAutoGenerateDue()}
-          >
-            {autoRunning ? (
-              <Loader2 size={16} className="mr-1 animate-spin" aria-hidden />
-            ) : (
-              <Wand2 size={16} className="mr-1" aria-hidden />
-            )}
-            Run auto-generate (due)
-          </Button>
+  const showListPanel = view === 'list';
+  const showGridPanel = view === 'grid';
+  const showBoardPanel = view === 'board';
+
+  const openPlanIdFromUrl = searchParams.get(OPEN_EXPENSE_PLAN_QUERY)?.trim() || null;
+  const sheetOpen = Boolean(openPlanIdFromUrl);
+
+  const openExpensePlanDetail = useCallback(
+    (plan: ExpensePlan) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_EXPENSE_PLAN_QUERY, plan.id);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handlePlanSheetOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) return;
+      const params = new URLSearchParams(searchParams.toString());
+      if (!params.has(OPEN_EXPENSE_PLAN_QUERY)) return;
+      params.delete(OPEN_EXPENSE_PLAN_QUERY);
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const openGenerateDialog = useCallback((plan: ExpensePlan) => {
+    setGeneratePlan(plan);
+    setGenerateOpen(true);
+  }, []);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={searchDraft}
+          onSearchChange={setSearchDraft}
+          searchPlaceholder="Search by name or provider…"
+          filters={planFilterConfigs}
+          filterValues={planFilterValues}
+          onFilterChange={handlePlanFilterChange}
+          onClearAll={handleClearFilters}
+        />
+      ),
+      viewMode: (
+        <ViewModeSwitch
+          value={view}
+          onChange={handleViewChange}
+          options={EXPENSE_PLANS_VIEW_OPTIONS}
+          ariaLabel="Expense plans view"
+        />
+      ),
+      trailing: (
+        <>
+          <ExpensePlansPageSettingsSheet
+            exportDisabled={loading || exportCsvSubmitting}
+            exportInProgress={exportCsvSubmitting}
+            autoGenerateDisabled={loading || autoRunning}
+            autoGenerateInProgress={autoRunning}
+            onExportCsv={handleExportCsv}
+            onRunAutoGenerateDue={handleRunAutoGenerateDue}
+          />
           <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus size={16} className="mr-1" />
+            <Plus size={16} className="mr-1" aria-hidden />
             New plan
           </Button>
-        </div>
-      </PageHeader>
+        </>
+      ),
+    }),
+    [
+      autoRunning,
+      exportCsvSubmitting,
+      handleClearFilters,
+      handleExportCsv,
+      handlePlanFilterChange,
+      handleRunAutoGenerateDue,
+      handleViewChange,
+      loading,
+      planFilterConfigs,
+      planFilterValues,
+      searchDraft,
+      view,
+    ],
+  );
 
-      <ExpensePlansListToolbar
-        searchDraft={searchDraft}
-        onSearchDraftChange={setSearchDraft}
-        category={category}
-        onCategoryChange={handleCategoryChange}
-        projectId={projectId}
-        onProjectIdChange={handleProjectIdChange}
-        projects={projects}
-        projectsLoading={projectsLoading}
-        onClearFilters={handleClearFilters}
-        hasActiveFilters={hasActiveFilters}
-      />
+  useModuleHeroSlots(moduleHeroSlots);
 
-      {loading ? (
-        <LoadingState count={3} />
-      ) : error ? (
-        <ErrorState description={error} onRetry={() => void fetchPlans()} />
-      ) : plans.length === 0 ? (
-        <EmptyState
-          icon={CalendarDays}
-          title={
-            totalInScope === 0 && !hasActiveFilters ? 'No expense plans yet' : 'No matching plans'
-          }
-          description={
-            totalInScope === 0 && !hasActiveFilters
-              ? 'Create a plan for rent, SaaS, or other recurring spend; generate Board expenses from a plan when due.'
-              : 'Try clearing filters or widening search — CSV export respects the same filters.'
-          }
-          action={
-            hasActiveFilters ? (
-              <Button type="button" variant="outline" onClick={handleClearFilters}>
-                Clear filters
-              </Button>
-            ) : undefined
-          }
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-5">
+      {showGridPanel ? (
+        <ExpensePlanCoverageGrid
+          year={gridYear}
+          onYearChange={handleGridYearChange}
+          payload={gridPayload}
+          loading={gridLoading}
+          error={gridError}
+          onRetry={() => void fetchGrid()}
+          onOpenPlan={(planId) => {
+            const plan = plans.find((row) => row.id === planId);
+            if (plan) openExpensePlanDetail(plan);
+          }}
         />
-      ) : (
-        <div className="border-border rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Frequency</TableHead>
-                <TableHead>Auto</TableHead>
-                <TableHead>Next due</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead className="text-right">Linked cards</TableHead>
-                <TableHead className="w-[120px] text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {plans.map((plan) => (
-                <TableRow key={plan.id}>
-                  <TableCell className="font-medium">
-                    <Link
-                      href={`/finance/expenses/plans/${plan.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      {plan.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{plan.category}</TableCell>
-                  <TableCell>{formatAmount(Number(plan.amount))}</TableCell>
-                  <TableCell>{expensePlanFrequencyLabel(plan.frequency)}</TableCell>
-                  <TableCell>{plan.autoGenerate ? 'Yes' : '—'}</TableCell>
-                  <TableCell>{formatExpensePlanShortDate(plan.nextDueDate)}</TableCell>
-                  <TableCell>{plan.project ? `${plan.project.code}` : '—'}</TableCell>
-                  <TableCell className="text-right">{plan._count.expenses}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Generate expense from ${plan.name}`}
-                        onClick={() => {
-                          setGeneratePlan(plan);
-                          setGenerateOpen(true);
-                        }}
-                      >
-                        <FileOutput size={16} />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Delete ${plan.name}`}
-                        onClick={() => void handleDelete(plan.id, plan.name)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      ) : null}
+
+      {showBoardPanel || showListPanel ? (
+        loading ? (
+          <LoadingState count={3} />
+        ) : error ? (
+          <ErrorState description={error} onRetry={() => void fetchPlans()} />
+        ) : plans.length === 0 ? (
+          <EmptyState
+            icon={CalendarDays}
+            title={
+              totalInScope === 0 && !hasActiveFilters ? 'No expense plans yet' : 'No matching plans'
+            }
+            description={
+              totalInScope === 0 && !hasActiveFilters
+                ? 'Create a plan for rent, SaaS, or other recurring spend; cards appear on pay now when due.'
+                : 'Try clearing filters or switch to the calendar grid.'
+            }
+            action={
+              hasActiveFilters ? (
+                <Button type="button" variant="outline" onClick={handleClearFilters}>
+                  Clear filters
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : showBoardPanel ? (
+          <ExpensePlansBoard plans={plans} onOpen={openExpensePlanDetail} />
+        ) : (
+          <ExpensePlansListTable plans={plans} onOpen={openExpensePlanDetail} />
+        )
+      ) : null}
 
       <CreateExpensePlanDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={() => {
-          void fetchPlans();
+          void refreshAll();
         }}
       />
 
@@ -418,7 +476,15 @@ export function ExpensePlansPageContent() {
           setGenerateOpen(next);
           if (!next) setGeneratePlan(null);
         }}
-        onGenerated={() => void fetchPlans()}
+        onGenerated={() => void refreshAll()}
+      />
+
+      <ExpensePlanDetailSheet
+        planId={openPlanIdFromUrl}
+        open={sheetOpen}
+        onOpenChange={handlePlanSheetOpenChange}
+        onPlanUpdated={() => void refreshAll()}
+        onPlanDeleted={() => void refreshAll()}
       />
     </div>
   );

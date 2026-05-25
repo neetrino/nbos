@@ -81,7 +81,7 @@ function paidMonthIndicesInYear(invoices: InvoiceCoverageRow[], year: number): S
 }
 
 export function buildSubscriptionCoverageSummary(
-  subscription: { amount: number | string | { toString(): string } },
+  subscription: { baseMonthlyAmount: number | string | { toString(): string } },
   invoices: InvoiceCoverageRow[] | undefined,
   year: number,
 ): SubscriptionCoverageSummary {
@@ -92,7 +92,7 @@ export function buildSubscriptionCoverageSummary(
   }
 
   const firstCoveredMonth = Math.min(...paidMonths);
-  const unitAmount = Number(subscription.amount);
+  const unitAmount = Number(subscription.baseMonthlyAmount);
 
   return {
     firstCoveredMonth,
@@ -106,7 +106,7 @@ export function attachSubscriptionCoverage<T extends object>(
   year = new Date().getFullYear(),
 ): T & { coverage: SubscriptionCoverageSummary } {
   const row = subscription as T & {
-    amount: number | string | { toString(): string };
+    baseMonthlyAmount: number | string | { toString(): string };
     invoices?: InvoiceCoverageRow[];
   };
   const coverage = buildSubscriptionCoverageSummary(row, row.invoices, year);

@@ -12,8 +12,10 @@ interface BootstrapCtx {
   open: boolean;
   order?: Order | null;
   subscriptionId?: string | null;
+  /** When opening manual invoice from Client Portfolio, pre-select project if allowed. */
+  initialProjectId?: string | null;
   setError: (v: string | null) => void;
-  setLoadError: (v: string | null) => void;
+  setLoadError: (e: string | null) => void;
   setForm: (f: CreateInvoiceFormState) => void;
   setProjects: (p: Project[]) => void;
   setSubscriptionDetail: (s: Subscription | null) => void;
@@ -47,7 +49,7 @@ export function bootstrapCreateInvoiceDialog(ctx: BootstrapCtx): void {
 
   ctx.setSubscriptionDetail(null);
   ctx.setForm(getInitialInvoiceForm());
-  void loadProjects(ctx.setProjects, ctx.setLoadError);
+  void loadProjects(ctx.setProjects, ctx.setLoadError, ctx.setForm, ctx.initialProjectId?.trim());
 }
 
 async function loadSubscriptionById(
@@ -74,10 +76,16 @@ async function loadSubscriptionById(
 async function loadProjects(
   setProjects: (projects: Project[]) => void,
   setLoadError: (error: string | null) => void,
+  setForm: ((f: CreateInvoiceFormState) => void) | undefined,
+  preferredProjectId: string | undefined,
 ) {
   try {
     const data = await projectsApi.getAll({ pageSize: 100 });
     setProjects(data.items);
+    setLoadError(null);
+    if (setForm && preferredProjectId && data.items.some((p) => p.id === preferredProjectId)) {
+      setForm({ ...getInitialInvoiceForm(), projectId: preferredProjectId });
+    }
   } catch (caught) {
     setLoadError(getApiErrorMessage(caught, 'Projects could not be loaded.'));
   }

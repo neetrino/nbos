@@ -39,6 +39,24 @@ export class CalendarController {
     });
   }
 
+  @Get('meetings/:id')
+  @RequirePermission('CALENDAR', 'VIEW')
+  @ApiOperation({ summary: 'Get one calendar meeting if visible to the user' })
+  async getMeeting(
+    @CurrentUser() user: CurrentUserPayload,
+    @Req() req: AuthedRequest,
+    @Param('id') id: string,
+  ) {
+    return this.calendarService.getMeetingById(user.id, req.permissionScope ?? 'OWN', id);
+  }
+
+  @Get('personal-events/:id')
+  @RequirePermission('CALENDAR', 'VIEW')
+  @ApiOperation({ summary: 'Get one personal calendar event (owner only)' })
+  async getPersonalEvent(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.calendarService.getPersonalEventById(user.id, id);
+  }
+
   @Post('meetings')
   @RequirePermission('CALENDAR', 'ADD')
   @ApiOperation({ summary: 'Create a client-facing calendar meeting' })

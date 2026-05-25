@@ -131,7 +131,7 @@ export class ExpenseBacklogRemindersService {
   private async loadBacklogRows(): Promise<BacklogRow[]> {
     return this.prisma.expense.findMany({
       where: {
-        status: 'DELAYED',
+        status: 'BACKLOG',
         backlogReason: { not: null },
       },
       select: {

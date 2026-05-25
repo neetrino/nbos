@@ -53,7 +53,17 @@ export class BonusReleaseService {
     private readonly notifications: NotificationService,
   ) {}
 
-  async listForEntry(bonusEntryId: string) {
+  /**
+   * Paginated release ledger for a bonus entry (newest first).
+   * Page/size are clamped to protect the API from abuse.
+   */
+  async listForEntry(
+    bonusEntryId: string,
+    opts?: { page?: number; pageSize?: number },
+  ): Promise<{
+    items: Awaited<ReturnType<PrismaClient['bonusRelease']['findMany']>>;
+    meta: { total: number; page: number; pageSize: number; totalPages: number };
+  }> {
     const entry = await this.prisma.bonusEntry.findUnique({
       where: { id: bonusEntryId },
       select: { id: true },
@@ -61,10 +71,34 @@ export class BonusReleaseService {
     if (!entry) {
       throw new NotFoundException(`Bonus entry ${bonusEntryId} not found`);
     }
-    return this.prisma.bonusRelease.findMany({
-      where: { bonusEntryId },
-      orderBy: { createdAt: 'desc' },
-    });
+
+    const rawPage = opts?.page;
+    const rawSize = opts?.pageSize;
+    const page =
+      typeof rawPage === 'number' && Number.isFinite(rawPage) && rawPage >= 1
+        ? Math.min(10_000, Math.floor(rawPage))
+        : 1;
+    const pageSize =
+      typeof rawSize === 'number' && Number.isFinite(rawSize) && rawSize >= 1
+        ? Math.min(100, Math.floor(rawSize))
+        : 50;
+
+    const where = { bonusEntryId };
+
+    const [items, total] = await Promise.all([
+      this.prisma.bonusRelease.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.bonusRelease.count({ where }),
+    ]);
+
+    return {
+      items,
+      meta: { total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) },
+    };
   }
 
   async createForEntry(bonusEntryId: string, input: CreateBonusReleaseInput) {

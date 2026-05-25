@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -11,12 +11,28 @@ import {
 } from '@/components/ui/table';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { payrollRunRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
-import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
+import {
+  payrollRunStatusUi,
+  payrollRunListRowClass,
+} from '@/features/finance/constants/payroll-run-status-ui';
+import { formatPayrollMonthLabel } from '@/features/finance/utils/salary-board-month-utils';
+import { PayrollRunsPaidProgressBar } from '@/features/finance/components/payroll/payroll-runs-paid-progress';
 import type { PayrollRunListRow } from '@/lib/api/payroll-runs';
+import { cn } from '@/lib/utils';
+
+const PAYROLL_LIST_ROW_CELL_CLASS = 'px-4 py-4 align-middle';
+const PAYROLL_LIST_HEAD_CELL_CLASS = 'px-4 py-3';
+const PAYROLL_LIST_FOOTER_CELL_CLASS = 'text-foreground px-4 py-3 text-sm font-bold tabular-nums';
+const PAYROLL_LIST_FOOTER_LABEL_CLASS =
+  'text-muted-foreground px-4 py-3 text-xs font-semibold uppercase tracking-wide';
 
 function parseAmount(value: string): number {
   const n = Number.parseFloat(value);
   return Number.isFinite(n) ? n : 0;
+}
+
+function payrollRunDetailHref(runId: string): string {
+  return `/finance/payroll/${runId}`;
 }
 
 export function PayrollRunsListTable(props: {
@@ -30,65 +46,112 @@ export function PayrollRunsListTable(props: {
   };
 }) {
   const { items, pageTotals } = props;
+  const router = useRouter();
 
   return (
     <div className="border-border overflow-x-auto rounded-xl border">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Month</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Lines</TableHead>
-            <TableHead className="text-right">Expense cards</TableHead>
-            <TableHead className="text-right">Total payable</TableHead>
-            <TableHead className="text-right">Paid</TableHead>
-            <TableHead className="text-right">Remaining</TableHead>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead className={PAYROLL_LIST_HEAD_CELL_CLASS}>Month</TableHead>
+            <TableHead className={PAYROLL_LIST_HEAD_CELL_CLASS}>Status</TableHead>
+            <TableHead className={PAYROLL_LIST_HEAD_CELL_CLASS}>Progress</TableHead>
+            <TableHead className={`${PAYROLL_LIST_HEAD_CELL_CLASS} text-right`}>Lines</TableHead>
+            <TableHead className={`${PAYROLL_LIST_HEAD_CELL_CLASS} text-right`}>
+              Expense cards
+            </TableHead>
+            <TableHead className={`${PAYROLL_LIST_HEAD_CELL_CLASS} text-right`}>
+              Total payable
+            </TableHead>
+            <TableHead className={`${PAYROLL_LIST_HEAD_CELL_CLASS} text-right`}>Paid</TableHead>
+            <TableHead className={`${PAYROLL_LIST_HEAD_CELL_CLASS} text-right`}>
+              Remaining
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>
-                <Link
-                  href={`/finance/payroll/${row.id}`}
-                  className="text-primary font-medium hover:underline"
+          {items.map((row) => {
+            const payable = parseAmount(row.totalPayable);
+            const paid = parseAmount(row.totalPaid);
+            const monthLabel = formatPayrollMonthLabel(row.payrollMonth);
+            const href = payrollRunDetailHref(row.id);
+            const statusUi = payrollRunStatusUi(row.status);
+
+            return (
+              <TableRow
+                key={row.id}
+                className={cn('cursor-pointer', payrollRunListRowClass(row.status))}
+                onClick={() => router.push(href)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    router.push(href);
+                  }
+                }}
+                tabIndex={0}
+                role="link"
+                aria-label={`Open payroll for ${monthLabel}`}
+              >
+                <TableCell className={PAYROLL_LIST_ROW_CELL_CLASS}>
+                  <span className="text-base font-semibold">{monthLabel}</span>
+                </TableCell>
+                <TableCell className={PAYROLL_LIST_ROW_CELL_CLASS}>
+                  <span className="text-xs font-semibold tracking-wide uppercase">
+                    {statusUi.label}
+                  </span>
+                </TableCell>
+                <TableCell className={`${PAYROLL_LIST_ROW_CELL_CLASS} min-w-[8rem]`}>
+                  <PayrollRunsPaidProgressBar paid={paid} payable={payable} className="h-2" />
+                </TableCell>
+                <TableCell
+                  className={`${PAYROLL_LIST_ROW_CELL_CLASS} text-right text-sm tabular-nums opacity-90`}
                 >
-                  {row.payrollMonth}
-                </Link>
-              </TableCell>
-              <TableCell>{PAYROLL_RUN_STATUS_LABEL[row.status]}</TableCell>
-              <TableCell className="text-right">{row._count.salaryLines}</TableCell>
-              <TableCell className="text-muted-foreground text-right text-xs tabular-nums">
-                {row.materializedExpenseLineCount} / {row._count.salaryLines}
-              </TableCell>
-              <TableCell className="text-right">
-                {formatAmount(parseAmount(row.totalPayable))}
-              </TableCell>
-              <TableCell className="text-right">
-                {formatAmount(parseAmount(row.totalPaid))}
-              </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {formatAmount(payrollRunRemainingMajorUnits(row.totalPayable, row.totalPaid))}
-              </TableCell>
-            </TableRow>
-          ))}
+                  {row._count.salaryLines}
+                </TableCell>
+                <TableCell
+                  className={`${PAYROLL_LIST_ROW_CELL_CLASS} text-right text-sm tabular-nums opacity-80`}
+                >
+                  {row.materializedExpenseLineCount} / {row._count.salaryLines}
+                </TableCell>
+                <TableCell
+                  className={`${PAYROLL_LIST_ROW_CELL_CLASS} text-right text-sm font-medium tabular-nums`}
+                >
+                  {formatAmount(payable)}
+                </TableCell>
+                <TableCell
+                  className={`${PAYROLL_LIST_ROW_CELL_CLASS} text-right text-sm tabular-nums`}
+                >
+                  {formatAmount(paid)}
+                </TableCell>
+                <TableCell
+                  className={`${PAYROLL_LIST_ROW_CELL_CLASS} text-right text-sm font-semibold tabular-nums`}
+                >
+                  {formatAmount(payrollRunRemainingMajorUnits(row.totalPayable, row.totalPaid))}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
         <tfoot>
-          <TableRow className="bg-muted/30 font-medium">
-            <TableCell colSpan={2} className="text-muted-foreground text-xs">
-              Visible page totals ({items.length} run{items.length === 1 ? '' : 's'})
+          <TableRow className="bg-muted/40 hover:bg-muted/40 border-border border-t-2">
+            <TableCell colSpan={3} className={PAYROLL_LIST_FOOTER_LABEL_CLASS}>
+              Total ({items.length} run{items.length === 1 ? '' : 's'})
             </TableCell>
-            <TableCell className="text-right tabular-nums">{pageTotals.lines}</TableCell>
-            <TableCell className="text-muted-foreground text-right text-xs tabular-nums">
+            <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
+              {pageTotals.lines}
+            </TableCell>
+            <TableCell
+              className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-muted-foreground text-right text-xs font-semibold`}
+            >
               {pageTotals.materialized}
             </TableCell>
-            <TableCell className="text-right tabular-nums">
+            <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
               {formatAmount(pageTotals.payable)}
             </TableCell>
-            <TableCell className="text-right tabular-nums">
+            <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
               {formatAmount(pageTotals.paid)}
             </TableCell>
-            <TableCell className="text-right tabular-nums">
+            <TableCell className={`${PAYROLL_LIST_FOOTER_CELL_CLASS} text-right`}>
               {formatAmount(pageTotals.remaining)}
             </TableCell>
           </TableRow>

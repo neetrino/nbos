@@ -81,10 +81,14 @@ export class SubscriptionsController {
     body: {
       projectId: string;
       type: string;
-      amount: number;
+      baseMonthlyAmount?: number;
+      amount?: number;
       billingDay: number;
+      billingFrequency?: string;
       taxStatus?: string;
-      startDate: string;
+      billingStartDate?: string;
+      startDate?: string;
+      notificationsEnabled?: boolean;
       endDate?: string;
       partnerId?: string;
     },
@@ -99,10 +103,14 @@ export class SubscriptionsController {
     @Body()
     body: {
       type?: string;
+      baseMonthlyAmount?: number;
       amount?: number;
       billingDay?: number;
+      billingFrequency?: string;
       taxStatus?: string;
+      billingStartDate?: string;
       startDate?: string;
+      notificationsEnabled?: boolean;
       endDate?: string;
       partnerId?: string | null;
     },

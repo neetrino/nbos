@@ -11,13 +11,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 
 import {
   FILTER_BAR_CONTROL_PILL,
+  FILTER_BAR_FILTER_TRIGGER_ACTIVE,
+  FILTER_BAR_GLOBAL_CLEAR_BUTTON_TONE,
+  FILTER_BAR_GLOBAL_CLEAR_SLOT,
   FILTER_BAR_INNER_GAP,
+  FILTER_BAR_SEARCH_ACTIVE,
   FILTER_BAR_TOOLBAR_SURFACE,
 } from './filter-bar-constants';
+import { LIST_SEARCH_INPUT_PROPS } from './list-search-input-props';
 
 export interface FilterOption {
   value: string;
@@ -28,8 +33,27 @@ export interface FilterConfig {
   key: string;
   label: string;
   options: FilterOption[];
+  /** Select (default) or calendar month (`YYYY-MM`). */
+  fieldType?: 'select' | 'month';
   /** When false, no “All …” option; value falls back to the first option if unset. */
   includeAllOption?: boolean;
+  /** Baseline value when unset; also used to hide filter chips (e.g. board default “Active”). */
+  defaultOptionValue?: string;
+}
+
+/** Current select value for a filter field. */
+export function resolveFilterSelectValue(
+  filter: FilterConfig,
+  filterValues: Record<string, string>,
+): string {
+  if (filter.fieldType === 'month') {
+    const raw = filterValues[filter.key]?.trim() ?? '';
+    return raw.length > 0 ? raw : 'all';
+  }
+  if (filter.includeAllOption !== false) {
+    return filterValues[filter.key] || 'all';
+  }
+  return filterValues[filter.key] ?? filter.defaultOptionValue ?? filter.options[0]?.value ?? '';
 }
 
 export interface FilterBarProps {
@@ -52,9 +76,14 @@ function filterBarHasActiveQuery(
   if (search.trim().length > 0) return true;
   return (
     filters?.some((f) => {
-      if (f.includeAllOption === false) return false;
-      const v = filterValues[f.key];
-      return Boolean(v) && v !== 'all';
+      if (f.fieldType === 'month') {
+        const raw = filterValues[f.key]?.trim() ?? '';
+        return raw.length > 0 && raw !== 'all';
+      }
+      const value = resolveFilterSelectValue(f, filterValues);
+      const baseline =
+        f.includeAllOption !== false ? 'all' : (f.defaultOptionValue ?? f.options[0]?.value ?? '');
+      return value !== baseline;
     }) ?? false
   );
 }
@@ -74,17 +103,28 @@ function FilterBarSearchField({
   onSearchChange: (value: string) => void;
   searchPlaceholder: string;
 }) {
+  const searchActive = search.trim().length > 0;
+
   return (
     <div className="relative min-h-10 min-w-0 flex-1 md:min-w-[240px]">
       <Search
         size={16}
-        className="text-muted-foreground pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2"
+        className={cn(
+          'pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2',
+          searchActive ? 'text-blue-600/80 dark:text-blue-300/90' : 'text-muted-foreground',
+        )}
       />
       <Input
+        {...LIST_SEARCH_INPUT_PROPS}
         value={search}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder={searchPlaceholder}
-        className={cn('w-full pl-10', FILTER_BAR_CONTROL_PILL)}
+        role="searchbox"
+        className={cn(
+          'w-full pl-10',
+          FILTER_BAR_CONTROL_PILL,
+          searchActive && FILTER_BAR_SEARCH_ACTIVE,
+        )}
       />
     </div>
   );
@@ -96,21 +136,40 @@ function FilterBarFilterSelect({
   onFilterChange,
 }: FilterBarFilterSelectProps) {
   const showAll = filter.includeAllOption !== false;
-  const fallback = filter.options[0]?.value ?? '';
-  const value = showAll
-    ? filterValues[filter.key] || 'all'
-    : (filterValues[filter.key] ?? fallback);
+  const value = resolveFilterSelectValue(filter, filterValues);
+  const baseline = showAll ? 'all' : (filter.defaultOptionValue ?? filter.options[0]?.value ?? '');
+
+  const items = useMemo(
+    () => [
+      ...(showAll ? [{ value: 'all' as const, label: `All ${filter.label}` }] : []),
+      ...filter.options.map((opt) => ({ value: opt.value, label: opt.label })),
+    ],
+    [filter.label, filter.options, showAll],
+  );
+
+  const resolveTriggerLabel = (selected: string | null) => {
+    const resolved = selected ?? value;
+    const row = items.find((i) => i.value === resolved);
+    return row?.label ?? filter.label;
+  };
+
+  const isNarrowingFilter = value !== baseline;
 
   return (
     <Select value={value} onValueChange={(v) => onFilterChange?.(filter.key, v as string)}>
-      <SelectTrigger className={cn('w-[min(100%,160px)] sm:w-[160px]', FILTER_BAR_CONTROL_PILL)}>
-        <SelectValue placeholder={filter.label} />
+      <SelectTrigger
+        className={cn(
+          'w-[min(100%,160px)] sm:w-[160px]',
+          FILTER_BAR_CONTROL_PILL,
+          isNarrowingFilter && FILTER_BAR_FILTER_TRIGGER_ACTIVE,
+        )}
+      >
+        <SelectValue placeholder={filter.label}>{resolveTriggerLabel}</SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {showAll ? <SelectItem value="all">All {filter.label}</SelectItem> : null}
-        {filter.options.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
-            {opt.label}
+        {items.map((item) => (
+          <SelectItem key={`${filter.key}-${item.value}`} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -141,6 +200,15 @@ function FilterBarInner({
   actions,
   hasActiveFilters,
 }: FilterBarInnerProps) {
+  const reserveGlobalClearSlot = Boolean(onClearFilters);
+
+  const handleToolbarClear = () => {
+    onClearFilters?.();
+    if (search.trim().length > 0) {
+      onSearchChange('');
+    }
+  };
+
   return (
     <div className={FILTER_BAR_INNER_GAP}>
       <FilterBarSearchField
@@ -148,6 +216,23 @@ function FilterBarInner({
         onSearchChange={onSearchChange}
         searchPlaceholder={searchPlaceholder}
       />
+
+      {reserveGlobalClearSlot ? (
+        <div className={FILTER_BAR_GLOBAL_CLEAR_SLOT}>
+          {hasActiveFilters ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={cn('size-9 shrink-0 rounded-full', FILTER_BAR_GLOBAL_CLEAR_BUTTON_TONE)}
+              onClick={handleToolbarClear}
+              aria-label="Clear active filters and search"
+            >
+              <X className="size-4" aria-hidden />
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
 
       {filters?.map((filter) => (
         <FilterBarFilterSelect
@@ -157,18 +242,6 @@ function FilterBarInner({
           onFilterChange={onFilterChange}
         />
       ))}
-
-      {hasActiveFilters && onClearFilters ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:text-foreground h-10 shrink-0 rounded-full px-3"
-          onClick={onClearFilters}
-        >
-          <X size={14} />
-          Clear
-        </Button>
-      ) : null}
 
       {actions}
     </div>

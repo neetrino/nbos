@@ -24,6 +24,7 @@ const MODULES = [
   'MAIL',
   'CALENDAR',
   'COMPANY',
+  'CHECKLIST_TEMPLATES',
   'PARTNERS',
   'DASHBOARDS',
   'AUDIT_LOGS',
@@ -387,6 +388,16 @@ async function main() {
     module: 'DOCUMENTS',
     action: 'MANAGE_SECTIONS',
   });
+  permissionRecords.push({
+    id: 'perm-checklist-templates-publish',
+    module: 'CHECKLIST_TEMPLATES',
+    action: 'PUBLISH',
+  });
+  permissionRecords.push({
+    id: 'perm-checklist-templates-archive',
+    module: 'CHECKLIST_TEMPLATES',
+    action: 'ARCHIVE',
+  });
 
   await prisma.permission.createMany({
     data: permissionRecords,
@@ -435,8 +446,45 @@ async function main() {
     });
   }
 
+  for (const [roleId, moduleMap] of Object.entries(ROLE_MATRIX)) {
+    const company = moduleMap.COMPANY;
+    const checklistScopes = moduleMap.CHECKLIST_TEMPLATES;
+    if (!company) continue;
+    const [viewScope, editScope, , addScope] = company;
+    const checklistViewFromMatrix = checklistScopes?.[0] ?? 'NONE';
+
+    if (viewScope !== 'NONE' && checklistViewFromMatrix === 'NONE') {
+      rolePermissionData.push({
+        roleId,
+        permissionId: 'perm-checklist-templates-view',
+        scope: viewScope,
+      });
+    }
+
+    const writeScope = editScope !== 'NONE' ? editScope : addScope;
+    if (writeScope === 'NONE') continue;
+
+    const hasChecklistCrudFromMatrix =
+      checklistScopes !== undefined &&
+      (checklistScopes[1] !== 'NONE' || checklistScopes[2] !== 'NONE');
+
+    const checklistCompanyActions: ('add' | 'edit' | 'publish' | 'archive')[] =
+      hasChecklistCrudFromMatrix ? ['publish', 'archive'] : ['add', 'edit', 'publish', 'archive'];
+
+    for (const action of checklistCompanyActions) {
+      rolePermissionData.push({
+        roleId,
+        permissionId: `perm-checklist-templates-${action}`,
+        scope: writeScope,
+      });
+    }
+  }
+
   await prisma.rolePermission.deleteMany({});
-  await prisma.rolePermission.createMany({ data: rolePermissionData });
+  await prisma.rolePermission.createMany({
+    data: rolePermissionData,
+    skipDuplicates: true,
+  });
   console.log(`  ✓ RolePermissions (${rolePermissionData.length})`);
 
   console.log('\n✅ RBAC seed completed!');

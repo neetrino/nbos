@@ -1,8 +1,17 @@
 import { type Prisma } from '@nbos/database';
 
+const contactSummarySelect = { id: true, firstName: true, lastName: true, email: true } as const;
+
+export const projectAdditionalContactsInclude = {
+  additionalContacts: {
+    include: { contact: { select: contactSummarySelect } },
+  },
+} as const;
+
 export const projectDetailInclude = {
   company: true,
   contact: true,
+  ...projectAdditionalContactsInclude,
   products: {
     include: {
       pm: { select: { id: true, firstName: true, lastName: true } },
@@ -74,9 +83,23 @@ export const projectDetailInclude = {
         },
       },
     },
-    orderBy: { startDate: 'desc' },
+    orderBy: { billingStartDate: 'desc' },
   },
-  domains: { orderBy: { expiryDate: 'asc' } },
+  domains: {
+    orderBy: { expiryDate: 'asc' },
+    select: {
+      id: true,
+      domainName: true,
+      provider: true,
+      purchaseDate: true,
+      expiryDate: true,
+      renewalCost: true,
+      clientCharge: true,
+      autoRenew: true,
+      status: true,
+      clientServiceRecordId: true,
+    },
+  },
   expenses: { orderBy: { createdAt: 'desc' } },
   auditLogs: { orderBy: { createdAt: 'desc' }, take: 20 },
   _count: {

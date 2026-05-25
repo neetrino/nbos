@@ -157,11 +157,20 @@ Completion rules должны быть:
 
 Живёт внутри конкретной задачи и помогает выполнить задачу.
 
+Может быть создан вручную или из reusable `ChecklistTemplate`.
+
+Если automation создаёт задачу с checklist, она должна создавать `ChecklistInstance` snapshot из active template version. Изменение template позже не должно менять уже созданные task checklists.
+
 ### 6.2. Stage Gate Checklist
 
 Живёт в delivery boundary продукта/расширения и контролирует переход сущности между стадиями.
 
 Stage gate checklist — это уже не модуль `Tasks`, а правило `Projects Hub`.
+
+При этом сам checklist template может быть тем же reusable механизмом из My Company / SOP & Templates. Разница в том, кто использует instance:
+
+- Task uses checklist instance as execution helper;
+- Delivery stage uses checklist instance as one `StageRequirement` type.
 
 ## 7. Примеры канонического разделения
 

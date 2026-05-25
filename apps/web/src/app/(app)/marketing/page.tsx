@@ -1,11 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { Megaphone, Plus, RefreshCcw } from 'lucide-react';
-import { EmptyState, ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Megaphone, Plus } from 'lucide-react';
+import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -99,28 +97,6 @@ export default function MarketingPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Marketing Board"
-        description="Demand generation activities that can become CRM attribution sources."
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href="/marketing/attribution"
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-          >
-            Attribution Review
-          </Link>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={fetchActivities}
-            aria-label="Refresh board"
-          >
-            <RefreshCcw size={16} />
-          </Button>
-        </div>
-      </PageHeader>
-
       <form
         onSubmit={handleCreate}
         className="border-border bg-card grid gap-4 rounded-2xl border p-5 lg:grid-cols-6"

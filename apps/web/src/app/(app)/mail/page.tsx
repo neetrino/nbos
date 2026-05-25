@@ -5,7 +5,15 @@ import Link from 'next/link';
 import { Mail, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PageHeader, EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import {
+  PageHero,
+  PageHeroSearch,
+  PageHeroTabs,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  type PageHeroTabOption,
+} from '@/components/shared';
 import {
   mailApi,
   type MailAccountHealthSummaryRow,
@@ -15,10 +23,17 @@ import {
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
 import { MailProviderConnectionBadge } from '@/features/mail/MailProviderConnectionBadge';
 
 const MAIL_INBOX_SEARCH_DEBOUNCE_MS = 350;
+
+type MailThreadListSegment = 'all' | 'unread' | 'needs_link';
+
+const MAIL_THREAD_SEGMENT_OPTIONS: PageHeroTabOption<MailThreadListSegment>[] = [
+  { value: 'all', label: 'All threads' },
+  { value: 'unread', label: 'Unread' },
+  { value: 'needs_link', label: 'Needs link' },
+];
 
 function formatThreadTitle(subjectNormalized: string): string {
   const t = subjectNormalized.trim();
@@ -38,9 +53,7 @@ export default function MailInboxPage() {
   const [threadPage, setThreadPage] = useState(1);
   const [filterAccountId, setFilterAccountId] = useState<string | null>(null);
   /** Inbox segment: all, unread-only, or needs-business-link only (mutually exclusive). */
-  const [threadListSegment, setThreadListSegment] = useState<'all' | 'unread' | 'needs_link'>(
-    'all',
-  );
+  const [threadListSegment, setThreadListSegment] = useState<MailThreadListSegment>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
@@ -103,13 +116,15 @@ export default function MailInboxPage() {
     void load();
   }, [canView, load]);
 
+  const handleThreadSegmentChange = (segment: MailThreadListSegment) => {
+    setThreadPage(1);
+    setThreadListSegment(segment);
+  };
+
   if (!canView) {
     return (
       <div className="flex flex-col gap-6 p-6">
-        <PageHeader
-          title="Mail"
-          description="Unified inbox for connected mailboxes (Phase 5 MVP)."
-        />
+        <PageHero title="Mail" />
         <EmptyState
           icon={Mail}
           title="No access"
@@ -121,55 +136,37 @@ export default function MailInboxPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader
+      <PageHero
         title="Mail"
-        description="Threads from mailboxes you own or that your role can list (ALL scope). Account health shows local thread counts and sync timestamps; live provider checks are not wired yet. Editors can run stub sync (timestamps only)."
-      >
-        <div className="flex flex-wrap items-center gap-2">
+        tabs={
+          <PageHeroTabs
+            value={threadListSegment}
+            onChange={handleThreadSegmentChange}
+            options={MAIL_THREAD_SEGMENT_OPTIONS}
+            ariaLabel="Inbox segment"
+          />
+        }
+        search={
+          <PageHeroSearch
+            value={threadSearchDraft}
+            onChange={setThreadSearchDraft}
+            placeholder="Search by subject…"
+          />
+        }
+        trailing={
           <Button
             type="button"
-            variant={threadListSegment === 'all' ? 'secondary' : 'outline'}
-            size="sm"
-            onClick={() => {
-              setThreadPage(1);
-              setThreadListSegment('all');
-            }}
-          >
-            All threads
-          </Button>
-          <Button
-            type="button"
-            variant={threadListSegment === 'unread' ? 'secondary' : 'outline'}
-            size="sm"
-            onClick={() => {
-              setThreadPage(1);
-              setThreadListSegment('unread');
-            }}
-          >
-            Unread only
-          </Button>
-          <Button
-            type="button"
-            variant={threadListSegment === 'needs_link' ? 'secondary' : 'outline'}
-            size="sm"
-            onClick={() => {
-              setThreadPage(1);
-              setThreadListSegment('needs_link');
-            }}
-          >
-            Needs link
-          </Button>
-          <Button
             variant="outline"
             size="sm"
             className="gap-1"
             onClick={() => void load()}
             disabled={loading}
           >
-            <RefreshCcw size={14} /> Refresh
+            <RefreshCcw size={14} aria-hidden />
+            Refresh
           </Button>
-        </div>
-      </PageHeader>
+        }
+      />
 
       {loading ? <LoadingState /> : null}
       {error ? <ErrorState description={error} onRetry={() => void load()} /> : null}
@@ -261,16 +258,8 @@ export default function MailInboxPage() {
           </Card>
 
           <Card>
-            <CardHeader className="space-y-3 pb-2">
+            <CardHeader className="pb-2">
               <CardTitle className="text-base">Threads</CardTitle>
-              <Input
-                type="search"
-                placeholder="Search by subject…"
-                value={threadSearchDraft}
-                onChange={(e) => setThreadSearchDraft(e.target.value)}
-                className="max-w-md"
-                aria-label="Search threads by subject"
-              />
             </CardHeader>
             <CardContent>
               {threads.length === 0 && (!threadListMeta || threadListMeta.totalCount === 0) ? (

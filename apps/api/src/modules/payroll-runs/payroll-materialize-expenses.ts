@@ -1,8 +1,16 @@
 import { Decimal, type ExpenseCategoryEnum, type TransactionClient } from '@nbos/database';
 
 /** Machine-readable trace for support / reconciliation (not shown as user-facing copy). */
-export function formatPayrollExpenseNotes(payrollRunId: string, salaryLineId: string): string {
-  return `NBOS payrollRunId=${payrollRunId}; salaryLineId=${salaryLineId}`;
+export function formatPayrollExpenseNotes(
+  payrollRunId: string,
+  salaryLineId: string,
+  compensationProfileId?: string | null,
+): string {
+  const parts = [`NBOS payrollRunId=${payrollRunId}`, `salaryLineId=${salaryLineId}`];
+  if (compensationProfileId) {
+    parts.push(`compensationProfileId=${compensationProfileId}`);
+  }
+  return parts.join('; ');
 }
 
 export function endOfPayrollMonthUtc(payrollMonth: string): Date {
@@ -45,7 +53,10 @@ export async function materializePayrollExpensesForApprovedRun(
   const createdExpenseIds: string[] = [];
   const lines = await tx.salaryLine.findMany({
     where: { payrollRunId: params.payrollRunId, expenseId: null },
-    include: { employee: { select: { firstName: true, lastName: true } } },
+    include: {
+      employee: { select: { firstName: true, lastName: true } },
+      compensationProfile: { select: { id: true, currency: true } },
+    },
   });
 
   for (const line of lines) {
@@ -63,8 +74,8 @@ export async function materializePayrollExpensesForApprovedRun(
         amount: line.totalPayable,
         frequency: 'ONE_TIME',
         dueDate: endOfPayrollMonthUtc(params.payrollMonth),
-        status: 'UNPAID',
-        notes: formatPayrollExpenseNotes(params.payrollRunId, line.id),
+        status: 'DUE_NOW',
+        notes: formatPayrollExpenseNotes(params.payrollRunId, line.id, line.compensationProfileId),
       },
     });
 

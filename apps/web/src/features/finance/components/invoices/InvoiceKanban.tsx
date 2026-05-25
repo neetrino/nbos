@@ -1,17 +1,29 @@
+import { useMemo } from 'react';
 import { AlertTriangle, Building2, Calendar, FolderKanban } from 'lucide-react';
-import { KanbanBoard, StatusBadge, type KanbanColumn } from '@/components/shared';
+import { KanbanBoard, KanbanColumnMoneyTotal, StatusBadge } from '@/components/shared';
+import {
+  buildTerminalDropZonesFromBoard,
+  shouldShowTerminalDropBar,
+} from '@/features/shared/kanban-terminal-drop';
 import {
   formatAmount,
-  getInvoiceMoneyStage,
   INVOICE_MONEY_STAGES,
   INVOICE_TYPES,
 } from '@/features/finance/constants/finance';
+import { parseMoneyAmount } from '@/lib/format/money';
+import { INVOICE_MONEY_BOARD_STAGES } from '@/features/finance/constants/invoice-board-lifecycle';
+import { getBoardStageKeys, type BoardLifecycleScope } from '@/features/shared/board-lifecycle';
+import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
+import { createInvoiceKanbanQuickCreateConfig } from '@/features/finance/kanban/finance-kanban-quick-create';
+import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoiceKanbanProps {
   invoices: Invoice[];
+  boardScope: BoardLifecycleScope;
   onInvoiceClick: (invoice: Invoice) => void;
   onMove: (itemId: string, from: string, to: string) => void;
+  onOpenQuickCreate?: () => void;
 }
 
 const STAGE_COLORS: Record<string, string> = {
@@ -22,15 +34,49 @@ const STAGE_COLORS: Record<string, string> = {
   CANCELLED: 'bg-red-500',
   PAID: 'bg-green-500',
 };
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-export function InvoiceKanban({ invoices, onInvoiceClick, onMove }: InvoiceKanbanProps) {
-  const columns = INVOICE_MONEY_STAGES.map((stage) => ({
-    key: stage.value,
-    label: stage.label,
-    color: STAGE_COLORS[stage.value] ?? 'bg-gray-400',
-    items: invoices.filter((invoice) => invoice.moneyStatus === stage.value),
-  }));
+export function InvoiceKanban({
+  invoices,
+  boardScope,
+  onInvoiceClick,
+  onMove,
+  onOpenQuickCreate,
+}: InvoiceKanbanProps) {
+  const visibleKeys = getBoardStageKeys(INVOICE_MONEY_BOARD_STAGES, boardScope);
+  const columns = INVOICE_MONEY_STAGES.filter((stage) => visibleKeys.includes(stage.value)).map(
+    (stage) => {
+      const color = STAGE_COLORS[stage.value] ?? 'bg-gray-400';
+      return {
+        key: stage.value,
+        label: stage.label,
+        color,
+        hexColor: resolveKanbanStageHex(color),
+        items: invoices.filter((invoice) => invoice.moneyStatus === stage.value),
+      };
+    },
+  );
+
+  const invoiceQuickCreate = useMemo(
+    () =>
+      onOpenQuickCreate
+        ? createInvoiceKanbanQuickCreateConfig(() => onOpenQuickCreate())
+        : undefined,
+    [onOpenQuickCreate],
+  );
+
+  const invoiceStatusLabels = useMemo(
+    () =>
+      Object.fromEntries(INVOICE_MONEY_STAGES.map((stage) => [stage.value, stage.label])) as Record<
+        string,
+        string
+      >,
+    [],
+  );
+
+  const terminalDropZones = useMemo(
+    () => buildTerminalDropZonesFromBoard(INVOICE_MONEY_BOARD_STAGES, invoiceStatusLabels),
+    [invoiceStatusLabels],
+  );
 
   return (
     <div className="min-h-0 flex-1">
@@ -38,29 +84,18 @@ export function InvoiceKanban({ invoices, onInvoiceClick, onMove }: InvoiceKanba
         columns={columns}
         getItemId={(invoice: Invoice) => invoice.id}
         onMove={onMove}
-        columnWidth={270}
+        columnQuickCreate={invoiceQuickCreate}
+        terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
+        columnWidth={boardScope === 'CLOSED' ? 288 : 270}
         emptyMessage="No invoices"
-        renderColumnHeader={(column: KanbanColumn<Invoice>) => (
-          <InvoiceKanbanColumnTotal column={column} />
+        renderColumnHeader={(column) => (
+          <KanbanColumnMoneyTotal column={column} getAmount={(invoice) => invoice.amount} />
         )}
         renderCard={(invoice: Invoice) => (
           <InvoiceKanbanCard invoice={invoice} onInvoiceClick={onInvoiceClick} />
         )}
       />
     </div>
-  );
-}
-
-function InvoiceMoneyStatusBadge({ moneyStatus }: { moneyStatus: string }) {
-  const stage = getInvoiceMoneyStage(moneyStatus);
-  if (!stage) return null;
-  return <StatusBadge label={stage.label} variant={stage.variant} />;
-}
-
-function InvoiceKanbanColumnTotal({ column }: { column: KanbanColumn<Invoice> }) {
-  const columnTotal = column.items.reduce((sum, invoice) => sum + parseFloat(invoice.amount), 0);
-  return (
-    <p className="text-foreground text-lg font-bold tabular-nums">{formatAmount(columnTotal)}</p>
   );
 }
 
@@ -72,20 +107,21 @@ function InvoiceKanbanCard({
   onInvoiceClick: (invoice: Invoice) => void;
 }) {
   const type = INVOICE_TYPES.find((invoiceType) => invoiceType.value === invoice.type);
-  const overdueDays = resolveOverdueDays(invoice);
+  const overdueDays = resolveInvoiceOverdueDays(invoice);
 
   return (
     <div
-      className="border-border bg-card cursor-pointer space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-sm"
+      className="border-border bg-card hover:bg-muted/30 cursor-pointer space-y-1.5 rounded-xl border p-3 transition-shadow hover:shadow-sm"
       onClick={() => onInvoiceClick(invoice)}
     >
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-xs font-medium">{invoice.code}</span>
         {invoice.taxStatus === 'TAX' && <StatusBadge label="Tax" variant="green" />}
       </div>
-      <p className="text-sm font-bold">{formatAmount(parseFloat(invoice.amount))}</p>
-      {type && <StatusBadge label={type.label} variant="blue" />}
-      <InvoiceMoneyStatusBadge moneyStatus={invoice.moneyStatus} />
+      <p className="text-foreground text-sm font-bold tabular-nums">
+        {formatAmount(parseMoneyAmount(invoice.amount))}
+      </p>
+      {type ? <StatusBadge label={type.label} variant="blue" /> : null}
       {invoice.company && <InvoiceCompany name={invoice.company.name} />}
       {invoice.project && <InvoiceProject name={invoice.project.name} />}
       {invoice.dueDate && <InvoiceDueDate dueDate={invoice.dueDate} />}
@@ -128,15 +164,4 @@ function InvoiceOverdueDays({ days }: { days: number }) {
       {days}d overdue
     </div>
   );
-}
-
-function resolveOverdueDays(invoice: Invoice) {
-  if (!invoice.dueDate || invoice.moneyStatus === 'PAID') return 0;
-
-  const dueDate = new Date(invoice.dueDate);
-  const now = new Date();
-  dueDate.setHours(0, 0, 0, 0);
-  now.setHours(0, 0, 0, 0);
-
-  return Math.max(0, Math.floor((now.getTime() - dueDate.getTime()) / DAY_IN_MS));
 }

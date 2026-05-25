@@ -10,8 +10,10 @@ import {
 } from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 import { ExpensesService } from './expenses.service';
+import { buildExpensePlanGridPayload } from './expense-plan-grid';
 
 const EXPENSE_PLAN_SORT_FIELDS = new Set(['createdAt', 'nextDueDate', 'amount', 'name']);
+const EXPENSE_PLAN_GRID_MAX_ROWS = 300;
 
 export interface ExpensePlanQueryParams {
   page?: number;
@@ -69,20 +71,7 @@ export class ExpensePlansService {
   async findAll(params: ExpensePlanQueryParams) {
     const page = normalizeExpenseListPage(params.page);
     const pageSize = normalizeExpenseListPageSize(params.pageSize);
-    const safeCategory = pickExpenseCategoryFilter(params.category);
-    const where: Prisma.ExpensePlanWhereInput = {
-      ...(safeCategory ? { category: safeCategory as ExpenseCategoryEnum } : {}),
-      ...(params.projectId?.trim() ? { projectId: params.projectId.trim() } : {}),
-      ...(params.search?.trim()
-        ? {
-            OR: [
-              { name: { contains: params.search.trim(), mode: 'insensitive' } },
-              { provider: { contains: params.search.trim(), mode: 'insensitive' } },
-            ],
-          }
-        : {}),
-    };
-
+    const where = this.buildListWhere(params);
     const orderBy = this.buildOrderBy(params.sortBy, params.sortOrder);
 
     const [items, total] = await Promise.all([
@@ -103,6 +92,45 @@ export class ExpensePlansService {
       items: items.map((row) => serializePlanRow(row)),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
+  }
+
+  async getGrid(params: ExpensePlanQueryParams & { year?: number }) {
+    const year = params.year ?? new Date().getUTCFullYear();
+    const where = this.buildListWhere(params);
+    const rangeStart = new Date(Date.UTC(year, 0, 1));
+    const rangeEnd = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999));
+
+    const plans = await this.prisma.expensePlan.findMany({
+      where,
+      include: {
+        project: { select: { id: true, code: true, name: true } },
+        expenses: {
+          where: { dueDate: { gte: rangeStart, lte: rangeEnd } },
+          select: {
+            id: true,
+            amount: true,
+            dueDate: true,
+            status: true,
+            expensePayments: { select: { amount: true } },
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+      take: EXPENSE_PLAN_GRID_MAX_ROWS,
+    });
+
+    return buildExpensePlanGridPayload(
+      plans.map((plan) => ({
+        id: plan.id,
+        name: plan.name,
+        amount: plan.amount,
+        frequency: plan.frequency,
+        nextDueDate: plan.nextDueDate,
+        project: plan.project,
+        expenses: plan.expenses,
+      })),
+      year,
+    );
   }
 
   async findById(id: string) {
@@ -227,7 +255,7 @@ export class ExpensePlansService {
       amount,
       frequency: 'ONE_TIME',
       dueDate: occurrence.toISOString(),
-      status: 'THIS_MONTH',
+      status: 'PLANNED',
       projectId: plan.projectId ?? undefined,
       notes: plan.provider ? `From plan. Provider: ${plan.provider}` : 'From expense plan',
       expensePlanId: planId,
@@ -290,6 +318,29 @@ export class ExpensePlansService {
       throw new BadRequestException('Invalid asOf; use an ISO-8601 date or datetime.');
     }
     return parsed;
+  }
+
+  private buildListWhere(params: ExpensePlanQueryParams): Prisma.ExpensePlanWhereInput {
+    const safeCategory = pickExpenseCategoryFilter(params.category);
+    const searchTrimmed = params.search?.trim();
+    const ic = searchTrimmed
+      ? { contains: searchTrimmed, mode: 'insensitive' as const }
+      : undefined;
+    const searchOr: Prisma.ExpensePlanWhereInput['OR'] = ic
+      ? [
+          { name: ic },
+          { provider: ic },
+          { notes: ic },
+          { project: { name: ic } },
+          { project: { code: ic } },
+        ]
+      : undefined;
+
+    return {
+      ...(safeCategory ? { category: safeCategory as ExpenseCategoryEnum } : {}),
+      ...(params.projectId?.trim() ? { projectId: params.projectId.trim() } : {}),
+      ...(searchOr ? { OR: searchOr } : {}),
+    };
   }
 
   private buildOrderBy(

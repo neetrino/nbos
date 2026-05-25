@@ -55,6 +55,7 @@ model ClientServiceRecord {
   invoices        Invoice[]
   expensePlans    ExpensePlan[]
   expenses        Expense[]
+  domain          Domain?
 
   @@index([projectId])
   @@index([productId])

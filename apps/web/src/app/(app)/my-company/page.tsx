@@ -2,19 +2,20 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import type { LucideIcon } from 'lucide-react';
 import {
   BadgeDollarSign,
   Building2,
   ClipboardList,
+  ListChecks,
   Network,
+  Waypoints,
   Percent,
-  RefreshCcw,
   ShieldCheck,
   Target,
   Users2,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ErrorState, LoadingState, PageHeader, StatusBadge } from '@/components/shared';
+import { ErrorState, LoadingState, PageHero, StatusBadge } from '@/components/shared';
 import {
   departmentsApi,
   employeesApi,
@@ -23,8 +24,17 @@ import {
   type Employee,
   type RoleItem,
 } from '@/lib/api/employees';
+import { usePermission } from '@/lib/permissions';
 
-const MY_COMPANY_SECTIONS = [
+type HubSection = {
+  title: string;
+  href: string;
+  description: string;
+  icon: LucideIcon;
+  require?: { module: string; action: string };
+};
+
+const MY_COMPANY_SECTIONS: HubSection[] = [
   {
     title: 'Team',
     href: '/my-company/team',
@@ -50,6 +60,13 @@ const MY_COMPANY_SECTIONS = [
     icon: BadgeDollarSign,
   },
   {
+    title: 'Bonus policies',
+    href: '/my-company/bonus-policies',
+    description: 'Bonus rule bundles (sales, delivery, manual) for compensation profiles.',
+    icon: BadgeDollarSign,
+    require: { module: 'COMPANY', action: 'VIEW' },
+  },
+  {
     title: 'Sales bonus policies',
     href: '/my-company/sales-bonus-policies',
     description:
@@ -63,12 +80,35 @@ const MY_COMPANY_SECTIONS = [
     icon: Target,
   },
   {
+    title: 'KPI gate policies',
+    href: '/my-company/kpi-policies',
+    description:
+      'Attainment thresholds and payout % for payroll (linked via compensation profiles).',
+    icon: Target,
+    require: { module: 'COMPANY', action: 'VIEW' },
+  },
+  {
     title: 'SOP & Templates',
     href: '/my-company/sop',
     description: 'SOP documents, process templates, and operational runs.',
     icon: ClipboardList,
   },
-] as const;
+  {
+    title: 'Checklist templates',
+    href: '/my-company/checklist-templates',
+    description: 'Versioned checklist builders for delivery, QA, maintenance, and SOP.',
+    icon: ListChecks,
+    require: { module: 'CHECKLIST_TEMPLATES', action: 'VIEW' },
+  },
+  {
+    title: 'Delivery checklist rules',
+    href: '/my-company/checklist-stage-rules',
+    description:
+      'Bind published templates to Product / Extension stages; instances on stage entry.',
+    icon: Waypoints,
+    require: { module: 'CHECKLIST_TEMPLATES', action: 'VIEW' },
+  },
+];
 
 const FOUNDATION_GAPS = [
   'Seat assignments are not modelled separately from technical permission roles yet.',
@@ -86,6 +126,7 @@ function countActiveEmployees(employees: Employee[]): number {
 }
 
 export default function MyCompanyPage() {
+  const { can, isLoading: permsLoading } = usePermission();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [roles, setRoles] = useState<RoleItem[]>([]);
@@ -121,17 +162,18 @@ export default function MyCompanyPage() {
   const assignedEmployees = employees.filter((employee) => employee.departments.length > 0).length;
   const systemRoles = roles.filter((role) => role.isSystem).length;
 
+  const visibleHubSections = MY_COMPANY_SECTIONS.filter(
+    (section) =>
+      permsLoading || !section.require || can(section.require.action, section.require.module),
+  );
+
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title="My Company"
-        description="Org Structure is the company control center for departments, seats, employees, KPI, compensation, and SOP."
-      >
-        <Button variant="outline" size="sm" onClick={fetchFoundation}>
-          <RefreshCcw size={16} />
-          Refresh
-        </Button>
-      </PageHeader>
+      <PageHero title="My Company" />
+      <p className="text-muted-foreground text-sm">
+        Org Structure is the company control center for departments, seats, employees, KPI,
+        compensation, and SOP.
+      </p>
 
       {loading ? (
         <LoadingState variant="cards" count={6} />
@@ -199,7 +241,7 @@ export default function MyCompanyPage() {
             </div>
 
             <div className="grid gap-3">
-              {MY_COMPANY_SECTIONS.map((section) => {
+              {visibleHubSections.map((section) => {
                 const Icon = section.icon;
                 return (
                   <Link

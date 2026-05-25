@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,20 +22,10 @@ import {
   TAX_STATUSES,
 } from './edit-expense-dialog-constants';
 
-export interface EditExpenseFormState {
-  name: string;
-  amount: string;
-  type: string;
-  category: string;
-  frequency: string;
-  status: string;
-  dueDate: string;
-  projectId: string;
-  isPassThrough: boolean;
-  taxStatus: string;
-  backlogReason: string;
-  notes: string;
-}
+import type { ExpenseGeneralDraft } from '@/features/finance/utils/expense-general-form-state';
+
+/** @deprecated Prefer `ExpenseGeneralDraft` — kept for create dialog. */
+export type EditExpenseFormState = ExpenseGeneralDraft;
 
 interface EditExpenseDialogFormProps {
   form: EditExpenseFormState;
@@ -99,10 +90,10 @@ export function EditExpenseDialogForm({
         </div>
         <div>
           <Label>Due date</Label>
-          <Input
-            type="date"
+          <NbosDatePicker
             value={form.dueDate}
-            onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+            onChange={(dueDate) => setForm({ ...form, dueDate })}
+            aria-label="Due date"
           />
         </div>
       </div>
@@ -193,7 +184,7 @@ export function EditExpenseDialogForm({
         </div>
       </div>
 
-      {form.status === 'DELAYED' ? (
+      {form.status === 'BACKLOG' ? (
         <div>
           <Label>Backlog reason</Label>
           <Select

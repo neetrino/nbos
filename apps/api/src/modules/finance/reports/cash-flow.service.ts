@@ -93,7 +93,7 @@ export class CashFlowService {
   private async getExpectedExpenseCards(asOf: Date, maxDate: Date) {
     const expenses = await this.prisma.expense.findMany({
       where: {
-        status: { notIn: ['PAID', 'DELAYED'] },
+        status: { notIn: ['PAID', 'BACKLOG'] },
         backlogReason: null,
         dueDate: { gte: asOf, lte: maxDate },
       },
@@ -127,7 +127,7 @@ export class CashFlowService {
 
   private async getBacklogDebt() {
     const rows = await this.prisma.expense.findMany({
-      where: { OR: [{ status: 'DELAYED' }, { backlogReason: { not: null } }] },
+      where: { OR: [{ status: 'BACKLOG' }, { backlogReason: { not: null } }] },
       select: { amount: true, expensePayments: { select: { amount: true } } },
     });
     const amount = rows.reduce(

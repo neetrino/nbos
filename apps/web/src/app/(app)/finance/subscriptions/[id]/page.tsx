@@ -1,35 +1,32 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, ExternalLink, FileText, FolderKanban, RefreshCcw } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { ArrowLeft, Repeat } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
+import { DetailSheetFormFooter, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { subscriptionDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { SubscriptionGeneralTab } from '@/features/finance/components/subscriptions/SubscriptionGeneralTab';
+import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import {
-  ErrorState,
-  ListMutationErrorBanner,
-  LoadingState,
-  StatusBadge,
-} from '@/components/shared';
+  buildSubscriptionGeneralPatch,
+  createSubscriptionGeneralDraft,
+  isSubscriptionGeneralDirty,
+  type SubscriptionGeneralDraft,
+} from '@/features/finance/utils/subscription-general-form-state';
 import {
   formatAmount,
   getSubscriptionStatus,
   getSubscriptionType,
 } from '@/features/finance/constants/finance';
-import { subscriptionDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
-import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/subscription-invoice-drilldown';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
-import { SubscriptionDetailActions } from '@/features/finance/components/subscriptions/SubscriptionDetailActions';
-import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 
-function formatDate(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
+function subscriptionSaveErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message) return err.message;
+  return 'Could not save changes.';
 }
 
 export default function SubscriptionDetailPage() {
@@ -39,6 +36,11 @@ export default function SubscriptionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [generalDraft, setGeneralDraft] = useState<SubscriptionGeneralDraft | null>(null);
+  const [generalSnap, setGeneralSnap] = useState<SubscriptionGeneralDraft | null>(null);
+  const [generalError, setGeneralError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const generalDirtyRef = useRef(false);
 
   const fetchSubscription = useCallback(async () => {
     if (!id) return;
@@ -59,8 +61,77 @@ export default function SubscriptionDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    fetchSubscription();
+    void fetchSubscription();
   }, [fetchSubscription]);
+
+  useLayoutEffect(() => {
+    if (!subscription) {
+      setGeneralDraft(null);
+      setGeneralSnap(null);
+      return;
+    }
+    if (generalDirtyRef.current) return;
+    const next = createSubscriptionGeneralDraft(subscription);
+    setGeneralDraft(next);
+    setGeneralSnap(next);
+  }, [
+    subscription?.id,
+    subscription?.status,
+    subscription?.baseMonthlyAmount,
+    subscription?.billingDay,
+    subscription?.billingFrequency,
+    subscription?.partner?.id,
+  ]);
+
+  const patchGeneralDraft = useCallback((partial: Partial<SubscriptionGeneralDraft>) => {
+    setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));
+  }, []);
+
+  const generalDirty =
+    generalDraft != null &&
+    generalSnap != null &&
+    isSubscriptionGeneralDirty(generalDraft, generalSnap);
+  generalDirtyRef.current = generalDirty;
+
+  const handleSubscriptionChange = useCallback((updated: Subscription) => {
+    setSubscription(updated);
+    setActionError(null);
+    generalDirtyRef.current = false;
+    const next = createSubscriptionGeneralDraft(updated);
+    setGeneralDraft(next);
+    setGeneralSnap(next);
+  }, []);
+
+  const handleGeneralSave = useCallback(() => {
+    if (!subscription || !generalDraft || !generalSnap) return;
+    setGeneralError(null);
+    const patch = buildSubscriptionGeneralPatch(generalSnap, generalDraft);
+    if (Object.keys(patch).length === 0) return;
+
+    const draftAtSave = generalDraft;
+    const snapAtSave = generalSnap;
+    setGeneralSnap({ ...draftAtSave });
+    setSaving(true);
+
+    void (async () => {
+      try {
+        const updated = await subscriptionsApi.update(subscription.id, patch);
+        generalDirtyRef.current = false;
+        handleSubscriptionChange(updated);
+      } catch (err) {
+        setGeneralSnap(snapAtSave);
+        setGeneralDraft(draftAtSave);
+        setGeneralError(subscriptionSaveErrorMessage(err));
+      } finally {
+        setSaving(false);
+      }
+    })();
+  }, [subscription, generalDraft, generalSnap, handleSubscriptionChange]);
+
+  const handleGeneralCancel = useCallback(() => {
+    setGeneralError(null);
+    if (generalSnap) setGeneralDraft({ ...generalSnap });
+  }, [generalSnap]);
 
   useFinanceDocumentTitle(
     subscriptionDetailPageTitle({
@@ -78,7 +149,7 @@ export default function SubscriptionDetailPage() {
     );
   }
 
-  if (error || !subscription) {
+  if (error || !subscription || !generalDraft) {
     return (
       <div className="flex h-full flex-col gap-5">
         <div className="flex items-center gap-2">
@@ -91,18 +162,17 @@ export default function SubscriptionDetailPage() {
           </Link>
           <h1 className="text-foreground text-2xl font-semibold">Subscription</h1>
         </div>
-        <ErrorState description={error ?? 'Not found'} onRetry={fetchSubscription} />
+        <ErrorState description={error ?? 'Not found'} onRetry={() => void fetchSubscription()} />
       </div>
     );
   }
 
   const subType = getSubscriptionType(subscription.type);
   const subStatus = getSubscriptionStatus(subscription.status);
-  const invoiceCount = subscription.invoices?.length ?? 0;
 
   return (
-    <div className="flex h-full flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
+      <div className="border-border shrink-0 border-b px-1 pb-4">
         <div className="flex items-start gap-3">
           <Link
             href="/finance/subscriptions"
@@ -111,142 +181,51 @@ export default function SubscriptionDetailPage() {
           >
             <ArrowLeft size={18} />
           </Link>
-          <div>
-            <h1 className="text-foreground text-2xl font-semibold">{subscription.code}</h1>
+          <div className="min-w-0 flex-1">
+            <div className="inline-flex flex-wrap items-center gap-2">
+              <Repeat className="text-muted-foreground size-5" aria-hidden />
+              <h1 className="text-foreground text-2xl font-bold tracking-tight">
+                {subscription.code}
+              </h1>
+              {subType ? (
+                <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
+                  {subType.label}
+                </span>
+              ) : null}
+            </div>
             <p className="text-muted-foreground mt-1 text-sm">
-              Started {formatDate(subscription.startDate)}
-              {subscription.endDate ? ` · Ended ${formatDate(subscription.endDate)}` : ''}
+              {formatAmount(parseFloat(subscription.baseMonthlyAmount))}/mo ·{' '}
+              {subscription.project.name}
             </p>
           </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="icon" type="button" onClick={fetchSubscription}>
-            <RefreshCcw size={16} />
-          </Button>
-          <SubscriptionDetailActions
-            subscription={subscription}
-            onSubscriptionChange={setSubscription}
-            onError={setActionError}
-          />
-          <Link
-            href={subscriptionInvoicesDrilldownHref(subscription.id)}
-            className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'gap-1.5')}
-          >
-            <FileText size={16} />
-            Invoices
-          </Link>
+          {subStatus ? <StatusBadge label={subStatus.label} variant={subStatus.variant} /> : null}
         </div>
       </div>
 
-      {actionError ? (
-        <ListMutationErrorBanner
-          message={actionError}
-          onDismiss={() => setActionError(null)}
-          dismissAriaLabel="Dismiss subscription action error"
+      <div className="min-h-0 flex-1 overflow-y-auto py-5">
+        <SubscriptionGeneralTab
+          subscription={subscription}
+          draft={generalDraft}
+          patchDraft={patchGeneralDraft}
+          formDisabled={saving}
+          onSubscriptionChange={handleSubscriptionChange}
+          onActionError={setActionError}
         />
-      ) : null}
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Status</p>
-          <div className="mt-2">
-            {subStatus ? (
-              <StatusBadge label={subStatus.label} variant={subStatus.variant} />
-            ) : (
-              subscription.status
-            )}
-          </div>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Type</p>
-          <div className="mt-2">
-            {subType ? (
-              <StatusBadge label={subType.label} variant={subType.variant} />
-            ) : (
-              subscription.type
-            )}
-          </div>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Amount / month</p>
-          <p className="mt-2 text-lg font-semibold tabular-nums">
-            {formatAmount(parseFloat(subscription.amount))}
+        {actionError ? (
+          <p className="text-destructive mt-4 text-sm" role="alert">
+            {actionError}
           </p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Coverage</p>
-          <p className="mt-2 text-lg font-semibold tabular-nums">
-            {subscription.coverage?.activeMonthCount ?? 0} months
-          </p>
-        </div>
+        ) : null}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Billing day</p>
-          <p className="mt-2 font-medium">{subscription.billingDay}</p>
-        </div>
-        <div className="border-border bg-card rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs">Tax status</p>
-          <p className="mt-2 font-medium">{subscription.taxStatus}</p>
-        </div>
-      </div>
-
-      <div className="border-border bg-card rounded-xl border p-4">
-        <p className="text-muted-foreground text-xs">Project</p>
-        <Link
-          href={`/projects/${subscription.projectId}`}
-          className="text-primary mt-2 inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
-        >
-          <FolderKanban size={14} />
-          {subscription.project.name}
-          <ExternalLink size={12} className="opacity-70" aria-hidden />
-        </Link>
-      </div>
-
-      <div className="border-border bg-card rounded-xl border p-4">
-        <p className="text-muted-foreground text-xs">Partner</p>
-        <div className="mt-2 text-sm">
-          {subscription.partner ? (
-            <Link
-              href={`/partners/${subscription.partner.id}`}
-              className="text-primary inline-flex items-center gap-1.5 font-medium hover:underline"
-            >
-              {subscription.partner.name}
-              <ExternalLink size={12} className="opacity-70" aria-hidden />
-            </Link>
-          ) : (
-            <span className="text-muted-foreground">None linked</span>
-          )}
-        </div>
-      </div>
-
-      <div className="border-border bg-card rounded-xl border p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-muted-foreground text-xs">Linked invoices ({invoiceCount})</p>
-          <Link
-            href={subscriptionInvoicesDrilldownHref(subscription.id)}
-            className="text-primary text-xs font-medium hover:underline"
-          >
-            Open in Finance → Invoices
-          </Link>
-        </div>
-        {invoiceCount === 0 ? (
-          <p className="text-muted-foreground mt-3 text-sm">
-            No invoices yet for this subscription.
-          </p>
-        ) : (
-          <ul className="mt-3 space-y-2 text-sm">
-            {subscription.invoices.slice(0, 12).map((inv) => (
-              <li key={inv.id} className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="font-mono text-xs">{inv.code}</span>
-                <span className="text-muted-foreground">{inv.moneyStatus}</span>
-                <span className="tabular-nums">{formatAmount(parseFloat(inv.amount))}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <DetailSheetFormFooter
+        visible
+        dirty={generalDirty}
+        saving={saving}
+        errorMessage={generalError}
+        onSave={handleGeneralSave}
+        onCancel={handleGeneralCancel}
+      />
     </div>
   );
 }

@@ -109,20 +109,32 @@ Contact (человек)
 
 **Центральная сущность платформы.** Один проект = один бизнес / бренд клиента.
 
-| Поле        | Тип           | Описание                                    |
-| ----------- | ------------- | ------------------------------------------- |
-| id          | UUID          | Уникальный идентификатор                    |
-| name        | String        | Название проекта (обычно = название бренда) |
-| contact_id  | FK → Contact  | Основной контакт                            |
-| company_id  | FK → Company  | Юрлицо для биллинга                         |
-| type        | Enum          | White Label, Mix, Custom Code               |
-| status      | Computed      | Вычисляется из статусов Products (см. ниже) |
-| seller_id   | FK → Employee | Ответственный продажник                     |
-| pm_id       | FK → Employee | Ответственный PM                            |
-| deadline    | Date          | Общий дедлайн проекта                       |
-| description | Text          | Описание проекта                            |
-| created_at  | DateTime      | Дата создания                               |
-| archived_at | DateTime      | Дата архивации (если закрыт)                |
+| Поле        | Тип          | Описание                                    |
+| ----------- | ------------ | ------------------------------------------- |
+| id          | UUID         | Уникальный идентификатор                    |
+| name        | String       | Название проекта (обычно = название бренда) |
+| contact_id  | FK → Contact | Основной контакт                            |
+| company_id  | FK → Company | Юрлицо для биллинга                         |
+| status      | Computed     | Вычисляется из статусов Products (см. ниже) |
+| description | Text         | Описание проекта                            |
+| created_at  | DateTime     | Дата создания                               |
+| archived_at | DateTime     | Дата архивации (если закрыт)                |
+
+`Project` больше не хранит `type`, `seller_id`, `pm_id` и общий `deadline` как core-поля.
+
+Причина:
+
+- проект является контейнером бизнеса / бренда;
+- PM, deadline, seller/order context и delivery-классификация относятся к конкретному `Product`, `Extension`, `Deal` или `Order`;
+- старая project-level классификация deprecated и не должна использоваться в новом Delivery Board.
+
+Актуальная классификация delivery-работы:
+
+- `Product.productCategory`;
+- `Product.productType`;
+- `Extension.size`;
+- stage requirements configuration;
+- checklist template assignment.
 
 **Вычисляемый статус проекта:**
 
@@ -150,7 +162,7 @@ Contact (человек)
 
 Конкретный результат работы внутри проекта: website, mobile app, logo, CRM system.
 
-`Product` — центральная delivery-сущность внутри `Project`. Именно вокруг него строятся delivery board, задачи, QA, transfer, credentials и support context.
+`Product` — центральная delivery-сущность внутри `Project`. Именно вокруг него строятся задачи, QA, transfer, credentials, support context и карточка на отдельной `Delivery Board` page.
 
 | Поле               | Тип                               | Описание                                                                               |
 | ------------------ | --------------------------------- | -------------------------------------------------------------------------------------- |
@@ -236,27 +248,27 @@ Contact (человек)
 
 Коммерческая единица: что продали, за сколько, как оплачивается. Классификация по смыслу **Deal Type** сделки (см. § 1.1): `PRODUCT`, `EXTENSION`, `MAINTENANCE`, `OUTSOURCE` — переносится из Deal; подписка учитывается в **payment_type** и сущности Subscription, а не как отдельный «тип заказа» вместо четырёх значений.
 
-| Поле                   | Тип                        | Описание                                                            |
-| ---------------------- | -------------------------- | ------------------------------------------------------------------- |
-| id                     | UUID                       | Уникальный идентификатор                                            |
-| project_id             | FK → Project               | Проект                                                              |
-| deal_id                | FK → Deal                  | Сделка, из которой создан                                           |
-| deal_type              | FK → System List Deal Type | Как у Deal: PRODUCT / EXTENSION / MAINTENANCE / OUTSOURCE           |
-| payment_type           | Enum                       | Classic 50/50, Classic 30/30/40, Subscription Monthly               |
-| total_amount           | Decimal                    | Общая сумма заказа                                                  |
-| currency               | Enum                       | AMD (default), USD, EUR                                             |
-| tax_status             | Enum                       | Tax, Tax-Free                                                       |
-| status                 | Enum                       | Active, Partially Paid, Fully Paid, Closed, Cancelled               |
-| partner_id             | FK → Partner               | Партнёр-реферал (если есть)                                         |
-| partner_percent        | Decimal                    | % партнёра (обычно 30%)                                             |
-| seller_id              | FK → Employee              | Продавец                                                            |
-| seller_bonus_percent   | Decimal                    | % бонуса продавца (5–10%)                                           |
-| seller_bonus_source    | Enum                       | Cold Call, Marketing Lead, Existing Client, Partner Referral        |
-| delivery_bonus_percent | Decimal                    | % бонуса delivery (зависит от типа проекта: WL 7%, Mix 10%, CC 15%) |
-| deadline               | Date                       | Дедлайн                                                             |
-| notes                  | Text                       | Заметки                                                             |
-| created_at             | DateTime                   | Дата создания                                                       |
-| closed_at              | DateTime                   | Дата закрытия                                                       |
+| Поле                   | Тип                        | Описание                                                                               |
+| ---------------------- | -------------------------- | -------------------------------------------------------------------------------------- |
+| id                     | UUID                       | Уникальный идентификатор                                                               |
+| project_id             | FK → Project               | Проект                                                                                 |
+| deal_id                | FK → Deal                  | Сделка, из которой создан                                                              |
+| deal_type              | FK → System List Deal Type | Как у Deal: PRODUCT / EXTENSION / MAINTENANCE / OUTSOURCE                              |
+| payment_type           | Enum                       | Classic 50/50, Classic 30/30/40, Subscription Monthly                                  |
+| total_amount           | Decimal                    | Общая сумма заказа                                                                     |
+| currency               | Enum                       | AMD (default), USD, EUR                                                                |
+| tax_status             | Enum                       | Tax, Tax-Free                                                                          |
+| status                 | Enum                       | Active, Partially Paid, Fully Paid, Closed, Cancelled                                  |
+| partner_id             | FK → Partner               | Партнёр-реферал (если есть)                                                            |
+| partner_percent        | Decimal                    | % партнёра (обычно 30%)                                                                |
+| seller_id              | FK → Employee              | Продавец                                                                               |
+| seller_bonus_percent   | Decimal                    | % бонуса продавца (5–10%)                                                              |
+| seller_bonus_source    | Enum                       | Cold Call, Marketing Lead, Existing Client, Partner Referral                           |
+| delivery_bonus_percent | Decimal                    | % бонуса delivery (зависит от product/extension bonus policy, complexity и role rules) |
+| deadline               | Date                       | Дедлайн                                                                                |
+| notes                  | Text                       | Заметки                                                                                |
+| created_at             | DateTime                   | Дата создания                                                                          |
+| closed_at              | DateTime                   | Дата закрытия                                                                          |
 
 **Связи:**
 
@@ -997,7 +1009,7 @@ Contact (человек)
 | reviewer_id           | FK → Employee   | Кто принимает review/completion, если применимо           |
 | workflow_status       | Enum            | Open, In Progress, Review, Completed, Deferred, Cancelled |
 | priority              | Enum            | Critical, High, Normal, Low                               |
-| sprint_id             | FK → Sprint     | Спринт (опционально, если workspace scrum-enabled)        |
+| sprint_id             | FK → Sprint     | Спринт (null = backlog; иначе membership + history)       |
 | due_date              | Date            | Дедлайн                                                   |
 | description           | Text            | Описание                                                  |
 | completion_rules_json | JSON            | Условия, без которых задачу нельзя завершить              |

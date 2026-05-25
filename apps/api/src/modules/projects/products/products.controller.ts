@@ -14,22 +14,28 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
+import { ProductAccessSlotBindingsService } from './product-access-slot-bindings.service';
 import {
   GENERIC_STATUS_DEPRECATION_DESCRIPTION,
   GENERIC_STATUS_DEPRECATION_HEADER,
 } from '../delivery-status-deprecation';
+import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 
 @ApiTags('Products')
 @ApiBearerAuth()
 @Controller('projects/products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly productAccessSlotBindings: ProductAccessSlotBindingsService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all products with filters' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
+  @ApiQuery({ name: 'companyId', required: false, description: "Project's billing company (CRM)" })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'deliveryStage', required: false })
   @ApiQuery({ name: 'deliveryWorkStatus', required: false })
@@ -42,6 +48,7 @@ export class ProductsController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
+    @Query('companyId') companyId?: string,
     @Query('status') status?: string,
     @Query('deliveryStage') deliveryStage?: string,
     @Query('deliveryWorkStatus') deliveryWorkStatus?: string,
@@ -55,6 +62,7 @@ export class ProductsController {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,
+      companyId,
       status,
       deliveryStage,
       deliveryWorkStatus,
@@ -71,6 +79,32 @@ export class ProductsController {
   @ApiQuery({ name: 'projectId', required: false })
   async getStats(@Query('projectId') projectId?: string) {
     return this.productsService.getStats(projectId);
+  }
+
+  @Get(':id/access-slots')
+  @ApiOperation({ summary: 'Access & infrastructure slots with credential bindings' })
+  async getAccessSlots(@Param('id') id: string) {
+    return this.productAccessSlotBindings.getProductAccessSlots(id);
+  }
+
+  @Put(':id/access-slots')
+  @ApiOperation({ summary: 'Bind a credential to an access slot for this product' })
+  async bindAccessSlot(
+    @Param('id') id: string,
+    @Body() body: { slotKey: string; credentialId: string },
+  ) {
+    return this.productAccessSlotBindings.bindProductAccessSlot(
+      id,
+      body.slotKey,
+      body.credentialId,
+    );
+  }
+
+  @Delete(':id/access-slots/bindings/:bindingId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Remove a single access-slot binding (credential stays in vault)' })
+  async unbindAccessSlotBinding(@Param('id') id: string, @Param('bindingId') bindingId: string) {
+    return this.productAccessSlotBindings.unbindProductAccessSlotBinding(id, bindingId);
   }
 
   @Get(':id')
@@ -92,6 +126,7 @@ export class ProductsController {
       deadline?: string;
       description?: string;
       checklistTemplateId?: string;
+      languages?: string[];
     },
   ) {
     return this.productsService.create(body);
@@ -107,9 +142,14 @@ export class ProductsController {
       productCategory?: string;
       productType?: string;
       pmId?: string | null;
+      developerId?: string | null;
+      designerId?: string | null;
+      technicalSpecialistId?: string | null;
+      qaLeadId?: string | null;
       deadline?: string | null;
       description?: string | null;
       checklistTemplateId?: string | null;
+      languages?: string[];
     },
   ) {
     return this.productsService.update(id, body);
@@ -122,8 +162,12 @@ export class ProductsController {
     description: GENERIC_STATUS_DEPRECATION_DESCRIPTION,
     deprecated: true,
   })
-  async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {
-    return this.productsService.updateStatus(id, body.status);
+  async updateStatus(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { status: string },
+  ) {
+    return this.productsService.updateStatus(id, body.status, user.id);
   }
 
   @Patch(':id/stage')
@@ -146,14 +190,18 @@ export class ProductsController {
 
   @Patch(':id/cancel')
   @ApiOperation({ summary: 'Cancel product delivery with reason' })
-  async cancel(@Param('id') id: string, @Body() body: { reason: string }) {
-    return this.productsService.cancel(id, body);
+  async cancel(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { reason: string },
+  ) {
+    return this.productsService.cancel(id, body, user.id);
   }
 
   @Patch(':id/complete')
   @ApiOperation({ summary: 'Complete product delivery' })
-  async complete(@Param('id') id: string) {
-    return this.productsService.complete(id);
+  async complete(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.productsService.complete(id, user.id);
   }
 
   @Patch(':id/acceptance')

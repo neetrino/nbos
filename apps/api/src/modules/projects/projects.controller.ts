@@ -80,19 +80,10 @@ export class ProjectsController {
       companyId?: string;
       contactId?: string;
       isArchived?: boolean;
+      contactIds?: string[];
     },
   ) {
     return this.projectsService.update(id, body);
-  }
-
-  @Put(':id/kickoff-checklist/:itemId')
-  @ApiOperation({ summary: 'Update project kickoff checklist item' })
-  async updateKickoffChecklistItem(
-    @Param('id') id: string,
-    @Param('itemId') itemId: string,
-    @Body() body: { isChecked?: boolean; note?: string | null },
-  ) {
-    return this.projectsService.updateKickoffChecklistItem(id, itemId, body);
   }
 
   @Delete(':id')

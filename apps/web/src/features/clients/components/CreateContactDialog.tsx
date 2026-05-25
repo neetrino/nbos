@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { RelationCreatePrefill } from '@/components/shared/relation-picker';
 import {
   Dialog,
   DialogContent,
@@ -20,44 +21,54 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CONTACT_ROLES, PREFERRED_CHANNELS, LANGUAGES } from '../constants/clients';
-import { contactsApi } from '@/lib/api/clients';
+import { contactsApi, type Contact } from '@/lib/api/clients';
 
 interface CreateContactDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
+  onCreated?: (contact?: Contact) => void;
+  prefill?: RelationCreatePrefill | null;
 }
 
-export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateContactDialogProps) {
+const EMPTY_FORM = {
+  firstName: '',
+  lastName: '',
+  phone: '',
+  email: '',
+  role: 'CLIENT',
+  preferredChannel: '',
+  language: '',
+  whatsapp: '',
+  telegram: '',
+  notes: '',
+};
+
+export function CreateContactDialog({
+  open,
+  onOpenChange,
+  onCreated,
+  prefill = null,
+}: CreateContactDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    role: 'CLIENT',
-    preferredChannel: '',
-    language: '',
-    whatsapp: '',
-    telegram: '',
-    notes: '',
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!prefill) {
+      setForm(EMPTY_FORM);
+      return;
+    }
+    setForm({
+      ...EMPTY_FORM,
+      firstName: prefill.firstName ?? '',
+      lastName: prefill.lastName ?? '',
+    });
+  }, [open, prefill]);
 
   const canSubmit = form.firstName && form.lastName && form.phone && form.role;
 
   const reset = () => {
-    setForm({
-      firstName: '',
-      lastName: '',
-      phone: '',
-      email: '',
-      role: 'CLIENT',
-      preferredChannel: '',
-      language: '',
-      whatsapp: '',
-      telegram: '',
-      notes: '',
-    });
+    setForm(EMPTY_FORM);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,7 +76,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
     if (!canSubmit) return;
     setLoading(true);
     try {
-      await contactsApi.create({
+      const created = await contactsApi.create({
         firstName: form.firstName,
         lastName: form.lastName,
         phone: form.phone,
@@ -79,7 +90,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
           ...(form.language && { language: form.language }),
         },
       });
-      onCreated();
+      onCreated?.(created);
       onOpenChange(false);
       reset();
     } finally {
@@ -180,7 +191,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
             <div>
               <Label>Preferred Channel</Label>
               <Select
-                value={form.preferredChannel || undefined}
+                value={form.preferredChannel}
                 onValueChange={(v) => setForm({ ...form, preferredChannel: v as string })}
               >
                 <SelectTrigger>
@@ -198,7 +209,7 @@ export function CreateContactDialog({ open, onOpenChange, onCreated }: CreateCon
             <div>
               <Label>Language</Label>
               <Select
-                value={form.language || undefined}
+                value={form.language}
                 onValueChange={(v) => setForm({ ...form, language: v as string })}
               >
                 <SelectTrigger>

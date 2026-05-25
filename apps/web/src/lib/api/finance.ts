@@ -47,6 +47,10 @@ export interface Invoice {
   dueDate: string | null;
   paidDate: string | null;
   govInvoiceId: string | null;
+  officialInvoiceRequestSent: boolean;
+  officialInvoiceSentAt: string | null;
+  officialInvoiceCancelledAt: string | null;
+  notificationsEnabled: boolean;
   description: string | null;
   createdAt: string;
   order: { id: string; code: string } | null;
@@ -203,6 +207,11 @@ export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   status?: string;
   /** When true and `status` is omitted: same scope as `GET /expenses?activeBoard=true`. */
   activeBoard?: boolean;
+  /** When true and `status` is omitted: same scope as `GET /expenses?closedBoard=true`. */
+  closedBoard?: boolean;
+  payrollLinked?: boolean;
+  payrollMonth?: string;
+  payrollEmployeeId?: string;
 }
 
 /** Allowed `sortBy` values for `GET /expenses` (aligned with ExpensesService allowlist). */
@@ -224,9 +233,15 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   sortBy?: ExpenseListSortField;
   sortOrder?: 'asc' | 'desc';
   /**
-   * When true and `status` is omitted: exclude `PAID` and `DELAYED` (board vs closed/backlog), per NBOS.
+   * When true and `status` is omitted: exclude `PAID` and `BACKLOG` (board vs closed/backlog), per NBOS.
    */
   activeBoard?: boolean;
+  /** When true and `status` is omitted: only `PAID` and `CANCELLED` (closed expense route). */
+  closedBoard?: boolean;
+  /** When true: only payroll-materialized salary expenses. */
+  payrollLinked?: boolean;
+  payrollMonth?: string;
+  payrollEmployeeId?: string;
 }
 
 /** Body for `PUT /expenses/:id` (aligned with ExpensesController). */
@@ -331,6 +346,19 @@ export interface FinanceDashboardPayrollRuns {
   }>;
 }
 
+export interface FinanceDashboardMoneyBucket {
+  count: number;
+  amount: number;
+}
+
+export interface FinanceDashboardExpenseCards {
+  dueNow: FinanceDashboardMoneyBucket;
+  dueSoon: FinanceDashboardMoneyBucket;
+  overdue: FinanceDashboardMoneyBucket;
+  onHold: FinanceDashboardMoneyBucket;
+  backlog: FinanceDashboardMoneyBucket;
+}
+
 export interface FinanceDashboardSummary {
   kpis: {
     totalRevenue: number | null;
@@ -347,6 +375,7 @@ export interface FinanceDashboardSummary {
     count: number;
     amount: number | null;
   }>;
+  expenseCards: FinanceDashboardExpenseCards;
   reconciliation: {
     orderCount: number;
     orderAmount: number;
@@ -394,9 +423,27 @@ export const invoicesApi = {
     const resp = await api.post<Invoice>('/api/finance/invoices', data);
     return resp.data;
   },
+  async updateGeneral(id: string, data: { amount?: number; taxStatus?: string }): Promise<Invoice> {
+    const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}`, data);
+    return resp.data;
+  },
   async updateMoneyStatus(id: string, moneyStatus: string): Promise<Invoice> {
     const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}/money-status`, {
       moneyStatus,
+    });
+    return resp.data;
+  },
+  async sendOfficialInvoiceRequest(id: string): Promise<Invoice> {
+    const resp = await api.post<Invoice>(`/api/finance/invoices/${id}/official-request/send`);
+    return resp.data;
+  },
+  async cancelOfficialInvoiceRequest(id: string): Promise<Invoice> {
+    const resp = await api.post<Invoice>(`/api/finance/invoices/${id}/official-request/cancel`);
+    return resp.data;
+  },
+  async updateOfficialInvoiceGovId(id: string, govInvoiceId: string | null): Promise<Invoice> {
+    const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}/official-request`, {
+      govInvoiceId,
     });
     return resp.data;
   },

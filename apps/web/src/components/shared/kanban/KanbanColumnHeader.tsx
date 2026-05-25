@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pencil, Trash2, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { KanbanColorPicker } from './KanbanColorPicker';
@@ -11,6 +11,94 @@ interface ColumnHeaderProps<T> {
   editable: boolean;
   onRenameColumn?: (key: string, title: string, color: string) => void;
   onDeleteColumn?: (key: string) => void;
+  trailing?: ReactNode;
+}
+
+function KanbanStageHeaderBar({
+  hex,
+  label,
+  count,
+  textColor,
+  trailing,
+  editable,
+  column,
+  hasItems,
+  onRenameColumn,
+  onDeleteColumn,
+  onStartRename,
+}: {
+  hex: string;
+  label: string;
+  count: number;
+  textColor: '#fff' | '#000';
+  trailing?: ReactNode;
+  editable: boolean;
+  column: KanbanColumn<unknown>;
+  hasItems: boolean;
+  onRenameColumn?: (key: string, title: string, color: string) => void;
+  onDeleteColumn?: (key: string) => void;
+  onStartRename: () => void;
+}) {
+  const iconAlpha = textColor === '#fff' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.4)';
+  const iconHover = textColor === '#fff' ? 'hover:bg-white/20' : 'hover:bg-black/10';
+
+  return (
+    <div
+      className="group/bar flex min-h-8 w-full items-center gap-1.5 rounded-md px-3 py-1.5"
+      style={{ backgroundColor: hex }}
+    >
+      <span className="min-w-0 truncate text-sm font-bold" style={{ color: textColor }}>
+        {label}
+      </span>
+
+      <span
+        className="ml-auto shrink-0 text-xs font-medium tabular-nums"
+        style={{ color: textColor }}
+      >
+        {count}
+      </span>
+
+      {trailing ? (
+        <div className="ml-auto flex shrink-0 items-center justify-center self-stretch">
+          {trailing}
+        </div>
+      ) : null}
+
+      {editable && !column.readonly ? (
+        <div
+          className={cn(
+            'flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/bar:opacity-100',
+            !trailing && 'ml-auto',
+          )}
+        >
+          {onRenameColumn ? (
+            <button
+              type="button"
+              onClick={onStartRename}
+              className={cn('rounded p-0.5', iconHover)}
+              title="Rename"
+            >
+              <Pencil size={12} style={{ color: iconAlpha }} />
+            </button>
+          ) : null}
+          {onDeleteColumn ? (
+            <button
+              type="button"
+              onClick={() => !hasItems && onDeleteColumn(column.key)}
+              className={cn(
+                'rounded p-0.5',
+                hasItems ? 'cursor-not-allowed opacity-30' : iconHover,
+              )}
+              title={hasItems ? 'Move all tasks first' : 'Delete'}
+              disabled={hasItems}
+            >
+              <Trash2 size={12} style={{ color: iconAlpha }} />
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export function KanbanColumnHeader<T>({
@@ -18,6 +106,7 @@ export function KanbanColumnHeader<T>({
   editable,
   onRenameColumn,
   onDeleteColumn,
+  trailing,
 }: ColumnHeaderProps<T>) {
   const hex = getColumnHex(column);
   const hasItems = column.items.length > 0;
@@ -51,12 +140,13 @@ export function KanbanColumnHeader<T>({
     return (
       <div className="relative flex w-full items-center gap-1">
         <button
+          type="button"
           onClick={() => setPickerOpen(!pickerOpen)}
           className="border-border h-8 w-8 shrink-0 rounded-lg border"
           style={{ backgroundColor: color }}
           title="Pick color"
         />
-        {pickerOpen && (
+        {pickerOpen ? (
           <KanbanColorPicker
             value={color}
             onChange={(c) => {
@@ -64,7 +154,7 @@ export function KanbanColumnHeader<T>({
               setPickerOpen(false);
             }}
           />
-        )}
+        ) : null}
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -76,10 +166,10 @@ export function KanbanColumnHeader<T>({
           style={{ backgroundColor: color, color: contrastText(color) }}
           autoFocus
         />
-        <button onClick={confirmRename} className="hover:bg-muted rounded p-0.5">
+        <button type="button" onClick={confirmRename} className="hover:bg-muted rounded p-0.5">
           <Check size={14} className="text-green-500" />
         </button>
-        <button onClick={cancelRename} className="hover:bg-muted rounded p-0.5">
+        <button type="button" onClick={cancelRename} className="hover:bg-muted rounded p-0.5">
           <X size={14} className="text-muted-foreground" />
         </button>
       </div>
@@ -88,87 +178,37 @@ export function KanbanColumnHeader<T>({
 
   if (hex) {
     const textColor = contrastText(hex);
-    const iconAlpha = textColor === '#fff' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.4)';
-    const iconHover = textColor === '#fff' ? 'hover:bg-white/20' : 'hover:bg-black/10';
-    const countBg = textColor === '#fff' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.12)';
 
     return (
-      <div
-        className="group/bar flex w-full items-center gap-1.5 rounded-lg px-3 py-1.5"
-        style={{ backgroundColor: hex }}
-      >
-        <span className="min-w-0 truncate text-sm font-bold" style={{ color: textColor }}>
-          {column.label}
-        </span>
-
-        <span
-          className="shrink-0 rounded px-1.5 py-0.5 text-xs font-medium tabular-nums"
-          style={{ backgroundColor: countBg, color: textColor }}
-        >
-          {column.items.length}
-        </span>
-
-        {editable && !column.readonly && (
-          <div className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/bar:opacity-100">
-            {onRenameColumn && (
-              <button
-                onClick={startRename}
-                className={cn('rounded p-0.5', iconHover)}
-                title="Rename"
-              >
-                <Pencil size={12} style={{ color: iconAlpha }} />
-              </button>
-            )}
-            {onDeleteColumn && (
-              <button
-                onClick={() => !hasItems && onDeleteColumn(column.key)}
-                className={cn(
-                  'rounded p-0.5',
-                  hasItems ? 'cursor-not-allowed opacity-30' : iconHover,
-                )}
-                title={hasItems ? 'Move all tasks first' : 'Delete'}
-                disabled={hasItems}
-              >
-                <Trash2 size={12} style={{ color: iconAlpha }} />
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      <KanbanStageHeaderBar
+        hex={hex}
+        label={column.label}
+        count={column.items.length}
+        textColor={textColor}
+        trailing={trailing}
+        editable={editable}
+        column={column as KanbanColumn<unknown>}
+        hasItems={hasItems}
+        onRenameColumn={onRenameColumn}
+        onDeleteColumn={onDeleteColumn}
+        onStartRename={startRename}
+      />
     );
   }
 
   return (
-    <div className="group/bar flex w-full items-center gap-2">
-      <div className={cn('h-2.5 w-2.5 shrink-0 rounded-full', column.color)} />
-      <h3 className="text-foreground min-w-0 truncate text-sm font-bold">{column.label}</h3>
-
-      <span className="bg-secondary text-muted-foreground ml-auto shrink-0 rounded-md px-2 py-0.5 text-xs font-medium tabular-nums">
-        {column.items.length}
-      </span>
-
-      {editable && !column.readonly && (
-        <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/bar:opacity-100">
-          {onRenameColumn && (
-            <button onClick={startRename} className="hover:bg-muted rounded p-0.5" title="Rename">
-              <Pencil size={12} className="text-muted-foreground" />
-            </button>
-          )}
-          {onDeleteColumn && (
-            <button
-              onClick={() => !hasItems && onDeleteColumn(column.key)}
-              className={cn(
-                'rounded p-0.5',
-                hasItems ? 'cursor-not-allowed opacity-30' : 'hover:bg-destructive/10',
-              )}
-              title={hasItems ? 'Move all tasks first' : 'Delete'}
-              disabled={hasItems}
-            >
-              <Trash2 size={12} className="text-muted-foreground" />
-            </button>
-          )}
-        </div>
-      )}
-    </div>
+    <KanbanStageHeaderBar
+      hex="#6B7280"
+      label={column.label}
+      count={column.items.length}
+      textColor="#fff"
+      trailing={trailing}
+      editable={editable}
+      column={column as KanbanColumn<unknown>}
+      hasItems={hasItems}
+      onRenameColumn={onRenameColumn}
+      onDeleteColumn={onDeleteColumn}
+      onStartRename={startRename}
+    />
   );
 }

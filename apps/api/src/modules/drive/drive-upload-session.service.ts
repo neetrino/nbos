@@ -7,6 +7,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PrismaClient, type Prisma } from '@nbos/database';
@@ -24,10 +25,19 @@ import {
   UPLOAD_SESSION_PRESIGN_EXPIRY_SECONDS,
   UPLOAD_SESSION_TTL_MS,
 } from './drive-upload.constants';
-import { buildSessionUploadStorageKey } from './drive-upload-path';
 import { buildFileAssetCreateInputForCompletedSession } from './drive-upload-complete';
+import { readTenantOrganizationId } from './drive-tenant';
+import { resolveStorageHomeContextWithPurpose } from './drive-storage-home-resolver';
+import { buildStorageHomeKeyFromParams } from './drive-storage-home-path';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
+import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
+import { DriveFolderService } from './drive-folder.service';
+import type { DocumentsReadAccess } from '../documents/documents-access-read';
+import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access.types';
+import { assertDriveEntityContextAccessible } from './drive-entity-context-access';
+import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
+import { applyFinanceDriveUploadDefaults } from './drive-finance-upload-defaults';
 
 @Injectable()
 export class DriveUploadSessionService {
@@ -36,39 +46,104 @@ export class DriveUploadSessionService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly r2: DriveR2Client,
+    private readonly folders: DriveFolderService,
+    private readonly config: ConfigService,
   ) {}
 
-  async listDriveLibrary(contextType: string | undefined, contextId: string | undefined) {
+  async listDriveLibrary(
+    contextType: string | undefined,
+    contextId: string | undefined,
+    access?: DriveEntityAccess,
+    documentsAccess?: DocumentsReadAccess,
+  ) {
     const entityType = resolveDriveLibraryEntityType(contextType);
     const entityId = requireText(contextId, 'contextId');
-    return this.listFileAssetsByEntity(entityType, entityId);
+    if (access) {
+      await assertDriveEntityContextAccessible(
+        this.prisma,
+        entityType,
+        entityId,
+        documentsAccess ? { ...access, documentsAccess } : access,
+      );
+    }
+    return this.listFileAssetsByEntity(entityType, entityId, {
+      ...(access ?? { employeeId: '', departmentIds: [] }),
+      ...(documentsAccess ? { documentsAccess } : {}),
+    });
   }
 
-  async createUploadSession(dto: CreateUploadSessionDto, userId: string) {
+  async createUploadSession(
+    dto: CreateUploadSessionDto,
+    userId: string,
+    access?: DriveEntityAccess,
+    documentsAccess?: DocumentsReadAccess,
+  ) {
     const fileName = requireText(dto.fileName, 'fileName');
     const contentType = requireText(dto.contentType, 'contentType');
-    requireText(dto.entityType, 'entityType');
-    requireText(dto.entityId, 'entityId');
+    if (dto.folderId) {
+      const folderAccess = access
+        ? documentsAccess
+          ? { ...access, documentsAccess }
+          : access
+        : undefined;
+      await this.folders.assertCanUseFolder(dto.folderId, userId, folderAccess);
+    }
+    if (!dto.folderId) {
+      requireText(dto.entityType, 'entityType');
+      requireText(dto.entityId, 'entityId');
+    }
 
     const sessionId = randomUUID();
-    const storageKey = buildSessionUploadStorageKey(sessionId, fileName);
+    const fileAssetId = randomUUID();
+    const entityType = dto.entityType?.trim() ?? 'DRIVE_FOLDER';
+    const entityId = dto.entityId?.trim() ?? dto.folderId ?? sessionId;
+    if (!dto.folderId && access) {
+      await assertDriveEntityContextAccessible(
+        this.prisma,
+        entityType,
+        entityId,
+        documentsAccess ? { ...access, documentsAccess } : access,
+      );
+    }
+    const uploadFields = applyFinanceDriveUploadDefaults(entityType, {
+      purpose: dto.purpose,
+      sourceModule: dto.sourceModule,
+      visibility: dto.visibility,
+      confidentiality: dto.confidentiality,
+      linkType: dto.linkType,
+    });
+    const purpose = uploadFields.purpose;
     const displayName = (dto.displayName?.trim() || fileName).slice(0, 500);
+    const orgId = readTenantOrganizationId(this.config);
+    const contextPath = await resolveStorageHomeContextWithPurpose(
+      this.prisma,
+      entityType,
+      entityId,
+      purpose,
+    );
+    const storageKey = buildStorageHomeKeyFromParams(orgId, contextPath, {
+      displayName,
+      fileAssetId,
+      purpose,
+    });
     const expiresAt = new Date(Date.now() + UPLOAD_SESSION_TTL_MS);
 
     const session = await this.prisma.fileUploadSession.create({
       data: {
         id: sessionId,
+        fileAssetId,
         storageKey,
-        entityType: dto.entityType.trim(),
-        entityId: dto.entityId.trim(),
+        entityType,
+        entityId,
+        folderId: dto.folderId?.trim(),
         displayName,
         originalName: fileName,
         mimeType: contentType,
-        purpose: pickPurpose(dto.purpose),
-        sourceModule: dto.sourceModule?.trim(),
-        visibility: pickVisibility(dto.visibility),
-        confidentiality: pickConfidentiality(dto.confidentiality),
-        linkType: pickLinkType(dto.linkType),
+        purpose,
+        sourceModule: uploadFields.sourceModule,
+        visibility: uploadFields.visibility,
+        confidentiality: uploadFields.confidentiality,
+        linkType: uploadFields.linkType,
         createdById: userId,
         expiresAt,
       },
@@ -92,7 +167,13 @@ export class DriveUploadSessionService {
     };
   }
 
-  async completeUploadSession(sessionId: string, userId: string, dto: CompleteUploadSessionDto) {
+  async completeUploadSession(
+    sessionId: string,
+    userId: string,
+    dto: CompleteUploadSessionDto,
+    access?: DriveEntityAccess,
+    documentsAccess?: DocumentsReadAccess,
+  ) {
     const session = await this.prisma.fileUploadSession.findUnique({ where: { id: sessionId } });
     if (!session) throw new NotFoundException(`Upload session ${sessionId} not found`);
     if (session.createdById !== userId) {
@@ -107,6 +188,22 @@ export class DriveUploadSessionService {
         data: { status: 'EXPIRED', failedReason: 'session_expired' },
       });
       throw new BadRequestException('Upload session has expired.');
+    }
+
+    const contextAccess = access
+      ? documentsAccess
+        ? { ...access, documentsAccess }
+        : access
+      : undefined;
+    if (session.folderId && contextAccess) {
+      await this.folders.assertCanUseFolder(session.folderId, userId, contextAccess);
+    } else if (!session.folderId && contextAccess) {
+      await assertDriveEntityContextAccessible(
+        this.prisma,
+        session.entityType,
+        session.entityId,
+        contextAccess,
+      );
     }
 
     try {
@@ -138,7 +235,17 @@ export class DriveUploadSessionService {
         where: { id: sessionId },
         data: { status: 'COMPLETED', fileAssetId: file.id },
       });
-      return file;
+      if (fresh.folderId) {
+        await tx.driveFolderItem.create({
+          data: {
+            folderId: fresh.folderId,
+            itemType: 'FILE',
+            fileAssetId: file.id,
+            placedById: userId,
+          },
+        });
+      }
+      return jsonSafeForHttp(file);
     });
   }
 
@@ -160,16 +267,23 @@ export class DriveUploadSessionService {
     });
   }
 
-  private async listFileAssetsByEntity(entityType: string, entityId: string) {
+  private async listFileAssetsByEntity(
+    entityType: string,
+    entityId: string,
+    access?: DriveEntityContextAccess,
+  ) {
     const where: Prisma.FileAssetWhereInput = {
       deletedAt: null,
       links: { some: { entityType, entityId, unlinkedAt: null } },
+      ...(access?.employeeId ? await buildDriveAssetAccessWhere(this.prisma, access) : {}),
     };
-    return this.prisma.fileAsset.findMany({
-      where,
-      include: FILE_ASSET_INCLUDE,
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    });
+    return jsonSafeForHttp(
+      await this.prisma.fileAsset.findMany({
+        where,
+        include: FILE_ASSET_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      }),
+    );
   }
 }

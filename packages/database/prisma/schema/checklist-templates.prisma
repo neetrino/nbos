@@ -1,0 +1,117 @@
+// ─── CHECKLIST TEMPLATES (My Company / SOP) ─────────────────
+
+enum ChecklistTemplateStatusEnum {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum ChecklistTemplateCategoryEnum {
+  DELIVERY
+  MAINTENANCE
+  QA
+  TECHNICAL
+  SOP
+  OTHER
+}
+
+enum ChecklistOwnerModuleEnum {
+  MY_COMPANY
+  PROJECTS
+  TASKS
+  TECHNICAL
+}
+
+enum ChecklistTemplateVersionStatusEnum {
+  DRAFT
+  PUBLISHED
+}
+
+enum DeliveryChecklistTargetEnum {
+  PRODUCT
+  EXTENSION
+}
+
+model ChecklistTemplate {
+  id              String                        @id @default(uuid())
+  name            String
+  description     String?
+  category        ChecklistTemplateCategoryEnum
+  ownerModule     ChecklistOwnerModuleEnum      @map("owner_module")
+  status          ChecklistTemplateStatusEnum   @default(DRAFT)
+  activeVersionId String?                       @unique @map("active_version_id")
+  createdAt       DateTime                      @default(now()) @map("created_at")
+  updatedAt       DateTime                      @updatedAt @map("updated_at")
+
+  activeVersion      ChecklistTemplateVersion?    @relation("TemplateActiveVersionLink", fields: [activeVersionId], references: [id], onDelete: SetNull)
+  versions           ChecklistTemplateVersion[]   @relation("TemplateVersionList")
+  products           Product[]
+  instances          ChecklistInstance[]
+  deliveryStageRules DeliveryStageChecklistRule[]
+
+  @@index([status])
+  @@index([category])
+  @@map("checklist_templates")
+}
+
+model ChecklistTemplateVersion {
+  id            String                             @id @default(uuid())
+  templateId    String                             @map("template_id")
+  versionNumber Int                                @map("version_number")
+  status        ChecklistTemplateVersionStatusEnum @default(DRAFT)
+  items         Json
+  createdById   String                             @map("created_by_id")
+  createdAt     DateTime                           @default(now()) @map("created_at")
+
+  template         ChecklistTemplate   @relation("TemplateVersionList", fields: [templateId], references: [id], onDelete: Cascade)
+  createdBy        Employee            @relation("ChecklistTemplateVersionCreatedBy", fields: [createdById], references: [id])
+  templateAsActive ChecklistTemplate?  @relation("TemplateActiveVersionLink")
+  instances        ChecklistInstance[]
+
+  @@unique([templateId, versionNumber])
+  @@index([templateId])
+  @@map("checklist_template_versions")
+}
+
+model ChecklistInstance {
+  id                String             @id @default(uuid())
+  templateId        String             @map("template_id")
+  templateVersionId String             @map("template_version_id")
+  ownerEntityType   String             @map("owner_entity_type")
+  ownerEntityId     String             @map("owner_entity_id")
+  deliveryStage     DeliveryStageEnum? @map("delivery_stage")
+  snapshotItems     Json               @map("snapshot_items")
+  completedAt       DateTime?          @map("completed_at")
+  completedById     String?            @map("completed_by_id")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  template        ChecklistTemplate        @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateVersion ChecklistTemplateVersion @relation(fields: [templateVersionId], references: [id], onDelete: Restrict)
+  completedBy     Employee?                @relation("ChecklistInstanceCompletedBy", fields: [completedById], references: [id])
+
+  @@index([ownerEntityType, ownerEntityId])
+  @@index([ownerEntityType, ownerEntityId, deliveryStage])
+  @@index([templateId])
+  @@map("checklist_instances")
+}
+
+/// Binds a published checklist template to a delivery stage (CHECKLIST requirement); optional filters per canon §6.
+model DeliveryStageChecklistRule {
+  id                    String                      @id @default(uuid())
+  target                DeliveryChecklistTargetEnum
+  deliveryStage         DeliveryStageEnum           @map("delivery_stage")
+  checklistTemplateId   String                      @map("checklist_template_id")
+  priority              Int                         @default(0)
+  filterProductCategory ProductCategoryEnum?        @map("filter_product_category")
+  filterProductType     ProductTypeEnum?            @map("filter_product_type")
+  filterExtensionSize   ExtensionSizeEnum?          @map("filter_extension_size")
+  isActive              Boolean                     @default(true) @map("is_active")
+  createdAt             DateTime                    @default(now()) @map("created_at")
+  updatedAt             DateTime                    @updatedAt @map("updated_at")
+
+  checklistTemplate ChecklistTemplate @relation(fields: [checklistTemplateId], references: [id], onDelete: Cascade)
+
+  @@index([target, deliveryStage, isActive])
+  @@map("delivery_stage_checklist_rules")
+}

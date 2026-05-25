@@ -1,0 +1,12 @@
+import { formatAmount } from '@/features/finance/constants/finance';
+
+export function parseBonusPoolAmount(value: string | null | undefined): number {
+  if (value == null) return 0;
+  const n = Number.parseFloat(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+export function formatBonusPoolMoney(value: string | null | undefined): string {
+  if (value == null) return '—';
+  return formatAmount(parseBonusPoolAmount(value));
+}

@@ -1,17 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, Clock, DollarSign, Download, RefreshCw } from 'lucide-react';
-import { ErrorState } from '@/components/shared';
-import { Button } from '@/components/ui/button';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Clock, DollarSign, RefreshCw } from 'lucide-react';
+import { ErrorState, useModuleHeroSlots } from '@/components/shared';
 import {
-  FINANCE_PERIOD_OPTIONS,
   getFinancePeriodParams,
   type FinancePeriod,
   formatAmount,
 } from '@/features/finance/constants/finance';
 import {
   DashboardLoadingSkeleton,
+  ExpenseCardsSnapshot,
   FinanceNotes,
   InvoiceDistribution,
   KpiCards,
@@ -20,11 +19,15 @@ import {
   ReconciliationSnapshot,
   UpcomingInvoices,
 } from '@/features/finance/components/dashboard/FinanceDashboardSections';
+import { FinanceZoneHubCards } from '@/features/finance/components/dashboard/FinanceZoneHubCards';
+import { buildFinanceZoneHubMetrics } from '@/features/finance/components/dashboard/build-finance-zone-hub-metrics';
 import {
   buildFinanceDashboardData,
   type FinanceDashboardData,
   type FinanceKpi,
 } from '@/features/finance/components/dashboard/finance-dashboard-data';
+import { buildFinanceOverviewHeroSearch } from '@/features/finance/components/overview/build-finance-overview-hero-search';
+import { FinanceOverviewPageSettingsSheet } from '@/features/finance/components/overview/FinanceOverviewPageSettingsSheet';
 import { financeDashboardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { downloadFinanceDashboardCsv } from '@/features/finance/utils/export-finance-dashboard-csv';
@@ -36,6 +39,7 @@ export default function FinanceDashboardPage() {
   const [data, setData] = useState<FinanceDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [search, setSearch] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useFinanceDocumentTitle(financeDashboardPageTitle());
@@ -60,8 +64,45 @@ export default function FinanceDashboardPage() {
   }, [period]);
 
   useEffect(() => {
-    fetchDashboard();
+    void fetchDashboard();
   }, [fetchDashboard]);
+
+  const handleClearFilters = useCallback(() => {
+    setSearch('');
+    setPeriod('month');
+  }, []);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: buildFinanceOverviewHeroSearch({
+        search,
+        onSearchChange: setSearch,
+        searchPlaceholder: 'Search KPIs, sections, notes…',
+        period,
+        onPeriodChange: setPeriod,
+        onClearAll: handleClearFilters,
+      }),
+      trailing: (
+        <FinanceOverviewPageSettingsSheet
+          title="Finance overview — settings"
+          description="Refresh dashboard data or export a CSV snapshot for the selected period."
+          triggerAriaLabel="Finance overview settings"
+          refreshDisabled={loading}
+          onRefresh={() => void fetchDashboard()}
+          onExportCsv={() => {
+            if (!data) return;
+            downloadFinanceDashboardCsv(data, period);
+            toast.success('Finance dashboard snapshot exported');
+          }}
+          exportCsvDisabled={loading || !data}
+          exportCsvLabel="Export dashboard (CSV)"
+        />
+      ),
+    }),
+    [data, fetchDashboard, handleClearFilters, loading, period, search],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
 
   if (loading) {
     return <DashboardLoadingSkeleton />;
@@ -80,90 +121,84 @@ export default function FinanceDashboardPage() {
     );
   }
 
+  const query = search.trim().toLowerCase();
+  const zoneHubMetrics = buildFinanceZoneHubMetrics(data);
+
   return (
     <div className="space-y-6">
-      <DashboardHeader
-        period={period}
-        setPeriod={setPeriod}
-        onRefresh={fetchDashboard}
-        onExportCsv={() => {
-          downloadFinanceDashboardCsv(data, period);
-          toast.success('Finance dashboard snapshot exported');
-        }}
-      />
-      <KpiCards kpis={buildKpis(data)} />
+      {showDashboardKpis(query) ? <KpiCards kpis={buildKpis(data)} /> : null}
 
-      <PayrollRunsSnapshot payroll={data.payrollRuns} />
+      {matchesOverviewSearch('Finance zones', query) ? (
+        <FinanceZoneHubCards metrics={zoneHubMetrics} />
+      ) : null}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <InvoiceDistribution items={data.invoiceStatusItems} />
-        <RecentPayments items={data.recentPayments} />
-      </div>
+      {matchesOverviewSearch('Payroll runs', query) ? (
+        <PayrollRunsSnapshot payroll={data.payrollRuns} />
+      ) : null}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ReconciliationSnapshot data={data} />
-        <UpcomingInvoices items={data.upcomingInvoices} />
-      </div>
+      {matchesOverviewSearch('Expense cards', query) ? (
+        <ExpenseCardsSnapshot buckets={data.expenseBuckets} />
+      ) : null}
 
-      <FinanceNotes />
+      {matchesOverviewSearch('Invoice distribution', query) ||
+      matchesOverviewSearch('Recent payments', query) ? (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {matchesOverviewSearch('Invoice distribution', query) ? (
+            <InvoiceDistribution items={data.invoiceStatusItems} />
+          ) : null}
+          {matchesOverviewSearch('Recent payments', query) ? (
+            <RecentPayments items={data.recentPayments} />
+          ) : null}
+        </div>
+      ) : null}
+
+      {matchesOverviewSearch('Reconciliation', query) ||
+      matchesOverviewSearch('Upcoming invoices', query) ? (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {matchesOverviewSearch('Reconciliation', query) ? (
+            <ReconciliationSnapshot data={data} />
+          ) : null}
+          {matchesOverviewSearch('Upcoming invoices', query) ? (
+            <UpcomingInvoices items={data.upcomingInvoices} />
+          ) : null}
+        </div>
+      ) : null}
+
+      {matchesOverviewSearch('Notes', query) ? <FinanceNotes /> : null}
+
+      {query && !hasAnyOverviewSectionMatch(query) ? (
+        <p className="text-muted-foreground text-sm">
+          No dashboard sections match your search. Clear search or filters to see all blocks.
+        </p>
+      ) : null}
     </div>
   );
 }
 
-function DashboardHeader({
-  period,
-  setPeriod,
-  onRefresh,
-  onExportCsv,
-}: {
-  period: FinancePeriod;
-  setPeriod: (period: FinancePeriod) => void;
-  onRefresh: () => void;
-  onExportCsv: () => void;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-4">
-      <div>
-        <h1 className="text-foreground text-2xl font-semibold">Finance Overview</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Revenue, invoices, order coverage, payment analytics, and workspace payroll run totals
-          from live finance data.
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="border-border flex rounded-lg border p-1">
-          {FINANCE_PERIOD_OPTIONS.map((option) => (
-            <Button
-              key={option.value}
-              variant={period === option.value ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setPeriod(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={onRefresh}
-          aria-label="Refresh finance overview"
-        >
-          <RefreshCw size={16} />
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={onExportCsv}
-          aria-label="Export finance dashboard snapshot as CSV"
-          title="KPIs, invoice mix, reconciliation, recent payments, upcoming invoices, and payroll run totals for this period"
-        >
-          <Download size={16} />
-        </Button>
-      </div>
-    </div>
-  );
+function matchesOverviewSearch(sectionLabel: string, query: string): boolean {
+  if (!query) return true;
+  return sectionLabel.toLowerCase().includes(query);
+}
+
+function showDashboardKpis(query: string): boolean {
+  if (!query) return true;
+  const kpiLabels = ['Total Revenue', 'Outstanding', 'Overdue', 'MRR', 'KPI'];
+  return kpiLabels.some((label) => label.toLowerCase().includes(query));
+}
+
+function hasAnyOverviewSectionMatch(query: string): boolean {
+  const labels = [
+    'KPI summary',
+    'Finance zones',
+    'Payroll runs',
+    'Expense cards',
+    'Invoice distribution',
+    'Recent payments',
+    'Reconciliation',
+    'Upcoming invoices',
+    'Notes',
+  ];
+  return showDashboardKpis(query) || labels.some((label) => matchesOverviewSearch(label, query));
 }
 
 function buildKpis(data: FinanceDashboardData): FinanceKpi[] {

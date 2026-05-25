@@ -1,6 +1,7 @@
 // ─── SUPPORT ──────────────────────────────────────────────
 
 enum TicketCategoryEnum {
+  UNCLASSIFIED
   INCIDENT
   SERVICE_REQUEST
   CHANGE_REQUEST
@@ -47,38 +48,38 @@ enum SupportTicketCloseReasonEnum {
 }
 
 model SupportTicket {
-  id                  String               @id @default(uuid())
-  code                String               @unique
-  projectId           String               @map("project_id")
-  productId           String?              @map("product_id")
-  contactId           String?              @map("contact_id")
-  extensionDealId     String?              @unique @map("extension_deal_id")
-  category            TicketCategoryEnum
-  priority            TicketPriorityEnum   @default(P3)
-  status              TicketStatusEnum     @default(NEW)
-  coverageDecision    SupportCoverageEnum? @map("coverage_decision")
-  title               String
-  description         String?
-  resolutionSummary   String?              @map("resolution_summary") @db.Text
-  closeReason         SupportTicketCloseReasonEnum? @map("close_reason")
-  billable            Boolean              @default(false)
-  assignedTo          String?              @map("assigned_to")
-  slaResponseDeadline DateTime?            @map("sla_response_deadline")
-  slaResolveDeadline  DateTime?            @map("sla_resolve_deadline")
-  waitingState           TicketWaitingStateEnum @default(NONE) @map("waiting_state")
-  waitingReason          String?                @map("waiting_reason")
-  slaPausedTotalSeconds  Int                    @default(0) @map("sla_paused_total_seconds")
-  slaPauseStartedAt      DateTime?              @map("sla_pause_started_at")
-  technicalAssetId       String?                @map("technical_asset_id")
-  technicalEnvironmentId String?                @map("technical_environment_id")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  updatedAt           DateTime             @updatedAt @map("updated_at")
+  id                     String                        @id @default(uuid())
+  code                   String                        @unique
+  projectId              String                        @map("project_id")
+  productId              String?                       @map("product_id")
+  contactId              String?                       @map("contact_id")
+  extensionDealId        String?                       @unique @map("extension_deal_id")
+  category               TicketCategoryEnum
+  priority               TicketPriorityEnum            @default(P3)
+  status                 TicketStatusEnum              @default(NEW)
+  coverageDecision       SupportCoverageEnum?          @map("coverage_decision")
+  title                  String
+  description            String?
+  resolutionSummary      String?                       @map("resolution_summary") @db.Text
+  closeReason            SupportTicketCloseReasonEnum? @map("close_reason")
+  billable               Boolean                       @default(false)
+  assignedTo             String?                       @map("assigned_to")
+  slaResponseDeadline    DateTime?                     @map("sla_response_deadline")
+  slaResolveDeadline     DateTime?                     @map("sla_resolve_deadline")
+  waitingState           TicketWaitingStateEnum        @default(NONE) @map("waiting_state")
+  waitingReason          String?                       @map("waiting_reason")
+  slaPausedTotalSeconds  Int                           @default(0) @map("sla_paused_total_seconds")
+  slaPauseStartedAt      DateTime?                     @map("sla_pause_started_at")
+  technicalAssetId       String?                       @map("technical_asset_id")
+  technicalEnvironmentId String?                       @map("technical_environment_id")
+  createdAt              DateTime                      @default(now()) @map("created_at")
+  updatedAt              DateTime                      @updatedAt @map("updated_at")
 
-  project       Project   @relation(fields: [projectId], references: [id])
-  product       Product?  @relation(fields: [productId], references: [id])
-  extensionDeal Deal?     @relation(fields: [extensionDealId], references: [id])
-  contact       Contact?  @relation(fields: [contactId], references: [id])
-  assignee      Employee? @relation("TicketAssignee", fields: [assignedTo], references: [id])
+  project              Project               @relation(fields: [projectId], references: [id])
+  product              Product?              @relation(fields: [productId], references: [id])
+  extensionDeal        Deal?                 @relation(fields: [extensionDealId], references: [id])
+  contact              Contact?              @relation(fields: [contactId], references: [id])
+  assignee             Employee?             @relation("TicketAssignee", fields: [assignedTo], references: [id])
   technicalAsset       TechnicalAsset?       @relation(fields: [technicalAssetId], references: [id], onDelete: SetNull)
   technicalEnvironment TechnicalEnvironment? @relation(fields: [technicalEnvironmentId], references: [id], onDelete: SetNull)
 

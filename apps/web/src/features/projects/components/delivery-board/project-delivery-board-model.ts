@@ -42,8 +42,22 @@ export type DeliveryBoardItem =
 
 export function getBoardItems(project: FullProject): DeliveryBoardItem[] {
   return [
-    ...project.products.map((product) => ({ kind: 'PRODUCT' as const, product })),
-    ...project.extensions.map((extension) => ({ kind: 'EXTENSION' as const, extension })),
+    ...project.products.map((product) => ({
+      kind: 'PRODUCT' as const,
+      product: {
+        ...product,
+        projectId: project.id,
+        project: { id: project.id, name: project.name, code: project.code },
+      },
+    })),
+    ...project.extensions.map((extension) => ({
+      kind: 'EXTENSION' as const,
+      extension: {
+        ...extension,
+        projectId: project.id,
+        project: { id: project.id, name: project.name, code: project.code },
+      },
+    })),
   ];
 }
 
@@ -67,6 +81,26 @@ export function getItemId(item: DeliveryBoardItem) {
 
 export function getItemLabel(item: DeliveryBoardItem) {
   return item.kind === 'PRODUCT' ? item.product.name : item.extension.name;
+}
+
+export function getProjectId(item: DeliveryBoardItem): string {
+  if (item.kind === 'PRODUCT') {
+    return item.product.projectId ?? '';
+  }
+  return item.extension.projectId ?? '';
+}
+
+/** Whole-board aggregates for header badges when a scope filter locks column data. */
+export function countDeliveryAggregates(items: DeliveryBoardItem[]) {
+  let active = 0;
+  let closed = 0;
+  for (const item of items) {
+    const lc = getItemLifecycle(item);
+    if (!lc) continue;
+    if (lc.isTerminal) closed += 1;
+    else if (lc.isActive && lc.stage) active += 1;
+  }
+  return { active, closed };
 }
 
 export function filterBoardItems(

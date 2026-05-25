@@ -1,8 +1,9 @@
 'use client';
 
-import { CheckSquare, Flag, FolderKanban, Play, CheckCircle2, RotateCcw } from 'lucide-react';
-import { getTaskPriority } from '@/features/tasks/constants/tasks';
+import { CheckSquare, FolderKanban, Play, CheckCircle2, RotateCcw } from 'lucide-react';
+import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
 import type { Task } from '@/lib/api/tasks';
+import { cn } from '@/lib/utils';
 import { getDeadlineColumn } from './task-board-constants';
 
 export type TaskBoardAction = 'start' | 'complete' | 'reopen';
@@ -16,7 +17,6 @@ export function TaskMiniCard({
   onAction: (taskId: string, action: TaskBoardAction) => void;
   onClick: (task: Task) => void;
 }) {
-  const priority = getTaskPriority(task.priority);
   const checklistTotal = task.checklists.reduce((sum, cl) => sum + cl.items.length, 0);
   const checklistDone = task.checklists.reduce(
     (sum, cl) => sum + cl.items.filter((i) => i.checked).length,
@@ -27,12 +27,14 @@ export function TaskMiniCard({
 
   return (
     <div
-      className="border-border bg-card space-y-2 rounded-xl border p-3 transition-shadow hover:shadow-md"
+      className="border-border bg-card w-full min-w-0 space-y-2 overflow-hidden rounded-xl border p-3 transition-shadow hover:shadow-md"
       onClick={() => onClick(task)}
     >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm leading-tight font-medium">{task.title}</p>
-        {priority && <Flag size={12} className={priority.color} />}
+      <div className="flex min-w-0 items-start gap-2">
+        <p className="min-w-0 flex-1 truncate text-sm leading-tight font-medium" title={task.title}>
+          {task.title}
+        </p>
+        <TaskUrgentFlameIndicator priority={task.priority} className="mt-0.5" />
       </div>
 
       {task.links.length > 0 && (
@@ -40,10 +42,11 @@ export function TaskMiniCard({
           {task.links.map((link) => (
             <span
               key={link.id}
-              className="bg-muted text-muted-foreground inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px]"
+              className="bg-muted text-muted-foreground inline-flex max-w-[min(100%,11rem)] items-center gap-1 truncate rounded px-1.5 py-0.5 text-[10px]"
+              title={link.entityLabel ?? link.entityType}
             >
-              <FolderKanban size={9} />
-              {link.entityType}
+              <FolderKanban size={9} className="shrink-0" />
+              <span className="min-w-0 truncate">{link.entityLabel ?? link.entityType}</span>
             </span>
           ))}
         </div>
@@ -91,7 +94,7 @@ export function TaskMiniCard({
               <CheckCircle2 size={12} className="text-green-500" />
             </button>
           )}
-          {(task.status === 'COMPLETED' || task.status === 'DONE') && (
+          {(task.status === 'COMPLETED' || task.status === 'DONE' || task.status === 'ON_HOLD') && (
             <button
               onClick={(e) => {
                 e.stopPropagation();

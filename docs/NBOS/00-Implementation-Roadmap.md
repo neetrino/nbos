@@ -103,7 +103,7 @@ UI should let users complete the link later.
 - module navigation and visibility;
 - CRM Lead/Deal required fields and stage gates;
 - Deal Won rules and override flow;
-- Product/Extension lifecycle gates;
+- Product/Extension lifecycle gates (`@nbos/shared` + sheet field highlights on Product/Delivery surfaces);
 - Finance Invoice/Payment/Subscription basics;
 - Expense basics;
 - Task basics;
@@ -226,6 +226,8 @@ Exit criteria:
 - bonus release and product bonus pool logic are safe;
 - partner payout rules respect Deal Type and Payment Type.
 
+**Compensation slice (2026-05):** salary board, payroll workspace, bonus board, pools, Pay Now payroll linkage, employee wallet MVP — audit [`02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md`](02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md). **Still open for Phase 3 exit:** My Company policy engine (cap/carry-over/burned), expense/subscription canon — [`todo.md`](../../todo.md) at repo root.
+
 Key docs:
 
 - `02-Modules/04-Finance/*`
@@ -239,7 +241,7 @@ Goal: sold work becomes controlled product delivery.
 Scope:
 
 - Projects Hub;
-- Product/Extension delivery board;
+- global `/delivery-board` for Product/Extension lifecycle;
 - lifecycle gates;
 - On Hold status and pause date;
 - Closed / Done / Cancelled logic;
@@ -259,6 +261,7 @@ Exit criteria:
 Key docs:
 
 - `02-Modules/02-Projects-Hub/*`
+- `02-Modules/02-Projects-Hub/07-Delivery-Board.md`
 - `02-Modules/05-Tasks/*`
 - `02-Modules/06-Support/*`
 

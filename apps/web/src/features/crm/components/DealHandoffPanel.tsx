@@ -11,6 +11,10 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DETAIL_SHEET_SECTION_SURFACE_CLASS,
+  DETAIL_SHEET_SECTION_TITLE_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import type { Deal } from '@/lib/api/deals';
 
 interface DealHandoffPanelProps {
@@ -32,9 +36,14 @@ function hasPaidInvoice(deal: Deal) {
 
 function getReadinessItems(deal: Deal): ReadinessItem[] {
   const hasOfferProof = Boolean(
-    deal.offerSentAt && (deal.offerLink || deal.offerFileUrl || deal.offerScreenshotUrl),
+    (deal.linkedOfferAssetCount ?? 0) > 0 ||
+    deal.offerLink ||
+    deal.offerFileUrl ||
+    deal.offerScreenshotUrl,
   );
-  const hasContractProof = Boolean(deal.contractSignedAt || deal.contractFileUrl);
+  const hasContractProof = Boolean(
+    (deal.linkedContractAssetCount ?? 0) > 0 || deal.contractFileUrl,
+  );
   const hasInvoice = deal.orders.some((order) => order.invoices.length > 0);
   const isClassic = deal.paymentType === 'CLASSIC';
 
@@ -55,11 +64,13 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
           ? 'Maintenance start is tracked separately'
           : 'Set delivery deadline',
     },
-    { label: 'Offer proof', ready: hasOfferProof, hint: 'Add sent date and offer link/file' },
+    { label: 'Offer file', ready: hasOfferProof, hint: 'Attach offer in Drive (Offer section)' },
     {
-      label: 'Contract proof',
+      label: 'Contract file',
       ready: !isClassic || hasContractProof,
-      hint: isClassic ? 'Attach signed contract proof' : 'Not required for subscription payment',
+      hint: isClassic
+        ? 'Attach contract in Drive (Contract section)'
+        : 'Not required for subscription',
     },
     { label: 'Invoice exists', ready: hasInvoice, hint: 'Create invoice from Actions' },
     {
@@ -77,9 +88,9 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
 
 function ReadinessRow({ item }: { item: ReadinessItem }) {
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-stone-100 bg-white/60 p-2 dark:border-stone-800 dark:bg-stone-900/20">
+    <div className="border-border bg-background/60 flex items-start gap-2 rounded-lg border p-2">
       {item.ready ? (
-        <Check className="mt-0.5 size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <Check className="text-foreground mt-0.5 size-3.5 shrink-0" />
       ) : (
         <CircleDashed className="text-muted-foreground mt-0.5 size-3.5 shrink-0" />
       )}
@@ -112,8 +123,8 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
     : null;
 
   return (
-    <section className="rounded-2xl border-2 border-sky-200 bg-gradient-to-br from-sky-50/80 to-white p-4 dark:border-sky-800 dark:from-sky-950/20 dark:to-transparent">
-      <h4 className="text-muted-foreground mb-3 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
+    <section className={DETAIL_SHEET_SECTION_SURFACE_CLASS}>
+      <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
         <ShieldCheck size={12} />
         Handoff
       </h4>
@@ -125,7 +136,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             className="border-border bg-background hover:bg-muted flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-semibold transition-colors"
           >
             <span className="flex min-w-0 items-center gap-2">
-              <FolderKanban className="size-3.5 shrink-0 text-sky-600" />
+              <FolderKanban className="text-muted-foreground size-3.5 shrink-0" />
               <span className="truncate">{project?.name}</span>
             </span>
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
@@ -142,7 +153,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             className="border-border bg-background hover:bg-muted flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-semibold transition-colors"
           >
             <span className="flex min-w-0 items-center gap-2">
-              <Layers className="size-3.5 shrink-0 text-violet-600" />
+              <Layers className="text-muted-foreground size-3.5 shrink-0" />
               <span className="truncate">{product?.name}</span>
             </span>
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />
@@ -159,7 +170,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             className="border-border bg-background hover:bg-muted flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-semibold transition-colors"
           >
             <span className="flex min-w-0 items-center gap-2">
-              <RefreshCw className="size-3.5 shrink-0 text-emerald-600" />
+              <RefreshCw className="text-muted-foreground size-3.5 shrink-0" />
               <span className="truncate">{subscription?.code}</span>
             </span>
             <ExternalLink className="text-muted-foreground size-3.5 shrink-0" />

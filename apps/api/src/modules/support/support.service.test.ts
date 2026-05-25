@@ -122,6 +122,27 @@ describe('SupportService', () => {
       );
     });
 
+    it('defaults category to UNCLASSIFIED when omitted', async () => {
+      prisma.supportTicket.findFirst.mockResolvedValue(null);
+      prisma.supportTicket.create.mockResolvedValue({
+        id: '1',
+        code: 'TKT-2026-0001',
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        waitingState: 'NONE',
+        slaPausedTotalSeconds: 0,
+        slaPauseStartedAt: null,
+        slaResponseDeadline: new Date('2099-01-01T00:00:00Z'),
+        slaResolveDeadline: new Date('2099-01-02T00:00:00Z'),
+        status: 'NEW',
+      });
+      await service.create({ title: 'Intake', projectId: 'p1' });
+      expect(prisma.supportTicket.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ category: 'UNCLASSIFIED' }),
+        }),
+      );
+    });
+
     it('stores product context when provided', async () => {
       prisma.supportTicket.findFirst.mockResolvedValue(null);
       await service.create({

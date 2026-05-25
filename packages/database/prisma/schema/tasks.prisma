@@ -4,11 +4,8 @@ enum TaskStatusEnum {
   OPEN
   IN_PROGRESS
   REVIEW
+  ON_HOLD
   COMPLETED
-  DEFERRED
-  CANCELLED
-  NEW
-  DONE
 }
 
 enum TaskPriorityEnum {
@@ -31,6 +28,12 @@ enum TaskPlanningStatusEnum {
   ACTIVE_SPRINT
 }
 
+enum SprintStatusEnum {
+  PLANNING
+  ACTIVE
+  CLOSED
+}
+
 model WorkSpace {
   id           String            @id @default(uuid())
   projectId    String?           @map("project_id")
@@ -47,10 +50,32 @@ model WorkSpace {
   product   Product?   @relation(fields: [productId], references: [id])
   extension Extension? @relation(fields: [extensionId], references: [id])
   tasks     Task[]
+  sprints   Sprint[]
 
   @@index([projectId])
   @@index([type])
   @@map("work_spaces")
+}
+
+model Sprint {
+  id          String           @id @default(uuid())
+  workspaceId String           @map("workspace_id")
+  name        String
+  goal        String?
+  status      SprintStatusEnum @default(PLANNING)
+  startDate   DateTime?        @map("start_date")
+  endDate     DateTime?        @map("end_date")
+  closedAt    DateTime?        @map("closed_at")
+  sortOrder   Int              @default(0) @map("sort_order")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  workspace WorkSpace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@index([workspaceId, status])
+  @@index([workspaceId, sortOrder])
+  @@map("sprints")
 }
 
 model Task {
@@ -61,14 +86,17 @@ model Task {
   productId          String?                @map("product_id")
   extensionId        String?                @map("extension_id")
   workspaceId        String?                @map("workspace_id")
+  sprintId           String?                @map("sprint_id")
   creatorId          String                 @map("creator_id")
   assigneeId         String?                @map("assignee_id")
+  reviewerId         String?                @map("reviewer_id")
   coAssignees        String[]               @map("co_assignees")
   observers          String[]
   status             TaskStatusEnum         @default(OPEN)
+  reviewRequestedAt  DateTime?              @map("review_requested_at")
+  reviewApprovedAt   DateTime?              @map("review_approved_at")
   planningStatus     TaskPlanningStatusEnum @default(UNPLANNED) @map("planning_status")
   priority           TaskPriorityEnum       @default(NORMAL)
-  startDate          DateTime?              @map("start_date")
   dueDate            DateTime?              @map("due_date")
   completedAt        DateTime?              @map("completed_at")
   completionRules    Json?                  @map("completion_rules")
@@ -85,15 +113,21 @@ model Task {
   product    Product?        @relation(fields: [productId], references: [id])
   extension  Extension?      @relation(fields: [extensionId], references: [id])
   workspace  WorkSpace?      @relation(fields: [workspaceId], references: [id])
+  sprint     Sprint?         @relation(fields: [sprintId], references: [id], onDelete: SetNull)
   creator    Employee        @relation("TaskCreator", fields: [creatorId], references: [id])
   assignee   Employee?       @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  reviewer   Employee?       @relation("TaskReviewer", fields: [reviewerId], references: [id])
   parent     Task?           @relation("TaskSubtasks", fields: [parentId], references: [id])
   subtasks   Task[]          @relation("TaskSubtasks")
   links      TaskLink[]
   checklists TaskChecklist[]
 
   @@index([workspaceId])
+  @@index([sprintId])
   @@index([planningStatus])
+  @@index([assigneeId])
+  @@index([reviewerId])
+  @@index([creatorId])
   @@map("tasks")
 }
 

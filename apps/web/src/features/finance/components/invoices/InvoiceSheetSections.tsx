@@ -1,110 +1,147 @@
-import { FileText, Building2, Clock, User, FolderKanban, Shield, Repeat } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import { StatusBadge } from '@/components/shared';
+import type { ReactNode } from 'react';
+import { FileText, Building2, Clock, User, FolderKanban, Repeat } from 'lucide-react';
+import { DetailSheetSection, InlineField, StatusBadge } from '@/components/shared';
 import { getInvoiceMoneyStage, formatAmount } from '@/features/finance/constants/finance';
 import type { Invoice } from '@/lib/api/finance';
-import { InvoicePaymentCoverageCard } from './InvoicePaymentCoverageCard';
+import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
+import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
+import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
+import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { RecordPaymentForm } from './RecordPaymentForm';
 
 export type InvoiceSheetInvoice = Invoice;
 
 export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice }) {
   const money = getInvoiceMoneyStage(invoice.moneyStatus);
+  if (!money) return null;
+  return <StatusBadge label={money.label} variant={money.variant} />;
+}
+
+export function InvoiceMoneySummaryRow({
+  invoice,
+  gateRequiredFields = new Set<string>(),
+  billingFields = null,
+}: {
+  invoice: InvoiceSheetInvoice;
+  gateRequiredFields?: ReadonlySet<string>;
+  billingFields?: ReactNode;
+}) {
+  const coverage = invoice.paymentCoverage;
+  const outstanding = coverage?.outstandingAmount ?? parseFloat(invoice.amount);
+  const isOverdue = isInvoiceOverdue(invoice);
+
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {money && <StatusBadge label={money.label} variant={money.variant} />}
-      <StatusBadge
-        label={invoice.taxStatus === 'TAX' ? 'Tax' : 'Tax-Free'}
-        variant={invoice.taxStatus === 'TAX' ? 'green' : 'gray'}
-      />
+    <div
+      className={invoiceStageGateSectionClass(
+        gateRequiredFields,
+        INVOICE_GATE_FIELD_PAYMENTS,
+        'space-y-4',
+      )}
+    >
+      {billingFields}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <MoneyMetric
+          label="Outstanding"
+          value={formatAmount(outstanding, invoice.currency)}
+          emphasize={outstanding > 0 && isOverdue}
+        />
+        <MoneyMetric
+          label="Paid"
+          value={formatAmount(coverage?.paidAmount ?? 0, invoice.currency)}
+        />
+        <MoneyMetric
+          label="Due"
+          value={invoice.dueDate ? formatShortDate(invoice.dueDate) : '—'}
+          emphasize={Boolean(isOverdue && invoice.dueDate)}
+        />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <InlineField
+          variant="controlled"
+          label="Created"
+          type="text"
+          value={formatShortDate(invoice.createdAt)}
+          icon={<Clock size={12} />}
+          disabled
+          onValueChange={() => undefined}
+        />
+        {invoice.paidDate ? (
+          <InlineField
+            variant="controlled"
+            label="Paid on"
+            type="text"
+            value={formatShortDate(invoice.paidDate)}
+            icon={<Clock size={12} />}
+            disabled
+            onValueChange={() => undefined}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
 
-export function InvoiceAmountPanel({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  const isOverdue = isInvoiceOverdue(invoice);
+export function InvoiceOfficialSection({
+  invoice,
+  onInvoiceUpdated,
+}: {
+  invoice: InvoiceSheetInvoice;
+  onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
+}) {
   return (
-    <section className="bg-secondary/50 rounded-xl p-4">
-      <div className="text-center">
-        <p className="text-muted-foreground text-xs font-medium">Amount</p>
-        <p className="text-foreground mt-1 text-3xl font-bold">
-          {formatAmount(parseFloat(invoice.amount), invoice.currency)}
-        </p>
-        {isOverdue && <p className="mt-1 text-xs font-medium text-red-500">Overdue</p>}
-      </div>
-    </section>
-  );
-}
-
-export function InvoiceDetailsSection({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  const money = getInvoiceMoneyStage(invoice.moneyStatus);
-  return (
-    <section className="space-y-3">
-      <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-        Invoice Details
-      </h4>
-      <div className="grid grid-cols-2 gap-y-3 text-sm">
-        <div className="text-muted-foreground">Type</div>
-        <div className="font-medium">{invoice.type}</div>
-        <div className="text-muted-foreground">Status</div>
-        <div>{money && <StatusBadge label={money.label} variant={money.variant} />}</div>
-        <InvoiceTaxStatusRow taxStatus={invoice.taxStatus} />
-        <OfficialInvoiceRow invoice={invoice} />
-        <InvoiceDueDateRow invoice={invoice} />
-        <InvoicePaidDateRow paidDate={invoice.paidDate} />
-        <DateRow label="Created" date={invoice.createdAt} />
-      </div>
-    </section>
+    <DetailSheetSection title="Official invoice">
+      {onInvoiceUpdated ? (
+        <InvoiceOfficialRequestPanel invoice={invoice} onUpdated={onInvoiceUpdated} />
+      ) : (
+        <OfficialInvoiceReadOnly invoice={invoice} />
+      )}
+    </DetailSheetSection>
   );
 }
 
 export function InvoiceLinkedEntitiesSection({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  const links = [
+    invoice.company ? { icon: Building2, label: 'Company', value: invoice.company.name } : null,
+    invoice.project ? { icon: FolderKanban, label: 'Project', value: invoice.project.name } : null,
+    invoice.contact
+      ? {
+          icon: User,
+          label: 'Contact',
+          value: `${invoice.contact.firstName} ${invoice.contact.lastName}`,
+        }
+      : null,
+    invoice.order ? { icon: FileText, label: 'Order', value: invoice.order.code } : null,
+    invoice.subscriptionId
+      ? { icon: Repeat, label: 'Subscription', value: invoice.subscriptionId }
+      : null,
+  ].filter((row): row is { icon: typeof FileText; label: string; value: string } => row != null);
+
+  if (links.length === 0) return null;
+
   return (
-    <section className="space-y-3">
-      <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-        Linked Entities
-      </h4>
-      <div className="space-y-2">
-        {invoice.company && (
-          <LinkedEntity icon={Building2} label="Company" value={invoice.company.name} />
-        )}
-        {invoice.project && (
-          <LinkedEntity icon={FolderKanban} label="Project" value={invoice.project.name} />
-        )}
-        {invoice.contact && (
-          <LinkedEntity
-            icon={User}
-            label="Contact"
-            value={`${invoice.contact.firstName} ${invoice.contact.lastName}`}
-          />
-        )}
-        {invoice.order && <LinkedEntity icon={FileText} label="Order" value={invoice.order.code} />}
-        {invoice.subscriptionId && (
-          <LinkedEntity icon={Repeat} label="Subscription" value={invoice.subscriptionId} />
-        )}
+    <DetailSheetSection title="Linked">
+      <div className="space-y-3">
+        {links.map((row) => (
+          <LinkedEntity key={`${row.label}-${row.value}`} {...row} />
+        ))}
       </div>
-    </section>
+    </DetailSheetSection>
   );
 }
 
 export function InvoiceDescriptionSection({ description }: { description: string | null }) {
   if (!description) return null;
   return (
-    <>
-      <Separator />
-      <section className="space-y-2">
-        <h4 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-          Description
-        </h4>
-        <p className="text-foreground text-sm">{description}</p>
-      </section>
-    </>
+    <DetailSheetSection title="Description">
+      <p className="text-foreground text-sm leading-relaxed">{description}</p>
+    </DetailSheetSection>
   );
 }
 
 export function InvoicePaymentsSection({
   invoice,
   onPaymentRecorded,
+  gateRequiredFields = new Set<string>(),
 }: {
   invoice: InvoiceSheetInvoice;
   onPaymentRecorded: (data: {
@@ -114,75 +151,82 @@ export function InvoicePaymentsSection({
     paymentMethod?: string;
     notes?: string;
   }) => Promise<void>;
+  gateRequiredFields?: ReadonlySet<string>;
 }) {
   return (
-    <section className="space-y-2">
-      <InvoicePaymentCoverageCard invoice={invoice} />
+    <DetailSheetSection
+      title="Payments"
+      className={invoiceStageGateSectionClass(gateRequiredFields, INVOICE_GATE_FIELD_PAYMENTS)}
+    >
+      {invoice.paymentCoverage?.isFullyPaid ? (
+        <p className="text-sm font-medium text-green-600">Fully paid</p>
+      ) : null}
+      {invoice.payments.length > 0 ? (
+        <div className="space-y-4">
+          {invoice.payments.map((payment) => (
+            <FinanceProofAttachments
+              key={payment.id}
+              entityType="PAYMENT"
+              entityId={payment.id}
+              purpose="PAYMENT_PROOF"
+              title={`Payment proof · ${new Date(payment.paymentDate).toLocaleDateString()}`}
+            />
+          ))}
+        </div>
+      ) : null}
       <RecordPaymentForm invoice={invoice} onRecordPayment={onPaymentRecorded} />
-    </section>
+    </DetailSheetSection>
   );
 }
 
-function InvoiceTaxStatusRow({ taxStatus }: { taxStatus: string }) {
-  return (
-    <>
-      <div className="text-muted-foreground">Tax Status</div>
-      <div className="flex items-center gap-1.5">
-        <Shield size={13} className="text-muted-foreground" />
-        {taxStatus === 'TAX' ? 'Tax Payer' : 'Tax-Free'}
-      </div>
-    </>
-  );
-}
-
-function OfficialInvoiceRow({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  if (invoice.taxStatus !== 'TAX' && !invoice.govInvoiceId) return null;
-
-  return (
-    <>
-      <div className="text-muted-foreground">Official Invoice</div>
-      <div className="font-medium">{invoice.govInvoiceId ?? 'Request not recorded'}</div>
-    </>
-  );
-}
-
-function InvoiceDueDateRow({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  if (!invoice.dueDate) return null;
-  return (
-    <DateRow
-      label="Due Date"
-      date={invoice.dueDate}
-      className={isInvoiceOverdue(invoice) ? 'text-red-500' : ''}
-    />
-  );
-}
-
-function InvoicePaidDateRow({ paidDate }: { paidDate: string | null }) {
-  if (!paidDate) return null;
-  return <DateRow label="Paid Date" date={paidDate} className="text-green-600" />;
-}
-
-function DateRow({
+function MoneyMetric({
   label,
-  date,
-  className = '',
+  value,
+  emphasize = false,
 }: {
   label: string;
-  date: string;
-  className?: string;
+  value: string;
+  emphasize?: boolean;
 }) {
   return (
-    <>
-      <div className="text-muted-foreground">{label}</div>
-      <div className={`flex items-center gap-1.5 font-medium ${className}`}>
-        <Clock size={13} />
-        {new Date(date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-        })}
-      </div>
-    </>
+    <div className="min-w-0">
+      <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase">
+        {label}
+      </p>
+      <p
+        className={`mt-1 text-sm font-semibold tabular-nums ${emphasize ? 'text-red-600' : 'text-foreground'}`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) {
+  if (invoice.taxStatus !== 'TAX') {
+    return (
+      <p className="text-muted-foreground text-sm">
+        Tax-free invoice — accountant request is not required.
+      </p>
+    );
+  }
+  const status = invoice.officialInvoiceRequestSent
+    ? 'Sent to accountant'
+    : invoice.officialInvoiceCancelledAt
+      ? 'Cancelled'
+      : 'Not sent';
+  const variant = invoice.officialInvoiceRequestSent
+    ? 'green'
+    : invoice.officialInvoiceCancelledAt
+      ? 'amber'
+      : 'gray';
+  return (
+    <div className="space-y-2">
+      <StatusBadge label={status} variant={variant} />
+      {invoice.govInvoiceId ? (
+        <p className="text-muted-foreground font-mono text-xs">{invoice.govInvoiceId}</p>
+      ) : null}
+    </div>
   );
 }
 
@@ -196,12 +240,24 @@ function LinkedEntity({
   value: string;
 }) {
   return (
-    <div className="border-border flex items-center gap-2 rounded-lg border p-3 text-sm">
-      <Icon size={14} className="text-muted-foreground" />
-      <span className="font-medium">{value}</span>
-      <span className="text-muted-foreground text-xs">{label}</span>
-    </div>
+    <InlineField
+      variant="controlled"
+      label={label}
+      type="text"
+      value={value}
+      icon={<Icon size={12} />}
+      disabled
+      onValueChange={() => undefined}
+    />
   );
+}
+
+function formatShortDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 function isInvoiceOverdue(invoice: InvoiceSheetInvoice) {

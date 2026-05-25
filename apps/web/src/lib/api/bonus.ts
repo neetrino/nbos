@@ -90,7 +90,73 @@ export interface BonusProductPoolRow {
   ledgerReleasedAmount: string | null;
   ledgerRemainingAmount: string | null;
   ledgerAvailableFunding: string | null;
+  ledgerOverFundingAmount: string | null;
+  ledgerReceivedAmount: string | null;
   ledgerPoolStatus: string | null;
+  orderIds: string[];
+  orderCodes: string[];
+  employeeCount: number;
+  fundingFillPercent: number | null;
+  fundingHealth: 'EMPTY' | 'PARTIAL' | 'READY' | 'OVER' | 'CLOSED' | 'UNKNOWN';
+}
+
+/** `GET /api/bonus/products/pools/lines?poolKey=` — per-employee pool breakdown. */
+export interface BonusPoolEmployeeLine {
+  employeeId: string;
+  employeeName: string;
+  role: string | null;
+  bonusTypes: string[];
+  entryCount: number;
+  plannedAmount: string;
+  pipelineAmount: string;
+  releasedAmount: string;
+  includedInPayrollAmount: string;
+  paidAmount: string;
+  remainingAmount: string;
+  burnedAmount: string | null;
+  carryOverAmount: string | null;
+  suggestedReleaseAmount: string | null;
+  kpiGatePassed: boolean | null;
+  primaryStatus: string | null;
+}
+
+export interface BonusPoolEmployeeLinesResponse {
+  poolKey: string;
+  orderIds: string[];
+  orderCodes: string[];
+  lines: BonusPoolEmployeeLine[];
+}
+
+export type BonusPoolTimelineEventKind = 'PAYMENT_IN' | 'RELEASE_OUT';
+
+export type BonusPoolRiskFlag =
+  | 'OVER_FUNDING'
+  | 'UNDERFUNDED'
+  | 'KPI_NOT_PASSED'
+  | 'EARLY_RELEASE'
+  | 'EXTRA_BONUS'
+  | 'OVER_FUNDING_RELEASE';
+
+export interface BonusPoolTimelineEvent {
+  id: string;
+  kind: BonusPoolTimelineEventKind;
+  occurredAt: string;
+  amount: string;
+  label: string;
+  orderCode: string | null;
+  employeeName: string | null;
+  releaseType: string | null;
+  releaseStatus: string | null;
+  releaseReason: string | null;
+  invoiceId: string | null;
+  bonusEntryId: string | null;
+}
+
+export interface BonusPoolTimelineResponse {
+  poolKey: string;
+  orderIds: string[];
+  events: BonusPoolTimelineEvent[];
+  riskFlags: BonusPoolRiskFlag[];
 }
 
 /** Matches Prisma `BonusReleaseTypeEnum`. */
@@ -144,6 +210,9 @@ export const BONUS_LIST_PAGE_SIZE = 500;
 
 const BONUS_FETCH_MAX_PAGES = 40;
 
+const BONUS_RELEASE_LEDGER_PAGE_SIZE = 100;
+const BONUS_RELEASE_LEDGER_MAX_PAGES = 50;
+
 /** Matches `SalesBonusPaymentModelEnum` (sales bonus policy rows). */
 export type SalesBonusPaymentModel =
   | 'CLASSIC'
@@ -169,6 +238,17 @@ export interface PatchSalesBonusPolicyBody {
   isActive?: boolean;
 }
 
+export interface CreateBonusEntryPayload {
+  employeeId: string;
+  orderId: string;
+  projectId: string;
+  type: BonusType;
+  amount: number;
+  percent: number;
+  status?: BonusStatus;
+  payoutMonth?: string;
+}
+
 export const bonusesApi = {
   async getSalesPolicies(): Promise<SalesBonusPolicyRow[]> {
     const resp = await api.get<SalesBonusPolicyRow[]>('/api/bonus/sales-policies');
@@ -183,6 +263,11 @@ export const bonusesApi = {
     return resp.data;
   },
 
+  async create(payload: CreateBonusEntryPayload): Promise<BonusEntryListRow> {
+    const resp = await api.post<BonusEntryListRow>('/api/bonus', payload);
+    return resp.data;
+  },
+
   async getPage(params?: BonusListQueryParams): Promise<ListData<BonusEntryListRow>> {
     const resp = await api.get<ListData<BonusEntryListRow>>('/api/bonus', {
       params: {
@@ -190,6 +275,11 @@ export const bonusesApi = {
         ...params,
       },
     });
+    return resp.data;
+  },
+
+  async getById(id: string): Promise<BonusEntryListRow> {
+    const resp = await api.get<BonusEntryListRow>(`/api/bonus/${id}`);
     return resp.data;
   },
 
@@ -203,9 +293,88 @@ export const bonusesApi = {
     return resp.data;
   },
 
-  async listReleasesForEntry(entryId: string): Promise<BonusReleaseRow[]> {
-    const resp = await api.get<BonusReleaseRow[]>(`/api/bonus/entries/${entryId}/releases`);
+  async getProductPoolEmployeeLines(poolKey: string): Promise<BonusPoolEmployeeLinesResponse> {
+    const resp = await api.get<BonusPoolEmployeeLinesResponse>('/api/bonus/products/pools/lines', {
+      params: { poolKey },
+    });
     return resp.data;
+  },
+
+  async getProductPoolEmployeeLinesBatch(
+    poolKeys: string,
+  ): Promise<{ items: { poolKey: string; lines: BonusPoolEmployeeLine[] }[] }> {
+    const resp = await api.get<{ items: { poolKey: string; lines: BonusPoolEmployeeLine[] }[] }>(
+      '/api/bonus/products/pools/lines/batch',
+      { params: { poolKeys } },
+    );
+    return resp.data;
+  },
+
+  async getProductPoolTimeline(poolKey: string): Promise<BonusPoolTimelineResponse> {
+    const resp = await api.get<BonusPoolTimelineResponse>('/api/bonus/products/pools/timeline', {
+      params: { poolKey },
+    });
+    return resp.data;
+  },
+
+  async triggerProductPoolAutoRelease(poolKey: string): Promise<{
+    poolKey: string;
+    orderIds: string[];
+    ordersProcessed: number;
+    releasesCreated: boolean;
+  }> {
+    const resp = await api.post<{
+      poolKey: string;
+      orderIds: string[];
+      ordersProcessed: number;
+      releasesCreated: boolean;
+    }>('/api/bonus/products/pools/auto-release', {}, { params: { poolKey } });
+    return resp.data;
+  },
+
+  async syncProductPoolLedger(poolKey: string): Promise<{
+    poolKey: string;
+    orderIds: string[];
+    ordersSynced: number;
+  }> {
+    const resp = await api.post<{
+      poolKey: string;
+      orderIds: string[];
+      ordersSynced: number;
+    }>('/api/bonus/products/pools/sync', {}, { params: { poolKey } });
+    return resp.data;
+  },
+
+  async listReleasesForEntryPage(
+    entryId: string,
+    params?: { page?: number; pageSize?: number },
+  ): Promise<ListData<BonusReleaseRow>> {
+    const resp = await api.get<ListData<BonusReleaseRow>>(
+      `/api/bonus/entries/${entryId}/releases`,
+      {
+        params: {
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? 50,
+        },
+      },
+    );
+    return resp.data;
+  },
+
+  /** Loads every release row for finance ledger flows (walks pages). */
+  async listReleasesForEntry(entryId: string): Promise<BonusReleaseRow[]> {
+    const combined: BonusReleaseRow[] = [];
+    for (let page = 1; page <= BONUS_RELEASE_LEDGER_MAX_PAGES; page += 1) {
+      const { items, meta } = await bonusesApi.listReleasesForEntryPage(entryId, {
+        page,
+        pageSize: BONUS_RELEASE_LEDGER_PAGE_SIZE,
+      });
+      combined.push(...items);
+      if (page >= meta.totalPages || items.length === 0) {
+        break;
+      }
+    }
+    return combined;
   },
 
   async patchRelease(
@@ -228,9 +397,14 @@ export const bonusesApi = {
 export async function fetchAllBonusListRows(options?: {
   /** When set, each list page is requested with this server filter (aligned with `GET /api/bonus`). */
   projectId?: string;
+  orderId?: string;
 }): Promise<BonusEntryListRow[]> {
   const projectId = options?.projectId?.trim();
-  const listParams: BonusListQueryParams = projectId ? { projectId } : {};
+  const orderId = options?.orderId?.trim();
+  const listParams: BonusListQueryParams = {
+    ...(projectId ? { projectId } : {}),
+    ...(orderId ? { orderId } : {}),
+  };
   const combined: BonusEntryListRow[] = [];
   for (let page = 1; page <= BONUS_FETCH_MAX_PAGES; page += 1) {
     const { items, meta } = await bonusesApi.getPage({

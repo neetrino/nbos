@@ -10,6 +10,7 @@ export interface Contact {
   notes: string | null;
   messengerLinks: Record<string, string> | null;
   createdAt: string;
+  updatedAt: string;
   companies: Array<{ id: string; name: string }>;
   _count: { projects: number; leads: number; deals: number };
 }
@@ -22,9 +23,15 @@ export interface Company {
   taxStatus: string;
   legalAddress: string | null;
   notes: string | null;
+  phone: string | null;
+  email: string | null;
+  country: string | null;
+  billingContactId: string | null;
   createdAt: string;
   contact: { id: string; firstName: string; lastName: string };
+  billingContact: { id: string; firstName: string; lastName: string } | null;
   _count: { projects: number; invoices: number };
+  updatedAt: string;
 }
 
 interface ListData<T> {
@@ -35,6 +42,10 @@ interface ListData<T> {
 export const contactsApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Contact>> {
     const resp = await api.get<ListData<Contact>>('/api/clients/contacts', { params });
+    return resp.data;
+  },
+  async getById(id: string): Promise<Contact> {
+    const resp = await api.get<Contact>(`/api/clients/contacts/${id}`);
     return resp.data;
   },
   async create(data: Record<string, unknown>): Promise<Contact> {
@@ -53,6 +64,10 @@ export const contactsApi = {
 export const companiesApi = {
   async getAll(params?: Record<string, unknown>): Promise<ListData<Company>> {
     const resp = await api.get<ListData<Company>>('/api/clients/companies', { params });
+    return resp.data;
+  },
+  async getById(id: string): Promise<Company> {
+    const resp = await api.get<Company>(`/api/clients/companies/${id}`);
     return resp.data;
   },
   async create(data: Record<string, unknown>): Promise<Company> {

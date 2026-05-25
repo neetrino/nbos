@@ -16,12 +16,20 @@ const MARKETING_CHANNELS_REQUIRING_WHICH_ONE_SET = new Set<string>(
 export const DEAL_STAGE_GATE_ORDER = [
   'START_CONVERSATION',
   'DISCUSS_NEEDS',
-  'MEETING',
-  'CAN_WE_DO_IT',
   'SEND_OFFER',
   'GET_ANSWER',
   'DEPOSIT_AND_CONTRACT',
   'WON',
+] as const;
+
+/** Lead statuses in pipeline order (excludes SPAM; matches lead stage gate). */
+export const LEAD_STAGE_GATE_ORDER = [
+  'NEW',
+  'DIDNT_GET_THROUGH',
+  'CONTACT_ESTABLISHED',
+  'MQL',
+  'ON_HOLD',
+  'SQL',
 ] as const;
 
 export type DealStageGateKey = (typeof DEAL_STAGE_GATE_ORDER)[number];

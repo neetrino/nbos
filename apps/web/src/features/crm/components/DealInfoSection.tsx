@@ -1,6 +1,5 @@
 'use client';
 
-import type { Dispatch, SetStateAction } from 'react';
 import {
   Building2,
   Calendar,
@@ -9,281 +8,239 @@ import {
   FolderKanban,
   Layers,
   Receipt,
-  Sparkles,
   Tag,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { InlineField, SearchField, StatusBadge } from '@/components/shared';
 import {
-  DEAL_TYPES,
-  PAYMENT_TYPES,
-  PRODUCT_CATEGORIES,
-  formatAmount,
-} from '../constants/dealPipeline';
-import type { Deal } from '@/lib/api/deals';
-import type { SaveField, SaveMultipleFields, SearchLoader } from './deal-general-tab.types';
-import { formatDate, TAX_STATUS_OPTIONS, toDateInputValue } from './deal-general-tab.helpers';
-import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  InlineField,
+  RelationPickerField,
+} from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
+import { DEAL_TYPES, PAYMENT_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
+import type { SearchLoader } from './deal-general-tab.types';
+import type { DealGeneralDraft } from './deal-general-form-state';
+import { TAX_STATUS_OPTIONS } from './deal-general-tab.helpers';
+import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 
-interface DealInfoSectionProps {
-  deal: Deal;
-  linkedProjectName: string | null;
-  isNewProject: boolean;
-  productTypeOptions: Array<{ value: string; label: string }>;
+interface DealInfoFieldsProps {
+  draft: DealGeneralDraft;
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   filteredProductTypeOptions: Array<{ value: string; label: string }>;
-  setLinkedProjectName: Dispatch<SetStateAction<string | null>>;
-  setIsNewProject: Dispatch<SetStateAction<boolean>>;
   searchProjects: SearchLoader;
   searchProducts: SearchLoader;
   searchCompanies: SearchLoader;
-  saveField: SaveField;
-  saveMultipleFields: SaveMultipleFields;
+  disabled?: boolean;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
-export function DealInfoSection({
-  deal,
-  linkedProjectName,
-  isNewProject,
-  productTypeOptions,
-  filteredProductTypeOptions,
-  setLinkedProjectName,
-  setIsNewProject,
+/** Left column: project, company, and commercial basics. */
+export function DealInfoProjectBillingFields({
+  draft,
+  patchDraft,
   searchProjects,
-  searchProducts,
   searchCompanies,
-  saveField,
-  saveMultipleFields,
-}: DealInfoSectionProps) {
-  const dealTypeLabel = DEAL_TYPES.find((type) => type.value === deal.type)?.label ?? deal.type;
-  const isExtension = deal.type === 'EXTENSION';
+  disabled = false,
+  gateRequiredFields = new Set(),
+}: Pick<
+  DealInfoFieldsProps,
+  'draft' | 'patchDraft' | 'searchProjects' | 'searchCompanies' | 'disabled' | 'gateRequiredFields'
+>) {
+  const projectPicker = useRelationPickerActions('project');
+  const companyPicker = useRelationPickerActions('company');
 
   return (
-    <section
-      id={DEAL_SHEET_SECTION.INFO}
-      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent"
-    >
-      <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
-        <Tag size={12} />
-        Deal Info
-      </h4>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-        <InlineField
-          label="Cost"
-          value={deal.amount}
-          displayValue={
-            deal.amount != null ? (
-              <span className="text-lg font-extrabold text-amber-600 tabular-nums dark:text-amber-400">
-                {formatAmount(deal.amount)}
-              </span>
-            ) : undefined
-          }
-          type="number"
-          placeholder="Enter amount..."
-          icon={<DollarSign size={12} />}
-          onSave={(value) => saveField('amount', value)}
+    <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+      <InlineField
+        variant="controlled"
+        label="Cost"
+        type="number"
+        value={draft.amount ?? ''}
+        placeholder="Enter amount..."
+        icon={<DollarSign size={12} />}
+        disabled={disabled}
+        className={dealStageGateFieldClass(gateRequiredFields, 'amount')}
+        onValueChange={(v) => patchDraft({ amount: v === '' ? null : Number(v) })}
+      />
+
+      <InlineField
+        variant="controlled"
+        label="Tax Status"
+        type="select"
+        value={draft.taxStatus}
+        options={TAX_STATUS_OPTIONS.map((type) => ({ value: type.value, label: type.label }))}
+        placeholder="Tax / Tax Free"
+        icon={<Receipt size={12} />}
+        disabled={disabled}
+        onValueChange={(v) => patchDraft({ taxStatus: v })}
+      />
+
+      <InlineField
+        variant="controlled"
+        label="Payment Type"
+        type="select"
+        value={draft.paymentType ?? ''}
+        options={PAYMENT_TYPES.map((type) => ({ value: type.value, label: type.label }))}
+        placeholder="Select payment type..."
+        icon={<CreditCard size={12} />}
+        clearable
+        disabled={disabled}
+        className={dealStageGateFieldClass(gateRequiredFields, 'paymentType')}
+        onValueChange={(v) => patchDraft({ paymentType: v || null })}
+      />
+
+      <RelationPickerField
+        label="Project"
+        entityKind="project"
+        value={draft.projectId}
+        selectionLabel={draft.linkedProjectLabel}
+        disabled={disabled}
+        placeholder="Search projects…"
+        icon={<FolderKanban size={12} />}
+        onSearch={searchProjects}
+        onSelect={(id, label) => patchDraft({ projectId: id, linkedProjectLabel: label })}
+        onClear={() => patchDraft({ projectId: null, linkedProjectLabel: null })}
+        {...projectPicker}
+      />
+
+      {(draft.taxStatus ?? 'TAX') === 'TAX' && (
+        <RelationPickerField
+          label="Company"
+          entityKind="company"
+          value={draft.companyId}
+          selectionLabel={draft.companyPickLabel}
+          className={dealStageGateFieldClass(gateRequiredFields, 'companyId')}
+          disabled={disabled}
+          placeholder="Search company…"
+          icon={<Building2 size={12} />}
+          onSearch={searchCompanies}
+          onSelect={(id, label) => patchDraft({ companyId: id, companyPickLabel: label })}
+          onClear={() => patchDraft({ companyId: null, companyPickLabel: null })}
+          {...companyPicker}
         />
-
-        <InlineField
-          label="Payment Type"
-          value={deal.paymentType}
-          displayValue={
-            deal.paymentType ? (
-              <span className="text-foreground text-sm font-medium">
-                {PAYMENT_TYPES.find((type) => type.value === deal.paymentType)?.label ??
-                  deal.paymentType}
-              </span>
-            ) : undefined
-          }
-          type="select"
-          options={PAYMENT_TYPES.map((type) => ({ value: type.value, label: type.label }))}
-          placeholder="Select payment type..."
-          icon={<CreditCard size={12} />}
-          onSave={(value) => saveField('paymentType', value)}
-          clearable
-        />
-
-        <InlineField
-          label="Tax Status"
-          value={deal.taxStatus ?? 'TAX'}
-          displayValue={
-            <span className="text-foreground text-sm font-medium">
-              {TAX_STATUS_OPTIONS.find((type) => type.value === (deal.taxStatus ?? 'TAX'))?.label ??
-                deal.taxStatus ??
-                'TAX'}
-            </span>
-          }
-          type="select"
-          options={TAX_STATUS_OPTIONS.map((type) => ({ value: type.value, label: type.label }))}
-          placeholder="Tax / Tax Free"
-          icon={<Receipt size={12} />}
-          onSave={(value) => saveField('taxStatus', value)}
-        />
-
-        <SearchField
-          label="Project"
-          value={linkedProjectName}
-          displayValue={
-            isNewProject ? (
-              <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <Sparkles size={13} />
-                New Project
-              </span>
-            ) : linkedProjectName ? (
-              <span className="text-foreground text-sm font-medium">{linkedProjectName}</span>
-            ) : undefined
-          }
-          placeholder="Search projects..."
-          icon={<FolderKanban size={12} />}
-          onSearch={searchProjects}
-          onSave={async (value, label) => {
-            await saveField('projectId', value);
-            setLinkedProjectName(label);
-            setIsNewProject(false);
-          }}
-          onClear={async () => {
-            await saveField('projectId', null);
-            setLinkedProjectName(null);
-            setIsNewProject(false);
-          }}
-          newBadge={
-            !isNewProject ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="shrink-0 gap-1.5 border-emerald-200 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/20"
-                onClick={() => {
-                  setIsNewProject(true);
-                  setLinkedProjectName(null);
-                }}
-              >
-                <Sparkles size={12} />
-                New Project
-              </Button>
-            ) : undefined
-          }
-        />
-
-        <InlineField
-          label="Deal Type"
-          value={deal.type}
-          displayValue={
-            <StatusBadge label={dealTypeLabel} variant={getDealTypeVariant(deal.type)} />
-          }
-          type="select"
-          options={DEAL_TYPES.map((type) => ({ value: type.value, label: type.label }))}
-          icon={<Layers size={12} />}
-          onSave={(value) => saveField('type', value)}
-        />
-
-        {deal.type === 'MAINTENANCE' && (
-          <InlineField
-            label="Planned Maintenance Start"
-            value={toDateInputValue(deal.maintenanceStartAt)}
-            displayValue={
-              deal.maintenanceStartAt ? (
-                <span className="text-foreground text-sm font-medium">
-                  {formatDate(deal.maintenanceStartAt)}
-                </span>
-              ) : undefined
-            }
-            type="date"
-            placeholder="Select start date..."
-            icon={<Calendar size={12} />}
-            onSave={(value) => saveField('maintenanceStartAt', value)}
-          />
-        )}
-
-        {(deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE') && (
-          <InlineField
-            label="Product Category"
-            value={deal.productCategory ?? null}
-            displayValue={
-              deal.productCategory ? (
-                <StatusBadge
-                  label={
-                    PRODUCT_CATEGORIES.find((category) => category.value === deal.productCategory)
-                      ?.label ?? deal.productCategory
-                  }
-                  variant="purple"
-                />
-              ) : undefined
-            }
-            type="select"
-            options={PRODUCT_CATEGORIES.map((category) => ({
-              value: category.value,
-              label: category.label,
-            }))}
-            placeholder="Select category..."
-            icon={<Layers size={12} />}
-            onSave={(value) => saveMultipleFields({ productCategory: value, productType: null })}
-            clearable
-          />
-        )}
-
-        {(deal.type === 'PRODUCT' || deal.type === 'OUTSOURCE') && deal.productCategory && (
-          <InlineField
-            label="Product Type"
-            value={deal.productType ?? null}
-            displayValue={
-              deal.productType ? (
-                <span className="text-foreground text-sm font-medium">
-                  {productTypeOptions.find((type) => type.value === deal.productType)?.label ??
-                    deal.productType}
-                </span>
-              ) : undefined
-            }
-            type="select"
-            options={filteredProductTypeOptions}
-            placeholder="Select product type..."
-            icon={<Tag size={12} />}
-            onSave={(value) => saveField('productType', value)}
-            clearable
-          />
-        )}
-
-        {isExtension && (
-          <SearchField
-            label="Existing Product"
-            value={deal.existingProductId ?? null}
-            displayValue={
-              deal.existingProduct ? (
-                <span className="text-foreground text-sm font-medium">
-                  {deal.existingProduct.name}
-                </span>
-              ) : undefined
-            }
-            placeholder="Search products..."
-            icon={<Layers size={12} />}
-            onSearch={searchProducts}
-            onSave={(value) => saveField('existingProductId', value)}
-            onClear={() => saveField('existingProductId', null)}
-          />
-        )}
-
-        {(deal.taxStatus ?? 'TAX') === 'TAX' && (
-          <SearchField
-            label="Company"
-            value={deal.companyId ?? null}
-            displayValue={
-              deal.company ? (
-                <span className="text-foreground text-sm font-medium">{deal.company.name}</span>
-              ) : undefined
-            }
-            placeholder="Search company..."
-            icon={<Building2 size={12} />}
-            onSearch={searchCompanies}
-            onSave={(value) => saveField('companyId', value)}
-            onClear={() => saveField('companyId', null)}
-          />
-        )}
-      </div>
-    </section>
+      )}
+    </div>
   );
 }
 
-function getDealTypeVariant(type: string) {
-  if (type === 'EXTENSION') return 'blue';
-  if (type === 'OUTSOURCE') return 'purple';
-  if (type === 'MAINTENANCE') return 'teal';
-  return 'amber';
+/** Right column: deal type and product taxonomy. */
+export function DealInfoDealProductFields({
+  draft,
+  patchDraft,
+  filteredProductTypeOptions,
+  searchProducts,
+  disabled = false,
+  gateRequiredFields = new Set(),
+}: Omit<DealInfoFieldsProps, 'searchProjects' | 'searchCompanies'>) {
+  const productPicker = useRelationPickerActions(
+    'product',
+    'deal-existing-product',
+    draft.projectId ? { projectId: draft.projectId } : undefined,
+  );
+  const isExtension = draft.type === 'EXTENSION';
+  const isProductLike = draft.type === 'PRODUCT' || draft.type === 'OUTSOURCE';
+
+  return (
+    <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+      <InlineField
+        variant="controlled"
+        label="Deal Type"
+        type="select"
+        value={draft.type}
+        options={DEAL_TYPES.map((type) => ({ value: type.value, label: type.label }))}
+        icon={<Layers size={12} />}
+        disabled={disabled}
+        onValueChange={(v) => {
+          if (v) patchDraft({ type: v });
+        }}
+      />
+
+      {isProductLike && (
+        <InlineField
+          variant="controlled"
+          label="Product Category"
+          type="select"
+          value={draft.productCategory ?? ''}
+          options={PRODUCT_CATEGORIES.map((category) => ({
+            value: category.value,
+            label: category.label,
+          }))}
+          placeholder="Select category..."
+          icon={<Layers size={12} />}
+          clearable
+          disabled={disabled}
+          className={dealStageGateFieldClass(gateRequiredFields, 'productCategory')}
+          onValueChange={(v) => {
+            if (!v) {
+              patchDraft({ productCategory: null, productType: null });
+              return;
+            }
+            patchDraft({ productCategory: v, productType: null });
+          }}
+        />
+      )}
+
+      {isProductLike && draft.productCategory && (
+        <InlineField
+          variant="controlled"
+          label="Product Type"
+          type="select"
+          value={draft.productType ?? ''}
+          options={filteredProductTypeOptions}
+          placeholder="Select product type..."
+          icon={<Tag size={12} />}
+          clearable
+          disabled={disabled}
+          className={dealStageGateFieldClass(gateRequiredFields, 'productType')}
+          onValueChange={(v) => patchDraft({ productType: v || null })}
+        />
+      )}
+
+      {draft.type === 'MAINTENANCE' && (
+        <InlineField
+          variant="controlled"
+          label="Planned Maintenance Start"
+          type="date"
+          value={draft.maintenanceStartAt ?? ''}
+          placeholder="Select start date..."
+          icon={<Calendar size={12} />}
+          disabled={disabled}
+          onValueChange={(v) => patchDraft({ maintenanceStartAt: v || null })}
+        />
+      )}
+
+      {isExtension && (
+        <RelationPickerField
+          label="Existing Product"
+          entityKind="product"
+          value={draft.existingProductId}
+          selectionLabel={draft.existingProductPickLabel}
+          className={dealStageGateFieldClass(gateRequiredFields, 'existingProductId')}
+          disabled={disabled}
+          placeholder="Search products…"
+          icon={<Layers size={12} />}
+          onSearch={searchProducts}
+          onSelect={(id, label) =>
+            patchDraft({ existingProductId: id, existingProductPickLabel: label })
+          }
+          onClear={() => patchDraft({ existingProductId: null, existingProductPickLabel: null })}
+          {...productPicker}
+        />
+      )}
+
+      {draft.type !== 'MAINTENANCE' && (
+        <InlineField
+          variant="controlled"
+          label="Deadline"
+          type="date"
+          datePickerVariant="extended"
+          value={draft.deadline ?? ''}
+          placeholder="Select delivery deadline…"
+          icon={<Calendar size={12} />}
+          disabled={disabled}
+          className={dealStageGateFieldClass(gateRequiredFields, 'deadline')}
+          onValueChange={(v) => patchDraft({ deadline: v || null })}
+        />
+      )}
+    </div>
+  );
 }

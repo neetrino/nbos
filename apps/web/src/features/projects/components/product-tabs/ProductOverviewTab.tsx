@@ -1,31 +1,58 @@
 'use client';
 
+import { useCallback, useMemo, useState } from 'react';
 import { DollarSign, ListChecks, Puzzle, Ticket } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import type { FullProduct } from '@/lib/api/products';
 import {
   formatDeliveryLifecycleLabel,
-  formatDeliveryHoldUntil,
   getDeliveryLifecycleVariant,
   getProductStatus,
   getProductType,
-  isDeliveryHoldExpired,
 } from '@/features/projects/constants/projects';
+import {
+  buildProductGateRequiredFields,
+  productStageGateFieldClass,
+  resolveProductTabFromGateErrors,
+  type ProductTabForGate,
+} from '@/features/projects/product-stage-gate-highlight';
+import type { SheetStageGateHighlight } from '@/lib/stage-gate-highlight';
+import type { ApiFieldError } from '@/lib/api-errors';
+import { DeliveryStageTimelineCard } from './DeliveryStageTimelineCard';
 import { ProductStageGateCard } from './ProductStageGateCard';
-
-const DELIVERY_STAGES = [
-  { value: 'STARTING', label: 'Starting' },
-  { value: 'DEVELOPMENT', label: 'Development' },
-  { value: 'QA', label: 'QA' },
-  { value: 'TRANSFER', label: 'Transfer' },
-] as const;
 
 interface ProductOverviewTabProps {
   product: FullProduct;
   onStatusChange: () => void;
+  onNavigateTab: (tab: ProductTabForGate) => void;
 }
 
-export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewTabProps) {
+export function ProductOverviewTab({
+  product,
+  onStatusChange,
+  onNavigateTab,
+}: ProductOverviewTabProps) {
+  const [stageGateHighlight, setStageGateHighlight] = useState<SheetStageGateHighlight | null>(
+    null,
+  );
+
+  const gateRequiredFields = useMemo(
+    () =>
+      stageGateHighlight
+        ? buildProductGateRequiredFields(stageGateHighlight.errors)
+        : new Set<string>(),
+    [stageGateHighlight],
+  );
+
+  const showStageGateRequirements = useCallback(
+    (errors: ApiFieldError[]) => {
+      setStageGateHighlight({ errors });
+      const tab = resolveProductTabFromGateErrors(errors);
+      if (tab !== 'overview') onNavigateTab(tab);
+    },
+    [onNavigateTab],
+  );
+
   const doneTasks = product.tasks.filter((task) => task.status === 'DONE').length;
   const doneExtensions = product.extensions.filter(
     (extension) => extension.status === 'DONE',
@@ -36,10 +63,22 @@ export function ProductOverviewTab({ product, onStatusChange }: ProductOverviewT
       <ProductStats product={product} doneTasks={doneTasks} doneExtensions={doneExtensions} />
       <ProductDeliveryLifecycleCard product={product} />
       <div className="grid gap-6 lg:grid-cols-2">
-        <ProductDetailsCard product={product} />
-        <ProductStageGateCard product={product} onStatusChange={onStatusChange} />
+        <ProductDetailsCard product={product} gateRequiredFields={gateRequiredFields} />
+        <ProductStageGateCard
+          product={product}
+          gateRequiredFields={gateRequiredFields}
+          stageGateHighlight={stageGateHighlight}
+          onStatusChange={onStatusChange}
+          onStageGateBlocked={showStageGateRequirements}
+          onStageGateClear={() => setStageGateHighlight(null)}
+          onNavigateTab={onNavigateTab}
+        />
       </div>
-      {product.description && <ProductDescriptionCard description={product.description} />}
+      <ProductDescriptionCard
+        description={product.description}
+        gateRequiredFields={gateRequiredFields}
+        forceVisible={gateRequiredFields.has('description')}
+      />
     </div>
   );
 }
@@ -82,7 +121,13 @@ function ProductStats({
   );
 }
 
-function ProductDetailsCard({ product }: { product: FullProduct }) {
+function ProductDetailsCard({
+  product,
+  gateRequiredFields,
+}: {
+  product: FullProduct;
+  gateRequiredFields: ReadonlySet<string>;
+}) {
   const status = getProductStatus(product.status);
   const productType = getProductType(product.productType);
   const lifecycle = product.deliveryLifecycle;
@@ -109,9 +154,28 @@ function ProductDetailsCard({ product }: { product: FullProduct }) {
         {product.pm && (
           <DetailRow label="PM" value={`${product.pm.firstName} ${product.pm.lastName}`} />
         )}
-        {product.deadline && (
-          <DetailRow label="Deadline" value={new Date(product.deadline).toLocaleDateString()} />
-        )}
+        <div
+          className={productStageGateFieldClass(
+            gateRequiredFields,
+            'deadline',
+            'flex justify-between rounded-md px-1 py-0.5',
+          )}
+        >
+          <span className="text-muted-foreground">Deadline</span>
+          <span className="font-medium">
+            {product.deadline ? new Date(product.deadline).toLocaleDateString() : '—'}
+          </span>
+        </div>
+        <div
+          className={productStageGateFieldClass(
+            gateRequiredFields,
+            'order',
+            'flex justify-between rounded-md px-1 py-0.5',
+          )}
+        >
+          <span className="text-muted-foreground">Order</span>
+          <span className="font-medium">{product.order ? 'Linked' : '—'}</span>
+        </div>
         <DetailRow label="Project" value={product.project.name} />
         <DetailRow label="Created" value={new Date(product.createdAt).toLocaleDateString()} />
       </div>
@@ -124,88 +188,13 @@ function ProductDeliveryLifecycleCard({ product }: { product: FullProduct }) {
   if (!lifecycle) return null;
 
   return (
-    <section className="bg-card border-border rounded-xl border p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold">Delivery Lifecycle</h3>
-          <p className="text-muted-foreground text-xs">
-            Product delivery source of truth for stage, pause state and terminal outcome.
-          </p>
-        </div>
-        <StatusBadge
-          label={formatDeliveryLifecycleLabel(lifecycle)}
-          variant={getDeliveryLifecycleVariant(lifecycle)}
-        />
-      </div>
-      <div className="grid gap-2 sm:grid-cols-4">
-        {DELIVERY_STAGES.map((stage) => (
-          <DeliveryStageStep key={stage.value} stage={stage} lifecycle={lifecycle} />
-        ))}
-      </div>
-      {lifecycle.workStatus === 'ON_HOLD' && <HoldStateCopy lifecycle={lifecycle} />}
-    </section>
+    <DeliveryStageTimelineCard
+      lifecycle={lifecycle}
+      title="Delivery Lifecycle"
+      description="Product delivery source of truth for stage, pause state and terminal outcome."
+      showLifecycleBadge
+    />
   );
-}
-
-function HoldStateCopy({
-  lifecycle,
-}: {
-  lifecycle: NonNullable<FullProduct['deliveryLifecycle']>;
-}) {
-  const date = formatDeliveryHoldUntil(lifecycle.onHoldUntil);
-  const expired = isDeliveryHoldExpired(lifecycle);
-  const dateCopy = date ? ` until ${date}` : '';
-  const copy = expired
-    ? `Delivery hold expired${date ? ` on ${date}` : ''}. Resume or update the delivery pause.`
-    : `Delivery is paused${dateCopy}. Resume delivery when work can continue.`;
-
-  return (
-    <p
-      className={`mt-3 text-xs ${expired ? 'font-medium text-amber-600' : 'text-muted-foreground'}`}
-    >
-      {copy}
-    </p>
-  );
-}
-
-function DeliveryStageStep({
-  stage,
-  lifecycle,
-}: {
-  stage: (typeof DELIVERY_STAGES)[number];
-  lifecycle: NonNullable<FullProduct['deliveryLifecycle']>;
-}) {
-  const currentIndex = DELIVERY_STAGES.findIndex((item) => item.value === lifecycle.stage);
-  const stageIndex = DELIVERY_STAGES.findIndex((item) => item.value === stage.value);
-  const isCurrent = lifecycle.stage === stage.value && !lifecycle.resolution;
-  const isDone =
-    lifecycle.resolution === 'DONE' || (currentIndex >= 0 && stageIndex < currentIndex);
-  const stateClassName = getStageStepClassName({ isCurrent, isDone, lifecycle });
-
-  return (
-    <div className={`rounded-lg border px-3 py-2 text-xs font-medium ${stateClassName}`}>
-      {stage.label}
-    </div>
-  );
-}
-
-function getStageStepClassName({
-  isCurrent,
-  isDone,
-  lifecycle,
-}: {
-  isCurrent: boolean;
-  isDone: boolean;
-  lifecycle: NonNullable<FullProduct['deliveryLifecycle']>;
-}) {
-  if (lifecycle.resolution === 'CANCELLED') return 'border-red-200 bg-red-50 text-red-700';
-  if (isCurrent && lifecycle.workStatus === 'ON_HOLD') {
-    if (isDeliveryHoldExpired(lifecycle)) return 'border-amber-300 bg-amber-50 text-amber-700';
-    return 'border-gray-300 bg-gray-100 text-gray-700';
-  }
-  if (isCurrent) return 'border-purple-300 bg-purple-50 text-purple-700';
-  if (isDone) return 'border-green-200 bg-green-50 text-green-700';
-  return 'border-border bg-muted/30 text-muted-foreground';
 }
 
 function StatCard({
@@ -245,11 +234,31 @@ function DetailRow({ label, value }: { label: string; value?: string }) {
   );
 }
 
-function ProductDescriptionCard({ description }: { description: string }) {
+function ProductDescriptionCard({
+  description,
+  gateRequiredFields,
+  forceVisible,
+}: {
+  description: string | null;
+  gateRequiredFields: ReadonlySet<string>;
+  forceVisible: boolean;
+}) {
+  if (!description && !forceVisible) return null;
+
   return (
-    <section className="bg-card border-border rounded-xl border p-5">
+    <section
+      className={productStageGateFieldClass(
+        gateRequiredFields,
+        'description',
+        'bg-card border-border rounded-xl border p-5',
+      )}
+    >
       <h3 className="mb-2 text-sm font-semibold">Description</h3>
-      <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
+      {description ? (
+        <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
+      ) : (
+        <p className="text-muted-foreground text-sm">Description is required before Creating.</p>
+      )}
     </section>
   );
 }

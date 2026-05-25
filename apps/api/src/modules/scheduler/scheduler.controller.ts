@@ -45,7 +45,7 @@ export class SchedulerController {
   @ApiOperation({
     summary: 'Expense Backlog reminder jobs (external cron)',
     description:
-      'Creates idempotent NotificationEvent/NotificationJob records: one weekly digest per UTC week for open backlog cards (DELAYED + backlog reason + unpaid balance), and per-day reminders for backlog cards whose due date has passed. Does not send external messages.',
+      'Creates idempotent NotificationEvent/NotificationJob records: one weekly digest per UTC week for open backlog cards (BACKLOG + backlog reason + unpaid balance), and per-day reminders for backlog cards whose due date has passed. Does not send external messages.',
   })
   async runExpenseBacklogReminders() {
     return this.schedulerService.runExpenseBacklogReminders();

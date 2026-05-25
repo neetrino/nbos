@@ -180,6 +180,8 @@ Proof-файлы расходов не должны храниться как л
 
 `Paid / Оплачено` и `Cancelled / Отменено` не должны мешать рабочей доске. Они уходят в `Closed / Закрытые`.
 
+**Web (NBOS standard):** маршрут `/finance/expenses/closed` использует `GET /expenses?closedBoard=true` (оба terminal status), переключатель **Board / List**, колонки kanban **Paid** и **Cancelled** (288px). См. [`11-Finance-Stage-Gate-and-Board-UX-Standard.md`](11-Finance-Stage-Gate-and-Board-UX-Standard.md).
+
 Оплата делается действием:
 
 `Add Payment / Добавить оплату`

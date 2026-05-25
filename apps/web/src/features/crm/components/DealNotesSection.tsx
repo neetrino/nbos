@@ -1,26 +1,40 @@
 'use client';
 
 import { MessageSquare } from 'lucide-react';
-import { InlineField } from '@/components/shared';
-import type { Deal } from '@/lib/api/deals';
-import type { SaveField } from './deal-general-tab.types';
+import { EntityNotesSection } from '@/components/shared';
+import { cn } from '@/lib/utils';
+import type { DealGeneralDraft } from './deal-general-form-state';
+import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 
 interface DealNotesSectionProps {
-  deal: Deal;
-  saveField: SaveField;
+  entityId: string;
+  draft: DealGeneralDraft;
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void;
+  disabled?: boolean;
+  sectionClassName?: string;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
-export function DealNotesSection({ deal, saveField }: DealNotesSectionProps) {
+export function DealNotesSection({
+  entityId,
+  draft,
+  patchDraft,
+  disabled = false,
+  sectionClassName,
+  gateRequiredFields = new Set(),
+}: DealNotesSectionProps) {
   return (
-    <section className="rounded-2xl border border-stone-100 bg-gradient-to-br from-stone-50/80 to-white p-5 dark:border-stone-800 dark:from-stone-900/30 dark:to-transparent">
-      <InlineField
-        label="Notes"
-        value={deal.notes}
-        type="textarea"
-        placeholder="Add notes about this deal..."
-        icon={<MessageSquare size={12} />}
-        onSave={(value) => saveField('notes', value)}
-      />
-    </section>
+    <EntityNotesSection
+      title="Notes"
+      icon={<MessageSquare size={12} />}
+      sectionClassName={sectionClassName}
+      entityType="deal"
+      entityId={entityId}
+      value={draft.notes}
+      onChange={(notes) => patchDraft({ notes })}
+      disabled={disabled}
+      placeholder="Add notes about this deal…"
+      shellClassName={cn(dealStageGateFieldClass(gateRequiredFields, 'notes', ''))}
+    />
   );
 }

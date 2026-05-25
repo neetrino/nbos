@@ -1,6 +1,7 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 
 export const TICKET_CATEGORIES = [
+  { value: 'UNCLASSIFIED', label: 'Unclassified', variant: 'gray' as StatusVariant },
   { value: 'INCIDENT', label: 'Incident', variant: 'red' as StatusVariant },
   { value: 'SERVICE_REQUEST', label: 'Service Request', variant: 'blue' as StatusVariant },
   { value: 'CHANGE_REQUEST', label: 'Change Request', variant: 'purple' as StatusVariant },

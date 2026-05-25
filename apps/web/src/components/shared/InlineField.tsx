@@ -12,6 +12,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { NbosDatePicker } from '@/components/shared/date-picker';
+import { ControlledInlineField } from './ControlledInlineField';
+import {
+  DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
+  DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+} from './detail-sheet-classes';
+import { resolveSelectOptionLabel } from './select-option-label';
 
 type FieldType = 'text' | 'number' | 'email' | 'phone' | 'textarea' | 'select' | 'link' | 'date';
 
@@ -21,7 +30,8 @@ interface SelectOption {
   icon?: ReactNode;
 }
 
-interface InlineFieldProps {
+type InlineFieldInlineProps = {
+  variant?: 'inline' | undefined;
   label: string;
   value: string | number | null | undefined;
   displayValue?: ReactNode;
@@ -34,9 +44,28 @@ interface InlineFieldProps {
   suffix?: string;
   className?: string;
   clearable?: boolean;
-}
+};
 
-export function InlineField({
+type InlineFieldControlledProps = {
+  variant: 'controlled';
+  label: string;
+  value: string | number | null | undefined;
+  onValueChange: (value: string) => void;
+  type?: FieldType;
+  options?: SelectOption[];
+  placeholder?: string;
+  icon?: ReactNode;
+  suffix?: string;
+  className?: string;
+  clearable?: boolean;
+  disabled?: boolean;
+  datePickerVariant?: 'compact' | 'extended';
+  datePickerMode?: 'date' | 'datetime';
+};
+
+export type InlineFieldProps = InlineFieldInlineProps | InlineFieldControlledProps;
+
+function InlineFieldUncontrolled({
   label,
   value,
   displayValue,
@@ -49,7 +78,7 @@ export function InlineField({
   suffix,
   className,
   clearable = false,
-}: InlineFieldProps) {
+}: InlineFieldInlineProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
@@ -109,7 +138,11 @@ export function InlineField({
     }
   };
 
-  const displayStr = value != null && value !== '' ? String(value) : null;
+  const rawDisplayStr = value != null && value !== '' ? String(value) : null;
+  const displayStr =
+    rawDisplayStr && type === 'select' && options
+      ? resolveSelectOptionLabel(rawDisplayStr, options)
+      : rawDisplayStr;
 
   return (
     <div className={cn('group relative', className)}>
@@ -143,7 +176,11 @@ export function InlineField({
                 }}
               >
                 <SelectTrigger className="h-8 w-full text-sm">
-                  <SelectValue placeholder={placeholder ?? 'Select...'} />
+                  <SelectValue placeholder={placeholder ?? 'Select...'}>
+                    {(selected: string | null) =>
+                      selected ? resolveSelectOptionLabel(selected, options) : null
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {options.map((opt) => (
@@ -182,18 +219,18 @@ export function InlineField({
               className="min-h-[72px] text-sm"
               placeholder={placeholder}
             />
+          ) : type === 'date' ? (
+            <NbosDatePicker
+              value={editValue}
+              onChange={setEditValue}
+              placeholder={placeholder ?? 'Select date…'}
+              className="min-w-0 flex-1"
+              aria-label={label}
+            />
           ) : (
             <Input
               ref={inputRef as React.Ref<HTMLInputElement>}
-              type={
-                type === 'number'
-                  ? 'number'
-                  : type === 'email'
-                    ? 'email'
-                    : type === 'date'
-                      ? 'date'
-                      : 'text'
-              }
+              type={type === 'number' ? 'number' : type === 'email' ? 'email' : 'text'}
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -224,10 +261,10 @@ export function InlineField({
         <div
           onClick={editable && onSave ? startEdit : undefined}
           className={cn(
-            'rounded-lg px-3 py-2 text-sm transition-all',
-            editable && onSave
-              ? 'hover:bg-accent/5 hover:border-border cursor-pointer border border-transparent'
-              : 'cursor-default',
+            DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+            DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+            'rounded-xl px-3 py-2 text-sm',
+            editable && onSave ? 'cursor-pointer' : 'cursor-default',
           )}
         >
           <div className="flex items-center justify-between">
@@ -255,16 +292,13 @@ export function InlineField({
                       handleClear();
                     }}
                     disabled={saving}
-                    className="text-muted-foreground/0 hover:bg-destructive/10 hover:text-destructive group-hover:text-muted-foreground/60 flex size-7 items-center justify-center rounded-md transition-colors"
+                    className={DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS}
                     aria-label={`Clear ${label}`}
                   >
                     <X size={16} />
                   </button>
                 )}
-                <Pencil
-                  size={16}
-                  className="text-muted-foreground/0 group-hover:text-muted-foreground/60 rounded-md transition-all"
-                />
+                <Pencil size={16} className={DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS} aria-hidden />
               </div>
             )}
           </div>
@@ -272,4 +306,18 @@ export function InlineField({
       )}
     </div>
   );
+}
+
+export function InlineField(props: InlineFieldProps) {
+  if (props.variant === 'controlled') {
+    const { datePickerVariant, datePickerMode, ...controlledProps } = props;
+    return (
+      <ControlledInlineField
+        {...controlledProps}
+        datePickerVariant={datePickerVariant}
+        datePickerMode={datePickerMode}
+      />
+    );
+  }
+  return <InlineFieldUncontrolled {...props} />;
 }

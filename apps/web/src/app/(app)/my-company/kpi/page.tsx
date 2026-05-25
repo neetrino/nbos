@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Target, TrendingUp, Wallet, Timer } from 'lucide-react';
-import { PageHeader, StatusBadge } from '@/components/shared';
+import { PageHero, StatusBadge } from '@/components/shared';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import { dashboardApi, type DashboardControlCenterProjection } from '@/lib/api/dashboard';
 
@@ -43,10 +43,11 @@ export default function KpiPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="KPI / Scorecard"
-        description="Company KPI runtime: cross-module signals, scorecard gate policy, and links to execution modules."
-      />
+      <PageHero title="KPI / Scorecard" />
+      <p className="text-muted-foreground text-sm">
+        Company KPI runtime: cross-module signals, scorecard gate policy, and links to execution
+        modules.
+      </p>
 
       <div className="grid gap-3 md:grid-cols-4">
         <div className="border-border bg-card rounded-2xl border p-4">
@@ -113,6 +114,12 @@ export default function KpiPage() {
             className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
           >
             Reports Catalog
+          </Link>
+          <Link
+            href="/my-company/kpi-policies"
+            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
+          >
+            KPI gate policies (edit bands)
           </Link>
           <Link
             href="/finance/payroll"

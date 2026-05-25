@@ -5,6 +5,8 @@ export interface TaskLink {
   taskId: string;
   entityType: string;
   entityId: string;
+  /** Resolved title from API (project name, product name, order code, …). */
+  entityLabel?: string | null;
   createdAt: string;
 }
 
@@ -29,6 +31,16 @@ export interface TaskOrderRef {
   code: string;
 }
 
+export interface TaskSprintRef {
+  id: string;
+  name: string;
+  status: 'PLANNING' | 'ACTIVE' | 'CLOSED';
+  goal?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  closedAt?: string | null;
+}
+
 export interface Task {
   id: string;
   code: string;
@@ -36,9 +48,12 @@ export interface Task {
   description: string | null;
   status: string;
   priority: string;
-  startDate: string | null;
+  sprintId?: string | null;
+  sprint?: TaskSprintRef | null;
   dueDate: string | null;
   completedAt: string | null;
+  reviewRequestedAt: string | null;
+  reviewApprovedAt: string | null;
   completionRules: TaskCompletionRule[] | null;
   parentId: string | null;
   workspaceId: string | null;
@@ -54,6 +69,7 @@ export interface Task {
   updatedAt: string;
   creator: { id: string; firstName: string; lastName: string };
   assignee: { id: string; firstName: string; lastName: string } | null;
+  reviewer?: { id: string; firstName: string; lastName: string } | null;
   parent?: { id: string; code: string; title: string } | null;
   links: TaskLink[];
   checklists: TaskChecklist[];
@@ -169,6 +185,8 @@ interface TaskQueryParams {
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  /** Only tasks where this employee is assignee, creator, co-assignee, or observer. */
+  involvesEmployeeId?: string;
 }
 
 /** Workspace aggregates from `GET /api/tasks/stats` (Prisma `groupBy`). */
@@ -199,9 +217,9 @@ export const tasksApi = {
     observers?: string[];
     priority?: string;
     workspaceId?: string;
+    sprintId?: string | null;
     planningStatus?: string;
     completionRules?: TaskCompletionRule[];
-    startDate?: string;
     dueDate?: string;
     parentId?: string;
     links?: Array<{ entityType: string; entityId: string }>;
@@ -225,15 +243,27 @@ export const tasksApi = {
     const resp = await api.patch<Task>(`/api/tasks/${id}/reopen`);
     return resp.data;
   },
-  async defer(id: string): Promise<Task> {
-    const resp = await api.patch<Task>(`/api/tasks/${id}/defer`);
+  async setOnHold(id: string): Promise<Task> {
+    const resp = await api.patch<Task>(`/api/tasks/${id}/on-hold`);
+    return resp.data;
+  },
+  async submitForReview(id: string, reviewerId?: string): Promise<Task> {
+    const resp = await api.patch<Task>(`/api/tasks/${id}/submit-review`, { reviewerId });
+    return resp.data;
+  },
+  async approveReview(id: string): Promise<Task> {
+    const resp = await api.patch<Task>(`/api/tasks/${id}/approve-review`);
+    return resp.data;
+  },
+  async requestReviewChanges(id: string): Promise<Task> {
+    const resp = await api.patch<Task>(`/api/tasks/${id}/request-review-changes`);
     return resp.data;
   },
   async delete(id: string): Promise<void> {
     await api.delete(`/api/tasks/${id}`);
   },
-  async getStats(): Promise<TaskStats> {
-    const resp = await api.get<TaskStats>('/api/tasks/stats');
+  async getStats(params?: { involvesEmployeeId?: string }): Promise<TaskStats> {
+    const resp = await api.get<TaskStats>('/api/tasks/stats', { params });
     return resp.data;
   },
 

@@ -3,6 +3,8 @@ import { ProductsService } from './products.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import type { NotificationService } from '../../notifications/notification.service';
+import type { AuditService } from '../../audit/audit.service';
+import { DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION } from '../delivery-status-deprecation';
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -13,11 +15,32 @@ describe('ProductsService', () => {
     tryInboundClassicAfterDelivery: vi.fn().mockResolvedValue(undefined),
   };
 
+  const auditService: Pick<AuditService, 'log'> = {
+    log: vi.fn().mockResolvedValue(undefined),
+  };
+
+  const deliveryStageChecklistSync = {
+    syncProductAfterLifecycleWrite: vi.fn().mockResolvedValue(undefined),
+  };
+  const checklistTemplates = {
+    assertStageInstancesCompleted: vi.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(() => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;
     partnerAccrualClassic.tryInboundClassicAfterDelivery.mockClear();
-    service = new ProductsService(prisma as never, notifications, partnerAccrualClassic as never);
+    vi.mocked(auditService.log).mockClear();
+    deliveryStageChecklistSync.syncProductAfterLifecycleWrite.mockClear();
+    checklistTemplates.assertStageInstancesCompleted.mockClear();
+    service = new ProductsService(
+      prisma as never,
+      notifications,
+      partnerAccrualClassic as never,
+      auditService as never,
+      deliveryStageChecklistSync as never,
+      checklistTemplates as never,
+    );
   });
 
   describe('findAll', () => {
@@ -32,6 +55,17 @@ describe('ProductsService', () => {
       expect(prisma.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ projectId: 'proj-1' }),
+        }),
+      );
+    });
+
+    it('applies companyId filter on related project', async () => {
+      await service.findAll({ companyId: 'comp-1' });
+      expect(prisma.product.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            project: { is: { companyId: 'comp-1' } },
+          }),
         }),
       );
     });
@@ -77,7 +111,10 @@ describe('ProductsService', () => {
       expect(prisma.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            name: { contains: 'site', mode: 'insensitive' },
+            OR: expect.arrayContaining([
+              { name: { contains: 'site', mode: 'insensitive' } },
+              { project: { name: { contains: 'site', mode: 'insensitive' } } },
+            ]),
           }),
         }),
       );
@@ -317,7 +354,9 @@ describe('ProductsService', () => {
         order: null,
       });
 
-      await expect(service.updateStatus('p1', 'CREATING')).rejects.toThrow(BadRequestException);
+      await expect(service.updateStatus('p1', 'CREATING', 'emp-audit')).rejects.toThrow(
+        BadRequestException,
+      );
       expect(prisma.product.update).not.toHaveBeenCalled();
     });
 
@@ -330,7 +369,7 @@ describe('ProductsService', () => {
         order: { id: 'ord-1' },
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'CREATING' });
-      const result = await service.updateStatus('p1', 'CREATING');
+      const result = await service.updateStatus('p1', 'CREATING', 'emp-audit');
       expect(result.status).toBe('CREATING');
     });
 
@@ -341,7 +380,9 @@ describe('ProductsService', () => {
         tasks: [{ status: 'IN_PROGRESS' }, { status: 'DONE' }],
       });
 
-      const error = await service.updateStatus('p1', 'QA').catch((caught: unknown) => caught);
+      const error = await service
+        .updateStatus('p1', 'QA', 'emp-audit')
+        .catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(readExceptionResponse(error)).toMatchObject({
@@ -355,10 +396,10 @@ describe('ProductsService', () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'DEVELOPMENT',
-        tasks: [{ status: 'DONE' }, { status: 'DEFERRED' }],
+        tasks: [{ status: 'DONE' }, { status: 'ON_HOLD' }],
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'QA' });
-      const result = await service.updateStatus('p1', 'QA');
+      const result = await service.updateStatus('p1', 'QA', 'emp-audit');
       expect(result.status).toBe('QA');
     });
 
@@ -369,7 +410,9 @@ describe('ProductsService', () => {
         tasks: [{ status: 'IN_PROGRESS' }, { status: 'DONE' }],
       });
 
-      const error = await service.updateStatus('p1', 'TRANSFER').catch((caught: unknown) => caught);
+      const error = await service
+        .updateStatus('p1', 'TRANSFER', 'emp-audit')
+        .catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(readExceptionResponse(error)).toMatchObject({
@@ -383,28 +426,50 @@ describe('ProductsService', () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'QA',
-        tasks: [{ status: 'DONE' }, { status: 'CANCELLED' }],
+        tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'TRANSFER' });
-      const result = await service.updateStatus('p1', 'TRANSFER');
+      const result = await service.updateStatus('p1', 'TRANSFER', 'emp-audit');
       expect(result.status).toBe('TRANSFER');
     });
 
     it('rejects DONE → CREATING (terminal state)', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'DONE' });
-      await expect(service.updateStatus('p1', 'CREATING')).rejects.toThrow(BadRequestException);
+      await expect(service.updateStatus('p1', 'CREATING', 'emp-audit')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('rejects NEW → QA (skip not allowed)', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'NEW' });
-      await expect(service.updateStatus('p1', 'QA')).rejects.toThrow(BadRequestException);
+      await expect(service.updateStatus('p1', 'QA', 'emp-audit')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('allows any → LOST', async () => {
-      prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'DEVELOPMENT',
+      });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'LOST' });
-      const result = await service.updateStatus('p1', 'LOST');
+      const result = await service.updateStatus('p1', 'LOST', 'emp-audit');
       expect(result.status).toBe('LOST');
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+          entityType: 'PRODUCT',
+          entityId: 'p1',
+          userId: 'emp-audit',
+          projectId: 'proj-1',
+          changes: expect.objectContaining({
+            deprecatedApiPath: 'PATCH /projects/products/:id/status',
+            targetStatus: 'LOST',
+            deliveryResolution: 'CANCELLED',
+          }),
+        }),
+      );
     });
 
     it('allows ON_HOLD → back to any active stage', async () => {
@@ -412,17 +477,10 @@ describe('ProductsService', () => {
         id: 'p1',
         projectId: 'proj-1',
         status: 'ON_HOLD',
+        deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
-      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
-        {
-          key: 'scope_confirmed',
-          title: 'Scope confirmed',
-          isRequired: true,
-          isChecked: true,
-        },
-      ]);
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
-      const result = await service.updateStatus('p1', 'DEVELOPMENT');
+      const result = await service.updateStatus('p1', 'DEVELOPMENT', 'emp-audit');
       expect(result.status).toBe('DEVELOPMENT');
     });
 
@@ -436,7 +494,9 @@ describe('ProductsService', () => {
         tickets: [{ status: 'NEW' }],
       });
 
-      const error = await service.updateStatus('p1', 'DONE').catch((caught: unknown) => caught);
+      const error = await service
+        .updateStatus('p1', 'DONE', 'emp-audit')
+        .catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(readExceptionResponse(error)).toMatchObject({
@@ -465,7 +525,9 @@ describe('ProductsService', () => {
         },
       });
 
-      const error = await service.updateStatus('p1', 'DONE').catch((caught: unknown) => caught);
+      const error = await service
+        .updateStatus('p1', 'DONE', 'emp-audit')
+        .catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(readExceptionResponse(error)).toMatchObject({
@@ -490,7 +552,9 @@ describe('ProductsService', () => {
         },
       });
 
-      const error = await service.updateStatus('p1', 'DONE').catch((caught: unknown) => caught);
+      const error = await service
+        .updateStatus('p1', 'DONE', 'emp-audit')
+        .catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(readExceptionResponse(error)).toMatchObject({
@@ -503,10 +567,11 @@ describe('ProductsService', () => {
     it('allows TRANSFER → DONE when delivery items are closed', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
+        projectId: 'proj-1',
         status: 'TRANSFER',
         clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         extensions: [{ status: 'DONE' }, { status: 'LOST' }],
-        tasks: [{ status: 'DONE' }, { status: 'DEFERRED' }],
+        tasks: [{ status: 'DONE' }, { status: 'ON_HOLD' }],
         tickets: [{ status: 'RESOLVED' }, { status: 'CLOSED' }],
         order: {
           id: 'ord-1',
@@ -516,54 +581,63 @@ describe('ProductsService', () => {
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DONE' });
 
-      const result = await service.updateStatus('p1', 'DONE');
+      const result = await service.updateStatus('p1', 'DONE', 'emp-audit');
 
       expect(result.status).toBe('DONE');
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
+          entityType: 'PRODUCT',
+          entityId: 'p1',
+          userId: 'emp-audit',
+          projectId: 'proj-1',
+          changes: expect.objectContaining({
+            targetStatus: 'DONE',
+            deliveryResolution: 'DONE',
+          }),
+        }),
+      );
     });
 
-    it('blocks CREATING → DEVELOPMENT when kickoff checklist has missing required items', async () => {
+    it('blocks CREATING → DEVELOPMENT when stage checklist is not complete', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         projectId: 'proj-1',
         status: 'CREATING',
+        deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
-      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
-        {
-          key: 'scope_confirmed',
-          title: 'Scope confirmed',
-          isRequired: true,
-          isChecked: false,
-        },
-      ]);
+      checklistTemplates.assertStageInstancesCompleted.mockRejectedValueOnce(
+        new BadRequestException({
+          code: 'STAGE_GATE_VALIDATION',
+          errors: [{ field: 'checklist.stage', message: 'Checklist must be completed.' }],
+        }),
+      );
 
-      await expect(service.updateStatus('p1', 'DEVELOPMENT')).rejects.toThrow(BadRequestException);
+      await expect(service.updateStatus('p1', 'DEVELOPMENT', 'emp-audit')).rejects.toThrow(
+        BadRequestException,
+      );
       expect(prisma.product.update).not.toHaveBeenCalled();
     });
 
-    it('allows CREATING → DEVELOPMENT when required kickoff checklist is accepted', async () => {
+    it('allows CREATING → DEVELOPMENT when required stage checklist is complete', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         projectId: 'proj-1',
         status: 'CREATING',
+        deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
-      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
-        {
-          key: 'scope_confirmed',
-          title: 'Scope confirmed',
-          isRequired: true,
-          isChecked: true,
-        },
-      ]);
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
 
-      const result = await service.updateStatus('p1', 'DEVELOPMENT');
+      const result = await service.updateStatus('p1', 'DEVELOPMENT', 'emp-audit');
 
       expect(result.status).toBe('DEVELOPMENT');
     });
 
     it('rejects invalid status string', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'NEW' });
-      await expect(service.updateStatus('p1', 'INVALID')).rejects.toThrow(BadRequestException);
+      await expect(service.updateStatus('p1', 'INVALID', 'emp-audit')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -573,15 +647,8 @@ describe('ProductsService', () => {
         id: 'p1',
         projectId: 'proj-1',
         status: 'CREATING',
+        deadline: new Date('2026-05-20T00:00:00.000Z'),
       });
-      prisma.projectKickoffChecklistItem.findMany.mockResolvedValue([
-        {
-          key: 'scope_confirmed',
-          title: 'Scope confirmed',
-          isRequired: true,
-          isChecked: true,
-        },
-      ]);
       prisma.product.update.mockResolvedValue({
         id: 'p1',
         status: 'DEVELOPMENT',
@@ -618,6 +685,7 @@ describe('ProductsService', () => {
     it('completes product delivery through dedicated action', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
+        projectId: 'proj-1',
         status: 'TRANSFER',
         deliveryStage: 'TRANSFER',
         deliveryWorkStatus: 'ACTIVE',
@@ -635,7 +703,7 @@ describe('ProductsService', () => {
         deliveryResolution: 'DONE',
       });
 
-      const result = await service.complete('p1');
+      const result = await service.complete('p1', 'emp-1');
 
       expect(prisma.product.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -644,7 +712,17 @@ describe('ProductsService', () => {
             deliveryStage: null,
             deliveryWorkStatus: 'ACTIVE',
             deliveryResolution: 'DONE',
+            closedById: 'emp-1',
           }),
+        }),
+      );
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'PRODUCT',
+          entityId: 'p1',
+          action: 'delivery.completed',
+          userId: 'emp-1',
+          projectId: 'proj-1',
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('DONE');
@@ -662,7 +740,7 @@ describe('ProductsService', () => {
         order: { status: 'FULLY_PAID', invoices: [] },
       });
 
-      const error = await service.complete('p1').catch((caught: unknown) => caught);
+      const error = await service.complete('p1', 'emp-1').catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(readExceptionResponse(error)).toMatchObject({
@@ -712,7 +790,7 @@ describe('ProductsService', () => {
         deliveryWorkStatus: 'ON_HOLD',
       });
 
-      await expect(service.complete('p1')).rejects.toThrow(BadRequestException);
+      await expect(service.complete('p1', 'emp-1')).rejects.toThrow(BadRequestException);
       expect(prisma.product.update).not.toHaveBeenCalled();
     });
 
@@ -776,7 +854,11 @@ describe('ProductsService', () => {
     });
 
     it('cancels product delivery with a reason', async () => {
-      prisma.product.findUnique.mockResolvedValue({ id: 'p1', status: 'DEVELOPMENT' });
+      prisma.product.findUnique.mockResolvedValue({
+        id: 'p1',
+        projectId: 'proj-1',
+        status: 'DEVELOPMENT',
+      });
       prisma.product.update.mockResolvedValue({
         id: 'p1',
         status: 'LOST',
@@ -784,7 +866,7 @@ describe('ProductsService', () => {
         cancellationReason: 'Scope cancelled',
       });
 
-      const result = await service.cancel('p1', { reason: 'Scope cancelled' });
+      const result = await service.cancel('p1', { reason: 'Scope cancelled' }, 'emp-1');
 
       expect(prisma.product.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -793,7 +875,15 @@ describe('ProductsService', () => {
             deliveryStage: null,
             deliveryResolution: 'CANCELLED',
             cancellationReason: 'Scope cancelled',
+            closedById: 'emp-1',
           }),
+        }),
+      );
+      expect(auditService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'PRODUCT',
+          action: 'delivery.cancelled',
+          userId: 'emp-1',
         }),
       );
       expect(result.deliveryLifecycle.resolution).toBe('CANCELLED');

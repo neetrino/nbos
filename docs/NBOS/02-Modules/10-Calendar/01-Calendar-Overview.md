@@ -61,7 +61,7 @@ Filters: Project, Product, Seller, PM, Client, Event Type
 | CEO / Owner | `All`                                  |
 | Developer   | `Personal` или `All`, если есть доступ |
 
-Пользователь может выбрать свой default layer.
+Пользователь может выбрать свой default layer (клиент может запоминать последний выбор).
 
 ## Source and projection
 
@@ -88,6 +88,7 @@ Calendar не должен дублировать Product/Extension deadline в 
 - PM видит delivery deadlines своих Products/Extensions.
 - CEO/Owner видит всё.
 - Developer видит только доступные ему проекты/события.
+- Client meeting может быть видна не только создателю и участникам, но и ролям, привязанным к связанной сделке/проекту (seller, assistant, PM, assignee на extension и т.д. по правилам доступа к источнику), без дублирования отдельной «копии» встречи в CRM.
 
 ## Связанные документы
 
@@ -95,4 +96,3 @@ Calendar не должен дублировать Product/Extension deadline в 
 - `03-Delivery-Deadline-Projections.md`
 - `04-Scheduler-and-Time-Jobs.md`
 - `05-Calendar-Integrations.md`
-- `06-Calendar-Cleanup-Register.md`

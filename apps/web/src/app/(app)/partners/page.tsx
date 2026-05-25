@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Handshake, ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +12,14 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import { FilterBar, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  PageHero,
+  IntegratedSearchFilters,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
 import {
   PARTNER_LEVELS,
   PARTNER_DIRECTIONS,
@@ -22,7 +29,8 @@ import {
   getPartnerStatus,
 } from '@/features/partners/constants/partners';
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
-import { PartnersPageHeader } from '@/features/partners/components/PartnersPageHeader';
+import { PartnerDetailSheet } from '@/features/partners/components/PartnerDetailSheet';
+import { PartnersPageSettingsSheet } from '@/features/partners/components/PartnersPageSettingsSheet';
 import { usePartnersCsvExport } from '@/features/partners/components/use-partners-csv-export';
 import { usePartnersScopeStatsCsvExport } from '@/features/partners/components/use-partners-scope-stats-csv-export';
 import { buildPartnerListApiParams } from '@/features/partners/utils/build-partner-list-api-params';
@@ -34,6 +42,8 @@ import {
 } from '@/lib/api/partners';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
+import { PARTNER_OPEN_QUERY } from '@/features/partners/constants/partner-open-query';
+
 const PARTNERS_LIST_PAGE_SIZE = 100;
 
 function formatPercent(value: string | number): string {
@@ -42,8 +52,10 @@ function formatPercent(value: string | number): string {
   return `${Number.isInteger(n) ? n : n.toFixed(1)}%`;
 }
 
-export default function PartnersPage() {
+function PartnersPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const openPartnerId = searchParams.get(PARTNER_OPEN_QUERY)?.trim() || null;
   const [partners, setPartners] = useState<Partner[]>([]);
   const [stats, setStats] = useState<PartnerStats | null>(null);
   const [listTotal, setListTotal] = useState(0);
@@ -61,6 +73,26 @@ export default function PartnersPage() {
   const { exportCsvSubmitting, handleExportCsv } = usePartnersCsvExport(partnerListExportParams);
 
   const { handleExportScopeStatsCsv } = usePartnersScopeStatsCsvExport(stats);
+
+  const closePartnerSheet = useCallback(() => {
+    const p = new URLSearchParams(searchParams.toString());
+    p.delete(PARTNER_OPEN_QUERY);
+    const qs = p.toString();
+    router.push(qs ? `/partners?${qs}` : '/partners');
+  }, [router, searchParams]);
+
+  const openPartnerSheet = useCallback(
+    (id: string) => {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set(PARTNER_OPEN_QUERY, id);
+      router.push(`/partners?${p.toString()}`);
+    },
+    [router, searchParams],
+  );
+
+  const handlePartnerUpdatedFromSheet = useCallback((updated: Partner) => {
+    setPartners((prev) => prev.map((x) => (x.id === updated.id ? { ...x, ...updated } : x)));
+  }, []);
 
   const fetchPartners = useCallback(async () => {
     setLoading(true);
@@ -94,23 +126,26 @@ export default function PartnersPage() {
     fetchPartners();
   }, [fetchPartners]);
 
-  const filterConfigs = [
-    {
-      key: 'level',
-      label: 'Level',
-      options: PARTNER_LEVELS.map((t) => ({ value: t.value, label: t.label })),
-    },
-    {
-      key: 'direction',
-      label: 'Direction',
-      options: PARTNER_DIRECTIONS.map((d) => ({ value: d.value, label: d.label })),
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      options: PARTNER_STATUSES.map((s) => ({ value: s.value, label: s.label })),
-    },
-  ];
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'level',
+        label: 'Level',
+        options: PARTNER_LEVELS.map((t) => ({ value: t.value, label: t.label })),
+      },
+      {
+        key: 'direction',
+        label: 'Direction',
+        options: PARTNER_DIRECTIONS.map((d) => ({ value: d.value, label: d.label })),
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        options: PARTNER_STATUSES.map((s) => ({ value: s.value, label: s.label })),
+      },
+    ],
+    [],
+  );
 
   const summary = stats ?? {
     total: 0,
@@ -120,15 +155,34 @@ export default function PartnersPage() {
 
   return (
     <div className="flex h-full flex-col gap-5">
-      <PartnersPageHeader
-        description={`${listTotal} partner${listTotal === 1 ? '' : 's'}`}
-        onRefresh={fetchPartners}
-        onExportCsv={handleExportCsv}
-        exportDisabled={loading || exportCsvSubmitting}
-        exportInProgress={exportCsvSubmitting}
-        statsExportDisabled={loading || !stats}
-        onExportScopeStatsCsv={handleExportScopeStatsCsv}
-        onAddPartner={() => setCreateOpen(true)}
+      <PageHero
+        title="Partners"
+        search={
+          <IntegratedSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search partners…"
+            filters={filterConfigs}
+            filterValues={filters}
+            onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
+            onClearAll={() => setFilters({})}
+          />
+        }
+        trailing={
+          <>
+            <PartnersPageSettingsSheet
+              exportDisabled={loading || exportCsvSubmitting}
+              exportInProgress={exportCsvSubmitting}
+              statsExportDisabled={loading || !stats}
+              onExportCsv={handleExportCsv}
+              onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            />
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <Plus size={16} aria-hidden />
+              Add Partner
+            </Button>
+          </>
+        }
       />
 
       <CreatePartnerDialog
@@ -151,16 +205,6 @@ export default function PartnersPage() {
           <p className="mt-1 text-xl font-bold">{summary.avgPayoutPercent.toFixed(1)}%</p>
         </div>
       </div>
-
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by name..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-        onClearFilters={() => setFilters({})}
-      />
 
       {loading ? (
         <LoadingState count={4} />
@@ -202,7 +246,7 @@ export default function PartnersPage() {
                   <TableRow
                     key={partner.id}
                     className="cursor-pointer"
-                    onClick={() => router.push(`/partners/${partner.id}`)}
+                    onClick={() => openPartnerSheet(partner.id)}
                   >
                     <TableCell>
                       <div>
@@ -246,6 +290,22 @@ export default function PartnersPage() {
           </Table>
         </div>
       )}
+      <PartnerDetailSheet
+        partnerId={openPartnerId}
+        open={Boolean(openPartnerId)}
+        onOpenChange={(next) => {
+          if (!next) closePartnerSheet();
+        }}
+        onPartnerUpdated={handlePartnerUpdatedFromSheet}
+      />
     </div>
+  );
+}
+
+export default function PartnersPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <PartnersPageContent />
+    </Suspense>
   );
 }

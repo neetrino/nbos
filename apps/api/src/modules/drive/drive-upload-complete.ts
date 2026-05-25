@@ -24,6 +24,7 @@ export function buildFileAssetCreateInputForCompletedSession(
     checksum: complete.checksum,
   };
   return {
+    ...(session.fileAssetId ? { id: session.fileAssetId } : {}),
     displayName: session.displayName,
     originalName: session.originalName,
     fileType: pickFileType(

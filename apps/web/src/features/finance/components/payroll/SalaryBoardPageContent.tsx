@@ -1,36 +1,73 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Grid3x3, Users } from 'lucide-react';
+import { Banknote, Users } from 'lucide-react';
+import { buttonVariants } from '@/components/ui/button';
+import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
+import { SALARY_BOARD_OPEN_LINE_QUERY } from '@/features/finance/constants/salary-board-url';
+import {
+  readSalaryBoardViewMode,
+  writeSalaryBoardViewMode,
+  type SalaryBoardViewMode,
+} from '@/features/finance/constants/salary-board-view';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/shared';
-import { StatusBadge } from '@/components/shared/StatusBadge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+} from '@/components/shared';
 import { salaryBoardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import {
   PAYROLL_RUNS_LIST_MONTH_FROM_QUERY,
   PAYROLL_RUNS_LIST_MONTH_TO_QUERY,
   parsePayrollRunsListMonthParam,
 } from '@/features/finance/constants/payroll-runs-list-url';
-import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-run-ui';
-import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
-import { formatAmount } from '@/features/finance/constants/finance';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { departmentsApi } from '@/lib/api/employees';
 import { payrollRunsApi, type SalaryBoardResponse } from '@/lib/api/payroll-runs';
-import { cn } from '@/lib/utils';
+import {
+  buildPayrollMonthRangeFilterConfigs,
+  PAYROLL_FILTER_MONTH_FROM_KEY,
+  PAYROLL_FILTER_MONTH_TO_KEY,
+} from '@/features/finance/components/payroll/build-payroll-integrated-filter-configs';
+import {
+  buildSalaryBoardClientFilterConfigs,
+  SALARY_BOARD_DEPARTMENT_FILTER_KEY,
+  SALARY_BOARD_EMPLOYEE_FILTER_KEY,
+  SALARY_BOARD_LINE_STATUS_FILTER_KEY,
+  SALARY_BOARD_PAYOUT_PHASE_FILTER_KEY,
+} from '@/features/finance/components/payroll/build-salary-board-client-filter-configs';
+import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
+import {
+  employeeDisplayName,
+  filterSalaryBoardEntries,
+  filterSalaryBoardRows,
+  flattenSalaryBoard,
+} from '@/features/finance/components/payroll/salary-board-entries';
+import { SalaryBoardCalendarView } from '@/features/finance/components/payroll/salary-board-calendar-view';
+import { SalaryBoardListView } from '@/features/finance/components/payroll/salary-board-list-view';
+import { SalaryBoardPayoutBoardView } from '@/features/finance/components/payroll/salary-board-payout-board-view';
+import { SALARY_BOARD_VIEW_OPTIONS } from '@/features/finance/components/payroll/salary-board-view-options';
+import { SalaryBoardPageSettingsSheet } from '@/features/finance/components/payroll/SalaryBoardPageSettingsSheet';
+import { SalaryBoardFilteredTotalsBar } from '@/features/finance/components/payroll/salary-board-filtered-totals-bar';
+import { useSalaryBoardCsvExport } from '@/features/finance/components/payroll/use-salary-board-csv-export';
+import { computeSalaryBoardFilteredTotals } from '@/features/finance/utils/salary-board-filtered-totals';
 
-function parseAmount(value: string): number {
-  const n = Number.parseFloat(value);
-  return Number.isFinite(n) ? n : 0;
+function salaryLineExistsOnBoard(board: SalaryBoardResponse, salaryLineId: string): boolean {
+  return board.rows.some((row) => row.cells.some((cell) => cell?.salaryLineId === salaryLineId));
 }
 
-function employeeLabel(emp: SalaryBoardResponse['rows'][number]['employee']): string {
-  return `${emp.firstName} ${emp.lastName}`.trim();
-}
+const INITIAL_CLIENT_FILTERS: Record<string, string> = {
+  [SALARY_BOARD_DEPARTMENT_FILTER_KEY]: 'all',
+  [SALARY_BOARD_EMPLOYEE_FILTER_KEY]: 'all',
+  [SALARY_BOARD_LINE_STATUS_FILTER_KEY]: 'all',
+  [SALARY_BOARD_PAYOUT_PHASE_FILTER_KEY]: 'all',
+};
 
 export function SalaryBoardPageContent() {
   useFinanceDocumentTitle(salaryBoardPageTitle());
@@ -40,10 +77,15 @@ export function SalaryBoardPageContent() {
   const searchParams = useSearchParams();
 
   const [data, setData] = useState<SalaryBoardResponse | null>(null);
+  const [departmentOptions, setDepartmentOptions] = useState<Array<{ id: string; label: string }>>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [draftFrom, setDraftFrom] = useState('');
-  const [draftTo, setDraftTo] = useState('');
+  const [search, setSearch] = useState('');
+  const [clientFilters, setClientFilters] = useState(INITIAL_CLIENT_FILTERS);
+  const [view, setView] = useState<SalaryBoardViewMode>(() => readSalaryBoardViewMode());
+  const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
 
   const monthFrom = parsePayrollRunsListMonthParam(
     searchParams.get(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY),
@@ -55,41 +97,246 @@ export function SalaryBoardPageContent() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    const payrollMonthFrom = view === 'calendar' ? `${calendarYear}-01` : monthFrom;
+    const payrollMonthTo = view === 'calendar' ? `${calendarYear}-12` : monthTo;
     try {
       const board = await payrollRunsApi.getSalaryBoard({
-        payrollMonthFrom: monthFrom,
-        payrollMonthTo: monthTo,
+        payrollMonthFrom,
+        payrollMonthTo,
       });
       setData(board);
-      setDraftFrom(board.payrollMonthFrom);
-      setDraftTo(board.payrollMonthTo);
     } catch (e) {
       setError(getApiErrorMessage(e, 'Could not load salary board'));
       setData(null);
     } finally {
       setLoading(false);
     }
-  }, [monthFrom, monthTo]);
+  }, [calendarYear, monthFrom, monthTo, view]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const applyRange = useCallback(() => {
-    const next = new URLSearchParams(searchParams.toString());
-    if (draftFrom.trim()) {
-      next.set(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY, draftFrom.trim());
-    } else {
-      next.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
+  useEffect(() => {
+    let cancelled = false;
+    void departmentsApi
+      .getAll()
+      .then((items) => {
+        if (cancelled) return;
+        setDepartmentOptions(
+          items
+            .map((d) => ({ id: d.id, label: d.name }))
+            .sort((a, b) => a.label.localeCompare(b.label)),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setDepartmentOptions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleViewChange = useCallback((next: SalaryBoardViewMode) => {
+    setView(next);
+    writeSalaryBoardViewMode(next);
+  }, []);
+
+  const employeeOptions = useMemo(() => {
+    if (!data) return [];
+    return data.rows.map((row) => ({
+      id: row.employee.id,
+      label: employeeDisplayName(row.employee),
+    }));
+  }, [data]);
+
+  const clientFilterState = useMemo(
+    () => ({
+      search,
+      employeeId: clientFilters[SALARY_BOARD_EMPLOYEE_FILTER_KEY] ?? 'all',
+      departmentId: clientFilters[SALARY_BOARD_DEPARTMENT_FILTER_KEY] ?? 'all',
+      lineStatus: clientFilters[SALARY_BOARD_LINE_STATUS_FILTER_KEY] ?? 'all',
+      payoutPhase: clientFilters[SALARY_BOARD_PAYOUT_PHASE_FILTER_KEY] ?? 'all',
+    }),
+    [clientFilters, search],
+  );
+
+  const payNowPresetHref = useMemo(
+    () => expensesPayrollPresetHref({ payrollMonth: monthTo ?? monthFrom }),
+    [monthFrom, monthTo],
+  );
+
+  const filteredEntries = useMemo(() => {
+    if (!data) return [];
+    return filterSalaryBoardEntries(flattenSalaryBoard(data), clientFilterState);
+  }, [clientFilterState, data]);
+
+  const filteredRows = useMemo(() => {
+    if (!data) return [];
+    return filterSalaryBoardRows(data, clientFilterState);
+  }, [clientFilterState, data]);
+
+  const salaryFilterConfigs = useMemo(
+    () => [
+      ...buildPayrollMonthRangeFilterConfigs(),
+      ...buildSalaryBoardClientFilterConfigs(employeeOptions, departmentOptions),
+    ],
+    [departmentOptions, employeeOptions],
+  );
+
+  const salaryFilterValues = useMemo(
+    () => ({
+      [PAYROLL_FILTER_MONTH_FROM_KEY]: monthFrom ?? 'all',
+      [PAYROLL_FILTER_MONTH_TO_KEY]: monthTo ?? 'all',
+      ...clientFilters,
+    }),
+    [clientFilters, monthFrom, monthTo],
+  );
+
+  const replaceSalaryBoardUrl = useCallback(
+    (mutate: (params: URLSearchParams) => void) => {
+      const next = new URLSearchParams(searchParams.toString());
+      mutate(next);
+      const q = next.toString();
+      router.replace(q ? `${pathname}?${q}` : pathname);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handleSalaryFilterChange = useCallback(
+    (key: string, value: string) => {
+      const monthValue = value === 'all' ? undefined : value;
+      if (key === PAYROLL_FILTER_MONTH_FROM_KEY) {
+        replaceSalaryBoardUrl((params) => {
+          if (!monthValue) params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
+          else params.set(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY, monthValue);
+        });
+        return;
+      }
+      if (key === PAYROLL_FILTER_MONTH_TO_KEY) {
+        replaceSalaryBoardUrl((params) => {
+          if (!monthValue) params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
+          else params.set(PAYROLL_RUNS_LIST_MONTH_TO_QUERY, monthValue);
+        });
+        return;
+      }
+      setClientFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    [replaceSalaryBoardUrl],
+  );
+
+  const handleClearSalaryFilters = useCallback(() => {
+    replaceSalaryBoardUrl((params) => {
+      params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
+      params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
+    });
+    setSearch('');
+    setClientFilters(INITIAL_CLIENT_FILTERS);
+  }, [replaceSalaryBoardUrl]);
+
+  const openSalaryLineId = searchParams.get(SALARY_BOARD_OPEN_LINE_QUERY)?.trim() || null;
+  const monthSheetOpen = Boolean(openSalaryLineId);
+
+  const openMonthSheet = useCallback(
+    (salaryLineId: string) => {
+      replaceSalaryBoardUrl((params) => {
+        params.set(SALARY_BOARD_OPEN_LINE_QUERY, salaryLineId);
+      });
+    },
+    [replaceSalaryBoardUrl],
+  );
+
+  const handleMonthSheetOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) return;
+      replaceSalaryBoardUrl((params) => {
+        params.delete(SALARY_BOARD_OPEN_LINE_QUERY);
+      });
+    },
+    [replaceSalaryBoardUrl],
+  );
+
+  useEffect(() => {
+    if (loading || !openSalaryLineId || !data) return;
+    if (!salaryLineExistsOnBoard(data, openSalaryLineId)) {
+      replaceSalaryBoardUrl((params) => {
+        params.delete(SALARY_BOARD_OPEN_LINE_QUERY);
+      });
     }
-    if (draftTo.trim()) {
-      next.set(PAYROLL_RUNS_LIST_MONTH_TO_QUERY, draftTo.trim());
-    } else {
-      next.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
-    }
-    const q = next.toString();
-    router.replace(q ? `${pathname}?${q}` : pathname);
-  }, [draftFrom, draftTo, pathname, router, searchParams]);
+  }, [data, loading, openSalaryLineId, replaceSalaryBoardUrl]);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search employees…"
+          filters={salaryFilterConfigs}
+          filterValues={salaryFilterValues}
+          onFilterChange={handleSalaryFilterChange}
+          onClearAll={handleClearSalaryFilters}
+        />
+      ),
+      viewMode: (
+        <ViewModeSwitch
+          value={view}
+          onChange={handleViewChange}
+          options={SALARY_BOARD_VIEW_OPTIONS}
+        />
+      ),
+    }),
+    [
+      handleClearSalaryFilters,
+      handleSalaryFilterChange,
+      handleViewChange,
+      salaryFilterConfigs,
+      salaryFilterValues,
+      search,
+      view,
+    ],
+  );
+
+  const filteredTotals = useMemo(
+    () => computeSalaryBoardFilteredTotals(filteredEntries),
+    [filteredEntries],
+  );
+
+  const { exportCsvSubmitting, handleExportCsv } = useSalaryBoardCsvExport(filteredEntries, {
+    monthFrom,
+    monthTo,
+  });
+
+  const moduleHeroSlotsWithExport = useMemo(
+    () => ({
+      ...moduleHeroSlots,
+      trailing: (
+        <>
+          <Link
+            href={payNowPresetHref}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            <Banknote className="mr-1.5 size-4" aria-hidden />
+            Pay Now
+          </Link>
+          <SalaryBoardPageSettingsSheet
+            exportCsvDisabled={exportCsvSubmitting || filteredEntries.length === 0}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportCsv={handleExportCsv}
+          />
+        </>
+      ),
+    }),
+    [
+      exportCsvSubmitting,
+      filteredEntries.length,
+      handleExportCsv,
+      moduleHeroSlots,
+      payNowPresetHref,
+    ],
+  );
+
+  useModuleHeroSlots(moduleHeroSlotsWithExport);
 
   if (loading && !data) {
     return <LoadingState />;
@@ -101,49 +348,14 @@ export function SalaryBoardPageContent() {
 
   if (!data) {
     return (
-      <EmptyState icon={Grid3x3} title="No data" description="Salary board response was empty." />
+      <EmptyState icon={Users} title="No data" description="Salary data response was empty." />
     );
   }
 
+  const hasVisibleLines = filteredEntries.length > 0;
+
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        title="Salary board"
-        description="Employees × payroll months (NBOS). Header links open the payroll run; cells open the salary line on that run."
-      />
-
-      <div className="border-border flex flex-wrap items-end gap-4 rounded-xl border p-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="salary-board-from">From</Label>
-          <Input
-            id="salary-board-from"
-            type="month"
-            value={draftFrom}
-            onChange={(e) => setDraftFrom(e.target.value)}
-            className="w-44"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="salary-board-to">To</Label>
-          <Input
-            id="salary-board-to"
-            type="month"
-            value={draftTo}
-            onChange={(e) => setDraftTo(e.target.value)}
-            className="w-44"
-          />
-        </div>
-        <Button type="button" onClick={() => applyRange()}>
-          Apply range
-        </Button>
-        <p className="text-muted-foreground max-w-md text-sm">
-          Range {data.payrollMonthFrom}–{data.payrollMonthTo} (UTC{' '}
-          <code className="text-xs">YYYY-MM</code>
-          ). Clear URL filters to use the API default (twelve months ending in the current UTC
-          month).
-        </p>
-      </div>
-
+    <div className="flex h-full min-h-0 flex-col gap-6">
       {error ? (
         <p className="text-destructive text-sm" role="alert">
           {error}
@@ -154,92 +366,44 @@ export function SalaryBoardPageContent() {
         <EmptyState
           icon={Users}
           title="No employees"
-          description="No non-terminated employees are available for the salary board."
+          description="No non-terminated employees are available for the salary view."
+        />
+      ) : !hasVisibleLines ? (
+        <EmptyState
+          icon={Users}
+          title="No matching lines"
+          description="Adjust search or filters to see salary lines."
         />
       ) : (
-        <div className="border-border overflow-x-auto rounded-xl border">
-          <table className="w-full min-w-[640px] border-collapse text-sm">
-            <thead>
-              <tr className="bg-muted/40">
-                <th
-                  className={cn(
-                    'border-border text-foreground sticky left-0 z-20 border-r border-b px-3 py-2 text-left font-semibold',
-                    'bg-background',
-                  )}
-                >
-                  Employee
-                </th>
-                {data.columns.map((col) => (
-                  <th
-                    key={col.payrollMonth}
-                    className="border-border border-b px-2 py-2 text-center font-semibold"
-                  >
-                    <div className="flex flex-col items-center gap-1">
-                      {col.payrollRunId ? (
-                        <Link
-                          href={`/finance/payroll/${col.payrollRunId}`}
-                          className="text-primary hover:underline"
-                        >
-                          {col.payrollMonth}
-                        </Link>
-                      ) : (
-                        <span className="text-muted-foreground">{col.payrollMonth}</span>
-                      )}
-                      {col.runStatus ? (
-                        <span className="text-muted-foreground text-xs font-normal">
-                          {PAYROLL_RUN_STATUS_LABEL[col.runStatus]}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground text-xs font-normal">No run</span>
-                      )}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.rows.map((row) => (
-                <tr key={row.employee.id} className="hover:bg-muted/20">
-                  <td
-                    className={cn(
-                      'border-border text-foreground sticky left-0 z-10 border-r border-b px-3 py-2',
-                      'bg-background',
-                    )}
-                  >
-                    <div className="font-medium">{employeeLabel(row.employee)}</div>
-                    {row.employee.position ? (
-                      <div className="text-muted-foreground text-xs">{row.employee.position}</div>
-                    ) : null}
-                  </td>
-                  {row.cells.map((cell, idx) => {
-                    const monthKey = data.months[idx] ?? `col-${idx}`;
-                    const lineUi = cell ? salaryLineStatusBoardUi(cell.lineStatus) : null;
-                    return (
-                      <td key={monthKey} className="border-border border-b px-1 py-1 align-top">
-                        {cell && lineUi ? (
-                          <Link
-                            href={`/finance/payroll/${cell.payrollRunId}#salary-line-${cell.salaryLineId}`}
-                            className="hover:bg-muted/60 flex flex-col items-center gap-1 rounded-md px-1 py-2 transition-colors"
-                          >
-                            <StatusBadge label={lineUi.label} variant={lineUi.variant} />
-                            <span className="text-muted-foreground text-xs tabular-nums">
-                              {formatAmount(parseAmount(cell.totalPayable))}
-                            </span>
-                          </Link>
-                        ) : (
-                          <div className="text-muted-foreground flex min-h-[3rem] items-center justify-center text-xs">
-                            —
-                          </div>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <SalaryBoardFilteredTotalsBar totals={filteredTotals} />
+          {view === 'calendar' ? (
+            <SalaryBoardCalendarView
+              data={data}
+              rows={filteredRows}
+              calendarYear={calendarYear}
+              onCalendarYearChange={setCalendarYear}
+              onOpenMonth={openMonthSheet}
+            />
+          ) : view === 'list' ? (
+            <SalaryBoardListView
+              entries={filteredEntries}
+              totals={filteredTotals}
+              onOpenMonth={openMonthSheet}
+            />
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col" style={{ minHeight: '28rem' }}>
+              <SalaryBoardPayoutBoardView entries={filteredEntries} onOpenMonth={openMonthSheet} />
+            </div>
+          )}
+        </>
       )}
+
+      <EmployeeMonthCompensationSheet
+        salaryLineId={openSalaryLineId}
+        open={monthSheetOpen}
+        onOpenChange={handleMonthSheetOpenChange}
+      />
     </div>
   );
 }

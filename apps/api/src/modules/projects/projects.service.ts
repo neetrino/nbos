@@ -1,16 +1,14 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import {
-  ProjectKickoffChecklistService,
-  type UpdateKickoffChecklistItemDto,
-} from './project-kickoff-checklist.service';
 import { projectDetailInclude } from './project.includes';
 import { buildProjectIntake } from './project-intake';
 import {
   attachExtensionDeliveryLifecycle,
   attachProductDeliveryLifecycle,
+  type DeliveryStatusCarrier,
 } from './delivery-lifecycle';
+import { syncEntityContactLinks } from '../crm/shared/sync-entity-contact-links.ops';
 
 interface CreateProjectDto {
   name: string;
@@ -22,9 +20,10 @@ interface CreateProjectDto {
 interface UpdateProjectDto {
   name?: string;
   description?: string;
-  companyId?: string;
+  companyId?: string | null;
   contactId?: string;
   isArchived?: boolean;
+  contactIds?: string[];
 }
 
 interface ProjectQueryParams {
@@ -38,10 +37,7 @@ interface ProjectQueryParams {
 
 @Injectable()
 export class ProjectsService {
-  constructor(
-    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    private readonly kickoffChecklist: ProjectKickoffChecklistService,
-  ) {}
+  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async findAll(params: ProjectQueryParams) {
     const {
@@ -56,10 +52,16 @@ export class ProjectsService {
     const where: Prisma.ProjectWhereInput = {};
     if (isArchived !== undefined) where.isArchived = isArchived;
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { code: { contains: search, mode: 'insensitive' } },
-      ];
+      const q = search.trim();
+      if (q.length > 0) {
+        where.OR = [
+          { name: { contains: q, mode: 'insensitive' } },
+          { code: { contains: q, mode: 'insensitive' } },
+          { company: { name: { contains: q, mode: 'insensitive' } } },
+          { contact: { firstName: { contains: q, mode: 'insensitive' } } },
+          { contact: { lastName: { contains: q, mode: 'insensitive' } } },
+        ];
+      }
     }
 
     const [items, total] = await Promise.all([
@@ -89,13 +91,8 @@ export class ProjectsService {
       include: projectDetailInclude,
     });
     if (!project) throw new NotFoundException(`Project ${id} not found`);
-    const kickoffChecklist = await this.kickoffChecklist.ensureForProject(id);
     const deliveryProject = attachProjectDeliveryLifecycles(project);
-    return { ...deliveryProject, intake: buildProjectIntake(deliveryProject), kickoffChecklist };
-  }
-
-  updateKickoffChecklistItem(id: string, itemId: string, data: UpdateKickoffChecklistItemDto) {
-    return this.kickoffChecklist.updateItem(id, itemId, data);
+    return { ...deliveryProject, intake: buildProjectIntake(deliveryProject) };
   }
 
   async create(data: CreateProjectDto) {
@@ -116,21 +113,38 @@ export class ProjectsService {
   }
 
   async update(id: string, data: UpdateProjectDto) {
-    await this.findById(id);
-    return this.prisma.project.update({
+    const existing = await this.prisma.project.findUnique({
+      where: { id },
+      select: { contactId: true },
+    });
+    if (!existing) throw new NotFoundException(`Project ${id} not found`);
+
+    let resolvedContactId = data.contactId ?? existing.contactId;
+
+    if (data.contactIds !== undefined) {
+      const { primaryContactId } = await syncEntityContactLinks(
+        this.prisma,
+        'project',
+        id,
+        data.contactIds,
+      );
+      resolvedContactId = primaryContactId ?? existing.contactId;
+    }
+
+    await this.prisma.project.update({
       where: { id },
       data: {
         ...(data.name && { name: data.name }),
         ...(data.description !== undefined && { description: data.description }),
         ...(data.companyId !== undefined && { companyId: data.companyId || null }),
-        ...(data.contactId && { contactId: data.contactId }),
+        ...(data.contactIds !== undefined || data.contactId !== undefined
+          ? { contactId: resolvedContactId }
+          : {}),
         ...(data.isArchived !== undefined && { isArchived: data.isArchived }),
       },
-      include: {
-        company: { select: { id: true, name: true } },
-        contact: { select: { id: true, firstName: true, lastName: true } },
-      },
     });
+
+    return this.findById(id);
   }
 
   async delete(id: string) {
@@ -154,18 +168,8 @@ export class ProjectsService {
   }
 }
 
-interface ProjectDeliveryCarrier {
-  status?: string | null;
-  deliveryStage?: 'STARTING' | 'DEVELOPMENT' | 'QA' | 'TRANSFER' | null;
-  deliveryWorkStatus?: 'ACTIVE' | 'ON_HOLD' | null;
-  deliveryResolution?: 'DONE' | 'CANCELLED' | null;
-  onHoldReason?: string | null;
-  onHoldUntil?: Date | string | null;
-  cancellationReason?: string | null;
-}
-
 function attachProjectDeliveryLifecycles<
-  T extends { products?: ProjectDeliveryCarrier[]; extensions?: ProjectDeliveryCarrier[] },
+  T extends { products?: Array<DeliveryStatusCarrier>; extensions?: Array<DeliveryStatusCarrier> },
 >(project: T) {
   return {
     ...project,

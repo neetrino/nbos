@@ -25,7 +25,7 @@ const EMPTY_FORM: EditExpenseFormState = {
   type: 'PLANNED',
   category: 'OTHER',
   frequency: 'ONE_TIME',
-  status: 'THIS_MONTH',
+  status: 'PLANNED',
   dueDate: '',
   projectId: 'none',
   isPassThrough: false,
@@ -107,7 +107,7 @@ export function CreateExpenseDialog({
     setFormError(null);
     try {
       const backlogReason =
-        form.status === 'DELAYED'
+        form.status === 'BACKLOG'
           ? form.backlogReason === 'none'
             ? null
             : form.backlogReason
@@ -125,7 +125,7 @@ export function CreateExpenseDialog({
         isPassThrough: form.isPassThrough,
         taxStatus: form.taxStatus,
         notes: form.notes.trim() ? form.notes.trim() : null,
-        ...(form.status === 'DELAYED' ? { backlogReason } : {}),
+        ...(form.status === 'BACKLOG' ? { backlogReason } : {}),
       };
       const created = await expensesApi.create(payload);
       onCreated(created);

@@ -112,13 +112,13 @@ Runtime имеет search entry в sidebar. Canon допускает global sear
 
 Статус: `PARTIAL UI / RBAC VISIBILITY HARDENED`
 
-Runtime finance children не соответствуют новому Finance canon:
+Runtime finance zone nav (Payroll section pills) now includes **Salary**, **Bonus**, **Bonus pools**, **Payroll** — см. `finance-module-nav.ts`. Compensation MVP audit: [`12-Compensation-Roadmap-Implementation-Audit.md`](../02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md); remaining: [`todo.md`](../../../todo.md).
 
-- нет Salary Board;
-- нет Bonus Board;
-- нет Client Services;
-- нет Expense Plans / Expense Backlog separation;
-- Orders может быть stale naming.
+**Ещё не по канону:**
+
+- отдельный пункт sidebar / backlog для **Expense Backlog** (есть Pay Now + Expenses Plan + Client services);
+- Orders naming может быть stale;
+- top-level sidebar tree может не дублировать все finance zone links — проверить при shell refactor.
 
 CRM children тоже должны быть приведены к CRM canon:
 
@@ -186,28 +186,23 @@ Runtime now includes this sidebar structure and safe routes/placeholders. Full M
 
 ### C2. Personal Navigation preferences are missing
 
-Статус: `MISSING CODE / MISSING UI`
+Статус: `DONE (2026-05-19)`
 
-Нужно добавить возможность:
+Реализовано:
 
-- reorder sidebar top-level modules;
+- reorder sidebar top-level modules (Customize menu sheet);
 - hide modules into More / Hidden;
 - restore hidden modules;
-- save preferences per user.
+- save preferences per user (`dashboard_preferences.sidebar_module_order`, `hidden_sidebar_modules`);
+- API: `GET/PATCH /api/me/navigation` (auth-only, без DASHBOARDS permission).
 
 ### C3. My Links are missing
 
-Статус: `MISSING CODE / MISSING UI`
+Статус: `PARTIAL UI (2026-05-19)`
 
-Нужно добавить personal links:
+Реализовано в sidebar customize sheet + рендер секции **My Links** (модель `PersonalLink` уже была).
 
-- internal NBOS URL;
-- external URL;
-- title;
-- icon/color;
-- open in new tab;
-- show in sidebar;
-- show in dashboard.
+Остаток: icon/color picker, admin policy для external links.
 
 ### C4. Dashboard and sidebar do not share personal links
 

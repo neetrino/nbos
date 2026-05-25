@@ -21,7 +21,7 @@
 
 ## 2. My Plan — Личный план задач
 
-**Путь:** `/tasks/my`
+**Путь:** `/tasks` — вкладка **My Plan** (сегмент в шапке страницы Tasks)
 
 ### 2.1. Структура страницы
 
@@ -215,36 +215,54 @@
 
 Если у workspace включён Scrum, daily kanban по умолчанию показывает только задачи active sprint. Backlog и future sprint не засоряют execution board.
 
-### 4.4. Scrum-вид
+### 4.4. Scrum Planning (Work Space)
 
-Scrum-вид должен содержать:
+**Вкладка:** `Planning` (только при `scrumEnabled` на workspace).
 
-- `Backlog`
-- `Future Sprints`
-- `Active Sprint`
-- `Closed Sprints`
+**Layout — две зоны (Bitrix-like):**
 
-**Ключевое правило:**
+```
+┌─────────────────────────────┬──────────────────────────────────┐
+│  BACKLOG (wide, ~40%)       │  SPRINT BLOCKS (~60%)            │
+│  Tasks: N                   │  [Active sprint — expanded]      │
+│  [+ Epic] [+ Task]          │  progress · dates · Finish       │
+│  ─────────────────          │  ─────────────────────────────   │
+│  task cards (DnD source)    │  [Planning sprint cards]         │
+│                             │  [+ Start new sprint]            │
+│                             │  ▼ Completed sprints             │
+└─────────────────────────────┴──────────────────────────────────┘
+```
 
-- backlog — это planning area, а не task status
-- задача может быть `Open`, но лежать в backlog
-- задача может быть `Open`, но быть уже в future sprint
-- только задачи active sprint попадают в daily execution board
+**Backlog (left):**
 
-**Sprint Planning:**
+- Широкая колонка для планирования и быстрого создания задач
+- Поиск/фильтр в backlog scope
+- Drag задач в sprint block справа
 
-- Кнопка `Create Sprint`
-- создание нового спринта с названием, датами и целью
-- перетаскивание задач из backlog в future/active sprint
-- управление future sprints без засорения текущего kanban
+**Sprint blocks (right):**
+
+| Block            | UI                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------ |
+| Active sprint    | Заголовок (имя, % выполнено, дедлайн), goal, список задач, `Finish`, `+` add task                      |
+| Planning sprints | Карточки будущих спринтов; `Start sprint` переводит в Active (закрывает предыдущий active по правилам) |
+| New sprint       | `Create sprint` — name, dates, goal → status Planning                                                  |
+| Completed        | Accordion «Завершённые спринты» — read-only history                                                    |
+
+**Ключевые правила:**
+
+- backlog — planning area (`sprint_id` пустой), не workflow status
+- только задачи **active sprint** попадают в Kanban/List execution views
+- close sprint dialog: куда деть незавершённые задачи (backlog / next planning sprint / keep on closed sprint)
+
+**v1 out of scope:** story points, burndown, velocity, epics.
 
 ---
 
 ## 5. All Tasks — Все задачи
 
-**Путь:** `/tasks/all`
+**Путь:** `/tasks` — вкладки **Board** / **List** и фильтры в `FilterBar`
 
-Доступен PM и Head of Delivery. Показывает все задачи по всем проектам.
+Доступен PM и Head of Delivery. Показывает задачи в scope пользователя (с фильтрами по проекту, статусу, приоритету и т.д.).
 
 ### 5.1. Виды
 

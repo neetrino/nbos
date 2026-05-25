@@ -26,7 +26,7 @@ export function getInitialInvoiceForm(order?: Order | null): CreateInvoiceFormSt
 export function getInitialInvoiceFormFromSubscription(
   subscription: Subscription,
 ): CreateInvoiceFormState {
-  const monthly = parseFloat(subscription.amount);
+  const monthly = parseFloat(subscription.baseMonthlyAmount);
   return {
     projectId: subscription.projectId,
     amount: Number.isFinite(monthly) ? String(monthly) : '',

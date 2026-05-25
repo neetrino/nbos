@@ -29,11 +29,13 @@ import {
   parsePartnerDefaultPercentInput,
   formatPartnerDefaultPercentForForm,
 } from '@/features/partners/utils/partner-default-percent';
+import { sliceIsoToDateInput } from '@/features/partners/utils/partner-detail-format';
+import { PartnerNotesStartFields } from '@/features/partners/components/PartnerNotesStartFields';
 import { partnersApi, type Partner } from '@/lib/api/partners';
 import { contactsApi, type Contact } from '@/lib/api/clients';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
-const CONTACTS_PAGE_SIZE = 200;
+import { PARTNER_CONTACTS_PAGE_SIZE } from '@/features/partners/constants/partner-contacts-page-size';
 
 interface EditPartnerDialogProps {
   partner: Partner | null;
@@ -60,6 +62,8 @@ export function EditPartnerDialog({
     defaultPercent: '',
     status: 'ACTIVE',
     contactId: 'none',
+    notes: '',
+    startDate: '',
   });
 
   useEffect(() => {
@@ -68,7 +72,7 @@ export function EditPartnerDialog({
     setContactsLoading(true);
     setContactsError(null);
     contactsApi
-      .getAll({ page: 1, pageSize: CONTACTS_PAGE_SIZE })
+      .getAll({ page: 1, pageSize: PARTNER_CONTACTS_PAGE_SIZE })
       .then((res) => {
         if (!cancelled) {
           setContacts(res.items);
@@ -103,6 +107,8 @@ export function EditPartnerDialog({
       defaultPercent: formatPartnerDefaultPercentForForm(partner.defaultPercent),
       status: partner.status,
       contactId: partner.contactId ?? 'none',
+      notes: partner.notes ?? '',
+      startDate: sliceIsoToDateInput(partner.startDate),
     });
     setFormError(null);
   }, [open, partner]);
@@ -124,6 +130,8 @@ export function EditPartnerDialog({
         defaultPercent: pct,
         status: form.status,
         contactId: form.contactId === 'none' ? null : form.contactId,
+        notes: form.notes.trim() || null,
+        startDate: form.startDate.trim() || null,
       });
       onSaved(updated);
       onOpenChange(false);
@@ -143,7 +151,7 @@ export function EditPartnerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>Edit Partner</DialogTitle>
         </DialogHeader>
@@ -242,6 +250,13 @@ export function EditPartnerDialog({
               </Select>
             </div>
           </div>
+
+          <PartnerNotesStartFields
+            notes={form.notes}
+            startDate={form.startDate}
+            onNotesChange={(notes) => setForm({ ...form, notes })}
+            onStartDateChange={(startDate) => setForm({ ...form, startDate })}
+          />
 
           <div>
             <Label>Primary contact</Label>

@@ -55,11 +55,16 @@ export class CompaniesController {
     body: {
       name: string;
       contactId: string;
+      billingContactId?: string | null;
       type?: string;
       taxId?: string;
       legalAddress?: string;
       taxStatus?: string;
       notes?: string;
+      phone?: string | null;
+      email?: string | null;
+      country?: string | null;
+      bankDetails?: Record<string, unknown>;
     },
   ) {
     return this.companiesService.create(body);
@@ -73,11 +78,16 @@ export class CompaniesController {
     body: {
       name?: string;
       contactId?: string;
+      billingContactId?: string | null;
       type?: string;
       taxId?: string;
       legalAddress?: string;
       taxStatus?: string;
       notes?: string;
+      phone?: string | null;
+      email?: string | null;
+      country?: string | null;
+      bankDetails?: Record<string, unknown> | null;
     },
   ) {
     return this.companiesService.update(id, body);

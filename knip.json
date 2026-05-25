@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignore": ["packages/database/src/generated/**"],
+  "ignoreDependencies": ["@nbos/tsconfig"],
+  "ignoreWorkspaces": ["packages/eslint-config"],
+  "workspaces": {
+    ".": {
+      "entry": ["vitest.regression.config.ts"]
+    },
+    "packages/database": {
+      "entry": ["prisma/check-data.ts", "prisma/seed-system-lists.ts"],
+      "ignoreDependencies": ["pg", "@types/pg"]
+    }
+  }
+}

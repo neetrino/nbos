@@ -1,113 +1,61 @@
 'use client';
 
-import { Calendar, Check, CheckSquare, Clock, ExternalLink, FileText } from 'lucide-react';
-import { InlineField } from '@/components/shared';
-import type { Deal } from '@/lib/api/deals';
-import type { SaveField } from './deal-general-tab.types';
-import { formatDate, toDateInputValue } from './deal-general-tab.helpers';
+import { useEffect } from 'react';
+import { FileText, ScrollText } from 'lucide-react';
+import { DetailSheetCollapsibleSection } from '@/components/shared';
+import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
+import {
+  DEAL_SHEET_COLLAPSE_KEY,
+  useDealSheetSectionCollapse,
+} from '../hooks/use-deal-sheet-section-collapse';
+import { DealFilesBlock } from './DealFilesBlock';
+import { cn } from '@/lib/utils';
 
 interface DealOfferContractSectionProps {
-  deal: Deal;
-  saveField: SaveField;
+  dealId: string;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
-export function DealOfferContractSection({ deal, saveField }: DealOfferContractSectionProps) {
+export function DealOfferContractSection({
+  dealId,
+  gateRequiredFields = new Set(),
+}: DealOfferContractSectionProps) {
+  const offerRequired = gateRequiredFields.has('offerProof');
+  const contractRequired = gateRequiredFields.has('contractProof');
+  const offerCollapse = useDealSheetSectionCollapse(DEAL_SHEET_COLLAPSE_KEY.OFFER);
+  const contractCollapse = useDealSheetSectionCollapse(DEAL_SHEET_COLLAPSE_KEY.CONTRACT);
+
+  useEffect(() => {
+    if (offerRequired) offerCollapse.onOpenChange(true);
+  }, [offerRequired, offerCollapse.onOpenChange]);
+
+  useEffect(() => {
+    if (contractRequired) contractCollapse.onOpenChange(true);
+  }, [contractRequired, contractCollapse.onOpenChange]);
+
   return (
-    <section
-      id={DEAL_SHEET_SECTION.OFFER_CONTRACT}
-      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-blue-50/40 to-white p-5 dark:border-stone-800 dark:from-blue-950/10 dark:to-transparent"
-    >
-      <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
-        <FileText size={12} />
-        Offer & Contract
-      </h4>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-        <InlineField
-          label="Offer Sent Date"
-          value={toDateInputValue(deal.offerSentAt)}
-          displayValue={
-            deal.offerSentAt ? (
-              <span className="text-foreground text-sm font-medium">
-                {formatDate(deal.offerSentAt)}
-              </span>
-            ) : undefined
-          }
-          type="date"
-          placeholder="Select offer date..."
-          icon={<Calendar size={12} />}
-          onSave={(value) => saveField('offerSentAt', value)}
-        />
+    <div className="flex flex-col gap-4">
+      <DetailSheetCollapsibleSection
+        id={DEAL_SHEET_SECTION.OFFER_CONTRACT}
+        title="Offer"
+        icon={<FileText size={12} />}
+        open={offerCollapse.open}
+        onOpenChange={offerCollapse.onOpenChange}
+        className={cn(offerRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS)}
+      >
+        <DealFilesBlock dealId={dealId} purpose="OFFER" />
+      </DetailSheetCollapsibleSection>
 
-        <InlineField
-          label="Response Due Date"
-          value={toDateInputValue(deal.responseDueAt)}
-          displayValue={
-            deal.responseDueAt ? (
-              <span className="text-foreground text-sm font-medium">
-                {formatDate(deal.responseDueAt)}
-              </span>
-            ) : undefined
-          }
-          type="date"
-          placeholder="Select response date..."
-          icon={<Clock size={12} />}
-          onSave={(value) => saveField('responseDueAt', value)}
-        />
-
-        <InlineField
-          label="Offer Link"
-          value={deal.offerLink}
-          type="link"
-          placeholder="https://..."
-          icon={<ExternalLink size={12} />}
-          onSave={(value) => saveField('offerLink', value)}
-        />
-
-        <InlineField
-          label="Offer File URL"
-          value={deal.offerFileUrl}
-          type="link"
-          placeholder="https://..."
-          icon={<FileText size={12} />}
-          onSave={(value) => saveField('offerFileUrl', value)}
-        />
-
-        <InlineField
-          label="Offer Screenshot URL"
-          value={deal.offerScreenshotUrl}
-          type="link"
-          placeholder="https://..."
-          icon={<ExternalLink size={12} />}
-          onSave={(value) => saveField('offerScreenshotUrl', value)}
-        />
-
-        <InlineField
-          label="Contract Signed Date"
-          value={toDateInputValue(deal.contractSignedAt)}
-          displayValue={
-            deal.contractSignedAt ? (
-              <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                <Check size={13} />
-                {formatDate(deal.contractSignedAt)}
-              </span>
-            ) : undefined
-          }
-          type="date"
-          placeholder="Select contract date..."
-          icon={<CheckSquare size={12} />}
-          onSave={(value) => saveField('contractSignedAt', value)}
-        />
-
-        <InlineField
-          label="Contract File URL"
-          value={deal.contractFileUrl}
-          type="link"
-          placeholder="https://..."
-          icon={<FileText size={12} />}
-          onSave={(value) => saveField('contractFileUrl', value)}
-        />
-      </div>
-    </section>
+      <DetailSheetCollapsibleSection
+        title="Contract"
+        icon={<ScrollText size={12} />}
+        open={contractCollapse.open}
+        onOpenChange={contractCollapse.onOpenChange}
+        className={cn(contractRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS)}
+      >
+        <DealFilesBlock dealId={dealId} purpose="CONTRACT" />
+      </DetailSheetCollapsibleSection>
+    </div>
   );
 }

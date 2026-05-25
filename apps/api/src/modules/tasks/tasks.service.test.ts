@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TasksService } from './tasks.service';
+import { TASK_INCLUDE } from './task-response-includes';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
@@ -9,7 +10,8 @@ describe('TasksService', () => {
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new TasksService(prisma as never);
+    const notifications = { create: vi.fn().mockResolvedValue({ id: 'n1' }) };
+    service = new TasksService(prisma as never, notifications as never);
   });
 
   describe('findAll', () => {
@@ -30,7 +32,32 @@ describe('TasksService', () => {
       expect(prisma.task.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            AND: expect.arrayContaining([{ workspaceId: 'ws-1' }, { planningStatus: 'BACKLOG' }]),
+            AND: expect.arrayContaining([
+              { workspaceId: 'ws-1' },
+              { planningStatus: 'BACKLOG' },
+              expect.objectContaining({
+                OR: expect.arrayContaining([
+                  { title: { contains: 'test', mode: 'insensitive' } },
+                  { code: { contains: 'test', mode: 'insensitive' } },
+                ]),
+              }),
+            ]),
+          },
+        }),
+      );
+    });
+
+    it('applies involvesEmployeeId filter', async () => {
+      await service.findAll({ involvesEmployeeId: 'emp-1' });
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            OR: [
+              { assigneeId: 'emp-1' },
+              { creatorId: 'emp-1' },
+              { coAssignees: { has: 'emp-1' } },
+              { observers: { has: 'emp-1' } },
+            ],
           },
         }),
       );
@@ -91,14 +118,17 @@ describe('TasksService', () => {
 
   describe('create', () => {
     it('generates code T-YYYY-NNNN', async () => {
-      prisma.task.findFirst.mockResolvedValue(null);
+      prisma.task.findMany.mockResolvedValue([]);
       prisma.task.create.mockResolvedValue({ id: '1', code: 'T-2026-0001' });
       const result = await service.create({ title: 'Test', creatorId: 'c1' });
       expect(result.code).toMatch(/^T-\d{4}-\d{4}$/);
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({ include: TASK_INCLUDE }),
+      );
     });
 
     it('creates task inside a Work Space planning layer', async () => {
-      prisma.task.findFirst.mockResolvedValue(null);
+      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Backlog task',
         creatorId: 'c1',
@@ -112,12 +142,13 @@ describe('TasksService', () => {
             workspaceId: 'ws-1',
             planningStatus: 'BACKLOG',
           }),
+          include: TASK_INCLUDE,
         }),
       );
     });
 
     it('normalizes completion rules on create', async () => {
-      prisma.task.findFirst.mockResolvedValue(null);
+      prisma.task.findMany.mockResolvedValue([]);
       await service.create({
         title: 'Controlled task',
         creatorId: 'c1',
@@ -239,6 +270,25 @@ describe('TasksService', () => {
       const stats = await service.getStats();
       expect(stats).toHaveProperty('byStatus');
       expect(stats).toHaveProperty('byPriority');
+    });
+
+    it('scopes stats when involvesEmployeeId is set', async () => {
+      await service.getStats('emp-1');
+      const expectedWhere = {
+        OR: [
+          { assigneeId: 'emp-1' },
+          { creatorId: 'emp-1' },
+          { coAssignees: { has: 'emp-1' } },
+          { observers: { has: 'emp-1' } },
+        ],
+      };
+      expect(prisma.task.groupBy).toHaveBeenCalledTimes(2);
+      expect(prisma.task.groupBy.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({ where: expectedWhere }),
+      );
+      expect(prisma.task.groupBy.mock.calls[1]?.[0]).toEqual(
+        expect.objectContaining({ where: expectedWhere }),
+      );
     });
   });
 });

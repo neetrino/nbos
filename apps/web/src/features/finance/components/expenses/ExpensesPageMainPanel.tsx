@@ -1,15 +1,29 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Plus, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, KanbanBoard, LoadingState } from '@/components/shared';
-import type { ExpenseListNavigationSort } from '@/features/finance/constants/project-expenses-drilldown';
+import {
+  EmptyState,
+  ErrorState,
+  KanbanBoard,
+  KanbanColumnMoneyTotal,
+  LoadingState,
+} from '@/components/shared';
+import { buildTerminalDropZones } from '@/features/shared/kanban-terminal-drop';
+import { EXPENSE_ACTIVE_TERMINAL_DROP_STAGES } from '@/features/finance/constants/expense-board';
 import type { Expense } from '@/lib/api/finance';
 import { ExpenseKanbanCard } from './ExpenseKanbanCard';
-import { buildExpenseKanbanColumns } from './expense-kanban-columns';
+import { createExpenseKanbanQuickCreateConfig } from '@/features/finance/kanban/finance-kanban-quick-create';
+import {
+  buildExpenseClosedKanbanColumns,
+  buildExpenseKanbanColumns,
+} from './expense-kanban-columns';
 import { ExpensesTableSection } from './ExpensesTableSection';
 
 export type ExpensesViewMode = 'kanban' | 'list';
+
+export type ExpensesKanbanScope = 'active' | 'closed';
 
 interface ExpensesPageMainPanelProps {
   loading: boolean;
@@ -17,14 +31,14 @@ interface ExpensesPageMainPanelProps {
   onRetry: () => void;
   expenses: Expense[];
   view: ExpensesViewMode;
-  /** Detail links include `from=backlog` when opened from `/finance/expenses/backlog`. */
+  kanbanScope?: ExpensesKanbanScope;
+  /** Backlog route: list-only deferred queue. */
   fromBacklog?: boolean;
-  effectiveProjectId: string | null;
-  /** When set, detail links preserve `?expensePlanId=` from the list URL. */
-  listExpensePlanId?: string | null;
-  listSort: ExpenseListNavigationSort;
+  onOpenExpense: (expense: Expense) => void;
   onRequestDelete: (expense: Expense) => void;
   onAddFirstExpense: () => void;
+  onKanbanMove?: (expenseId: string, from: string, toStatus: string) => void;
+  onOpenQuickCreate?: () => void;
 }
 
 export function ExpensesPageMainPanel({
@@ -33,14 +47,31 @@ export function ExpensesPageMainPanel({
   onRetry,
   expenses,
   view,
+  kanbanScope = 'active',
   fromBacklog = false,
-  effectiveProjectId,
-  listExpensePlanId = null,
-  listSort,
+  onOpenExpense,
   onRequestDelete,
   onAddFirstExpense,
+  onKanbanMove,
+  onOpenQuickCreate,
 }: ExpensesPageMainPanelProps) {
-  const kanbanColumns = buildExpenseKanbanColumns(expenses);
+  const expenseTerminalDropZones = useMemo(
+    () => buildTerminalDropZones(EXPENSE_ACTIVE_TERMINAL_DROP_STAGES),
+    [],
+  );
+
+  const kanbanColumns =
+    kanbanScope === 'closed'
+      ? buildExpenseClosedKanbanColumns(expenses)
+      : buildExpenseKanbanColumns(expenses);
+
+  const expenseQuickCreate = useMemo(
+    () =>
+      kanbanScope === 'active' && onOpenQuickCreate
+        ? createExpenseKanbanQuickCreateConfig(() => onOpenQuickCreate())
+        : undefined,
+    [kanbanScope, onOpenQuickCreate],
+  );
 
   if (loading) {
     return <LoadingState />;
@@ -71,14 +102,20 @@ export function ExpensesPageMainPanel({
     return (
       <KanbanBoard
         columns={kanbanColumns}
+        columnWidth={kanbanScope === 'closed' ? 288 : undefined}
         getItemId={(e: Expense) => e.id}
+        onMove={onKanbanMove}
+        columnQuickCreate={expenseQuickCreate}
+        terminalDropZones={
+          kanbanScope === 'active' && onKanbanMove ? expenseTerminalDropZones : undefined
+        }
+        renderColumnHeader={(column) => (
+          <KanbanColumnMoneyTotal column={column} getAmount={(expense) => expense.amount} />
+        )}
         renderCard={(expense: Expense) => (
           <ExpenseKanbanCard
             expense={expense}
-            listProjectId={effectiveProjectId}
-            listExpensePlanId={listExpensePlanId}
-            listSort={listSort}
-            fromBacklog={fromBacklog}
+            onOpen={onOpenExpense}
             onRequestDelete={onRequestDelete}
           />
         )}
@@ -88,10 +125,7 @@ export function ExpensesPageMainPanel({
   return (
     <ExpensesTableSection
       expenses={expenses}
-      listProjectId={effectiveProjectId}
-      listExpensePlanId={listExpensePlanId}
-      listSort={listSort}
-      fromBacklog={fromBacklog}
+      onOpen={onOpenExpense}
       onRequestDelete={onRequestDelete}
     />
   );

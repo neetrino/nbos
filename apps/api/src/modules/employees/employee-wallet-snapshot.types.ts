@@ -1,6 +1,8 @@
 import type { BonusStatusEnum } from '@nbos/database';
+import type { CompensationPayoutPhase } from '../payroll-runs/compensation-payout-phase';
 
 import type { EmployeeWalletActivityItem } from './employee-wallet-activity';
+import type { BonusPolicyBreakdownStatus } from '../payroll-runs/bonus-policy-breakdown-status';
 import type { WalletBonusPipelineGroup } from './employee-wallet-bonus-group';
 import type { EmployeeWalletProjectBreakdownRow } from './employee-wallet-project-breakdown';
 
@@ -20,6 +22,12 @@ export interface EmployeeWalletBonusRow {
   remainingAmount: string;
   /** Payroll month when a release is on a run (latest qualifying). */
   payrollMonth: string | null;
+  /** Sum of persisted SALES KPI burned on releases for this entry. */
+  kpiBurnedAmount: string | null;
+  /** Latest persisted burned-KPI reason from a qualifying release. */
+  kpiBurnedReason: string | null;
+  payrollCarryOverAmount: string | null;
+  policyBreakdownStatuses: BonusPolicyBreakdownStatus[];
   orderPaymentType: string | null;
   salesAccrualHint: string | null;
   /** Product name, extension label, or order fallback (same source as project breakdown pool). */
@@ -33,6 +41,7 @@ export interface EmployeeWalletSalaryRow {
   id: string;
   payrollRunId: string;
   payrollMonth: string;
+  payoutPhase: CompensationPayoutPhase;
   runStatus: string;
   baseSalary: string;
   bonusesTotal: string;

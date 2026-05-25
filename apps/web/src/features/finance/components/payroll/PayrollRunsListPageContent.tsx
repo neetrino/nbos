@@ -1,10 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/components/shared';
+import { Banknote, Plus } from 'lucide-react';
+import { Button, buttonVariants } from '@/components/ui/button';
+import {
+  EmptyState,
+  ErrorState,
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+} from '@/components/shared';
 import {
   PAYROLL_RUNS_LIST_MONTH_FROM_QUERY,
   PAYROLL_RUNS_LIST_MONTH_TO_QUERY,
@@ -21,11 +29,26 @@ import {
   type PayrollRunStats,
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
+import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import { payrollRunsListPageTitle } from '@/features/finance/constants/finance-route-page-titles';
+import { PayrollRunsBoardView } from '@/features/finance/components/payroll/PayrollRunsBoardView';
+import { PayrollRunsCalendarView } from '@/features/finance/components/payroll/PayrollRunsCalendarView';
 import { PayrollRunsCreateRunDialog } from '@/features/finance/components/payroll/PayrollRunsCreateRunDialog';
 import { PayrollRunsListTable } from '@/features/finance/components/payroll/PayrollRunsListTable';
-import { PayrollRunsListToolbar } from '@/features/finance/components/payroll/PayrollRunsListToolbar';
-import { PayrollRunsScopeStatsCard } from '@/features/finance/components/payroll/PayrollRunsScopeStatsCard';
+import { PayrollRunsListTotalsBar } from '@/features/finance/components/payroll/payroll-runs-list-totals-bar';
+import { PAYROLL_RUNS_VIEW_OPTIONS } from '@/features/finance/components/payroll/payroll-runs-view-options';
+import {
+  readPayrollRunsListViewMode,
+  writePayrollRunsListViewMode,
+  type PayrollRunsListViewMode,
+} from '@/features/finance/constants/payroll-runs-list-view';
+import {
+  buildPayrollIntegratedFilterConfigs,
+  PAYROLL_FILTER_MONTH_FROM_KEY,
+  PAYROLL_FILTER_MONTH_TO_KEY,
+  PAYROLL_FILTER_STATUS_KEY,
+} from '@/features/finance/components/payroll/build-payroll-integrated-filter-configs';
+import { PayrollRunsPageSettingsSheet } from '@/features/finance/components/payroll/PayrollRunsPageSettingsSheet';
 import { usePayrollRunsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-csv-export';
 import { usePayrollRunsScopeStatsCsvExport } from '@/features/finance/components/payroll/use-payroll-runs-scope-stats-csv-export';
 import { sumPayrollRunsRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
@@ -58,6 +81,7 @@ export function PayrollRunsListPageContent() {
   const [monthTo, setMonthTo] = useState<string | undefined>(() =>
     parsePayrollRunsListMonthParam(searchParams.get(PAYROLL_RUNS_LIST_MONTH_TO_QUERY)),
   );
+  const [view, setView] = useState<PayrollRunsListViewMode>(() => readPayrollRunsListViewMode());
 
   useEffect(() => {
     setStatusFilter(
@@ -201,36 +225,124 @@ export function PayrollRunsListPageContent() {
     [replaceListUrl],
   );
 
-  return (
-    <div className="flex h-full flex-col gap-5">
-      <PageHeader
-        title="Payroll"
-        description="Monthly payroll runs (NBOS Draft → Closed workflow). Status and month bounds use the same filters as list, stats, and CSV exports (per-run list and scope statistics snapshot)."
-      >
-        <PayrollRunsListToolbar
-          statusFilter={statusFilter}
-          onStatusChange={handleStatusChange}
-          monthFrom={monthFrom}
-          monthTo={monthTo}
-          onMonthFromChange={handleMonthFromChange}
-          onMonthToChange={handleMonthToChange}
-          onRefresh={load}
-          loading={loading}
-          statsExportDisabled={loading || !stats}
-          onExportScopeStatsCsv={handleExportScopeStatsCsv}
-          exportCsvSubmitting={exportCsvSubmitting}
-          onExportCsv={handleExportCsv}
-          onNewRun={openDialog}
-        />
-      </PageHeader>
+  const payrollFilterConfigs = useMemo(() => buildPayrollIntegratedFilterConfigs(), []);
 
+  const payrollFilterValues = useMemo(
+    () => ({
+      [PAYROLL_FILTER_STATUS_KEY]: statusFilter === 'ALL' ? 'all' : statusFilter,
+      [PAYROLL_FILTER_MONTH_FROM_KEY]: monthFrom ?? 'all',
+      [PAYROLL_FILTER_MONTH_TO_KEY]: monthTo ?? 'all',
+    }),
+    [monthFrom, monthTo, statusFilter],
+  );
+
+  const handlePayrollFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (key === PAYROLL_FILTER_STATUS_KEY) {
+        handleStatusChange(value);
+        return;
+      }
+      if (key === PAYROLL_FILTER_MONTH_FROM_KEY) {
+        handleMonthFromChange(value === 'all' ? '' : value);
+        return;
+      }
+      if (key === PAYROLL_FILTER_MONTH_TO_KEY) {
+        handleMonthToChange(value === 'all' ? '' : value);
+      }
+    },
+    [handleMonthFromChange, handleMonthToChange, handleStatusChange],
+  );
+
+  const handleViewChange = useCallback((next: PayrollRunsListViewMode) => {
+    setView(next);
+    writePayrollRunsListViewMode(next);
+  }, []);
+
+  const handleClearPayrollFilters = useCallback(() => {
+    setStatusFilter('ALL');
+    setMonthFrom(undefined);
+    setMonthTo(undefined);
+    replaceListUrl((params) => {
+      params.delete(PAYROLL_RUNS_LIST_STATUS_QUERY);
+      params.delete(PAYROLL_RUNS_LIST_MONTH_FROM_QUERY);
+      params.delete(PAYROLL_RUNS_LIST_MONTH_TO_QUERY);
+    });
+  }, [replaceListUrl]);
+
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search=""
+          onSearchChange={() => undefined}
+          searchPlaceholder="Filter payroll runs…"
+          filters={payrollFilterConfigs}
+          filterValues={payrollFilterValues}
+          onFilterChange={handlePayrollFilterChange}
+          onClearAll={handleClearPayrollFilters}
+        />
+      ),
+      viewMode: (
+        <ViewModeSwitch
+          value={view}
+          onChange={handleViewChange}
+          options={PAYROLL_RUNS_VIEW_OPTIONS}
+        />
+      ),
+      trailing: (
+        <>
+          <Link
+            href={expensesPayrollPresetHref({ payrollMonth: monthTo ?? monthFrom })}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            <Banknote className="mr-1.5 size-4" aria-hidden />
+            Pay Now
+          </Link>
+          <PayrollRunsPageSettingsSheet
+            refreshDisabled={loading}
+            statsExportDisabled={loading || !stats}
+            exportCsvDisabled={loading || exportCsvSubmitting}
+            exportCsvInProgress={exportCsvSubmitting}
+            onRefresh={load}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            onExportCsv={handleExportCsv}
+          />
+          <Button type="button" onClick={openDialog}>
+            <Plus size={16} className="mr-1.5" aria-hidden />
+            New run
+          </Button>
+        </>
+      ),
+    }),
+    [
+      exportCsvSubmitting,
+      handleClearPayrollFilters,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      handlePayrollFilterChange,
+      load,
+      loading,
+      monthFrom,
+      monthTo,
+      openDialog,
+      payrollFilterConfigs,
+      payrollFilterValues,
+      stats,
+      view,
+      handleViewChange,
+    ],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {loading ? (
         <LoadingState />
       ) : error ? (
         <ErrorState description={error} onRetry={() => void load()} />
       ) : (
         <>
-          <PayrollRunsScopeStatsCard stats={stats} loading={false} />
           {items.length === 0 ? (
             <EmptyState
               icon={Plus}
@@ -247,7 +359,22 @@ export function PayrollRunsListPageContent() {
               }
             />
           ) : (
-            <PayrollRunsListTable items={items} pageTotals={pageTotals} />
+            <div className="flex min-h-0 flex-1 flex-col gap-4">
+              <PayrollRunsListTotalsBar
+                runCount={items.length}
+                payable={pageTotals.payable}
+                paid={pageTotals.paid}
+                remaining={pageTotals.remaining}
+                lines={pageTotals.lines}
+              />
+              {view === 'calendar' ? (
+                <PayrollRunsCalendarView items={items} />
+              ) : view === 'board' ? (
+                <PayrollRunsBoardView items={items} />
+              ) : (
+                <PayrollRunsListTable items={items} pageTotals={pageTotals} />
+              )}
+            </div>
           )}
         </>
       )}

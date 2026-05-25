@@ -1,15 +1,24 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PageHero, PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
 import { calendarApi, type CalendarEventProjection, type CalendarLayer } from '@/lib/api/calendar';
+import { Button } from '@/components/ui/button';
+import { CreateMeetingCalendarDialog } from './calendar-create-meeting-dialog';
+import { CreatePersonalCalendarDialog } from './calendar-create-personal-dialog';
+import { CalendarEventDetailSheet } from './calendar-event-detail-sheet';
+import {
+  CALENDAR_DEFAULT_LAYER_STORAGE_KEY,
+  parseStoredCalendarLayer,
+} from './calendar-ui-constants';
 import { CalendarEmptyState, DayCell, EventCard, WEEKDAYS } from './calendar-view-parts';
 
-const LAYERS: Array<{ key: CalendarLayer; label: string }> = [
-  { key: 'ALL', label: 'All' },
-  { key: 'MEETINGS', label: 'Meetings' },
-  { key: 'DELIVERY_DEADLINES', label: 'Delivery Deadlines' },
-  { key: 'PERSONAL', label: 'Personal' },
+const CALENDAR_LAYER_OPTIONS: PageHeroTabOption<CalendarLayer>[] = [
+  { value: 'ALL', label: 'All' },
+  { value: 'MEETINGS', label: 'Meetings' },
+  { value: 'DELIVERY_DEADLINES', label: 'Deadlines' },
+  { value: 'PERSONAL', label: 'Personal' },
 ];
 
 function monthRange(date: Date): { from: Date; to: Date } {
@@ -57,6 +66,36 @@ export default function CalendarPage() {
   const [events, setEvents] = useState<CalendarEventProjection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [meetingOpen, setMeetingOpen] = useState(false);
+  const [personalOpen, setPersonalOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetEvent, setSheetEvent] = useState<CalendarEventProjection | null>(null);
+
+  useLayoutEffect(() => {
+    const stored = parseStoredCalendarLayer(
+      typeof window !== 'undefined'
+        ? localStorage.getItem(CALENDAR_DEFAULT_LAYER_STORAGE_KEY)
+        : null,
+    );
+    if (stored) setLayer(stored);
+  }, []);
+
+  const persistLayer = useCallback((value: CalendarLayer) => {
+    setLayer(value);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(CALENDAR_DEFAULT_LAYER_STORAGE_KEY, value);
+    }
+  }, []);
+
+  const openEventSheet = useCallback((ev: CalendarEventProjection) => {
+    setSheetEvent(ev);
+    setSheetOpen(true);
+  }, []);
+
+  const onSheetOpenChange = useCallback((open: boolean) => {
+    setSheetOpen(open);
+    if (!open) setSheetEvent(null);
+  }, []);
 
   const loadEvents = useCallback(async () => {
     setLoading(true);
@@ -106,32 +145,37 @@ export default function CalendarPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-foreground text-2xl font-semibold">Calendar</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Meetings, delivery deadlines and personal events only.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {LAYERS.map((item) => (
-            <button
-              key={item.key}
+      <PageHero
+        title="Calendar"
+        tabs={
+          <PageHeroTabs
+            value={layer}
+            onChange={persistLayer}
+            options={CALENDAR_LAYER_OPTIONS}
+            ariaLabel="Calendar layers"
+          />
+        }
+        trailing={
+          <>
+            <Button
               type="button"
-              onClick={() => setLayer(item.key)}
-              className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                layer === item.key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-              }`}
+              variant="secondary"
+              size="sm"
+              onClick={() => setMeetingOpen(true)}
             >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
+              New meeting
+            </Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => setPersonalOpen(true)}>
+              Personal event
+            </Button>
+          </>
+        }
+      />
+      <p className="text-muted-foreground text-sm">
+        Meetings, delivery deadlines and personal events only.
+      </p>
 
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <button
           type="button"
           onClick={goToToday}
@@ -200,7 +244,7 @@ export default function CalendarPage() {
           ) : selectedEvents.length > 0 ? (
             <div className="mt-4 space-y-3">
               {selectedEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
+                <EventCard key={event.id} event={event} onMeetingOrPersonalClick={openEventSheet} />
               ))}
             </div>
           ) : (
@@ -208,6 +252,25 @@ export default function CalendarPage() {
           )}
         </div>
       </div>
+
+      <CalendarEventDetailSheet
+        event={sheetEvent}
+        open={sheetOpen}
+        onOpenChange={onSheetOpenChange}
+      />
+
+      <CreateMeetingCalendarDialog
+        open={meetingOpen}
+        onOpenChange={setMeetingOpen}
+        selectedDate={selectedDate}
+        onCreated={() => void loadEvents()}
+      />
+      <CreatePersonalCalendarDialog
+        open={personalOpen}
+        onOpenChange={setPersonalOpen}
+        selectedDate={selectedDate}
+        onCreated={() => void loadEvents()}
+      />
     </div>
   );
 }

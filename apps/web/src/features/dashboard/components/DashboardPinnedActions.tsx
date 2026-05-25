@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Check, SlidersHorizontal } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { DASHBOARD_TWO_COLUMN_DROP_MIN_HEIGHT_CLASS } from '../dashboard-dnd.constants';
 import { dashboardPointerCollisionDetection } from '../dashboard-dnd-collision';
@@ -38,6 +39,7 @@ interface PinnedActionsProps {
   ) => void;
   onCreatePersonalLink: (label: string, url: string) => Promise<void>;
   onDeletePersonalLink: (id: string) => Promise<void>;
+  onToggleEdit: () => void;
   personalLinks: DashboardPersonalLink[];
   saving: boolean;
 }
@@ -49,6 +51,7 @@ export function PinnedActions({
   onApplyPinnedLayout,
   onCreatePersonalLink,
   onDeletePersonalLink,
+  onToggleEdit,
   personalLinks,
   saving,
 }: PinnedActionsProps) {
@@ -95,7 +98,7 @@ export function PinnedActions({
 
   return (
     <section className="border-border bg-card rounded-2xl border p-4 shadow-sm">
-      <PinnedActionsTitle editMode={editMode} />
+      <PinnedActionsTitle editMode={editMode} onToggleEdit={onToggleEdit} />
 
       {hasPinned ? (
         editMode ? (
@@ -280,13 +283,33 @@ function CreateLinkInline({
   );
 }
 
-function PinnedActionsTitle({ editMode }: { editMode: boolean }) {
+function PinnedActionsTitle({
+  editMode,
+  onToggleEdit,
+}: {
+  editMode: boolean;
+  onToggleEdit: () => void;
+}) {
   return (
-    <div>
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-2">
         <h2 className="text-base font-semibold">Pinned actions</h2>
         {editMode ? <Badge variant="outline">Editing</Badge> : null}
       </div>
+      <Button
+        type="button"
+        variant={editMode ? 'default' : 'secondary'}
+        size="icon"
+        className="h-8 w-8 shrink-0"
+        onClick={onToggleEdit}
+        aria-label={editMode ? 'Done editing layout' : 'Edit layout'}
+      >
+        {editMode ? (
+          <Check className="h-4 w-4" aria-hidden />
+        ) : (
+          <SlidersHorizontal className="h-4 w-4" aria-hidden />
+        )}
+      </Button>
     </div>
   );
 }

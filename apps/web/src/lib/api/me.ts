@@ -1,4 +1,6 @@
 import { api } from '../api';
+import type { SalaryLineMonthDetail } from './payroll-runs';
+import type { CompensationPayoutPhase } from './payroll-runs';
 
 export type WalletBonusPipelineGroup =
   | 'POTENTIAL'
@@ -19,6 +21,11 @@ export interface EmployeeWalletBonusRow {
   paidAmount: string;
   remainingAmount: string;
   payrollMonth: string | null;
+  /** Sum of persisted SALES KPI burned on releases for this bonus entry. */
+  kpiBurnedAmount: string | null;
+  kpiBurnedReason: string | null;
+  payrollCarryOverAmount: string | null;
+  policyBreakdownStatuses: Array<'INCOMING' | 'BURNED' | 'CARRY_OVER' | 'CLAWBACK'>;
   orderPaymentType: string | null;
   salesAccrualHint: string | null;
   /** Product / extension scope for this order (from bonus pool). */
@@ -32,6 +39,7 @@ export interface EmployeeWalletSalaryRow {
   id: string;
   payrollRunId: string;
   payrollMonth: string;
+  payoutPhase: CompensationPayoutPhase;
   runStatus: string;
   baseSalary: string;
   bonusesTotal: string;
@@ -108,6 +116,13 @@ export interface EmployeeWalletSnapshot {
 export const meApi = {
   async getWallet(): Promise<EmployeeWalletSnapshot> {
     const resp = await api.get<EmployeeWalletSnapshot>('/api/me/wallet');
+    return resp.data;
+  },
+
+  async getWalletSalaryLineMonthDetail(salaryLineId: string): Promise<SalaryLineMonthDetail> {
+    const resp = await api.get<SalaryLineMonthDetail>(
+      `/api/me/wallet/salary-lines/${salaryLineId}/month-detail`,
+    );
     return resp.data;
   },
 };

@@ -27,9 +27,10 @@ export interface SubscriptionGridInvoiceInput {
 
 export interface SubscriptionGridRowInput {
   id: string;
+  type: string;
   status: string;
-  amount: unknown;
-  startDate: Date;
+  baseMonthlyAmount: unknown;
+  billingStartDate: Date;
   endDate: Date | null;
   project: { id: string; name: string };
   invoices: SubscriptionGridInvoiceInput[];
@@ -39,6 +40,7 @@ export interface SubscriptionGridRow {
   subscriptionId: string;
   projectId: string;
   projectName: string;
+  subscriptionType: string;
   amountMonthly: number;
   subscriptionStatus: string;
   months: SubscriptionGridCell[];
@@ -78,14 +80,14 @@ function invoiceOverdue(inv: SubscriptionGridInvoiceInput, now: Date): boolean {
 }
 
 function subscriptionOverlapsMonth(
-  startDate: Date,
+  billingStartDate: Date,
   endDate: Date | null,
   year: number,
   monthIndex: number,
 ): boolean {
   const first = new Date(year, monthIndex, 1);
   const last = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
-  if (startDate > last) return false;
+  if (billingStartDate > last) return false;
   if (endDate !== null && endDate < first) return false;
   return true;
 }
@@ -153,7 +155,7 @@ function resolveMonthCell(
   monthIndex: number,
   now: Date,
 ): SubscriptionGridCell {
-  if (!subscriptionOverlapsMonth(sub.startDate, sub.endDate, year, monthIndex)) {
+  if (!subscriptionOverlapsMonth(sub.billingStartDate, sub.endDate, year, monthIndex)) {
     return { kind: 'NA', invoiceId: null };
   }
 
@@ -184,7 +186,7 @@ export function buildSubscriptionGridPayload(
   now: Date,
 ): SubscriptionGridPayload {
   const rows: SubscriptionGridRow[] = subscriptions.map((sub) => {
-    const amountMonthly = numericAmount(sub.amount);
+    const amountMonthly = numericAmount(sub.baseMonthlyAmount);
     const months: SubscriptionGridCell[] = [];
     for (let m = 0; m < 12; m++) {
       months.push(resolveMonthCell(sub, year, m, now));
@@ -197,6 +199,7 @@ export function buildSubscriptionGridPayload(
       subscriptionId: sub.id,
       projectId: sub.project.id,
       projectName: sub.project.name,
+      subscriptionType: sub.type,
       amountMonthly,
       subscriptionStatus: sub.status,
       months,
@@ -215,7 +218,7 @@ export function buildSubscriptionGridPayload(
   const grandAnnualTotal = rows.reduce(
     (sum, row) =>
       sum +
-      row.months.reduce((rowSum, cell, idx) => {
+      row.months.reduce((rowSum, cell, _idx) => {
         if (!cellContributesToTotals(cell.kind)) return rowSum;
         return rowSum + row.amountMonthly;
       }, 0),

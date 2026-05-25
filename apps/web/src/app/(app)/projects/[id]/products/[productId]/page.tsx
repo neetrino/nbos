@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
-  RefreshCcw,
   Package,
   LayoutDashboard,
   ListChecks,
@@ -15,8 +14,10 @@ import {
   ServerCog,
   ChevronRight,
   ChevronsUpDown,
+  HardDrive,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { StatusBadge } from '@/components/shared';
@@ -35,6 +36,10 @@ import { ProductTicketsTab } from '@/features/projects/components/product-tabs/P
 import { ProductTechnicalTab } from '@/features/projects/components/product-tabs/ProductTechnicalTab';
 import { CredentialsTab } from '@/features/projects/components/tabs/CredentialsTab';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
+import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
+import { EntityDriveFilesPanel } from '@/features/drive/EntityDriveFilesPanel';
+import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
+import { cn } from '@/lib/utils';
 
 const TAB_ITEMS = [
   { value: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -48,7 +53,7 @@ const TAB_ITEMS = [
 
 type ProductTab = (typeof TAB_ITEMS)[number]['value'];
 
-export default function ProductDetailPage() {
+function ProductDetailPageContent() {
   const params = useParams<{ id: string; productId: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -56,6 +61,7 @@ export default function ProductDetailPage() {
   const [siblingProducts, setSiblingProducts] = useState<Product[]>([]);
   const [showSwitcher, setShowSwitcher] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [driveFilesRefreshKey, setDriveFilesRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState<ProductTab>(getInitialTab(searchParams.get('tab')));
   const [projectData, setProjectData] = useState<{
     credentials: unknown[];
@@ -231,9 +237,30 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
-        <Button variant="outline" size="icon" onClick={fetchProduct}>
-          <RefreshCcw size={16} />
-        </Button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <EntityDriveQuickAttach
+            libraryKey="products"
+            entityType="PRODUCT"
+            entityId={product.id}
+            onUploaded={() => {
+              setDriveFilesRefreshKey((key) => key + 1);
+              void fetchProduct();
+            }}
+          />
+          <Link
+            href={buildDriveHrefWithProduct(product.id)}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+          >
+            <HardDrive className="size-4" aria-hidden />
+            Drive files
+          </Link>
+        </div>
+        <EntityDriveFilesPanel
+          entityType="PRODUCT"
+          entityId={product.id}
+          driveHref={buildDriveHrefWithProduct(product.id)}
+          refreshKey={driveFilesRefreshKey}
+        />
       </div>
 
       <Tabs
@@ -251,7 +278,11 @@ export default function ProductDetailPage() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-5">
-          <ProductOverviewTab product={product} onStatusChange={fetchProduct} />
+          <ProductOverviewTab
+            product={product}
+            onStatusChange={fetchProduct}
+            onNavigateTab={(tab) => setActiveTab(tab as ProductTab)}
+          />
         </TabsContent>
 
         <TabsContent value="tasks" className="mt-5">
@@ -286,6 +317,7 @@ export default function ProductDetailPage() {
               subscriptions={projectData.subscriptions as never[]}
               expenses={projectData.expenses as never[]}
               domains={projectData.domains as never[]}
+              onAfterDriveUpload={() => void fetchProduct()}
             />
           ) : (
             <div className="text-muted-foreground py-8 text-center text-sm">Loading...</div>
@@ -293,6 +325,28 @@ export default function ProductDetailPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function ProductDetailPageFallback() {
+  return (
+    <div className="flex h-full flex-col gap-5">
+      <Skeleton className="h-12 w-72" />
+      <Skeleton className="h-10 w-full" />
+      <div className="grid grid-cols-3 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-32" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function ProductDetailPage() {
+  return (
+    <Suspense fallback={<ProductDetailPageFallback />}>
+      <ProductDetailPageContent />
+    </Suspense>
   );
 }
 

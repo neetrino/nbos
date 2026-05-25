@@ -90,7 +90,7 @@ describe('partner payout batch ops', () => {
       data: expect.objectContaining({
         category: 'PARTNER_PAYOUT',
         amount: new Decimal('150'),
-        status: 'UNPAID',
+        status: 'DUE_NOW',
       }),
     });
     expect(prisma.partnerPayoutBatch.update).toHaveBeenCalledWith({

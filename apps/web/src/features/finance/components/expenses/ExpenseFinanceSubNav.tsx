@@ -9,11 +9,11 @@ import {
 } from '@/features/finance/constants/project-expenses-drilldown';
 import { cn } from '@/lib/utils';
 
+/** Active expense cards only; plans live on `/finance/expenses/plans` (Finance top tab). */
 const LINKS = [
-  { href: EXPENSE_LIST_PATH, label: 'Board' },
+  { href: EXPENSE_LIST_PATH, label: 'Active' },
   { href: EXPENSE_BACKLOG_LIST_PATH, label: 'Backlog' },
   { href: EXPENSE_CLOSED_LIST_PATH, label: 'Closed' },
-  { href: '/finance/expenses/plans', label: 'Plans' },
 ] as const;
 
 function isBoardSection(pathname: string): boolean {
@@ -28,7 +28,7 @@ export function ExpenseFinanceSubNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="mb-4 flex flex-wrap gap-2" aria-label="Expense views">
+    <nav className="flex flex-wrap gap-1.5" aria-label="Expense pay-now scope">
       {LINKS.map((link) => {
         const active =
           link.href === EXPENSE_LIST_PATH

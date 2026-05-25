@@ -1,47 +1,17 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
+import { ModuleHeroSlotProvider, PageHeroNavLinks } from '@/components/shared/page-hero';
+import { MARKETING_MODULE_NAV } from '@/features/marketing/marketing-module-nav';
 
-const MARKETING_NAV = [
-  { href: '/marketing', label: 'Board' },
-  { href: '/marketing/attribution', label: 'Attribution Review' },
-  { href: '/marketing/dashboard', label: 'Dashboard' },
-  { href: '/marketing/settings', label: 'Settings' },
-] as const;
-
-export default function MarketingLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-
+export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="space-y-6">
-      <nav
-        className="border-border flex flex-wrap gap-2 border-b pb-3"
-        aria-label="Marketing sections"
-      >
-        {MARKETING_NAV.map((item) => {
-          const active =
-            item.href === '/marketing'
-              ? pathname === '/marketing'
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
-                active
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+    <ModuleHeroSlotProvider
+      title="Marketing"
+      tabs={<PageHeroNavLinks items={MARKETING_MODULE_NAV} ariaLabel="Marketing sections" />}
+      className="flex h-full min-h-0 flex-col gap-5"
+    >
       {children}
-    </div>
+    </ModuleHeroSlotProvider>
   );
 }

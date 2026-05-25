@@ -1,4 +1,5 @@
 import { api } from '../api';
+import type { KpiScorecardMetric } from '@/features/my-company/kpi-policies/kpi-scorecard-metrics.types';
 import type { ListData } from './finance-common';
 
 export type PayrollRunStatus = 'DRAFT' | 'REVIEW' | 'APPROVED' | 'PAYING' | 'CLOSED';
@@ -29,6 +30,7 @@ export interface SalaryBoardCell {
   payrollMonth: string;
   runStatus: PayrollRunStatus;
   lineStatus: SalaryLineStatus;
+  payoutPhase: CompensationPayoutPhase;
   totalPayable: string;
   paidAmount: string;
   remainingAmount: string;
@@ -46,6 +48,8 @@ export interface SalaryBoardRow {
     firstName: string;
     lastName: string;
     position: string | null;
+    departmentIds: string[];
+    primaryDepartmentId: string | null;
   };
   cells: (SalaryBoardCell | null)[];
 }
@@ -105,6 +109,13 @@ export interface SalaryLineRow {
   remainingAmount: string;
   status: SalaryLineStatus;
   expenseId: string | null;
+  /** Per-employee sales KPI override; null uses payroll run defaults at SALES attach. */
+  kpiSalesPlanAmount: string | null;
+  kpiSalesActualAmount: string | null;
+  /** Prior-month line plan or that run's default; hint until saved. */
+  kpiSalesPlanSuggestedAmount: string;
+  /** Seller-attributed payment sum for run month (deal.sellerId); hint until saved. */
+  kpiSalesActualSuggestedAmount: string;
   createdAt: string;
   updatedAt: string;
   employee: PayrollRunEmployeeRef;
@@ -124,6 +135,10 @@ export interface PayrollRunDetail extends PayrollRunListRow {
    * Hint for sales actual; does not persist until saved via PATCH.
    */
   kpiSalesActualSuggestedAmount: string;
+  /** Prior payroll month run-level plan; null when unavailable. */
+  kpiSalesPlanSuggestedAmount: string | null;
+  /** Labels/links from dominant active KPI policy on run salary lines. */
+  salesKpiScorecardMetrics: KpiScorecardMetric[];
   /** Read-only milestones from run timestamps (no intermediate status audit yet). */
   journal: PayrollJournalEntry[];
   /** Audit log rows for this run (`CREATED`, `STATUS_CHANGED`, …). */
@@ -133,6 +148,18 @@ export interface PayrollRunDetail extends PayrollRunListRow {
 export interface PatchPayrollRunBody {
   kpiSalesPlanAmount?: number | null;
   kpiSalesActualAmount?: number | null;
+}
+
+export interface PatchSalaryLineSalesKpiBody {
+  kpiSalesPlanAmount?: number | null;
+  kpiSalesActualAmount?: number | null;
+}
+
+export interface EmployeeSalesKpiDetail {
+  planAmount: string | null;
+  actualAmount: string | null;
+  source: 'RUN_DEFAULT' | 'LINE_OVERRIDE';
+  effectivePayoutScaleLabel: string | null;
 }
 
 export interface PayrollRunListParams {
@@ -146,6 +173,95 @@ export interface PayrollRunListParams {
 }
 
 export type SalaryBoardParams = Pick<PayrollRunListParams, 'payrollMonthFrom' | 'payrollMonthTo'>;
+
+export type CompensationPayoutPhase = 'past_paid' | 'active_payout' | 'accumulating';
+
+export interface SalaryLineMonthPaymentRow {
+  id: string;
+  amount: string;
+  paymentDate: string;
+  notes: string | null;
+}
+
+export type BonusPolicyBreakdownStatus = 'INCOMING' | 'BURNED' | 'CARRY_OVER' | 'CLAWBACK';
+
+export interface BonusBreakdownSummary {
+  incomingCount: number;
+  burnedTotal: string;
+  carryOverTotal: string;
+  clawbackCount: number;
+}
+
+export interface SalaryLineMonthBonusRow {
+  bonusEntryId: string;
+  bonusReleaseId: string;
+  entryStatus: string;
+  policyBreakdownStatuses: BonusPolicyBreakdownStatus[];
+  type: string;
+  releaseType: string;
+  releaseStatus: string;
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  orderCode: string;
+  productLabel: string;
+  plannedAmount: string;
+  releaseAmount: string;
+  includedAmount: string | null;
+  kpiBurnedAmount: string | null;
+  kpiBurnedReason: string | null;
+  payrollCarryOverAmount: string | null;
+  paidAmount: string;
+  remainingAmount: string;
+  reason: string | null;
+}
+
+export interface SalaryLineMonthDetail {
+  payoutPhase: CompensationPayoutPhase;
+  pendingPayrollCarryOver: string | null;
+  employee: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    position: string | null;
+  };
+  payrollMonth: string;
+  payrollRun: {
+    id: string;
+    status: PayrollRunStatus;
+    kpiSalesPlanAmount: string | null;
+    kpiSalesActualAmount: string | null;
+  };
+  employeeSalesKpi: EmployeeSalesKpiDetail;
+  salaryLine: {
+    id: string;
+    status: SalaryLineStatus;
+    baseSalary: string;
+    bonusesTotal: string;
+    payrollCarryAppliedAmount: string | null;
+    adjustmentsTotal: string;
+    deductionsTotal: string;
+    totalPayable: string;
+    paidAmount: string;
+    remainingAmount: string;
+    compensationProfileId: string | null;
+    kpiSalesPlanAmount: string | null;
+    kpiSalesActualAmount: string | null;
+  };
+  expense: {
+    id: string;
+    name: string;
+    amount: string;
+    status: string;
+    paymentStatus: string;
+    paidAmount: string;
+    remainingAmount: string;
+    payments: SalaryLineMonthPaymentRow[];
+  } | null;
+  bonusBreakdownSummary: BonusBreakdownSummary;
+  bonusBreakdown: SalaryLineMonthBonusRow[];
+}
 
 export interface PayrollRunStats {
   runCount: number;
@@ -188,6 +304,13 @@ export const payrollRunsApi = {
     return resp.data;
   },
 
+  async getSalaryLineMonthDetail(salaryLineId: string): Promise<SalaryLineMonthDetail> {
+    const resp = await api.get<SalaryLineMonthDetail>(
+      `/api/payroll-runs/salary-lines/${salaryLineId}/month-detail`,
+    );
+    return resp.data;
+  },
+
   async getById(id: string): Promise<PayrollRunDetail> {
     const resp = await api.get<PayrollRunDetail>(`/api/payroll-runs/${id}`);
     return resp.data;
@@ -207,4 +330,64 @@ export const payrollRunsApi = {
     const resp = await api.patch<PayrollRunDetail>(`/api/payroll-runs/${id}`, body);
     return resp.data;
   },
+
+  async patchSalaryLineSalesKpi(
+    payrollRunId: string,
+    salaryLineId: string,
+    body: PatchSalaryLineSalesKpiBody,
+  ): Promise<PayrollRunDetail> {
+    const resp = await api.patch<PayrollRunDetail>(
+      `/api/payroll-runs/${payrollRunId}/salary-lines/${salaryLineId}/sales-kpi`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async getBonusReleases(payrollRunId: string): Promise<PayrollRunBonusReleases> {
+    const resp = await api.get<PayrollRunBonusReleases>(
+      `/api/payroll-runs/${payrollRunId}/bonus-releases`,
+    );
+    return resp.data;
+  },
+
+  async attachBonusReleases(payrollRunId: string, releaseIds: string[]): Promise<PayrollRunDetail> {
+    const resp = await api.post<PayrollRunDetail>(
+      `/api/payroll-runs/${payrollRunId}/bonus-releases/attach`,
+      { releaseIds },
+    );
+    return resp.data;
+  },
+
+  async detachBonusReleases(payrollRunId: string, releaseIds: string[]): Promise<PayrollRunDetail> {
+    const resp = await api.post<PayrollRunDetail>(
+      `/api/payroll-runs/${payrollRunId}/bonus-releases/detach`,
+      { releaseIds },
+    );
+    return resp.data;
+  },
 };
+
+export interface PayrollRunBonusReleaseRow {
+  id: string;
+  bonusEntryId: string;
+  employeeId: string;
+  employeeName: string;
+  projectCode: string;
+  projectName: string;
+  orderCode: string;
+  productLabel: string;
+  bonusType: string;
+  releaseType: string;
+  status: string;
+  amount: string;
+  payrollIncludedAmount: string | null;
+}
+
+export interface PayrollRunBonusReleases {
+  payrollRunId: string;
+  payrollMonth: string;
+  runStatus: PayrollRunStatus;
+  canAttach: boolean;
+  included: PayrollRunBonusReleaseRow[];
+  availableToAttach: PayrollRunBonusReleaseRow[];
+}

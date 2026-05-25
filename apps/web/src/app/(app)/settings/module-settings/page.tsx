@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
-import { PageHeader, EmptyState } from '@/components/shared';
+import { PageHero, EmptyState } from '@/components/shared';
 import { notificationsApi, type NotificationAdminRuleDto } from '@/lib/api/notifications';
 
 const RULE_CHANNELS = ['IN_APP', 'EMAIL', 'TELEGRAM', 'WHATSAPP'] as const;
@@ -34,10 +34,10 @@ export default function ModuleSettingsPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <PageHeader
-          title="Module Settings"
-          description="Safe platform-level defaults and notification rules."
-        />
+        <PageHero title="Module Settings" />
+        <p className="text-muted-foreground text-sm">
+          Safe platform-level defaults and notification rules.
+        </p>
         <p className="text-muted-foreground text-sm">Loading module settings…</p>
       </div>
     );
@@ -55,10 +55,10 @@ export default function ModuleSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Module Settings"
-        description="Admin-managed notification rules: enablement, priority, and channel matrix."
-      />
+      <PageHero title="Module Settings" />
+      <p className="text-muted-foreground text-sm">
+        Admin-managed notification rules: enablement, priority, and channel matrix.
+      </p>
 
       <div className="border-border bg-card space-y-3 rounded-2xl border p-4">
         <h2 className="text-foreground text-sm font-semibold">Notification Rules</h2>

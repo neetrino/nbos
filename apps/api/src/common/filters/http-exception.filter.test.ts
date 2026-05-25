@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { GlobalExceptionFilter } from './http-exception.filter';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus } from '@nestjs/common';
 import type { ArgumentsHost } from '@nestjs/common';
 
 function createMockHost() {
@@ -49,6 +49,27 @@ describe('GlobalExceptionFilter', () => {
         statusCode: 400,
         message: 'Validation failed',
         error: 'Bad Request',
+      }),
+    );
+  });
+
+  it('forwards conflicts from ConflictException object response', () => {
+    const { host, json } = createMockHost();
+    const conflicts = [
+      { code: 'PARTICIPANT_OVERLAP', meetingId: 'm1', meetingTitle: 'Busy', detail: 'Overlap' },
+    ];
+    const exception = new ConflictException({
+      message: 'Meeting overlaps with existing scheduled meetings.',
+      code: 'CALENDAR_MEETING_CONFLICT',
+      conflicts,
+    });
+    filter.catch(exception, host);
+
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 409,
+        code: 'CALENDAR_MEETING_CONFLICT',
+        conflicts,
       }),
     );
   });

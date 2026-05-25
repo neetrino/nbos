@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { FilterBar } from '@/components/shared';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
+import { IntegratedSearchFilters, useModuleHeroSlots, ViewModeSwitch } from '@/components/shared';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   expensesApi,
@@ -11,12 +14,14 @@ import {
   type ExpenseStats,
 } from '@/lib/api/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { OPEN_EXPENSE_QUERY } from '@/features/finance/constants/expense-deep-link';
 import {
   EXPENSE_BACKLOG_FIXED_STATUS,
   EXPENSE_PLAN_DRILLDOWN_QUERY,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
-  expenseDetailHref,
+  type ExpenseListHrefOptions,
 } from '@/features/finance/constants/project-expenses-drilldown';
+import { ExpenseDetailSheet } from '@/features/finance/components/expenses/ExpenseDetailSheet';
 import {
   clearedExpenseFilterRecord,
   expenseFiltersWithoutProjectDrilldown,
@@ -24,12 +29,40 @@ import {
 } from './expenses-page-filter-helpers';
 import { ExpensePlanDrilldownBanner } from './ExpensePlanDrilldownBanner';
 import { useExpensePlanBannerLabel } from './use-expense-plan-banner-label';
-import { ExpenseSortControls } from './ExpenseSortControls';
-import { ExpensesPageHeader } from './ExpensesPageHeader';
-import { ExpenseSummaryCards } from './ExpenseSummaryCards';
+import { EXPENSES_VIEW_OPTIONS } from './expenses-view-options';
 import { ExpensesPageDialogs } from './ExpensesPageDialogs';
 import { ExpenseProjectDrilldownBanner } from './ExpenseProjectDrilldownBanner';
-import { buildExpenseFilterConfigs } from './expenses-filter-config';
+import { buildExpenseIntegratedFilterConfigs } from './build-expense-integrated-filter-configs';
+import {
+  ExpensePayrollPresetBanner,
+  isPayrollSourceFilterActive,
+} from './ExpensePayrollPresetBanner';
+import { useExpensePayrollEmployeeFilterOptions } from './use-expense-payroll-employee-filter-options';
+import {
+  EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY,
+  EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY,
+  EXPENSE_PAYROLL_MONTH_FILTER_KEY,
+  EXPENSE_PAYROLL_MONTH_URL_QUERY,
+  EXPENSE_PAYROLL_PRESET_QUERY,
+  EXPENSE_PAYROLL_SOURCE_FILTER_KEY,
+  EXPENSE_PAYROLL_SOURCE_PAYROLL,
+  clearPayrollPayNowFilters,
+  payNowDefaultExpenseFilters,
+} from '@/features/finance/constants/expense-payroll-filter';
+import { resolveExpensePayrollRunId } from '@/features/finance/utils/parse-payroll-expense-notes';
+import {
+  EXPENSE_BOARD_SCOPE_FILTER_KEY,
+  EXPENSE_PERIOD_FILTER_KEY,
+  EXPENSE_SORT_BY_FILTER_KEY,
+  EXPENSE_SORT_ORDER_FILTER_KEY,
+  expenseBoardPathForScope,
+  expenseBoardScopeFromVariant,
+} from './expense-board-scope';
+import { ExpensesPageSettingsSheet } from './ExpensesPageSettingsSheet';
+import {
+  readExpensesBoardViewMode,
+  writeExpensesBoardViewMode,
+} from '@/features/finance/constants/expenses-board-view';
 import { ExpensesPageMainPanel, type ExpensesViewMode } from './ExpensesPageMainPanel';
 import { useExpenseProjectFilterOptions } from './use-expense-project-filter-options';
 import {
@@ -40,9 +73,10 @@ import {
 import { useExpenseCsvExport } from './use-expense-csv-export';
 import { useExpensesScopeStatsCsvExport } from './use-expenses-scope-stats-csv-export';
 import { useExpenseProjectBannerLabel } from './use-expense-project-banner-label';
+import { useExpenseKanbanStatusChange } from './use-expense-kanban-status-change';
 
 interface ExpensesPageContentProps {
-  /** Backlog: deferred (`DELAYED`). Closed: paid (`PAID`) off active board. Default: active board scope. */
+  /** Backlog: deferred (`BACKLOG`). Closed: paid (`PAID`) off active board. Default: active board scope. */
   pageVariant?: 'default' | 'backlog' | 'closed';
   projectIdFromUrl: string | null;
   expensePlanIdFromUrl: string | null;
@@ -66,6 +100,9 @@ export function ExpensesPageContent({
   onSortOrderChange,
 }: ExpensesPageContentProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const openExpenseIdFromUrl = searchParams.get(OPEN_EXPENSE_QUERY)?.trim() || null;
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [stats, setStats] = useState<ExpenseStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,13 +111,71 @@ export function ExpensesPageContent({
   const [filters, setFilters] = useState<Record<string, string>>(() =>
     initialExpenseFilterRecord(pageVariant),
   );
-  const [view, setView] = useState<ExpensesViewMode>('list');
+  const [view, setView] = useState<ExpensesViewMode>(() => readExpensesBoardViewMode());
+
+  const handleViewChange = useCallback((next: ExpensesViewMode) => {
+    setView(next);
+    writeExpensesBoardViewMode(next);
+  }, []);
   const [period, setPeriod] = useState<FinancePeriod>('month');
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const projectFilterOptions = useExpenseProjectFilterOptions();
+  const payrollEmployeeFilterOptions = useExpensePayrollEmployeeFilterOptions();
+
+  const listHrefOptions = useMemo((): ExpenseListHrefOptions => {
+    return {
+      fromBacklog: pageVariant === 'backlog',
+      closed: pageVariant === 'closed',
+      expensePlanId: expensePlanIdFromUrl?.trim() || undefined,
+    };
+  }, [expensePlanIdFromUrl, pageVariant]);
+
+  const stripOpenExpenseFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has(OPEN_EXPENSE_QUERY)) return;
+    params.delete(OPEN_EXPENSE_QUERY);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const pushOpenExpenseToUrl = useCallback(
+    (expenseId: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_EXPENSE_QUERY, expenseId);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams],
+  );
+
+  const handleExpenseClick = useCallback(
+    (expense: Expense) => {
+      setSelectedExpense(expense);
+      setSheetOpen(true);
+      pushOpenExpenseToUrl(expense.id);
+    },
+    [pushOpenExpenseToUrl],
+  );
+
+  const handleExpenseSheetOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      setSheetOpen(nextOpen);
+      if (!nextOpen) {
+        setSelectedExpense(null);
+        stripOpenExpenseFromUrl();
+      }
+    },
+    [stripOpenExpenseFromUrl],
+  );
+
+  const handleExpenseUpdated = useCallback((updated: Expense) => {
+    setSelectedExpense(updated);
+    setExpenses((current) => current.map((row) => (row.id === updated.id ? updated : row)));
+  }, []);
 
   useEffect(() => {
     if (projectIdFromUrl) {
@@ -184,6 +279,56 @@ export function ExpensesPageContent({
     }
   }, [listApiParams]);
 
+  const handleExpenseKanbanMove = useExpenseKanbanStatusChange({
+    listProjectId: effectiveProjectId ?? null,
+    listSort: { sortBy, sortOrder },
+    fromBacklog: pageVariant === 'backlog',
+    closed: pageVariant === 'closed',
+    expensePlanId: expensePlanIdFromUrl?.trim() ?? null,
+  });
+
+  const handleExpenseDeleted = useCallback(
+    (expenseId: string) => {
+      setExpenses((current) => current.filter((row) => row.id !== expenseId));
+      void fetchExpenses();
+    },
+    [fetchExpenses],
+  );
+
+  useEffect(() => {
+    if (!openExpenseIdFromUrl) return;
+    const fromList = expenses.find((row) => row.id === openExpenseIdFromUrl);
+    if (fromList) {
+      setSelectedExpense(fromList);
+      setSheetOpen(true);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await expensesApi.getById(openExpenseIdFromUrl);
+        if (!cancelled) {
+          setSelectedExpense(data);
+          setSheetOpen(true);
+        }
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Could not open expense from link.'));
+        stripOpenExpenseFromUrl();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openExpenseIdFromUrl, expenses, stripOpenExpenseFromUrl]);
+
+  const onKanbanStatusMove = useCallback(
+    async (expenseId: string, _from: string, toStatus: string) => {
+      setError(null);
+      await handleExpenseKanbanMove(expenseId, toStatus, expenses, fetchExpenses);
+    },
+    [expenses, fetchExpenses, handleExpenseKanbanMove],
+  );
+
   const handleConfirmDeleteExpense = async () => {
     if (!deleteTarget) return;
     setDeleteError(null);
@@ -220,41 +365,162 @@ export function ExpensesPageContent({
 
   const filterConfigs = useMemo(
     () =>
-      buildExpenseFilterConfigs(projectFilterOptions, {
+      buildExpenseIntegratedFilterConfigs(projectFilterOptions, payrollEmployeeFilterOptions, {
         omitStatus: pageVariant === 'backlog' || pageVariant === 'closed',
+        includePayrollFilters: pageVariant === 'default',
       }),
-    [projectFilterOptions, pageVariant],
+    [payrollEmployeeFilterOptions, projectFilterOptions, pageVariant],
+  );
+
+  const payrollFilterActive = isPayrollSourceFilterActive(filters);
+
+  useEffect(() => {
+    if (pageVariant !== 'default') return;
+    const preset = searchParams.get(EXPENSE_PAYROLL_PRESET_QUERY) === '1';
+    const monthFromUrl = searchParams.get(EXPENSE_PAYROLL_MONTH_URL_QUERY)?.trim();
+    const employeeFromUrl = searchParams.get(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY)?.trim();
+    if (!preset && !monthFromUrl && !employeeFromUrl) return;
+    setFilters((prev) => {
+      const next = { ...prev };
+      if (preset) {
+        next[EXPENSE_PAYROLL_SOURCE_FILTER_KEY] = EXPENSE_PAYROLL_SOURCE_PAYROLL;
+      }
+      if (monthFromUrl) {
+        next[EXPENSE_PAYROLL_MONTH_FILTER_KEY] = monthFromUrl;
+      }
+      if (employeeFromUrl) {
+        next[EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY] = employeeFromUrl;
+      }
+      return next;
+    });
+    replaceExpensesUrl((params) => {
+      params.delete(EXPENSE_PAYROLL_PRESET_QUERY);
+      params.delete(EXPENSE_PAYROLL_MONTH_URL_QUERY);
+      params.delete(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY);
+    });
+  }, [pageVariant, replaceExpensesUrl, searchParams]);
+
+  const applyPayrollFilter = useCallback(() => {
+    setFilters((prev) => ({
+      ...prev,
+      ...payNowDefaultExpenseFilters(),
+    }));
+  }, []);
+
+  const clearPayrollFilter = useCallback(() => {
+    setFilters((prev) => ({
+      ...prev,
+      ...clearPayrollPayNowFilters(),
+    }));
+  }, []);
+
+  const payrollPaymentFocus = Boolean(
+    selectedExpense && resolveExpensePayrollRunId(selectedExpense),
+  );
+
+  const integratedFilterValues = useMemo(
+    () => ({
+      [EXPENSE_BOARD_SCOPE_FILTER_KEY]: expenseBoardScopeFromVariant(pageVariant),
+      [EXPENSE_PERIOD_FILTER_KEY]: period,
+      [EXPENSE_SORT_BY_FILTER_KEY]: sortBy,
+      [EXPENSE_SORT_ORDER_FILTER_KEY]: sortOrder,
+      ...filters,
+    }),
+    [filters, pageVariant, period, sortBy, sortOrder],
+  );
+
+  const handleIntegratedFilterChange = useCallback(
+    (key: string, value: string) => {
+      if (key === EXPENSE_BOARD_SCOPE_FILTER_KEY) {
+        const path = expenseBoardPathForScope(value);
+        const q = searchParams.toString();
+        router.push(q ? `${path}?${q}` : path);
+        return;
+      }
+      if (key === EXPENSE_PERIOD_FILTER_KEY) {
+        setPeriod(value as FinancePeriod);
+        return;
+      }
+      if (key === EXPENSE_SORT_BY_FILTER_KEY) {
+        onSortByChange(value as ExpenseListSortField);
+        return;
+      }
+      if (key === EXPENSE_SORT_ORDER_FILTER_KEY) {
+        if (value === 'asc' || value === 'desc') {
+          onSortOrderChange(value);
+        }
+        return;
+      }
+      handleFilterChange(key, value);
+    },
+    [handleFilterChange, onSortByChange, onSortOrderChange, router, searchParams],
   );
 
   const clearFilters = useCallback(() => {
     setFilters(clearedExpenseFilterRecord(pageVariant, projectIdFromUrl));
+    setPeriod('month');
   }, [pageVariant, projectIdFromUrl]);
 
+  const moduleHeroSlots = useMemo(
+    () => ({
+      search: (
+        <IntegratedSearchFilters
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by name, notes, project, plan…"
+          filters={filterConfigs}
+          filterValues={integratedFilterValues}
+          onFilterChange={handleIntegratedFilterChange}
+          onClearAll={clearFilters}
+        />
+      ),
+      viewMode:
+        pageVariant === 'backlog' ? undefined : (
+          <ViewModeSwitch
+            value={view}
+            onChange={handleViewChange}
+            options={EXPENSES_VIEW_OPTIONS}
+          />
+        ),
+      trailing: (
+        <>
+          <ExpensesPageSettingsSheet
+            statsExportDisabled={loading || !stats}
+            exportCsvDisabled={loading || exportCsvSubmitting}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            onExportCsv={handleExportCsv}
+          />
+          {pageVariant === 'closed' ? null : (
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <Plus size={16} aria-hidden />
+              New Expense
+            </Button>
+          )}
+        </>
+      ),
+    }),
+    [
+      clearFilters,
+      exportCsvSubmitting,
+      filterConfigs,
+      handleExportCsv,
+      handleExportScopeStatsCsv,
+      handleIntegratedFilterChange,
+      handleViewChange,
+      integratedFilterValues,
+      loading,
+      pageVariant,
+      search,
+      stats,
+      view,
+    ],
+  );
+
+  useModuleHeroSlots(moduleHeroSlots);
+
   return (
-    <div className="flex h-full flex-col gap-5">
-      <ExpensesPageHeader
-        expenseCount={expenses.length}
-        period={period}
-        onPeriodChange={setPeriod}
-        view={view}
-        onViewChange={setView}
-        hideViewToggle={pageVariant === 'backlog' || pageVariant === 'closed'}
-        pageVariant={pageVariant}
-        onRefresh={fetchExpenses}
-        onExportCsv={handleExportCsv}
-        exportDisabled={loading || exportCsvSubmitting}
-        exportInProgress={exportCsvSubmitting}
-        statsExportDisabled={loading || !stats}
-        onExportScopeStatsCsv={handleExportScopeStatsCsv}
-        onCreateClick={() => setCreateOpen(true)}
-      />
-
-      <ExpenseSummaryCards
-        stats={stats}
-        loading={loading}
-        variant={pageVariant === 'backlog' ? 'backlog' : 'default'}
-      />
-
+    <div className="flex h-full min-h-0 flex-col gap-5">
       {projectIdFromUrl ? (
         <ExpenseProjectDrilldownBanner
           projectId={projectIdFromUrl}
@@ -271,39 +537,46 @@ export function ExpensesPageContent({
         />
       ) : null}
 
-      <FilterBar
-        search={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search expenses..."
-        filters={filterConfigs}
-        filterValues={filters}
-        onFilterChange={handleFilterChange}
-        onClearFilters={clearFilters}
-        actions={
-          <ExpenseSortControls
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSortByChange={onSortByChange}
-            onSortOrderChange={onSortOrderChange}
-          />
-        }
-      />
+      {pageVariant === 'default' ? (
+        <ExpensePayrollPresetBanner
+          active={payrollFilterActive}
+          onApplyPayrollFilter={applyPayrollFilter}
+          onClearPayrollFilter={clearPayrollFilter}
+        />
+      ) : null}
 
       <ExpensesPageMainPanel
         loading={loading}
         error={error}
         onRetry={fetchExpenses}
         expenses={expenses}
-        view={pageVariant === 'backlog' || pageVariant === 'closed' ? 'list' : view}
+        view={pageVariant === 'backlog' ? 'list' : view}
+        kanbanScope={pageVariant === 'closed' ? 'closed' : 'active'}
         fromBacklog={pageVariant === 'backlog'}
-        effectiveProjectId={effectiveProjectId ?? null}
-        listExpensePlanId={expensePlanIdFromUrl?.trim() ?? null}
-        listSort={{ sortBy, sortOrder }}
+        onOpenExpense={handleExpenseClick}
         onRequestDelete={(row) => {
           setDeleteError(null);
           setDeleteTarget(row);
         }}
         onAddFirstExpense={() => setCreateOpen(true)}
+        onKanbanMove={
+          pageVariant === 'default' && view === 'kanban' ? onKanbanStatusMove : undefined
+        }
+        onOpenQuickCreate={
+          pageVariant === 'default' && view === 'kanban' ? () => setCreateOpen(true) : undefined
+        }
+      />
+
+      <ExpenseDetailSheet
+        expenseId={sheetOpen ? (openExpenseIdFromUrl ?? selectedExpense?.id ?? null) : null}
+        open={sheetOpen || Boolean(openExpenseIdFromUrl)}
+        onOpenChange={handleExpenseSheetOpenChange}
+        listProjectId={effectiveProjectId ?? null}
+        listSort={{ sortBy, sortOrder }}
+        listHrefOptions={listHrefOptions}
+        payrollPaymentFocus={payrollPaymentFocus}
+        onExpenseUpdated={handleExpenseUpdated}
+        onExpenseDeleted={handleExpenseDeleted}
       />
 
       <ExpensesPageDialogs
@@ -312,18 +585,9 @@ export function ExpensesPageContent({
         effectiveProjectId={effectiveProjectId ?? null}
         defaultCreateStatus={pageVariant === 'backlog' ? EXPENSE_BACKLOG_FIXED_STATUS : undefined}
         onExpenseCreated={(created) => {
-          fetchExpenses();
-          router.push(
-            expenseDetailHref(
-              created.id,
-              effectiveProjectId ?? null,
-              { sortBy, sortOrder },
-              {
-                fromBacklog: pageVariant === 'backlog',
-                expensePlanId: expensePlanIdFromUrl?.trim() || undefined,
-              },
-            ),
-          );
+          void fetchExpenses().then(() => {
+            handleExpenseClick(created);
+          });
         }}
         deleteTarget={deleteTarget}
         deleteSubmitting={deleteSubmitting}

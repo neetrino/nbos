@@ -62,16 +62,12 @@ export function CreateLeadDialog({ open, onOpenChange, onCreated }: CreateLeadDi
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Inquiry title (product / service) *</Label>
+            <Label>Title *</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g. Corporate website, Mobile app for field staff"
               autoFocus
             />
-            <p className="text-muted-foreground text-xs">
-              Stored as the lead title; required before qualifying to SQL and creating a deal.
-            </p>
           </div>
 
           <DialogFooter>

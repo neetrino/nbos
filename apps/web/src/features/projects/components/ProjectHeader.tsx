@@ -1,17 +1,20 @@
 'use client';
 
-import { ArrowLeft, FolderKanban, RefreshCcw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft, FolderKanban, HardDrive, Kanban } from 'lucide-react';
+import Link from 'next/link';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/shared';
 import type { FullProject } from '@/lib/api/projects';
+import { buildDriveHrefWithProject } from '@/features/drive/drive-deep-link';
+import { EntityDriveQuickAttach } from '@/features/drive/EntityDriveQuickAttach';
 
 interface ProjectHeaderProps {
   project: FullProject;
   onBack: () => void;
-  onRefresh: () => void;
 }
 
-export function ProjectHeader({ project, onBack, onRefresh }: ProjectHeaderProps) {
+export function ProjectHeader({ project, onBack }: ProjectHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -31,9 +34,23 @@ export function ProjectHeader({ project, onBack, onRefresh }: ProjectHeaderProps
           </div>
         </div>
       </div>
-      <Button variant="outline" size="icon" onClick={onRefresh}>
-        <RefreshCcw size={16} />
-      </Button>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Link
+          href={`/delivery-board?projectId=${encodeURIComponent(project.id)}`}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+        >
+          <Kanban className="size-4" aria-hidden />
+          Delivery Board
+        </Link>
+        <EntityDriveQuickAttach entityType="PROJECT" entityId={project.id} />
+        <Link
+          href={buildDriveHrefWithProject(project.id)}
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+        >
+          <HardDrive className="size-4" aria-hidden />
+          Drive files
+        </Link>
+      </div>
     </div>
   );
 }

@@ -2,6 +2,8 @@
 
 > NBOS My Company - что нужно привести к новому канону после обсуждения org, team, KPI, compensation и bonus policy.
 
+**Finance compensation screens (salary / payroll / wallet / bonus board) — MVP в Finance (2026-05).** My Company всё ещё должен стать source of truth для **Compensation Profile** и **универсальных Bonus/KPI policies** — см. C1–C3 и [`todo.md`](../../../../todo.md) §1–2.
+
 ## Назначение
 
 Этот файл фиксирует расхождения между текущей реализацией / старыми документами и новым каноном `My Company`.
@@ -211,6 +213,8 @@ New canon requires:
 
 **Done (2026-05-06, foundation slice):** runtime `my-company/compensation` больше не placeholder — есть live summary по сотрудникам/зарплатам, покрытие sales bonus policies и рабочие переходы в Team / Sales Bonus Policies / Payroll.
 
+**Not done:** Finance уже считает payroll и показывает wallet без versioned `Compensation Profile` — подключение policies к cap/carry-over/burned — [`todo.md`](../../../../todo.md) + [Finance cleanup C4](../04-Finance/10-Finance-Cleanup-Register.md#c4-payroll--compensation-runtime).
+
 ### C7. SOP runtime model is missing
 
 Статус: `FOUNDATION VISIBLE / RUNTIME MODEL STILL MISSING`
@@ -247,5 +251,5 @@ Current docs/processes may still treat SOP as static markdown or mix it with tas
 8. Add Compensation dashboard and policy management views.
 9. Add SOP Library, Process Templates and Process Runs.
 10. Connect onboarding/offboarding/monthly close to Tasks via process runs.
-11. Connect policies to Finance payroll and bonus release.
-12. Add KPI dashboards and employee wallet projections.
+11. Connect policies to Finance payroll and bonus release (**Finance MVP UX done; policy engine + profile versioning pending**).
+12. Add KPI dashboards (**wallet month projection shipped**; executive KPI dashboards pending).

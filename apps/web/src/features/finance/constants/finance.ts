@@ -18,14 +18,33 @@ export const INVOICE_MONEY_STAGES = [
   { value: 'CANCELLED', label: 'Cancelled', variant: 'red' as StatusVariant },
 ] as const;
 
+/**
+ * Chevron pipeline segments in invoice detail sheet — active + terminal (sheet header canon).
+ * Kanban active columns use the first four keys only; PAID / CANCELLED are closed outcomes.
+ */
+export const INVOICE_PIPELINE_MONEY_STAGES = [
+  { key: 'NEW', label: 'New', shortLabel: 'New' },
+  { key: 'AWAITING_PAYMENT', label: 'Awaiting payment', shortLabel: 'Awaiting' },
+  { key: 'OVERDUE', label: 'Overdue', shortLabel: 'Overdue' },
+  { key: 'ON_HOLD', label: 'On hold', shortLabel: 'Hold' },
+  { key: 'PAID', label: 'Paid', shortLabel: 'Paid' },
+  { key: 'CANCELLED', label: 'Cancelled', shortLabel: 'Cancelled' },
+] as const;
+
+export const INVOICE_TAX_STATUS_OPTIONS = [
+  { value: 'TAX', label: 'Tax' },
+  { value: 'TAX_FREE', label: 'Tax Free' },
+] as const;
+
 export const EXPENSE_STAGES = [
-  { value: 'THIS_MONTH', label: 'This Month', variant: 'blue' as StatusVariant },
-  { value: 'PAY_NOW', label: 'Pay Now', variant: 'orange' as StatusVariant },
-  { value: 'DELAYED', label: 'Delayed', variant: 'amber' as StatusVariant },
+  { value: 'PLANNED', label: 'Planned', variant: 'blue' as StatusVariant },
+  { value: 'DUE_SOON', label: 'Due Soon', variant: 'purple' as StatusVariant },
+  { value: 'DUE_NOW', label: 'Due Now', variant: 'orange' as StatusVariant },
+  { value: 'OVERDUE', label: 'Overdue', variant: 'red' as StatusVariant },
   { value: 'ON_HOLD', label: 'On Hold', variant: 'gray' as StatusVariant },
-  { value: 'OLD', label: 'Old', variant: 'gray' as StatusVariant },
+  { value: 'BACKLOG', label: 'Backlog', variant: 'amber' as StatusVariant },
   { value: 'PAID', label: 'Paid', variant: 'green' as StatusVariant },
-  { value: 'UNPAID', label: 'Unpaid', variant: 'red' as StatusVariant },
+  { value: 'CANCELLED', label: 'Cancelled', variant: 'gray' as StatusVariant },
 ] as const;
 
 export const EXPENSE_CATEGORIES = [
@@ -46,6 +65,12 @@ export const SUBSCRIPTION_TYPES = [
   { value: 'DEV_AND_MAINTENANCE', label: 'Dev + Maintenance', variant: 'blue' as StatusVariant },
   { value: 'DEV_ONLY', label: 'Development Only', variant: 'purple' as StatusVariant },
   { value: 'PARTNER_SERVICE', label: 'Partner Service', variant: 'orange' as StatusVariant },
+] as const;
+
+export const SUBSCRIPTION_BILLING_FREQUENCIES = [
+  { value: 'MONTHLY', label: 'Monthly' },
+  { value: 'YEARLY', label: 'Yearly' },
+  { value: 'CUSTOM', label: 'Custom' },
 ] as const;
 
 export const SUBSCRIPTION_STATUSES = [
@@ -82,14 +107,20 @@ export function getSubscriptionStatus(value: string) {
   return SUBSCRIPTION_STATUSES.find((s) => s.value === value);
 }
 
-export function formatAmount(amount: number, currency = 'AMD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+export function getSubscriptionBillingFrequency(value: string) {
+  return SUBSCRIPTION_BILLING_FREQUENCIES.find((f) => f.value === value);
 }
+
+export {
+  AMD_CURRENCY_SYMBOL,
+  formatAmount,
+  formatAmountCompact,
+  formatAmountDramSuffix,
+  formatGroupedNumber,
+  formatMoneyDram,
+  formatMoneyDramOrDash,
+  parseMoneyAmount,
+} from '@/lib/format/money';
 
 function toApiDate(date: Date): string {
   return date.toISOString();

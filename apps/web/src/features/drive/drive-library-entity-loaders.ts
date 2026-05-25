@@ -1,0 +1,190 @@
+import { companiesApi, contactsApi } from '@/lib/api/clients';
+import { dealsApi } from '@/lib/api/deals';
+import { expensesApi, invoicesApi } from '@/lib/api/finance';
+import { leadsApi } from '@/lib/api/leads';
+import { partnersApi } from '@/lib/api/partners';
+import { productsApi } from '@/lib/api/products';
+import { projectsApi } from '@/lib/api/projects';
+import { supportApi } from '@/lib/api/support';
+import { tasksApi } from '@/lib/api/tasks';
+import type { DriveLibraryKey } from './drive-options';
+
+const LIST_PARAMS = { page: 1, pageSize: 60 } as const;
+
+export type DriveLibraryEntityRow = {
+  id: string;
+  /** Primary display name (e.g. project title without code prefix). */
+  label: string;
+  entityType: string;
+  /** Optional record code shown as a small badge (e.g. P-2026-0005). */
+  code?: string;
+};
+
+export function buildDriveLibraryEntityRow(params: {
+  id: string;
+  entityType: string;
+  name: string;
+  code?: string | null;
+}): DriveLibraryEntityRow {
+  const label = params.name.trim() || 'Untitled';
+  const code = params.code?.trim();
+  return {
+    id: params.id,
+    entityType: params.entityType,
+    label,
+    ...(code ? { code } : {}),
+  };
+}
+
+/** Merges API rows with pinned rows (e.g. deep-linked project) without duplicates. */
+export function mergeDriveLibraryEntityRows(
+  base: DriveLibraryEntityRow[],
+  pinned?: readonly DriveLibraryEntityRow[],
+): DriveLibraryEntityRow[] {
+  if (!pinned?.length) return base;
+  const map = new Map<string, DriveLibraryEntityRow>();
+  for (const row of pinned) {
+    map.set(`${row.entityType}:${row.id}`, row);
+  }
+  for (const row of base) {
+    const k = `${row.entityType}:${row.id}`;
+    if (!map.has(k)) map.set(k, row);
+  }
+  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label));
+}
+
+const isSystemEntityLibrary = (key: DriveLibraryKey): boolean =>
+  ['deals', 'projects', 'products', 'clients', 'finance', 'partners', 'tasks', 'support'].includes(
+    key,
+  );
+
+export async function loadDriveLibraryEntityRows(
+  libraryKey: DriveLibraryKey,
+): Promise<DriveLibraryEntityRow[]> {
+  if (!isSystemEntityLibrary(libraryKey)) return [];
+
+  switch (libraryKey) {
+    case 'deals': {
+      const [deals, leads] = await Promise.all([
+        dealsApi.getAll(LIST_PARAMS),
+        leadsApi.getAll(LIST_PARAMS),
+      ]);
+      const dealRows = deals.items.map((d) =>
+        buildDriveLibraryEntityRow({
+          id: d.id,
+          entityType: 'DEAL',
+          code: d.code,
+          name: d.name?.trim() || 'Deal',
+        }),
+      );
+      const leadRows = leads.items.map((l) =>
+        buildDriveLibraryEntityRow({
+          id: l.id,
+          entityType: 'LEAD',
+          code: l.code,
+          name: l.contactName || l.name || 'Lead',
+        }),
+      );
+      return [...dealRows, ...leadRows].sort((a, b) => a.label.localeCompare(b.label));
+    }
+    case 'projects': {
+      const data = await projectsApi.getAll(LIST_PARAMS);
+      return data.items.map((p) =>
+        buildDriveLibraryEntityRow({
+          id: p.id,
+          entityType: 'PROJECT',
+          code: p.code,
+          name: p.name,
+        }),
+      );
+    }
+    case 'products': {
+      const data = await productsApi.getAll(LIST_PARAMS);
+      return data.items.map((p) =>
+        buildDriveLibraryEntityRow({
+          id: p.id,
+          entityType: 'PRODUCT',
+          name: p.name,
+          code: p.project?.code ?? null,
+        }),
+      );
+    }
+    case 'clients': {
+      const [companies, contacts] = await Promise.all([
+        companiesApi.getAll(LIST_PARAMS),
+        contactsApi.getAll(LIST_PARAMS),
+      ]);
+      const companyRows = companies.items.map((c) => ({
+        id: c.id,
+        label: `Company: ${c.name}`,
+        entityType: 'COMPANY',
+      }));
+      const contactRows = contacts.items.map((c) => ({
+        id: c.id,
+        label: `Contact: ${c.firstName} ${c.lastName}`,
+        entityType: 'CONTACT',
+      }));
+      return [...companyRows, ...contactRows].sort((a, b) => a.label.localeCompare(b.label));
+    }
+    case 'finance': {
+      const [inv, exp] = await Promise.all([
+        invoicesApi.getAll(LIST_PARAMS),
+        expensesApi.getAll({ ...LIST_PARAMS, activeBoard: true }),
+      ]);
+      const invRows = inv.items.map((i) => ({
+        id: i.id,
+        label: `Invoice ${i.code}`,
+        entityType: 'INVOICE',
+      }));
+      const expRows = exp.items.map((e) => ({
+        id: e.id,
+        label: `Expense: ${e.name}`,
+        entityType: 'EXPENSE',
+      }));
+      return [...invRows, ...expRows].sort((a, b) => a.label.localeCompare(b.label));
+    }
+    case 'partners': {
+      const data = await partnersApi.getAll(LIST_PARAMS);
+      return data.items.map((p) => ({
+        id: p.id,
+        label: p.name,
+        entityType: 'PARTNER',
+      }));
+    }
+    case 'tasks': {
+      const [taskData, wsData] = await Promise.all([
+        tasksApi.getAll(LIST_PARAMS),
+        tasksApi.getWorkSpaces(LIST_PARAMS),
+      ]);
+      const taskRows = taskData.items.map((t) =>
+        buildDriveLibraryEntityRow({
+          id: t.id,
+          entityType: 'TASK',
+          code: t.code,
+          name: t.title,
+        }),
+      );
+      const wsRows = wsData.items.map((w) =>
+        buildDriveLibraryEntityRow({
+          id: w.id,
+          entityType: 'WORK_SPACE',
+          name: w.name,
+        }),
+      );
+      return [...taskRows, ...wsRows].sort((a, b) => a.label.localeCompare(b.label));
+    }
+    case 'support': {
+      const data = await supportApi.getAll(LIST_PARAMS);
+      return data.items.map((t) =>
+        buildDriveLibraryEntityRow({
+          id: t.id,
+          entityType: 'SUPPORT_TICKET',
+          code: t.code,
+          name: t.title,
+        }),
+      );
+    }
+    default:
+      return [];
+  }
+}

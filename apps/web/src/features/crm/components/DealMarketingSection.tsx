@@ -1,187 +1,252 @@
 'use client';
 
 import { Building2, ExternalLink, Megaphone, User } from 'lucide-react';
-import { InlineField, SearchField } from '@/components/shared';
+import {
+  DETAIL_SHEET_SECTION_BODY_CLASS,
+  DetailSheetSection,
+  InlineField,
+  RelationPickerField,
+  SearchField,
+} from '@/components/shared';
+import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import type { Deal } from '@/lib/api/deals';
 import { LEAD_SOURCES, SALES_CHANNELS } from '../constants/leadPipeline';
-import { isDealAttributionLocked } from '@nbos/shared/constants';
+import {
+  isDealAttributionLocked,
+  requiresMarketingWhichOneSelection,
+} from '@nbos/shared/constants';
 import { useCrmMarketingWhereOptions } from '../hooks/useCrmMarketingWhereOptions';
-import type { SaveField, SaveMultipleFields, SearchLoader } from './deal-general-tab.types';
+import type { DealGeneralDraft } from './deal-general-form-state';
+import type { SearchLoader } from './deal-general-tab.types';
 import { DEAL_SHEET_SECTION } from '@/features/shared/crm-sheet-section-ids';
 import { DealPartnerReferralTermsSection } from './DealPartnerReferralTermsSection';
+import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
+import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
+import { cn } from '@/lib/utils';
 
 interface DealMarketingSectionProps {
   deal: Deal;
+  draft: DealGeneralDraft;
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void;
   searchAttributionOptions: SearchLoader;
   searchPartners: SearchLoader;
   searchContacts: SearchLoader;
-  saveField: SaveField;
-  saveMultipleFields: SaveMultipleFields;
   onRefresh?: () => void;
+  disabled?: boolean;
+  sectionClassName?: string;
+  gateRequiredFields?: ReadonlySet<string>;
 }
 
 export function DealMarketingSection({
   deal,
+  draft,
+  patchDraft,
   searchAttributionOptions,
   searchPartners,
   searchContacts,
-  saveField,
-  saveMultipleFields,
   onRefresh,
+  disabled = false,
+  sectionClassName,
+  gateRequiredFields = new Set(),
 }: DealMarketingSectionProps) {
+  const partnerPicker = useRelationPickerActions('partner');
+  const sourceContactPicker = useRelationPickerActions('contact', 'deal-source-contact');
   const { options: marketingWhereOptions } = useCrmMarketingWhereOptions(
-    deal.source === 'MARKETING',
+    draft.source === 'MARKETING',
   );
-  const sourceLabel =
-    LEAD_SOURCES.find((source) => source.value === deal.source)?.label ?? deal.source;
-  const whereOptions = getWhereOptions(deal.source, marketingWhereOptions);
+  const whereOptions = getWhereOptions(draft.source, marketingWhereOptions);
   const attributionLocked = isDealAttributionLocked(deal.status);
+  const showMarketingWhichOne =
+    draft.source === 'MARKETING' &&
+    Boolean(draft.sourceDetail) &&
+    requiresMarketingWhichOneSelection(draft.source, draft.sourceDetail);
+  const rowFieldCount = countMarketingRowFields(draft, showMarketingWhichOne);
 
   return (
-    <section
+    <DetailSheetSection
       id={DEAL_SHEET_SECTION.MARKETING}
-      className="rounded-2xl border border-stone-100 bg-gradient-to-br from-violet-50/40 to-white p-5 dark:border-stone-800 dark:from-violet-950/10 dark:to-transparent"
+      title="Marketing"
+      icon={<Megaphone size={12} />}
+      className={sectionClassName}
     >
-      <h4 className="text-muted-foreground mb-4 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase">
-        <Megaphone size={12} />
-        Marketing
-      </h4>
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-        <InlineField
-          label="From"
-          value={deal.source}
-          displayValue={
-            deal.source ? (
-              <span className="text-foreground text-sm font-medium">{sourceLabel}</span>
-            ) : undefined
-          }
-          type="select"
-          options={LEAD_SOURCES.map((source) => ({ value: source.value, label: source.label }))}
-          placeholder="Select source..."
-          icon={<Megaphone size={12} />}
-          onSave={(value) =>
-            saveMultipleFields({
-              source: value,
-              sourceDetail: null,
-              sourcePartnerId: null,
-              sourceContactId: null,
-              marketingAccountId: null,
-              marketingActivityId: null,
-            })
-          }
-          clearable={!attributionLocked}
-        />
+      <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+        <div className={marketingFieldsRowGridClass(rowFieldCount)}>
+          <div className="min-w-0">
+            <InlineField
+              variant="controlled"
+              label="From"
+              value={draft.source ?? ''}
+              type="select"
+              options={LEAD_SOURCES.map((source) => ({ value: source.value, label: source.label }))}
+              placeholder="Select source..."
+              icon={<Megaphone size={12} />}
+              disabled={disabled || attributionLocked}
+              clearable={!attributionLocked}
+              className={dealStageGateFieldClass(gateRequiredFields, 'source')}
+              onValueChange={(value) =>
+                patchDraft({
+                  source: value || null,
+                  sourceDetail: null,
+                  sourcePartnerId: null,
+                  sourceContactId: null,
+                  marketingAccountId: null,
+                  marketingActivityId: null,
+                  marketingPickLabel: null,
+                  partnerPickLabel: null,
+                  clientPickLabel: null,
+                })
+              }
+            />
+          </div>
 
-        {(deal.source === 'SALES' || deal.source === 'MARKETING') && (
-          <InlineField
-            label="Where?"
-            value={deal.sourceDetail}
-            displayValue={
-              deal.sourceDetail ? (
-                <span className="text-foreground text-sm font-medium">
-                  {whereOptions.find((option) => option.value === deal.sourceDetail)?.label ??
-                    deal.sourceDetail}
-                </span>
-              ) : undefined
-            }
-            type="select"
-            options={whereOptions}
-            placeholder="Select channel..."
-            icon={<ExternalLink size={12} />}
-            onSave={(value) =>
-              saveMultipleFields({
-                sourceDetail: value,
-                marketingAccountId: null,
-                marketingActivityId: null,
-              })
-            }
-            clearable={!attributionLocked}
-          />
-        )}
+          {(draft.source === 'SALES' || draft.source === 'MARKETING') && (
+            <div className="min-w-0">
+              <InlineField
+                variant="controlled"
+                label="Where?"
+                value={draft.sourceDetail ?? ''}
+                type="select"
+                options={whereOptions}
+                placeholder="Select channel..."
+                icon={<ExternalLink size={12} />}
+                disabled={disabled || attributionLocked}
+                clearable={!attributionLocked}
+                className={dealStageGateFieldClass(gateRequiredFields, 'sourceDetail')}
+                onValueChange={(value) =>
+                  patchDraft({
+                    sourceDetail: value || null,
+                    marketingAccountId: null,
+                    marketingActivityId: null,
+                    marketingPickLabel: null,
+                  })
+                }
+              />
+            </div>
+          )}
 
-        {deal.source === 'MARKETING' && deal.sourceDetail && (
-          <SearchField
-            label="Which one"
-            value={
-              deal.marketingAccount
-                ? deal.marketingAccount.name
-                : (deal.marketingActivity?.title ?? null)
-            }
-            displayValue={
-              deal.marketingAccount || deal.marketingActivity ? (
-                <span className="text-foreground text-sm font-medium">
-                  {deal.marketingAccount?.name ?? deal.marketingActivity?.title}
-                </span>
-              ) : undefined
-            }
-            placeholder="Search accounts or activities..."
-            icon={<ExternalLink size={12} />}
-            onSearch={searchAttributionOptions}
-            onSave={(value) => saveMarketingAttribution(value, saveMultipleFields)}
-            onClear={
-              attributionLocked
-                ? undefined
-                : () =>
-                    saveMultipleFields({
-                      marketingAccountId: null,
-                      marketingActivityId: null,
-                    })
-            }
-          />
-        )}
+          {showMarketingWhichOne ? (
+            <div className="min-w-0">
+              <SearchField
+                selectionMode="stage"
+                label="Which one?"
+                value={draft.marketingAccountId ?? draft.marketingActivityId ?? null}
+                className={dealStageGateFieldClass(gateRequiredFields, 'whichOne')}
+                displayValue={
+                  draft.marketingPickLabel ? (
+                    <span className="text-foreground text-sm font-medium">
+                      {draft.marketingPickLabel}
+                    </span>
+                  ) : undefined
+                }
+                placeholder="Search accounts or activities..."
+                icon={<ExternalLink size={12} />}
+                disabled={disabled || attributionLocked}
+                onSearch={searchAttributionOptions}
+                onStageSelect={(value, label) => {
+                  const [type, id] = value.split(':');
+                  patchDraft({
+                    marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
+                    marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
+                    marketingPickLabel: label,
+                  });
+                }}
+                onClear={
+                  attributionLocked || disabled
+                    ? undefined
+                    : () =>
+                        patchDraft({
+                          marketingAccountId: null,
+                          marketingActivityId: null,
+                          marketingPickLabel: null,
+                        })
+                }
+              />
+            </div>
+          ) : null}
 
-        {deal.source === 'PARTNER' && (
-          <SearchField
-            label="Which Partner?"
-            value={deal.sourcePartner?.name ?? null}
-            displayValue={
-              deal.sourcePartner ? (
-                <span className="text-foreground text-sm font-medium">
-                  {deal.sourcePartner.name}
-                </span>
-              ) : undefined
-            }
-            placeholder="Search partners..."
-            icon={<Building2 size={12} />}
-            onSearch={searchPartners}
-            onSave={(value) => saveField('sourcePartnerId', value)}
-            onClear={attributionLocked ? undefined : () => saveField('sourcePartnerId', null)}
-          />
-        )}
+          {draft.source === 'PARTNER' && (
+            <div className="min-w-0">
+              <RelationPickerField
+                label="Which Partner?"
+                entityKind="partner"
+                value={draft.sourcePartnerId}
+                selectionLabel={draft.partnerPickLabel}
+                className={dealStageGateFieldClass(gateRequiredFields, 'sourcePartnerId')}
+                placeholder="Search partners…"
+                icon={<Building2 size={12} />}
+                disabled={disabled || attributionLocked}
+                onSearch={searchPartners}
+                onSelect={(value, label) =>
+                  patchDraft({ sourcePartnerId: value, partnerPickLabel: label })
+                }
+                onClear={
+                  attributionLocked || disabled
+                    ? undefined
+                    : () => patchDraft({ sourcePartnerId: null, partnerPickLabel: null })
+                }
+                {...partnerPicker}
+              />
+            </div>
+          )}
 
-        {deal.source === 'PARTNER' && deal.sourcePartnerId ? (
-          <DealPartnerReferralTermsSection
-            deal={deal}
-            attributionLocked={attributionLocked}
-            onTermsUpdated={onRefresh}
-          />
+          {draft.source === 'CLIENT' && (
+            <div className="min-w-0">
+              <RelationPickerField
+                label="Which Client?"
+                entityKind="contact"
+                value={draft.sourceContactId}
+                selectionLabel={draft.clientPickLabel}
+                className={dealStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
+                placeholder="Search contacts…"
+                icon={<User size={12} />}
+                disabled={disabled || attributionLocked}
+                onSearch={searchContacts}
+                onSelect={(value, label) =>
+                  patchDraft({ sourceContactId: value, clientPickLabel: label })
+                }
+                onClear={
+                  attributionLocked || disabled
+                    ? undefined
+                    : () => patchDraft({ sourceContactId: null, clientPickLabel: null })
+                }
+                {...sourceContactPicker}
+              />
+            </div>
+          )}
+        </div>
+
+        {draft.source === 'PARTNER' && draft.sourcePartnerId ? (
+          <div
+            className={cn(
+              gateRequiredFields.has('partnerReferralTerms') &&
+                DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
+            )}
+          >
+            <DealPartnerReferralTermsSection
+              deal={deal}
+              attributionLocked={attributionLocked}
+              onTermsUpdated={onRefresh}
+            />
+          </div>
         ) : null}
-
-        {deal.source === 'CLIENT' && (
-          <SearchField
-            label="Which Client?"
-            value={
-              deal.sourceContact
-                ? `${deal.sourceContact.firstName} ${deal.sourceContact.lastName}`
-                : null
-            }
-            displayValue={
-              deal.sourceContact ? (
-                <span className="text-foreground text-sm font-medium">
-                  {deal.sourceContact.firstName} {deal.sourceContact.lastName}
-                </span>
-              ) : undefined
-            }
-            placeholder="Search contacts..."
-            icon={<User size={12} />}
-            onSearch={searchContacts}
-            onSave={(value) => saveField('sourceContactId', value)}
-            onClear={attributionLocked ? undefined : () => saveField('sourceContactId', null)}
-          />
-        )}
       </div>
-    </section>
+    </DetailSheetSection>
   );
+}
+
+function countMarketingRowFields(draft: DealGeneralDraft, showMarketingWhichOne: boolean): number {
+  let count = 1;
+  if (draft.source === 'SALES' || draft.source === 'MARKETING') count += 1;
+  if (showMarketingWhichOne) count += 1;
+  if (draft.source === 'PARTNER') count += 1;
+  if (draft.source === 'CLIENT') count += 1;
+  return count;
+}
+
+function marketingFieldsRowGridClass(count: number): string {
+  if (count >= 3) return 'grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-4';
+  if (count === 2) return 'grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4';
+  return 'grid grid-cols-1 gap-4';
 }
 
 function getWhereOptions(
@@ -195,12 +260,4 @@ function getWhereOptions(
     return marketingOptions;
   }
   return [];
-}
-
-function saveMarketingAttribution(value: string, saveMultipleFields: SaveMultipleFields) {
-  const [type, id] = value.split(':');
-  return saveMultipleFields({
-    marketingAccountId: type === 'ACCOUNT' ? (id ?? null) : null,
-    marketingActivityId: type === 'ACTIVITY' ? (id ?? null) : null,
-  });
 }

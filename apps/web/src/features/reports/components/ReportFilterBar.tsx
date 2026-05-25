@@ -5,9 +5,11 @@ import type { ReactNode } from 'react';
 import { BookmarkPlus, CalendarRange, Filter, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import type { ReportDefinition, SavedReportView } from '@/lib/api/reports';
 import { reportsApi } from '@/lib/api/reports';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
 import { buildReportFilters, savedViewToFilters, type ReportFilterState } from '../report-filters';
 
 type PeriodPreset = 'THIS_MONTH' | 'THIS_QUARTER' | 'THIS_YEAR';
@@ -168,9 +170,11 @@ function SearchInput({
     <div className="relative">
       <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
       <Input
+        {...LIST_SEARCH_INPUT_PROPS}
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder="Search reports..."
+        role="searchbox"
         className="bg-background/80 pl-9"
       />
     </div>
@@ -234,18 +238,16 @@ function CustomRangePanel({
 }) {
   return (
     <div className="border-border bg-popover absolute top-11 left-0 z-20 grid w-full gap-3 rounded-2xl border p-3 shadow-lg sm:w-96 sm:grid-cols-[1fr_1fr_auto]">
-      <Input
-        type="date"
-        aria-label="Custom period start"
+      <NbosDatePicker
         value={dateFrom}
-        onChange={(event) => onDateFromChange(event.target.value)}
+        onChange={onDateFromChange}
+        aria-label="Custom period start"
         className="bg-background"
       />
-      <Input
-        type="date"
-        aria-label="Custom period end"
+      <NbosDatePicker
         value={dateTo}
-        onChange={(event) => onDateToChange(event.target.value)}
+        onChange={onDateToChange}
+        aria-label="Custom period end"
         className="bg-background"
       />
       <Button type="button" size="sm" onClick={onApply} disabled={!dateFrom && !dateTo}>

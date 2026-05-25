@@ -19,6 +19,8 @@ export interface DeliveryLifecycleProjection {
   cancellationReason: string | null;
   isActive: boolean;
   isTerminal: boolean;
+  /** When set (e.g. list API), powers segmented readiness ring for current stage. */
+  currentStageReadiness?: { completed: number; total: number };
 }
 
 export interface Project {
@@ -31,8 +33,19 @@ export interface Project {
   updatedAt: string;
   company: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string };
+  additionalContacts?: Array<{
+    contact: { id: string; firstName: string; lastName: string; email: string | null };
+  }>;
   _count: { orders: number; products?: number; extensions?: number };
 }
+
+/** Aggregated checklist instance progress for the entity current delivery stage. */
+export type ChecklistStageProgress = {
+  completed: number;
+  total: number;
+  completedChecklists?: number;
+  totalChecklists?: number;
+};
 
 export interface ProjectProductSummary {
   id: string;
@@ -41,13 +54,32 @@ export interface ProjectProductSummary {
   productCategory: string;
   productType: string;
   deadline: string | null;
+  description?: string | null;
+  order?: {
+    id: string;
+    status?: string;
+    invoices?: Array<{ moneyStatus: string }>;
+  } | null;
   pm: EmployeeRef | null;
   deliveryLifecycle?: DeliveryLifecycleProjection;
+  /** Present when item comes from list/global board (not embedded project bundle). */
+  projectId?: string;
+  project?: {
+    id: string;
+    name: string;
+    code: string;
+    companyId?: string | null;
+    company?: { id: string; name: string } | null;
+  };
+  /** List/global board: proxy for closed-at when terminal (ISO). */
+  updatedAt?: string;
+  clientAcceptedAt?: string | null;
   _count: {
     extensions: number;
     tasks: number;
     tickets: number;
   };
+  checklistStageProgress?: ChecklistStageProgress | null;
 }
 
 export interface ProjectExtensionSummary {
@@ -56,10 +88,28 @@ export interface ProjectExtensionSummary {
   status: string;
   size: string;
   productId: string;
+  projectId?: string;
+  description?: string | null;
+  assignedTo?: string | null;
+  order?: {
+    id: string;
+    status?: string | null;
+    invoices?: Array<{ moneyStatus: string }>;
+  } | null;
   assignee: EmployeeRef | null;
   product: { id: string; name: string; productType: string; status: string };
+  project?: {
+    id: string;
+    name: string;
+    code: string;
+    companyId?: string | null;
+    company?: { id: string; name: string } | null;
+  };
   deliveryLifecycle?: DeliveryLifecycleProjection;
+  /** List/global board: proxy for closed-at when terminal (ISO). */
+  updatedAt?: string;
   _count: { tasks: number };
+  checklistStageProgress?: ChecklistStageProgress | null;
 }
 
 export interface ProjectOrder {
@@ -123,6 +173,7 @@ export interface ProjectSubscription {
 
 export interface ProjectDomain {
   id: string;
+  clientServiceRecordId: string | null;
   domainName: string;
   provider: string | null;
   purchaseDate: string | null;
@@ -177,26 +228,6 @@ export interface ProjectIntakeSummary {
   subscriptionStatuses: string[];
 }
 
-export interface ProjectKickoffChecklistItem {
-  id: string;
-  projectId: string;
-  key: string;
-  title: string;
-  isRequired: boolean;
-  isChecked: boolean;
-  note: string | null;
-  checkedAt: string | null;
-  checkedById: string | null;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface UpdateKickoffChecklistItemInput {
-  isChecked?: boolean;
-  note?: string | null;
-}
-
 export interface FullProject extends Project {
   products: ProjectProductSummary[];
   extensions: ProjectExtensionSummary[];
@@ -208,7 +239,6 @@ export interface FullProject extends Project {
   expenses: ProjectExpense[];
   auditLogs: ProjectAuditLog[];
   intake?: ProjectIntakeSummary;
-  kickoffChecklist?: ProjectKickoffChecklistItem[];
   _count: {
     products: number;
     extensions: number;
@@ -250,20 +280,8 @@ export const projectsApi = {
     return resp.data;
   },
 
-  async update(id: string, data: Record<string, unknown>): Promise<Project> {
-    const resp = await api.put<Project>(`/api/projects/${id}`, data);
-    return resp.data;
-  },
-
-  async updateKickoffChecklistItem(
-    projectId: string,
-    itemId: string,
-    data: UpdateKickoffChecklistItemInput,
-  ): Promise<ProjectKickoffChecklistItem> {
-    const resp = await api.put<ProjectKickoffChecklistItem>(
-      `/api/projects/${projectId}/kickoff-checklist/${itemId}`,
-      data,
-    );
+  async update(id: string, data: Record<string, unknown>): Promise<FullProject> {
+    const resp = await api.put<FullProject>(`/api/projects/${id}`, data);
     return resp.data;
   },
 

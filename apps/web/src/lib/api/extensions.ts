@@ -1,11 +1,17 @@
 import { api } from '../api';
-import type { DeliveryLifecycleProjection } from './projects';
+import type { ChecklistStageProgress, DeliveryLifecycleProjection } from './projects';
 
 export interface ExtensionEmployee {
   id: string;
   firstName: string;
   lastName: string;
   email?: string;
+}
+
+export interface ExtensionClosedByRef {
+  id: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface Extension {
@@ -18,14 +24,37 @@ export interface Extension {
   deliveryLifecycle?: DeliveryLifecycleProjection;
   assignedTo: string | null;
   description: string | null;
+  closedAt?: string | null;
+  closedBy?: ExtensionClosedByRef | null;
   createdAt: string;
   updatedAt: string;
-  project: { id: string; name: string; code: string };
-  product: { id: string; name: string };
+  project: {
+    id: string;
+    name: string;
+    code: string;
+    companyId?: string | null;
+    company?: { id: string; name: string } | null;
+    contactId?: string | null;
+    contact?: { id: string; firstName: string; lastName: string } | null;
+  };
+  product: {
+    id: string;
+    name: string;
+    productType?: string;
+    languages?: string[];
+    technicalProfiles?: Array<{
+      productionUrl: string | null;
+      stagingUrl: string | null;
+      repositoryUrl: string | null;
+      hostingProvider: string | null;
+      technicalOwnerId: string | null;
+    }>;
+  };
   assignee: ExtensionEmployee | null;
   order?: { id: string; code: string; status: string } | null;
   readiness?: ExtensionReadinessSummary;
   _count: { tasks: number };
+  checklistStageProgress?: ChecklistStageProgress | null;
 }
 
 export interface FullExtension extends Extension {
@@ -57,9 +86,18 @@ export interface ExtensionOrderRef {
   id: string;
   code: string;
   type: string;
+  paymentType: string;
   totalAmount: string;
   currency: string;
   status: string;
+  deal?: {
+    id: string;
+    code: string;
+    offerFileUrl?: string | null;
+    contractFileUrl?: string | null;
+    seller?: ExtensionEmployee | null;
+  } | null;
+  invoices?: Array<{ moneyStatus: string }>;
 }
 
 export interface ExtensionStats {

@@ -22,6 +22,7 @@ declare module 'next-auth' {
 const BACKEND_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {

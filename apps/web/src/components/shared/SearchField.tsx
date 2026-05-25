@@ -4,8 +4,14 @@ import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react'
 import { Search, X, Plus, Pencil, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import {
+  DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
+  DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+} from './detail-sheet-classes';
 
-const MAX_RESULTS = 5;
+const DEFAULT_MAX_RESULTS = 5;
 
 interface SearchOption {
   value: string;
@@ -13,35 +19,68 @@ interface SearchOption {
   subtitle?: string;
 }
 
-interface SearchFieldProps {
+interface SearchFieldBaseProps {
   label: string;
   value: string | null | undefined;
   displayValue?: ReactNode;
   placeholder?: string;
   icon?: ReactNode;
-  onSave: (value: string, label: string) => Promise<void> | void;
   onSearch: (query: string) => Promise<SearchOption[]>;
-  onClear?: () => Promise<void> | void;
+  onClear?: () => Promise<void> | void | (() => void);
   onNew?: () => void;
   newLabel?: string;
   newBadge?: ReactNode;
   className?: string;
+  disabled?: boolean;
+  /** Max rows shown in the dropdown (default 5). */
+  maxResults?: number;
 }
 
-export function SearchField({
-  label,
-  value,
-  displayValue,
-  placeholder,
-  icon,
-  onSave,
-  onSearch,
-  onClear,
-  onNew,
-  newLabel = 'Create new',
-  newBadge,
-  className,
-}: SearchFieldProps) {
+type SearchFieldPersistProps = SearchFieldBaseProps & {
+  selectionMode?: 'persist';
+  onSave: (value: string, label: string) => Promise<void> | void;
+};
+
+type SearchFieldStageProps = SearchFieldBaseProps & {
+  selectionMode: 'stage';
+  onStageSelect: (value: string, label: string) => void;
+  onClear?: () => void;
+};
+
+export type SearchFieldProps = SearchFieldPersistProps | SearchFieldStageProps;
+
+/**
+ * Generic async search + optional inline “new” action.
+ *
+ * For **entity links** (Contact, Company, Project, Partner, Product, Employee) use
+ * {@link RelationPickerField} with {@link useRelationPickerActions} and app-wide
+ * {@link EntityRelationHost} instead — unified search, create bar, chip open, and clear.
+ *
+ * Keep `SearchField` for non-entity cases: Drive file pickers, composite ids (e.g. marketing
+ * attribution `ACCOUNT:id`), filters, and legacy screens not yet migrated.
+ */
+function isStageProps(props: SearchFieldProps): props is SearchFieldStageProps {
+  return props.selectionMode === 'stage';
+}
+
+export function SearchField(props: SearchFieldProps) {
+  const {
+    label,
+    value,
+    displayValue,
+    placeholder,
+    icon,
+    onSearch,
+    onClear,
+    onNew,
+    newLabel = 'Create new',
+    newBadge,
+    className,
+    disabled = false,
+    maxResults = DEFAULT_MAX_RESULTS,
+  } = props;
+  const onSave = isStageProps(props) ? undefined : props.onSave;
+  const onStageSelect = isStageProps(props) ? props.onStageSelect : undefined;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchOption[]>([]);
@@ -59,25 +98,29 @@ export function SearchField({
         setLoading(true);
         try {
           const items = await onSearch(q);
-          setResults(items.slice(0, MAX_RESULTS));
+          setResults(items.slice(0, maxResults));
           setHighlightIdx(-1);
         } finally {
           setLoading(false);
         }
       }, 150);
     },
-    [onSearch],
+    [onSearch, maxResults],
   );
 
   useEffect(() => {
-    if (open) {
+    if (open && !disabled) {
       doSearch('');
       setTimeout(() => inputRef.current?.focus(), 50);
     }
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [open, doSearch]);
+  }, [open, disabled, doSearch]);
+
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
 
   useEffect(() => {
     if (!open) return;
@@ -91,6 +134,14 @@ export function SearchField({
   }, [open]);
 
   const handleSelect = async (optValue: string, optLabel: string) => {
+    if (disabled) return;
+    if (isStageProps(props) && onStageSelect) {
+      onStageSelect(optValue, optLabel);
+      setOpen(false);
+      setQuery('');
+      return;
+    }
+    if (!onSave) return;
     setSaving(true);
     try {
       await onSave(optValue, optLabel);
@@ -102,10 +153,14 @@ export function SearchField({
   };
 
   const handleClear = async () => {
-    if (!onClear) return;
-    setSaving(true);
+    if (disabled || !onClear) return;
     setOpen(false);
     setQuery('');
+    if (isStageProps(props)) {
+      onClear();
+      return;
+    }
+    setSaving(true);
     try {
       await onClear();
     } finally {
@@ -114,6 +169,7 @@ export function SearchField({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setHighlightIdx((i) => Math.min(i + 1, results.length - 1));
@@ -131,8 +187,11 @@ export function SearchField({
   const hasValue = value != null && value !== '';
 
   return (
-    <div className={cn('group relative', className)} ref={containerRef}>
-      <div className="text-muted-foreground mb-1 flex items-center gap-1.5 text-xs font-medium">
+    <div
+      className={cn('group relative', disabled && 'pointer-events-none opacity-60', className)}
+      ref={containerRef}
+    >
+      <div className="text-foreground/85 mb-1.5 flex items-center gap-1.5 text-sm font-medium">
         {icon && <span className="text-muted-foreground/70">{icon}</span>}
         {label}
       </div>
@@ -142,18 +201,19 @@ export function SearchField({
           <div className="relative">
             <Search
               size={14}
-              className="text-muted-foreground absolute top-1/2 left-2.5 -translate-y-1/2"
+              className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
             />
             <Input
               ref={inputRef}
               value={query}
+              disabled={disabled}
               onChange={(e) => {
                 setQuery(e.target.value);
                 doSearch(e.target.value);
               }}
               onKeyDown={handleKeyDown}
               placeholder={placeholder ?? 'Type to search...'}
-              className="h-8 pr-8 pl-8 text-sm"
+              className="pr-9 pl-9 text-sm"
             />
             {query && (
               <button
@@ -224,10 +284,14 @@ export function SearchField({
       ) : (
         <div className="flex items-center gap-2">
           <div
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              if (!disabled) setOpen(true);
+            }}
             className={cn(
-              'flex-1 cursor-pointer rounded-lg border border-transparent px-3 py-2 text-sm transition-all',
-              'hover:bg-accent/5 hover:border-border',
+              DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+              DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
+              'text-foreground flex-1 rounded-xl px-3 py-2 text-sm',
+              disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
             )}
           >
             <div className="flex items-center justify-between">
@@ -240,7 +304,7 @@ export function SearchField({
                   ))}
               </div>
               <div className="flex items-center gap-1">
-                {onClear && hasValue && (
+                {onClear && hasValue ? (
                   <button
                     type="button"
                     onMouseDown={(event) => {
@@ -252,16 +316,13 @@ export function SearchField({
                       handleClear();
                     }}
                     disabled={saving}
-                    className="text-muted-foreground/0 hover:bg-destructive/10 hover:text-destructive group-hover:text-muted-foreground/60 flex size-7 items-center justify-center rounded-md transition-colors"
+                    className={DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS}
                     aria-label={`Clear ${label}`}
                   >
                     <X size={16} />
                   </button>
-                )}
-                <Pencil
-                  size={16}
-                  className="text-muted-foreground/0 group-hover:text-muted-foreground/60 transition-all"
-                />
+                ) : null}
+                <Pencil size={16} className={DETAIL_SHEET_FIELD_PENCIL_ICON_CLASS} aria-hidden />
               </div>
             </div>
           </div>

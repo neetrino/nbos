@@ -181,25 +181,32 @@ describe('PayrollRunsService', () => {
       prisma.auditLog.findMany.mockResolvedValue([]);
       prisma.employee.findMany.mockResolvedValue([]);
       prisma.salaryLine.groupBy.mockResolvedValue([{ payrollRunId: 'p1', _count: { _all: 2 } }]);
-      prisma.payrollRun.findUnique.mockResolvedValue({
-        id: 'p1',
-        payrollMonth: '2026-04',
-        status: 'CLOSED',
-        totalBaseSalary: 0,
-        totalBonuses: 0,
-        totalAdjustments: 0,
-        totalDeductions: 0,
-        totalPayable: 0,
-        totalPaid: 0,
-        createdAt: new Date('2026-04-01T10:00:00.000Z'),
-        updatedAt: new Date('2026-04-10T10:00:00.000Z'),
-        approvedAt: new Date('2026-04-05T12:00:00.000Z'),
-        closedAt: new Date('2026-04-06T08:00:00.000Z'),
-        salaryLines: [],
-        createdBy: { id: 'e1', firstName: 'A', lastName: 'B' },
-        approvedBy: { id: 'e2', firstName: 'C', lastName: 'D' },
+      prisma.payrollRun.findUnique.mockImplementation((args: { where: { id?: string } }) => {
+        if (args.where.id === 'p1') {
+          return Promise.resolve({
+            id: 'p1',
+            payrollMonth: '2026-04',
+            status: 'CLOSED',
+            totalBaseSalary: 0,
+            totalBonuses: 0,
+            totalAdjustments: 0,
+            totalDeductions: 0,
+            totalPayable: 0,
+            totalPaid: 0,
+            createdAt: new Date('2026-04-01T10:00:00.000Z'),
+            updatedAt: new Date('2026-04-10T10:00:00.000Z'),
+            approvedAt: new Date('2026-04-05T12:00:00.000Z'),
+            closedAt: new Date('2026-04-06T08:00:00.000Z'),
+            salaryLines: [],
+            createdBy: { id: 'e1', firstName: 'A', lastName: 'B' },
+            approvedBy: { id: 'e2', firstName: 'C', lastName: 'D' },
+          });
+        }
+        return Promise.resolve(null);
       });
       prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: new Decimal('99.10') } });
+      prisma.kpiPolicy.findFirst.mockResolvedValue({ scorecardMetrics: [] });
+      prisma.payment.findMany.mockResolvedValue([]);
       const result = await service.findById('p1');
       expect(result.kpiSalesActualSuggestedAmount).toBe('99.10');
       expect(result.materializedExpenseLineCount).toBe(2);
