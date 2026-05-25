@@ -31,7 +31,7 @@ export const BONUS_BOARD_KANBAN_COLUMNS: readonly BonusBoardKanbanColumnDef[] = 
   {
     key: 'ACTIVE',
     label: 'Active',
-    color: 'bg-teal-500',
+    color: 'bg-green-500',
     statuses: ['ACTIVE'],
   },
   {

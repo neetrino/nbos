@@ -16,7 +16,7 @@ export const BONUS_ENTRY_STATUS_VARIANT: Record<BonusStatus, StatusVariant> = {
   EARNED: 'blue',
   PENDING_ELIGIBILITY: 'amber',
   VESTED: 'indigo',
-  ACTIVE: 'teal',
+  ACTIVE: 'green',
   PAID: 'green',
   CLAWBACK: 'red',
 };
