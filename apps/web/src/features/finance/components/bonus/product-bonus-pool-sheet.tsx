@@ -136,8 +136,6 @@ export function ProductBonusPoolSheet({
           pool={pool}
           lines={lines}
           entries={entries}
-          loading={detailLoading}
-          linesError={linesError}
           entriesError={entriesError}
           onAfterAutoRelease={handleAfterAutoRelease}
         />
@@ -146,6 +144,8 @@ export function ProductBonusPoolSheet({
     return (
       <BonusPoolSheetGeneralTab
         pool={pool}
+        orderCodes={orderCodes}
+        riskFlags={riskFlags}
         paymentCount={paymentCount}
         releaseCount={releaseCount}
         onOpenTab={setActiveTab}
@@ -158,10 +158,11 @@ export function ProductBonusPoolSheet({
     entriesError,
     handleAfterAutoRelease,
     lines,
-    linesError,
+    orderCodes,
     paymentCount,
     pool,
     releaseCount,
+    riskFlags,
     timelineError,
     timelineEvents,
   ]);
@@ -172,7 +173,7 @@ export function ProductBonusPoolSheet({
         <EntityDetailSheetContent open={open} layout="full" width="medium" className="gap-0">
           {pool ? (
             <>
-              <BonusPoolSheetHeader pool={pool} orderCodes={orderCodes} riskFlags={riskFlags} />
+              <BonusPoolSheetHeader pool={pool} />
               <DetailSheetTabBar
                 tabs={BONUS_POOL_DETAIL_SHEET_TABS}
                 activeTab={activeTab}

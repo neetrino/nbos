@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Banknote, ExternalLink } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
@@ -8,17 +8,13 @@ import {
   DetailSheetSection,
   EntityItemList,
   ENTITY_ITEM_VIEW_OPTIONS,
-  useOpenEntityItemFromSummary,
+  useEntityItemHost,
   ViewModeSwitch,
   type EntityItemSummary,
   type EntityItemVariant,
 } from '@/components/shared';
-import { BonusPoolSheetMetricRow } from '@/features/finance/components/bonus/bonus-pool-sheet-metric-row';
 import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
-import {
-  bonusPoolPaymentToItemSummary,
-  bonusPoolReleaseToItemSummary,
-} from '@/features/finance/entity-item/bonus-pool-funding-item-summary';
+import { bonusPoolPaymentToItemSummary } from '@/features/finance/entity-item/bonus-pool-funding-item-summary';
 import type { BonusPoolTimelineEvent, BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
@@ -33,50 +29,50 @@ export function BonusPoolSheetFundingTab({
   loading: boolean;
   error: string | null;
 }) {
-  const onOpenItem = useOpenEntityItemFromSummary();
+  const { openEntityItem } = useEntityItemHost();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
+
+  const paymentEvents = useMemo(
+    () => timelineEvents.filter((event) => event.kind === 'PAYMENT_IN'),
+    [timelineEvents],
+  );
 
   const paymentItems = useMemo(
     () =>
-      timelineEvents
-        .filter((event) => event.kind === 'PAYMENT_IN')
+      paymentEvents
         .map(bonusPoolPaymentToItemSummary)
         .filter((item): item is EntityItemSummary => item != null),
-    [timelineEvents],
+    [paymentEvents],
   );
 
-  const releaseItems = useMemo(
-    () =>
-      timelineEvents
-        .filter((event) => event.kind === 'RELEASE_OUT')
-        .map(bonusPoolReleaseToItemSummary)
-        .filter((item): item is EntityItemSummary => item != null),
-    [timelineEvents],
+  const handleOpenItem = useCallback(
+    (item: EntityItemSummary) => {
+      const event = paymentEvents.find((row) => row.invoiceId === item.id || row.id === item.id);
+      if (event?.invoiceId) {
+        openEntityItem({ id: event.invoiceId, kind: 'invoice' });
+      }
+    },
+    [openEntityItem, paymentEvents],
   );
 
   if (loading) {
-    return <p className="text-muted-foreground text-sm">Loading funding detail…</p>;
+    return <p className="text-muted-foreground text-sm">Loading client payments…</p>;
   }
   if (error) {
     return <p className="text-destructive text-sm">{error}</p>;
   }
 
+  const received = formatBonusPoolMoney(pool.ledgerReceivedAmount);
+  const emptyDescription =
+    received !== '—' && received !== '0.00'
+      ? 'Received total is on the ledger, but no payment rows are linked to order invoices yet.'
+      : 'Payments on linked order invoices will fill this pool.';
+
   return (
-    <div className="space-y-5">
-      <div className="border-border bg-muted/20 space-y-2 rounded-xl border px-3 py-3">
-        <BonusPoolSheetMetricRow
-          label="Received from client"
-          value={formatBonusPoolMoney(pool.ledgerReceivedAmount)}
-        />
-        <BonusPoolSheetMetricRow
-          label="Available for release"
-          value={formatBonusPoolMoney(pool.ledgerAvailableFunding)}
-        />
-        <BonusPoolSheetMetricRow
-          label="Over funding"
-          value={formatBonusPoolMoney(pool.ledgerOverFundingAmount)}
-        />
-      </div>
+    <div className="space-y-4">
+      <p className="text-muted-foreground text-sm">
+        Client payments received for this product pool through order invoices.
+      </p>
 
       <DetailSheetSection title="Client payments" icon={<Banknote size={12} aria-hidden />}>
         <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
@@ -90,21 +86,10 @@ export function BonusPoolSheetFundingTab({
         <EntityItemList
           items={paymentItems}
           variant={viewVariant}
-          onOpen={onOpenItem}
+          onOpen={handleOpenItem}
           emptyIcon={Banknote}
           emptyTitle="No client payments"
-          emptyDescription="Payments on linked order invoices will fill this pool."
-        />
-      </DetailSheetSection>
-
-      <DetailSheetSection title="Bonus releases out">
-        <EntityItemList
-          items={releaseItems}
-          variant={viewVariant}
-          onOpen={onOpenItem}
-          emptyIcon={Banknote}
-          emptyTitle="No releases yet"
-          emptyDescription="Approved releases reduce available pool funding."
+          emptyDescription={emptyDescription}
         />
       </DetailSheetSection>
 

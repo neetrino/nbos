@@ -10,11 +10,8 @@ import {
   ViewModeSwitch,
   type EntityItemVariant,
 } from '@/components/shared';
-import { BonusPoolEmployeeBreakdown } from '@/features/finance/components/bonus/bonus-pool-employee-breakdown';
-import { BonusPoolSheetMetricRow } from '@/features/finance/components/bonus/bonus-pool-sheet-metric-row';
 import { BonusPoolSheetSuggestedPanel } from '@/features/finance/components/bonus/bonus-pool-sheet-suggested-panel';
 import { bonusEntryToItemSummary } from '@/features/finance/entity-item/bonus-entry-item-summary';
-import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
 import type {
   BonusEntryListRow,
   BonusPoolEmployeeLine,
@@ -25,16 +22,12 @@ export function BonusPoolSheetBonusesTab({
   pool,
   lines,
   entries,
-  loading,
-  linesError,
   entriesError,
   onAfterAutoRelease,
 }: {
   pool: BonusProductPoolRow;
   lines: BonusPoolEmployeeLine[];
   entries: BonusEntryListRow[];
-  loading: boolean;
-  linesError: string | null;
   entriesError: string | null;
   onAfterAutoRelease: () => void | Promise<void>;
 }) {
@@ -45,28 +38,6 @@ export function BonusPoolSheetBonusesTab({
 
   return (
     <div className="space-y-5">
-      <div className="border-border bg-muted/20 space-y-2 rounded-xl border px-3 py-3">
-        <BonusPoolSheetMetricRow
-          label="Planned"
-          value={formatBonusPoolMoney(pool.ledgerPlannedAmount)}
-        />
-        <BonusPoolSheetMetricRow
-          label="Released"
-          value={formatBonusPoolMoney(pool.ledgerReleasedAmount)}
-          accentClass="text-teal-700 dark:text-teal-400"
-        />
-        <BonusPoolSheetMetricRow
-          label="Remaining"
-          value={formatBonusPoolMoney(pool.ledgerRemainingAmount)}
-          accentClass="text-amber-700 dark:text-amber-400"
-        />
-        <BonusPoolSheetMetricRow
-          label="Paid"
-          value={formatBonusPoolMoney(pool.sumPaidAmount)}
-          accentClass="text-emerald-700 dark:text-emerald-400"
-        />
-      </div>
-
       <DetailSheetSection title="Suggested release">
         <BonusPoolSheetSuggestedPanel
           pool={pool}
@@ -93,13 +64,6 @@ export function BonusPoolSheetBonusesTab({
           emptyTitle="No bonus entries"
           emptyDescription="Bonus lines for this product pool appear here."
         />
-      </DetailSheetSection>
-
-      <DetailSheetSection title="By employee">
-        <p className="text-muted-foreground mb-3 text-xs">
-          Aggregated planned, released, and paid totals per person.
-        </p>
-        <BonusPoolEmployeeBreakdown lines={lines} loading={loading} error={linesError} />
       </DetailSheetSection>
     </div>
   );

@@ -21,12 +21,12 @@ function releaseStatusVariant(status: string | null): 'green' | 'amber' | 'blue'
 export function bonusPoolPaymentToItemSummary(
   event: BonusPoolTimelineEvent,
 ): EntityItemSummary | null {
-  if (event.kind !== 'PAYMENT_IN' || !event.invoiceId) return null;
+  if (event.kind !== 'PAYMENT_IN') return null;
   return {
-    id: event.invoiceId,
+    id: event.invoiceId ?? event.id,
     kind: 'invoice',
     title: event.label,
-    subtitle: 'Client payment',
+    subtitle: event.orderCode ? `Order ${event.orderCode}` : 'Client payment',
     primaryMetric: `+${formatBonusPoolMoney(event.amount)}`,
     trailing: formatEventDate(event.occurredAt),
     leadingIcon: FileText,
