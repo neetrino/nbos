@@ -141,6 +141,7 @@ export {
   EntityItemSurface,
   ENTITY_ITEM_VIEW_OPTIONS,
   useEntityItemHost,
+  useOpenEntityItemFromSummary,
   type EntityItemHostProps,
   type EntityItemListProps,
   type EntityItemOpenTarget,

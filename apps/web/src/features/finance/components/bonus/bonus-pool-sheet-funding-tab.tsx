@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Banknote, ExternalLink } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
@@ -8,11 +8,12 @@ import {
   DetailSheetSection,
   EntityItemList,
   ENTITY_ITEM_VIEW_OPTIONS,
-  useEntityItemHost,
+  useOpenEntityItemFromSummary,
   ViewModeSwitch,
   type EntityItemSummary,
   type EntityItemVariant,
 } from '@/components/shared';
+import { BonusPoolSheetMetricRow } from '@/features/finance/components/bonus/bonus-pool-sheet-metric-row';
 import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
 import {
   bonusPoolPaymentToItemSummary,
@@ -20,15 +21,6 @@ import {
 } from '@/features/finance/entity-item/bonus-pool-funding-item-summary';
 import type { BonusPoolTimelineEvent, BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
-
-function MetricRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-semibold tabular-nums">{value}</span>
-    </div>
-  );
-}
 
 export function BonusPoolSheetFundingTab({
   pool,
@@ -41,7 +33,7 @@ export function BonusPoolSheetFundingTab({
   loading: boolean;
   error: string | null;
 }) {
-  const { openEntityItem } = useEntityItemHost();
+  const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
 
   const paymentItems = useMemo(
@@ -62,13 +54,6 @@ export function BonusPoolSheetFundingTab({
     [timelineEvents],
   );
 
-  const handleOpenItem = useCallback(
-    (item: EntityItemSummary) => {
-      openEntityItem({ id: item.id, kind: item.kind });
-    },
-    [openEntityItem],
-  );
-
   if (loading) {
     return <p className="text-muted-foreground text-sm">Loading funding detail…</p>;
   }
@@ -79,15 +64,15 @@ export function BonusPoolSheetFundingTab({
   return (
     <div className="space-y-5">
       <div className="border-border bg-muted/20 space-y-2 rounded-xl border px-3 py-3">
-        <MetricRow
+        <BonusPoolSheetMetricRow
           label="Received from client"
           value={formatBonusPoolMoney(pool.ledgerReceivedAmount)}
         />
-        <MetricRow
+        <BonusPoolSheetMetricRow
           label="Available for release"
           value={formatBonusPoolMoney(pool.ledgerAvailableFunding)}
         />
-        <MetricRow
+        <BonusPoolSheetMetricRow
           label="Over funding"
           value={formatBonusPoolMoney(pool.ledgerOverFundingAmount)}
         />
@@ -105,7 +90,7 @@ export function BonusPoolSheetFundingTab({
         <EntityItemList
           items={paymentItems}
           variant={viewVariant}
-          onOpen={handleOpenItem}
+          onOpen={onOpenItem}
           emptyIcon={Banknote}
           emptyTitle="No client payments"
           emptyDescription="Payments on linked order invoices will fill this pool."
@@ -116,7 +101,7 @@ export function BonusPoolSheetFundingTab({
         <EntityItemList
           items={releaseItems}
           variant={viewVariant}
-          onOpen={handleOpenItem}
+          onOpen={onOpenItem}
           emptyIcon={Banknote}
           emptyTitle="No releases yet"
           emptyDescription="Approved releases reduce available pool funding."

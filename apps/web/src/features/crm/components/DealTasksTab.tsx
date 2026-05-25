@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/button';
 import {
   EntityItemList,
   QuickCreateTaskDialog,
-  useEntityItemHost,
+  useOpenEntityItemFromSummary,
   ViewModeSwitch,
   ENTITY_ITEM_VIEW_OPTIONS,
-  type EntityItemSummary,
   type EntityItemVariant,
 } from '@/components/shared';
 import { taskToItemSummary } from '@/features/tasks/entity-item/task-item-summary';
@@ -23,7 +22,7 @@ interface DealTasksTabProps {
 }
 
 export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
-  const { openEntityItem } = useEntityItemHost();
+  const onOpenItem = useOpenEntityItemFromSummary();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
@@ -69,19 +68,12 @@ export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
 
   const itemSummaries = useMemo(() => tasks.map(taskToItemSummary), [tasks]);
 
-  const handleOpenItem = useCallback(
-    (item: EntityItemSummary) => {
-      openEntityItem({ id: item.id, kind: item.kind });
-    },
-    [openEntityItem],
-  );
-
   if (!projectId) {
     return (
       <EntityItemList
         items={[]}
         variant={viewVariant}
-        onOpen={handleOpenItem}
+        onOpen={onOpenItem}
         emptyIcon={CheckSquare}
         emptyTitle="Tasks"
         emptyDescription="Link a project to this deal to create and view tasks."
@@ -124,12 +116,12 @@ export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
       />
 
       {loading ? (
-        <div className="text-muted-foreground py-8 text-center text-sm">Loading tasks...</div>
+        <p className="text-muted-foreground py-8 text-center text-sm">Loading tasks...</p>
       ) : (
         <EntityItemList
           items={itemSummaries}
           variant={viewVariant}
-          onOpen={handleOpenItem}
+          onOpen={onOpenItem}
           emptyIcon={CheckSquare}
           emptyTitle="Tasks"
           emptyDescription="No tasks yet. Create one to track work for this deal."

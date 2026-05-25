@@ -2,23 +2,42 @@ import { FileText } from 'lucide-react';
 import type { EntityItemSummary } from '@/components/shared/entity-item';
 import { formatAmount, getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 
-type SubscriptionInvoiceRow = {
+export type InvoicePreviewRow = {
   id: string;
   code: string;
   moneyStatus: string;
-  amount: string;
+  amount: string | number;
+  subtitle?: string;
 };
 
-/** Maps a subscription-linked invoice row to the shared entity tab preview model. */
-export function subscriptionInvoiceToItemSummary(row: SubscriptionInvoiceRow): EntityItemSummary {
+/** Maps a lightweight invoice row to the shared entity tab preview model. */
+export function invoicePreviewToItemSummary(row: InvoicePreviewRow): EntityItemSummary {
   const money = getInvoiceMoneyStage(row.moneyStatus);
+  const amount = typeof row.amount === 'number' ? row.amount : parseFloat(row.amount);
   return {
     id: row.id,
     kind: 'invoice',
     title: row.code,
-    subtitle: 'Invoice',
+    subtitle: row.subtitle ?? 'Invoice',
     status: money ? { label: money.label, variant: money.variant } : undefined,
-    primaryMetric: formatAmount(parseFloat(row.amount)),
+    primaryMetric: formatAmount(amount),
     leadingIcon: FileText,
   };
+}
+
+/** Maps a subscription-linked invoice row to the shared entity tab preview model. */
+export function subscriptionInvoiceToItemSummary(
+  row: Pick<InvoicePreviewRow, 'id' | 'code' | 'moneyStatus' | 'amount'>,
+): EntityItemSummary {
+  return invoicePreviewToItemSummary(row);
+}
+
+/** Maps a deal order invoice row to the shared entity tab preview model. */
+export function dealInvoiceToItemSummary(
+  row: Pick<InvoicePreviewRow, 'id' | 'code' | 'moneyStatus' | 'amount'> & { orderCode: string },
+): EntityItemSummary {
+  return invoicePreviewToItemSummary({
+    ...row,
+    subtitle: row.orderCode,
+  });
 }

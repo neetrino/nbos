@@ -1,7 +1,7 @@
 'use client';
 
-import { createContext, useContext, type ReactNode } from 'react';
-import type { EntityItemOpenTarget } from './entity-item.types';
+import { createContext, useCallback, useContext, type ReactNode } from 'react';
+import type { EntityItemOpenTarget, EntityItemSummary } from './entity-item.types';
 
 export type EntityItemHostApi = {
   openEntityItem: (target: EntityItemOpenTarget) => void;
@@ -26,4 +26,13 @@ export function useEntityItemHost(): EntityItemHostApi {
     throw new Error('useEntityItemHost must be used within EntityItemHost');
   }
   return ctx;
+}
+
+/** Convenience wrapper for {@link EntityItemList} `onOpen`. */
+export function useOpenEntityItemFromSummary(): (item: EntityItemSummary) => void {
+  const { openEntityItem } = useEntityItemHost();
+  return useCallback(
+    (item: EntityItemSummary) => openEntityItem({ id: item.id, kind: item.kind }),
+    [openEntityItem],
+  );
 }

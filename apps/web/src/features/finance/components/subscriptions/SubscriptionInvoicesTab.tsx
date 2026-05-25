@@ -1,16 +1,15 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ExternalLink, FileText } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import {
   DetailSheetSection,
   EntityItemList,
-  useEntityItemHost,
+  useOpenEntityItemFromSummary,
   ViewModeSwitch,
   ENTITY_ITEM_VIEW_OPTIONS,
-  type EntityItemSummary,
   type EntityItemVariant,
 } from '@/components/shared';
 import { subscriptionInvoicesDrilldownHref } from '@/features/finance/constants/subscription-invoice-drilldown';
@@ -23,18 +22,11 @@ interface SubscriptionInvoicesTabProps {
 }
 
 export function SubscriptionInvoicesTab({ subscription }: SubscriptionInvoicesTabProps) {
-  const { openEntityItem } = useEntityItemHost();
+  const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
   const invoices = subscription.invoices ?? [];
 
   const itemSummaries = useMemo(() => invoices.map(subscriptionInvoiceToItemSummary), [invoices]);
-
-  const handleOpenItem = useCallback(
-    (item: EntityItemSummary) => {
-      openEntityItem({ id: item.id, kind: item.kind });
-    },
-    [openEntityItem],
-  );
 
   return (
     <DetailSheetSection title="Invoices" icon={<FileText size={12} />}>
@@ -50,7 +42,7 @@ export function SubscriptionInvoicesTab({ subscription }: SubscriptionInvoicesTa
       <EntityItemList
         items={itemSummaries}
         variant={viewVariant}
-        onOpen={handleOpenItem}
+        onOpen={onOpenItem}
         emptyIcon={FileText}
         emptyTitle="No invoices"
         emptyDescription="No invoices linked to this subscription yet."

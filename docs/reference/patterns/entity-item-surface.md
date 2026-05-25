@@ -30,14 +30,15 @@ Board cards and tab preview items may share visual tokens but are **different co
 
 ## Components
 
-| Piece                 | Location                                   | Role                                                    |
-| --------------------- | ------------------------------------------ | ------------------------------------------------------- |
-| `EntityItemSummary`   | `entity-item.types.ts`                     | Normalized preview model (`kind`, `title`, `status`, …) |
-| `EntityItemSurface`   | `EntityItemSurface.tsx`                    | One preview item (`list-row` \| `compact-card`)         |
-| `EntityItemList`      | `EntityItemList.tsx`                       | Collection + empty state                                |
-| `EntityItemHost`      | `EntityItemHost.tsx`                       | Opens stacked child sheets                              |
-| `useEntityItemHost()` | `entity-item-context.tsx`                  | `openEntityItem({ kind, id })`                          |
-| Feature adapters      | `features/*/entity-item/*-item-summary.ts` | API DTO → `EntityItemSummary`                           |
+| Piece                            | Location                                   | Role                                                    |
+| -------------------------------- | ------------------------------------------ | ------------------------------------------------------- |
+| `EntityItemSummary`              | `entity-item.types.ts`                     | Normalized preview model (`kind`, `title`, `status`, …) |
+| `EntityItemSurface`              | `EntityItemSurface.tsx`                    | One preview item (`list-row` \| `compact-card`)         |
+| `EntityItemList`                 | `EntityItemList.tsx`                       | Collection + empty state                                |
+| `EntityItemHost`                 | `EntityItemHost.tsx`                       | Opens stacked child sheets                              |
+| `useEntityItemHost()`            | `entity-item-context.tsx`                  | `openEntityItem({ kind, id })`                          |
+| `useOpenEntityItemFromSummary()` | `entity-item-context.tsx`                  | List `onOpen` helper                                    |
+| Feature adapters                 | `features/*/entity-item/*-item-summary.ts` | API DTO → `EntityItemSummary`                           |
 
 Public exports: `apps/web/src/components/shared/entity-item/` (re-exported from `@/components/shared`).
 
@@ -54,7 +55,7 @@ Do not add kanban inside entity tabs unless the tab is a full workspace (see Pro
 
 ## Wiring
 
-Wrap the **parent entity sheet** in `EntityItemHost`. Tab content calls `openEntityItem`.
+Wrap the **parent entity sheet** in `EntityItemHost`. Tab content calls `openEntityItem` or `useOpenEntityItemFromSummary()` for list `onOpen`.
 
 ```tsx
 <EntityItemHost nested onEntityChanged={refreshParent}>
