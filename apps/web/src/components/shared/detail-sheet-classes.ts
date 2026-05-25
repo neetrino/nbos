@@ -144,3 +144,23 @@ export const RELATION_PICKER_EMPTY_TRIGGER_CLASS = [
 
 /** Use on Save / Cancel in detail sheets and sticky form footers. */
 export const DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE = 'form' as const;
+
+/** Tab strip wrapper (Deal / entity detail sheets). */
+export const DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS =
+  'border-border shrink-0 border-b px-5 dark:border-stone-800';
+
+export const DETAIL_SHEET_TAB_BAR_SCROLL_CLASS = 'flex gap-1 overflow-x-auto';
+
+/** Shared tab button — pairs with active/inactive classes below. */
+export const DETAIL_SHEET_TAB_BUTTON_BASE_CLASS =
+  'relative flex shrink-0 items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors';
+
+/** Active tab: brand tint (`--sidebar-accent` / `--primary`). */
+export const DETAIL_SHEET_TAB_ACTIVE_CLASS = 'bg-sidebar-accent text-sidebar-accent-foreground';
+
+export const DETAIL_SHEET_TAB_INACTIVE_CLASS =
+  'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300';
+
+/** Bottom indicator — matches floating rail `bg-primary`. */
+export const DETAIL_SHEET_TAB_INDICATOR_CLASS =
+  'absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-primary';

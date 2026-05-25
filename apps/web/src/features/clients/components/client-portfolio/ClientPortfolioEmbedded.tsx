@@ -5,6 +5,13 @@ import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DetailSheetSection } from '@/components/shared';
+import {
+  DETAIL_SHEET_TAB_ACTIVE_CLASS,
+  DETAIL_SHEET_TAB_BAR_SCROLL_CLASS,
+  DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
+  DETAIL_SHEET_TAB_INACTIVE_CLASS,
+  DETAIL_SHEET_TAB_INDICATOR_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import {
   portfolioApi,
@@ -85,7 +92,7 @@ interface ClientDetailTabBarProps {
 export function ClientDetailTabBar({ activeTab, tabs, onSelect }: ClientDetailTabBarProps) {
   return (
     <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
-      <div className="flex gap-1 overflow-x-auto">
+      <div className={DETAIL_SHEET_TAB_BAR_SCROLL_CLASS}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = activeTab === tab.id;
@@ -95,17 +102,13 @@ export function ClientDetailTabBar({ activeTab, tabs, onSelect }: ClientDetailTa
               type="button"
               onClick={() => onSelect(tab.id)}
               className={cn(
-                'relative flex shrink-0 items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors',
-                active
-                  ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
-                  : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300',
+                DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
+                active ? DETAIL_SHEET_TAB_ACTIVE_CLASS : DETAIL_SHEET_TAB_INACTIVE_CLASS,
               )}
             >
               <Icon size={16} aria-hidden />
               {tab.label}
-              {active ? (
-                <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
-              ) : null}
+              {active ? <span className={DETAIL_SHEET_TAB_INDICATOR_CLASS} /> : null}
             </button>
           );
         })}

@@ -2,6 +2,14 @@
 
 import { useState } from 'react';
 import { BarChart3, FileText, Handshake, LayoutGrid, Percent, Wallet } from 'lucide-react';
+import {
+  DETAIL_SHEET_TAB_ACTIVE_CLASS,
+  DETAIL_SHEET_TAB_BAR_SCROLL_CLASS,
+  DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS,
+  DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
+  DETAIL_SHEET_TAB_INACTIVE_CLASS,
+  DETAIL_SHEET_TAB_INDICATOR_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import { PartnerAccrualsCard } from '@/features/partners/components/PartnerAccrualsCard';
 import { PartnerAgreementsCard } from '@/features/partners/components/PartnerAgreementsCard';
@@ -45,8 +53,8 @@ export function PartnerDetailTabs(props: {
 
   return (
     <div className="w-full">
-      <div className="border-border shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
-        <div className="flex flex-wrap gap-1">
+      <div className={cn(DETAIL_SHEET_TAB_BAR_WRAPPER_CLASS, 'flex-wrap')}>
+        <div className={cn(DETAIL_SHEET_TAB_BAR_SCROLL_CLASS, 'flex-wrap')}>
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const active = panel === tab.id;
@@ -56,17 +64,14 @@ export function PartnerDetailTabs(props: {
                 type="button"
                 onClick={() => setPanel(tab.id)}
                 className={cn(
-                  'relative flex items-center gap-2 rounded-t-lg px-4 py-3 text-sm font-semibold transition-colors sm:px-5',
-                  active
-                    ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
-                    : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300',
+                  DETAIL_SHEET_TAB_BUTTON_BASE_CLASS,
+                  'px-4 sm:px-5',
+                  active ? DETAIL_SHEET_TAB_ACTIVE_CLASS : DETAIL_SHEET_TAB_INACTIVE_CLASS,
                 )}
               >
                 <Icon size={16} aria-hidden />
                 {tab.label}
-                {active ? (
-                  <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
-                ) : null}
+                {active ? <span className={DETAIL_SHEET_TAB_INDICATOR_CLASS} /> : null}
               </button>
             );
           })}

@@ -5,6 +5,7 @@ import { Trash2, LayoutGrid, History, FileText, Phone, CheckSquare } from 'lucid
 import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
+  DetailSheetTabBar,
   EntityDetailSheetContent,
   EntityItemHost,
 } from '@/components/shared';
@@ -270,33 +271,11 @@ export function DealSheet({
             />
           </div>
 
-          {/* ── Tabs ── */}
-          <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
-            <div className="flex gap-1">
-              {TABS.map((tab) => {
-                const isActive = activeTab === tab.value;
-                return (
-                  <button
-                    key={tab.value}
-                    type="button"
-                    onClick={() => setActiveTab(tab.value)}
-                    className={
-                      'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
-                      (isActive
-                        ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
-                        : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300')
-                    }
-                  >
-                    <tab.icon size={16} />
-                    {tab.label}
-                    {isActive && (
-                      <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <DetailSheetTabBar
+            tabs={TABS}
+            activeTab={activeTab}
+            onTabChange={(value) => setActiveTab(value as (typeof TABS)[number]['value'])}
+          />
 
           <ScrollArea className="min-h-0 flex-1">
             <div className="px-7 py-5">
