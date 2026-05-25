@@ -125,6 +125,20 @@ Rules:
 - Avoid large blocks for one short value.
 - Avoid repeating the same value in the header, hero panel, and details grid.
 
+### Related items in entity tabs
+
+Tabs that list linked entities (tasks, invoices, bonus entries, expense cards, tickets) use a **shared preview + stacked sheet** pattern — not custom inline rows or plain `<ul>` lists.
+
+Rules:
+
+- Show a compact preview (`EntityItemSurface`: list row or compact card) with scan-friendly fields only.
+- Click opens the **child entity detail sheet** stacked above the parent; closing the child returns to the parent tab.
+- Do not navigate away from the parent sheet for inspect-only flows.
+- Optional drill-down link to a filtered module page is allowed **in addition** to sheet open (e.g. “Open all in Finance”).
+- Map API rows via feature adapters (`*ToItemSummary`); keep business display logic out of shared components.
+
+Engineering reference: `docs/reference/patterns/entity-item-surface.md`.
+
 ---
 
 ## Field Label Rules
@@ -252,14 +266,15 @@ Do **not** hand-wire `floatingClose` / `floatingRail`. Use raw `SheetContent` on
 
 ## Reference implementation (code)
 
-| Pattern                                     | Location                                                                                   |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Entity detail sheet shell                   | `apps/web/src/components/shared/EntityDetailSheetContent.tsx`                              |
-| Floating rail actions                       | `apps/web/src/components/shared/entity-sheet-floating-rail.tsx`                            |
-| Quick create (compact dialog)               | `apps/web/src/components/shared/quick-create-task/QuickCreateTaskDialog.tsx`               |
-| Task detail sheet (wide operational layout) | `apps/web/src/features/tasks/components/TaskSheet.tsx`                                     |
-| Compact finance detail sheet                | `apps/web/src/features/finance/components/InvoiceSheet.tsx`, `SubscriptionDetailSheet.tsx` |
-| Deep-link query keys                        | `OPEN_*_QUERY` constants under `apps/web/src/features/*/constants/*-deep-link.ts`          |
+| Pattern                                     | Location                                                                                             |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Entity detail sheet shell                   | `apps/web/src/components/shared/EntityDetailSheetContent.tsx`                                        |
+| Floating rail actions                       | `apps/web/src/components/shared/entity-sheet-floating-rail.tsx`                                      |
+| Quick create (compact dialog)               | `apps/web/src/components/shared/quick-create-task/QuickCreateTaskDialog.tsx`                         |
+| Task detail sheet (wide operational layout) | `apps/web/src/features/tasks/components/TaskSheet.tsx`                                               |
+| Compact finance detail sheet                | `apps/web/src/features/finance/components/InvoiceSheet.tsx`, `SubscriptionDetailSheet.tsx`           |
+| Related items in entity tabs (preview list) | `apps/web/src/components/shared/entity-item/` — see `docs/reference/patterns/entity-item-surface.md` |
+| Deep-link query keys                        | `OPEN_*_QUERY` constants under `apps/web/src/features/*/constants/*-deep-link.ts`                    |
 
 ---
 

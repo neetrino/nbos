@@ -36,12 +36,16 @@ Expected: no matches.
 
 ## Other props
 
-| Prop                                       | When                                                |
-| ------------------------------------------ | --------------------------------------------------- |
-| `contentClassName` + `railAnchorClassName` | Bespoke width (Task, Drive, checklist)              |
-| `trailingRail`                             | Extra buttons under standard rail (`layout="full"`) |
-| `floatingRailContent`                      | Fully custom rail (workspace drive)                 |
-| `forceNestedBackdrop`                      | Nested sheet over parent sheet                      |
+| Prop                                       | When                                                     |
+| ------------------------------------------ | -------------------------------------------------------- |
+| `contentClassName` + `railAnchorClassName` | Bespoke width (Task, Drive, checklist)                   |
+| `trailingRail`                             | Extra buttons under standard rail (`layout="full"`)      |
+| `floatingRailContent`                      | Fully custom rail (workspace drive)                      |
+| `forceNestedBackdrop`                      | Nested sheet over parent sheet (see entity-item-surface) |
+
+## Related items in tabs
+
+Stacked child sheets from entity tabs: [`entity-item-surface.md`](./entity-item-surface.md).
 
 ## Exceptions (raw `SheetContent`)
 
