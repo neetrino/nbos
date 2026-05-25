@@ -63,8 +63,8 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 ### Residual (canon backlog)
 
-- Marketing: `GET /api/bonus/marketing-accrual/preview` + Finance UI (counts); apply + rates in DB pending.
-- Support SLA scorecard → automatic SUPPORT accrual (template exists; engine pending).
+- Marketing: `GET/POST /api/bonus/marketing-accrual/preview|apply` + Finance UI on bonus board.
+- Support: `GET/POST /api/bonus/support-accrual/preview|apply` (SLA-met tickets; MARKETING-type entries).
 - Bonus policy template parameters beyond name/notes (per-template config UI).
 - KPI scorecard metrics per non-sales role (sales plan/actual links ship on `kpi_policies`).
 
@@ -88,7 +88,7 @@ Use after deploy or large UX change:
 
 Tracked in repo root [`todo.md`](../../../../todo.md). Summary:
 
-- **Policy engine:** marketing/support accrual automation; per-template bonus config UI.
+- **Policy engine:** company anchor order for planned bonuses; per-template rates in admin UI.
 - **KPI:** `KPI Plan` / `KPI Result` entities; automated targets beyond prior-month + payment hints.
 - **Notifications:** separate mobile/web push channel (in-app wallet notify ships for KPI + carry).
 - **Ops:** manual visual QA checklist (§ above); staging deploy smoke.

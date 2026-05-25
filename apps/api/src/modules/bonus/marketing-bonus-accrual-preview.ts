@@ -141,7 +141,7 @@ export async function queryMarketingBonusAccrualPreview(
       suggestedAmount: totalSuggested.toFixed(2),
     },
     note: ratesConfigured
-      ? 'Suggested amounts use configured per-MQL/SQL rates. Create MARKETING bonus entries manually in Finance.'
-      : 'Rates are not configured (preview counts only). Set constants in marketing-bonus-accrual.constants.ts or future policy params.',
+      ? 'Suggested amounts use per-MQL/SQL rates. Apply creates one INCOMING MARKETING entry per employee (company anchor order).'
+      : 'Rates are not configured (preview counts only). Set marketing-bonus-accrual.constants.ts.',
   };
 }

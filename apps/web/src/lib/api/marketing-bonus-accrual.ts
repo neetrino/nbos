@@ -23,11 +23,27 @@ export interface MarketingBonusAccrualPreview {
   note: string;
 }
 
+export interface PlannedBonusAccrualApplyResult {
+  payrollMonth: string;
+  anchor: { projectId: string; orderId: string; projectCode: string; orderCode: string };
+  created: number;
+  skipped: number;
+  skippedEmployeeIds: string[];
+}
+
 export const marketingBonusAccrualApi = {
   async preview(payrollMonth: string): Promise<MarketingBonusAccrualPreview> {
     const resp = await api.get<MarketingBonusAccrualPreview>(
       '/api/bonus/marketing-accrual/preview',
       { params: { payrollMonth } },
+    );
+    return resp.data;
+  },
+
+  async apply(payrollMonth: string): Promise<PlannedBonusAccrualApplyResult> {
+    const resp = await api.post<PlannedBonusAccrualApplyResult>(
+      '/api/bonus/marketing-accrual/apply',
+      { payrollMonth },
     );
     return resp.data;
   },

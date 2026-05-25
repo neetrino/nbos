@@ -98,10 +98,11 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 
 ---
 
-## 4b. Policy accrual automation (backlog)
+## 4b. Policy accrual automation
 
-- ◐ **Marketing accrual:** MQL/SQL preview on bonus board; persist + rates config pending.
-- ☐ **Support accrual:** SLA scorecard → SUPPORT/MARKETING bonus entries (template seeded).
+- ☑ **Marketing accrual:** preview + apply on `/finance/bonuses`; rates in `marketing-bonus-accrual.constants.ts`.
+- ☑ **Support accrual:** SLA-met preview + apply (MARKETING-type entries on company anchor order).
+- ☐ **Post-MVP:** dedicated company anchor order/project; `SUPPORT` bonus type enum; rates in policy UI.
 
 ---
 
