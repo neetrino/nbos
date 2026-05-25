@@ -269,15 +269,24 @@ Legacy URL `/bonus` редиректит на `/finance/bonuses` с сохран
 
 ### 5.2. Kanban-доска
 
-Колонки:
+Переключатель scope в фильтрах hero: **Active** (default) | **All statuses** | **Closed** — меняет набор данных, не отдельный UI.
 
-| Колонка     | Описание                              |
+**Active board** — упрощённые колонки (общий `KanbanBoard`, суммы под заголовком колонки):
+
+| Колонка     | Full statuses                         |
 | ----------- | ------------------------------------- |
-| Incoming    | Прогнозные бонусы                     |
+| Incoming    | Incoming                              |
 | In Progress | Earned / Pending Eligibility / Vested |
 | Active      | Войдут в ближайший payroll            |
-| Paid        | Выплачены                             |
-| Clawback    | Отзывы и корректировки                |
+
+**Closed board** — терминальные исходы (288px колонки):
+
+| Колонка  | Описание               |
+| -------- | ---------------------- |
+| Paid     | Выплачены              |
+| Clawback | Отзывы и корректировки |
+
+На карточке показывается **full status** badge (Incoming / Earned / …), тип бонуса, сумма, процент (если есть), проект, payroll month.
 
 ### 5.3. Карточка бонуса
 

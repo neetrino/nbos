@@ -1,12 +1,14 @@
-import { Gift, User, FolderKanban, DollarSign, TrendingUp } from 'lucide-react';
+import { User, FolderKanban, DollarSign } from 'lucide-react';
+import { StatusBadge } from '@/components/shared';
+import { BONUS_BOARD_TYPE_CONFIG } from '@/features/finance/constants/bonus-board';
 import {
-  BONUS_BOARD_STATUSES,
-  BONUS_BOARD_TYPE_CONFIG,
-} from '@/features/finance/constants/bonus-board';
+  BONUS_ENTRY_STATUS_LABEL,
+  BONUS_ENTRY_STATUS_VARIANT,
+  isBonusEntryTerminalStatus,
+} from '@/features/finance/constants/bonus-board-status-ui';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { formatMoneyDram } from '@/lib/format/money';
 import { bonusSalesAccrualHint } from '@/features/finance/utils/bonus-sales-accrual-hint';
-import type { BonusEntryListRow, BonusStatus, BonusType } from '@/lib/api/bonus';
+import type { BonusEntryListRow, BonusStatus } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
 export function employeeDisplayName(employee: BonusEntryListRow['employee']): string {
@@ -67,88 +69,79 @@ export function uniqueProjectsFromRows(
   return [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
 }
 
-export function SummaryCard({
-  label,
-  value,
-  icon: Icon,
-  accent,
-}: {
-  label: string;
-  value: string;
-  icon: typeof TrendingUp;
-  accent?: boolean;
-}) {
-  return (
-    <div className="border-border bg-card rounded-2xl border p-5">
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-xs font-medium">{label}</p>
-        <div
-          className={`rounded-xl p-2 ${accent ? 'bg-accent/10 text-accent' : 'bg-secondary text-muted-foreground'}`}
-        >
-          <Icon size={16} />
-        </div>
-      </div>
-      <p className="text-foreground mt-2 text-xl font-semibold">{value}</p>
-    </div>
-  );
-}
-
 export function BonusCard({
   row,
   onOpenReleases,
+  readOnly = false,
 }: {
   row: BonusEntryListRow;
   onOpenReleases?: (entry: BonusEntryListRow) => void;
+  readOnly?: boolean;
 }) {
   const typeCfg = BONUS_BOARD_TYPE_CONFIG[row.type];
   const project = projectLabel(row.project);
   const salesHint = bonusSalesAccrualHint(row);
+  const terminal = isBonusEntryTerminalStatus(row.status);
+  const canOpen = Boolean(onOpenReleases);
+  const percent = Number.parseFloat(row.percent);
+  const showPercent = Number.isFinite(percent) && percent > 0;
 
   return (
     <div
       className={cn(
         'group border-border bg-card rounded-xl border p-3.5 transition-all hover:shadow-md',
-        onOpenReleases &&
+        canOpen &&
           'focus-visible:ring-ring cursor-pointer focus-visible:ring-2 focus-visible:outline-none',
       )}
-      role={onOpenReleases ? 'button' : undefined}
-      tabIndex={onOpenReleases ? 0 : undefined}
-      onClick={() => onOpenReleases?.(row)}
+      role={canOpen ? 'button' : undefined}
+      tabIndex={canOpen ? 0 : undefined}
+      onClick={() => canOpen && onOpenReleases?.(row)}
       onKeyDown={(e) => {
-        if (!onOpenReleases) return;
+        if (!canOpen) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onOpenReleases(row);
+          onOpenReleases?.(row);
         }
       }}
     >
-      <div className="flex items-start justify-between">
-        <div className="text-foreground flex items-center gap-1.5 text-sm font-medium">
-          <User size={12} className="text-muted-foreground" />
-          {employeeDisplayName(row.employee)}
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-foreground flex min-w-0 items-center gap-1.5 text-sm font-medium">
+          <User size={12} className="text-muted-foreground shrink-0" />
+          <span className="truncate">{employeeDisplayName(row.employee)}</span>
         </div>
         <span
-          className={`inline-flex rounded-md px-1.5 py-0.5 text-[10px] font-medium ${typeCfg.color}`}
+          className={`inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium ${typeCfg.color}`}
         >
           {typeCfg.label}
         </span>
       </div>
 
       <div className="text-foreground mt-2.5 flex items-center gap-1 text-sm font-semibold">
-        <DollarSign size={12} className="text-accent" />
+        <DollarSign size={12} className="text-accent shrink-0" />
         {formatAmount(parseBonusAmount(row.amount))}
+        {showPercent ? (
+          <span className="text-muted-foreground text-[10px] font-normal">· {percent}%</span>
+        ) : null}
+      </div>
+
+      <div className="mt-2">
+        <StatusBadge
+          label={BONUS_ENTRY_STATUS_LABEL[row.status]}
+          variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
+          className="text-[10px]"
+        />
       </div>
 
       {salesHint ? (
-        <p className="text-muted-foreground mt-1 text-[10px] leading-snug">{salesHint}</p>
+        <p className="text-muted-foreground mt-1.5 text-[10px] leading-snug">{salesHint}</p>
       ) : null}
 
-      {project && (
+      {project ? (
         <div className="text-muted-foreground mt-2 flex items-center gap-1 text-[10px]">
-          <FolderKanban size={10} />
-          {project}
+          <FolderKanban size={10} className="shrink-0" />
+          <span className="truncate">{project}</span>
         </div>
-      )}
+      ) : null}
 
       {row.payoutMonth ? (
         <p className="text-muted-foreground mt-1 text-[10px] tabular-nums">
@@ -156,78 +149,13 @@ export function BonusCard({
         </p>
       ) : null}
 
-      {onOpenReleases ? (
+      {canOpen ? (
         <p className="text-muted-foreground border-border mt-2.5 border-t pt-2 text-[10px]">
-          Open release ledger — adjust APPROVED / DRAFT amounts before payroll.
+          {readOnly || terminal
+            ? 'View release ledger and payout history.'
+            : 'Open release ledger — adjust APPROVED / DRAFT amounts before payroll.'}
         </p>
       ) : null}
-    </div>
-  );
-}
-
-function BonusColumnMoneyTotal({ bonuses }: { bonuses: BonusEntryListRow[] }) {
-  const total = sumBonusEntryAmounts(bonuses);
-
-  return (
-    <div className="flex justify-center px-1">
-      <p
-        className={cn(
-          'max-w-full rounded-full border px-3 py-1 text-center text-sm leading-tight font-semibold tabular-nums',
-          'text-foreground/85 border-white/30 bg-white/25 shadow-sm backdrop-blur-md',
-          'dark:text-foreground/90 dark:border-white/10 dark:bg-white/8',
-        )}
-        aria-label={`Column total: ${formatMoneyDram(total)}`}
-      >
-        {formatMoneyDram(total)}
-      </p>
-    </div>
-  );
-}
-
-export function BonusBoardColumns({
-  filtered,
-  onOpenReleases,
-}: {
-  filtered: BonusEntryListRow[];
-  onOpenReleases?: (entry: BonusEntryListRow) => void;
-}) {
-  const columns = BONUS_BOARD_STATUSES.map((status) => ({
-    ...status,
-    bonuses: filtered.filter((b) => b.status === status.key),
-  }));
-
-  return (
-    <div className="mt-6 flex-1 overflow-x-auto">
-      <div
-        className="flex gap-4 pb-4"
-        style={{ minWidth: `${BONUS_BOARD_STATUSES.length * 260}px` }}
-      >
-        {columns.map((column) => (
-          <div key={column.key} className="w-[240px] flex-shrink-0">
-            <div className="mb-3 flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <div className={`h-2 w-2 rounded-full ${column.color}`} />
-                <h3 className="text-foreground text-xs font-semibold">{column.label}</h3>
-                <span className="bg-secondary text-muted-foreground ml-auto rounded-md px-1.5 py-0.5 text-[10px] font-medium">
-                  {column.bonuses.length}
-                </span>
-              </div>
-              <BonusColumnMoneyTotal bonuses={column.bonuses} />
-            </div>
-            <div className="space-y-3">
-              {column.bonuses.map((bonus) => (
-                <BonusCard key={bonus.id} row={bonus} onOpenReleases={onOpenReleases} />
-              ))}
-              {column.bonuses.length === 0 && (
-                <div className="border-border rounded-xl border border-dashed p-8 text-center">
-                  <Gift size={20} className="text-muted-foreground/30 mx-auto" />
-                  <p className="text-muted-foreground mt-2 text-[10px]">No bonuses</p>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

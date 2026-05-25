@@ -12,6 +12,7 @@ References: [`11-Finance-Stage-Gate-and-Board-UX-Standard.md`](11-Finance-Stage-
 | **Expenses (closed)**  | `/finance/expenses/closed`  | —                                                        | `closedBoard=true` → `PAID`, `CANCELLED` kanban columns | Yes (2026-05)            |
 | **Expenses (backlog)** | `/finance/expenses/backlog` | `BACKLOG` only                                           | —                                                       | List only                |
 | **Invoices**           | Finance → Invoices          | `moneyStatus` kanban                                     | `PAID`, `CANCELLED` on same board                       | Kanban (list TBD parity) |
+| **Bonus board**        | `/finance/bonuses`          | Incoming / In Progress / Active (simplified kanban)      | `PAID`, `CLAWBACK` via **Closed** scope filter          | Board + List (2026-05)   |
 | **Subscriptions**      | Finance module              | Grid/list-first                                          | Canon TBD                                               | List-first               |
 
 ## Stage-gate UX

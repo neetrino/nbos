@@ -35,22 +35,29 @@ import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bon
 import { BonusBoardPageSettingsSheet } from '@/features/finance/components/bonus/BonusBoardPageSettingsSheet';
 import {
   buildBonusBoardIntegratedFilterConfigs,
+  BONUS_FILTER_BOARD_SCOPE_KEY,
   BONUS_FILTER_EMPLOYEE_KEY,
   BONUS_FILTER_PROJECT_KEY,
   BONUS_FILTER_TYPE_KEY,
 } from '@/features/finance/components/bonus/build-bonus-board-integrated-filter-configs';
 import {
-  BonusBoardColumns,
   employeeDisplayName,
   projectLabel,
   uniqueEmployeesFromRows,
   uniqueProjectsFromRows,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
+import { BonusBoardKanbanView } from '@/features/finance/components/bonus/bonus-board-kanban-view';
 import { useBonusBoardCsvExport } from '@/features/finance/components/bonus/use-bonus-board-csv-export';
 import { useBonusScopeStatsCsvExport } from '@/features/finance/components/bonus/use-bonus-scope-stats-csv-export';
 import { bonusBoardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { matchesBonusBoardLifecycleScope } from '@/features/finance/constants/bonus-board-lifecycle';
+import {
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
 import {
   bonusesApi,
   fetchAllBonusListRows,
@@ -75,6 +82,7 @@ export function BonusBoardPageContent() {
   const [typeFilter, setTypeFilter] = useState<BonusType | 'ALL'>('ALL');
   const [employeeFilter, setEmployeeFilter] = useState<string>('ALL');
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
+  const [boardScopeFilter, setBoardScopeFilter] = useState<string>(DEFAULT_BOARD_LIFECYCLE_SCOPE);
   const [view, setView] = useState<BonusBoardViewMode>(() => readBonusBoardViewMode());
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -184,6 +192,8 @@ export function BonusBoardPageContent() {
     [replaceBonusUrl],
   );
 
+  const boardScope: BoardLifecycleScope = resolveBoardLifecycleScope(boardScopeFilter);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((row) => {
@@ -194,9 +204,10 @@ export function BonusBoardPageContent() {
       const matchesType = typeFilter === 'ALL' || row.type === typeFilter;
       const matchesEmployee = employeeFilter === 'ALL' || row.employee.id === employeeFilter;
       const matchesProject = projectFilter === 'ALL' || row.projectId === projectFilter;
-      return matchesSearch && matchesType && matchesEmployee && matchesProject;
+      const matchesScope = matchesBonusBoardLifecycleScope(row.status, boardScope);
+      return matchesSearch && matchesType && matchesEmployee && matchesProject && matchesScope;
     });
-  }, [rows, search, typeFilter, employeeFilter, projectFilter]);
+  }, [rows, search, typeFilter, employeeFilter, projectFilter, boardScope]);
 
   const serverProjectScope =
     projectFilter !== 'ALL' && projectFilter.trim().length > 0 ? projectFilter : undefined;
@@ -219,15 +230,22 @@ export function BonusBoardPageContent() {
 
   const bonusFilterValues = useMemo(
     () => ({
+      [BONUS_FILTER_BOARD_SCOPE_KEY]: boardScopeFilter,
       [BONUS_FILTER_TYPE_KEY]: typeFilter === 'ALL' ? 'all' : typeFilter,
       [BONUS_FILTER_PROJECT_KEY]: projectFilter === 'ALL' ? 'all' : projectFilter,
       [BONUS_FILTER_EMPLOYEE_KEY]: employeeFilter === 'ALL' ? 'all' : employeeFilter,
     }),
-    [employeeFilter, projectFilter, typeFilter],
+    [boardScopeFilter, employeeFilter, projectFilter, typeFilter],
   );
 
   const handleBonusFilterChange = useCallback(
     (key: string, value: string) => {
+      if (key === BONUS_FILTER_BOARD_SCOPE_KEY) {
+        setBoardScopeFilter(
+          value === DEFAULT_BOARD_LIFECYCLE_SCOPE ? DEFAULT_BOARD_LIFECYCLE_SCOPE : value,
+        );
+        return;
+      }
       if (key === BONUS_FILTER_TYPE_KEY) {
         setTypeFilter(value === 'all' ? 'ALL' : (value as BonusType));
         return;
@@ -247,6 +265,7 @@ export function BonusBoardPageContent() {
     setSearch('');
     setTypeFilter('ALL');
     setEmployeeFilter('ALL');
+    setBoardScopeFilter(DEFAULT_BOARD_LIFECYCLE_SCOPE);
     handleProjectFilterChange('ALL');
   }, [handleProjectFilterChange]);
 
@@ -308,7 +327,13 @@ export function BonusBoardPageContent() {
   const boardBody = useMemo(() => {
     switch (view) {
       case 'list':
-        return <BonusBoardListView rows={filtered} onOpenReleases={openReleaseLedger} />;
+        return (
+          <BonusBoardListView
+            rows={filtered}
+            boardScope={boardScope}
+            onOpenReleases={openReleaseLedger}
+          />
+        );
       case 'employee':
         return <BonusBoardEmployeeView rows={filtered} onOpenReleases={openReleaseLedger} />;
       case 'product':
@@ -316,9 +341,15 @@ export function BonusBoardPageContent() {
       case 'payroll':
         return <BonusBoardPayrollMonthView rows={filtered} onOpenReleases={openReleaseLedger} />;
       default:
-        return <BonusBoardColumns filtered={filtered} onOpenReleases={openReleaseLedger} />;
+        return (
+          <BonusBoardKanbanView
+            rows={filtered}
+            boardScope={boardScope}
+            onOpenReleases={openReleaseLedger}
+          />
+        );
     }
-  }, [filtered, openReleaseLedger, view]);
+  }, [boardScope, filtered, openReleaseLedger, view]);
 
   useModuleHeroSlots(moduleHeroSlots);
 

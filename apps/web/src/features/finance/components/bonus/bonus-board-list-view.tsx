@@ -1,7 +1,7 @@
 'use client';
 
 import { Gift } from 'lucide-react';
-import { EmptyState } from '@/components/shared';
+import { EmptyState, StatusBadge } from '@/components/shared';
 import {
   Table,
   TableBody,
@@ -12,18 +12,25 @@ import {
 } from '@/components/ui/table';
 import { BONUS_BOARD_TYPE_CONFIG } from '@/features/finance/constants/bonus-board';
 import {
+  BONUS_ENTRY_STATUS_LABEL,
+  BONUS_ENTRY_STATUS_VARIANT,
+} from '@/features/finance/constants/bonus-board-status-ui';
+import {
   employeeDisplayName,
   parseBonusAmount,
   projectLabel,
 } from '@/features/finance/components/bonus/bonus-board-widgets';
 import { formatAmount } from '@/features/finance/constants/finance';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 
 export function BonusBoardListView({
   rows,
+  boardScope,
   onOpenReleases,
 }: {
   rows: BonusEntryListRow[];
+  boardScope: BoardLifecycleScope;
   onOpenReleases: (entry: BonusEntryListRow) => void;
 }) {
   if (rows.length === 0) {
@@ -46,7 +53,7 @@ export function BonusBoardListView({
             <TableHead>Project</TableHead>
             <TableHead>Order</TableHead>
             <TableHead>Type</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>{boardScope === 'CLOSED' ? 'Outcome' : 'Status'}</TableHead>
             <TableHead>Payroll month</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead />
@@ -70,7 +77,13 @@ export function BonusBoardListView({
                     {typeCfg.label}
                   </span>
                 </TableCell>
-                <TableCell className="text-xs">{row.status}</TableCell>
+                <TableCell>
+                  <StatusBadge
+                    label={BONUS_ENTRY_STATUS_LABEL[row.status]}
+                    variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
+                    className="text-[10px]"
+                  />
+                </TableCell>
                 <TableCell className="tabular-nums">{row.payoutMonth ?? '—'}</TableCell>
                 <TableCell className="text-right tabular-nums">
                   {formatAmount(parseBonusAmount(row.amount))}
