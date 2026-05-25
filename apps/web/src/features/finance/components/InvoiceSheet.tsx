@@ -46,6 +46,8 @@ interface InvoiceSheetProps {
     notes?: string;
   }) => Promise<void>;
   stageGateHighlight?: InvoiceSheetStageGateHighlight | null;
+  /** Stack above a parent entity sheet (related-item open from tab). */
+  forceNestedBackdrop?: boolean;
 }
 
 export function InvoiceSheet({
@@ -56,6 +58,7 @@ export function InvoiceSheet({
   onMoneyStatusChange,
   onPaymentRecorded,
   stageGateHighlight = null,
+  forceNestedBackdrop,
 }: InvoiceSheetProps) {
   const [activeTab, setActiveTab] = useState<InvoiceDetailSheetTab>('general');
   const [generalDraft, setGeneralDraft] = useState<InvoiceGeneralDraft | null>(null);
@@ -147,6 +150,7 @@ export function InvoiceSheet({
         layout="full"
         width="compact"
         sourcePageHref={sourcePageHref}
+        forceNestedBackdrop={forceNestedBackdrop}
       >
         <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
           <div className="flex flex-wrap items-start justify-between gap-3">

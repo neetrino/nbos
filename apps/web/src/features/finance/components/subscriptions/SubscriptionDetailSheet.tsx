@@ -6,6 +6,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
   EntityDetailSheetContent,
+  EntityItemHost,
   ErrorState,
   LoadingState,
   StatusBadge,
@@ -173,92 +174,94 @@ export function SubscriptionDetailSheet({
   const sourcePageHref = subscriptionsListWithOpenSubscriptionHref(subscriptionId);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent
-        open={open}
-        layout="full"
-        sourcePageHref={sourcePageHref}
-        workspaceHref={subscriptionWorkspaceHref(subscriptionId)}
-      >
-        <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
-          {loading ? (
-            <p className="text-muted-foreground text-sm">Loading…</p>
-          ) : subscription ? (
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                  <Repeat className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {subscription.code}
-                  </h2>
-                  {subType ? (
-                    <span className="text-muted-foreground rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
-                      {subType.label}
-                    </span>
+    <EntityItemHost nested onEntityChanged={() => void fetchSubscription()}>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          sourcePageHref={sourcePageHref}
+          workspaceHref={subscriptionWorkspaceHref(subscriptionId)}
+        >
+          <div className="bg-background border-border shrink-0 border-b px-7 pt-5 pb-3">
+            {loading ? (
+              <p className="text-muted-foreground text-sm">Loading…</p>
+            ) : subscription ? (
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
+                    <Repeat className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                      {subscription.code}
+                    </h2>
+                    {subType ? (
+                      <span className="text-muted-foreground rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+                        {subType.label}
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="text-muted-foreground mt-0.5 text-sm">
+                    {formatAmount(parseFloat(subscription.baseMonthlyAmount))}/mo
+                    <span className="mx-1.5">·</span>
+                    {subscription.project.name}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {subStatus ? (
+                    <StatusBadge label={subStatus.label} variant={subStatus.variant} />
                   ) : null}
                 </div>
-                <p className="text-muted-foreground mt-0.5 text-sm">
-                  {formatAmount(parseFloat(subscription.baseMonthlyAmount))}/mo
-                  <span className="mx-1.5">·</span>
-                  {subscription.project.name}
-                </p>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {subStatus ? (
-                  <StatusBadge label={subStatus.label} variant={subStatus.variant} />
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-        <DetailSheetTabBar
-          tabs={SUBSCRIPTION_DETAIL_SHEET_TABS}
-          activeTab={activeTab}
-          onTabChange={(value) => setActiveTab(value as SubscriptionDetailSheetTab)}
-        />
-
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="px-7 py-5">
-            {loading ? (
-              <LoadingState count={3} />
-            ) : error ? (
-              <ErrorState description={error} onRetry={() => void fetchSubscription()} />
-            ) : subscription && generalDraft ? (
-              <>
-                {activeTab === 'general' ? (
-                  <SubscriptionGeneralTab
-                    subscription={subscription}
-                    draft={generalDraft}
-                    patchDraft={patchGeneralDraft}
-                    formDisabled={saving}
-                    onSubscriptionChange={handleSubscriptionChange}
-                    onActionError={setActionError}
-                  />
-                ) : null}
-                {activeTab === 'invoice' ? (
-                  <SubscriptionInvoicesTab subscription={subscription} />
-                ) : null}
-                {activeTab === 'history' ? <SubscriptionHistoryTab /> : null}
-              </>
-            ) : null}
-            {actionError ? (
-              <p className="text-destructive mt-4 text-sm" role="alert">
-                {actionError}
-              </p>
             ) : null}
           </div>
-        </ScrollArea>
 
-        <DetailSheetFormFooter
-          visible={activeTab === 'general' && Boolean(subscription && generalDraft)}
-          dirty={generalDirty}
-          saving={saving}
-          errorMessage={generalError}
-          onSave={handleGeneralSave}
-          onCancel={handleGeneralCancel}
-        />
-      </EntityDetailSheetContent>
-    </Sheet>
+          <DetailSheetTabBar
+            tabs={SUBSCRIPTION_DETAIL_SHEET_TABS}
+            activeTab={activeTab}
+            onTabChange={(value) => setActiveTab(value as SubscriptionDetailSheetTab)}
+          />
+
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="px-7 py-5">
+              {loading ? (
+                <LoadingState count={3} />
+              ) : error ? (
+                <ErrorState description={error} onRetry={() => void fetchSubscription()} />
+              ) : subscription && generalDraft ? (
+                <>
+                  {activeTab === 'general' ? (
+                    <SubscriptionGeneralTab
+                      subscription={subscription}
+                      draft={generalDraft}
+                      patchDraft={patchGeneralDraft}
+                      formDisabled={saving}
+                      onSubscriptionChange={handleSubscriptionChange}
+                      onActionError={setActionError}
+                    />
+                  ) : null}
+                  {activeTab === 'invoice' ? (
+                    <SubscriptionInvoicesTab subscription={subscription} />
+                  ) : null}
+                  {activeTab === 'history' ? <SubscriptionHistoryTab /> : null}
+                </>
+              ) : null}
+              {actionError ? (
+                <p className="text-destructive mt-4 text-sm" role="alert">
+                  {actionError}
+                </p>
+              ) : null}
+            </div>
+          </ScrollArea>
+
+          <DetailSheetFormFooter
+            visible={activeTab === 'general' && Boolean(subscription && generalDraft)}
+            dirty={generalDirty}
+            saving={saving}
+            errorMessage={generalError}
+            onSave={handleGeneralSave}
+            onCancel={handleGeneralCancel}
+          />
+        </EntityDetailSheetContent>
+      </Sheet>
+    </EntityItemHost>
   );
 }

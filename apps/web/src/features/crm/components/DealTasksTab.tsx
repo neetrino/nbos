@@ -3,9 +3,17 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CheckSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { QuickCreateTaskDialog, StatusBadge } from '@/components/shared';
+import {
+  EntityItemList,
+  QuickCreateTaskDialog,
+  useEntityItemHost,
+  ViewModeSwitch,
+  ENTITY_ITEM_VIEW_OPTIONS,
+  type EntityItemSummary,
+  type EntityItemVariant,
+} from '@/components/shared';
+import { taskToItemSummary } from '@/features/tasks/entity-item/task-item-summary';
 import { tasksApi, type Task } from '@/lib/api/tasks';
-import { getTaskStatus } from '@/features/tasks/constants/tasks';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import type { Deal } from '@/lib/api/deals';
 
@@ -15,9 +23,11 @@ interface DealTasksTabProps {
 }
 
 export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
+  const { openEntityItem } = useEntityItemHost();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
   const { creatorId, creatorReady } = useTaskCreatorId();
 
   const projectId = deal.projectId ?? deal.orders?.[0]?.projectId;
@@ -54,36 +64,52 @@ export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
   }, [projectId]);
 
   useEffect(() => {
-    fetchTasks();
+    void fetchTasks();
   }, [fetchTasks]);
+
+  const itemSummaries = useMemo(() => tasks.map(taskToItemSummary), [tasks]);
+
+  const handleOpenItem = useCallback(
+    (item: EntityItemSummary) => {
+      openEntityItem({ id: item.id, kind: item.kind });
+    },
+    [openEntityItem],
+  );
 
   if (!projectId) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 dark:bg-stone-800/40">
-          <CheckSquare size={24} className="text-stone-400" />
-        </div>
-        <h3 className="text-foreground mb-1.5 text-sm font-semibold">Tasks</h3>
-        <p className="text-muted-foreground max-w-[280px] text-xs leading-relaxed">
-          Link a project to this deal to create and view tasks.
-        </p>
-      </div>
+      <EntityItemList
+        items={[]}
+        variant={viewVariant}
+        onOpen={handleOpenItem}
+        emptyIcon={CheckSquare}
+        emptyTitle="Tasks"
+        emptyDescription="Link a project to this deal to create and view tasks."
+      />
     );
   }
 
   return (
     <div className="space-y-4">
-      <Button
-        variant="outline"
-        size="sm"
-        className="gap-1.5 border-sky-200 text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:border-sky-800 dark:text-sky-400"
-        disabled={creatorReady && !creatorId}
-        title={creatorReady && !creatorId ? 'Employee profile required' : undefined}
-        onClick={() => setQuickCreateOpen(true)}
-      >
-        <Plus size={14} />
-        Create Task
-      </Button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 border-sky-200 text-sky-600 hover:bg-sky-50 hover:text-sky-700 dark:border-sky-800 dark:text-sky-400"
+          disabled={creatorReady && !creatorId}
+          title={creatorReady && !creatorId ? 'Employee profile required' : undefined}
+          onClick={() => setQuickCreateOpen(true)}
+        >
+          <Plus size={14} />
+          Create Task
+        </Button>
+        <ViewModeSwitch
+          value={viewVariant}
+          onChange={setViewVariant}
+          options={ENTITY_ITEM_VIEW_OPTIONS}
+          ariaLabel="Task list view"
+        />
+      </div>
 
       <QuickCreateTaskDialog
         open={quickCreateOpen}
@@ -99,47 +125,15 @@ export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
 
       {loading ? (
         <div className="text-muted-foreground py-8 text-center text-sm">Loading tasks...</div>
-      ) : tasks.length > 0 ? (
-        <div className="space-y-3">
-          {tasks.map((task) => {
-            const statusInfo = getTaskStatus(task.status);
-            return (
-              <div
-                key={task.id}
-                className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-stone-100 p-4 transition-colors hover:bg-stone-50/50 dark:border-stone-800 dark:hover:bg-stone-900/30"
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400">
-                    <CheckSquare size={18} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-foreground truncate text-sm font-medium" title={task.title}>
-                      {task.title}
-                    </p>
-                    {statusInfo ? (
-                      <StatusBadge label={statusInfo.label} variant={statusInfo.variant} />
-                    ) : null}
-                  </div>
-                </div>
-                {task.dueDate ? (
-                  <span className="text-muted-foreground shrink-0 text-xs">
-                    {new Date(task.dueDate).toLocaleDateString()}
-                  </span>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 dark:bg-stone-800/40">
-            <CheckSquare size={24} className="text-stone-400" />
-          </div>
-          <h3 className="text-foreground mb-1.5 text-sm font-semibold">Tasks</h3>
-          <p className="text-muted-foreground max-w-[280px] text-xs leading-relaxed">
-            No tasks yet. Create one to track work for this deal.
-          </p>
-        </div>
+        <EntityItemList
+          items={itemSummaries}
+          variant={viewVariant}
+          onOpen={handleOpenItem}
+          emptyIcon={CheckSquare}
+          emptyTitle="Tasks"
+          emptyDescription="No tasks yet. Create one to track work for this deal."
+        />
       )}
     </div>
   );

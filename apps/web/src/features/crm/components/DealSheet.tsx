@@ -6,6 +6,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetSettingsMenu,
   EntityDetailSheetContent,
+  EntityItemHost,
 } from '@/components/shared';
 import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
@@ -227,110 +228,112 @@ export function DealSheet({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent
-        open={open}
-        layout="full"
-        sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`}
-      >
-        <CrmSheetEntityHeader
-          title={headerTitle}
-          entityLabel={typeVisual.label}
-          EntityIcon={TypeIcon}
-          headerIconClassName={typeVisual.headerIconClassName}
-          headerBadgeClassName={typeVisual.headerBadgeClassName}
-          editing={editingName}
-          nameValue={nameValue}
-          onNameValueChange={setNameValue}
-          onCommitName={commitNameToDraft}
-          onNameKeyDown={handleNameKeyDown}
-          nameInputRef={nameInputRef}
-          namePlaceholder="Deal name..."
-          titleEditHint="Click to edit deal name"
-          onStartEditing={startEditing}
-          actions={
-            onDelete ? (
-              <DetailSheetSettingsMenu>
-                <DropdownMenuItem variant="destructive" onClick={() => onDelete(deal.id)}>
-                  <Trash2 />
-                  Delete
-                </DropdownMenuItem>
-              </DetailSheetSettingsMenu>
-            ) : null
-          }
-        />
-
-        {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
-        <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
-          <DealPipelineStages
-            currentStatus={deal.status}
-            onStageClick={(key) => onStatusChange(deal.id, key)}
+    <EntityItemHost nested onEntityChanged={onRefresh}>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          sourcePageHref={`/crm/deals?${CRM_OPEN_DEAL_QUERY}=${encodeURIComponent(deal.id)}`}
+        >
+          <CrmSheetEntityHeader
+            title={headerTitle}
+            entityLabel={typeVisual.label}
+            EntityIcon={TypeIcon}
+            headerIconClassName={typeVisual.headerIconClassName}
+            headerBadgeClassName={typeVisual.headerBadgeClassName}
+            editing={editingName}
+            nameValue={nameValue}
+            onNameValueChange={setNameValue}
+            onCommitName={commitNameToDraft}
+            onNameKeyDown={handleNameKeyDown}
+            nameInputRef={nameInputRef}
+            namePlaceholder="Deal name..."
+            titleEditHint="Click to edit deal name"
+            onStartEditing={startEditing}
+            actions={
+              onDelete ? (
+                <DetailSheetSettingsMenu>
+                  <DropdownMenuItem variant="destructive" onClick={() => onDelete(deal.id)}>
+                    <Trash2 />
+                    Delete
+                  </DropdownMenuItem>
+                </DetailSheetSettingsMenu>
+              ) : null
+            }
           />
-        </div>
 
-        {/* ── Tabs ── */}
-        <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
-          <div className="flex gap-1">
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.value;
-              return (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => setActiveTab(tab.value)}
-                  className={
-                    'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
-                    (isActive
-                      ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
-                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300')
-                  }
-                >
-                  <tab.icon size={16} />
-                  {tab.label}
-                  {isActive && (
-                    <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
-                  )}
-                </button>
-              );
-            })}
+          {/* ── Pipeline Stages (always visible, includes Won/Failed) ── */}
+          <div className="shrink-0 border-b border-stone-100 px-5 py-2.5 dark:border-stone-800">
+            <DealPipelineStages
+              currentStatus={deal.status}
+              onStageClick={(key) => onStatusChange(deal.id, key)}
+            />
           </div>
-        </div>
 
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="px-7 py-5">
-            {activeTab === 'general' && generalDraft ? (
-              <DealGeneralTab
-                deal={deal}
-                draft={generalDraft}
-                patchDraft={patchGeneralDraft}
-                onRefresh={onRefresh}
-                onOpenTaskTab={() => setActiveTab('task')}
-                onOpenDeal={onOpenDeal}
-                gateRequiredFields={gateRequiredFields}
-              />
-            ) : null}
-            {activeTab === 'history' && <DealHistoryTab />}
-            {activeTab === 'invoice' && (
-              <DealInvoiceTab
-                deal={deal}
-                onRefresh={onRefresh}
-                expandCreateFormNonce={invoiceCreateNonce}
-              />
-            )}
-            {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
-            {activeTab === 'calls' && <DealCallsTab />}
+          {/* ── Tabs ── */}
+          <div className="shrink-0 border-b border-stone-100 px-5 dark:border-stone-800">
+            <div className="flex gap-1">
+              {TABS.map((tab) => {
+                const isActive = activeTab === tab.value;
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setActiveTab(tab.value)}
+                    className={
+                      'relative flex items-center gap-2 rounded-t-lg px-5 py-3 text-sm font-semibold transition-colors ' +
+                      (isActive
+                        ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400'
+                        : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600 dark:text-stone-500 dark:hover:bg-stone-800/40 dark:hover:text-stone-300')
+                    }
+                  >
+                    <tab.icon size={16} />
+                    {tab.label}
+                    {isActive && (
+                      <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t-full bg-sky-500" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </ScrollArea>
 
-        <DetailSheetFormFooter
-          visible={activeTab === 'general' && Boolean(generalDraft)}
-          dirty={generalDirty}
-          saving={false}
-          errorMessage={generalError}
-          onSave={handleGeneralSave}
-          onCancel={handleGeneralCancel}
-        />
-      </EntityDetailSheetContent>
-    </Sheet>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="px-7 py-5">
+              {activeTab === 'general' && generalDraft ? (
+                <DealGeneralTab
+                  deal={deal}
+                  draft={generalDraft}
+                  patchDraft={patchGeneralDraft}
+                  onRefresh={onRefresh}
+                  onOpenTaskTab={() => setActiveTab('task')}
+                  onOpenDeal={onOpenDeal}
+                  gateRequiredFields={gateRequiredFields}
+                />
+              ) : null}
+              {activeTab === 'history' && <DealHistoryTab />}
+              {activeTab === 'invoice' && (
+                <DealInvoiceTab
+                  deal={deal}
+                  onRefresh={onRefresh}
+                  expandCreateFormNonce={invoiceCreateNonce}
+                />
+              )}
+              {activeTab === 'task' && <DealTasksTab deal={deal} onRefresh={onRefresh} />}
+              {activeTab === 'calls' && <DealCallsTab />}
+            </div>
+          </ScrollArea>
+
+          <DetailSheetFormFooter
+            visible={activeTab === 'general' && Boolean(generalDraft)}
+            dirty={generalDirty}
+            saving={false}
+            errorMessage={generalError}
+            onSave={handleGeneralSave}
+            onCancel={handleGeneralCancel}
+          />
+        </EntityDetailSheetContent>
+      </Sheet>
+    </EntityItemHost>
   );
 }

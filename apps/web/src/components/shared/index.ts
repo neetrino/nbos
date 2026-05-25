@@ -135,3 +135,15 @@ export {
   type EntityNotesFieldProps,
   type EntityNotesSectionProps,
 } from './entity-notes';
+export {
+  EntityItemHost,
+  EntityItemList,
+  EntityItemSurface,
+  ENTITY_ITEM_VIEW_OPTIONS,
+  useEntityItemHost,
+  type EntityItemHostProps,
+  type EntityItemListProps,
+  type EntityItemOpenTarget,
+  type EntityItemSummary,
+  type EntityItemVariant,
+} from './entity-item';

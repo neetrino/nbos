@@ -26,6 +26,8 @@ interface TaskSheetProps {
   onOpenChange: (open: boolean) => void;
   onUpdate?: (task: Task) => void;
   onDelete?: (taskId: string) => void;
+  /** Stack above a parent entity sheet (related-item open from tab). */
+  forceNestedBackdrop?: boolean;
 }
 
 const TASK_SHEET_WIDTH_CLASS =
@@ -33,7 +35,14 @@ const TASK_SHEET_WIDTH_CLASS =
 
 const TASK_SHEET_RAIL_ANCHOR_CLASS = 'sm:right-[min(96vw,112rem)] 2xl:right-[min(98vw,128rem)]';
 
-export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: TaskSheetProps) {
+export function TaskSheet({
+  taskId,
+  open,
+  onOpenChange,
+  onUpdate,
+  onDelete,
+  forceNestedBackdrop,
+}: TaskSheetProps) {
   const state = useTaskSheetState({ taskId, open, onUpdate, onDelete });
   const [extrasOpen, setExtrasOpen] = useState(false);
 
@@ -61,6 +70,7 @@ export function TaskSheet({ taskId, open, onOpenChange, onUpdate, onDelete }: Ta
         contentClassName={TASK_SHEET_WIDTH_CLASS}
         railAnchorClassName={TASK_SHEET_RAIL_ANCHOR_CLASS}
         showRailActions={Boolean(state.task)}
+        forceNestedBackdrop={forceNestedBackdrop}
         sourcePageHref={
           state.task ? `/tasks?${TASK_OPEN_QUERY}=${encodeURIComponent(state.task.id)}` : '#'
         }
