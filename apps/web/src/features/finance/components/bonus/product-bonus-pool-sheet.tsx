@@ -9,6 +9,7 @@ import {
   EntityItemHost,
   LoadingState,
 } from '@/components/shared';
+import { BonusPoolFundingMismatchBanner } from '@/features/finance/components/bonus/bonus-pool-funding-mismatch-banner';
 import { BonusPoolSheetBonusesTab } from '@/features/finance/components/bonus/bonus-pool-sheet-bonuses-tab';
 import {
   BONUS_POOL_DETAIL_SHEET_TABS,
@@ -18,6 +19,7 @@ import { BonusPoolSheetFundingTab } from '@/features/finance/components/bonus/bo
 import { BonusPoolSheetGeneralTab } from '@/features/finance/components/bonus/bonus-pool-sheet-general-tab';
 import { BonusPoolSheetHeader } from '@/features/finance/components/bonus/bonus-pool-sheet-header';
 import { fetchBonusEntriesForPool } from '@/features/finance/utils/fetch-bonus-entries-for-pool';
+import { detectBonusPoolFundingMismatch } from '@/features/finance/utils/bonus-pool-funding-mismatch';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   bonusesApi,
@@ -40,6 +42,7 @@ export function ProductBonusPoolSheet({
   onPoolsRefresh?: () => void | Promise<void>;
 }) {
   const [activeTab, setActiveTab] = useState<BonusPoolDetailSheetTab>('general');
+  const [displayPool, setDisplayPool] = useState<BonusProductPoolRow | null>(null);
   const [lines, setLines] = useState<BonusPoolEmployeeLine[]>([]);
   const [entries, setEntries] = useState<BonusEntryListRow[]>([]);
   const [orderCodes, setOrderCodes] = useState<string[]>([]);
@@ -49,6 +52,15 @@ export function ProductBonusPoolSheet({
   const [linesError, setLinesError] = useState<string | null>(null);
   const [entriesError, setEntriesError] = useState<string | null>(null);
   const [timelineError, setTimelineError] = useState<string | null>(null);
+  const [fundingSyncing, setFundingSyncing] = useState(false);
+  const [fundingSyncError, setFundingSyncError] = useState<string | null>(null);
+
+  const activePool = displayPool ?? pool;
+
+  useEffect(() => {
+    setDisplayPool(pool);
+    setFundingSyncError(null);
+  }, [pool]);
 
   const loadPoolDetail = useCallback(async (poolKey: string, orderIds: string[]) => {
     setDetailLoading(true);
@@ -81,6 +93,13 @@ export function ProductBonusPoolSheet({
     }
   }, []);
 
+  const refreshDisplayPool = useCallback(async (poolKey: string) => {
+    const pools = await bonusesApi.getProductPools();
+    const updated = pools.find((row) => row.poolKey === poolKey) ?? null;
+    if (updated) setDisplayPool(updated);
+    return updated;
+  }, []);
+
   useEffect(() => {
     if (!open || !pool) {
       setLines([]);
@@ -106,24 +125,49 @@ export function ProductBonusPoolSheet({
     [timelineEvents],
   );
 
+  const fundingMismatch = useMemo(() => {
+    if (detailLoading || timelineError || !activePool) {
+      return { hasMismatch: false, paymentsTotal: 0, ledgerReceived: 0 };
+    }
+    return detectBonusPoolFundingMismatch(activePool.ledgerReceivedAmount, timelineEvents);
+  }, [activePool, detailLoading, timelineError, timelineEvents]);
+
+  const handleReconcileFunding = useCallback(async () => {
+    if (!activePool) return;
+    setFundingSyncing(true);
+    setFundingSyncError(null);
+    try {
+      await bonusesApi.syncProductPoolLedger(activePool.poolKey);
+      await refreshDisplayPool(activePool.poolKey);
+      await loadPoolDetail(activePool.poolKey, activePool.orderIds);
+      await onPoolsRefresh?.();
+    } catch (caught) {
+      setFundingSyncError(getApiErrorMessage(caught, 'Pool funding could not be reconciled.'));
+    } finally {
+      setFundingSyncing(false);
+    }
+  }, [activePool, loadPoolDetail, onPoolsRefresh, refreshDisplayPool]);
+
   const handleAfterAutoRelease = useCallback(async () => {
-    if (!pool) return;
-    await loadPoolDetail(pool.poolKey, pool.orderIds);
+    if (!activePool) return;
+    await loadPoolDetail(activePool.poolKey, activePool.orderIds);
+    await refreshDisplayPool(activePool.poolKey);
     await onPoolsRefresh?.();
-  }, [loadPoolDetail, onPoolsRefresh, pool]);
+  }, [activePool, loadPoolDetail, onPoolsRefresh, refreshDisplayPool]);
 
   const handleEntityChanged = useCallback(async () => {
-    if (!pool) return;
-    await loadPoolDetail(pool.poolKey, pool.orderIds);
+    if (!activePool) return;
+    await loadPoolDetail(activePool.poolKey, activePool.orderIds);
+    await refreshDisplayPool(activePool.poolKey);
     await onPoolsRefresh?.();
-  }, [loadPoolDetail, onPoolsRefresh, pool]);
+  }, [activePool, loadPoolDetail, onPoolsRefresh, refreshDisplayPool]);
 
   const tabContent = useMemo(() => {
-    if (!pool) return null;
+    if (!activePool) return null;
     if (activeTab === 'funding') {
       return (
         <BonusPoolSheetFundingTab
-          pool={pool}
+          pool={activePool}
           timelineEvents={timelineEvents}
           loading={detailLoading}
           error={timelineError}
@@ -133,7 +177,7 @@ export function ProductBonusPoolSheet({
     if (activeTab === 'bonuses') {
       return (
         <BonusPoolSheetBonusesTab
-          pool={pool}
+          pool={activePool}
           lines={lines}
           entries={entries}
           entriesError={entriesError}
@@ -143,7 +187,7 @@ export function ProductBonusPoolSheet({
     }
     return (
       <BonusPoolSheetGeneralTab
-        pool={pool}
+        pool={activePool}
         orderCodes={orderCodes}
         riskFlags={riskFlags}
         paymentCount={paymentCount}
@@ -152,6 +196,7 @@ export function ProductBonusPoolSheet({
       />
     );
   }, [
+    activePool,
     activeTab,
     detailLoading,
     entries,
@@ -160,7 +205,6 @@ export function ProductBonusPoolSheet({
     lines,
     orderCodes,
     paymentCount,
-    pool,
     releaseCount,
     riskFlags,
     timelineError,
@@ -171,16 +215,22 @@ export function ProductBonusPoolSheet({
     <EntityItemHost nested onEntityChanged={() => void handleEntityChanged()}>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <EntityDetailSheetContent open={open} layout="full" width="medium" className="gap-0">
-          {pool ? (
+          {activePool ? (
             <>
-              <BonusPoolSheetHeader pool={pool} />
+              <BonusPoolSheetHeader pool={activePool} />
               <DetailSheetTabBar
                 tabs={BONUS_POOL_DETAIL_SHEET_TABS}
                 activeTab={activeTab}
                 onTabChange={(value) => setActiveTab(value as BonusPoolDetailSheetTab)}
               />
               <ScrollArea className="min-h-0 flex-1">
-                <div className="px-5 py-5">
+                <div className="space-y-4 px-5 py-5">
+                  <BonusPoolFundingMismatchBanner
+                    mismatch={fundingMismatch}
+                    syncing={fundingSyncing}
+                    syncError={fundingSyncError}
+                    onReconcile={handleReconcileFunding}
+                  />
                   {detailLoading && activeTab === 'general' ? (
                     <LoadingState count={3} />
                   ) : (

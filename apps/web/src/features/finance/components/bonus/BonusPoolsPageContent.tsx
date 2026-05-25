@@ -62,6 +62,9 @@ export function BonusPoolsPageContent() {
     try {
       const data = await bonusesApi.getProductPools();
       setRows(data);
+      setSheetPool((current) =>
+        current ? (data.find((row) => row.poolKey === current.poolKey) ?? current) : null,
+      );
     } catch (caught) {
       setRows([]);
       setError(getApiErrorMessage(caught, 'Bonus pool roll-ups could not be loaded.'));

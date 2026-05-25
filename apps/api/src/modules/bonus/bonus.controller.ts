@@ -141,6 +141,19 @@ export class BonusController {
     return this.bonusService.triggerProductPoolAutoRelease(key);
   }
 
+  @Post('products/pools/sync')
+  @ApiOperation({
+    summary: 'Recompute product bonus pool ledger from live client payments for all pool orders',
+  })
+  @ApiQuery({ name: 'poolKey', required: true })
+  async postProductPoolSync(@Query('poolKey') poolKey?: string) {
+    const key = poolKey?.trim();
+    if (!key) {
+      throw new BadRequestException('poolKey query parameter is required');
+    }
+    return this.bonusService.syncProductPoolLedger(key);
+  }
+
   @Get('entries/:entryId/releases')
   @ApiOperation({ summary: 'List bonus releases for a bonus entry (NBOS Bonus Release ledger)' })
   @ApiQuery({ name: 'page', required: false })

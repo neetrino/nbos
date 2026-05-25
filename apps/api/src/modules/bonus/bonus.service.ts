@@ -20,6 +20,7 @@ import {
 } from './bonus-pool-lines-batch';
 import { queryBonusPoolTimeline } from './bonus-pool-timeline';
 import { triggerPoolProportionalAutoRelease } from './bonus-pool-auto-release-trigger';
+import { syncProductBonusPoolForPoolKey } from './bonus-pool-sync-trigger';
 import { deriveBonusPoolFundingMetrics, sumPoolLedgerFields } from './bonus-pool-funding-health';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 
@@ -228,6 +229,10 @@ export class BonusService {
 
   async triggerProductPoolAutoRelease(poolKey: string) {
     return triggerPoolProportionalAutoRelease(this.prisma, poolKey);
+  }
+
+  async syncProductPoolLedger(poolKey: string) {
+    return syncProductBonusPoolForPoolKey(this.prisma, poolKey);
   }
 
   async getProductPoolEmployeeLinesBatch(poolKeysRaw: string): Promise<{

@@ -332,6 +332,19 @@ export const bonusesApi = {
     return resp.data;
   },
 
+  async syncProductPoolLedger(poolKey: string): Promise<{
+    poolKey: string;
+    orderIds: string[];
+    ordersSynced: number;
+  }> {
+    const resp = await api.post<{
+      poolKey: string;
+      orderIds: string[];
+      ordersSynced: number;
+    }>('/api/bonus/products/pools/sync', {}, { params: { poolKey } });
+    return resp.data;
+  },
+
   async listReleasesForEntryPage(
     entryId: string,
     params?: { page?: number; pageSize?: number },
