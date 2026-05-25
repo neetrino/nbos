@@ -236,6 +236,17 @@ export interface PatchSalesBonusPolicyBody {
   isActive?: boolean;
 }
 
+export interface CreateBonusEntryPayload {
+  employeeId: string;
+  orderId: string;
+  projectId: string;
+  type: BonusType;
+  amount: number;
+  percent: number;
+  status?: BonusStatus;
+  payoutMonth?: string;
+}
+
 export const bonusesApi = {
   async getSalesPolicies(): Promise<SalesBonusPolicyRow[]> {
     const resp = await api.get<SalesBonusPolicyRow[]>('/api/bonus/sales-policies');
@@ -247,6 +258,11 @@ export const bonusesApi = {
     body: PatchSalesBonusPolicyBody,
   ): Promise<SalesBonusPolicyRow> {
     const resp = await api.patch<SalesBonusPolicyRow>(`/api/bonus/sales-policies/${id}`, body);
+    return resp.data;
+  },
+
+  async create(payload: CreateBonusEntryPayload): Promise<BonusEntryListRow> {
+    const resp = await api.post<BonusEntryListRow>('/api/bonus', payload);
     return resp.data;
   },
 

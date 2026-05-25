@@ -98,11 +98,11 @@ Backend + rules live in My Company policy templates; Finance executes. See `05-B
 
 ---
 
-## 4b. Policy accrual automation
+## 4b. Manual bonus creation (replaces planned accrual automation)
 
-- ☑ **Marketing accrual:** preview + apply on `/finance/bonuses`; rates in `marketing-bonus-accrual.constants.ts`.
-- ☑ **Support accrual:** SLA-met preview + apply (MARKETING-type entries on company anchor order).
-- ☐ **Post-MVP:** dedicated company anchor order/project; `SUPPORT` bonus type enum; rates in policy UI.
+- ☑ **Remove §4b:** marketing/support preview+apply accrual panels and API endpoints removed.
+- ☑ **Manual create:** `Create bonus` on `/finance/bonuses` — employee, order, type, amount, status (default Active), payroll month.
+- ☐ **Post-MVP:** automated marketing/support KPI accrual when business rules are defined; optional dedicated company anchor order.
 
 ---
 

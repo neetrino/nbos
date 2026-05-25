@@ -311,14 +311,14 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
               ) : null}
               {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_MARKETING_MANUAL_PLANNED ? (
                 <p className="text-muted-foreground text-xs">
-                  Create MARKETING bonus entries manually in Finance; automated CPL/MQL accrual from
-                  the Marketing module is not wired yet.
+                  Create bonus entries on Finance → Bonus board (Create bonus). Automated MQL/SQL
+                  accrual is not wired yet.
                 </p>
               ) : null}
               {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_SUPPORT_MANUAL_PLANNED ? (
                 <p className="text-muted-foreground text-xs">
-                  Create support/maintenance bonus entries manually in Finance; automated SLA
-                  scorecard accrual is not wired yet.
+                  Create bonus entries on Finance → Bonus board (Create bonus). Automated SLA
+                  accrual is not wired yet.
                 </p>
               ) : null}
             </label>

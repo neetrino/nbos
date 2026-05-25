@@ -63,8 +63,7 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 ### Residual (canon backlog)
 
-- Marketing: `GET/POST /api/bonus/marketing-accrual/preview|apply` + Finance UI on bonus board.
-- Support: `GET/POST /api/bonus/support-accrual/preview|apply` (SLA-met tickets; MARKETING-type entries).
+- Manual bonus create UI on `/finance/bonuses` (`POST /api/bonus`) — marketing/support until KPI accrual rules ship.
 - Bonus policy template parameters beyond name/notes (per-template config UI).
 - KPI scorecard metrics per non-sales role (sales plan/actual links ship on `kpi_policies`).
 

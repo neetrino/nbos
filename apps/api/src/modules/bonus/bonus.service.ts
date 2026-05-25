@@ -22,10 +22,6 @@ import { queryBonusPoolTimeline } from './bonus-pool-timeline';
 import { triggerPoolProportionalAutoRelease } from './bonus-pool-auto-release-trigger';
 import { deriveBonusPoolFundingMetrics, sumPoolLedgerFields } from './bonus-pool-funding-health';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
-import { applyMarketingBonusAccrual } from './marketing-bonus-accrual-apply';
-import { queryMarketingBonusAccrualPreview } from './marketing-bonus-accrual-preview';
-import { applySupportBonusAccrual } from './support-bonus-accrual-apply';
-import { querySupportBonusAccrualPreview } from './support-bonus-accrual-preview';
 
 interface CreateBonusDto {
   employeeId: string;
@@ -323,22 +319,6 @@ export class BonusService {
       ...row,
       employeeCount: employeesByPool.get(row.poolKey)?.size ?? 0,
     }));
-  }
-
-  async previewMarketingBonusAccrual(payrollMonth: string) {
-    return queryMarketingBonusAccrualPreview(this.prisma, payrollMonth);
-  }
-
-  async applyMarketingBonusAccrual(payrollMonth: string) {
-    return applyMarketingBonusAccrual(this.prisma, payrollMonth);
-  }
-
-  async previewSupportBonusAccrual(payrollMonth: string) {
-    return querySupportBonusAccrualPreview(this.prisma, payrollMonth);
-  }
-
-  async applySupportBonusAccrual(payrollMonth: string) {
-    return applySupportBonusAccrual(this.prisma, payrollMonth);
   }
 
   private buildWhere(

@@ -141,36 +141,6 @@ export class BonusController {
     return this.bonusService.triggerProductPoolAutoRelease(key);
   }
 
-  @Get('marketing-accrual/preview')
-  @ApiOperation({
-    summary: 'Preview MARKETING bonus accrual from attributed MQL/SQL leads (no persist)',
-  })
-  @ApiQuery({ name: 'payrollMonth', required: true, description: 'YYYY-MM payroll month' })
-  async previewMarketingAccrual(@Query('payrollMonth') payrollMonth: string) {
-    return this.bonusService.previewMarketingBonusAccrual(payrollMonth);
-  }
-
-  @Post('marketing-accrual/apply')
-  @ApiOperation({
-    summary: 'Create MARKETING bonus entries from MQL/SQL preview (idempotent per employee/month)',
-  })
-  async applyMarketingAccrual(@Body() body: { payrollMonth: string }) {
-    return this.bonusService.applyMarketingBonusAccrual(body.payrollMonth);
-  }
-
-  @Get('support-accrual/preview')
-  @ApiOperation({ summary: 'Preview support bonus accrual from SLA-met tickets in payroll month' })
-  @ApiQuery({ name: 'payrollMonth', required: true })
-  async previewSupportAccrual(@Query('payrollMonth') payrollMonth: string) {
-    return this.bonusService.previewSupportBonusAccrual(payrollMonth);
-  }
-
-  @Post('support-accrual/apply')
-  @ApiOperation({ summary: 'Create planned support bonus entries from SLA-met preview' })
-  async applySupportAccrual(@Body() body: { payrollMonth: string }) {
-    return this.bonusService.applySupportBonusAccrual(body.payrollMonth);
-  }
-
   @Get('entries/:entryId/releases')
   @ApiOperation({ summary: 'List bonus releases for a bonus entry (NBOS Bonus Release ledger)' })
   @ApiQuery({ name: 'page', required: false })

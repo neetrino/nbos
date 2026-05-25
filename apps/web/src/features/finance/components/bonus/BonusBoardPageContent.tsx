@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Gift } from 'lucide-react';
+import { Gift, Plus } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   EmptyState,
@@ -11,6 +11,7 @@ import {
   useModuleHeroSlots,
   ViewModeSwitch,
 } from '@/components/shared';
+import { Button } from '@/components/ui/button';
 import { BonusBoardFilteredTotalsBar } from '@/features/finance/components/bonus/bonus-board-filtered-totals-bar';
 import { computeBonusBoardFilteredTotals } from '@/features/finance/utils/bonus-board-filtered-totals';
 import {
@@ -29,7 +30,7 @@ import {
   BONUS_BOARD_OPEN_ENTRY_QUERY,
   BONUS_BOARD_PROJECT_FILTER_QUERY,
 } from '@/features/finance/constants/bonus-board-url';
-import { PlannedBonusAccrualPanels } from '@/features/finance/components/bonus/planned-bonus-accrual-panels';
+import { CreateManualBonusDialog } from '@/features/finance/components/bonus/create-manual-bonus-dialog';
 import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
 import { BonusBoardPageSettingsSheet } from '@/features/finance/components/bonus/BonusBoardPageSettingsSheet';
 import {
@@ -75,6 +76,7 @@ export function BonusBoardPageContent() {
   const [employeeFilter, setEmployeeFilter] = useState<string>('ALL');
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
   const [view, setView] = useState<BonusBoardViewMode>(() => readBonusBoardViewMode());
+  const [createOpen, setCreateOpen] = useState(false);
 
   const handleViewChange = useCallback((mode: BonusBoardViewMode) => {
     setView(mode);
@@ -269,13 +271,19 @@ export function BonusBoardPageContent() {
         />
       ),
       trailing: (
-        <BonusBoardPageSettingsSheet
-          statsExportDisabled={loading || !stats}
-          exportCsvDisabled={exportCsvSubmitting || filtered.length === 0}
-          exportCsvInProgress={exportCsvSubmitting}
-          onExportScopeStatsCsv={handleExportScopeStatsCsv}
-          onExportCsv={handleExportCsv}
-        />
+        <>
+          <BonusBoardPageSettingsSheet
+            statsExportDisabled={loading || !stats}
+            exportCsvDisabled={exportCsvSubmitting || filtered.length === 0}
+            exportCsvInProgress={exportCsvSubmitting}
+            onExportScopeStatsCsv={handleExportScopeStatsCsv}
+            onExportCsv={handleExportCsv}
+          />
+          <Button type="button" onClick={() => setCreateOpen(true)}>
+            <Plus size={16} aria-hidden />
+            Create bonus
+          </Button>
+        </>
       ),
     }),
     [
@@ -324,12 +332,16 @@ export function BonusBoardPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      <PlannedBonusAccrualPanels onApplied={() => void load()} />
+      <CreateManualBonusDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={() => void load()}
+      />
       {filtered.length === 0 ? (
         <EmptyState
           icon={Gift}
           title="No matching bonuses"
-          description="Adjust search or filters, or wait for bonus entries on orders."
+          description="Adjust search or filters, or create a manual bonus."
           action={null}
         />
       ) : (
