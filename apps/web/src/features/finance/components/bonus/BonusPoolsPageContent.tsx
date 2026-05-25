@@ -30,7 +30,6 @@ import {
   type BonusPoolsViewMode,
 } from '@/features/finance/constants/bonus-pools-view';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import { useBonusPoolsEmployeePreviews } from '@/features/finance/hooks/use-bonus-pools-employee-previews';
 import { computeBonusPoolsFilteredTotals } from '@/features/finance/utils/bonus-pools-filtered-totals';
 import {
   filterBonusPoolsRows,
@@ -114,8 +113,6 @@ export function BonusPoolsPageContent() {
     handleExportEmployeesCsv,
   } = useBonusProductPoolsCsvExport(filteredRows);
 
-  const { linesByPoolKey } = useBonusPoolsEmployeePreviews(filteredRows, true);
-
   const openPoolSheet = useCallback((row: BonusProductPoolRow) => {
     setSheetPool(row);
     setSheetOpen(true);
@@ -178,23 +175,12 @@ export function BonusPoolsPageContent() {
 
   const mainView = useMemo(() => {
     if (view === 'board') {
-      return (
-        <BonusPoolsBoardView
-          rows={filteredRows}
-          onOpenPool={openPoolSheet}
-          linesByPoolKey={linesByPoolKey}
-        />
-      );
+      return <BonusPoolsBoardView rows={filteredRows} onOpenPool={openPoolSheet} />;
     }
     return (
-      <BonusPoolsListView
-        rows={filteredRows}
-        totals={filteredTotals}
-        onOpenPool={openPoolSheet}
-        linesByPoolKey={linesByPoolKey}
-      />
+      <BonusPoolsListView rows={filteredRows} totals={filteredTotals} onOpenPool={openPoolSheet} />
     );
-  }, [filteredRows, filteredTotals, linesByPoolKey, openPoolSheet, view]);
+  }, [filteredRows, filteredTotals, openPoolSheet, view]);
 
   if (loading) {
     return <LoadingState />;

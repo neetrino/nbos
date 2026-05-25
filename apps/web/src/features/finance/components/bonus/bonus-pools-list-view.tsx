@@ -14,37 +14,29 @@ import { formatAmount } from '@/features/finance/constants/finance';
 import {
   bonusPoolFundingHealthUi,
   bonusPoolFundingRowAccentForRow,
-  formatPoolFillPercent,
   resolveRowFundingHealth,
 } from '@/features/finance/constants/bonus-pool-funding-health-ui';
-import { bonusPoolSheetStatusUi } from '@/features/finance/constants/bonus-pool-status-ui';
 import { BonusPoolFillBar } from '@/features/finance/components/bonus/bonus-pool-fill-bar';
 import { StatusBadge } from '@/components/shared';
 import type { BonusPoolsFilteredTotals } from '@/features/finance/utils/bonus-pools-filtered-totals';
 import {
   BONUS_POOL_SCOPE_COLUMN_LABEL,
   bonusPoolKindLabel,
-  bonusPoolOrderCodesLabel,
   bonusPoolScopeTitle,
 } from '@/features/finance/utils/bonus-pool-display';
 import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
-import {
-  formatBonusPoolEmployeePreviewLine,
-  topBonusPoolEmployeePreviewLines,
-} from '@/features/finance/utils/bonus-pool-employee-preview-label';
-import type { BonusPoolEmployeeLine, BonusProductPoolRow } from '@/lib/api/bonus';
+import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
-const LIST_ROW_CELL = 'px-4 py-4 align-middle';
+const LIST_ROW_CELL = 'px-4 py-3 align-middle';
 const LIST_HEAD_CELL = 'px-4 py-3';
 const LIST_FOOTER_CELL = 'text-foreground px-4 py-3 text-sm font-bold tabular-nums';
 const LIST_FOOTER_LABEL =
   'text-muted-foreground px-4 py-3 text-xs font-semibold uppercase tracking-wide';
-const LIST_SCOPE_COL_CLASS = 'min-w-[10rem]';
-const LIST_ORDER_COL_CLASS = 'min-w-[6rem]';
-const LIST_PROJECT_COL_CLASS = 'min-w-[9rem]';
-const LIST_IDENTITY_COLS = 3;
-const LIST_FILL_COL_CLASS = 'min-w-[4.5rem]';
+const LIST_SCOPE_COL_CLASS = 'min-w-[12rem]';
+const LIST_PROJECT_COL_CLASS = 'min-w-[7rem]';
+const LIST_FILL_COL_CLASS = 'min-w-[5rem]';
+const LIST_IDENTITY_COLS = 2;
 
 function handlePoolRowKeyDown(
   event: KeyboardEvent<HTMLTableRowElement>,
@@ -60,12 +52,10 @@ export function BonusPoolsListView({
   rows,
   totals,
   onOpenPool,
-  linesByPoolKey,
 }: {
   rows: BonusProductPoolRow[];
   totals: BonusPoolsFilteredTotals;
   onOpenPool: (row: BonusProductPoolRow) => void;
-  linesByPoolKey: ReadonlyMap<string, BonusPoolEmployeeLine[]>;
 }) {
   return (
     <div className="border-border bg-card overflow-hidden rounded-xl border">
@@ -75,25 +65,15 @@ export function BonusPoolsListView({
             <TableHead className={cn(LIST_HEAD_CELL, LIST_SCOPE_COL_CLASS)}>
               {BONUS_POOL_SCOPE_COLUMN_LABEL}
             </TableHead>
-            <TableHead className={cn(LIST_HEAD_CELL, LIST_ORDER_COL_CLASS)}>Order</TableHead>
             <TableHead className={cn(LIST_HEAD_CELL, LIST_PROJECT_COL_CLASS)}>Project</TableHead>
-            <TableHead className={`${LIST_HEAD_CELL} text-right`}>Received</TableHead>
-            <TableHead className={`${LIST_HEAD_CELL} text-right`}>Planned</TableHead>
-            <TableHead className={`${LIST_HEAD_CELL} text-right`}>Released</TableHead>
             <TableHead className={`${LIST_HEAD_CELL} text-right`}>Available</TableHead>
-            <TableHead className={`${LIST_HEAD_CELL} text-right`}>Remaining</TableHead>
             <TableHead className={cn(LIST_HEAD_CELL, LIST_FILL_COL_CLASS)}>Fill</TableHead>
             <TableHead className={LIST_HEAD_CELL}>Funding</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((row) => (
-            <BonusPoolsListRow
-              key={row.poolKey}
-              row={row}
-              onOpenPool={onOpenPool}
-              employeeLines={linesByPoolKey.get(row.poolKey)}
-            />
+            <BonusPoolsListRow key={row.poolKey} row={row} onOpenPool={onOpenPool} />
           ))}
         </TableBody>
         <tfoot>
@@ -101,17 +81,9 @@ export function BonusPoolsListView({
             <TableCell colSpan={LIST_IDENTITY_COLS} className={LIST_FOOTER_LABEL}>
               Filtered ({totals.poolCount} pools · {totals.entryCount} entries)
             </TableCell>
-            <TableCell className={`${LIST_FOOTER_CELL} text-right`}>—</TableCell>
-            <TableCell className={`${LIST_FOOTER_CELL} text-right`}>
-              {formatAmount(totals.planned)}
-            </TableCell>
-            <TableCell className={`${LIST_FOOTER_CELL} text-right`}>
-              {formatAmount(totals.released)}
-            </TableCell>
             <TableCell className={`${LIST_FOOTER_CELL} text-right`}>
               {formatAmount(totals.available)}
             </TableCell>
-            <TableCell className={`${LIST_FOOTER_CELL} text-right`}>—</TableCell>
             <TableCell />
             <TableCell />
           </TableRow>
@@ -124,16 +96,12 @@ export function BonusPoolsListView({
 function BonusPoolsListRow({
   row,
   onOpenPool,
-  employeeLines,
 }: {
   row: BonusProductPoolRow;
   onOpenPool: (row: BonusProductPoolRow) => void;
-  employeeLines?: readonly BonusPoolEmployeeLine[];
 }) {
   const fundingUi = bonusPoolFundingHealthUi(resolveRowFundingHealth(row));
-  const ledgerUi = bonusPoolSheetStatusUi(row);
   const scopeTitle = bonusPoolScopeTitle(row);
-  const preview = employeeLines ? topBonusPoolEmployeePreviewLines(employeeLines, 2) : [];
 
   return (
     <TableRow
@@ -145,28 +113,13 @@ function BonusPoolsListRow({
       onKeyDown={(event) => handlePoolRowKeyDown(event, row, onOpenPool)}
       tabIndex={0}
       role="button"
-      aria-label={`${scopeTitle} · ${row.orderCode} · ${row.projectCode}`}
+      aria-label={`${scopeTitle} · ${row.projectCode}`}
     >
       <TableCell className={cn(LIST_ROW_CELL, LIST_SCOPE_COL_CLASS)}>
-        <div className="flex flex-col gap-0.5">
-          <span className="text-base font-semibold">{scopeTitle}</span>
-          <span className="text-xs font-medium tracking-wide uppercase opacity-80">
-            {bonusPoolKindLabel(row.poolKind)}
-          </span>
-          {preview.length > 0 ? (
-            <span className="text-muted-foreground truncate text-xs">
-              {preview.map((line) => formatBonusPoolEmployeePreviewLine(line)).join(' · ')}
-            </span>
-          ) : null}
-        </div>
-      </TableCell>
-      <TableCell className={cn(LIST_ROW_CELL, LIST_ORDER_COL_CLASS)}>
-        <span className="font-mono text-sm font-semibold" title={row.orderCodes.join(', ')}>
-          {bonusPoolOrderCodesLabel(row)}
+        <span className="text-base font-semibold">{scopeTitle}</span>
+        <span className="text-muted-foreground mt-0.5 block text-xs font-medium tracking-wide uppercase">
+          {bonusPoolKindLabel(row.poolKind)}
         </span>
-        {row.employeeCount > 0 ? (
-          <span className="text-muted-foreground text-xs">{row.employeeCount} people</span>
-        ) : null}
       </TableCell>
       <TableCell className={cn(LIST_ROW_CELL, LIST_PROJECT_COL_CLASS)}>
         <Link
@@ -176,44 +129,19 @@ function BonusPoolsListRow({
         >
           {row.projectCode}
         </Link>
-        <p className="text-muted-foreground mt-0.5 truncate text-xs">{row.projectName}</p>
-      </TableCell>
-      <TableCell className={`${LIST_ROW_CELL} text-right text-sm tabular-nums`}>
-        {formatBonusPoolMoney(row.ledgerReceivedAmount)}
-      </TableCell>
-      <TableCell className={`${LIST_ROW_CELL} text-right text-sm font-medium tabular-nums`}>
-        {formatBonusPoolMoney(row.ledgerPlannedAmount)}
-      </TableCell>
-      <TableCell className={`${LIST_ROW_CELL} text-right text-sm tabular-nums`}>
-        {formatBonusPoolMoney(row.ledgerReleasedAmount)}
       </TableCell>
       <TableCell className={`${LIST_ROW_CELL} text-right text-sm font-medium tabular-nums`}>
         {formatBonusPoolMoney(row.ledgerAvailableFunding)}
       </TableCell>
-      <TableCell className={`${LIST_ROW_CELL} text-right text-sm tabular-nums`}>
-        {formatBonusPoolMoney(row.ledgerRemainingAmount)}
-      </TableCell>
       <TableCell className={cn(LIST_ROW_CELL, LIST_FILL_COL_CLASS)}>
-        <div className="flex min-w-[5rem] flex-col gap-1">
-          <span className="text-sm font-bold tabular-nums">
-            {formatPoolFillPercent(row.fundingFillPercent)}
-          </span>
-          <BonusPoolFillBar row={row} showLabel={false} className="max-w-[5.5rem]" />
-        </div>
+        <BonusPoolFillBar row={row} showLabel={false} className="max-w-[5.5rem]" />
       </TableCell>
       <TableCell className={LIST_ROW_CELL}>
-        <div className="flex flex-col gap-1">
-          <StatusBadge
-            label={fundingUi.label}
-            variant={fundingUi.variant}
-            className="w-fit text-[10px]"
-          />
-          <StatusBadge
-            label={ledgerUi.label}
-            variant={ledgerUi.variant}
-            className="w-fit text-[10px]"
-          />
-        </div>
+        <StatusBadge
+          label={fundingUi.label}
+          variant={fundingUi.variant}
+          className="w-fit text-[10px]"
+        />
       </TableCell>
     </TableRow>
   );
