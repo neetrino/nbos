@@ -37,8 +37,6 @@ export function BonusBoardKanbanView({
     }));
   }, [boardScope, rows]);
 
-  const readOnly = boardScope === 'CLOSED';
-
   return (
     <div className="min-h-0 flex-1">
       <KanbanBoard
@@ -56,9 +54,7 @@ export function BonusBoardKanbanView({
             getAmount={(row) => parseBonusAmount(row.amount)}
           />
         )}
-        renderCard={(row) => (
-          <BonusCard row={row} onOpenReleases={onOpenReleases} readOnly={readOnly} />
-        )}
+        renderCard={(row) => <BonusCard row={row} onOpenReleases={onOpenReleases} />}
       />
     </div>
   );

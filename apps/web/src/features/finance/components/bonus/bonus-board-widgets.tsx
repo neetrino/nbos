@@ -1,13 +1,10 @@
-import { User, FolderKanban, DollarSign } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import { BONUS_BOARD_TYPE_CONFIG } from '@/features/finance/constants/bonus-board';
 import {
   BONUS_ENTRY_STATUS_LABEL,
   BONUS_ENTRY_STATUS_VARIANT,
-  isBonusEntryTerminalStatus,
 } from '@/features/finance/constants/bonus-board-status-ui';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { bonusSalesAccrualHint } from '@/features/finance/utils/bonus-sales-accrual-hint';
 import type { BonusEntryListRow, BonusStatus } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
@@ -72,24 +69,18 @@ export function uniqueProjectsFromRows(
 export function BonusCard({
   row,
   onOpenReleases,
-  readOnly = false,
 }: {
   row: BonusEntryListRow;
   onOpenReleases?: (entry: BonusEntryListRow) => void;
-  readOnly?: boolean;
 }) {
   const typeCfg = BONUS_BOARD_TYPE_CONFIG[row.type];
-  const project = projectLabel(row.project);
-  const salesHint = bonusSalesAccrualHint(row);
-  const terminal = isBonusEntryTerminalStatus(row.status);
+  const projectCode = row.project?.code;
   const canOpen = Boolean(onOpenReleases);
-  const percent = Number.parseFloat(row.percent);
-  const showPercent = Number.isFinite(percent) && percent > 0;
 
   return (
     <div
       className={cn(
-        'group border-border bg-card rounded-xl border p-3.5 transition-all hover:shadow-md',
+        'border-border bg-card rounded-xl border px-3 py-2.5 transition-all hover:shadow-md',
         canOpen &&
           'focus-visible:ring-ring cursor-pointer focus-visible:ring-2 focus-visible:outline-none',
       )}
@@ -105,10 +96,9 @@ export function BonusCard({
       }}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="text-foreground flex min-w-0 items-center gap-1.5 text-sm font-medium">
-          <User size={12} className="text-muted-foreground shrink-0" />
-          <span className="truncate">{employeeDisplayName(row.employee)}</span>
-        </div>
+        <p className="text-foreground min-w-0 truncate text-sm font-semibold">
+          {employeeDisplayName(row.employee)}
+        </p>
         <span
           className={`inline-flex shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium ${typeCfg.color}`}
         >
@@ -116,46 +106,20 @@ export function BonusCard({
         </span>
       </div>
 
-      <div className="text-foreground mt-2.5 flex items-center gap-1 text-sm font-semibold">
-        <DollarSign size={12} className="text-accent shrink-0" />
+      <p className="text-foreground mt-2 text-base font-bold tabular-nums">
         {formatAmount(parseBonusAmount(row.amount))}
-        {showPercent ? (
-          <span className="text-muted-foreground text-[10px] font-normal">· {percent}%</span>
-        ) : null}
-      </div>
+      </p>
 
-      <div className="mt-2">
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <StatusBadge
           label={BONUS_ENTRY_STATUS_LABEL[row.status]}
           variant={BONUS_ENTRY_STATUS_VARIANT[row.status]}
           className="text-[10px]"
         />
+        {projectCode ? (
+          <span className="text-muted-foreground text-[10px] font-medium">{projectCode}</span>
+        ) : null}
       </div>
-
-      {salesHint ? (
-        <p className="text-muted-foreground mt-1.5 text-[10px] leading-snug">{salesHint}</p>
-      ) : null}
-
-      {project ? (
-        <div className="text-muted-foreground mt-2 flex items-center gap-1 text-[10px]">
-          <FolderKanban size={10} className="shrink-0" />
-          <span className="truncate">{project}</span>
-        </div>
-      ) : null}
-
-      {row.payoutMonth ? (
-        <p className="text-muted-foreground mt-1 text-[10px] tabular-nums">
-          Payroll month · {row.payoutMonth}
-        </p>
-      ) : null}
-
-      {canOpen ? (
-        <p className="text-muted-foreground border-border mt-2.5 border-t pt-2 text-[10px]">
-          {readOnly || terminal
-            ? 'View release ledger and payout history.'
-            : 'Open release ledger — adjust APPROVED / DRAFT amounts before payroll.'}
-        </p>
-      ) : null}
     </div>
   );
 }
