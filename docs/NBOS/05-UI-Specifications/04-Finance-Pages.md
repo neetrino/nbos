@@ -18,7 +18,7 @@ Finance-модуль NBOS обеспечивает полное управлен
   - Overview: Dashboard | Reports | Journal — hero: поиск + Settings; период (Dashboard/Reports) в фильтрах; Journal — month filter + поиск записей; **Dashboard** — блок «Finance zones» (4 карточки зон + ссылки, last-visited)
   - Revenue: Orders | Invoices | Payments | Subscriptions
   - Expenses: Pay Now | Expenses Plan | Client services
-  - Payroll: Payroll | Salary | Bonus pools | Bonus
+  - Payroll: Payroll | Salary | Bonus | Bonus pools
 - **Employee Wallet:** не в Finance sidebar; маршрут `/my-account/wallet`, пункт в account menu (данные только текущего пользователя, `/api/me/wallet`).
 - **Поиск / фильтры / Board|List:** в hero через `useModuleHeroSlots` (эталон — CRM Leads). **Поиск** — по центру карточки hero (`PageHero` middle column, `max-w-3xl`), слева title + zone tabs, справа view/actions. Суммы по колонкам Kanban — под заголовком колонки (как Deals), не отдельная аналитическая полоса на странице.
 

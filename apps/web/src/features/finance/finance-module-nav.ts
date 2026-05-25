@@ -57,8 +57,8 @@ export const FINANCE_EXPENSES_NAV: PageHeroNavLinkItem[] = [
 export const FINANCE_PAYROLL_NAV: PageHeroNavLinkItem[] = [
   { href: '/finance/payroll', label: 'Payroll', icon: Banknote },
   { href: '/finance/salary', label: 'Salary', icon: Users },
-  { href: '/finance/bonus-pools', label: 'Bonus pools', icon: PieChart },
   { href: '/finance/bonuses', label: 'Bonus', icon: PieChart },
+  { href: '/finance/bonus-pools', label: 'Bonus pools', icon: PieChart },
 ];
 
 /** Zone tabs for the current Finance route; `null` = no section pills. */
