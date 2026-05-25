@@ -31,11 +31,13 @@ const sample: BonusProductPoolRow = {
 };
 
 describe('buildBonusProductPoolsCsvContent', () => {
-  it('includes header and pool columns', () => {
+  it('includes header, pool columns, and bonus-scale metrics', () => {
     const csv = buildBonusProductPoolsCsvContent([sample]);
     expect(csv).toContain('poolKey');
     expect(csv).toContain('product:p1');
     expect(csv).toContain('Website');
+    expect(csv).toContain('fundedPoolAmount');
+    expect(csv).toContain('releasableAmount');
   });
 
   it('returns header only when no rows', () => {

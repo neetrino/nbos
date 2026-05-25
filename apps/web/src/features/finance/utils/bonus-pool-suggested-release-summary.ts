@@ -1,11 +1,16 @@
 import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
+import {
+  bonusPoolFundedAmount,
+  bonusPoolReleaseBudget,
+} from '@/features/finance/utils/bonus-pool-display-metrics';
 import type { BonusPoolEmployeeLine, BonusProductPoolRow } from '@/lib/api/bonus';
 
 export type BonusPoolSuggestedReleaseSummary = {
   suggestedTotal: number;
-  availableFunding: number;
+  fundedPool: number;
+  releaseBudget: number;
   releasableNow: number;
-  exceedsAvailable: boolean;
+  exceedsBudget: boolean;
   employeeCountWithSuggestion: number;
 };
 
@@ -23,14 +28,16 @@ export function summarizeBonusPoolSuggestedReleases(
     employeeCountWithSuggestion += 1;
   }
 
-  const availableFunding = parseBonusPoolAmount(pool.ledgerAvailableFunding);
-  const releasableNow = Math.min(suggestedTotal, availableFunding);
+  const fundedPool = bonusPoolFundedAmount(pool);
+  const releaseBudget = bonusPoolReleaseBudget(pool);
+  const releasableNow = Math.min(suggestedTotal, releaseBudget);
 
   return {
     suggestedTotal,
-    availableFunding,
+    fundedPool,
+    releaseBudget,
     releasableNow,
-    exceedsAvailable: suggestedTotal > availableFunding && availableFunding >= 0,
+    exceedsBudget: suggestedTotal > releaseBudget && releaseBudget >= 0,
     employeeCountWithSuggestion,
   };
 }

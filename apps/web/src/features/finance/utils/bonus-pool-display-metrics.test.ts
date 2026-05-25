@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   bonusPoolFundedAmount,
   bonusPoolFundingFillPercent,
+  bonusPoolReleaseBudget,
   bonusPoolReleasableAmount,
 } from '@/features/finance/utils/bonus-pool-display-metrics';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
@@ -45,5 +46,9 @@ describe('bonusPoolDisplayMetrics', () => {
 
   it('caps fill percent at 100', () => {
     expect(bonusPoolFundingFillPercent({ ...base, fundingFillPercent: 2000 })).toBe(100);
+  });
+
+  it('caps release budget at releasable bonus amount', () => {
+    expect(bonusPoolReleaseBudget(base)).toBe(62_500);
   });
 });

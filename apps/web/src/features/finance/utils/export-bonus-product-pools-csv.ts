@@ -1,4 +1,8 @@
 import { sumMoneyStringsMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
+import {
+  bonusPoolFundedAmount,
+  bonusPoolReleasableAmount,
+} from '@/features/finance/utils/bonus-pool-display-metrics';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 
 const CSV_HEADERS = [
@@ -18,6 +22,8 @@ const CSV_HEADERS = [
   'ledgerPlannedAmount',
   'ledgerReleasedAmount',
   'ledgerRemainingAmount',
+  'fundedPoolAmount',
+  'releasableAmount',
   'ledgerAvailableFunding',
   'ledgerOverFundingAmount',
   'ledgerReceivedAmount',
@@ -56,6 +62,8 @@ function rowToCsvCells(row: BonusProductPoolRow): string[] {
     row.ledgerPlannedAmount ?? '',
     row.ledgerReleasedAmount ?? '',
     row.ledgerRemainingAmount ?? '',
+    String(bonusPoolFundedAmount(row)),
+    String(bonusPoolReleasableAmount(row)),
     row.ledgerAvailableFunding ?? '',
     row.ledgerOverFundingAmount ?? '',
     row.ledgerReceivedAmount ?? '',
@@ -75,6 +83,8 @@ function grandTotalCsvLine(rows: BonusProductPoolRow[]): string {
   const paid = sumMoneyStringsMajorUnits(rows.map((r) => r.sumPaidAmount)).toFixed(2);
   const clawback = sumMoneyStringsMajorUnits(rows.map((r) => r.sumClawbackAmount)).toFixed(2);
   const total = sumMoneyStringsMajorUnits(rows.map((r) => r.sumTotalAmount)).toFixed(2);
+  const funded = rows.reduce((acc, r) => acc + bonusPoolFundedAmount(r), 0).toFixed(2);
+  const releasable = rows.reduce((acc, r) => acc + bonusPoolReleasableAmount(r), 0).toFixed(2);
   const cells = [
     '_grand_total',
     '—',
@@ -91,6 +101,9 @@ function grandTotalCsvLine(rows: BonusProductPoolRow[]): string {
     total,
     '',
     '',
+    '',
+    funded,
+    releasable,
     '',
     '',
     '',

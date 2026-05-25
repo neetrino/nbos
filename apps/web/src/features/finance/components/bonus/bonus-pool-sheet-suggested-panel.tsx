@@ -37,16 +37,20 @@ export function BonusPoolSheetSuggestedPanel({
         <dd className="text-right font-semibold tabular-nums">
           {formatAmount(summary.suggestedTotal)}
         </dd>
-        <dt className="text-muted-foreground">Available funding</dt>
+        <dt className="text-muted-foreground">Funded pool</dt>
         <dd className="text-right font-semibold tabular-nums">
-          {formatAmount(summary.availableFunding)}
+          {formatAmount(summary.fundedPool)}
+        </dd>
+        <dt className="text-muted-foreground">Release budget</dt>
+        <dd className="text-right font-semibold tabular-nums">
+          {formatAmount(summary.releaseBudget)}
         </dd>
         <dt className="text-muted-foreground">Can release now</dt>
         <dd className="text-right font-bold tabular-nums">{formatAmount(summary.releasableNow)}</dd>
       </dl>
-      {summary.exceedsAvailable ? (
+      {summary.exceedsBudget ? (
         <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
-          Suggested exceeds available funding — release partially or wait for client payments.
+          Suggested exceeds release budget — release partially or wait for client payments.
         </p>
       ) : null}
       <p className="text-muted-foreground mt-2 text-xs">
@@ -62,7 +66,7 @@ export function BonusPoolSheetSuggestedPanel({
       {hasDeliveryLines ? (
         <BonusPoolAutoReleaseButton
           poolKey={pool.poolKey}
-          disabled={summary.availableFunding <= 0}
+          disabled={summary.releaseBudget <= 0}
           onComplete={onAfterAutoRelease}
         />
       ) : null}

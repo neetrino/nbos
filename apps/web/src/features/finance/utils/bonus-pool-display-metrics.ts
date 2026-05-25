@@ -15,6 +15,12 @@ export function bonusPoolReleasableAmount(row: BonusProductPoolRow): number {
   return Math.min(remaining, bonusPoolFundedAmount(row));
 }
 
+/** Bonus-side release cap: funded obligation limited by remaining cash headroom. */
+export function bonusPoolReleaseBudget(row: BonusProductPoolRow): number {
+  const cash = parseBonusPoolAmount(row.ledgerAvailableFunding);
+  return Math.min(bonusPoolReleasableAmount(row), Math.max(0, cash));
+}
+
 /** Pool fill toward planned bonus total (0–100). Prefer API field when capped. */
 export function bonusPoolFundingFillPercent(row: BonusProductPoolRow): number | null {
   const planned = parseBonusPoolAmount(row.ledgerPlannedAmount);

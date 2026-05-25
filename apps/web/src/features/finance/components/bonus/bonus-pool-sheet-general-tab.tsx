@@ -58,20 +58,20 @@ export function BonusPoolSheetGeneralTab({
           </p>
           <div className="grid grid-cols-2 gap-2">
             <SnapshotTile
-              label="Received"
-              value={formatBonusPoolMoney(pool.ledgerReceivedAmount)}
-            />
-            <SnapshotTile
               label="Funded"
               value={formatBonusPoolMoney(String(bonusPoolFundedAmount(pool)))}
             />
             <SnapshotTile
-              label="Available (cash)"
-              value={formatBonusPoolMoney(pool.ledgerAvailableFunding)}
+              label="Received"
+              value={formatBonusPoolMoney(pool.ledgerReceivedAmount)}
             />
             <SnapshotTile
               label="Over funding"
               value={formatBonusPoolMoney(pool.ledgerOverFundingAmount)}
+            />
+            <SnapshotTile
+              label="Available (cash)"
+              value={formatBonusPoolMoney(pool.ledgerAvailableFunding)}
             />
             <SnapshotTile label="Payments" value={String(paymentCount)} />
           </div>

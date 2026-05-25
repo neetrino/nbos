@@ -24,10 +24,7 @@ import {
   bonusPoolKindLabel,
   bonusPoolScopeTitle,
 } from '@/features/finance/utils/bonus-pool-display';
-import {
-  formatBonusPoolMoney,
-  parseBonusPoolAmount,
-} from '@/features/finance/utils/bonus-pool-amount';
+import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
 import { bonusPoolFundedAmount } from '@/features/finance/utils/bonus-pool-display-metrics';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
