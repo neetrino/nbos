@@ -1,4 +1,5 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
+import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 
 export type BonusPoolFundingHealth = 'EMPTY' | 'PARTIAL' | 'READY' | 'OVER' | 'CLOSED' | 'UNKNOWN';
@@ -45,4 +46,25 @@ export function resolveRowFundingHealth(row: BonusProductPoolRow): BonusPoolFund
 export function formatPoolFillPercent(value: number | null): string {
   if (value == null) return '—';
   return `${value}%`;
+}
+
+const ROW_ACCENT_BORDER: Record<BonusPoolFundingHealth, string> = {
+  EMPTY: 'border-l-zinc-400',
+  PARTIAL: 'border-l-orange-500',
+  READY: 'border-l-green-500',
+  OVER: 'border-l-red-500',
+  CLOSED: 'border-l-blue-500',
+  UNKNOWN: 'border-l-muted-foreground/40',
+};
+
+/** Left accent for list/card rows (funding health). */
+export function bonusPoolFundingRowAccentClass(health: BonusPoolFundingHealth): string {
+  return `border-l-4 ${ROW_ACCENT_BORDER[health]}`;
+}
+
+export function bonusPoolFundingRowAccentForRow(row: BonusProductPoolRow): string {
+  if (parseBonusPoolAmount(row.ledgerOverFundingAmount) > 0 || row.fundingHealth === 'OVER') {
+    return bonusPoolFundingRowAccentClass('OVER');
+  }
+  return bonusPoolFundingRowAccentClass(resolveRowFundingHealth(row));
 }

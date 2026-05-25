@@ -1,4 +1,4 @@
-import { Columns3, FolderKanban, List } from 'lucide-react';
+import { Columns3, List } from 'lucide-react';
 import type { ViewModeOption } from '@/components/shared';
 import type { BonusPoolsViewMode } from '@/features/finance/constants/bonus-pools-view';
 
@@ -14,11 +14,5 @@ export const BONUS_POOLS_VIEW_OPTIONS: ViewModeOption<BonusPoolsViewMode>[] = [
     label: 'Board',
     icon: <Columns3 className="size-3.5 shrink-0" aria-hidden />,
     ariaLabel: 'Funding status board',
-  },
-  {
-    value: 'project',
-    label: 'Project',
-    icon: <FolderKanban className="size-3.5 shrink-0" aria-hidden />,
-    ariaLabel: 'Pools grouped by project',
   },
 ];

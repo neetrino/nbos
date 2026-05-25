@@ -7,7 +7,6 @@ export const BONUS_POOLS_FILTER_KIND_KEY = 'bonusPoolsKind';
 export const BONUS_POOLS_FILTER_STATUS_KEY = 'bonusPoolsStatus';
 
 const POOL_KIND_OPTIONS = [
-  { value: 'all', label: 'All kinds' },
   { value: 'PRODUCT', label: 'Product' },
   { value: 'EXTENSION', label: 'Extension' },
   { value: 'ORDER', label: 'Order' },
@@ -28,10 +27,7 @@ export function buildBonusPoolsFilterConfigs(
     {
       key: BONUS_POOLS_FILTER_PROJECT_KEY,
       label: 'Project',
-      options: [
-        { value: 'all', label: 'All projects' },
-        ...projectOptions.map((p) => ({ value: p.id, label: p.label })),
-      ],
+      options: projectOptions.map((p) => ({ value: p.id, label: p.label })),
     },
     {
       key: BONUS_POOLS_FILTER_KIND_KEY,
@@ -41,13 +37,10 @@ export function buildBonusPoolsFilterConfigs(
     {
       key: BONUS_POOLS_FILTER_STATUS_KEY,
       label: 'Ledger status',
-      options: [
-        { value: 'all', label: 'All statuses' },
-        ...LEDGER_STATUS_OPTIONS.map((status) => ({
-          value: status,
-          label: bonusPoolStatusUi(status === 'UNKNOWN' ? null : status).label,
-        })),
-      ],
+      options: LEDGER_STATUS_OPTIONS.map((status) => ({
+        value: status,
+        label: bonusPoolStatusUi(status === 'UNKNOWN' ? null : status).label,
+      })),
     },
   ];
 }

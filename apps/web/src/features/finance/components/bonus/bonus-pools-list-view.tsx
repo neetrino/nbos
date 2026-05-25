@@ -13,10 +13,12 @@ import {
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   bonusPoolFundingHealthUi,
+  bonusPoolFundingRowAccentForRow,
   formatPoolFillPercent,
   resolveRowFundingHealth,
 } from '@/features/finance/constants/bonus-pool-funding-health-ui';
-import { bonusPoolListRowClass } from '@/features/finance/constants/bonus-pool-status-ui';
+import { bonusPoolSheetStatusUi } from '@/features/finance/constants/bonus-pool-status-ui';
+import { BonusPoolFillBar } from '@/features/finance/components/bonus/bonus-pool-fill-bar';
 import { StatusBadge } from '@/components/shared';
 import type { BonusPoolsFilteredTotals } from '@/features/finance/utils/bonus-pools-filtered-totals';
 import {
@@ -66,7 +68,7 @@ export function BonusPoolsListView({
   linesByPoolKey: ReadonlyMap<string, BonusPoolEmployeeLine[]>;
 }) {
   return (
-    <div className="border-border overflow-x-auto rounded-xl border">
+    <div className="border-border bg-card overflow-hidden rounded-xl border">
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -129,12 +131,16 @@ function BonusPoolsListRow({
   employeeLines?: readonly BonusPoolEmployeeLine[];
 }) {
   const fundingUi = bonusPoolFundingHealthUi(resolveRowFundingHealth(row));
+  const ledgerUi = bonusPoolSheetStatusUi(row);
   const scopeTitle = bonusPoolScopeTitle(row);
   const preview = employeeLines ? topBonusPoolEmployeePreviewLines(employeeLines, 2) : [];
 
   return (
     <TableRow
-      className={cn('cursor-pointer', bonusPoolListRowClass(row))}
+      className={cn(
+        'bg-card hover:bg-muted/40 cursor-pointer border-b',
+        bonusPoolFundingRowAccentForRow(row),
+      )}
       onClick={() => onOpenPool(row)}
       onKeyDown={(event) => handlePoolRowKeyDown(event, row, onOpenPool)}
       tabIndex={0}
@@ -188,12 +194,26 @@ function BonusPoolsListRow({
         {formatBonusPoolMoney(row.ledgerRemainingAmount)}
       </TableCell>
       <TableCell className={cn(LIST_ROW_CELL, LIST_FILL_COL_CLASS)}>
-        <span className="text-sm font-bold tabular-nums">
-          {formatPoolFillPercent(row.fundingFillPercent)}
-        </span>
+        <div className="flex min-w-[5rem] flex-col gap-1">
+          <span className="text-sm font-bold tabular-nums">
+            {formatPoolFillPercent(row.fundingFillPercent)}
+          </span>
+          <BonusPoolFillBar row={row} showLabel={false} className="max-w-[5.5rem]" />
+        </div>
       </TableCell>
       <TableCell className={LIST_ROW_CELL}>
-        <StatusBadge label={fundingUi.label} variant={fundingUi.variant} />
+        <div className="flex flex-col gap-1">
+          <StatusBadge
+            label={fundingUi.label}
+            variant={fundingUi.variant}
+            className="w-fit text-[10px]"
+          />
+          <StatusBadge
+            label={ledgerUi.label}
+            variant={ledgerUi.variant}
+            className="w-fit text-[10px]"
+          />
+        </div>
       </TableCell>
     </TableRow>
   );

@@ -94,7 +94,7 @@ function FilterField({
         </SelectTrigger>
         <SelectContent>
           {items.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
+            <SelectItem key={`${filter.key}-${item.value}`} value={item.value}>
               {item.label}
             </SelectItem>
           ))}

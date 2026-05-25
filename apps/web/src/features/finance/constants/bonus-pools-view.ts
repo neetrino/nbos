@@ -1,4 +1,4 @@
-export type BonusPoolsViewMode = 'list' | 'board' | 'project';
+export type BonusPoolsViewMode = 'list' | 'board';
 
 const STORAGE_KEY = 'nbos:finance:bonus-pools-view';
 
@@ -7,8 +7,8 @@ export function readBonusPoolsViewMode(): BonusPoolsViewMode {
     return 'list';
   }
   const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (raw === 'board' || raw === 'project') {
-    return raw;
+  if (raw === 'board') {
+    return 'board';
   }
   return 'list';
 }

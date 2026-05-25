@@ -11,7 +11,6 @@ import {
   ViewModeSwitch,
 } from '@/components/shared';
 import { BonusPoolsBoardView } from '@/features/finance/components/bonus/bonus-pools-board-view';
-import { BonusPoolsByProjectView } from '@/features/finance/components/bonus/bonus-pools-by-project-view';
 import { BonusPoolsFilteredTotalsBar } from '@/features/finance/components/bonus/bonus-pools-filtered-totals-bar';
 import { BonusPoolsListView } from '@/features/finance/components/bonus/bonus-pools-list-view';
 import { BONUS_POOLS_VIEW_OPTIONS } from '@/features/finance/components/bonus/bonus-pools-view-options';
@@ -178,33 +177,23 @@ export function BonusPoolsPageContent() {
   useModuleHeroSlots(moduleHeroSlots);
 
   const mainView = useMemo(() => {
-    switch (view) {
-      case 'board':
-        return (
-          <BonusPoolsBoardView
-            rows={filteredRows}
-            onOpenPool={openPoolSheet}
-            linesByPoolKey={linesByPoolKey}
-          />
-        );
-      case 'project':
-        return (
-          <BonusPoolsByProjectView
-            rows={filteredRows}
-            onOpenPool={openPoolSheet}
-            linesByPoolKey={linesByPoolKey}
-          />
-        );
-      default:
-        return (
-          <BonusPoolsListView
-            rows={filteredRows}
-            totals={filteredTotals}
-            onOpenPool={openPoolSheet}
-            linesByPoolKey={linesByPoolKey}
-          />
-        );
+    if (view === 'board') {
+      return (
+        <BonusPoolsBoardView
+          rows={filteredRows}
+          onOpenPool={openPoolSheet}
+          linesByPoolKey={linesByPoolKey}
+        />
+      );
     }
+    return (
+      <BonusPoolsListView
+        rows={filteredRows}
+        totals={filteredTotals}
+        onOpenPool={openPoolSheet}
+        linesByPoolKey={linesByPoolKey}
+      />
+    );
   }, [filteredRows, filteredTotals, linesByPoolKey, openPoolSheet, view]);
 
   if (loading) {

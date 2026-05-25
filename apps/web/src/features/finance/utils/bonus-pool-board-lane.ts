@@ -18,6 +18,14 @@ export const BONUS_POOL_BOARD_LANE_LABEL: Record<BonusPoolBoardLane, string> = {
   over: 'Over funding',
 };
 
+/** Kanban column header dot / hex source (board view). */
+export const BONUS_POOL_BOARD_LANE_COLOR: Record<BonusPoolBoardLane, string> = {
+  at_risk: 'bg-zinc-400',
+  partial: 'bg-orange-500',
+  ready: 'bg-green-500',
+  over: 'bg-red-500',
+};
+
 export function bonusPoolBoardLane(row: BonusProductPoolRow): BonusPoolBoardLane {
   if (bonusPoolHasOverFunding(row) || row.fundingHealth === 'OVER') {
     return 'over';

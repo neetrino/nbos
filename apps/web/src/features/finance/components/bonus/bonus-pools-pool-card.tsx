@@ -4,16 +4,18 @@ import Link from 'next/link';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   bonusPoolFundingHealthUi,
+  bonusPoolFundingRowAccentForRow,
   formatPoolFillPercent,
   resolveRowFundingHealth,
 } from '@/features/finance/constants/bonus-pool-funding-health-ui';
+import { bonusPoolSheetStatusUi } from '@/features/finance/constants/bonus-pool-status-ui';
 import { StatusBadge } from '@/components/shared';
+import { BonusPoolFillBar } from '@/features/finance/components/bonus/bonus-pool-fill-bar';
 import {
   bonusPoolKindLabel,
   bonusPoolOrderCodesLabel,
   bonusPoolScopeTitle,
 } from '@/features/finance/utils/bonus-pool-display';
-import { BonusPoolFillBar } from '@/features/finance/components/bonus/bonus-pool-fill-bar';
 import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
 import type { BonusPoolEmployeeLine, BonusProductPoolRow } from '@/lib/api/bonus';
 import {
@@ -34,69 +36,79 @@ export function BonusPoolsPoolCard({
   employeeLines?: readonly BonusPoolEmployeeLine[];
 }) {
   const fundingUi = bonusPoolFundingHealthUi(resolveRowFundingHealth(row));
-  const planned = parseBonusPoolAmount(row.ledgerPlannedAmount);
+  const ledgerUi = bonusPoolSheetStatusUi(row);
   const available = parseBonusPoolAmount(row.ledgerAvailableFunding);
   const remaining = parseBonusPoolAmount(row.ledgerRemainingAmount);
-  const preview = employeeLines ? topBonusPoolEmployeePreviewLines(employeeLines) : [];
+  const preview = employeeLines
+    ? topBonusPoolEmployeePreviewLines(employeeLines, compact ? 2 : 3)
+    : [];
 
   return (
     <button
       type="button"
       onClick={() => onOpen(row)}
       className={cn(
-        'border-border bg-card hover:bg-muted/30 w-full rounded-lg border px-3 py-2.5 text-left transition-colors',
-        compact ? 'py-2' : 'py-3',
+        'border-border bg-card hover:bg-muted/30 w-full rounded-xl border text-left shadow-sm transition-all hover:shadow-md',
+        bonusPoolFundingRowAccentForRow(row),
+        compact ? 'px-3 py-2.5' : 'px-3.5 py-3',
       )}
     >
-      <div className="flex flex-col gap-1">
-        <span className="text-foreground line-clamp-2 text-sm font-semibold">
-          {bonusPoolScopeTitle(row)}
-        </span>
-        <span className="text-muted-foreground text-[10px] font-semibold tracking-wide uppercase">
-          {bonusPoolKindLabel(row.poolKind)}
-        </span>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-foreground line-clamp-2 text-sm leading-snug font-semibold">
+            {bonusPoolScopeTitle(row)}
+          </p>
+          <p className="text-muted-foreground mt-0.5 text-[10px] font-semibold tracking-wide uppercase">
+            {bonusPoolKindLabel(row.poolKind)}
+          </p>
+        </div>
+        <StatusBadge
+          label={fundingUi.label}
+          variant={fundingUi.variant}
+          className="shrink-0 text-[10px]"
+        />
       </div>
-      <dl className="text-muted-foreground mt-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-xs">
-        <dt>Order</dt>
-        <dd className="text-foreground font-mono font-medium">{bonusPoolOrderCodesLabel(row)}</dd>
-        <dt>Team</dt>
-        <dd className="text-foreground tabular-nums">{row.employeeCount}</dd>
-        <dt>Project</dt>
-        <dd>
-          <Link
-            href={`/projects/${row.projectId}`}
-            className="text-primary hover:underline"
-            onClick={(event) => event.stopPropagation()}
-          >
-            {row.projectCode}
-          </Link>
-        </dd>
-      </dl>
+
+      <p className="text-foreground mt-2.5 text-lg font-bold tabular-nums">
+        {formatAmount(available)}
+        <span className="text-muted-foreground ml-1.5 text-xs font-normal">available</span>
+      </p>
+
       <div className="mt-2">
-        <BonusPoolFillBar row={row} showLabel={false} />
+        <BonusPoolFillBar row={row} showLabel={!compact} />
       </div>
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-        <StatusBadge label={fundingUi.label} variant={fundingUi.variant} />
-        <span className="font-semibold tabular-nums">
-          {formatPoolFillPercent(row.fundingFillPercent)}
-        </span>
-        <span className="text-muted-foreground tabular-nums">
-          Avail {formatAmount(available)} · Rem {formatAmount(remaining)}
+
+      <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px]">
+        <span className="font-mono font-medium">{bonusPoolOrderCodesLabel(row)}</span>
+        <span aria-hidden>·</span>
+        <Link
+          href={`/projects/${row.projectId}`}
+          className="text-primary hover:underline"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {row.projectCode}
+        </Link>
+        <span aria-hidden>·</span>
+        <span>{row.employeeCount} people</span>
+        <span aria-hidden>·</span>
+        <span className="tabular-nums">Rem {formatAmount(remaining)}</span>
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <StatusBadge label={ledgerUi.label} variant={ledgerUi.variant} className="text-[10px]" />
+        <span className="text-muted-foreground text-[10px] font-semibold tabular-nums">
+          {formatPoolFillPercent(row.fundingFillPercent)} fill
         </span>
       </div>
+
       {preview.length > 0 ? (
-        <ul className="text-muted-foreground mt-2 space-y-0.5 text-xs">
+        <ul className="text-muted-foreground mt-2 space-y-0.5 border-t pt-2 text-[10px] leading-snug">
           {preview.map((line) => (
             <li key={line.employeeId} className="truncate">
               {formatBonusPoolEmployeePreviewLine(line)}
             </li>
           ))}
         </ul>
-      ) : null}
-      {!compact ? (
-        <p className="text-muted-foreground mt-1 text-xs tabular-nums">
-          Planned {formatAmount(planned)} · {row.entryCount} entries
-        </p>
       ) : null}
     </button>
   );
