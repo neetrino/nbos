@@ -21,6 +21,7 @@ const base: EmployeeWalletBonusRow = {
   productLabel: 'Website',
   project: { code: 'PRJ', name: 'Alpha' },
   order: { code: 'ORD-1' },
+  policyBreakdownStatuses: [],
   createdAt: '',
 };
 

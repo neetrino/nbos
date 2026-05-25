@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { SalaryBoardRow } from '@/lib/api/payroll-runs';
 import {
   formatPayrollMonthAbbrev,
   formatPayrollMonthShort,
@@ -19,7 +20,14 @@ describe('salary-board-month-utils', () => {
     const total = sumSalaryBoardColumn(
       [
         {
-          employee: { id: 'e1', firstName: 'A', lastName: 'B', position: null },
+          employee: {
+            id: 'e1',
+            firstName: 'A',
+            lastName: 'B',
+            position: null,
+            departmentIds: [],
+            primaryDepartmentId: null,
+          },
           cells: [
             {
               salaryLineId: 'l1',
@@ -41,9 +49,16 @@ describe('salary-board-month-utils', () => {
   });
 
   it('sums row totals across employees', () => {
-    const rows = [
+    const rows: SalaryBoardRow[] = [
       {
-        employee: { id: 'e1', firstName: 'A', lastName: 'B', position: null },
+        employee: {
+          id: 'e1',
+          firstName: 'A',
+          lastName: 'B',
+          position: null,
+          departmentIds: [],
+          primaryDepartmentId: null,
+        },
         cells: [
           {
             salaryLineId: 'l1',
@@ -59,7 +74,14 @@ describe('salary-board-month-utils', () => {
         ],
       },
       {
-        employee: { id: 'e2', firstName: 'C', lastName: 'D', position: null },
+        employee: {
+          id: 'e2',
+          firstName: 'C',
+          lastName: 'D',
+          position: null,
+          departmentIds: [],
+          primaryDepartmentId: null,
+        },
         cells: [
           {
             salaryLineId: 'l2',

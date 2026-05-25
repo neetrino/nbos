@@ -26,18 +26,26 @@ export default function PayrollRunDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    void load()
-      .catch((caught) => {
+    if (!id) return;
+
+    let cancelled = false;
+    void (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        await load();
+      } catch (caught) {
+        if (cancelled) return;
         setRun(null);
         setError(getApiErrorMessage(caught, 'Payroll run could not be loaded.'));
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id, load]);
 
   if (!id) {

@@ -26,7 +26,7 @@ async function loadPendingCarryRows(
   employeeId: string,
   payrollMonth: string,
 ): Promise<PendingCarryRow[]> {
-  return tx.bonusRelease.findMany({
+  const rows = await tx.bonusRelease.findMany({
     where: {
       employeeId,
       payrollCarryOverRemaining: { gt: 0 },
@@ -36,6 +36,7 @@ async function loadPendingCarryRows(
     orderBy: { payrollRun: { payrollMonth: 'asc' } },
     select: { id: true, payrollCarryOverRemaining: true },
   });
+  return rows.filter((row): row is PendingCarryRow => row.payrollCarryOverRemaining != null);
 }
 
 async function consumeCarryFifo(

@@ -10,9 +10,11 @@ export function parsePayrollMonthParts(
   payrollMonth: string,
 ): { year: number; month: number } | null {
   const match = /^(\d{4})-(\d{2})$/.exec(payrollMonth.trim());
-  if (!match) return null;
-  const year = Number.parseInt(match[1], 10);
-  const month = Number.parseInt(match[2], 10);
+  const yearPart = match?.[1];
+  const monthPart = match?.[2];
+  if (yearPart === undefined || monthPart === undefined) return null;
+  const year = Number.parseInt(yearPart, 10);
+  const month = Number.parseInt(monthPart, 10);
   if (!Number.isFinite(year) || month < 1 || month > 12) return null;
   return { year, month };
 }

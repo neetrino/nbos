@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Banknote, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
   EmptyState,
   ErrorState,
@@ -291,12 +291,13 @@ export function PayrollRunsListPageContent() {
       ),
       trailing: (
         <>
-          <Button type="button" variant="outline" size="sm" asChild>
-            <Link href={expensesPayrollPresetHref({ payrollMonth: monthTo ?? monthFrom })}>
-              <Banknote className="mr-1.5 size-4" aria-hidden />
-              Pay Now
-            </Link>
-          </Button>
+          <Link
+            href={expensesPayrollPresetHref({ payrollMonth: monthTo ?? monthFrom })}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            <Banknote className="mr-1.5 size-4" aria-hidden />
+            Pay Now
+          </Link>
           <PayrollRunsPageSettingsSheet
             refreshDisabled={loading}
             statsExportDisabled={loading || !stats}

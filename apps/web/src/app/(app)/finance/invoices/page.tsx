@@ -122,13 +122,13 @@ function InvoicesPageInner() {
         return { ...prev, [key]: value };
       });
     },
-    [state.setFilters, state.setPeriod],
+    [state],
   );
 
   const handleClearFilters = useCallback(() => {
     state.setFilters({});
     state.setPeriod('month');
-  }, [state.setFilters, state.setPeriod]);
+  }, [state]);
 
   const invoiceFilterConfigs = useMemo(
     () => [buildFinancePeriodFilterConfig(), ...INVOICE_FILTER_CONFIGS_BASE],
@@ -192,14 +192,7 @@ function InvoicesPageInner() {
       handleFilterChange,
       invoiceFilterConfigs,
       invoiceFilterValues,
-      state.loading,
-      state.search,
-      state.stats,
-      state.view,
-      state.setCreateOpen,
-      state.setPeriod,
-      state.setSearch,
-      state.setView,
+      state,
     ],
   );
 

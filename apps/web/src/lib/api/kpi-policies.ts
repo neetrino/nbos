@@ -53,19 +53,23 @@ export interface UpdateKpiPolicyPayload {
 }
 
 export const kpiPoliciesApi = {
-  list(): Promise<{ items: KpiPolicyRow[] }> {
-    return api.get<{ items: KpiPolicyRow[] }>('/api/kpi-policies');
+  async list(): Promise<{ items: KpiPolicyRow[] }> {
+    const { data } = await api.get<{ items: KpiPolicyRow[] }>('/api/kpi-policies');
+    return data;
   },
 
-  getById(id: string): Promise<KpiPolicyRow> {
-    return api.get<KpiPolicyRow>(`/api/kpi-policies/${id}`);
+  async getById(id: string): Promise<KpiPolicyRow> {
+    const { data } = await api.get<KpiPolicyRow>(`/api/kpi-policies/${id}`);
+    return data;
   },
 
-  create(payload: CreateKpiPolicyPayload): Promise<KpiPolicyRow> {
-    return api.post<KpiPolicyRow>('/api/kpi-policies', payload);
+  async create(payload: CreateKpiPolicyPayload): Promise<KpiPolicyRow> {
+    const { data } = await api.post<KpiPolicyRow>('/api/kpi-policies', payload);
+    return data;
   },
 
-  update(id: string, payload: UpdateKpiPolicyPayload): Promise<KpiPolicyRow> {
-    return api.patch<KpiPolicyRow>(`/api/kpi-policies/${id}`, payload);
+  async update(id: string, payload: UpdateKpiPolicyPayload): Promise<KpiPolicyRow> {
+    const { data } = await api.patch<KpiPolicyRow>(`/api/kpi-policies/${id}`, payload);
+    return data;
   },
 };

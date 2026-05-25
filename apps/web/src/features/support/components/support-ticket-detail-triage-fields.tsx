@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Layers, User, UserCog } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -48,18 +48,6 @@ export function SupportTicketDetailTriageFields({
   const employeePicker = useRelationPickerActions('employee');
   const productPicker = useRelationPickerActions('product');
   const contactPicker = useRelationPickerActions('contact');
-
-  useEffect(() => {
-    if (assigneeLabelProp != null) setAssigneeLabel(assigneeLabelProp);
-  }, [assigneeLabelProp]);
-
-  useEffect(() => {
-    if (productLabelProp != null) setProductLabel(productLabelProp);
-  }, [productLabelProp]);
-
-  useEffect(() => {
-    if (contactLabelProp != null) setContactLabel(contactLabelProp);
-  }, [contactLabelProp]);
 
   return (
     <>

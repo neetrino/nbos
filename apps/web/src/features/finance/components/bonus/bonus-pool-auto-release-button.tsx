@@ -34,7 +34,7 @@ export function BonusPoolAutoReleaseButton({
         );
       }
     } catch (err) {
-      setError(getApiErrorMessage(err));
+      setError(getApiErrorMessage(err, 'Auto release failed.'));
     } finally {
       setSubmitting(false);
     }

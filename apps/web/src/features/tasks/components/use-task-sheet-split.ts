@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { TASK_SHEET_DETAIL_RATIO_DEFAULT } from './task-sheet-split-constants';
 import {
   clampTaskSheetDetailRatio,
   persistTaskSheetDetailRatio,
@@ -27,13 +26,9 @@ interface UseTaskSheetSplitResult {
 
 export function useTaskSheetSplit(): UseTaskSheetSplitResult {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [detailRatio, setDetailRatio] = useState(TASK_SHEET_DETAIL_RATIO_DEFAULT);
+  const [detailRatio, setDetailRatio] = useState(() => readStoredTaskSheetDetailRatio());
   const [isDragging, setIsDragging] = useState(false);
   const [isSplitRow, setIsSplitRow] = useState(readSplitRowMedia);
-
-  useEffect(() => {
-    setDetailRatio(readStoredTaskSheetDetailRatio());
-  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia(TASK_SHEET_SPLIT_ROW_MEDIA);

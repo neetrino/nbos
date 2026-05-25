@@ -37,30 +37,40 @@ export interface PatchCompensationProfileDraftPayload {
 }
 
 export const compensationProfilesApi = {
-  listForEmployee(employeeId: string): Promise<{ items: CompensationProfileRow[] }> {
-    return api.get<{ items: CompensationProfileRow[] }>(
+  async listForEmployee(employeeId: string): Promise<{ items: CompensationProfileRow[] }> {
+    const { data } = await api.get<{ items: CompensationProfileRow[] }>(
       `/api/employees/${employeeId}/compensation-profiles`,
     );
+    return data;
   },
 
-  createDraft(
+  async createDraft(
     employeeId: string,
     payload: CreateCompensationProfilePayload,
   ): Promise<CompensationProfileRow> {
-    return api.post<CompensationProfileRow>(
+    const { data } = await api.post<CompensationProfileRow>(
       `/api/employees/${employeeId}/compensation-profiles`,
       payload,
     );
+    return data;
   },
 
-  patchDraft(
+  async patchDraft(
     id: string,
     payload: PatchCompensationProfileDraftPayload,
   ): Promise<CompensationProfileRow> {
-    return api.patch<CompensationProfileRow>(`/api/compensation-profiles/${id}`, payload);
+    const { data } = await api.patch<CompensationProfileRow>(
+      `/api/compensation-profiles/${id}`,
+      payload,
+    );
+    return data;
   },
 
-  activate(id: string): Promise<CompensationProfileRow> {
-    return api.post<CompensationProfileRow>(`/api/compensation-profiles/${id}/activate`, {});
+  async activate(id: string): Promise<CompensationProfileRow> {
+    const { data } = await api.post<CompensationProfileRow>(
+      `/api/compensation-profiles/${id}/activate`,
+      {},
+    );
+    return data;
   },
 };

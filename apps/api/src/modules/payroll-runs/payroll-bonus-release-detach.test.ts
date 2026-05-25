@@ -109,6 +109,7 @@ describe('detachBonusReleasesFromPayrollRun', () => {
         payrollRunId: null,
         payrollIncludedAmount: null,
         kpiBurnedAmount: null,
+        kpiBurnedReason: null,
         payrollCarryOverAmount: null,
         payrollCarryOverRemaining: null,
       },

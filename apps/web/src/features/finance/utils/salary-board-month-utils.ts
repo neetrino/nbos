@@ -15,9 +15,11 @@ export function formatPayrollMonthLabel(payrollMonth: string): string {
 /** Short month label, e.g. `2026-04` → `Apr`. */
 export function formatPayrollMonthAbbrev(payrollMonth: string): string {
   const match = /^(\d{4})-(\d{2})$/.exec(payrollMonth.trim());
-  if (!match) return payrollMonth;
-  const year = Number.parseInt(match[1], 10);
-  const month = Number.parseInt(match[2], 10) - 1;
+  const yearPart = match?.[1];
+  const monthPart = match?.[2];
+  if (yearPart === undefined || monthPart === undefined) return payrollMonth;
+  const year = Number.parseInt(yearPart, 10);
+  const month = Number.parseInt(monthPart, 10) - 1;
   if (!Number.isFinite(year) || month < 0 || month > 11) return payrollMonth;
   return new Intl.DateTimeFormat(undefined, { month: 'short' }).format(new Date(year, month, 1));
 }
@@ -25,9 +27,11 @@ export function formatPayrollMonthAbbrev(payrollMonth: string): string {
 /** Month label without year, e.g. `2026-04` → `April`. */
 export function formatPayrollMonthShort(payrollMonth: string): string {
   const match = /^(\d{4})-(\d{2})$/.exec(payrollMonth.trim());
-  if (!match) return payrollMonth;
-  const year = Number.parseInt(match[1], 10);
-  const month = Number.parseInt(match[2], 10) - 1;
+  const yearPart = match?.[1];
+  const monthPart = match?.[2];
+  if (yearPart === undefined || monthPart === undefined) return payrollMonth;
+  const year = Number.parseInt(yearPart, 10);
+  const month = Number.parseInt(monthPart, 10) - 1;
   if (!Number.isFinite(year) || month < 0 || month > 11) return payrollMonth;
   return new Intl.DateTimeFormat(undefined, { month: 'long' }).format(new Date(year, month, 1));
 }

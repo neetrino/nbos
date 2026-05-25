@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Banknote, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { SALARY_BOARD_OPEN_LINE_QUERY } from '@/features/finance/constants/salary-board-url';
 import {
@@ -312,12 +312,13 @@ export function SalaryBoardPageContent() {
       ...moduleHeroSlots,
       trailing: (
         <>
-          <Button type="button" variant="outline" size="sm" asChild>
-            <Link href={payNowPresetHref}>
-              <Banknote className="mr-1.5 size-4" aria-hidden />
-              Pay Now
-            </Link>
-          </Button>
+          <Link
+            href={payNowPresetHref}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            <Banknote className="mr-1.5 size-4" aria-hidden />
+            Pay Now
+          </Link>
           <SalaryBoardPageSettingsSheet
             exportCsvDisabled={exportCsvSubmitting || filteredEntries.length === 0}
             exportCsvInProgress={exportCsvSubmitting}

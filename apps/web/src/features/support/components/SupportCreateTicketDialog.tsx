@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FolderKanban, Layers, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,24 +85,16 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
   const productPicker = useRelationPickerActions('product');
   const contactPicker = useRelationPickerActions('contact');
 
-  useEffect(() => {
-    if (!projectId) setProjectLabel('');
-  }, [projectId]);
+  const projectSelectionLabel = projectId ? projectLabel || null : null;
+  const productSelectionLabel = productId ? productLabel || null : null;
+  const contactSelectionLabel = contactId ? contactLabel || null : null;
 
-  useEffect(() => {
-    if (!productId) setProductLabel('');
-  }, [productId]);
-
-  useEffect(() => {
-    if (!contactId) setContactLabel('');
-  }, [contactId]);
-
-  useEffect(() => {
-    if (!projectId) {
-      onProductIdChange('');
-      setProductLabel('');
-    }
-  }, [projectId, onProductIdChange]);
+  const clearProjectSelection = () => {
+    onProjectIdChange('');
+    setProjectLabel('');
+    onProductIdChange('');
+    setProductLabel('');
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -127,21 +119,26 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
             label="Project"
             entityKind="project"
             value={projectId || null}
-            selectionLabel={projectLabel || null}
+            selectionLabel={projectSelectionLabel}
             placeholder="Search projects…"
             icon={<FolderKanban size={12} />}
             onSearch={searchProjects}
             onSelect={(id, label) => {
+              if (!id) {
+                clearProjectSelection();
+                return;
+              }
               onProjectIdChange(id);
               setProjectLabel(label);
             }}
+            onClear={clearProjectSelection}
             {...projectPicker}
           />
           <RelationPickerField
             label="Product"
             entityKind="product"
             value={productId || null}
-            selectionLabel={productLabel || null}
+            selectionLabel={productSelectionLabel}
             placeholder={projectId ? 'Search products…' : 'Select a project first'}
             icon={<Layers size={12} />}
             disabled={!projectId}
@@ -218,7 +215,7 @@ export function SupportCreateTicketDialog(props: SupportCreateTicketDialogProps)
             label="Contact"
             entityKind="contact"
             value={contactId || null}
-            selectionLabel={contactLabel || null}
+            selectionLabel={contactSelectionLabel}
             placeholder="Search contacts…"
             icon={<User size={12} />}
             onSearch={searchContacts}

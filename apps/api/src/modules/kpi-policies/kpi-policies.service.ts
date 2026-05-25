@@ -19,7 +19,7 @@ function serializeKpiPolicy(
     templateCode: string;
     gateRules: unknown;
     scorecardMetrics: unknown;
-    bonusCapBaseSalaryMultiplier: { toFixed: (n: number) => string };
+    bonusCapBaseSalaryMultiplier: Decimal;
     status: KpiPolicyStatusEnum;
     scope: string | null;
     notes: string | null;

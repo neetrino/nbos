@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { parseMoneyAmount } from '@/lib/format/money';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   marketingBonusAccrualApi,
@@ -129,7 +130,7 @@ export function PlannedBonusAccrualPanels({ onApplied }: { onApplied?: () => voi
           <p className="text-foreground mt-2 text-xs tabular-nums">
             {marketing.totals.mqlCount} MQL · {marketing.totals.sqlCount} SQL
             {marketing.ratesConfigured ? (
-              <> · {formatAmount(marketing.totals.suggestedAmount)}</>
+              <> · {formatAmount(parseMoneyAmount(marketing.totals.suggestedAmount))}</>
             ) : null}
           </p>
           <Button
@@ -151,7 +152,7 @@ export function PlannedBonusAccrualPanels({ onApplied }: { onApplied?: () => voi
           <p className="text-foreground mt-2 text-xs tabular-nums">
             {support.totals.slaMetCount} SLA-met
             {support.ratesConfigured ? (
-              <> · {formatAmount(support.totals.suggestedAmount)}</>
+              <> · {formatAmount(parseMoneyAmount(support.totals.suggestedAmount))}</>
             ) : null}
           </p>
           <Button

@@ -100,7 +100,7 @@ export async function sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi(
       continue;
     }
     const prev = totals.get(sellerId) ?? BONUS_POOL_ZERO;
-    totals.set(sellerId, prev.plus(decimalFrom(payment.amount)));
+    totals.set(sellerId, prev.plus(decimalFrom(String(payment.amount))));
   }
 
   return totals;

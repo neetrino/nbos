@@ -49,7 +49,7 @@ describe('resolvePayrollRunSalesKpiScorecardMetrics', () => {
     };
 
     const metrics = await resolvePayrollRunSalesKpiScorecardMetrics(
-      { compensationProfile: {} as never, kpiPolicy },
+      { compensationProfile: {} as never, kpiPolicy: kpiPolicy as never },
       '2026-05',
       ['e1', 'e2', 'e3'],
     );
@@ -67,7 +67,7 @@ describe('resolvePayrollRunSalesKpiScorecardMetrics', () => {
     };
 
     await resolvePayrollRunSalesKpiScorecardMetrics(
-      { compensationProfile: {} as never, kpiPolicy },
+      { compensationProfile: {} as never, kpiPolicy: kpiPolicy as never },
       '2026-05',
       [],
     );

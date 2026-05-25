@@ -19,7 +19,7 @@ const entry = (employeeId: string, departmentIds: string[]): SalaryBoardEntry =>
     payrollMonth: '2026-04',
     runStatus: 'DRAFT',
     lineStatus: 'PENDING',
-    payoutPhase: 'UPCOMING',
+    payoutPhase: 'accumulating',
     totalPayable: '100',
     paidAmount: '0',
     remainingAmount: '100',

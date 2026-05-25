@@ -94,6 +94,7 @@ describe('buildEmployeeWalletProjectBreakdown', () => {
           paidAmount: new Decimal(100),
           remainingAmount: BONUS_POOL_ZERO,
           kpiBurnedAmount: BONUS_POOL_ZERO,
+          kpiBurnedReason: null,
           payrollCarryOverAmount: BONUS_POOL_ZERO,
           payrollMonth: '2026-01',
         },

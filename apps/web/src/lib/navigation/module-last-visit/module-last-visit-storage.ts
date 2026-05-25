@@ -9,6 +9,7 @@ import {
   MODULE_VISIT_REGISTRY,
   resolveRegisteredModuleFromPathname,
 } from './module-visit-registry';
+import { notifyModuleVisitStoreChange } from './module-visit-store-subscribe';
 import type {
   FlatModuleVisitState,
   ModuleVisitConfig,
@@ -47,6 +48,7 @@ function writePayload(payload: StoragePayload): void {
     return;
   }
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  notifyModuleVisitStoreChange();
 }
 
 function migrateLegacyFinanceStorage(): void {

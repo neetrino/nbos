@@ -109,7 +109,7 @@ function SubscriptionsPageInner() {
       }
       page.setFilters((prev) => ({ ...prev, [key]: value }));
     },
-    [partnerIdFromUrl, pathname, router, page.setFilters, page.setPeriod],
+    [partnerIdFromUrl, pathname, router, page],
   );
 
   const openSubscriptionDetail = useCallback(
@@ -153,7 +153,7 @@ function SubscriptionsPageInner() {
     page.setFilters({});
     page.setPeriod('month');
     page.setSearch('');
-  }, [partnerIdFromUrl, pathname, router, page.setFilters, page.setPeriod, page.setSearch]);
+  }, [partnerIdFromUrl, pathname, router, page]);
 
   const filterConfigs = useMemo((): FilterConfig[] => {
     const base = [buildFinancePeriodFilterConfig(), ...SUBSCRIPTION_STATIC_FILTER_CONFIGS];

@@ -1,11 +1,12 @@
 'use client';
 
-import { useLayoutEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import {
   isRegisteredModuleKey,
   readModuleSectionHref,
   type RegisteredModuleKey,
 } from '@/lib/navigation/module-last-visit';
+import { subscribeModuleVisitStore } from '@/lib/navigation/module-last-visit/module-visit-store-subscribe';
 
 /**
  * Sidebar section / header zone href: last page in that section after mount.
@@ -16,15 +17,11 @@ export function useModuleSectionHref(
   fallbackHref: string,
   pathname: string,
 ): string {
-  const [href, setHref] = useState(fallbackHref);
-
-  useLayoutEffect(() => {
-    if (!isRegisteredModuleKey(moduleKey)) {
-      setHref(fallbackHref);
-      return;
-    }
-    setHref(readModuleSectionHref(moduleKey, sectionId));
-  }, [moduleKey, sectionId, fallbackHref, pathname]);
-
-  return href;
+  void pathname;
+  return useSyncExternalStore(
+    subscribeModuleVisitStore,
+    () =>
+      isRegisteredModuleKey(moduleKey) ? readModuleSectionHref(moduleKey, sectionId) : fallbackHref,
+    () => fallbackHref,
+  );
 }

@@ -117,6 +117,7 @@ export function SupportTicketDetailGeneralTab({
               <DetailSheetSection title="Case & triage" icon={<Headphones size={12} />}>
                 <div className="space-y-4">
                   <SupportTicketDetailTriageFields
+                    key={ticket.id}
                     draft={draft}
                     terminal={terminal}
                     projectId={ticket.projectId}

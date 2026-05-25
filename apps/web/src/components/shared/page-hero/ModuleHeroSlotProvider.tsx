@@ -6,7 +6,6 @@ import {
   useContext,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -102,12 +101,10 @@ export function useModuleHeroSlots(slots: ModuleHeroSlots): void {
   }
 
   const { setSlots } = ctx;
-  const slotsRef = useRef(slots);
-  slotsRef.current = slots;
 
   useLayoutEffect(() => {
-    setSlots(slotsRef.current);
-  });
+    setSlots(slots);
+  }, [setSlots, slots.search, slots.viewMode, slots.trailing, slots.secondaryTabs]);
 
   useLayoutEffect(() => {
     return () => setSlots(EMPTY_SLOTS);

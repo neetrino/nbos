@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api } from '../api';
 
 export type BonusPolicyStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 
@@ -30,19 +30,22 @@ export interface UpdateBonusPolicyPayload {
 
 export const bonusPoliciesApi = {
   async list(): Promise<{ items: BonusPolicyRow[] }> {
-    const resp = await api.get<{ items: BonusPolicyRow[] }>('/api/bonus-policies');
-    return resp.data;
+    const { data } = await api.get<{ items: BonusPolicyRow[] }>('/api/bonus-policies');
+    return data;
   },
 
-  getById(id: string): Promise<BonusPolicyRow> {
-    return api.get<BonusPolicyRow>(`/api/bonus-policies/${id}`);
+  async getById(id: string): Promise<BonusPolicyRow> {
+    const { data } = await api.get<BonusPolicyRow>(`/api/bonus-policies/${id}`);
+    return data;
   },
 
-  create(payload: CreateBonusPolicyPayload): Promise<BonusPolicyRow> {
-    return api.post<BonusPolicyRow>('/api/bonus-policies', payload);
+  async create(payload: CreateBonusPolicyPayload): Promise<BonusPolicyRow> {
+    const { data } = await api.post<BonusPolicyRow>('/api/bonus-policies', payload);
+    return data;
   },
 
-  update(id: string, payload: UpdateBonusPolicyPayload): Promise<BonusPolicyRow> {
-    return api.patch<BonusPolicyRow>(`/api/bonus-policies/${id}`, payload);
+  async update(id: string, payload: UpdateBonusPolicyPayload): Promise<BonusPolicyRow> {
+    const { data } = await api.patch<BonusPolicyRow>(`/api/bonus-policies/${id}`, payload);
+    return data;
   },
 };

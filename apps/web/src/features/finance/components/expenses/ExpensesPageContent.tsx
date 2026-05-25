@@ -45,6 +45,7 @@ import {
   EXPENSE_PAYROLL_MONTH_URL_QUERY,
   EXPENSE_PAYROLL_PRESET_QUERY,
   EXPENSE_PAYROLL_SOURCE_FILTER_KEY,
+  EXPENSE_PAYROLL_SOURCE_PAYROLL,
   clearPayrollPayNowFilters,
   payNowDefaultExpenseFilters,
 } from '@/features/finance/constants/expense-payroll-filter';

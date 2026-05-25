@@ -5,7 +5,14 @@ import type { SalaryBoardEntry } from '@/features/finance/components/payroll/sal
 const entry: SalaryBoardEntry = {
   salaryLineId: 'sl-1',
   payrollMonth: '2026-04',
-  employee: { id: 'e1', firstName: 'Ann', lastName: 'Lee', position: null },
+  employee: {
+    id: 'e1',
+    firstName: 'Ann',
+    lastName: 'Lee',
+    position: null,
+    departmentIds: [],
+    primaryDepartmentId: null,
+  },
   cell: {
     salaryLineId: 'sl-1',
     payrollRunId: 'pr-1',

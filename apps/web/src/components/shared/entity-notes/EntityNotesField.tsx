@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { EditorContent } from '@tiptap/react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -64,10 +64,6 @@ export function EntityNotesField({
     disabled: isLocked,
     isActive: isEditing,
   });
-
-  useEffect(() => {
-    if (isLocked) setIsActive(false);
-  }, [isLocked]);
 
   const activate = useCallback(() => {
     if (isLocked) return;

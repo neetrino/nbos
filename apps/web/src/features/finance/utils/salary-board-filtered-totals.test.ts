@@ -6,7 +6,14 @@ function entry(payable: string, paid: string, remaining: string): SalaryBoardEnt
   return {
     salaryLineId: 'line-1',
     payrollMonth: '2026-04',
-    employee: { id: 'e1', firstName: 'A', lastName: 'B', position: null },
+    employee: {
+      id: 'e1',
+      firstName: 'A',
+      lastName: 'B',
+      position: null,
+      departmentIds: [],
+      primaryDepartmentId: null,
+    },
     cell: {
       salaryLineId: 'line-1',
       payrollRunId: 'run-1',

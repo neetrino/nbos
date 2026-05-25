@@ -41,47 +41,54 @@ function chatColumnStyle(isSplitRow: boolean): CSSProperties {
 }
 
 export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps) {
-  const split = useTaskSheetSplit();
+  const {
+    containerRef,
+    detailRatioPercent,
+    handlePointerDown,
+    isDragging,
+    isSplitRow,
+    nudgeDetailRatio,
+  } = useTaskSheetSplit();
 
   return (
     <div
-      ref={split.containerRef}
+      ref={containerRef}
       className={cn(
         'flex min-h-0 min-w-0 flex-1 overflow-hidden',
-        split.isSplitRow ? 'flex-row' : 'flex-col',
-        split.isDragging && 'select-none',
+        isSplitRow ? 'flex-row' : 'flex-col',
+        isDragging && 'select-none',
       )}
     >
       <div
         className={cn(
           TASK_SHEET_DETAIL_COLUMN_CLASS,
           'min-h-0 min-w-0',
-          split.isSplitRow ? 'overflow-hidden' : 'w-full',
+          isSplitRow ? 'overflow-hidden' : 'w-full',
         )}
-        style={detailColumnStyle(split.isSplitRow, split.detailRatioPercent)}
+        style={detailColumnStyle(isSplitRow, detailRatioPercent)}
       >
         {detail}
       </div>
 
-      {split.isSplitRow ? (
+      {isSplitRow ? (
         <div
           role="separator"
           aria-orientation="vertical"
           aria-valuemin={30}
           aria-valuemax={70}
-          aria-valuenow={Math.round(split.detailRatioPercent)}
+          aria-valuenow={Math.round(detailRatioPercent)}
           aria-label="Resize task detail and chat"
           tabIndex={0}
-          onPointerDown={split.handlePointerDown}
+          onPointerDown={handlePointerDown}
           onKeyDown={(event) => {
             if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
             event.preventDefault();
-            split.nudgeDetailRatio(event.key === 'ArrowLeft' ? -0.02 : 0.02);
+            nudgeDetailRatio(event.key === 'ArrowLeft' ? -0.02 : 0.02);
           }}
           className={cn(
             'group relative z-20 shrink-0 cursor-col-resize touch-none',
             'bg-border/60',
-            split.isDragging && 'bg-primary/30',
+            isDragging && 'bg-primary/30',
           )}
           style={{ width: TASK_SHEET_SPLIT_HIT_PX }}
         >
@@ -90,7 +97,7 @@ export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps
               'pointer-events-none absolute top-1/2 left-1/2 flex h-10 w-1.5 -translate-x-1/2 -translate-y-1/2',
               'bg-border items-center justify-center rounded-full shadow-sm ring-1 ring-black/5',
               'opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100',
-              split.isDragging && 'bg-primary/20 ring-primary/30 opacity-100',
+              isDragging && 'bg-primary/20 ring-primary/30 opacity-100',
             )}
           />
           <span className="sr-only">Drag to resize</span>
@@ -101,9 +108,9 @@ export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps
         className={cn(
           TASK_SHEET_CHAT_COLUMN_CLASS,
           'min-h-0 min-w-0 bg-white',
-          split.isSplitRow && 'relative z-10 shrink-0',
+          isSplitRow && 'relative z-10 shrink-0',
         )}
-        style={chatColumnStyle(split.isSplitRow)}
+        style={chatColumnStyle(isSplitRow)}
       >
         {chat}
       </div>
