@@ -35,4 +35,4 @@
 ## Phase 5 — Verify & commit
 
 - [x] Typecheck / lint затронутых файлов
-- [ ] Git commit
+- [x] Git commit
