@@ -4,8 +4,10 @@ import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
+import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi, paymentsApi, type Invoice } from '@/lib/api/finance';
+import { bonusesApi, type BonusEntryListRow } from '@/lib/api/bonus';
 import { EntityItemHostProvider } from './entity-item-context';
 import type { EntityItemOpenTarget } from './entity-item.types';
 
@@ -21,6 +23,8 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
   const [taskSheetOpen, setTaskSheetOpen] = useState(false);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [invoiceSheetOpen, setInvoiceSheetOpen] = useState(false);
+  const [bonusEntry, setBonusEntry] = useState<BonusEntryListRow | null>(null);
+  const [bonusEntrySheetOpen, setBonusEntrySheetOpen] = useState(false);
 
   const openEntityItem = useCallback(async (target: EntityItemOpenTarget) => {
     if (target.kind === 'task') {
@@ -36,6 +40,16 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
       } catch (caught) {
         toast.error(getApiErrorMessage(caught, 'Invoice could not be opened.'));
       }
+      return;
+    }
+    if (target.kind === 'bonus_entry') {
+      try {
+        const loaded = await bonusesApi.getById(target.id);
+        setBonusEntry(loaded);
+        setBonusEntrySheetOpen(true);
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Bonus entry could not be opened.'));
+      }
     }
   }, []);
 
@@ -49,6 +63,11 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
   const handleInvoiceSheetOpenChange = useCallback((next: boolean) => {
     setInvoiceSheetOpen(next);
     if (!next) setInvoice(null);
+  }, []);
+
+  const handleBonusEntrySheetOpenChange = useCallback((next: boolean) => {
+    setBonusEntrySheetOpen(next);
+    if (!next) setBonusEntry(null);
   }, []);
 
   const handleInvoiceUpdated = useCallback(
@@ -107,6 +126,14 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
         onInvoiceUpdated={handleInvoiceUpdated}
         onMoneyStatusChange={handleMoneyStatusChange}
         onPaymentRecorded={handlePaymentRecorded}
+        forceNestedBackdrop={nested}
+      />
+
+      <BonusEntryReleasesSheet
+        entry={bonusEntry}
+        open={bonusEntrySheetOpen}
+        onOpenChange={handleBonusEntrySheetOpenChange}
+        onAfterPatch={() => onEntityChanged?.()}
         forceNestedBackdrop={nested}
       />
     </EntityItemHostProvider>

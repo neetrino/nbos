@@ -21,11 +21,13 @@ export function BonusEntryReleasesSheet({
   open,
   onOpenChange,
   onAfterPatch,
+  forceNestedBackdrop,
 }: {
   entry: BonusEntryListRow | null;
   open: boolean;
   onOpenChange: (next: boolean) => void;
   onAfterPatch: () => void;
+  forceNestedBackdrop?: boolean;
 }) {
   const ledger = useBonusEntryReleasesLedger(entry, open, onAfterPatch);
 
@@ -38,7 +40,12 @@ export function BonusEntryReleasesSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent open={open} layout="auxiliary" className="gap-0">
+      <EntityDetailSheetContent
+        open={open}
+        layout="auxiliary"
+        className="gap-0"
+        forceNestedBackdrop={forceNestedBackdrop}
+      >
         <SheetHeader>
           <SheetTitle>Bonus entry</SheetTitle>
           <SheetDescription>

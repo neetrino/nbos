@@ -24,6 +24,10 @@ export type BonusPoolTimelineEventDto = {
   releaseType: string | null;
   releaseStatus: string | null;
   releaseReason: string | null;
+  /** Present for PAYMENT_IN — opens invoice detail sheet from pool tab. */
+  invoiceId: string | null;
+  /** Present for RELEASE_OUT — opens bonus entry release sheet. */
+  bonusEntryId: string | null;
 };
 
 export type BonusPoolTimelineDto = {
@@ -81,7 +85,7 @@ export async function queryBonusPoolTimeline(
         id: true,
         amount: true,
         paymentDate: true,
-        invoice: { select: { orderId: true, code: true } },
+        invoice: { select: { id: true, orderId: true, code: true } },
       },
       orderBy: { paymentDate: 'desc' },
     }),
@@ -97,7 +101,7 @@ export async function queryBonusPoolTimeline(
         updatedAt: true,
         payrollIncludedAmount: true,
         employee: { select: { firstName: true, lastName: true } },
-        bonusEntry: { select: { orderId: true } },
+        bonusEntry: { select: { id: true, orderId: true } },
         payrollRun: { select: { payrollMonth: true } },
       },
       orderBy: { updatedAt: 'desc' },
@@ -133,6 +137,8 @@ export async function queryBonusPoolTimeline(
       releaseType: null,
       releaseStatus: null,
       releaseReason: null,
+      invoiceId: p.invoice.id,
+      bonusEntryId: null,
     };
   });
 
@@ -160,6 +166,8 @@ export async function queryBonusPoolTimeline(
       releaseType: r.releaseType,
       releaseStatus: r.status,
       releaseReason: r.reason,
+      invoiceId: null,
+      bonusEntryId: r.bonusEntry.id,
     };
   });
 

@@ -85,10 +85,12 @@ Child sheets opened by the host pass `forceNestedBackdrop` so overlay and rail s
 
 ## Pilot implementations
 
-| Tab                     | Parent sheet              | Adapter                   | Child sheet    |
-| ----------------------- | ------------------------- | ------------------------- | -------------- |
-| Deal → Tasks            | `DealSheet`               | `task-item-summary.ts`    | `TaskSheet`    |
-| Subscription → Invoices | `SubscriptionDetailSheet` | `invoice-item-summary.ts` | `InvoiceSheet` |
+| Tab                     | Parent sheet              | Adapter                              | Child sheet               |
+| ----------------------- | ------------------------- | ------------------------------------ | ------------------------- |
+| Deal → Tasks            | `DealSheet`               | `task-item-summary.ts`               | `TaskSheet`               |
+| Subscription → Invoices | `SubscriptionDetailSheet` | `invoice-item-summary.ts`            | `InvoiceSheet`            |
+| Bonus pool → Funding    | `ProductBonusPoolSheet`   | `bonus-pool-funding-item-summary.ts` | `InvoiceSheet`            |
+| Bonus pool → Bonuses    | `ProductBonusPoolSheet`   | `bonus-entry-item-summary.ts`        | `BonusEntryReleasesSheet` |
 
 ## Canon
 

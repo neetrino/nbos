@@ -148,6 +148,8 @@ export interface BonusPoolTimelineEvent {
   releaseType: string | null;
   releaseStatus: string | null;
   releaseReason: string | null;
+  invoiceId: string | null;
+  bonusEntryId: string | null;
 }
 
 export interface BonusPoolTimelineResponse {
@@ -273,6 +275,11 @@ export const bonusesApi = {
         ...params,
       },
     });
+    return resp.data;
+  },
+
+  async getById(id: string): Promise<BonusEntryListRow> {
+    const resp = await api.get<BonusEntryListRow>(`/api/bonus/${id}`);
     return resp.data;
   },
 

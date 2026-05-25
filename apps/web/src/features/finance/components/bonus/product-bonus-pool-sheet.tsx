@@ -1,21 +1,27 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { EntityDetailSheetContent } from '@/components/shared';
-import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
-import { BonusPoolEmployeeBreakdown } from '@/features/finance/components/bonus/bonus-pool-employee-breakdown';
-import { BonusPoolFundingTimeline } from '@/features/finance/components/bonus/bonus-pool-funding-timeline';
-import { BonusPoolSheetSuggestedPanel } from '@/features/finance/components/bonus/bonus-pool-sheet-suggested-panel';
-import { BonusPoolSheetSummary } from '@/features/finance/components/bonus/bonus-pool-sheet-summary';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet } from '@/components/ui/sheet';
 import {
-  bonusPoolKindLabel,
-  bonusPoolOrderCodesLabel,
-  bonusPoolScopeTitle,
-} from '@/features/finance/utils/bonus-pool-display';
+  DetailSheetTabBar,
+  EntityDetailSheetContent,
+  EntityItemHost,
+  LoadingState,
+} from '@/components/shared';
+import { BonusPoolSheetBonusesTab } from '@/features/finance/components/bonus/bonus-pool-sheet-bonuses-tab';
+import {
+  BONUS_POOL_DETAIL_SHEET_TABS,
+  type BonusPoolDetailSheetTab,
+} from '@/features/finance/components/bonus/bonus-pool-detail-sheet-tabs';
+import { BonusPoolSheetFundingTab } from '@/features/finance/components/bonus/bonus-pool-sheet-funding-tab';
+import { BonusPoolSheetGeneralTab } from '@/features/finance/components/bonus/bonus-pool-sheet-general-tab';
+import { BonusPoolSheetHeader } from '@/features/finance/components/bonus/bonus-pool-sheet-header';
+import { fetchBonusEntriesForPool } from '@/features/finance/utils/fetch-bonus-entries-for-pool';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   bonusesApi,
+  type BonusEntryListRow,
   type BonusPoolEmployeeLine,
   type BonusPoolRiskFlag,
   type BonusPoolTimelineEvent,
@@ -33,34 +39,42 @@ export function ProductBonusPoolSheet({
   onOpenChange: (next: boolean) => void;
   onPoolsRefresh?: () => void | Promise<void>;
 }) {
+  const [activeTab, setActiveTab] = useState<BonusPoolDetailSheetTab>('general');
   const [lines, setLines] = useState<BonusPoolEmployeeLine[]>([]);
+  const [entries, setEntries] = useState<BonusEntryListRow[]>([]);
   const [orderCodes, setOrderCodes] = useState<string[]>([]);
   const [timelineEvents, setTimelineEvents] = useState<BonusPoolTimelineEvent[]>([]);
   const [riskFlags, setRiskFlags] = useState<BonusPoolRiskFlag[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [linesError, setLinesError] = useState<string | null>(null);
+  const [entriesError, setEntriesError] = useState<string | null>(null);
   const [timelineError, setTimelineError] = useState<string | null>(null);
 
-  const loadPoolDetail = useCallback(async (poolKey: string) => {
+  const loadPoolDetail = useCallback(async (poolKey: string, orderIds: string[]) => {
     setDetailLoading(true);
     setLinesError(null);
+    setEntriesError(null);
     setTimelineError(null);
     try {
-      const [linesData, timelineData] = await Promise.all([
+      const [linesData, timelineData, entryRows] = await Promise.all([
         bonusesApi.getProductPoolEmployeeLines(poolKey),
         bonusesApi.getProductPoolTimeline(poolKey),
+        fetchBonusEntriesForPool(orderIds),
       ]);
       setLines(linesData.lines);
       setOrderCodes(linesData.orderCodes);
       setTimelineEvents(timelineData.events);
       setRiskFlags(timelineData.riskFlags);
+      setEntries(entryRows);
     } catch (caught) {
+      const message = getApiErrorMessage(caught, 'Pool detail could not be loaded.');
       setLines([]);
+      setEntries([]);
       setOrderCodes([]);
       setTimelineEvents([]);
       setRiskFlags([]);
-      const message = getApiErrorMessage(caught, 'Pool detail could not be loaded.');
       setLinesError(message);
+      setEntriesError(message);
       setTimelineError(message);
     } finally {
       setDetailLoading(false);
@@ -70,65 +84,113 @@ export function ProductBonusPoolSheet({
   useEffect(() => {
     if (!open || !pool) {
       setLines([]);
+      setEntries([]);
       setOrderCodes([]);
       setTimelineEvents([]);
       setRiskFlags([]);
       setLinesError(null);
+      setEntriesError(null);
       setTimelineError(null);
+      setActiveTab('general');
       return;
     }
-    void loadPoolDetail(pool.poolKey);
+    void loadPoolDetail(pool.poolKey, pool.orderIds);
   }, [loadPoolDetail, open, pool]);
 
+  const paymentCount = useMemo(
+    () => timelineEvents.filter((event) => event.kind === 'PAYMENT_IN').length,
+    [timelineEvents],
+  );
+  const releaseCount = useMemo(
+    () => timelineEvents.filter((event) => event.kind === 'RELEASE_OUT').length,
+    [timelineEvents],
+  );
+
+  const handleAfterAutoRelease = useCallback(async () => {
+    if (!pool) return;
+    await loadPoolDetail(pool.poolKey, pool.orderIds);
+    await onPoolsRefresh?.();
+  }, [loadPoolDetail, onPoolsRefresh, pool]);
+
+  const handleEntityChanged = useCallback(async () => {
+    if (!pool) return;
+    await loadPoolDetail(pool.poolKey, pool.orderIds);
+    await onPoolsRefresh?.();
+  }, [loadPoolDetail, onPoolsRefresh, pool]);
+
+  const tabContent = useMemo(() => {
+    if (!pool) return null;
+    if (activeTab === 'funding') {
+      return (
+        <BonusPoolSheetFundingTab
+          pool={pool}
+          timelineEvents={timelineEvents}
+          loading={detailLoading}
+          error={timelineError}
+        />
+      );
+    }
+    if (activeTab === 'bonuses') {
+      return (
+        <BonusPoolSheetBonusesTab
+          pool={pool}
+          lines={lines}
+          entries={entries}
+          loading={detailLoading}
+          linesError={linesError}
+          entriesError={entriesError}
+          onAfterAutoRelease={handleAfterAutoRelease}
+        />
+      );
+    }
+    return (
+      <BonusPoolSheetGeneralTab
+        pool={pool}
+        paymentCount={paymentCount}
+        releaseCount={releaseCount}
+        onOpenTab={setActiveTab}
+      />
+    );
+  }, [
+    activeTab,
+    detailLoading,
+    entries,
+    entriesError,
+    handleAfterAutoRelease,
+    lines,
+    linesError,
+    paymentCount,
+    pool,
+    releaseCount,
+    timelineError,
+    timelineEvents,
+  ]);
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent open={open} layout="auxiliary" className="gap-0">
-        <SheetHeader>
-          <SheetTitle>{pool ? bonusPoolScopeTitle(pool) : 'Product bonus pool'}</SheetTitle>
-          <SheetDescription>
-            {pool
-              ? `${bonusPoolKindLabel(pool.poolKind)} · ${pool.projectCode} · ${bonusPoolOrderCodesLabel(pool)}`
-              : 'Select a pool to inspect funding and employee bonuses.'}
-          </SheetDescription>
-        </SheetHeader>
-
-        {pool ? (
-          <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-6">
-            <BonusPoolSheetSummary pool={pool} orderCodes={orderCodes} riskFlags={riskFlags} />
-
-            <DetailSheetSection title="Suggested release">
-              <BonusPoolSheetSuggestedPanel
-                pool={pool}
-                lines={lines}
-                onAfterAutoRelease={async () => {
-                  await loadPoolDetail(pool.poolKey);
-                  await onPoolsRefresh?.();
-                }}
+    <EntityItemHost nested onEntityChanged={() => void handleEntityChanged()}>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <EntityDetailSheetContent open={open} layout="full" width="medium" className="gap-0">
+          {pool ? (
+            <>
+              <BonusPoolSheetHeader pool={pool} orderCodes={orderCodes} riskFlags={riskFlags} />
+              <DetailSheetTabBar
+                tabs={BONUS_POOL_DETAIL_SHEET_TABS}
+                activeTab={activeTab}
+                onTabChange={(value) => setActiveTab(value as BonusPoolDetailSheetTab)}
               />
-            </DetailSheetSection>
-
-            <DetailSheetSection title="By employee">
-              <p className="text-muted-foreground mb-3 text-xs">
-                Planned vs released vs paid per person. Suggested release uses available pool
-                funding proportionally.
-              </p>
-              <BonusPoolEmployeeBreakdown
-                lines={lines}
-                loading={detailLoading}
-                error={linesError}
-              />
-            </DetailSheetSection>
-
-            <DetailSheetSection title="Funding timeline">
-              <BonusPoolFundingTimeline
-                events={timelineEvents}
-                loading={detailLoading}
-                error={timelineError}
-              />
-            </DetailSheetSection>
-          </div>
-        ) : null}
-      </EntityDetailSheetContent>
-    </Sheet>
+              <ScrollArea className="min-h-0 flex-1">
+                <div className="px-5 py-5">
+                  {detailLoading && activeTab === 'general' ? (
+                    <LoadingState count={3} />
+                  ) : (
+                    tabContent
+                  )}
+                </div>
+              </ScrollArea>
+            </>
+          ) : null}
+        </EntityDetailSheetContent>
+      </Sheet>
+    </EntityItemHost>
   );
 }
