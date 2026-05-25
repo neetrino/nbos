@@ -40,4 +40,17 @@ describe('deriveBonusPoolFundingMetrics', () => {
     expect(m.fundingHealth).toBe('EMPTY');
     expect(m.fundingFillPercent).toBe(0);
   });
+
+  it('caps fill at 100% when received exceeds planned bonus pool', () => {
+    const m = deriveBonusPoolFundingMetrics({
+      planned: new Decimal(125_000),
+      received: new Decimal(2_500_000),
+      available: new Decimal(2_437_500),
+      remaining: new Decimal(62_500),
+      overFunding: new Decimal(0),
+      ledgerStatus: 'PARTIALLY_RELEASED',
+    });
+    expect(m.fundingFillPercent).toBe(100);
+    expect(m.fundingHealth).toBe('READY');
+  });
 });

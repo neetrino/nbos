@@ -1,6 +1,10 @@
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { bonusPoolHasOverFunding } from '@/features/finance/constants/bonus-pool-status-ui';
 import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
+import {
+  bonusPoolFundedAmount,
+  bonusPoolReleasableAmount,
+} from '@/features/finance/utils/bonus-pool-display-metrics';
 
 export type BonusPoolBoardLane = 'over' | 'at_risk' | 'partial' | 'ready';
 
@@ -36,9 +40,11 @@ export function bonusPoolBoardLane(row: BonusProductPoolRow): BonusPoolBoardLane
   if (health === 'READY' || health === 'CLOSED') return 'ready';
 
   const status = row.ledgerPoolStatus?.toUpperCase() ?? '';
-  const available = parseBonusPoolAmount(row.ledgerAvailableFunding);
   const remaining = parseBonusPoolAmount(row.ledgerRemainingAmount);
   const released = parseBonusPoolAmount(row.ledgerReleasedAmount);
+  const planned = parseBonusPoolAmount(row.ledgerPlannedAmount);
+  const funded = bonusPoolFundedAmount(row);
+  const releasable = bonusPoolReleasableAmount(row);
 
   if (!row.ledgerPoolStatus) {
     return 'at_risk';
@@ -47,10 +53,16 @@ export function bonusPoolBoardLane(row: BonusProductPoolRow): BonusPoolBoardLane
     return 'ready';
   }
   if (status === 'PARTIALLY_RELEASED' || released > 0) {
+    if (planned > 0 && funded >= planned && releasable > 0) {
+      return 'ready';
+    }
     return 'partial';
   }
-  if (available > 0 && remaining > 0) {
+  if (planned > 0 && funded >= planned && releasable > 0) {
     return 'ready';
+  }
+  if (funded > 0) {
+    return 'partial';
   }
   return 'at_risk';
 }

@@ -14,8 +14,23 @@ function toNumber(value: Decimal | null | undefined): number {
   return value.toNumber();
 }
 
+/** Client money counted toward planned bonus pool (never above planned). */
+export function fundedTowardPlanned(planned: number, received: number): number {
+  if (planned <= 0) return received;
+  return Math.min(planned, received);
+}
+
+/** Bonus owed that is already funded from client payments. */
+export function releasableBonusAmount(
+  planned: number,
+  received: number,
+  remaining: number,
+): number {
+  return Math.min(remaining, fundedTowardPlanned(planned, received));
+}
+
 /**
- * Fill % = client money received vs planned bonus total (capped display at 999 for UI).
+ * Fill % = funded toward planned bonus pool (capped at 100 for UI).
  * Health drives list/board/sheet indicators (NBOS product bonus pool funding).
  */
 export function deriveBonusPoolFundingMetrics(input: {
@@ -28,10 +43,10 @@ export function deriveBonusPoolFundingMetrics(input: {
 }): BonusPoolFundingMetrics {
   const plannedN = toNumber(input.planned);
   const receivedN = toNumber(input.received);
-  const availableN = toNumber(input.available);
   const remainingN = toNumber(input.remaining);
   const overN = toNumber(input.overFunding);
   const status = input.ledgerStatus?.toUpperCase() ?? null;
+  const fundedN = fundedTowardPlanned(plannedN, receivedN);
 
   if (input.planned == null && input.received == null) {
     return { fundingFillPercent: null, fundingHealth: 'UNKNOWN' };
@@ -39,7 +54,7 @@ export function deriveBonusPoolFundingMetrics(input: {
 
   let fundingFillPercent: number | null = null;
   if (plannedN > 0) {
-    fundingFillPercent = Math.min(999, Math.round((receivedN / plannedN) * 100));
+    fundingFillPercent = Math.min(100, Math.round((fundedN / plannedN) * 100));
   } else if (receivedN > 0) {
     fundingFillPercent = 100;
   }
@@ -53,11 +68,14 @@ export function deriveBonusPoolFundingMetrics(input: {
   if (plannedN <= 0 && receivedN <= 0) {
     return { fundingFillPercent, fundingHealth: 'UNKNOWN' };
   }
-  if (receivedN <= 0 && remainingN > 0) {
+  if (fundedN <= 0 && remainingN > 0) {
     return { fundingFillPercent, fundingHealth: 'EMPTY' };
   }
-  if (availableN > 0 && remainingN > 0) {
+  if (plannedN > 0 && fundedN >= plannedN && remainingN > 0) {
     return { fundingFillPercent, fundingHealth: 'READY' };
+  }
+  if (fundedN > 0 && (plannedN <= 0 || fundedN < plannedN)) {
+    return { fundingFillPercent, fundingHealth: 'PARTIAL' };
   }
   if (receivedN > 0 || status === 'PARTIALLY_RELEASED') {
     return { fundingFillPercent, fundingHealth: 'PARTIAL' };

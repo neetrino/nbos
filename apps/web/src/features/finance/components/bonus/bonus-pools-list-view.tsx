@@ -24,7 +24,11 @@ import {
   bonusPoolKindLabel,
   bonusPoolScopeTitle,
 } from '@/features/finance/utils/bonus-pool-display';
-import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
+import {
+  formatBonusPoolMoney,
+  parseBonusPoolAmount,
+} from '@/features/finance/utils/bonus-pool-amount';
+import { bonusPoolFundedAmount } from '@/features/finance/utils/bonus-pool-display-metrics';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
@@ -66,7 +70,7 @@ export function BonusPoolsListView({
               {BONUS_POOL_SCOPE_COLUMN_LABEL}
             </TableHead>
             <TableHead className={cn(LIST_HEAD_CELL, LIST_PROJECT_COL_CLASS)}>Project</TableHead>
-            <TableHead className={`${LIST_HEAD_CELL} text-right`}>Available</TableHead>
+            <TableHead className={`${LIST_HEAD_CELL} text-right`}>Funded</TableHead>
             <TableHead className={cn(LIST_HEAD_CELL, LIST_FILL_COL_CLASS)}>Fill</TableHead>
             <TableHead className={LIST_HEAD_CELL}>Funding</TableHead>
           </TableRow>
@@ -82,7 +86,7 @@ export function BonusPoolsListView({
               Filtered ({totals.poolCount} pools · {totals.entryCount} entries)
             </TableCell>
             <TableCell className={`${LIST_FOOTER_CELL} text-right`}>
-              {formatAmount(totals.available)}
+              {formatAmount(totals.funded)}
             </TableCell>
             <TableCell />
             <TableCell />
@@ -131,7 +135,7 @@ function BonusPoolsListRow({
         </Link>
       </TableCell>
       <TableCell className={`${LIST_ROW_CELL} text-right text-sm font-medium tabular-nums`}>
-        {formatBonusPoolMoney(row.ledgerAvailableFunding)}
+        {formatBonusPoolMoney(String(bonusPoolFundedAmount(row)))}
       </TableCell>
       <TableCell className={cn(LIST_ROW_CELL, LIST_FILL_COL_CLASS)}>
         <BonusPoolFillBar row={row} showLabel={false} className="max-w-[5.5rem]" />

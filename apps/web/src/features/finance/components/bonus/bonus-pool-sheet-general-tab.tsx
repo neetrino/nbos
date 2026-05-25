@@ -9,6 +9,7 @@ import { BonusPoolSheetScopeLinks } from '@/features/finance/components/bonus/bo
 import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import { bonusPoolHasOverFunding } from '@/features/finance/constants/bonus-pool-status-ui';
 import { formatBonusPoolMoney } from '@/features/finance/utils/bonus-pool-amount';
+import { bonusPoolFundedAmount } from '@/features/finance/utils/bonus-pool-display-metrics';
 import type { BonusPoolRiskFlag, BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
@@ -61,7 +62,11 @@ export function BonusPoolSheetGeneralTab({
               value={formatBonusPoolMoney(pool.ledgerReceivedAmount)}
             />
             <SnapshotTile
-              label="Available"
+              label="Funded"
+              value={formatBonusPoolMoney(String(bonusPoolFundedAmount(pool)))}
+            />
+            <SnapshotTile
+              label="Available (cash)"
               value={formatBonusPoolMoney(pool.ledgerAvailableFunding)}
             />
             <SnapshotTile

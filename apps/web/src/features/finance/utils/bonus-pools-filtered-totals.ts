@@ -1,5 +1,9 @@
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
+import {
+  bonusPoolFundedAmount,
+  bonusPoolReleasableAmount,
+} from '@/features/finance/utils/bonus-pool-display-metrics';
 import { bonusPoolHasOverFunding } from '@/features/finance/constants/bonus-pool-status-ui';
 
 export type BonusPoolsFilteredTotals = {
@@ -8,7 +12,8 @@ export type BonusPoolsFilteredTotals = {
   planned: number;
   released: number;
   paid: number;
-  available: number;
+  funded: number;
+  releasable: number;
   overFundingPools: number;
 };
 
@@ -19,7 +24,8 @@ export function computeBonusPoolsFilteredTotals(
   let planned = 0;
   let released = 0;
   let paid = 0;
-  let available = 0;
+  let funded = 0;
+  let releasable = 0;
   let overFundingPools = 0;
 
   for (const row of rows) {
@@ -27,7 +33,8 @@ export function computeBonusPoolsFilteredTotals(
     planned += parseBonusPoolAmount(row.ledgerPlannedAmount);
     released += parseBonusPoolAmount(row.ledgerReleasedAmount);
     paid += parseBonusPoolAmount(row.sumPaidAmount);
-    available += parseBonusPoolAmount(row.ledgerAvailableFunding);
+    funded += bonusPoolFundedAmount(row);
+    releasable += bonusPoolReleasableAmount(row);
     if (bonusPoolHasOverFunding(row)) {
       overFundingPools += 1;
     }
@@ -39,7 +46,8 @@ export function computeBonusPoolsFilteredTotals(
     planned,
     released,
     paid,
-    available,
+    funded,
+    releasable,
     overFundingPools,
   };
 }

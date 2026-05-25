@@ -12,7 +12,7 @@ import {
   bonusPoolKindLabel,
   bonusPoolScopeTitle,
 } from '@/features/finance/utils/bonus-pool-display';
-import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
+import { bonusPoolFundedAmount } from '@/features/finance/utils/bonus-pool-display-metrics';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +24,7 @@ export function BonusPoolsPoolCard({
   onOpen: (row: BonusProductPoolRow) => void;
 }) {
   const fundingUi = bonusPoolFundingHealthUi(resolveRowFundingHealth(row));
-  const available = parseBonusPoolAmount(row.ledgerAvailableFunding);
+  const funded = bonusPoolFundedAmount(row);
 
   return (
     <button
@@ -52,7 +52,10 @@ export function BonusPoolsPoolCard({
       </div>
 
       <p className="text-foreground mt-2 text-base font-bold tabular-nums">
-        {formatAmount(available)}
+        {formatAmount(funded)}
+      </p>
+      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+        Funded
       </p>
 
       <div className="mt-2">

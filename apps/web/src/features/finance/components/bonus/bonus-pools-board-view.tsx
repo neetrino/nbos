@@ -11,7 +11,7 @@ import {
   groupPoolsByBoardLane,
   type BonusPoolBoardLane,
 } from '@/features/finance/utils/bonus-pool-board-lane';
-import { parseBonusPoolAmount } from '@/features/finance/utils/bonus-pool-amount';
+import { bonusPoolReleasableAmount } from '@/features/finance/utils/bonus-pool-display-metrics';
 import type { BonusProductPoolRow } from '@/lib/api/bonus';
 
 const BOARD_COLUMN_WIDTH = 288;
@@ -49,7 +49,7 @@ export function BonusPoolsBoardView({
         renderColumnHeader={(column) => (
           <KanbanColumnMoneyTotal
             column={column}
-            getAmount={(row) => parseBonusPoolAmount(row.ledgerAvailableFunding)}
+            getAmount={(row) => bonusPoolReleasableAmount(row)}
           />
         )}
         renderCard={(row) => <BonusPoolsPoolCard row={row} onOpen={onOpenPool} />}

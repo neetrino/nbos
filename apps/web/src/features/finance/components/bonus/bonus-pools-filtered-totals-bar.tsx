@@ -9,7 +9,8 @@ export function BonusPoolsFilteredTotalsBar({ totals }: { totals: BonusPoolsFilt
       <TotalTile label="Pools" value={String(totals.poolCount)} />
       <TotalTile label="Planned" value={formatAmount(totals.planned)} />
       <TotalTile label="Released" value={formatAmount(totals.released)} />
-      <TotalTile label="Available" value={formatAmount(totals.available)} />
+      <TotalTile label="Funded" value={formatAmount(totals.funded)} />
+      <TotalTile label="Releasable" value={formatAmount(totals.releasable)} />
       <TotalTile label="Paid (entries)" value={formatAmount(totals.paid)} />
       <TotalTile label="Over funding" value={String(totals.overFundingPools)} />
     </div>
