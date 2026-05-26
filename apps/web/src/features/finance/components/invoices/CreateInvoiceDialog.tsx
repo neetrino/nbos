@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { NbosDatePicker } from '@/components/shared/date-picker';
+import { MoneyInput } from '@/components/shared/MoneyInput';
 import { Label } from '@/components/ui/label';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { Order } from '@/lib/api/finance';
@@ -182,12 +182,9 @@ function InvoiceAmountFields({
     <div className="space-y-3">
       <div>
         <Label>Amount *</Label>
-        <Input
-          type="number"
-          min="0"
-          step="1"
+        <MoneyInput
           value={form.amount}
-          onChange={(event) => setForm({ ...form, amount: event.target.value })}
+          onChange={(amount) => setForm({ ...form, amount })}
           autoFocus
         />
       </div>

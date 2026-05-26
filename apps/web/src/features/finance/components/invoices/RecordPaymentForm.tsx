@@ -57,7 +57,7 @@ export function RecordPaymentForm({ invoice, onRecordPayment }: RecordPaymentFor
       <InlineField
         variant="controlled"
         label="Amount"
-        type="number"
+        type="money"
         value={amount}
         icon={<Banknote size={12} />}
         onValueChange={setAmount}

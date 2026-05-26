@@ -53,7 +53,7 @@ export function DealInfoProjectBillingFields({
       <InlineField
         variant="controlled"
         label="Cost"
-        type="number"
+        type="money"
         value={draft.amount ?? ''}
         placeholder="Enter amount..."
         icon={<DollarSign size={12} />}

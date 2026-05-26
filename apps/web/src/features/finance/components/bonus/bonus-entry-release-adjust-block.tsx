@@ -3,6 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/shared/MoneyInput';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { BonusReleaseRow } from '@/lib/api/bonus';
@@ -39,13 +40,10 @@ export function BonusEntryReleaseAdjustBlock({
       ) : null}
       <div className="space-y-1.5">
         <Label htmlFor={`amt-${row.id}`}>New amount</Label>
-        <Input
+        <MoneyInput
           id={`amt-${row.id}`}
-          type="number"
-          min={0}
-          step="0.01"
           value={form.amount}
-          onChange={(e) => onChange({ ...form, amount: e.target.value })}
+          onChange={(amount) => onChange({ ...form, amount })}
         />
       </div>
       <div className="space-y-1.5">

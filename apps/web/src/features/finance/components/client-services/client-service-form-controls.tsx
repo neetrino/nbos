@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/shared/MoneyInput';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
@@ -45,11 +45,7 @@ export function ClientServiceMoneyInput(props: {
   return (
     <div>
       <Label>{props.label}</Label>
-      <Input
-        inputMode="decimal"
-        value={props.value}
-        onChange={(event) => props.onChange(event.target.value)}
-      />
+      <MoneyInput value={props.value} onChange={props.onChange} />
     </div>
   );
 }

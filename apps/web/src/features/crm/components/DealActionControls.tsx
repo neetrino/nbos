@@ -2,6 +2,7 @@
 
 import { Check, CheckSquare, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { MoneyInput } from '@/components/shared/MoneyInput';
 
 interface InvoiceActionProps {
   showForm: boolean;
@@ -48,10 +49,9 @@ export function InvoiceAction({
       <label className="text-muted-foreground block text-[11px] font-medium">
         Invoice amount (AMD)
       </label>
-      <input
-        type="number"
+      <MoneyInput
         value={invoiceAmount}
-        onChange={(event) => setInvoiceAmount(event.target.value)}
+        onChange={setInvoiceAmount}
         placeholder="Amount..."
         className="text-foreground w-full rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-sm outline-none focus:border-emerald-400 dark:border-stone-700 dark:bg-stone-900"
         onKeyDown={(event) => {

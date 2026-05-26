@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Lock, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/shared/MoneyInput';
 import { Label } from '@/components/ui/label';
 import { IntegratedSearchFilters, NbosDatePicker, useModuleHeroSlots } from '@/components/shared';
 import { FinanceOverviewPageSettingsSheet } from '@/features/finance/components/overview/FinanceOverviewPageSettingsSheet';
@@ -268,12 +269,10 @@ export default function FinanceJournalPage() {
           <form onSubmit={(e) => void handleAdjustment(e)} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="adj-amount">Amount (signed)</Label>
-              <Input
+              <MoneyInput
                 id="adj-amount"
-                type="number"
-                step="any"
                 value={adjustAmount}
-                onChange={(e) => setAdjustAmount(e.target.value)}
+                onChange={setAdjustAmount}
                 required
               />
             </div>

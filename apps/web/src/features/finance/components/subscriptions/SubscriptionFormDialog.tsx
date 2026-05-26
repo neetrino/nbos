@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/shared/MoneyInput';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -188,13 +189,10 @@ export function SubscriptionFormDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="sub-amount">Base monthly amount</Label>
-              <Input
+              <MoneyInput
                 id="sub-amount"
-                type="number"
-                min={1}
-                step="any"
                 value={form.baseMonthlyAmount}
-                onChange={(e) => setForm({ ...form, baseMonthlyAmount: e.target.value })}
+                onChange={(baseMonthlyAmount) => setForm({ ...form, baseMonthlyAmount })}
                 required
               />
             </div>

@@ -5,6 +5,7 @@ import { Megaphone, Plus } from 'lucide-react';
 import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/shared/MoneyInput';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -147,10 +148,9 @@ export default function MarketingPage() {
         </div>
         <div>
           <Label>Budget</Label>
-          <Input
-            type="number"
+          <MoneyInput
             value={form.budget}
-            onChange={(event) => setForm({ ...form, budget: event.target.value })}
+            onChange={(budget) => setForm({ ...form, budget })}
             placeholder="AMD"
           />
         </div>

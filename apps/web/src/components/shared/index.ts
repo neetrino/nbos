@@ -38,6 +38,7 @@ export type {
 } from './kanban/kanban.types';
 export { KanbanColumnMoneyTotal } from './kanban/KanbanColumnMoneyTotal';
 export { InlineField, type InlineFieldProps } from './InlineField';
+export { MoneyInput, type MoneyInputProps } from './MoneyInput';
 export {
   NbosCalendarGrid,
   NbosDateInput,

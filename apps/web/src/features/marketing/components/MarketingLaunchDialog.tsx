@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { MoneyInput } from '@/components/shared/MoneyInput';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
@@ -140,10 +141,9 @@ export function MarketingLaunchDialog({
             </div>
             <div>
               <Label>Budget</Label>
-              <Input
-                type="number"
+              <MoneyInput
                 value={form.budget}
-                onChange={(event) => setForm({ ...form, budget: event.target.value })}
+                onChange={(budget) => setForm({ ...form, budget })}
                 placeholder="AMD"
               />
             </div>
