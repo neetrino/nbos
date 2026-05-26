@@ -9,7 +9,8 @@
 /** Hero card narrower than this (px) — search can expand over trailing actions. */
 export const PAGE_HERO_COMPACT_MAX_WIDTH_PX = 1280;
 
-export const PAGE_HERO_SURFACE_CLIP = 'w-full min-w-0 overflow-hidden';
+/** shrink-0 — never collapse when a tall list/grid sibling shares a flex column (e.g. Projects “All”). */
+export const PAGE_HERO_SURFACE_CLIP = 'w-full min-w-0 shrink-0 overflow-hidden';
 
 export const PAGE_HERO_SURFACE_PADDING = 'px-3 py-2.5 xl:px-4 xl:py-3';
 

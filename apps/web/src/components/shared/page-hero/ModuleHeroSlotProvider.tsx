@@ -72,6 +72,7 @@ export function ModuleHeroSlotProvider({
       <div className={className ?? 'flex h-full min-h-0 flex-col gap-5'}>
         <div
           className={cn(
+            'shrink-0',
             linkToHeaderTab && [MODULE_SHELL_BRIDGE_HERO_PULL, MODULE_SHELL_BRIDGE_HERO_GAP],
           )}
         >
