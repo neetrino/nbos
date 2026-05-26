@@ -82,6 +82,7 @@ export function ModuleHeroSlotProvider({
             viewMode={slots.viewMode}
             trailing={slots.trailing}
             secondaryTabs={slots.secondaryTabs}
+            className={linkToHeaderTab ? '!mt-0' : undefined}
           />
         </div>
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>

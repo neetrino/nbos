@@ -3,6 +3,7 @@
 import { useRef, type ReactNode } from 'react';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { cn } from '@/lib/utils';
+import { PAGE_HERO_HEADER_OFFSET } from '@/components/shared/module-shell/module-shell-surface';
 import { PAGE_HERO_SURFACE, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
 import {
   PAGE_HERO_SEARCH_SLOT,
@@ -74,6 +75,7 @@ function PageHeroInner({
     <section
       ref={sectionRef}
       className={cn(
+        PAGE_HERO_HEADER_OFFSET,
         PAGE_HERO_SURFACE,
         PAGE_HERO_SURFACE_CLIP,
         PAGE_HERO_SURFACE_PADDING,
