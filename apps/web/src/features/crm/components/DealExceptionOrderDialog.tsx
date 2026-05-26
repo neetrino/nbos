@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
+import { NbosDatePicker } from '@/components/shared/date-picker';
 import type { DealExceptionType } from '@/features/crm/constants/deal-commercial-ui.constants';
 import { dealsApi } from '@/lib/api/deals';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -81,8 +81,7 @@ export function DealExceptionOrderDialog({
         <DialogHeader>
           <DialogTitle>Exception order</DialogTitle>
           <DialogDescription>
-            Close the deal without a deposit invoice. FREE skips payment; POSTPAID expects payment
-            later. Sales bonuses are not created automatically.
+            Close without deposit invoice. FREE or POSTPAID — bonuses are manual.
           </DialogDescription>
         </DialogHeader>
 
@@ -115,15 +114,19 @@ export function DealExceptionOrderDialog({
           </div>
 
           {exceptionType === 'POSTPAID' ? (
-            <div className="space-y-2">
-              <Label htmlFor="payment-expected-at">Expected payment date (optional)</Label>
-              <Input
+            <label className="block space-y-2 text-sm font-medium" htmlFor="payment-expected-at">
+              Expected payment date (optional)
+              <NbosDatePicker
                 id="payment-expected-at"
-                type="date"
                 value={paymentExpectedAt}
-                onChange={(event) => setPaymentExpectedAt(event.target.value)}
+                onChange={setPaymentExpectedAt}
+                disabled={submitting}
+                variant="extended"
+                clearable
+                placeholder="Select expected payment date…"
+                aria-label="Expected payment date"
               />
-            </div>
+            </label>
           ) : null}
 
           {error ? <p className="text-destructive text-sm">{error}</p> : null}
