@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { PAGE_HERO_HEADER_OFFSET } from '@/components/shared/module-shell/module-shell-surface';
 import { PAGE_HERO_SURFACE, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
 import {
+  PAGE_HERO_OVERFLOW_FILTERS_OPEN,
   PAGE_HERO_SEARCH_SLOT,
   PAGE_HERO_SEARCH_SLOT_EXPANDED,
   PAGE_HERO_SURFACE_CLIP,
@@ -55,13 +56,14 @@ function PageHeroInner({
   const hasSearch = Boolean(search);
   const hasToolbar = Boolean(tabs || hasSearch || hasTrailing);
 
-  const { searchActive } = usePageHeroToolbar();
+  const { searchActive, filterPanelOpen } = usePageHeroToolbar();
   const isCompactToolbar = usePageHeroCompactToolbar(sectionRef);
   const toolsRowOverflow = usePageHeroToolsRowOverflow(
     toolsRowRef,
     hasSearch && hasTrailing && isCompactToolbar,
   );
   const searchExpanded = isCompactToolbar && (searchActive || toolsRowOverflow);
+  const filterOverflowClass = filterPanelOpen ? PAGE_HERO_OVERFLOW_FILTERS_OPEN : undefined;
 
   if (!hasToolbar && !secondaryTabs) {
     return null;
@@ -78,17 +80,18 @@ function PageHeroInner({
         PAGE_HERO_HEADER_OFFSET,
         PAGE_HERO_SURFACE,
         PAGE_HERO_SURFACE_CLIP,
+        filterOverflowClass,
         PAGE_HERO_SURFACE_PADDING,
         className,
       )}
     >
       {hasToolbar ? (
-        <div className={PAGE_HERO_TOOLBAR}>
+        <div className={cn(PAGE_HERO_TOOLBAR, filterOverflowClass)}>
           {tabs ? (
             <div className={cn(PAGE_HERO_TAB_SCROLL, PAGE_HERO_TABS_SLOT)}>{tabs}</div>
           ) : null}
           {hasSearch || trailingNode ? (
-            <div ref={toolsRowRef} className={PAGE_HERO_TOOLS_ROW}>
+            <div ref={toolsRowRef} className={cn(PAGE_HERO_TOOLS_ROW, filterOverflowClass)}>
               {search ? (
                 <div
                   className={cn(

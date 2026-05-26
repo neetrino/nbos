@@ -13,18 +13,28 @@ import {
 type PageHeroToolbarContextValue = {
   searchActive: boolean;
   setSearchActive: (active: boolean) => void;
+  filterPanelOpen: boolean;
+  setFilterPanelOpen: (open: boolean) => void;
 };
 
 const PageHeroToolbarContext = createContext<PageHeroToolbarContextValue | null>(null);
 
 export function PageHeroToolbarProvider({ children }: { children: ReactNode }) {
   const [searchActive, setSearchActiveState] = useState(false);
+  const [filterPanelOpen, setFilterPanelOpenState] = useState(false);
 
   const setSearchActive = useCallback((active: boolean) => {
     setSearchActiveState((prev) => (prev === active ? prev : active));
   }, []);
 
-  const value = useMemo(() => ({ searchActive, setSearchActive }), [searchActive, setSearchActive]);
+  const setFilterPanelOpen = useCallback((open: boolean) => {
+    setFilterPanelOpenState((prev) => (prev === open ? prev : open));
+  }, []);
+
+  const value = useMemo(
+    () => ({ searchActive, setSearchActive, filterPanelOpen, setFilterPanelOpen }),
+    [searchActive, setSearchActive, filterPanelOpen, setFilterPanelOpen],
+  );
 
   return (
     <PageHeroToolbarContext.Provider value={value}>{children}</PageHeroToolbarContext.Provider>
@@ -55,6 +65,18 @@ function usePageHeroSearchExpansion(active: boolean): void {
   }, [setSearchActive]);
 }
 
+function usePageHeroFilterPanelOverflow(open: boolean): void {
+  const setFilterPanelOpen = usePageHeroToolbarOptional()?.setFilterPanelOpen;
+
+  useLayoutEffect(() => {
+    setFilterPanelOpen?.(open);
+  }, [open, setFilterPanelOpen]);
+
+  useLayoutEffect(() => {
+    return () => setFilterPanelOpen?.(false);
+  }, [setFilterPanelOpen]);
+}
+
 /** Wire search focus / filters / query into PageHero toolbar collapse. */
 export function useHeroSearchExpansionState({
   focused,
@@ -66,4 +88,5 @@ export function useHeroSearchExpansionState({
   hasQuery: boolean;
 }): void {
   usePageHeroSearchExpansion(focused || panelOpen || hasQuery);
+  usePageHeroFilterPanelOverflow(panelOpen);
 }

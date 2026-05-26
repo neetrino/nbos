@@ -12,6 +12,9 @@ export const PAGE_HERO_COMPACT_MAX_WIDTH_PX = 1280;
 /** shrink-0 — never collapse when a tall list/grid sibling shares a flex column (e.g. Projects “All”). */
 export const PAGE_HERO_SURFACE_CLIP = 'w-full min-w-0 shrink-0 overflow-hidden';
 
+/** Let IntegratedSearchFilters dropdown escape hero clipping while open. */
+export const PAGE_HERO_OVERFLOW_FILTERS_OPEN = 'overflow-visible';
+
 export const PAGE_HERO_SURFACE_PADDING = 'px-3 py-2.5 xl:px-4 xl:py-3';
 
 export const PAGE_HERO_TOOLBAR = [
