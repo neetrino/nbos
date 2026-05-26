@@ -1,12 +1,13 @@
 'use client';
 
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_SURFACE, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
 import {
   PAGE_HERO_SEARCH_SLOT,
   PAGE_HERO_SEARCH_SLOT_EXPANDED,
+  PAGE_HERO_SURFACE_CLIP,
   PAGE_HERO_SURFACE_PADDING,
   PAGE_HERO_TABS_SLOT,
   PAGE_HERO_TOOLBAR,
@@ -16,6 +17,7 @@ import {
 } from './page-hero-layout';
 import { PageHeroToolbarProvider, usePageHeroToolbar } from './page-hero-toolbar-context';
 import { usePageHeroCompactToolbar } from './use-page-hero-compact-toolbar';
+import { usePageHeroToolsRowOverflow } from './use-page-hero-tools-row-overflow';
 
 export interface PageHeroProps {
   title: string;
@@ -45,14 +47,33 @@ function PageHeroInner({
   className,
 }: PageHeroProps) {
   const sectionRef = useRef<HTMLElement>(null);
+  const toolsRowRef = useRef<HTMLDivElement>(null);
   useHeaderModuleTitle(title);
-  const { searchActive } = usePageHeroToolbar();
-  const isCompactToolbar = usePageHeroCompactToolbar(sectionRef);
-  const searchExpanded = searchActive && isCompactToolbar;
 
   const hasTrailing = Boolean(viewMode || trailing);
   const hasSearch = Boolean(search);
   const hasToolbar = Boolean(tabs || hasSearch || hasTrailing);
+
+  const { searchActive } = usePageHeroToolbar();
+  const isCompactToolbar = usePageHeroCompactToolbar(sectionRef);
+  const [overflowExpandLatch, setOverflowExpandLatch] = useState(false);
+  const toolsRowOverflow = usePageHeroToolsRowOverflow(
+    toolsRowRef,
+    hasSearch && hasTrailing && isCompactToolbar && !overflowExpandLatch,
+  );
+  const searchExpanded = isCompactToolbar && (searchActive || overflowExpandLatch);
+
+  useEffect(() => {
+    if (!isCompactToolbar) {
+      setOverflowExpandLatch(false);
+    }
+  }, [isCompactToolbar]);
+
+  useEffect(() => {
+    if (toolsRowOverflow && isCompactToolbar) {
+      setOverflowExpandLatch(true);
+    }
+  }, [toolsRowOverflow, isCompactToolbar]);
 
   if (!hasToolbar && !secondaryTabs) {
     return null;
@@ -65,7 +86,12 @@ function PageHeroInner({
   return (
     <section
       ref={sectionRef}
-      className={cn(PAGE_HERO_SURFACE, PAGE_HERO_SURFACE_PADDING, className)}
+      className={cn(
+        PAGE_HERO_SURFACE,
+        PAGE_HERO_SURFACE_CLIP,
+        PAGE_HERO_SURFACE_PADDING,
+        className,
+      )}
     >
       {hasToolbar ? (
         <div className={PAGE_HERO_TOOLBAR}>
@@ -73,7 +99,7 @@ function PageHeroInner({
             <div className={cn(PAGE_HERO_TAB_SCROLL, PAGE_HERO_TABS_SLOT)}>{tabs}</div>
           ) : null}
           {hasSearch || trailingNode ? (
-            <div className={PAGE_HERO_TOOLS_ROW}>
+            <div ref={toolsRowRef} className={PAGE_HERO_TOOLS_ROW}>
               {search ? (
                 <div
                   className={cn(
