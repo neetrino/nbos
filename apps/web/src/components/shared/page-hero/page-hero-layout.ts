@@ -42,16 +42,16 @@ export const PAGE_HERO_TRAILING_COLLAPSED = [
   'pointer-events-none',
 ].join(' ');
 
-/** Single tab size on all viewports. */
+/** Single tab size on all viewports (Drive-style pill tabs). */
 export const PAGE_HERO_TAB_BUTTON = [
-  'inline-flex items-center gap-1.5 rounded-full px-2 py-1.5',
-  'text-xs font-bold tracking-tight whitespace-nowrap transition-colors',
+  'inline-flex items-center gap-2 rounded-full px-3 py-2',
+  'text-sm font-bold tracking-tight whitespace-nowrap transition-colors sm:px-3.5',
 ].join(' ');
 
 export const PAGE_HERO_TAB_ICON_WRAP =
-  'flex size-6 shrink-0 items-center justify-center rounded-full';
+  'flex size-7 shrink-0 items-center justify-center rounded-full';
 
-export const PAGE_HERO_TAB_ICON = 'size-3.5';
+export const PAGE_HERO_TAB_ICON = 'size-4';
 
 /** View mode icon button — labels live in aria-label / title only. */
 export const PAGE_HERO_VIEW_BUTTON =
