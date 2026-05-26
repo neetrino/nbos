@@ -37,7 +37,7 @@ const DEFAULT_TITLES: Record<DeleteConfirmLevel, string> = {
 
 const DEFAULT_DESCRIPTIONS: Record<DeleteConfirmLevel, string> = {
   simple: 'This action cannot be undone.',
-  strong: 'Type the exact name below. Use Copy to paste it into the field.',
+  strong: 'Type the exact name below. Use Copy, then paste into the field.',
 };
 
 export function DeleteConfirmDialog({
@@ -67,7 +67,6 @@ export function DeleteConfirmDialog({
     if (!itemName.trim()) return;
     try {
       await navigator.clipboard.writeText(itemName);
-      setTypedName(itemName);
       toast.success('Copied');
     } catch {
       toast.error('Could not copy');
@@ -128,7 +127,7 @@ export function DeleteConfirmDialog({
           </p>
         ) : null}
 
-        <DialogFooter className="gap-2 sm:justify-end">
+        <DialogFooter className="gap-2 sm:justify-center">
           <Button
             type="button"
             variant="outline"
