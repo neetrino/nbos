@@ -4,6 +4,7 @@ import { DriveModule } from '../../drive/drive.module';
 import { DealsController } from './deals.controller';
 import { DealsService } from './deals.service';
 import { DealWonHandler } from './deal-won.handler';
+import { DealCommercialHandoffService } from './deal-commercial-handoff.service';
 
 @Module({
   imports: [AuditModule, DriveModule],

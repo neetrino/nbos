@@ -39,11 +39,7 @@ export const dealOrderSelect = {
   },
 } as const;
 
-export const dealCommercialFieldsSelect = {
-  wonMode: true,
-  exceptionReason: true,
-  exceptionApprovedAt: true,
-  exceptionPaymentExpectedAt: true,
+export const dealCommercialRelationsInclude = {
   exceptionApprovedBy: { select: userSummarySelect },
 } as const;
 
@@ -54,7 +50,7 @@ export const dealListInclude = {
   seller: { select: userSummarySelect },
   sellerAssistant: { select: userSummarySelect },
   pm: { select: userSummarySelect },
-  ...dealCommercialFieldsSelect,
+  ...dealCommercialRelationsInclude,
   orders: {
     select: dealOrderSelect,
   },
