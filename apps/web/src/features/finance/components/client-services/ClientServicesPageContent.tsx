@@ -18,6 +18,8 @@ import {
   ErrorState,
   IntegratedSearchFilters,
   LoadingState,
+  DeleteConfirmDialog,
+  useDeleteConfirm,
   useModuleHeroSlots,
 } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
@@ -79,6 +81,7 @@ function ClientServicesPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
+  const deleteConfirm = useDeleteConfirm();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -181,12 +184,9 @@ function ClientServicesPageInner() {
     [pathname, router, searchParams],
   );
 
-  const handleDelete = async (service: ClientServiceRecord) => {
-    if (!window.confirm(`Delete client service "${service.name}"? Linked finance records stay.`)) {
-      return;
-    }
+  const handleDelete = async (id: string) => {
     try {
-      await clientServicesApi.delete(service.id);
+      await clientServicesApi.delete(id);
       await fetchData();
     } catch (caught) {
       setError(getApiErrorMessage(caught, 'Client service could not be deleted.'));
@@ -371,7 +371,13 @@ function ClientServicesPageInner() {
                       >
                         <CheckSquare className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => void handleDelete(service)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          deleteConfirm.request({ id: service.id, name: service.name })
+                        }
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -394,6 +400,19 @@ function ClientServicesPageInner() {
         open={Boolean(openServiceIdFromUrl)}
         onOpenChange={handleServiceSheetOpenChange}
         onSaved={() => void fetchData()}
+      />
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        itemName={deleteConfirm.target?.name ?? ''}
+        onConfirm={() => {
+          const id = deleteConfirm.target?.id;
+          if (!id) return;
+          deleteConfirm.clear();
+          void handleDelete(id);
+        }}
       />
     </div>
   );

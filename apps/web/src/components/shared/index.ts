@@ -150,3 +150,10 @@ export {
   type EntityItemSummary,
   type EntityItemVariant,
 } from './entity-item';
+export {
+  DeleteConfirmDialog,
+  useDeleteConfirm,
+  type DeleteConfirmDialogProps,
+  type DeleteConfirmLevel,
+  type DeleteConfirmTarget,
+} from './delete-confirm';

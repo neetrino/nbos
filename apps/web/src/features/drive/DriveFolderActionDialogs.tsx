@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { DeleteConfirmDialog } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -159,47 +160,25 @@ export function DriveDeleteFolderDialog({
   const [busy, setBusy] = useState(false);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Delete folder</DialogTitle>
-          <DialogDescription>
-            {folder ? (
-              <>
-                Permanently remove{' '}
-                <span className="text-foreground font-medium">{folder.name}</span> from Drive? It
-                must be empty (no files and no subfolders).
-              </>
-            ) : (
-              'This folder cannot be deleted.'
-            )}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={busy || !folder}
-            onClick={async () => {
-              if (!folder) return;
-              setBusy(true);
-              try {
-                await onConfirm(folder.id);
-                onOpenChange(false);
-              } catch {
-                // Caller shows toast.
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            Delete
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DeleteConfirmDialog
+      level="simple"
+      open={open}
+      onOpenChange={onOpenChange}
+      itemName={folder?.name ?? ''}
+      title="Delete folder?"
+      isSubmitting={busy}
+      onConfirm={async () => {
+        if (!folder) return;
+        setBusy(true);
+        try {
+          await onConfirm(folder.id);
+          onOpenChange(false);
+        } catch {
+          // Caller shows toast.
+        } finally {
+          setBusy(false);
+        }
+      }}
+    />
   );
 }

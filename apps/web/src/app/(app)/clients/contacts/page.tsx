@@ -19,6 +19,8 @@ import {
   ErrorState,
   LoadingState,
   StatusBadge,
+  DeleteConfirmDialog,
+  useDeleteConfirm,
 } from '@/components/shared';
 import { ContactSheet } from '@/features/clients/components/ContactSheet';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
@@ -40,6 +42,11 @@ function ContactsPageContent() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const deleteConfirm = useDeleteConfirm();
+
+  function contactDisplayName(contact: Contact): string {
+    return `${contact.firstName} ${contact.lastName}`.trim() || 'Contact';
+  }
 
   const fetchContacts = useCallback(async () => {
     setLoading(true);
@@ -294,7 +301,25 @@ function ContactsPageContent() {
           }
         }}
         onUpdate={handleUpdate}
-        onDelete={handleDelete}
+        onDelete={(id) => {
+          const contact =
+            selectedContact?.id === id ? selectedContact : contacts.find((item) => item.id === id);
+          if (!contact) return;
+          deleteConfirm.request({ id, name: contactDisplayName(contact) });
+        }}
+      />
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        itemName={deleteConfirm.target?.name ?? ''}
+        onConfirm={() => {
+          const id = deleteConfirm.target?.id;
+          if (!id) return;
+          deleteConfirm.clear();
+          void handleDelete(id);
+        }}
       />
     </div>
   );

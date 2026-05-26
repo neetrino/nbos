@@ -19,6 +19,8 @@ import {
   ErrorState,
   LoadingState,
   StatusBadge,
+  DeleteConfirmDialog,
+  useDeleteConfirm,
 } from '@/components/shared';
 import { CompanySheet } from '@/features/clients/components/CompanySheet';
 import { CreateCompanyDialog } from '@/features/clients/components/CreateCompanyDialog';
@@ -45,6 +47,7 @@ function CompaniesPageContent() {
   const [showCreate, setShowCreate] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const deleteConfirm = useDeleteConfirm();
 
   const fetchCompanies = useCallback(async () => {
     setLoading(true);
@@ -287,7 +290,25 @@ function CompaniesPageContent() {
           }
         }}
         onUpdate={handleUpdate}
-        onDelete={handleDelete}
+        onDelete={(id) => {
+          const company =
+            selectedCompany?.id === id ? selectedCompany : companies.find((item) => item.id === id);
+          if (!company) return;
+          deleteConfirm.request({ id, name: company.name });
+        }}
+      />
+
+      <DeleteConfirmDialog
+        level="simple"
+        open={deleteConfirm.open}
+        onOpenChange={deleteConfirm.onOpenChange}
+        itemName={deleteConfirm.target?.name ?? ''}
+        onConfirm={() => {
+          const id = deleteConfirm.target?.id;
+          if (!id) return;
+          deleteConfirm.clear();
+          void handleDelete(id);
+        }}
       />
     </div>
   );
