@@ -5,6 +5,7 @@ export {
   PageHeroNavLinks,
   PageHeroSearch,
   ViewModeSwitch,
+  PageHeroPrimaryAction,
   ModuleHeroSlotProvider,
   useModuleHeroSlots,
   type PageHeroProps,
@@ -15,6 +16,7 @@ export {
   type PageHeroSearchProps,
   type ViewModeOption,
   type ViewModeSwitchProps,
+  type PageHeroPrimaryActionProps,
   type ModuleHeroSlots,
   type ModuleHeroSlotProviderProps,
 } from './page-hero';

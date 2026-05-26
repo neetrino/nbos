@@ -7,6 +7,7 @@ export {
 } from './PageHeroNavLinks';
 export { PageHeroSearch, type PageHeroSearchProps } from './PageHeroSearch';
 export { ViewModeSwitch, type ViewModeOption, type ViewModeSwitchProps } from './ViewModeSwitch';
+export { PageHeroPrimaryAction, type PageHeroPrimaryActionProps } from './PageHeroPrimaryAction';
 export {
   ModuleHeroSlotProvider,
   useModuleHeroSlots,

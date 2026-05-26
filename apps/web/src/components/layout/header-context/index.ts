@@ -7,9 +7,12 @@ export type {
 } from './header-context-types';
 export { HeaderContextBar } from './HeaderContextBar';
 export { HeaderContextNav } from './HeaderContextNav';
+export { HeaderModuleTitle, type HeaderModuleTitleProps } from './HeaderModuleTitle';
 export {
   HeaderContextProvider,
   useHeaderContext,
   useHeaderContextLayout,
   useHeaderContextResolved,
+  useHeaderModuleTitle,
+  useHeaderModuleTitleResolved,
 } from './HeaderContextProvider';

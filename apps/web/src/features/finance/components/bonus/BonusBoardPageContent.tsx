@@ -1,13 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Gift, Plus } from 'lucide-react';
+import { Gift } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   EmptyState,
   ErrorState,
   IntegratedSearchFilters,
   LoadingState,
+  PageHeroPrimaryAction,
   useModuleHeroSlots,
   ViewModeSwitch,
 } from '@/components/shared';
@@ -298,10 +299,7 @@ export function BonusBoardPageContent() {
             onExportScopeStatsCsv={handleExportScopeStatsCsv}
             onExportCsv={handleExportCsv}
           />
-          <Button type="button" onClick={() => setCreateOpen(true)}>
-            <Plus size={16} aria-hidden />
-            Create bonus
-          </Button>
+          <PageHeroPrimaryAction label="Create bonus" onClick={() => setCreateOpen(true)} />
         </>
       ),
     }),

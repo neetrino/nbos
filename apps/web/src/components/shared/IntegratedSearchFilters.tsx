@@ -11,7 +11,9 @@ import {
   IntegratedSearchFilterChips,
 } from './integrated-search-filters/integrated-search-filter-chips';
 import { IntegratedSearchFilterPanel } from './integrated-search-filters/integrated-search-filter-panel';
+import { useHeroSearchExpansionState } from './page-hero/use-hero-search-expansion';
 import { LIST_SEARCH_INPUT_PROPS } from './list-search-input-props';
+
 const EMPTY_FILTER_VALUES: Record<string, string> = {};
 
 function areFilterValuesEqual(
@@ -47,6 +49,7 @@ export function IntegratedSearchFilters({
 }: IntegratedSearchFiltersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const [draftFilters, setDraftFilters] = useState(filterValues);
   const hasFilters = Boolean(filters?.length);
 
@@ -56,7 +59,19 @@ export function IntegratedSearchFilters({
   );
   const hasQuery = search.trim().length > 0 || chips.length > 0;
 
+  useHeroSearchExpansionState({
+    focused: searchFocused,
+    panelOpen,
+    hasQuery,
+  });
+
   const panelFilterValues = panelOpen ? draftFilters : filterValues;
+
+  useEffect(() => {
+    if (panelOpen) {
+      setSearchFocused(true);
+    }
+  }, [panelOpen]);
 
   useEffect(() => {
     if (!panelOpen) return;
@@ -110,9 +125,19 @@ export function IntegratedSearchFilters({
   };
 
   const openPanel = () => {
+    setSearchFocused(true);
     if (!hasFilters || search.trim().length > 0) return;
     setDraftFilters(filterValues);
     setPanelOpen(true);
+  };
+
+  const handleSearchBlur = () => {
+    window.setTimeout(() => {
+      const active = document.activeElement;
+      if (containerRef.current?.contains(active)) return;
+      if (active instanceof Element && active.closest('[data-slot="select-content"]')) return;
+      setSearchFocused(false);
+    }, 0);
   };
 
   const handleSearchChange = (value: string) => {
@@ -141,6 +166,7 @@ export function IntegratedSearchFilters({
             onChange={(event) => handleSearchChange(event.target.value)}
             onFocus={openPanel}
             onClick={openPanel}
+            onBlur={handleSearchBlur}
             placeholder={searchPlaceholder}
             aria-label={searchPlaceholder}
             role="searchbox"

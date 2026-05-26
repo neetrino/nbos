@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { LIST_SEARCH_INPUT_PROPS } from '../list-search-input-props';
+import { useHeroSearchExpansionState } from './use-hero-search-expansion';
 
 export interface PageHeroSearchProps {
   value: string;
@@ -18,6 +20,11 @@ export function PageHeroSearch({
   placeholder = 'Search…',
   className,
 }: PageHeroSearchProps) {
+  const [focused, setFocused] = useState(false);
+  const hasQuery = value.trim().length > 0;
+
+  useHeroSearchExpansionState({ focused, panelOpen: false, hasQuery });
+
   return (
     <div className={cn('relative min-w-0', className)}>
       <Search
@@ -28,6 +35,8 @@ export function PageHeroSearch({
         {...LIST_SEARCH_INPUT_PROPS}
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         placeholder={placeholder}
         aria-label={placeholder}
         role="searchbox"
