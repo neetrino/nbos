@@ -7,6 +7,7 @@ import {
   type HeaderContextContent,
   type HeaderNavItem,
 } from '@/components/layout/header-context';
+import { FINANCE_HEADER_ZONE_ACCENTS } from '@/features/finance/constants/finance-header-zone-accents';
 import { FINANCE_HEADER_ZONES } from '@/features/finance/constants/finance-header-zones';
 import {
   isFinanceHeaderContextPath,
@@ -35,6 +36,7 @@ export function FinanceHeaderContextLayout() {
       label: zone.label,
       href: readFinanceSectionHref(zone.zone),
       isActive: (path) => isFinanceSectionPath(path, zone.zone),
+      accent: FINANCE_HEADER_ZONE_ACCENTS[zone.zone],
     }));
 
     if (items.length === 0) {
