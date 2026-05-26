@@ -1,9 +1,12 @@
 /**
  * Global page hero toolbar layout (all viewport sizes).
  * Module title is always in the app header via useHeaderModuleTitle.
+ *
+ * Toolbar uses flex-wrap: one row while tabs + tools fit; second row only when
+ * the tools strip needs its minimum width (content-driven, not viewport breakpoints).
  */
 
-/** Hero toolbar narrower than this (px) — search can expand over trailing actions. */
+/** Hero card narrower than this (px) — search can expand over trailing actions. */
 export const PAGE_HERO_COMPACT_MAX_WIDTH_PX = 1280;
 
 export const PAGE_HERO_SURFACE_CLIP = 'w-full min-w-0 overflow-hidden';
@@ -11,19 +14,16 @@ export const PAGE_HERO_SURFACE_CLIP = 'w-full min-w-0 overflow-hidden';
 export const PAGE_HERO_SURFACE_PADDING = 'px-3 py-2.5 xl:px-4 xl:py-3';
 
 export const PAGE_HERO_TOOLBAR = [
-  'flex min-w-0 flex-col gap-2 overflow-hidden',
-  'lg:flex-row lg:flex-nowrap lg:items-center lg:gap-2.5',
-  'xl:gap-3',
+  'flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-2',
+  'overflow-hidden',
 ].join(' ');
 
-export const PAGE_HERO_TABS_SLOT = [
-  'min-w-0 max-w-full shrink-0',
-  'lg:max-w-[min(100%,26rem)]',
-].join(' ');
+export const PAGE_HERO_TABS_SLOT = 'min-w-0 max-w-full shrink-0';
 
+/** flex-basis 24rem — wraps to row 2 when tabs leave less than ~24rem for tools. */
 export const PAGE_HERO_TOOLS_ROW = [
-  'flex w-full min-w-0 flex-nowrap items-center gap-2 overflow-hidden',
-  'lg:min-w-0 lg:flex-1 lg:basis-0',
+  'flex min-w-0 max-w-full flex-nowrap items-center gap-2 overflow-hidden',
+  'min-w-[24rem] flex-[1_1_24rem]',
 ].join(' ');
 
 export const PAGE_HERO_SEARCH_SLOT =

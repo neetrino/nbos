@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { cn } from '@/lib/utils';
 import { PAGE_HERO_SURFACE, PAGE_HERO_TAB_SCROLL } from './page-hero-constants';
@@ -56,24 +56,11 @@ function PageHeroInner({
 
   const { searchActive } = usePageHeroToolbar();
   const isCompactToolbar = usePageHeroCompactToolbar(sectionRef);
-  const [overflowExpandLatch, setOverflowExpandLatch] = useState(false);
   const toolsRowOverflow = usePageHeroToolsRowOverflow(
     toolsRowRef,
-    hasSearch && hasTrailing && isCompactToolbar && !overflowExpandLatch,
+    hasSearch && hasTrailing && isCompactToolbar,
   );
-  const searchExpanded = isCompactToolbar && (searchActive || overflowExpandLatch);
-
-  useEffect(() => {
-    if (!isCompactToolbar) {
-      setOverflowExpandLatch(false);
-    }
-  }, [isCompactToolbar]);
-
-  useEffect(() => {
-    if (toolsRowOverflow && isCompactToolbar) {
-      setOverflowExpandLatch(true);
-    }
-  }, [toolsRowOverflow, isCompactToolbar]);
+  const searchExpanded = isCompactToolbar && (searchActive || toolsRowOverflow);
 
   if (!hasToolbar && !secondaryTabs) {
     return null;
