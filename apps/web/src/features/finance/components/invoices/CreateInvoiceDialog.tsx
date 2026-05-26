@@ -11,36 +11,19 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { RelationPickerField } from '@/components/shared';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { FolderKanban } from 'lucide-react';
-import { useProjectRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
-import { useRelationPickerActions } from '@/components/shared/relation-picker';
-import { INVOICE_TYPES, formatAmount } from '@/features/finance/constants/finance';
+import { formatAmount } from '@/features/finance/constants/finance';
 import type { Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
 import { canSubmitCreateInvoice, type CreateInvoiceFormState } from './create-invoice-dialog-utils';
 import {
   useCreateInvoiceDialogState,
+  type CreateInvoiceDialogOuterProps,
   type CreateInvoiceDialogState,
 } from './use-create-invoice-dialog-state';
 
-interface CreateInvoiceDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onCreated: () => Promise<void> | void;
-  order?: Order | null;
-  subscriptionId?: string | null;
-  initialProjectId?: string | null;
-}
+export type CreateInvoiceDialogProps = CreateInvoiceDialogOuterProps;
 
 export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
   const state = useCreateInvoiceDialogState(props);
@@ -49,7 +32,7 @@ export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
           <DialogTitle>{dialogTitle(props.order, state.subscriptionDetail)}</DialogTitle>
           <DialogDescription>
@@ -76,7 +59,7 @@ function dialogDescription(
   if (order) return `Generate an invoice for ${order.code}.`;
   if (subscriptionDetail) return `Bill against subscription ${subscriptionDetail.code}.`;
   if (subscriptionId) return 'Loading subscription context…';
-  return 'Create a manual invoice.';
+  return 'Enter the amount to create an invoice card. Link company and project on the card before awaiting payment.';
 }
 
 function computeSubscriptionBlocked(
@@ -102,7 +85,7 @@ function InvoiceForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <InvoiceContextFields state={state} order={order} />
+      <InvoiceContextSummary state={state} order={order} />
       <InvoiceAmountFields form={state.form} setForm={state.setForm} />
       {state.error ? (
         <p className="text-destructive text-sm" role="alert">
@@ -121,7 +104,7 @@ function InvoiceForm({
   );
 }
 
-function InvoiceContextFields({
+function InvoiceContextSummary({
   state,
   order,
 }: {
@@ -152,28 +135,7 @@ function InvoiceContextFields({
     return <SubscriptionInvoiceContext subscription={state.subscriptionDetail} />;
   }
 
-  return <InvoiceProjectPicker state={state} />;
-}
-
-function InvoiceProjectPicker({ state }: { state: CreateInvoiceDialogState }) {
-  const searchProjects = useProjectRelationSearch();
-  const projectPicker = useRelationPickerActions('project');
-  const linked = state.projects.find((p) => p.id === state.form.projectId);
-  const selectionLabel = linked ? `${linked.code} · ${linked.name}` : null;
-
-  return (
-    <RelationPickerField
-      label="Project"
-      entityKind="project"
-      value={state.form.projectId || null}
-      selectionLabel={selectionLabel}
-      placeholder="Search projects…"
-      icon={<FolderKanban size={12} />}
-      onSearch={searchProjects}
-      onSelect={(id) => state.setForm({ ...state.form, projectId: id })}
-      {...projectPicker}
-    />
-  );
+  return null;
 }
 
 function OrderInvoiceContext({ order }: { order: Order }) {
@@ -213,7 +175,7 @@ function InvoiceAmountFields({
   setForm: (form: CreateInvoiceFormState) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-3">
       <div>
         <Label>Amount *</Label>
         <Input
@@ -222,34 +184,20 @@ function InvoiceAmountFields({
           step="1"
           value={form.amount}
           onChange={(event) => setForm({ ...form, amount: event.target.value })}
+          autoFocus
         />
       </div>
       <div>
-        <Label>Due Date</Label>
+        <Label>Due date</Label>
         <NbosDatePicker
           value={form.dueDate}
           onChange={(dueDate) => setForm({ ...form, dueDate })}
           variant="extended"
           aria-label="Due date"
         />
-      </div>
-      <div className="col-span-2">
-        <Label>Type *</Label>
-        <Select
-          value={form.type || undefined}
-          onValueChange={(value) => setForm({ ...form, type: value ?? '' })}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            {INVOICE_TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Defaults to 10 days from creation when left empty.
+        </p>
       </div>
     </div>
   );

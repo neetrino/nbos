@@ -7,6 +7,8 @@ const TAX_STATUSES = new Set(['TAX', 'TAX_FREE']);
 export type UpdateInvoiceGeneralInput = {
   amount?: number;
   taxStatus?: string;
+  companyId?: string | null;
+  projectId?: string | null;
 };
 
 export function parseUpdateInvoiceGeneralInput(
@@ -28,7 +30,20 @@ export function parseUpdateInvoiceGeneralInput(
     out.taxStatus = body.taxStatus;
   }
 
-  if (out.amount === undefined && out.taxStatus === undefined) {
+  if (body.companyId !== undefined) {
+    out.companyId = body.companyId?.trim() ? body.companyId.trim() : null;
+  }
+
+  if (body.projectId !== undefined) {
+    out.projectId = body.projectId?.trim() ? body.projectId.trim() : null;
+  }
+
+  if (
+    out.amount === undefined &&
+    out.taxStatus === undefined &&
+    out.companyId === undefined &&
+    out.projectId === undefined
+  ) {
     throw new BadRequestException('No fields to update');
   }
 
@@ -44,6 +59,7 @@ export async function applyInvoiceGeneralUpdate(
     where: { id },
     select: {
       id: true,
+      type: true,
       amount: true,
       taxStatus: true,
       payments: { select: { amount: true } },
@@ -51,6 +67,13 @@ export async function applyInvoiceGeneralUpdate(
   });
   if (!invoice) {
     throw new NotFoundException(`Invoice ${id} not found`);
+  }
+
+  if (
+    (input.companyId !== undefined || input.projectId !== undefined) &&
+    invoice.type !== 'MANUAL'
+  ) {
+    throw new BadRequestException('Company and project can only be linked on manual invoices');
   }
 
   const paid = sumAmounts(invoice.payments);
@@ -72,6 +95,14 @@ export async function applyInvoiceGeneralUpdate(
       data.officialInvoiceCancelledAt = null;
       data.govInvoiceId = null;
     }
+  }
+
+  if (input.companyId !== undefined) {
+    data.company = input.companyId ? { connect: { id: input.companyId } } : { disconnect: true };
+  }
+
+  if (input.projectId !== undefined) {
+    data.project = input.projectId ? { connect: { id: input.projectId } } : { disconnect: true };
   }
 
   if (Object.keys(data).length === 0) return;

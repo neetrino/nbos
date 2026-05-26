@@ -81,7 +81,7 @@ export function InvoiceSheet({
     const next = createInvoiceGeneralDraft(invoice);
     setGeneralDraft(next);
     setGeneralSnap(next);
-  }, [invoice?.id, invoice?.amount, invoice?.taxStatus]);
+  }, [invoice?.id, invoice?.amount, invoice?.taxStatus, invoice?.companyId, invoice?.projectId]);
 
   const patchGeneralDraft = useCallback((partial: Partial<InvoiceGeneralDraft>) => {
     setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));

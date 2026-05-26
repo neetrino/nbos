@@ -237,7 +237,6 @@ function InvoicesPageInner() {
         onOpenChange={state.handleCreateDialogOpenChange}
         onCreated={state.handleInvoiceCreated}
         subscriptionId={subscriptionIdFromUrl}
-        initialProjectId={portfolioCreateInvoiceFromUrl ? portfolioProjectIdFromUrl : null}
       />
     </div>
   );

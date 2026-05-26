@@ -10,6 +10,7 @@ import {
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { DetailSheetSection } from '@/components/shared';
 import { InvoiceGeneralBillingFields } from './InvoiceGeneralBillingFields';
+import { InvoiceManualContextFields } from './InvoiceManualContextFields';
 import type { InvoiceGeneralDraft } from '@/features/finance/utils/invoice-general-form-state';
 
 interface InvoiceGeneralTabProps {
@@ -43,6 +44,18 @@ export function InvoiceGeneralTab({
           billingFields={billingFields}
         />
       </DetailSheetSection>
+
+      {invoice.type === 'MANUAL' && draft && onInvoiceUpdated ? (
+        <DetailSheetSection title="Client context">
+          <InvoiceManualContextFields
+            invoice={invoice}
+            draft={draft}
+            patchDraft={patchDraft}
+            gateRequiredFields={gateRequiredFields}
+            disabled={formDisabled}
+          />
+        </DetailSheetSection>
+      ) : null}
 
       <InvoiceOfficialSection invoice={invoice} onInvoiceUpdated={onInvoiceUpdated} />
 

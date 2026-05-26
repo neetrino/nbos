@@ -31,15 +31,17 @@ import {
   parseUpdateInvoiceGeneralInput,
   type UpdateInvoiceGeneralInput,
 } from './invoice-general-update';
+import { resolveCreateInvoiceType, resolveInvoiceDueDate } from './invoice-create-resolver';
+import { resolveInvoiceProjectRow } from './invoice-project-resolve';
 
 interface CreateInvoiceDto {
   orderId?: string;
   subscriptionId?: string;
-  projectId: string;
+  projectId?: string;
   companyId?: string;
   clientServiceRecordId?: string;
   amount: number;
-  type: string;
+  type?: string;
   dueDate?: string;
 }
 
@@ -144,6 +146,7 @@ export class InvoicesService {
       this.prisma.invoice.findMany({
         where,
         include: {
+          project: { select: { id: true, name: true } },
           order: {
             select: { id: true, code: true, project: { select: { id: true, name: true } } },
           },
@@ -163,7 +166,7 @@ export class InvoicesService {
       items: items.map((invoice) =>
         attachInvoicePaymentCoverage({
           ...invoice,
-          project: invoice.order?.project ?? invoice.subscription?.project ?? null,
+          project: resolveInvoiceProjectRow(invoice),
         }),
       ),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
@@ -174,6 +177,7 @@ export class InvoicesService {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
       include: {
+        project: true,
         order: { include: { project: true } },
         subscription: { include: { project: true } },
         company: true,
@@ -183,7 +187,7 @@ export class InvoicesService {
     if (!invoice) throw new NotFoundException(`Invoice ${id} not found`);
     return attachInvoicePaymentCoverage({
       ...invoice,
-      project: invoice.order?.project ?? invoice.subscription?.project ?? null,
+      project: resolveInvoiceProjectRow(invoice),
     });
   }
 
@@ -196,9 +200,9 @@ export class InvoicesService {
     });
     const code = await this.generateCode();
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
-
-    const due = data.dueDate ? new Date(data.dueDate) : undefined;
-    const bookedAt = due ?? new Date();
+    const type = await resolveCreateInvoiceType(this.prisma, data);
+    const due = resolveInvoiceDueDate(data.dueDate);
+    const bookedAt = due;
     await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
 
     const invoice = await this.prisma.invoice.create({
@@ -206,16 +210,16 @@ export class InvoicesService {
         code,
         orderId: data.orderId,
         subscriptionId: data.subscriptionId,
-        projectId: data.projectId,
+        projectId: data.projectId?.trim() || null,
         companyId: data.companyId,
         clientServiceRecordId: data.clientServiceRecordId,
         amount: data.amount,
         taxStatus,
-        type: data.type as InvoiceTypeEnum,
+        type,
         dueDate: due,
-        ...(data.subscriptionId && data.type === 'SUBSCRIPTION'
+        ...(data.subscriptionId && type === 'SUBSCRIPTION'
           ? {
-              coverageStartMonth: financeCalendarMonthKey(due ?? new Date()),
+              coverageStartMonth: financeCalendarMonthKey(due),
               coverageMonthCount: 1,
             }
           : {}),
@@ -235,7 +239,7 @@ export class InvoicesService {
       amount: data.amount,
       bookedAt,
       companyId: data.companyId ?? null,
-      projectId: data.projectId,
+      projectId: data.projectId?.trim() || null,
       productId: order?.productId ?? null,
       orderId: data.orderId ?? null,
     });
@@ -377,14 +381,6 @@ export class InvoicesService {
   }
 
   private assertCreateInvoiceInput(data: CreateInvoiceDto) {
-    if (!data.projectId?.trim()) {
-      throw new BadRequestException('projectId is required to create an invoice');
-    }
-
-    if (!data.type?.trim()) {
-      throw new BadRequestException('type is required to create an invoice');
-    }
-
     if (!Number.isFinite(data.amount) || data.amount <= 0) {
       throw new BadRequestException('Invoice amount must be greater than zero');
     }

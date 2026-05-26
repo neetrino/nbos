@@ -77,23 +77,35 @@ describe('InvoicesService create', () => {
     );
   });
 
+  it('creates manual invoice without project context', async () => {
+    const createdInvoice = {
+      id: 'manual-1',
+      code: 'INV-2026-0099',
+      amount: 50000,
+      type: 'MANUAL',
+      payments: [],
+      _count: { payments: 0 },
+    };
+    prisma.invoice.create.mockResolvedValue(createdInvoice);
+    prisma.invoice.findUnique.mockResolvedValue(createdInvoice);
+
+    await service.create({ amount: 50000 });
+
+    expect(prisma.invoice.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          type: 'MANUAL',
+          projectId: null,
+          dueDate: expect.any(Date),
+        }),
+      }),
+    );
+  });
+
   it('rejects invoices without positive amount', async () => {
     await expect(
       service.create({
-        projectId: 'p1',
         amount: 0,
-        type: 'PREPAYMENT',
-      }),
-    ).rejects.toThrow(BadRequestException);
-    expect(prisma.invoice.create).not.toHaveBeenCalled();
-  });
-
-  it('rejects invoices without a project context', async () => {
-    await expect(
-      service.create({
-        projectId: '',
-        amount: 50000,
-        type: 'PREPAYMENT',
       }),
     ).rejects.toThrow(BadRequestException);
     expect(prisma.invoice.create).not.toHaveBeenCalled();

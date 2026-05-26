@@ -1,9 +1,9 @@
 export interface CreateInvoiceInput {
   orderId?: string;
   subscriptionId?: string;
-  projectId: string;
+  projectId?: string;
   companyId?: string;
   amount: number;
-  type: string;
+  type?: string;
   dueDate?: string;
 }

@@ -193,7 +193,6 @@ export function DealGeneralTab({
           projectId={projectId}
           firstOrder={firstOrder}
           taxStatus={taxStatus}
-          canCreateInvoice={canCreateInvoice(deal, taxStatus)}
           onRefresh={onRefresh}
           onOpenTaskTab={onOpenTaskTab}
         />
@@ -213,20 +212,5 @@ function getFilteredProductTypeOptions(
   if (allowed.length === 0) return productTypeOptions;
   return productTypeOptions.filter(
     (option) => allowed.includes(option.value) || option.value === 'OTHER',
-  );
-}
-
-function canCreateInvoice(deal: Deal, taxStatus: string) {
-  return Boolean(
-    deal.amount != null &&
-    Number(deal.amount) > 0 &&
-    deal.paymentType &&
-    deal.contactId &&
-    deal.type &&
-    taxStatus &&
-    (taxStatus !== 'TAX' || deal.companyId) &&
-    deal.status !== 'WON' &&
-    deal.status !== 'FAILED' &&
-    (deal.orders?.length ?? 0) === 0,
   );
 }

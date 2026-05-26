@@ -13,8 +13,8 @@ const order: Order = {
   id: 'ord-1',
   code: 'ORD-2026-0001',
   projectId: 'project-1',
-  type: 'DEVELOPMENT',
-  paymentType: 'PREPAYMENT',
+  type: 'PRODUCT',
+  paymentType: 'CLASSIC',
   totalAmount: '120000',
   amount: '120000',
   paidAmount: 40000,
@@ -31,19 +31,11 @@ const order: Order = {
 describe('create invoice dialog utils', () => {
   it('pre-fills order scoped invoice amount from outstanding order coverage', () => {
     expect(getOrderOutstandingAmount(order)).toBe(80000);
-    expect(getInitialInvoiceForm(order)).toEqual({
-      projectId: 'project-1',
-      amount: '80000',
-      type: 'DEVELOPMENT',
-      dueDate: '',
-    });
+    expect(getInitialInvoiceForm(order).amount).toBe('80000');
   });
 
   it('builds a typed order-scoped create invoice payload', () => {
-    const payload = buildCreateInvoicePayload(
-      { projectId: 'ignored', amount: '80000', type: 'DEVELOPMENT', dueDate: '2026-04-30' },
-      order,
-    );
+    const payload = buildCreateInvoicePayload({ amount: '80000', dueDate: '2026-04-30' }, order);
 
     expect(payload).toEqual({
       projectId: 'project-1',
@@ -74,23 +66,13 @@ describe('create invoice dialog utils', () => {
     invoices: [],
   };
 
-  it('pre-fills subscription invoice form from monthly amount and SUBSCRIPTION type', () => {
-    expect(getInitialInvoiceFormFromSubscription(subscription)).toEqual({
-      projectId: 'project-1',
-      amount: '50000',
-      type: 'SUBSCRIPTION',
-      dueDate: '',
-    });
+  it('pre-fills subscription invoice form from monthly amount', () => {
+    expect(getInitialInvoiceFormFromSubscription(subscription).amount).toBe('50000');
   });
 
   it('builds subscription-scoped create invoice payload', () => {
     const payload = buildCreateInvoicePayload(
-      {
-        projectId: 'project-1',
-        amount: '50000',
-        type: 'SUBSCRIPTION',
-        dueDate: '2026-05-15',
-      },
+      { amount: '50000', dueDate: '2026-05-15' },
       undefined,
       subscription,
     );
@@ -105,15 +87,15 @@ describe('create invoice dialog utils', () => {
     });
   });
 
-  it('requires project, type and positive amount before submit', () => {
-    expect(
-      canSubmitCreateInvoice({ projectId: 'p1', amount: '1', type: 'DEVELOPMENT', dueDate: '' }),
-    ).toBe(true);
-    expect(
-      canSubmitCreateInvoice({ projectId: '', amount: '1', type: 'DEVELOPMENT', dueDate: '' }),
-    ).toBe(false);
-    expect(
-      canSubmitCreateInvoice({ projectId: 'p1', amount: '0', type: 'DEVELOPMENT', dueDate: '' }),
-    ).toBe(false);
+  it('builds manual payload with amount only', () => {
+    expect(buildCreateInvoicePayload({ amount: '12000', dueDate: '' })).toEqual({
+      amount: 12000,
+      dueDate: undefined,
+    });
+  });
+
+  it('requires positive amount before submit', () => {
+    expect(canSubmitCreateInvoice({ amount: '1', dueDate: '' })).toBe(true);
+    expect(canSubmitCreateInvoice({ amount: '0', dueDate: '' })).toBe(false);
   });
 });

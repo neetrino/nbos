@@ -68,10 +68,11 @@ export class InvoicesController {
     body: {
       orderId?: string;
       subscriptionId?: string;
-      projectId: string;
+      projectId?: string;
       companyId?: string;
+      clientServiceRecordId?: string;
       amount: number;
-      type: string;
+      type?: string;
       dueDate?: string;
     },
   ) {
@@ -79,10 +80,16 @@ export class InvoicesController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update invoice amount and/or tax status' })
+  @ApiOperation({ summary: 'Update invoice amount, tax status, and manual context links' })
   async updateGeneral(
     @Param('id') id: string,
-    @Body() body: { amount?: number; taxStatus?: string },
+    @Body()
+    body: {
+      amount?: number;
+      taxStatus?: string;
+      companyId?: string | null;
+      projectId?: string | null;
+    },
   ) {
     return this.invoicesService.updateGeneral(id, body);
   }

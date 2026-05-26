@@ -37,7 +37,7 @@ export interface Invoice {
   code: string;
   orderId: string | null;
   subscriptionId: string | null;
-  projectId: string;
+  projectId: string | null;
   companyId: string | null;
   amount: string;
   currency: string;
@@ -423,7 +423,15 @@ export const invoicesApi = {
     const resp = await api.post<Invoice>('/api/finance/invoices', data);
     return resp.data;
   },
-  async updateGeneral(id: string, data: { amount?: number; taxStatus?: string }): Promise<Invoice> {
+  async updateGeneral(
+    id: string,
+    data: {
+      amount?: number;
+      taxStatus?: string;
+      companyId?: string | null;
+      projectId?: string | null;
+    },
+  ): Promise<Invoice> {
     const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}`, data);
     return resp.data;
   },

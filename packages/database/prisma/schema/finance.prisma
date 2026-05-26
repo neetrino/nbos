@@ -75,6 +75,7 @@ enum InvoiceTypeEnum {
   SUBSCRIPTION
   DOMAIN
   SERVICE
+  MANUAL
 }
 
 enum InvoiceMoneyStatusEnum {
@@ -91,7 +92,7 @@ model Invoice {
   code                  String                 @unique
   orderId               String?                @map("order_id")
   subscriptionId        String?                @map("subscription_id")
-  projectId             String                 @map("project_id")
+  projectId             String?                @map("project_id")
   companyId             String?                @map("company_id")
   clientServiceRecordId String?                @map("client_service_record_id")
   amount                Decimal                @db.Decimal(12, 2)
@@ -116,6 +117,7 @@ model Invoice {
 
   order               Order?               @relation(fields: [orderId], references: [id])
   subscription        Subscription?        @relation(fields: [subscriptionId], references: [id])
+  project             Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
   company             Company?             @relation(fields: [companyId], references: [id])
   clientServiceRecord ClientServiceRecord? @relation(fields: [clientServiceRecordId], references: [id], onDelete: SetNull)
   payments            Payment[]

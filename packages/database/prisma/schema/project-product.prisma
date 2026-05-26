@@ -36,6 +36,7 @@ model Project {
   partnerAccruals           PartnerAccrual[]
   partnerServiceTerms       PartnerServiceTerm[]
   additionalContacts        ProjectAdditionalContact[]
+  invoices                  Invoice[]
 
   @@map("projects")
 }

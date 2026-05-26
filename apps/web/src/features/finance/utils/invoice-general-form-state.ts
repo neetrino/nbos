@@ -3,17 +3,23 @@ import type { Invoice } from '@/lib/api/finance';
 export type InvoiceGeneralDraft = {
   amount: string;
   taxStatus: string;
+  companyId: string | null;
+  projectId: string | null;
 };
 
 export type UpdateInvoiceGeneralPayload = {
   amount?: number;
   taxStatus?: string;
+  companyId?: string | null;
+  projectId?: string | null;
 };
 
 export function createInvoiceGeneralDraft(invoice: Invoice): InvoiceGeneralDraft {
   return {
     amount: invoice.amount,
     taxStatus: invoice.taxStatus,
+    companyId: invoice.companyId,
+    projectId: invoice.projectId,
   };
 }
 
@@ -38,9 +44,22 @@ export function buildInvoiceGeneralPatch(
     out.taxStatus = draft.taxStatus;
   }
 
+  if (draft.companyId !== snap.companyId) {
+    out.companyId = draft.companyId;
+  }
+
+  if (draft.projectId !== snap.projectId) {
+    out.projectId = draft.projectId;
+  }
+
   return out;
 }
 
 export function isInvoiceGeneralDirty(a: InvoiceGeneralDraft, b: InvoiceGeneralDraft): boolean {
-  return a.amount !== b.amount || a.taxStatus !== b.taxStatus;
+  return (
+    a.amount !== b.amount ||
+    a.taxStatus !== b.taxStatus ||
+    a.companyId !== b.companyId ||
+    a.projectId !== b.projectId
+  );
 }
