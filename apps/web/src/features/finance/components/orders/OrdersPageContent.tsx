@@ -2,6 +2,7 @@ import { Plus, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import type { OrderReconciliationGap } from '@/features/finance/constants/order-reconciliation-drilldown';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { Order } from '@/lib/api/finance';
 import type { OrderViewMode } from './order-page-types';
 import { OrdersBoardView } from './OrdersBoardView';
@@ -11,6 +12,7 @@ import { ReconciliationGapBanner } from './orders-page-helpers';
 
 interface OrdersPageContentProps {
   orders: Order[];
+  boardScope: BoardLifecycleScope;
   view: OrderViewMode;
   loading: boolean;
   error: string | null;
@@ -27,6 +29,7 @@ interface OrdersPageContentProps {
 
 export function OrdersPageContent({
   orders,
+  boardScope,
   view,
   loading,
   error,
@@ -63,6 +66,7 @@ export function OrdersPageContent({
           ) : (
             <OrdersListOrBoard
               view={view}
+              boardScope={boardScope}
               orders={orders}
               onOrderClick={onOrderClick}
               onCreateInvoice={onCreateInvoice}
@@ -76,11 +80,13 @@ export function OrdersPageContent({
 
 function OrdersListOrBoard({
   view,
+  boardScope,
   orders,
   onOrderClick,
   onCreateInvoice,
 }: {
   view: OrderViewMode;
+  boardScope: BoardLifecycleScope;
   orders: Order[];
   onOrderClick: (order: Order) => void;
   onCreateInvoice: (order: Order) => void;
@@ -89,6 +95,7 @@ function OrdersListOrBoard({
     return (
       <OrdersBoardView
         orders={orders}
+        boardScope={boardScope}
         onOrderClick={onOrderClick}
         onCreateInvoice={onCreateInvoice}
       />
@@ -96,7 +103,12 @@ function OrdersListOrBoard({
   }
 
   return (
-    <OrdersTable orders={orders} onOrderClick={onOrderClick} onCreateInvoice={onCreateInvoice} />
+    <OrdersTable
+      orders={orders}
+      boardScope={boardScope}
+      onOrderClick={onOrderClick}
+      onCreateInvoice={onCreateInvoice}
+    />
   );
 }
 

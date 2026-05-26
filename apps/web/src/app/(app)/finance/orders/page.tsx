@@ -13,9 +13,16 @@ import { Button } from '@/components/ui/button';
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { OrderDetailSheet } from '@/features/finance/components/orders/OrderDetailSheet';
-import { ORDER_FILTER_CONFIGS } from '@/features/finance/components/orders/order-filter-configs';
+import { buildOrderFilterConfigs } from '@/features/finance/components/orders/order-filter-configs';
 import { OrdersPageContent } from '@/features/finance/components/orders/OrdersPageContent';
 import { ORDER_VIEW_OPTIONS } from '@/features/finance/components/orders/order-view-options';
+import { ORDER_BOARD_STAGES } from '@/features/finance/constants/order-board-lifecycle';
+import {
+  DEFAULT_BOARD_LIFECYCLE_SCOPE,
+  matchesBoardLifecycleScope,
+  resolveBoardLifecycleScope,
+  type BoardLifecycleScope,
+} from '@/features/shared/board-lifecycle';
 import { useOrdersCsvExport } from '@/features/finance/components/orders/use-orders-csv-export';
 import { useOrdersPageState } from '@/features/finance/components/orders/useOrdersPageState';
 import { useOrdersScopeStatsCsvExport } from '@/features/finance/components/orders/use-orders-scope-stats-csv-export';
@@ -53,9 +60,22 @@ function OrdersPageInner() {
     statsQuery: state.orderStatsQueryParams,
   });
 
+  const boardScope = resolveBoardLifecycleScope(state.filters.boardScope);
+  const hasOrderStatusFilter = Boolean(state.filters.status) && state.filters.status !== 'all';
+
+  const displayOrders = useMemo(() => {
+    if (hasOrderStatusFilter) return state.orders;
+    return state.orders.filter((order) =>
+      matchesBoardLifecycleScope(order.status, ORDER_BOARD_STAGES, boardScope),
+    );
+  }, [state.orders, boardScope, hasOrderStatusFilter]);
+
+  const orderFilterConfigs = useMemo(() => buildOrderFilterConfigs(), []);
+
   const orderFilterValues = useMemo(
     () => ({
       [FINANCE_PERIOD_FILTER_KEY]: state.period,
+      boardScope: state.filters.boardScope ?? DEFAULT_BOARD_LIFECYCLE_SCOPE,
       ...state.filters,
     }),
     [state.filters, state.period],
@@ -67,7 +87,14 @@ function OrdersPageInner() {
         state.setPeriod(parseFinancePeriodFilterValue(value));
         return;
       }
-      state.setFilters((prev) => ({ ...prev, [key]: value }));
+      state.setFilters((prev) => {
+        if (key === 'boardScope' && value === DEFAULT_BOARD_LIFECYCLE_SCOPE) {
+          const next = { ...prev };
+          delete next.boardScope;
+          return next;
+        }
+        return { ...prev, [key]: value };
+      });
     },
     [state],
   );
@@ -95,7 +122,7 @@ function OrdersPageInner() {
           search={state.search}
           onSearchChange={state.setSearch}
           searchPlaceholder="Search by order, project, product, deal, partner…"
-          filters={ORDER_FILTER_CONFIGS}
+          filters={orderFilterConfigs}
           filterValues={orderFilterValues}
           onFilterChange={handleOrderFilterChange}
           onClearAll={handleClearOrderFilters}
@@ -130,7 +157,7 @@ function OrdersPageInner() {
       handleExportCsv,
       handleExportScopeStatsCsv,
       handleOrderFilterChange,
-      orderFilterValues,
+      orderFilterConfigs,
       state,
     ],
   );
@@ -141,7 +168,8 @@ function OrdersPageInner() {
     <div className="flex h-full min-h-0 flex-col gap-5">
       <div className="flex min-h-0 flex-1 flex-col">
         <OrdersPageContent
-          orders={state.orders}
+          orders={displayOrders}
+          boardScope={boardScope as BoardLifecycleScope}
           view={state.view}
           loading={state.loading}
           error={state.error}

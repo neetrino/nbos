@@ -11,6 +11,7 @@ import {
 import { StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
+import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import type { Order } from '@/lib/api/finance';
 import { OrderListCoverageCell } from './OrderListCoverageCell';
 import {
@@ -22,11 +23,17 @@ import { ORDER_STATUSES } from './order-statuses';
 
 interface OrdersTableProps {
   orders: Order[];
+  boardScope: BoardLifecycleScope;
   onOrderClick: (order: Order) => void;
   onCreateInvoice: (order: Order) => void;
 }
 
-export function OrdersTable({ orders, onOrderClick, onCreateInvoice }: OrdersTableProps) {
+export function OrdersTable({
+  orders,
+  boardScope,
+  onOrderClick,
+  onCreateInvoice,
+}: OrdersTableProps) {
   return (
     <div className="border-border overflow-hidden rounded-xl border">
       <Table>
@@ -36,7 +43,7 @@ export function OrdersTable({ orders, onOrderClick, onCreateInvoice }: OrdersTab
             <TableHead>Client</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead>Coverage</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>{boardScope === 'CLOSED' ? 'Closed' : 'Status'}</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="w-10 text-right">
               <span className="sr-only">Actions</span>
