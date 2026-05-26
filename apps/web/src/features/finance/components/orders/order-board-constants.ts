@@ -10,11 +10,14 @@ export const ORDER_BOARD_COLUMN_ORDER = [
 
 export type OrderBoardColumnStatus = (typeof ORDER_BOARD_COLUMN_ORDER)[number];
 
-export const ORDER_BOARD_LANE_HEADER_CLASS: Record<OrderBoardColumnStatus, string> = {
-  NEW: 'bg-blue-100/90 dark:bg-blue-900/35',
-  PREPAID: 'bg-amber-100/90 dark:bg-amber-900/35',
-  PARTIALLY_PAID: 'bg-orange-100/90 dark:bg-orange-900/35',
-  FULLY_PAID: 'bg-green-100/90 dark:bg-green-900/35',
-  CLOSED: 'bg-muted/60',
-  CANCELLED: 'bg-red-100/90 dark:bg-red-900/35',
+/** Kanban stage colors (shared `KanbanBoard` header bars). */
+export const ORDER_BOARD_STAGE_COLORS: Record<OrderBoardColumnStatus, string> = {
+  NEW: 'bg-blue-500',
+  PREPAID: 'bg-amber-500',
+  PARTIALLY_PAID: 'bg-orange-500',
+  FULLY_PAID: 'bg-green-500',
+  CLOSED: 'bg-gray-400',
+  CANCELLED: 'bg-red-500',
 };
+
+export const ORDER_BOARD_COLUMN_WIDTH = 270;

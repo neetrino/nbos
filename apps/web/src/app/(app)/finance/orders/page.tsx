@@ -139,21 +139,23 @@ function OrdersPageInner() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      <OrdersPageContent
-        orders={state.orders}
-        view={state.view}
-        loading={state.loading}
-        error={state.error}
-        mutationError={state.mutationError}
-        onDismissMutationError={state.clearMutationError}
-        onRetry={state.fetchOrders}
-        gap={gap}
-        partnerIdFromUrl={partnerIdFromUrl}
-        onClearReconciliationGap={clearReconciliationGap}
-        onClearPartnerDrilldown={clearPartnerDrilldown}
-        onOrderClick={state.handleOrderClick}
-        onCreateInvoice={state.handleCreateInvoice}
-      />
+      <div className="flex min-h-0 flex-1 flex-col">
+        <OrdersPageContent
+          orders={state.orders}
+          view={state.view}
+          loading={state.loading}
+          error={state.error}
+          mutationError={state.mutationError}
+          onDismissMutationError={state.clearMutationError}
+          onRetry={state.fetchOrders}
+          gap={gap}
+          partnerIdFromUrl={partnerIdFromUrl}
+          onClearReconciliationGap={clearReconciliationGap}
+          onClearPartnerDrilldown={clearPartnerDrilldown}
+          onOrderClick={state.handleOrderClick}
+          onCreateInvoice={state.handleCreateInvoice}
+        />
+      </div>
       <OrderDetailSheet
         orderId={state.selectedOrder?.id ?? openOrderIdFromUrl}
         open={state.sheetOpen}

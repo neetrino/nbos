@@ -41,7 +41,7 @@ export function OrdersPageContent({
   onCreateInvoice,
 }: OrdersPageContentProps) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {gap ? <ReconciliationGapBanner gap={gap} onClear={onClearReconciliationGap} /> : null}
       {partnerIdFromUrl ? <PartnerOrdersDrilldownBanner onClear={onClearPartnerDrilldown} /> : null}
       {loading ? (

@@ -47,18 +47,20 @@ export function InvoicesPageContent({
     );
   }
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {mutationError ? (
         <ListMutationErrorBanner message={mutationError} onDismiss={onDismissMutationError} />
       ) : null}
       {view === 'kanban' ? (
-        <InvoiceKanban
-          invoices={invoices}
-          boardScope={boardScope}
-          onInvoiceClick={onInvoiceClick}
-          onMove={onMove}
-          onOpenQuickCreate={onOpenQuickCreate}
-        />
+        <div className="min-h-0 flex-1">
+          <InvoiceKanban
+            invoices={invoices}
+            boardScope={boardScope}
+            onInvoiceClick={onInvoiceClick}
+            onMove={onMove}
+            onOpenQuickCreate={onOpenQuickCreate}
+          />
+        </div>
       ) : (
         <InvoicesTable
           invoices={invoices}

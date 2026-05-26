@@ -80,23 +80,21 @@ export function InvoiceKanban({
   );
 
   return (
-    <div className="min-h-0 flex-1">
-      <KanbanBoard
-        columns={columns}
-        getItemId={(invoice: Invoice) => invoice.id}
-        onMove={onMove}
-        columnQuickCreate={invoiceQuickCreate}
-        terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
-        columnWidth={boardScope === 'CLOSED' ? 288 : 270}
-        emptyMessage="No invoices"
-        renderColumnHeader={(column) => (
-          <KanbanColumnMoneyTotal column={column} getAmount={(invoice) => invoice.amount} />
-        )}
-        renderCard={(invoice: Invoice) => (
-          <InvoiceKanbanCard invoice={invoice} onInvoiceClick={onInvoiceClick} />
-        )}
-      />
-    </div>
+    <KanbanBoard
+      columns={columns}
+      getItemId={(invoice: Invoice) => invoice.id}
+      onMove={onMove}
+      columnQuickCreate={invoiceQuickCreate}
+      terminalDropZones={shouldShowTerminalDropBar(boardScope) ? terminalDropZones : undefined}
+      columnWidth={boardScope === 'CLOSED' ? 288 : 270}
+      emptyMessage="No invoices"
+      renderColumnHeader={(column) => (
+        <KanbanColumnMoneyTotal column={column} getAmount={(invoice) => invoice.amount} />
+      )}
+      renderCard={(invoice: Invoice) => (
+        <InvoiceKanbanCard invoice={invoice} onInvoiceClick={onInvoiceClick} />
+      )}
+    />
   );
 }
 
