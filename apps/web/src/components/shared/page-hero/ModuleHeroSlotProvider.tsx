@@ -91,7 +91,7 @@ export function ModuleHeroSlotProvider({
 }
 
 /**
- * Register list-page tools into the parent module PageHero (search, view, actions).
+ * Register list-page tools into the parent module PageHero (search, view, trailing).
  * Memoize the `slots` object in the caller to avoid redundant updates.
  */
 export function useModuleHeroSlots(slots: ModuleHeroSlots): void {

@@ -9,6 +9,3 @@ export const PAGE_HERO_TAB_SCROLL =
 
 /** Pill group container (tabs, view mode). */
 export const PAGE_HERO_PILL_GROUP = 'bg-muted/70 inline-flex items-center gap-0.5 rounded-full p-1';
-
-/** Centered search / IntegratedSearchFilters in module hero (CRM standard). */
-export const PAGE_HERO_SEARCH_CENTER = 'mx-auto w-full min-w-[16rem] max-w-3xl px-1';

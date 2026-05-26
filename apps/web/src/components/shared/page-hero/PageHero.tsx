@@ -23,7 +23,6 @@ export interface PageHeroProps {
   search?: ReactNode;
   secondaryTabs?: ReactNode;
   viewMode?: ReactNode;
-  actions?: ReactNode;
   trailing?: ReactNode;
   className?: string;
 }
@@ -42,7 +41,6 @@ function PageHeroInner({
   search,
   secondaryTabs,
   viewMode,
-  actions,
   trailing,
   className,
 }: PageHeroProps) {
@@ -52,7 +50,7 @@ function PageHeroInner({
   const isCompactToolbar = usePageHeroCompactToolbar(sectionRef);
   const searchExpanded = searchActive && isCompactToolbar;
 
-  const hasTrailing = Boolean(viewMode || actions || trailing);
+  const hasTrailing = Boolean(viewMode || trailing);
   const hasSearch = Boolean(search);
   const hasToolbar = Boolean(tabs || hasSearch || hasTrailing);
 
@@ -61,19 +59,13 @@ function PageHeroInner({
   }
 
   const trailingNode = hasTrailing ? (
-    <HeroTrailingActions
-      searchExpanded={searchExpanded}
-      viewMode={viewMode}
-      actions={actions}
-      trailing={trailing}
-    />
+    <HeroTrailingActions searchExpanded={searchExpanded} viewMode={viewMode} trailing={trailing} />
   ) : null;
 
   return (
     <section
       ref={sectionRef}
       className={cn(PAGE_HERO_SURFACE, PAGE_HERO_SURFACE_PADDING, className)}
-      data-hero-search-expanded={searchExpanded ? 'true' : 'false'}
     >
       {hasToolbar ? (
         <div className={PAGE_HERO_TOOLBAR}>
@@ -107,12 +99,10 @@ function PageHeroInner({
 function HeroTrailingActions({
   searchExpanded,
   viewMode,
-  actions,
   trailing,
 }: {
   searchExpanded: boolean;
   viewMode?: ReactNode;
-  actions?: ReactNode;
   trailing?: ReactNode;
 }) {
   return (
@@ -121,7 +111,6 @@ function HeroTrailingActions({
       aria-hidden={searchExpanded}
     >
       {viewMode}
-      {actions}
       {trailing}
     </div>
   );

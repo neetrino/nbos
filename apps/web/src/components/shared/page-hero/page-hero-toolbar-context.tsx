@@ -43,8 +43,7 @@ export function usePageHeroToolbar(): PageHeroToolbarContextValue {
   return ctx;
 }
 
-/** Keeps hero search expanded while focused, filtering, or typing. */
-export function usePageHeroSearchExpansion(active: boolean): void {
+function usePageHeroSearchExpansion(active: boolean): void {
   const setSearchActive = usePageHeroToolbarOptional()?.setSearchActive;
 
   useLayoutEffect(() => {
@@ -54,4 +53,17 @@ export function usePageHeroSearchExpansion(active: boolean): void {
   useLayoutEffect(() => {
     return () => setSearchActive?.(false);
   }, [setSearchActive]);
+}
+
+/** Wire search focus / filters / query into PageHero toolbar collapse. */
+export function useHeroSearchExpansionState({
+  focused,
+  panelOpen,
+  hasQuery,
+}: {
+  focused: boolean;
+  panelOpen: boolean;
+  hasQuery: boolean;
+}): void {
+  usePageHeroSearchExpansion(focused || panelOpen || hasQuery);
 }

@@ -5,7 +5,7 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { LIST_SEARCH_INPUT_PROPS } from '../list-search-input-props';
-import { useHeroSearchExpansionState } from './use-hero-search-expansion';
+import { useHeroSearchExpansionState } from './page-hero-toolbar-context';
 
 export interface PageHeroSearchProps {
   value: string;

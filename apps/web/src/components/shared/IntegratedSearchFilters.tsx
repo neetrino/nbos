@@ -11,20 +11,10 @@ import {
   IntegratedSearchFilterChips,
 } from './integrated-search-filters/integrated-search-filter-chips';
 import { IntegratedSearchFilterPanel } from './integrated-search-filters/integrated-search-filter-panel';
-import { useHeroSearchExpansionState } from './page-hero/use-hero-search-expansion';
+import { useHeroSearchExpansionState } from './page-hero/page-hero-toolbar-context';
 import { LIST_SEARCH_INPUT_PROPS } from './list-search-input-props';
 
 const EMPTY_FILTER_VALUES: Record<string, string> = {};
-
-function areFilterValuesEqual(
-  left: Record<string, string>,
-  right: Record<string, string>,
-): boolean {
-  const leftKeys = Object.keys(left);
-  const rightKeys = Object.keys(right);
-  if (leftKeys.length !== rightKeys.length) return false;
-  return leftKeys.every((key) => left[key] === right[key]);
-}
 
 export interface IntegratedSearchFiltersProps {
   search: string;
