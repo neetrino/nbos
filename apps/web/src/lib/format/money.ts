@@ -1,6 +1,14 @@
 /** Armenian dram sign (U+058F). */
 export const AMD_CURRENCY_SYMBOL = '\u058F';
 
+/**
+ * Money field usage:
+ * - display: formatAmount / formatGroupedNumber
+ * - input (dialogs/forms): NbosMoneyInput
+ * - input (detail sheets): InlineField type="money"
+ * - parse at submit/API: parseMoneyAmount
+ */
+
 const MONEY_GROUPING_LOCALE = 'hy-AM';
 
 /** Spaces and NBSP stripped from typed/displayed money strings. */

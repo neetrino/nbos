@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { MoneyInput } from '@/components/shared/MoneyInput';
+import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
@@ -42,12 +42,7 @@ export function ClientServiceMoneyInput(props: {
   value: string;
   onChange: (value: string) => void;
 }) {
-  return (
-    <div>
-      <Label>{props.label}</Label>
-      <MoneyInput value={props.value} onChange={props.onChange} />
-    </div>
-  );
+  return <NbosMoneyInput label={props.label} value={props.value} onChange={props.onChange} />;
 }
 
 export function ClientServiceDateInput(props: {

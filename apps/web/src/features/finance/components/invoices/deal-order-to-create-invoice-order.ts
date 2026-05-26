@@ -28,6 +28,7 @@ export function dealOrderToCreateInvoiceOrder(deal: Deal, order: DealOrder): Ord
     createdAt: deal.createdAt,
     project,
     company: deal.company ?? null,
+    deal: { id: deal.id, name: deal.name ?? null, code: deal.code },
     contact: deal.contact
       ? {
           id: deal.contact.id,

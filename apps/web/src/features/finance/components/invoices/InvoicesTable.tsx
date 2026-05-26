@@ -11,6 +11,7 @@ import { StatusBadge } from '@/components/shared';
 import { formatAmount, getInvoiceMoneyStage } from '@/features/finance/constants/finance';
 import type { BoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { resolveInvoiceOverdueDays } from '@/features/finance/utils/invoice-overdue-days';
+import { getInvoiceDealTitle, getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Invoice } from '@/lib/api/finance';
 
 interface InvoicesTableProps {
@@ -73,13 +74,18 @@ function InvoiceTableRow({
 }
 
 function InvoiceCodeCell({ invoice }: { invoice: Invoice }) {
+  const dealTitle = getInvoiceDealTitle(invoice.order);
+  const orderLabel = invoice.order
+    ? dealTitle
+      ? `Deal: ${dealTitle}`
+      : `Order: ${getOrderDisplayTitle(invoice.order)}`
+    : null;
+
   return (
     <TableCell>
       <div>
         <p className="font-medium">{invoice.code}</p>
-        {invoice.order && (
-          <p className="text-muted-foreground text-xs">Order: {invoice.order.code}</p>
-        )}
+        {orderLabel ? <p className="text-muted-foreground text-xs">{orderLabel}</p> : null}
       </div>
     </TableCell>
   );

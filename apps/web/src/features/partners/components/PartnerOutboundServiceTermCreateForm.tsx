@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MoneyInput } from '@/components/shared/MoneyInput';
+import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { NbosDatePicker } from '@/components/shared/date-picker';
 import { Label } from '@/components/ui/label';
 import {
@@ -67,9 +67,9 @@ export function PartnerOutboundServiceTermCreateForm(props: {
           </p>
         </div>
         <div>
-          <Label htmlFor="pst-amount">Amount *</Label>
-          <MoneyInput
+          <NbosMoneyInput
             id="pst-amount"
+            label="Amount *"
             value={form.amount}
             onChange={(amount) => onFormChange((prev) => ({ ...prev, amount }))}
             placeholder="0.00"

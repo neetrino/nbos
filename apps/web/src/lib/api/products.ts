@@ -148,6 +148,7 @@ export interface ProductOrderRef {
   status: string;
   deal?: {
     id: string;
+    name: string | null;
     code: string;
     offerFileUrl?: string | null;
     contractFileUrl?: string | null;

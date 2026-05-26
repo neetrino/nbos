@@ -32,6 +32,18 @@ export interface InvoiceStatsQueryParams extends FinanceDateRangeParams {
   subscriptionId?: string;
 }
 
+export interface InvoiceDealSummary {
+  id: string;
+  name: string | null;
+  code: string;
+}
+
+export interface InvoiceOrderSummary {
+  id: string;
+  code: string;
+  deal?: InvoiceDealSummary | null;
+}
+
 export interface Invoice {
   id: string;
   code: string;
@@ -53,7 +65,7 @@ export interface Invoice {
   notificationsEnabled: boolean;
   description: string | null;
   createdAt: string;
-  order: { id: string; code: string } | null;
+  order: InvoiceOrderSummary | null;
   company: { id: string; name: string } | null;
   project: { id: string; name: string } | null;
   contact: { id: string; firstName: string; lastName: string } | null;
@@ -104,6 +116,7 @@ export interface Order {
   status: string;
   createdAt: string;
   project: { id: string; code: string; name: string };
+  deal?: InvoiceDealSummary | null;
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   invoices: Array<{ id: string; code: string; moneyStatus: string; amount: string }>;

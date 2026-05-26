@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/table';
 import { StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
 import { OrderReconciliationCell } from './OrderReconciliationCell';
 import { ORDER_STATUSES } from './order-statuses';
@@ -58,7 +59,7 @@ function OrderRow({
   return (
     <TableRow>
       <TableCell>
-        <p className="font-medium">{order.code}</p>
+        <p className="font-medium">{getOrderDisplayTitle(order)}</p>
       </TableCell>
       <TableCell>
         <OrderProject order={order} />

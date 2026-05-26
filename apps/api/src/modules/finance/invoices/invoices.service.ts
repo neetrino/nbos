@@ -33,6 +33,7 @@ import {
 } from './invoice-general-update';
 import { resolveCreateInvoiceType, resolveInvoiceDueDate } from './invoice-create-resolver';
 import { resolveInvoiceProjectRow } from './invoice-project-resolve';
+import { INVOICE_ORDER_DETAIL_INCLUDE, INVOICE_ORDER_SELECT } from './invoice-order-select';
 
 interface CreateInvoiceDto {
   orderId?: string;
@@ -119,6 +120,8 @@ export class InvoicesService {
               order: {
                 OR: [
                   { code: ic },
+                  { deal: { name: ic } },
+                  { deal: { code: ic } },
                   { project: { name: ic } },
                   { project: { code: ic } },
                   { product: { name: ic } },
@@ -148,7 +151,7 @@ export class InvoicesService {
         include: {
           project: { select: { id: true, name: true } },
           order: {
-            select: { id: true, code: true, project: { select: { id: true, name: true } } },
+            select: INVOICE_ORDER_SELECT,
           },
           subscription: { select: { project: { select: { id: true, name: true } } } },
           company: { select: { id: true, name: true } },
@@ -178,7 +181,7 @@ export class InvoicesService {
       where: { id },
       include: {
         project: true,
-        order: { include: { project: true } },
+        order: { include: INVOICE_ORDER_DETAIL_INCLUDE },
         subscription: { include: { project: true } },
         company: true,
         payments: true,

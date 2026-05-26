@@ -11,9 +11,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { NbosDatePicker } from '@/components/shared/date-picker';
-import { MoneyInput } from '@/components/shared/MoneyInput';
+import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { Label } from '@/components/ui/label';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
 import { canSubmitCreateInvoice, type CreateInvoiceFormState } from './create-invoice-dialog-utils';
@@ -60,7 +61,7 @@ function dialogDescription(
   subscriptionId: string | null | undefined,
   subscriptionDetail: Subscription | null,
 ) {
-  if (order) return `Generate an invoice for ${order.code}.`;
+  if (order) return `Generate an invoice for ${getOrderDisplayTitle(order)}.`;
   if (subscriptionDetail) return `Bill against subscription ${subscriptionDetail.code}.`;
   if (subscriptionId) return 'Loading subscription context…';
   return null;
@@ -145,7 +146,7 @@ function InvoiceContextSummary({
 function OrderInvoiceContext({ order }: { order: Order }) {
   return (
     <div className="bg-muted/40 rounded-lg border p-3 text-sm">
-      <p className="font-medium">{order.code}</p>
+      <p className="font-medium">{getOrderDisplayTitle(order)}</p>
       <p className="text-muted-foreground">
         {order.project.name} · {order.company?.name ?? 'No company'}
       </p>
@@ -180,14 +181,12 @@ function InvoiceAmountFields({
 }) {
   return (
     <div className="space-y-3">
-      <div>
-        <Label>Amount *</Label>
-        <MoneyInput
-          value={form.amount}
-          onChange={(amount) => setForm({ ...form, amount })}
-          autoFocus
-        />
-      </div>
+      <NbosMoneyInput
+        label="Amount *"
+        value={form.amount}
+        onChange={(amount) => setForm({ ...form, amount })}
+        autoFocus
+      />
       <div>
         <Label>Due date</Label>
         <NbosDatePicker

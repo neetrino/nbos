@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MoneyInput } from '@/components/shared/MoneyInput';
+import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { StatusBadge } from '@/components/shared';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import {
@@ -368,10 +368,13 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
 
           {!draftProfile && selectedEmployee ? (
             <div className="border-border grid gap-3 rounded-xl border p-3 md:grid-cols-3">
-              <label className="space-y-1 text-sm">
-                <span className="text-muted-foreground">Base salary</span>
-                <MoneyInput value={baseSalary} disabled={busy} onChange={setBaseSalary} />
-              </label>
+              <NbosMoneyInput
+                label="Base salary"
+                labelClassName="text-muted-foreground font-normal"
+                value={baseSalary}
+                disabled={busy}
+                onChange={setBaseSalary}
+              />
               <label className="space-y-1 text-sm">
                 <span className="text-muted-foreground">Effective from</span>
                 <Input

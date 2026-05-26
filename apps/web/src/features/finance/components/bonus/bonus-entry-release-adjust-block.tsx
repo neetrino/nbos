@@ -3,7 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MoneyInput } from '@/components/shared/MoneyInput';
+import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { BonusReleaseRow } from '@/lib/api/bonus';
@@ -38,14 +38,12 @@ export function BonusEntryReleaseAdjustBlock({
           Adjusting an AUTO split stores the row as CORRECTION for audit (NBOS bonus pool).
         </p>
       ) : null}
-      <div className="space-y-1.5">
-        <Label htmlFor={`amt-${row.id}`}>New amount</Label>
-        <MoneyInput
-          id={`amt-${row.id}`}
-          value={form.amount}
-          onChange={(amount) => onChange({ ...form, amount })}
-        />
-      </div>
+      <NbosMoneyInput
+        id={`amt-${row.id}`}
+        label="New amount"
+        value={form.amount}
+        onChange={(amount) => onChange({ ...form, amount })}
+      />
       <div className="space-y-1.5">
         <Label htmlFor={`reason-${row.id}`}>Reason</Label>
         <Textarea

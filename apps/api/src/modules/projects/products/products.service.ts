@@ -306,6 +306,7 @@ export class ProductsService {
             deal: {
               select: {
                 id: true,
+                name: true,
                 code: true,
                 offerFileUrl: true,
                 contractFileUrl: true,
