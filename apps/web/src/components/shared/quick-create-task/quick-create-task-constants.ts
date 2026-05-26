@@ -15,12 +15,16 @@ export const QUICK_CREATE_TASK_HEADER_ICONS_CLASS =
 
 export const TASK_PRIORITY_FLAME_ICON_SIZE = 22;
 
-/** Plain icon toggle — no circular chip background. */
+/** Plain icon toggle — no border, background, or focus ring. */
 export const TASK_PRIORITY_FLAME_BUTTON_CLASS =
-  'text-muted-foreground/70 size-auto h-auto min-h-0 w-auto rounded-none bg-transparent p-0 shadow-none hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0';
+  'inline-flex shrink-0 cursor-pointer items-center justify-center rounded-none border-0 bg-transparent p-0 text-muted-foreground/70 shadow-none outline-none ring-0 hover:border-0 hover:bg-transparent hover:shadow-none focus:border-0 focus:bg-transparent focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 active:translate-y-0 disabled:pointer-events-none disabled:opacity-50';
 
+/** Active toggle — solid orange flame via child svg fill. */
 export const TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS =
-  'text-orange-500 hover:bg-transparent hover:text-orange-600';
+  'text-orange-500 hover:bg-transparent hover:text-orange-600 [&_svg]:fill-current';
+
+/** Urgent flame on cards, lists, KPIs — always filled. */
+export const TASK_PRIORITY_FLAME_FILLED_CLASS = 'fill-current text-orange-500';
 
 /** Title textarea — grows with wrapped lines (Bitrix-style). */
 export const QUICK_CREATE_TASK_TITLE_INPUT_CLASS =

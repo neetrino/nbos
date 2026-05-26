@@ -1,10 +1,10 @@
-import { Flame } from 'lucide-react';
 import {
   QUICK_CREATE_TASK_HEADER_ICONS_CLASS,
   QUICK_CREATE_TASK_TITLE_ROW_CLASS,
   TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
+  TASK_PRIORITY_FLAME_BUTTON_CLASS,
 } from '@/components/shared/quick-create-task/quick-create-task-constants';
-import { Button } from '@/components/ui/button';
+import { Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isTaskUrgentPriority } from '../constants/tasks';
 import type { TaskGeneralDraft } from '../task-general-form-state';
@@ -36,12 +36,11 @@ export function TaskSheetHeader({
           className="text-foreground placeholder:text-muted-foreground/55 w-full border-0 bg-transparent py-0 text-2xl leading-snug font-bold tracking-tight outline-none disabled:opacity-60 sm:text-[1.65rem]"
         />
         <div className={QUICK_CREATE_TASK_HEADER_ICONS_CLASS}>
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon-sm"
             className={cn(
-              'text-muted-foreground/75 size-8 rounded-full hover:text-orange-600',
+              TASK_PRIORITY_FLAME_BUTTON_CLASS,
+              'hover:text-orange-600',
               urgent && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
             )}
             aria-pressed={urgent}
@@ -51,7 +50,7 @@ export function TaskSheetHeader({
             onClick={onToggleUrgent}
           >
             <Flame size={19} strokeWidth={1.75} aria-hidden />
-          </Button>
+          </button>
         </div>
       </div>
     </header>

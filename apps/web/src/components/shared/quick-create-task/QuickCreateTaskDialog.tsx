@@ -70,9 +70,8 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
               onSubmitShortcut={() => void form.handleCreate()}
             />
             <div className={QUICK_CREATE_TASK_HEADER_ICONS_CLASS}>
-              <Button
+              <button
                 type="button"
-                variant="ghost"
                 className={cn(
                   TASK_PRIORITY_FLAME_BUTTON_CLASS,
                   'hover:text-orange-600',
@@ -85,7 +84,7 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
                 onClick={() => form.setIsHighPriority((value) => !value)}
               >
                 <Flame size={TASK_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
-              </Button>
+              </button>
               <Button
                 type="button"
                 variant="ghost"

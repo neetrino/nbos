@@ -1,6 +1,5 @@
 'use client';
 
-import { Flame } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -26,6 +25,7 @@ import {
   TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
   TASK_PRIORITY_FLAME_BUTTON_CLASS,
 } from '@/components/shared/quick-create-task/quick-create-task-constants';
+import { Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { recurringTasksApi, type RecurringTaskTemplate } from '@/lib/api/recurring-tasks';
 
@@ -108,13 +108,11 @@ export function CreateRecurringTaskDialog({
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Monthly subscription check"
               />
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="icon-sm"
                 className={cn(
                   TASK_PRIORITY_FLAME_BUTTON_CLASS,
-                  'absolute top-1/2 right-0 -translate-y-1/2',
+                  'absolute top-1/2 right-0 -translate-y-1/2 hover:text-orange-600',
                   isUrgent && TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
                 )}
                 aria-pressed={isUrgent}
@@ -123,7 +121,7 @@ export function CreateRecurringTaskDialog({
                 onClick={() => setIsUrgent((current) => !current)}
               >
                 <Flame size={20} strokeWidth={1.75} aria-hidden />
-              </Button>
+              </button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
