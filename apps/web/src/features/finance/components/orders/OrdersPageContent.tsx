@@ -3,12 +3,15 @@ import { Button } from '@/components/ui/button';
 import { EmptyState, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import type { OrderReconciliationGap } from '@/features/finance/constants/order-reconciliation-drilldown';
 import type { Order } from '@/lib/api/finance';
+import type { OrderViewMode } from './order-page-types';
+import { OrdersBoardView } from './OrdersBoardView';
 import { OrdersTable } from './OrdersTable';
 import { PartnerOrdersDrilldownBanner } from './PartnerOrdersDrilldownBanner';
 import { ReconciliationGapBanner } from './orders-page-helpers';
 
 interface OrdersPageContentProps {
   orders: Order[];
+  view: OrderViewMode;
   loading: boolean;
   error: string | null;
   mutationError: string | null;
@@ -24,6 +27,7 @@ interface OrdersPageContentProps {
 
 export function OrdersPageContent({
   orders,
+  view,
   loading,
   error,
   mutationError,
@@ -57,7 +61,8 @@ export function OrdersPageContent({
               onClearReconciliationGap={onClearReconciliationGap}
             />
           ) : (
-            <OrdersTable
+            <OrdersListOrBoard
+              view={view}
               orders={orders}
               onOrderClick={onOrderClick}
               onCreateInvoice={onCreateInvoice}
@@ -66,6 +71,32 @@ export function OrdersPageContent({
         </>
       )}
     </div>
+  );
+}
+
+function OrdersListOrBoard({
+  view,
+  orders,
+  onOrderClick,
+  onCreateInvoice,
+}: {
+  view: OrderViewMode;
+  orders: Order[];
+  onOrderClick: (order: Order) => void;
+  onCreateInvoice: (order: Order) => void;
+}) {
+  if (view === 'board') {
+    return (
+      <OrdersBoardView
+        orders={orders}
+        onOrderClick={onOrderClick}
+        onCreateInvoice={onCreateInvoice}
+      />
+    );
+  }
+
+  return (
+    <OrdersTable orders={orders} onOrderClick={onOrderClick} onCreateInvoice={onCreateInvoice} />
   );
 }
 

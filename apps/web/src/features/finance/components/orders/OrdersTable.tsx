@@ -1,4 +1,4 @@
-import { DollarSign, FolderKanban, Plus } from 'lucide-react';
+import { Building2, DollarSign, FolderKanban, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -12,7 +12,12 @@ import { StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { Order } from '@/lib/api/finance';
-import { OrderReconciliationCell } from './OrderReconciliationCell';
+import { OrderListCoverageCell } from './OrderListCoverageCell';
+import {
+  formatOrderPaidSubline,
+  formatOrderShortDate,
+  getOrderTotalAmount,
+} from './order-display-utils';
 import { ORDER_STATUSES } from './order-statuses';
 
 interface OrdersTableProps {
@@ -28,14 +33,14 @@ export function OrdersTable({ orders, onOrderClick, onCreateInvoice }: OrdersTab
         <TableHeader>
           <TableRow>
             <TableHead>Order</TableHead>
-            <TableHead>Project</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead>Type</TableHead>
+            <TableHead>Client</TableHead>
             <TableHead className="text-right">Amount</TableHead>
-            <TableHead>Payment</TableHead>
+            <TableHead>Coverage</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Reconciliation</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead className="w-10 text-right">
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -63,65 +68,70 @@ function OrderRow({
   onCreateInvoice: (order: Order) => void;
 }) {
   const statusCfg = ORDER_STATUSES[order.status];
+  const total = getOrderTotalAmount(order);
+  const paidSubline = formatOrderPaidSubline(order);
+  const typeLabel = order.type.replace(/_/g, ' ');
 
   return (
-    <TableRow className="cursor-pointer" onClick={() => onOrderClick(order)}>
-      <TableCell>
-        <p className="font-medium">{getOrderDisplayTitle(order)}</p>
-        <p className="text-muted-foreground text-xs">{order.code}</p>
+    <TableRow className="hover:bg-muted/40 cursor-pointer" onClick={() => onOrderClick(order)}>
+      <TableCell className="max-w-[14rem]">
+        <p className="truncate font-medium">{getOrderDisplayTitle(order)}</p>
+        <p className="text-muted-foreground truncate text-xs">
+          {order.code} · {typeLabel}
+        </p>
       </TableCell>
-      <TableCell>
-        <OrderProject order={order} />
+      <TableCell className="max-w-[12rem]">
+        <OrderClientCell order={order} />
       </TableCell>
-      <TableCell className="text-muted-foreground text-sm">{order.company?.name ?? '—'}</TableCell>
-      <TableCell className="text-xs">{order.type}</TableCell>
       <TableCell className="text-right">
-        <OrderAmount order={order} />
+        <p className="flex items-center justify-end gap-1 font-semibold tabular-nums">
+          <DollarSign size={12} className="text-accent" aria-hidden />
+          {formatAmount(total)}
+        </p>
+        {paidSubline ? (
+          <p className="text-muted-foreground text-xs tabular-nums">{paidSubline}</p>
+        ) : null}
       </TableCell>
-      <TableCell className="text-xs">{order.paymentType}</TableCell>
-      <TableCell>
-        {statusCfg && <StatusBadge label={statusCfg.label} variant={statusCfg.variant} />}
+      <TableCell className="min-w-[8.5rem]">
+        <OrderListCoverageCell order={order} />
       </TableCell>
       <TableCell>
-        <OrderReconciliationCell order={order} />
+        {statusCfg ? <StatusBadge label={statusCfg.label} variant={statusCfg.variant} /> : null}
+      </TableCell>
+      <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
+        {formatOrderShortDate(order.createdAt)}
       </TableCell>
       <TableCell className="text-right">
         <Button
-          variant="outline"
-          size="sm"
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          aria-label={`Create invoice for ${getOrderDisplayTitle(order)}`}
           onClick={(event) => {
             event.stopPropagation();
             onCreateInvoice(order);
           }}
         >
-          <Plus size={14} />
-          Create Invoice
+          <Plus size={14} aria-hidden />
         </Button>
       </TableCell>
     </TableRow>
   );
 }
 
-function OrderProject({ order }: { order: Order }) {
-  if (!order.project) {
-    return '—';
-  }
-
+function OrderClientCell({ order }: { order: Order }) {
   return (
-    <div className="flex items-center gap-1.5 text-sm">
-      <FolderKanban size={12} className="text-muted-foreground" />
-      {order.project.name}
+    <div className="space-y-1">
+      <p className="flex items-center gap-1 truncate text-sm">
+        <Building2 size={12} className="text-muted-foreground shrink-0" aria-hidden />
+        <span className="truncate">{order.company?.name ?? '—'}</span>
+      </p>
+      {order.project ? (
+        <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
+          <FolderKanban size={11} className="shrink-0" aria-hidden />
+          <span className="truncate">{order.project.name}</span>
+        </p>
+      ) : null}
     </div>
-  );
-}
-
-function OrderAmount({ order }: { order: Order }) {
-  const total = Number(order.amount ?? order.totalAmount ?? 0);
-
-  return (
-    <span className="flex items-center justify-end gap-1 font-semibold">
-      <DollarSign size={12} className="text-accent" />
-      {formatAmount(total)}
-    </span>
   );
 }

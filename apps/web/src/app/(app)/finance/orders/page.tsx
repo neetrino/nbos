@@ -3,13 +3,19 @@
 import { Suspense, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
-import { IntegratedSearchFilters, LoadingState, useModuleHeroSlots } from '@/components/shared';
+import {
+  IntegratedSearchFilters,
+  LoadingState,
+  useModuleHeroSlots,
+  ViewModeSwitch,
+} from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { OrderDetailSheet } from '@/features/finance/components/orders/OrderDetailSheet';
 import { ORDER_FILTER_CONFIGS } from '@/features/finance/components/orders/order-filter-configs';
 import { OrdersPageContent } from '@/features/finance/components/orders/OrdersPageContent';
+import { ORDER_VIEW_OPTIONS } from '@/features/finance/components/orders/order-view-options';
 import { useOrdersCsvExport } from '@/features/finance/components/orders/use-orders-csv-export';
 import { useOrdersPageState } from '@/features/finance/components/orders/useOrdersPageState';
 import { useOrdersScopeStatsCsvExport } from '@/features/finance/components/orders/use-orders-scope-stats-csv-export';
@@ -95,6 +101,9 @@ function OrdersPageInner() {
           onClearAll={handleClearOrderFilters}
         />
       ),
+      viewMode: (
+        <ViewModeSwitch value={state.view} onChange={state.setView} options={ORDER_VIEW_OPTIONS} />
+      ),
       trailing: (
         <>
           <FinanceListPageSettingsSheet
@@ -132,6 +141,7 @@ function OrdersPageInner() {
     <div className="flex h-full min-h-0 flex-col gap-5">
       <OrdersPageContent
         orders={state.orders}
+        view={state.view}
         loading={state.loading}
         error={state.error}
         mutationError={state.mutationError}
