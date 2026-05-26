@@ -39,11 +39,7 @@ function hasOfferProof(deal: DealStageGateInput): boolean {
   );
 }
 
-function hasContractProof(deal: DealStageGateInput): boolean {
-  return Boolean(
-    (deal.linkedContractAssetCount ?? 0) > 0 || hasNonBlankValue(deal.contractFileUrl ?? null),
-  );
-}
+const DEPOSIT_COMMERCIAL_DEAL_TYPES = new Set(['PRODUCT', 'EXTENSION', 'OUTSOURCE']);
 
 /**
  * Returns missing field / blocker errors for a deal stage transition (cumulative gates).
@@ -138,18 +134,6 @@ export function getDealStageGateErrors(
         message: 'Company is required for TAX deals at DEPOSIT_AND_CONTRACT',
       });
     }
-    if (deal.paymentType === 'CLASSIC' && !hasContractProof(deal)) {
-      errors.push({
-        field: 'contractProof',
-        message: 'Attach a signed contract file in Drive before DEPOSIT_AND_CONTRACT',
-      });
-    }
-    if (deal.paymentType === 'CLASSIC' && !hasInvoice) {
-      errors.push({
-        field: 'invoice',
-        message: 'Deposit invoice must be created before DEPOSIT_AND_CONTRACT',
-      });
-    }
     if (dealType === 'PRODUCT') {
       if (!deal.pmId) {
         errors.push({
@@ -170,6 +154,18 @@ export function getDealStageGateErrors(
         message: 'Existing product must be selected for EXTENSION deals at DEPOSIT_AND_CONTRACT',
       });
     }
+  }
+
+  if (
+    targetStatus === 'WON' &&
+    dealType &&
+    DEPOSIT_COMMERCIAL_DEAL_TYPES.has(dealType) &&
+    !hasInvoice
+  ) {
+    errors.push({
+      field: 'invoice',
+      message: 'Deposit invoice is required before Deal Won',
+    });
   }
 
   return errors;

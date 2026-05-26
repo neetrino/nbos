@@ -16,6 +16,10 @@ import {
   DETAIL_SHEET_SECTION_TITLE_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import type { Deal } from '@/lib/api/deals';
+import {
+  COMMERCIAL_DEAL_TYPES,
+  HANDOFF_VISIBLE_DEAL_STATUSES,
+} from '../constants/deal-handoff.constants';
 
 interface DealHandoffPanelProps {
   deal: Deal;
@@ -79,14 +83,34 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
       hint: 'Finance should mark invoice as paid',
     },
     {
-      label: 'Project/Product link',
+      label: 'Project linked',
+      ready: Boolean(deal.projectId || deal.handoff?.project),
+      hint: 'Link a project in Deal & project, or auto-created when delivery starts',
+    },
+    {
+      label: 'Delivery shell',
       ready:
-        Boolean(deal.handoff?.project || deal.projectId) &&
-        (Boolean(deal.handoff?.product) ||
-          deal.orders.some((order) => order.deliveryStartMode === 'EARLY_START')),
-      hint: 'Created after Deal Won handoff or early delivery start',
+        Boolean(deal.handoff?.product) ||
+        deal.orders.some((order) => order.deliveryStartMode === 'EARLY_START'),
+      hint: 'Product or extension appears after Won or early delivery start',
     },
   ];
+}
+
+function shouldShowHandoffPanel(deal: Deal): boolean {
+  const handoff = deal.handoff;
+  if (deal.status === 'WON') return true;
+  if (deal.orders.some((order) => order.deliveryStartMode === 'EARLY_START')) return true;
+  if (handoff?.project || handoff?.product || handoff?.subscriptions.length) return true;
+  if (handoff?.maintenanceDeal) return true;
+  if (
+    deal.type &&
+    COMMERCIAL_DEAL_TYPES.has(deal.type) &&
+    HANDOFF_VISIBLE_DEAL_STATUSES.has(deal.status)
+  ) {
+    return true;
+  }
+  return false;
 }
 
 function ReadinessRow({ item }: { item: ReadinessItem }) {
@@ -113,12 +137,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
   const product = handoff?.product ?? null;
   const subscription = handoff?.subscriptions[0] ?? null;
   const maintenanceDeal = handoff?.maintenanceDeal ?? null;
-  const showPanel =
-    deal.status === 'WON' ||
-    deal.orders.some((order) => order.deliveryStartMode === 'EARLY_START') ||
-    Boolean(project || product || subscription || maintenanceDeal);
-
-  if (!showPanel) return null;
+  if (!shouldShowHandoffPanel(deal)) return null;
 
   const readinessItems = getReadinessItems(deal);
   const projectHref = project ? `/projects/${project.id}` : null;
@@ -148,7 +167,7 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
           </Link>
         ) : (
           <p className="text-muted-foreground rounded-lg border border-dashed border-stone-200 px-3 py-2 text-xs dark:border-stone-700">
-            Project will appear after Deal Won creates the delivery shell.
+            Link a project in Deal &amp; project, or it will be created when delivery starts.
           </p>
         )}
 
