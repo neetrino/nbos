@@ -27,8 +27,15 @@ export interface DealOrder {
   status: string;
   totalAmount: number | null;
   projectId: string;
+  paymentMode?: OrderPaymentMode;
+  deliveryStartMode?: OrderDeliveryStartMode;
   invoices: DealInvoice[];
 }
+
+export type DealWonMode = 'STANDARD' | 'EXCEPTION_FREE' | 'EXCEPTION_POSTPAID';
+export type OrderPaymentMode = 'STANDARD_PREPAY' | 'POSTPAID' | 'FREE';
+export type OrderDeliveryStartMode = 'AFTER_PAYMENT' | 'EARLY_START' | 'EXCEPTION_IMMEDIATE';
+export type DealExceptionType = 'FREE' | 'POSTPAID';
 
 export interface DealHandoffReferences {
   project: { id: string; code: string; name: string } | null;
@@ -86,6 +93,11 @@ export interface Deal {
   linkedOfferAssetCount?: number;
   linkedContractAssetCount?: number;
   maintenanceStartAt: string | null;
+  wonMode?: DealWonMode | null;
+  exceptionReason?: string | null;
+  exceptionApprovedAt?: string | null;
+  exceptionPaymentExpectedAt?: string | null;
+  exceptionApprovedBy?: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
   updatedAt: string;
   lead: { id: string; code: string; contactName: string } | null;
@@ -146,6 +158,21 @@ interface DealQueryParams {
 
 interface DealStatusOptions {
   overrideReason?: string | null;
+}
+
+export interface CreateDepositOrderPayload {
+  amount: number;
+  dueDate?: string | null;
+}
+
+export interface CreateExceptionOrderPayload {
+  exceptionType: DealExceptionType;
+  reason: string;
+  paymentExpectedAt?: string | null;
+}
+
+export interface StartEarlyDeliveryPayload {
+  note?: string | null;
 }
 
 export type PatchPartnerReferralTermsPayload =
@@ -214,6 +241,24 @@ export const dealsApi = {
     payload: PatchPartnerReferralTermsPayload,
   ): Promise<Deal> {
     const resp = await api.patch<Deal>(`/api/crm/deals/${id}/partner-referral-terms`, payload);
+    return resp.data;
+  },
+
+  async createDepositOrder(id: string, payload: CreateDepositOrderPayload): Promise<Deal> {
+    const resp = await api.post<Deal>(`/api/crm/deals/${id}/actions/create-deposit-order`, payload);
+    return resp.data;
+  },
+
+  async startEarlyDelivery(id: string, payload: StartEarlyDeliveryPayload = {}): Promise<Deal> {
+    const resp = await api.post<Deal>(`/api/crm/deals/${id}/actions/start-early-delivery`, payload);
+    return resp.data;
+  },
+
+  async createExceptionOrder(id: string, payload: CreateExceptionOrderPayload): Promise<Deal> {
+    const resp = await api.post<Deal>(
+      `/api/crm/deals/${id}/actions/create-exception-order`,
+      payload,
+    );
     return resp.data;
   },
 

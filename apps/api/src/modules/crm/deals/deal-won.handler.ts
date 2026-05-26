@@ -60,6 +60,11 @@ export class DealWonHandler {
     }
   }
 
+  /** Creates project/product/extension shell without marking the deal Won (early delivery). */
+  async ensureDeliveryShell(deal: WonDealData) {
+    await this.resolveWonTargets(deal);
+  }
+
   private async resolveWonTargets(deal: WonDealData): Promise<DealWonDriveLinkTargets | null> {
     if (deal.type === 'PRODUCT') {
       return this.targetsAfterProductWon(deal);
@@ -175,6 +180,12 @@ export class DealWonHandler {
   private async ensureProduct(deal: WonDealData, projectId: string): Promise<string | null> {
     if (!deal.productCategory || !deal.productType) return null;
 
+    const linkedOrder = await this.prisma.order.findFirst({
+      where: { dealId: deal.id, productId: { not: null } },
+      select: { productId: true },
+    });
+    if (linkedOrder?.productId) return linkedOrder.productId;
+
     const product = await this.prisma.product.create({
       data: {
         projectId,
@@ -185,6 +196,12 @@ export class DealWonHandler {
         deadline: deal.deadline ?? undefined,
       },
     });
+
+    await this.prisma.order.updateMany({
+      where: { dealId: deal.id, productId: null },
+      data: { productId: product.id },
+    });
+
     this.logger.log(
       `Auto-created product ${product.id} (${deal.productCategory}/${deal.productType}) for deal ${deal.code}`,
     );
@@ -287,6 +304,12 @@ export class DealWonHandler {
       return null;
     }
 
+    const linkedOrder = await this.prisma.order.findFirst({
+      where: { dealId: deal.id, extensionId: { not: null } },
+      select: { extensionId: true },
+    });
+    if (linkedOrder?.extensionId) return linkedOrder.extensionId;
+
     const product = await this.prisma.product.findUnique({
       where: { id: deal.existingProductId },
       select: { id: true, projectId: true },
@@ -303,6 +326,11 @@ export class DealWonHandler {
         name: deal.name ?? `Extension from ${deal.code}`,
         size: 'MEDIUM',
       },
+    });
+
+    await this.prisma.order.updateMany({
+      where: { dealId: deal.id, extensionId: null },
+      data: { extensionId: extension.id },
     });
 
     if (!deal.projectId) {

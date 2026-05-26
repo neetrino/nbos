@@ -675,53 +675,6 @@ describe('DealsService', () => {
       expect(result.status).toBe('WON');
       expect(wonHandler.handle).toHaveBeenCalledTimes(1);
     });
-
-    it('allows Owner or CEO override without marking invoices paid', async () => {
-      const base = completeProductDeal('AWAITING_PAYMENT');
-      const won = { ...base, status: 'WON' as const };
-      prisma.deal.findUnique
-        .mockResolvedValueOnce(base)
-        .mockResolvedValueOnce(base)
-        .mockResolvedValueOnce(won)
-        .mockResolvedValueOnce(won);
-      prisma.deal.update.mockResolvedValue({ id: '1', status: 'WON', type: 'PRODUCT' });
-
-      await service.updateStatus('1', 'WON', {
-        reason: 'Client confirmed transfer; Finance will reconcile later.',
-        actorId: 'ceo-1',
-        actorRoleLevel: 2,
-      });
-
-      expect(prisma.deal.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            status: 'WON',
-            notes: expect.stringContaining('Deal Won override reason'),
-          }),
-        }),
-      );
-      expect(prisma.invoice.update).not.toHaveBeenCalled();
-      expect(auditService.log).toHaveBeenCalledWith(
-        expect.objectContaining({
-          action: 'DEAL_WON_OVERRIDE',
-          userId: 'ceo-1',
-        }),
-      );
-      expect(wonHandler.handle).toHaveBeenCalledTimes(1);
-    });
-
-    it('rejects non-privileged override', async () => {
-      prisma.deal.findUnique.mockResolvedValue(completeProductDeal('AWAITING_PAYMENT'));
-
-      await expect(
-        service.updateStatus('1', 'WON', {
-          reason: 'Seller override attempt',
-          actorId: 'seller-1',
-          actorRoleLevel: 4,
-        }),
-      ).rejects.toThrow('Only Owner or CEO can override');
-      expect(wonHandler.handle).not.toHaveBeenCalled();
-    });
   });
 
   describe('getStats', () => {

@@ -78,7 +78,7 @@ export function DisabledInvoiceAction() {
       size="sm"
       className="w-full justify-center gap-1.5 border-stone-300 text-stone-500 dark:border-stone-600 dark:text-stone-400"
       disabled
-      title="Fill required: Cost, Payment Type, Project, Deal Type, Tax Status; if Tax then Company"
+      title="Fill required: Cost, Payment Type, Contact, Deal Type, Tax Status; if Tax then Company"
     >
       <Plus size={14} />
       Create Invoice

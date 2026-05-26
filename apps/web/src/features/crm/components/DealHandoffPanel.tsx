@@ -75,13 +75,16 @@ function getReadinessItems(deal: Deal): ReadinessItem[] {
     { label: 'Invoice exists', ready: hasInvoice, hint: 'Create invoice from Actions' },
     {
       label: 'Payment received',
-      ready: hasPaidInvoice(deal),
+      ready: hasPaidInvoice(deal) || deal.wonMode === 'EXCEPTION_FREE',
       hint: 'Finance should mark invoice as paid',
     },
     {
       label: 'Project/Product link',
-      ready: Boolean(deal.handoff?.project || deal.projectId) && Boolean(deal.handoff?.product),
-      hint: 'Created after Deal Won handoff',
+      ready:
+        Boolean(deal.handoff?.project || deal.projectId) &&
+        (Boolean(deal.handoff?.product) ||
+          deal.orders.some((order) => order.deliveryStartMode === 'EARLY_START')),
+      hint: 'Created after Deal Won handoff or early delivery start',
     },
   ];
 }
@@ -111,7 +114,9 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
   const subscription = handoff?.subscriptions[0] ?? null;
   const maintenanceDeal = handoff?.maintenanceDeal ?? null;
   const showPanel =
-    deal.status === 'WON' || Boolean(project || product || subscription || maintenanceDeal);
+    deal.status === 'WON' ||
+    deal.orders.some((order) => order.deliveryStartMode === 'EARLY_START') ||
+    Boolean(project || product || subscription || maintenanceDeal);
 
   if (!showPanel) return null;
 

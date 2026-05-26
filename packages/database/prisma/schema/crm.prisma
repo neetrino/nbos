@@ -178,6 +178,12 @@ enum DealTypeEnum {
   OUTSOURCE
 }
 
+enum DealWonModeEnum {
+  STANDARD
+  EXCEPTION_FREE
+  EXCEPTION_POSTPAID
+}
+
 model Deal {
   id                  String               @id @default(uuid())
   code                String               @unique
@@ -212,6 +218,11 @@ model Deal {
   contractSignedAt    DateTime?            @map("contract_signed_at")
   contractFileUrl     String?              @map("contract_file_url")
   maintenanceStartAt  DateTime?            @map("maintenance_start_at")
+  wonMode             DealWonModeEnum?     @map("won_mode")
+  exceptionReason     String?              @map("exception_reason") @db.Text
+  exceptionApprovedById String?            @map("exception_approved_by_id")
+  exceptionApprovedAt DateTime?            @map("exception_approved_at")
+  exceptionPaymentExpectedAt DateTime?     @map("exception_payment_expected_at")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
 
@@ -221,6 +232,7 @@ model Deal {
   seller               Employee              @relation("DealSeller", fields: [sellerId], references: [id])
   sellerAssistant      Employee?             @relation("DealSellerAssistant", fields: [sellerAssistantId], references: [id])
   pm                   Employee?             @relation("DealPM", fields: [pmId], references: [id])
+  exceptionApprovedBy  Employee?             @relation("DealExceptionApprover", fields: [exceptionApprovedById], references: [id])
   existingProduct      Product?              @relation("DealExistingProduct", fields: [existingProductId], references: [id])
   sourcePartner        Partner?              @relation("DealSourcePartner", fields: [sourcePartnerId], references: [id])
   sourceContact        Contact?              @relation("DealSourceContact", fields: [sourceContactId], references: [id])

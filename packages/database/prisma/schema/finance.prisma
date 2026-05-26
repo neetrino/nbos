@@ -13,10 +13,23 @@ enum PaymentTypeEnum {
 }
 
 enum OrderStatusEnum {
+  PENDING_PAYMENT
   ACTIVE
   PARTIALLY_PAID
   FULLY_PAID
   CLOSED
+}
+
+enum OrderPaymentModeEnum {
+  STANDARD_PREPAY
+  POSTPAID
+  FREE
+}
+
+enum OrderDeliveryStartModeEnum {
+  AFTER_PAYMENT
+  EARLY_START
+  EXCEPTION_IMMEDIATE
 }
 
 model Order {
@@ -31,7 +44,9 @@ model Order {
   totalAmount          Decimal         @map("total_amount") @db.Decimal(12, 2)
   currency             String          @default("AMD")
   taxStatus            TaxStatus       @default(TAX) @map("tax_status")
-  status               OrderStatusEnum @default(ACTIVE)
+  status               OrderStatusEnum @default(PENDING_PAYMENT)
+  paymentMode          OrderPaymentModeEnum @default(STANDARD_PREPAY) @map("payment_mode")
+  deliveryStartMode    OrderDeliveryStartModeEnum @default(AFTER_PAYMENT) @map("delivery_start_mode")
   partnerId            String?         @map("partner_id")
   partnerPercent       Decimal?        @default(30) @map("partner_percent") @db.Decimal(5, 2)
   sellerBonusPercent   Decimal?        @map("seller_bonus_percent") @db.Decimal(5, 2)

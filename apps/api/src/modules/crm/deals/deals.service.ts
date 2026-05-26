@@ -14,7 +14,7 @@ import { DealWonHandler } from './deal-won.handler';
 import { isDealAttributionLocked } from '@nbos/shared';
 import { assertAttributionUpdateAllowed, type AttributionForValidation } from '../attribution-gate';
 import { validateDealStageGate } from './deal-stage-gate';
-import { type DealWonOverrideContext, validateDealWonGate } from './deal-won-gate';
+import { validateDealWonGate } from './deal-won-gate';
 import { assertDealSellerRefs, validateDealCreate } from './deal-create-validation';
 import { resolveDealCreateDefaults } from './deal-create-defaults.op';
 import {
@@ -328,7 +328,7 @@ export class DealsService {
     return this.findById(dealId);
   }
 
-  async updateStatus(id: string, status: string, override: DealWonOverrideContext = {}) {
+  async updateStatus(id: string, status: string) {
     let current = await this.findById(id);
     if (current.status === status) {
       return current;
@@ -349,30 +349,16 @@ export class DealsService {
     ]);
     validateDealStageGate({ ...current, linkedOfferAssetCount, linkedContractAssetCount }, status);
     if (status === 'WON') {
-      validateDealWonGate(current, override);
+      validateDealWonGate(current);
     }
 
-    const deal = await this.update(
-      id,
-      {
-        status,
-        ...(status === 'WON' && override.reason?.trim()
-          ? { notes: this.appendOverrideNote(current.notes, override.reason.trim()) }
-          : {}),
-      },
-      { actorRoleLevel: override.actorRoleLevel },
-    );
+    const deal = await this.update(id, { status });
 
     if (status === 'WON') {
-      if (override.reason?.trim() && override.actorId) {
-        await this.auditService.log({
-          entityType: 'DEAL',
-          entityId: id,
-          action: 'DEAL_WON_OVERRIDE',
-          userId: override.actorId,
-          changes: { reason: override.reason.trim() },
-        });
-      }
+      await this.prisma.deal.update({
+        where: { id },
+        data: { wonMode: current.wonMode ?? 'STANDARD' },
+      });
       await this.dealWonHandler.handle(deal);
       return this.findById(id);
     }
@@ -462,11 +448,6 @@ export class DealsService {
         },
       },
     });
-  }
-
-  private appendOverrideNote(notes: string | null, reason: string): string {
-    const line = `Deal Won override reason: ${reason}`;
-    return notes ? `${notes}\n${line}` : line;
   }
 
   private attachHandoffReferences<T extends DealForHandoff>(deal: T) {

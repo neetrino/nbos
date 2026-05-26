@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { CheckSquare, ExternalLink, FileText, TrendingUp } from 'lucide-react';
+import { CheckSquare, ExternalLink, FileText, Rocket, TrendingUp } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { QuickCreateTaskDialog } from '@/components/shared';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
@@ -13,10 +13,12 @@ import {
 import { cn } from '@/lib/utils';
 import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
 import type { Deal } from '@/lib/api/deals';
-import { invoicesApi, ordersApi } from '@/lib/api/finance';
+import { dealsApi } from '@/lib/api/deals';
 import { formatAmount } from '../constants/dealPipeline';
 import { DisabledInvoiceAction, InvoiceAction } from './DealActionControls';
 import { computeFinance } from './deal-general-tab.helpers';
+import { DealOrderCommercialBadges } from './DealOrderCommercialBadges';
+import { getApiErrorMessage } from '@/lib/api-errors';
 
 const FINANCE_PANEL_SURFACE_CLASS =
   'rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white p-5 dark:border-emerald-800 dark:from-emerald-950/20 dark:to-transparent';
@@ -49,6 +51,8 @@ export function DealFinanceActionsPanel({
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [invoiceAmount, setInvoiceAmount] = useState('');
   const [creatingInvoice, setCreatingInvoice] = useState(false);
+  const [startingEarly, setStartingEarly] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const { creatorId, creatorReady } = useTaskCreatorId();
   const finance = computeFinance(deal);
@@ -57,41 +61,45 @@ export function DealFinanceActionsPanel({
     [deal.id, projectId],
   );
 
+  const canStartEarlyDelivery = Boolean(
+    firstOrder &&
+    firstOrder.invoices.length > 0 &&
+    firstOrder.deliveryStartMode !== 'EARLY_START' &&
+    firstOrder.deliveryStartMode !== 'EXCEPTION_IMMEDIATE' &&
+    firstOrder.invoices.some((invoice) => invoice.moneyStatus !== 'PAID') &&
+    deal.status !== 'WON' &&
+    deal.status !== 'FAILED',
+  );
+
   const handleCreateInvoice = async () => {
     const amount = Number(invoiceAmount);
-    if (!amount || amount <= 0 || !canCreateInvoice || !projectId) return;
+    if (!amount || amount <= 0 || !canCreateInvoice) return;
     setCreatingInvoice(true);
+    setActionError(null);
     try {
-      const orderId = await ensureOrder(amount);
-      const projectIdForInvoice = firstOrder?.projectId ?? deal.projectId;
-      if (!projectIdForInvoice) return;
-      await invoicesApi.create({
-        orderId,
-        projectId: projectIdForInvoice,
-        amount,
-        type: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'DEVELOPMENT',
-        ...(taxStatus === 'TAX' && deal.companyId && { companyId: deal.companyId }),
-      });
+      await dealsApi.createDepositOrder(deal.id, { amount });
       setShowInvoiceForm(false);
       setInvoiceAmount('');
       onRefresh?.();
+    } catch (caught) {
+      setActionError(getApiErrorMessage(caught, 'Could not create deposit order.'));
     } finally {
       setCreatingInvoice(false);
     }
   };
 
-  const ensureOrder = async (amount: number) => {
-    if (firstOrder?.id) return firstOrder.id;
-    const orderType = getOrderType(deal);
-    const order = await ordersApi.create({
-      projectId: deal.projectId!,
-      dealId: deal.id,
-      type: orderType,
-      paymentType: deal.paymentType === 'SUBSCRIPTION' ? 'SUBSCRIPTION' : 'CLASSIC',
-      totalAmount: amount,
-      taxStatus,
-    });
-    return order.id;
+  const handleStartEarlyDelivery = async () => {
+    if (!canStartEarlyDelivery) return;
+    setStartingEarly(true);
+    setActionError(null);
+    try {
+      await dealsApi.startEarlyDelivery(deal.id);
+      onRefresh?.();
+    } catch (caught) {
+      setActionError(getApiErrorMessage(caught, 'Could not start early delivery.'));
+    } finally {
+      setStartingEarly(false);
+    }
   };
 
   return (
@@ -101,6 +109,7 @@ export function DealFinanceActionsPanel({
           <TrendingUp size={12} />
           Finance
         </h4>
+        {firstOrder ? <DealOrderCommercialBadges order={firstOrder} /> : null}
         <div className="space-y-2.5 text-sm">
           <FinanceRow
             label="Total"
@@ -150,6 +159,19 @@ export function DealFinanceActionsPanel({
             <DisabledInvoiceAction />
           )}
 
+          {canStartEarlyDelivery ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-center gap-1.5 border-amber-300 text-amber-800 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-950/30"
+              disabled={startingEarly}
+              onClick={handleStartEarlyDelivery}
+            >
+              <Rocket size={14} />
+              Start delivery before payment
+            </Button>
+          ) : null}
+
           {projectId ? (
             <Button
               variant="outline"
@@ -171,6 +193,8 @@ export function DealFinanceActionsPanel({
             <ExternalLink className="size-4" aria-hidden />
             Open Drive
           </Link>
+
+          {actionError ? <p className="text-destructive text-xs">{actionError}</p> : null}
         </div>
       </section>
 
@@ -204,12 +228,6 @@ function FinanceRow({
       <span className={cn('tabular-nums', valueClassName)}>{value}</span>
     </div>
   );
-}
-
-function getOrderType(deal: Deal) {
-  if (deal.type === 'EXTENSION') return 'EXTENSION';
-  if (deal.paymentType === 'SUBSCRIPTION') return 'SUBSCRIPTION';
-  return 'PRODUCT';
 }
 
 function getTaskLinks(dealId: string, projectId: string) {

@@ -8,7 +8,7 @@ import { DealWonHandler } from './deal-won.handler';
 @Module({
   imports: [AuditModule, DriveModule],
   controllers: [DealsController],
-  providers: [DealsService, DealWonHandler],
-  exports: [DealsService, DealWonHandler],
+  providers: [DealsService, DealWonHandler, DealCommercialHandoffService],
+  exports: [DealsService, DealWonHandler, DealCommercialHandoffService],
 })
 export class DealsModule {}

@@ -20,6 +20,33 @@ export const partnerReferralTermsSelect = {
   updatedAt: true,
 } as const;
 
+export const dealOrderSelect = {
+  id: true,
+  code: true,
+  status: true,
+  totalAmount: true,
+  projectId: true,
+  paymentMode: true,
+  deliveryStartMode: true,
+  invoices: {
+    select: {
+      id: true,
+      code: true,
+      moneyStatus: true,
+      amount: true,
+      payments: { select: { id: true, amount: true } },
+    },
+  },
+} as const;
+
+export const dealCommercialFieldsSelect = {
+  wonMode: true,
+  exceptionReason: true,
+  exceptionApprovedAt: true,
+  exceptionPaymentExpectedAt: true,
+  exceptionApprovedBy: { select: userSummarySelect },
+} as const;
+
 export const dealListInclude = {
   lead: { select: { id: true, code: true, contactName: true } },
   contact: { select: contactSummarySelect },
@@ -27,23 +54,9 @@ export const dealListInclude = {
   seller: { select: userSummarySelect },
   sellerAssistant: { select: userSummarySelect },
   pm: { select: userSummarySelect },
+  ...dealCommercialFieldsSelect,
   orders: {
-    select: {
-      id: true,
-      code: true,
-      status: true,
-      totalAmount: true,
-      projectId: true,
-      invoices: {
-        select: {
-          id: true,
-          code: true,
-          moneyStatus: true,
-          amount: true,
-          payments: { select: { id: true, amount: true } },
-        },
-      },
-    },
+    select: dealOrderSelect,
   },
   existingProduct: { select: productSummarySelect },
   sourcePartner: { select: partnerSummarySelect },
@@ -87,11 +100,7 @@ export const dealUpdateInclude = {
   ...dealListInclude,
   orders: {
     select: {
-      id: true,
-      code: true,
-      status: true,
-      totalAmount: true,
-      projectId: true,
+      ...dealOrderSelect,
       invoices: {
         select: {
           id: true,

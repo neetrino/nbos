@@ -221,9 +221,12 @@ function canCreateInvoice(deal: Deal, taxStatus: string) {
     deal.amount != null &&
     Number(deal.amount) > 0 &&
     deal.paymentType &&
-    deal.projectId &&
+    deal.contactId &&
     deal.type &&
     taxStatus &&
-    (taxStatus !== 'TAX' || deal.companyId),
+    (taxStatus !== 'TAX' || deal.companyId) &&
+    deal.status !== 'WON' &&
+    deal.status !== 'FAILED' &&
+    (deal.orders?.length ?? 0) === 0,
   );
 }

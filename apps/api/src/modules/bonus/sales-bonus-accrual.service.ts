@@ -75,6 +75,7 @@ export class SalesBonusAccrualService {
             projectId: true,
             totalAmount: true,
             paymentType: true,
+            paymentMode: true,
             dealId: true,
             deal: {
               select: {
@@ -94,6 +95,9 @@ export class SalesBonusAccrualService {
     }
 
     const raw = invoice.order;
+    if (raw.paymentMode === 'FREE') {
+      return null;
+    }
     if (!raw.dealId || !raw.deal || !raw.deal.source) {
       if (raw.deal && !raw.deal.source) {
         this.logger.warn(

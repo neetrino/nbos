@@ -337,7 +337,7 @@ export class InvoicesService {
       if (!deal) return;
       await this.prisma.deal.update({
         where: { id: deal.id },
-        data: { status: 'WON' },
+        data: { status: 'WON', wonMode: 'STANDARD' },
       });
       await this.dealWonHandler.handle(deal);
     }

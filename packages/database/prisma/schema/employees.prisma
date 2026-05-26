@@ -51,6 +51,7 @@ model Employee {
   dealsSelling             Deal[]                  @relation("DealSeller")
   dealsAsSellerAssistant   Deal[]                  @relation("DealSellerAssistant")
   dealsPM                  Deal[]                  @relation("DealPM")
+  dealsExceptionApproved   Deal[]                  @relation("DealExceptionApprover")
   paymentsConfirmed        Payment[]               @relation("PaymentConfirmer")
   tasksCreated             Task[]                  @relation("TaskCreator")
   tasksAssigned            Task[]                  @relation("TaskAssignee")
