@@ -3,6 +3,7 @@ import {
   QUICK_CREATE_TASK_TITLE_ROW_CLASS,
   TASK_PRIORITY_FLAME_BUTTON_ACTIVE_CLASS,
   TASK_PRIORITY_FLAME_BUTTON_CLASS,
+  TASK_SHEET_PRIORITY_FLAME_ICON_SIZE,
 } from '@/components/shared/quick-create-task/quick-create-task-constants';
 import { Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -49,7 +50,7 @@ export function TaskSheetHeader({
             disabled={disabled}
             onClick={onToggleUrgent}
           >
-            <Flame size={19} strokeWidth={1.75} aria-hidden />
+            <Flame size={TASK_SHEET_PRIORITY_FLAME_ICON_SIZE} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
       </div>
