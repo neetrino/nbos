@@ -210,6 +210,8 @@ export function TaskSheet({
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         itemName={state.task?.title ?? ''}
+        title="Delete task?"
+        description="The task and its checklists, subtasks, and comments will be removed."
         onConfirm={async () => {
           setDeleteOpen(false);
           await handleDelete();

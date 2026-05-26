@@ -146,6 +146,8 @@ export default function ChecklistStageRulesPage() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
+        title="Delete stage rule?"
+        description="Checklists will no longer auto-spawn when items enter this stage."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;

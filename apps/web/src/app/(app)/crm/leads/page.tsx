@@ -600,6 +600,8 @@ function LeadsPipelinePageContent() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
+        title="Delete lead?"
+        description="The lead will be removed from the pipeline and linked lists."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;

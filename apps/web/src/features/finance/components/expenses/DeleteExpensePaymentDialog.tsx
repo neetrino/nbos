@@ -26,6 +26,7 @@ export function DeleteExpensePaymentDialog({
       onOpenChange={onOpenChange}
       itemName={paymentSummary}
       title="Remove payment?"
+      description="This payment line will be removed from the expense. You can record it again later."
       confirmLabel="Remove"
       isSubmitting={isSubmitting}
       errorMessage={errorMessage}

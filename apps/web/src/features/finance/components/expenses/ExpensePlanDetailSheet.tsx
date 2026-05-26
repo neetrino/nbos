@@ -254,6 +254,7 @@ export function ExpensePlanDetailSheet({
         onOpenChange={setDeleteOpen}
         itemName={plan?.name ?? ''}
         title="Delete plan?"
+        description="Linked expense cards keep running; only the plan link is cleared."
         onConfirm={async () => {
           setDeleteOpen(false);
           await handleDeletePlan();

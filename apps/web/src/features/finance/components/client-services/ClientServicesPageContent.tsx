@@ -407,6 +407,8 @@ function ClientServicesPageInner() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
+        title="Delete client service?"
+        description="Linked finance records and history stay in the system."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;

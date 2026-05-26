@@ -166,6 +166,7 @@ export function DriveDeleteFolderDialog({
       onOpenChange={onOpenChange}
       itemName={folder?.name ?? ''}
       title="Delete folder?"
+      description="The folder must be empty — no files and no subfolders."
       isSubmitting={busy}
       onConfirm={async () => {
         if (!folder) return;

@@ -43,7 +43,8 @@ export function DeleteCredentialDialog({
       open={open}
       onOpenChange={onOpenChange}
       itemName={credentialName ?? ''}
-      title="Archive?"
+      title="Archive credential?"
+      description="Hidden from active lists and project handoff. You can restore it from Archived."
       confirmLabel="Archive"
       isSubmitting={deleting}
       onConfirm={handleDelete}

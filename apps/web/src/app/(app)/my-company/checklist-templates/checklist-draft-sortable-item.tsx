@@ -305,6 +305,7 @@ export function ChecklistDraftSortableItem({
         onOpenChange={setDeleteOpen}
         itemName={item.title.trim() || 'Checklist step'}
         title="Remove step?"
+        description="The step is removed from the draft. Save the template to apply."
         confirmLabel="Remove"
         onConfirm={() => {
           setDeleteOpen(false);

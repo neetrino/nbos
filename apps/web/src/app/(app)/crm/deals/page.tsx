@@ -656,6 +656,8 @@ function DealsPipelinePageContent() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
+        title="Delete deal?"
+        description="The deal will be removed from the pipeline and linked lists."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;

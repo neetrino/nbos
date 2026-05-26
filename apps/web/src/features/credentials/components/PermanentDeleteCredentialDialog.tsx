@@ -44,6 +44,7 @@ export function PermanentDeleteCredentialDialog({
       onOpenChange={onOpenChange}
       itemName={credentialName ?? ''}
       title="Delete permanently?"
+      description="Removes the database row and encrypted secrets. Only archived credentials can be purged."
       confirmLabel="Delete forever"
       isSubmitting={deleting}
       onConfirm={handlePermanentDelete}

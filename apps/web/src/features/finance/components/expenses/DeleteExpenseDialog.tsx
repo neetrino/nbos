@@ -26,6 +26,7 @@ export function DeleteExpenseDialog({
       onOpenChange={onOpenChange}
       itemName={expenseName}
       title="Delete expense?"
+      description="The expense and its payment history will be removed from Finance."
       confirmLabel="Delete"
       isSubmitting={isSubmitting}
       errorMessage={errorMessage}

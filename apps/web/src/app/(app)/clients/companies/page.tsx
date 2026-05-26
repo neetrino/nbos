@@ -303,6 +303,8 @@ function CompaniesPageContent() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
+        title="Delete company?"
+        description="The company will be removed from the directory."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;

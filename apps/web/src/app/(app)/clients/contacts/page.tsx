@@ -314,6 +314,8 @@ function ContactsPageContent() {
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
+        title="Delete contact?"
+        description="The contact will be removed from the directory."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;
