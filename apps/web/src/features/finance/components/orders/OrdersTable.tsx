@@ -17,10 +17,11 @@ import { ORDER_STATUSES } from './order-statuses';
 
 interface OrdersTableProps {
   orders: Order[];
+  onOrderClick: (order: Order) => void;
   onCreateInvoice: (order: Order) => void;
 }
 
-export function OrdersTable({ orders, onCreateInvoice }: OrdersTableProps) {
+export function OrdersTable({ orders, onOrderClick, onCreateInvoice }: OrdersTableProps) {
   return (
     <div className="border-border overflow-hidden rounded-xl border">
       <Table>
@@ -39,7 +40,12 @@ export function OrdersTable({ orders, onCreateInvoice }: OrdersTableProps) {
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <OrderRow key={order.id} order={order} onCreateInvoice={onCreateInvoice} />
+            <OrderRow
+              key={order.id}
+              order={order}
+              onOrderClick={onOrderClick}
+              onCreateInvoice={onCreateInvoice}
+            />
           ))}
         </TableBody>
       </Table>
@@ -49,17 +55,20 @@ export function OrdersTable({ orders, onCreateInvoice }: OrdersTableProps) {
 
 function OrderRow({
   order,
+  onOrderClick,
   onCreateInvoice,
 }: {
   order: Order;
+  onOrderClick: (order: Order) => void;
   onCreateInvoice: (order: Order) => void;
 }) {
   const statusCfg = ORDER_STATUSES[order.status];
 
   return (
-    <TableRow>
+    <TableRow className="cursor-pointer" onClick={() => onOrderClick(order)}>
       <TableCell>
         <p className="font-medium">{getOrderDisplayTitle(order)}</p>
+        <p className="text-muted-foreground text-xs">{order.code}</p>
       </TableCell>
       <TableCell>
         <OrderProject order={order} />
@@ -77,7 +86,14 @@ function OrderRow({
         <OrderReconciliationCell order={order} />
       </TableCell>
       <TableCell className="text-right">
-        <Button variant="outline" size="sm" onClick={() => onCreateInvoice(order)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(event) => {
+            event.stopPropagation();
+            onCreateInvoice(order);
+          }}
+        >
           <Plus size={14} />
           Create Invoice
         </Button>
