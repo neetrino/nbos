@@ -9,8 +9,9 @@ import {
   ORDER_BOARD_COLUMN_WIDTH,
   ORDER_BOARD_STAGE_COLORS,
 } from './order-board-constants';
-import { OrderBoardCard, orderBoardLaneLabel } from './OrderBoardCard';
+import { OrderBoardCard } from './OrderBoardCard';
 import { getOrderTotalAmount } from './order-display-utils';
+import { orderStatusLabel } from './order-statuses';
 
 interface OrdersBoardViewProps {
   orders: Order[];
@@ -27,7 +28,7 @@ export function OrdersBoardView({ orders, onOrderClick, onCreateInvoice }: Order
         const color = ORDER_BOARD_STAGE_COLORS[status];
         return {
           key: status,
-          label: orderBoardLaneLabel(status),
+          label: orderStatusLabel(status),
           color,
           hexColor: resolveKanbanStageHex(color),
           items: lanes[status] ?? [],

@@ -4,10 +4,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import {
   ORDER_RECONCILIATION_GAP,
   type OrderReconciliationGap,
-  parseOrderReconciliationGap,
 } from '@/features/finance/constants/order-reconciliation-drilldown';
-import type { ListData } from '@/lib/api/finance-common';
-import type { Order } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 
 export function ReconciliationGapBanner({
@@ -39,16 +36,4 @@ export function ReconciliationGapBanner({
       </div>
     </div>
   );
-}
-
-export function buildOrdersDescription(
-  pageCount: number,
-  meta: ListData<Order>['meta'] | null,
-  gap: ReturnType<typeof parseOrderReconciliationGap>,
-): string {
-  if (!gap) {
-    return `${pageCount} orders`;
-  }
-  const total = meta?.total ?? pageCount;
-  return `${pageCount} on this page · ${total} matching filter`;
 }

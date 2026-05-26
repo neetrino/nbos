@@ -13,7 +13,6 @@ import {
   getOrderCoveragePercents,
   getOrderTotalAmount,
 } from './order-display-utils';
-import { ORDER_STATUSES } from './order-statuses';
 
 interface OrderBoardCardProps {
   order: Order;
@@ -112,8 +111,4 @@ function handleCardKeyDown(
   if (event.key !== 'Enter' && event.key !== ' ') return;
   event.preventDefault();
   onOrderClick(order);
-}
-
-export function orderBoardLaneLabel(status: string): string {
-  return ORDER_STATUSES[status]?.label ?? status.replace(/_/g, ' ');
 }

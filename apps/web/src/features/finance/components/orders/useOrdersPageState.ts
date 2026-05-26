@@ -14,7 +14,6 @@ import {
 } from '@/features/finance/constants/orders-board-view';
 import type { OrderViewMode } from '@/features/finance/components/orders/order-page-types';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import type { ListData } from '@/lib/api/finance-common';
 import {
   ordersApi,
   type Order,
@@ -45,7 +44,6 @@ export function useOrdersPageState({
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [period, setPeriod] = useState<FinancePeriod>('month');
-  const [listMeta, setListMeta] = useState<ListData<Order>['meta'] | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -125,7 +123,6 @@ export function useOrdersPageState({
         ordersApi.getStats(orderStatsQueryParams),
       ]);
       setOrders(data.items);
-      setListMeta(data.meta);
       setStats(orderStats);
       setError(null);
       setMutationError(null);
@@ -199,11 +196,6 @@ export function useOrdersPageState({
     [stripOpenOrderFromUrl],
   );
 
-  const handleOrderUpdated = useCallback((updated: Order) => {
-    setSelectedOrder(updated);
-    setOrders((current) => current.map((row) => (row.id === updated.id ? updated : row)));
-  }, []);
-
   const handleCreateInvoice = useCallback((order: Order) => {
     setInvoiceOrder(order);
   }, []);
@@ -225,7 +217,6 @@ export function useOrdersPageState({
     setFilters,
     setPeriod,
     period,
-    listMeta,
     fetchOrders,
     orderListExportParams,
     orderStatsQueryParams,
@@ -233,7 +224,6 @@ export function useOrdersPageState({
     sheetOpen,
     handleOrderClick,
     handleOrderSheetOpenChange,
-    handleOrderUpdated,
     invoiceOrder,
     handleCreateInvoice,
     handleInvoiceDialogOpenChange,

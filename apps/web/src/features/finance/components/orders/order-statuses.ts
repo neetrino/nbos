@@ -9,3 +9,7 @@ export const ORDER_STATUSES: Record<
   CANCELLED: { label: 'Cancelled', variant: 'red' },
   CLOSED: { label: 'Closed', variant: 'gray' },
 };
+
+export function orderStatusLabel(status: string): string {
+  return ORDER_STATUSES[status]?.label ?? status.replace(/_/g, ' ');
+}
