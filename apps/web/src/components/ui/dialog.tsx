@@ -23,12 +23,20 @@ function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
-function DialogOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) {
+/** Nested dialog inside a sheet must stack above sheet overlay/popup (z-50). */
+const DIALOG_NESTED_Z_CLASS = 'z-[70]';
+
+function DialogOverlay({
+  className,
+  nested = false,
+  ...props
+}: DialogPrimitive.Backdrop.Props & { nested?: boolean }) {
   return (
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-black/25 duration-150 supports-backdrop-filter:backdrop-blur-sm',
+        'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate bg-black/25 duration-150 supports-backdrop-filter:backdrop-blur-sm',
+        nested ? cn(DIALOG_NESTED_Z_CLASS, 'bg-black/40') : 'z-50',
         className,
       )}
       {...props}
@@ -40,17 +48,26 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  forceNestedBackdrop = false,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean;
+  /**
+   * When opened inside another dialog/sheet, Base UI may omit the child backdrop.
+   * Set true so the dimmed overlay still renders above the parent surface.
+   */
+  forceNestedBackdrop?: boolean;
 }) {
+  const nestedStackClass = forceNestedBackdrop ? DIALOG_NESTED_Z_CLASS : 'z-50';
+
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay nested={forceNestedBackdrop} forceRender={forceNestedBackdrop} />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          'bg-background ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl p-5 text-sm shadow-lg ring-1 shadow-black/[0.07] duration-150 outline-none sm:max-w-sm sm:p-6',
+          'bg-background ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-5 rounded-2xl p-5 text-sm shadow-lg ring-1 shadow-black/[0.07] duration-150 outline-none sm:max-w-sm sm:p-6',
+          nestedStackClass,
           className,
         )}
         {...props}

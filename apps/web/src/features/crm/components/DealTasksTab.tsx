@@ -109,6 +109,7 @@ export function DealTasksTab({ deal, onRefresh }: DealTasksTabProps) {
         creatorId={creatorId ?? ''}
         creatorReady={creatorReady}
         defaultLinks={defaultLinks}
+        forceNestedBackdrop
         onCreated={() => {
           void fetchTasks();
           onRefresh?.();

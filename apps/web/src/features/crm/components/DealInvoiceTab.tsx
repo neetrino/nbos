@@ -107,6 +107,7 @@ export function DealInvoiceTab({
           onOpenChange={setCreateOpen}
           order={createInvoiceOrder}
           submitOverride={submitOverride}
+          forceNestedBackdrop
           onCreated={() => {
             onRefresh?.();
           }}

@@ -17,6 +17,8 @@ export interface CreateInvoiceDialogOuterProps {
   hiddenContext?: CreateInvoiceHiddenContext;
   /** Custom submit (e.g. deal deposit bootstrap) instead of default invoices API create. */
   submitOverride?: (form: CreateInvoiceFormState) => Promise<Invoice | void>;
+  /** Dimmed backdrop when opened inside a parent sheet/dialog (e.g. Deal card). */
+  forceNestedBackdrop?: boolean;
 }
 
 export interface CreateInvoiceDialogState {

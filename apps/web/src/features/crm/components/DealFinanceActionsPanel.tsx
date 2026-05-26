@@ -210,6 +210,7 @@ export function DealFinanceActionsPanel({
           onOpenChange={setCreateInvoiceOpen}
           order={createInvoiceOrder}
           submitOverride={submitOverride}
+          forceNestedBackdrop
           onCreated={() => {
             onRefresh?.();
           }}
@@ -222,6 +223,7 @@ export function DealFinanceActionsPanel({
         creatorId={creatorId ?? ''}
         creatorReady={creatorReady}
         defaultLinks={defaultLinks}
+        forceNestedBackdrop
         onCreated={() => {
           onOpenTaskTab?.();
           onRefresh?.();

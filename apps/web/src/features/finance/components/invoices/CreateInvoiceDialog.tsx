@@ -30,14 +30,18 @@ export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
   const subscriptionBlocked = computeSubscriptionBlocked(props.subscriptionId, state);
   const canSubmit = canSubmitCreateInvoice(state.form) && !state.loading && !subscriptionBlocked;
 
+  const description = dialogDescription(
+    props.order,
+    props.subscriptionId,
+    state.subscriptionDetail,
+  );
+
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-[420px]">
+      <DialogContent className="sm:max-w-[420px]" forceNestedBackdrop={props.forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>{dialogTitle(props.order, state.subscriptionDetail)}</DialogTitle>
-          <DialogDescription>
-            {dialogDescription(props.order, props.subscriptionId, state.subscriptionDetail)}
-          </DialogDescription>
+          {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
         <InvoiceForm state={state} order={props.order} canSubmit={canSubmit} />
       </DialogContent>
@@ -59,7 +63,7 @@ function dialogDescription(
   if (order) return `Generate an invoice for ${order.code}.`;
   if (subscriptionDetail) return `Bill against subscription ${subscriptionDetail.code}.`;
   if (subscriptionId) return 'Loading subscription context…';
-  return 'Enter the amount to create an invoice card. Link company and project on the card before awaiting payment.';
+  return null;
 }
 
 function computeSubscriptionBlocked(

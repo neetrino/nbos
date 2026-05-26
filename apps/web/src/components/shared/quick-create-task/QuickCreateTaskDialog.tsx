@@ -38,7 +38,11 @@ export function QuickCreateTaskDialog(props: QuickCreateTaskDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false} className={QUICK_CREATE_TASK_DIALOG_CLASS}>
+      <DialogContent
+        showCloseButton={false}
+        className={QUICK_CREATE_TASK_DIALOG_CLASS}
+        forceNestedBackdrop={props.forceNestedBackdrop}
+      >
         <DialogTitle className="sr-only">Create task</DialogTitle>
 
         <form
