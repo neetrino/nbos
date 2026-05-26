@@ -35,7 +35,6 @@ import { PayrollRunsBoardView } from '@/features/finance/components/payroll/Payr
 import { PayrollRunsCalendarView } from '@/features/finance/components/payroll/PayrollRunsCalendarView';
 import { PayrollRunsCreateRunDialog } from '@/features/finance/components/payroll/PayrollRunsCreateRunDialog';
 import { PayrollRunsListTable } from '@/features/finance/components/payroll/PayrollRunsListTable';
-import { PayrollRunsListTotalsBar } from '@/features/finance/components/payroll/payroll-runs-list-totals-bar';
 import { PAYROLL_RUNS_VIEW_OPTIONS } from '@/features/finance/components/payroll/payroll-runs-view-options';
 import {
   readPayrollRunsListViewMode,
@@ -360,13 +359,6 @@ export function PayrollRunsListPageContent() {
             />
           ) : (
             <div className="flex min-h-0 flex-1 flex-col gap-4">
-              <PayrollRunsListTotalsBar
-                runCount={items.length}
-                payable={pageTotals.payable}
-                paid={pageTotals.paid}
-                remaining={pageTotals.remaining}
-                lines={pageTotals.lines}
-              />
               {view === 'calendar' ? (
                 <PayrollRunsCalendarView items={items} />
               ) : view === 'board' ? (

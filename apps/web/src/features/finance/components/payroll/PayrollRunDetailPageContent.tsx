@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { PayrollRunStatusBadge } from '@/features/finance/components/payroll/payroll-run-status-badge';
-import { formatAmount } from '@/features/finance/constants/finance';
-import { payrollRunRemainingMajorUnits } from '@/features/finance/utils/payroll-run-remaining-from-strings';
 import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
 import { PayrollRunBonusReleasesSection } from '@/features/finance/components/payroll/payroll-run-bonus-releases-section';
 import { PayrollRunDetailActions } from '@/features/finance/components/payroll/PayrollRunDetailActions';
@@ -25,11 +23,6 @@ import {
   type PayrollRunDetail,
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
-
-function parseAmount(value: string): number {
-  const n = Number.parseFloat(value);
-  return Number.isFinite(n) ? n : 0;
-}
 
 function formatJournalAt(iso: string): string {
   const d = new Date(iso);
@@ -181,18 +174,6 @@ export function PayrollRunDetailPageContent({
         </p>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <Summary label="Total base" value={formatAmount(parseAmount(run.totalBaseSalary))} />
-        <Summary label="Bonuses" value={formatAmount(parseAmount(run.totalBonuses))} />
-        <Summary label="Payable" value={formatAmount(parseAmount(run.totalPayable))} />
-        <Summary label="Paid" value={formatAmount(parseAmount(run.totalPaid))} />
-        <Summary
-          label="Remaining"
-          value={formatAmount(payrollRunRemainingMajorUnits(run.totalPayable, run.totalPaid))}
-          accent
-        />
-      </div>
-
       <PayrollRunSalesKpiSection
         run={run}
         scorecardMetrics={run.salesKpiScorecardMetrics}
@@ -257,15 +238,6 @@ export function PayrollRunDetailPageContent({
           if (!next) setOpenSalaryLineId(null);
         }}
       />
-    </div>
-  );
-}
-
-function Summary({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="border-border bg-card rounded-xl border p-4">
-      <p className="text-muted-foreground text-xs">{label}</p>
-      <p className={`mt-1 text-lg font-semibold ${accent ? 'text-accent' : ''}`}>{value}</p>
     </div>
   );
 }

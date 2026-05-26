@@ -11,7 +11,6 @@ import {
   ViewModeSwitch,
 } from '@/components/shared';
 import { BonusPoolsBoardView } from '@/features/finance/components/bonus/bonus-pools-board-view';
-import { BonusPoolsFilteredTotalsBar } from '@/features/finance/components/bonus/bonus-pools-filtered-totals-bar';
 import { BonusPoolsListView } from '@/features/finance/components/bonus/bonus-pools-list-view';
 import { BONUS_POOLS_VIEW_OPTIONS } from '@/features/finance/components/bonus/bonus-pools-view-options';
 import {
@@ -219,7 +218,6 @@ export function BonusPoolsPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-6">
-      <BonusPoolsFilteredTotalsBar totals={filteredTotals} />
       {mainView}
       <ProductBonusPoolSheet
         pool={sheetPool}

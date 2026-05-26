@@ -13,8 +13,6 @@ import {
   ViewModeSwitch,
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { BonusBoardFilteredTotalsBar } from '@/features/finance/components/bonus/bonus-board-filtered-totals-bar';
-import { computeBonusBoardFilteredTotals } from '@/features/finance/utils/bonus-board-filtered-totals';
 import {
   readBonusBoardViewMode,
   writeBonusBoardViewMode,
@@ -320,8 +318,6 @@ export function BonusBoardPageContent() {
     ],
   );
 
-  const filteredTotals = useMemo(() => computeBonusBoardFilteredTotals(filtered), [filtered]);
-
   const boardBody = useMemo(() => {
     switch (view) {
       case 'list':
@@ -374,10 +370,7 @@ export function BonusBoardPageContent() {
           action={null}
         />
       ) : (
-        <>
-          <BonusBoardFilteredTotalsBar totals={filteredTotals} />
-          {boardBody}
-        </>
+        boardBody
       )}
 
       <BonusEntryReleasesSheet
