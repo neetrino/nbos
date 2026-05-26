@@ -23,8 +23,8 @@ export function ExpensePayrollPresetBanner({
         <div>
           <p className="text-foreground text-sm font-medium">Payroll salary expenses</p>
           <p className="text-muted-foreground text-xs leading-snug">
-            Pay Now opens on payroll salary cards for the current month by default. Record payments
-            here — salary line status syncs from the expense ledger.
+            Filter to payroll salary cards for a month, or record payments on any expense — salary
+            line status syncs from the expense ledger.
           </p>
         </div>
       </div>

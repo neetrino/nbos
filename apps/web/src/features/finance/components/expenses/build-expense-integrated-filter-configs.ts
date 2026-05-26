@@ -10,6 +10,10 @@ import {
 } from './expense-board-scope';
 import { buildPayrollExpenseFilterConfigs } from './build-payroll-expense-filter-configs';
 import { buildExpenseFilterConfigs, type ExpenseFilterBarConfig } from './expenses-filter-config';
+import {
+  EXPENSE_LIST_DEFAULT_SORT_BY,
+  EXPENSE_LIST_DEFAULT_SORT_ORDER,
+} from '@/features/finance/constants/expenses-list-query';
 import { EXPENSE_LIST_SORT_OPTIONS } from './expense-list-sort-options';
 
 export function buildExpenseIntegratedFilterConfigs(
@@ -41,7 +45,7 @@ export function buildExpenseIntegratedFilterConfigs(
     key: EXPENSE_SORT_BY_FILTER_KEY,
     label: 'Sort by',
     includeAllOption: false,
-    defaultOptionValue: 'dueDate',
+    defaultOptionValue: EXPENSE_LIST_DEFAULT_SORT_BY,
     options: EXPENSE_LIST_SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
   });
 
@@ -49,7 +53,7 @@ export function buildExpenseIntegratedFilterConfigs(
     key: EXPENSE_SORT_ORDER_FILTER_KEY,
     label: 'Order',
     includeAllOption: false,
-    defaultOptionValue: 'desc',
+    defaultOptionValue: EXPENSE_LIST_DEFAULT_SORT_ORDER,
     options: [
       { value: 'desc', label: 'Descending' },
       { value: 'asc', label: 'Ascending' },

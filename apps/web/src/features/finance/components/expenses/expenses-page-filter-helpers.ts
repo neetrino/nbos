@@ -1,8 +1,5 @@
 import { EXPENSE_BACKLOG_FIXED_STATUS } from '../../constants/project-expenses-drilldown';
-import {
-  clearPayrollPayNowFilters,
-  payNowDefaultExpenseFilters,
-} from '../../constants/expense-payroll-filter';
+import { clearPayrollPayNowFilters } from '../../constants/expense-payroll-filter';
 
 export type ExpensesPageVariant = 'default' | 'backlog' | 'closed';
 
@@ -13,7 +10,7 @@ export function initialExpenseFilterRecord(variant: ExpensesPageVariant): Record
   if (variant === 'closed') {
     return {};
   }
-  return payNowDefaultExpenseFilters();
+  return clearPayrollPayNowFilters();
 }
 
 export function clearedExpenseFilterRecord(
@@ -28,7 +25,7 @@ export function clearedExpenseFilterRecord(
   if (variant === 'closed') {
     return projectIdFromUrl ? { project: projectIdFromUrl } : {};
   }
-  return payNowDefaultExpenseFilters();
+  return clearPayrollPayNowFilters();
 }
 
 export function expenseFiltersWithoutProjectDrilldown(
