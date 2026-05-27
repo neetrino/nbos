@@ -24,7 +24,6 @@ import { DealMarketingSection } from './DealMarketingSection';
 import { DealNotesSection } from './DealNotesSection';
 import { DealOfferContractSection } from './DealOfferContractSection';
 import { DealSourceLeadSection } from './DealSourceLeadSection';
-import { DealLegacyFieldsPanel } from './DealLegacyFieldsPanel';
 import type { DealGeneralDraft } from './deal-general-form-state';
 
 interface DealGeneralTabProps {
@@ -158,7 +157,6 @@ export function DealGeneralTab({
           gateRequiredFields={gateRequiredFields}
         />
         <DealOfferContractSection dealId={deal.id} gateRequiredFields={gateRequiredFields} />
-        <DealLegacyFieldsPanel deal={deal} />
         <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS)}>
           <DealContactTeamSection
             deal={deal}
