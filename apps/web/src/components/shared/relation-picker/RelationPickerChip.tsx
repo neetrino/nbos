@@ -68,7 +68,9 @@ export function RelationPickerChip({
   return (
     <span className={cn(RELATION_PICKER_CHIP_SHELL_CLASS, disabled && 'opacity-60')}>
       {canOpen ? (
-        <div className={RELATION_PICKER_SHEET_TARGET_GROUP_CLASS}>
+        <div
+          className={cn(RELATION_PICKER_SHEET_TARGET_GROUP_CLASS, !canReplace && 'min-w-0 flex-1')}
+        >
           <button
             type="button"
             disabled={!canOpen}
@@ -96,7 +98,13 @@ export function RelationPickerChip({
           </button>
         </div>
       ) : (
-        <div className="flex min-w-0 shrink items-center gap-2">
+        <div
+          className={cn(
+            'flex min-w-0 items-center gap-2',
+            !canReplace && onClear && 'flex-1',
+            canReplace ? 'shrink' : undefined,
+          )}
+        >
           {leading}
           {sheetLabel}
         </div>
@@ -133,7 +141,7 @@ export function RelationPickerChip({
             event.stopPropagation();
             onClear();
           }}
-          className={DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS}
+          className={cn(DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS, 'ml-auto shrink-0')}
           aria-label={`Remove ${label}`}
         >
           <X size={14} />
