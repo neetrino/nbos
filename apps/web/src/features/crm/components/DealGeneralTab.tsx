@@ -174,6 +174,7 @@ export function DealGeneralTab({
           />
           <DealSourceLeadSection deal={deal} className={DETAIL_SHEET_PAIRED_FULL_WIDTH_CLASS} />
         </div>
+        <DealEntityMetaLine createdAt={deal.createdAt} updatedAt={deal.updatedAt} />
       </div>
 
       <div aria-hidden className="hidden min-h-0 xl:block" />
@@ -204,4 +205,33 @@ function getFilteredProductTypeOptions(
   return productTypeOptions.filter(
     (option) => allowed.includes(option.value) || option.value === 'OTHER',
   );
+}
+
+interface DealEntityMetaLineProps {
+  createdAt: string;
+  updatedAt: string;
+}
+
+function DealEntityMetaLine({ createdAt, updatedAt }: DealEntityMetaLineProps) {
+  return (
+    <p className="text-muted-foreground flex flex-wrap items-center gap-x-2.5 gap-y-1 px-1 text-xs tabular-nums">
+      <span>
+        <span className="font-medium">Created</span> {formatDealMetaDate(createdAt)}
+      </span>
+      <span aria-hidden className="text-muted-foreground/40">
+        |
+      </span>
+      <span>
+        <span className="font-medium">Last updated</span> {formatDealMetaDate(updatedAt)}
+      </span>
+    </p>
+  );
+}
+
+function formatDealMetaDate(value: string): string {
+  return new Date(value).toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }

@@ -1,10 +1,9 @@
 'use client';
 
-import { Building2, Calendar, Clock, User, UserCog } from 'lucide-react';
+import { Building2, User, UserCog } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
-  InlineField,
   RelationPickerField,
 } from '@/components/shared';
 import {
@@ -115,29 +114,7 @@ export function DealContactTeamSection({
           onClear={() => patchDraft({ pmId: null, pmDisplayLabel: null })}
           {...employeePicker}
         />
-
-        <InlineField
-          label="Created"
-          value={formatStaticDate(deal.createdAt)}
-          icon={<Calendar size={12} />}
-          editable={false}
-        />
-
-        <InlineField
-          label="Last Updated"
-          value={formatStaticDate(deal.updatedAt)}
-          icon={<Clock size={12} />}
-          editable={false}
-        />
       </div>
     </DetailSheetSection>
   );
-}
-
-function formatStaticDate(value: string) {
-  return new Date(value).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
