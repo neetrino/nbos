@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Plus, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  DETAIL_SHEET_PERSON_AVATAR_CLASS,
   RELATION_PICKER_CHIP_STACK_CLASS,
   RELATION_PICKER_EMPTY_TRIGGER_CLASS,
+  RELATION_PICKER_ENTITY_ICON_INLINE_CLASS,
+  RELATION_PICKER_PERSON_AVATAR_CLASS,
 } from '../detail-sheet-classes';
 import { RelationPickerChip } from './RelationPickerChip';
 import { RelationPickerEntityIcon } from './relation-picker-entity-icon';
@@ -37,14 +38,20 @@ function initialsFromLabel(label: string): string {
 }
 
 function personAvatar(label: string): ReactNode {
-  return <div className={DETAIL_SHEET_PERSON_AVATAR_CLASS}>{initialsFromLabel(label)}</div>;
+  return <div className={RELATION_PICKER_PERSON_AVATAR_CLASS}>{initialsFromLabel(label)}</div>;
 }
 
 function chipIcon(kind: RelationEntityKind, label: string): ReactNode {
   if (kind === 'contact' || kind === 'employee') {
     return personAvatar(label);
   }
-  return <RelationPickerEntityIcon kind={kind} />;
+  return (
+    <RelationPickerEntityIcon
+      kind={kind}
+      variant="inline"
+      className={RELATION_PICKER_ENTITY_ICON_INLINE_CLASS}
+    />
+  );
 }
 
 export function RelationPickerField(props: RelationPickerFieldProps) {
