@@ -40,6 +40,7 @@ export { KanbanColumnMoneyTotal } from './kanban/KanbanColumnMoneyTotal';
 export { InlineField, type InlineFieldProps } from './InlineField';
 export { MoneyInput, type MoneyInputProps } from './MoneyInput';
 export { NbosMoneyInput, type NbosMoneyInputProps } from './NbosMoneyInput';
+export { AmdCurrencyIcon, type AmdCurrencyIconProps } from './AmdCurrencyIcon';
 export {
   NbosCalendarGrid,
   NbosDateInput,

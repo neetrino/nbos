@@ -7,9 +7,10 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { QuickCreateTaskDialog } from '@/components/shared';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import {
+  AmdCurrencyIcon,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
-} from '@/components/shared/detail-sheet-classes';
+} from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { buildDriveHrefWithDeal } from '@/features/drive/drive-deep-link';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
@@ -242,10 +243,15 @@ function FinanceRow({
   value: string;
   valueClassName?: string;
 }) {
+  const showCurrency = value !== '—';
+
   return (
     <div className="flex justify-between gap-2">
       <span className="text-muted-foreground">{label}</span>
-      <span className={cn('tabular-nums', valueClassName)}>{value}</span>
+      <span className={cn('flex items-center justify-end gap-1 tabular-nums', valueClassName)}>
+        {showCurrency ? <AmdCurrencyIcon className={valueClassName} /> : null}
+        {value}
+      </span>
     </div>
   );
 }

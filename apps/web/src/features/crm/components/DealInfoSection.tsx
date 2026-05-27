@@ -1,16 +1,8 @@
 'use client';
 
+import { Building2, Calendar, CreditCard, FolderKanban, Layers, Receipt, Tag } from 'lucide-react';
 import {
-  Building2,
-  Calendar,
-  CreditCard,
-  DollarSign,
-  FolderKanban,
-  Layers,
-  Receipt,
-  Tag,
-} from 'lucide-react';
-import {
+  AmdCurrencyIcon,
   DETAIL_SHEET_SECTION_BODY_CLASS,
   InlineField,
   RelationPickerField,
@@ -56,7 +48,7 @@ export function DealInfoProjectBillingFields({
         type="money"
         value={draft.amount ?? ''}
         placeholder="Enter amount..."
-        icon={<DollarSign size={12} />}
+        icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
         disabled={disabled}
         className={dealStageGateFieldClass(gateRequiredFields, 'amount')}
         onValueChange={(v) => patchDraft({ amount: v === '' ? null : Number(v) })}
