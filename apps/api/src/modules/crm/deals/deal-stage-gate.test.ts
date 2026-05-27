@@ -125,7 +125,7 @@ describe('validateDealStageGate', () => {
     expect(() => validateDealStageGate(deal, 'GET_ANSWER')).not.toThrow();
   });
 
-  it('requires pmId + deadline for PRODUCT at DEPOSIT_AND_CONTRACT', () => {
+  it('requires deadline but not PM for PRODUCT at DEPOSIT_AND_CONTRACT', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
@@ -134,16 +134,29 @@ describe('validateDealStageGate', () => {
       productType: 'COMPANY_WEBSITE',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
+      companyId: 'company-1',
     };
     expect(() => validateDealStageGate(deal, 'DEPOSIT_AND_CONTRACT')).toThrow(BadRequestException);
 
-    const complete = {
-      ...deal,
+    const withDeadline = { ...deal, deadline: new Date() };
+    expect(() => validateDealStageGate(withDeadline, 'DEPOSIT_AND_CONTRACT')).not.toThrow();
+  });
+
+  it('requires PM for PRODUCT at WON', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerSentAt: new Date(),
+      offerLink: 'https://example.com/offer',
       companyId: 'company-1',
-      pmId: 'pm-1',
       deadline: new Date(),
+      orders: [{ invoices: [{ id: 'invoice-1' }] }],
     };
-    expect(() => validateDealStageGate(complete, 'DEPOSIT_AND_CONTRACT')).not.toThrow();
+    expect(() => validateDealStageGate(deal, 'WON')).toThrow(BadRequestException);
+    expect(() => validateDealStageGate({ ...deal, pmId: 'pm-1' }, 'WON')).not.toThrow();
   });
 
   it('requires deposit invoice before WON for commercial deals', () => {

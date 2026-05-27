@@ -134,19 +134,11 @@ export function getDealStageGateErrors(
         message: 'Company is required for TAX deals at DEPOSIT_AND_CONTRACT',
       });
     }
-    if (dealType === 'PRODUCT') {
-      if (!deal.pmId) {
-        errors.push({
-          field: 'pmId',
-          message: 'PM is required for PRODUCT deals at DEPOSIT_AND_CONTRACT',
-        });
-      }
-      if (!deal.deadline) {
-        errors.push({
-          field: 'deadline',
-          message: 'Deadline is required for PRODUCT deals at DEPOSIT_AND_CONTRACT',
-        });
-      }
+    if (dealType === 'PRODUCT' && !deal.deadline) {
+      errors.push({
+        field: 'deadline',
+        message: 'Deadline is required for PRODUCT deals at DEPOSIT_AND_CONTRACT',
+      });
     }
     if (isExtension && !deal.existingProductId) {
       errors.push({
@@ -156,16 +148,19 @@ export function getDealStageGateErrors(
     }
   }
 
-  if (
-    targetStatus === 'WON' &&
-    dealType &&
-    DEPOSIT_COMMERCIAL_DEAL_TYPES.has(dealType) &&
-    !hasInvoice
-  ) {
-    errors.push({
-      field: 'invoice',
-      message: 'Deposit invoice is required before Deal Won',
-    });
+  if (targetStatus === 'WON') {
+    if (dealType === 'PRODUCT' && !deal.pmId) {
+      errors.push({
+        field: 'pmId',
+        message: 'PM is required for PRODUCT deals before Deal Won',
+      });
+    }
+    if (dealType && DEPOSIT_COMMERCIAL_DEAL_TYPES.has(dealType) && !hasInvoice) {
+      errors.push({
+        field: 'invoice',
+        message: 'Deposit invoice is required before Deal Won',
+      });
+    }
   }
 
   return errors;

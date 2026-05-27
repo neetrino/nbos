@@ -57,7 +57,7 @@ describe('getDealStageGateErrors', () => {
     expect(getDealStageGateErrors({ ...baseDeal, notes: 'Budget' }, 'FAILED')).toEqual([]);
   });
 
-  it('accepts DEPOSIT_AND_CONTRACT without contract or invoice', () => {
+  it('accepts DEPOSIT_AND_CONTRACT without PM for PRODUCT', () => {
     const deal = {
       ...baseDeal,
       amount: 5000,
@@ -66,10 +66,27 @@ describe('getDealStageGateErrors', () => {
       productType: 'COMPANY_WEBSITE',
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
-      pmId: 'pm-1',
       deadline: new Date(),
     };
     expect(getDealStageGateErrors(deal, 'DEPOSIT_AND_CONTRACT')).toEqual([]);
+  });
+
+  it('requires PM before WON for PRODUCT', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerLink: 'https://example.com/offer',
+      companyId: 'company-1',
+      deadline: new Date(),
+      orders: [{ invoices: [{ id: 'invoice-1' }] }],
+    };
+    expect(getDealStageGateErrors(deal, 'WON').map((error) => error.field)).toContain('pmId');
+    expect(
+      getDealStageGateErrors({ ...deal, pmId: 'pm-1' }, 'WON').map((error) => error.field),
+    ).not.toContain('pmId');
   });
 
   it('requires deposit invoice before WON for commercial deals', () => {
