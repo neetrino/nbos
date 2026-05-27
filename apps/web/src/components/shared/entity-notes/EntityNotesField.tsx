@@ -24,6 +24,8 @@ function focusLeftShell(shell: HTMLElement | null): boolean {
   return active !== null && shell !== null && !shell.contains(active);
 }
 
+const DEFAULT_FIELD_LABEL = 'Comment';
+
 export function EntityNotesField({
   entityType: _entityType,
   entityId: _entityId,
@@ -77,9 +79,11 @@ export function EntityNotesField({
     activate();
   };
 
+  const fieldLabel = label === null ? null : (label ?? DEFAULT_FIELD_LABEL);
+
   return (
     <div className={cn('w-full', className)}>
-      {label ? <span className={ENTITY_NOTES_LABEL_CLASS}>{label}</span> : null}
+      {fieldLabel ? <span className={ENTITY_NOTES_LABEL_CLASS}>{fieldLabel}</span> : null}
       <div
         ref={shellRef}
         className={cn(

@@ -1,7 +1,7 @@
 import { DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS } from '../detail-sheet-classes';
 
 export const ENTITY_NOTES_LABEL_CLASS =
-  'text-muted-foreground mb-1.5 block text-xs font-medium tracking-wide';
+  'text-muted-foreground/75 mb-1 block text-[10px] font-semibold tracking-[0.14em] uppercase';
 
 /** Shell corner radius — softer than `rounded-xl` (Bitrix-style description bar). */
 const ENTITY_NOTES_SHELL_RADIUS_CLASS = 'rounded-lg';
