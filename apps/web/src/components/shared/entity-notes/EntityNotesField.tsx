@@ -2,11 +2,12 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { EditorContent } from '@tiptap/react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   ENTITY_NOTES_EDITOR_ROOT_CLASS,
   ENTITY_NOTES_LABEL_CLASS,
+  ENTITY_NOTES_LABEL_ICON_CLASS,
   ENTITY_NOTES_SHELL_DISABLED_CLASS,
   ENTITY_NOTES_SHELL_EDITING_SURFACE_CLASS,
   ENTITY_NOTES_SHELL_PASSIVE_SURFACE_CLASS,
@@ -83,7 +84,12 @@ export function EntityNotesField({
 
   return (
     <div className={cn('w-full', className)}>
-      {fieldLabel ? <span className={ENTITY_NOTES_LABEL_CLASS}>{fieldLabel}</span> : null}
+      {fieldLabel ? (
+        <span className={ENTITY_NOTES_LABEL_CLASS}>
+          <MessageSquare size={10} className={ENTITY_NOTES_LABEL_ICON_CLASS} aria-hidden />
+          {fieldLabel}
+        </span>
+      ) : null}
       <div
         ref={shellRef}
         className={cn(
