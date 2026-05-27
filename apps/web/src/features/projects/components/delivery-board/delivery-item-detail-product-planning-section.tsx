@@ -114,7 +114,6 @@ export function ProductPlanningSection({
           entityId={entityId}
           value={draft.description}
           onChange={(description) => patchDraft({ description: description ?? '' })}
-          label="Scope & working notes"
           placeholder="Plan, milestones, client context…"
           disabled={disabled}
         />

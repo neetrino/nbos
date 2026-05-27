@@ -14,7 +14,7 @@ import type { EntityNoteEntityType } from './entity-notes-contract';
  * />
  * ```
  *
- * Omit `label` for the default compact “Comment” caption, pass a string to override,
+ * Omit `label` for the default compact “Description” caption, pass a string to override,
  * or `label={null}` to hide the caption entirely.
  */
 export interface EntityNotesFieldProps {
@@ -26,7 +26,7 @@ export interface EntityNotesFieldProps {
   disabled?: boolean;
   loading?: boolean;
   placeholder?: string;
-  /** Default: “Comment”. Pass `null` to hide the caption. */
+  /** Default: “Description”. Pass `null` to hide the caption. */
   label?: string | null;
   className?: string;
   /** e.g. stage-gate ring from CRM sheets */

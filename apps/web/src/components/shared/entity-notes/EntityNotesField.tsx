@@ -17,14 +17,14 @@ import { EntityNotesToolbar } from './entity-notes-toolbar';
 import { isNotesValueEmpty } from './entity-notes-value';
 import { useEntityNotesEditor } from './use-entity-notes-editor';
 
-const DEFAULT_PLACEHOLDER = 'Comment';
+const DEFAULT_PLACEHOLDER = 'Description';
 
 function focusLeftShell(shell: HTMLElement | null): boolean {
   const active = document.activeElement;
   return active !== null && shell !== null && !shell.contains(active);
 }
 
-const DEFAULT_FIELD_LABEL = 'Comment';
+const DEFAULT_FIELD_LABEL = 'Description';
 
 export function EntityNotesField({
   entityType: _entityType,
