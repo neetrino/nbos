@@ -27,9 +27,10 @@ export type DealFilePurpose = 'OFFER' | 'CONTRACT';
 interface DealFilesBlockProps {
   dealId: string;
   purpose: DealFilePurpose;
+  onFilesChanged?: () => void;
 }
 
-export function DealFilesBlock({ dealId, purpose }: DealFilesBlockProps) {
+export function DealFilesBlock({ dealId, purpose, onFilesChanged }: DealFilesBlockProps) {
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
 
   const listFiles = useCallback(async () => {
@@ -40,12 +41,26 @@ export function DealFilesBlock({ dealId, purpose }: DealFilesBlockProps) {
     });
   }, [dealId, purpose]);
 
-  const { files, pending, loading, uploadFiles, refresh } = useOptimisticEntityFileUpload({
+  const {
+    files,
+    pending,
+    loading,
+    uploadFiles: uploadFilesInternal,
+    refresh,
+  } = useOptimisticEntityFileUpload({
     link: { entityType: 'DEAL', entityId: dealId },
     library: DEAL_FILES_LIBRARY,
     purpose,
     listFiles,
   });
+
+  const uploadFiles = useCallback(
+    async (picked: readonly File[]) => {
+      await uploadFilesInternal(picked);
+      onFilesChanged?.();
+    },
+    [onFilesChanged, uploadFilesInternal],
+  );
 
   const runUnlink = async (file: FileAsset) => {
     setBusyFileId(file.id);
@@ -53,6 +68,7 @@ export function DealFilesBlock({ dealId, purpose }: DealFilesBlockProps) {
       await unlinkFileFromEntityRecord(file, 'DEAL', dealId);
       toast.success('Unlinked — file stays in the deal folder on Drive');
       await refresh();
+      onFilesChanged?.();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not unlink file');
     } finally {
@@ -66,6 +82,7 @@ export function DealFilesBlock({ dealId, purpose }: DealFilesBlockProps) {
       await archiveAndUnlinkFileFromEntityRecord(file, 'DEAL', dealId);
       toast.success('File archived and unlinked from deal');
       await refresh();
+      onFilesChanged?.();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not archive file');
     } finally {

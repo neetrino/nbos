@@ -149,7 +149,11 @@ export function DealGeneralTab({
           disabled={formDisabled}
           gateRequiredFields={gateRequiredFields}
         />
-        <DealOfferContractSection dealId={deal.id} gateRequiredFields={gateRequiredFields} />
+        <DealOfferContractSection
+          dealId={deal.id}
+          gateRequiredFields={gateRequiredFields}
+          onFilesChanged={onRefresh}
+        />
         <div className={cn(DETAIL_SHEET_PAIRED_COLUMNS_CLASS)}>
           <DealContactTeamSection
             deal={deal}

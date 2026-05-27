@@ -155,6 +155,10 @@ function DealsPipelinePageContent() {
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
       });
       setDeals(data.items);
+      setSelectedDeal((prev) => {
+        if (!prev) return prev;
+        return data.items.find((deal) => deal.id === prev.id) ?? prev;
+      });
       setError(null);
     } catch {
       setError('Deals could not be loaded. Check your connection and try again.');

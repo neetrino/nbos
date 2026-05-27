@@ -178,6 +178,11 @@ export function DealSheet({
   }, [generalSnap]);
 
   useEffect(() => {
+    if (!open || !stageGateHighlight) return;
+    queueMicrotask(() => setActiveTab('general'));
+  }, [open, stageGateHighlight]);
+
+  useEffect(() => {
     if (!open || !blockerNavigation) return;
     const { intent } = blockerNavigation;
     queueMicrotask(() => {

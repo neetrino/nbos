@@ -18,11 +18,13 @@ import { DealFilesBlock } from './DealFilesBlock';
 interface DealOfferContractSectionProps {
   dealId: string;
   gateRequiredFields?: ReadonlySet<string>;
+  onFilesChanged?: () => void;
 }
 
 export function DealOfferContractSection({
   dealId,
   gateRequiredFields = new Set(),
+  onFilesChanged,
 }: DealOfferContractSectionProps) {
   const offerRequired = gateRequiredFields.has('offerProof');
   const contractRequired = gateRequiredFields.has('contractProof');
@@ -47,7 +49,7 @@ export function DealOfferContractSection({
           className={cn('min-w-0', dealStageGateFieldClass(gateRequiredFields, 'offerProof', ''))}
         >
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Offer</p>
-          <DealFilesBlock dealId={dealId} purpose="OFFER" />
+          <DealFilesBlock dealId={dealId} purpose="OFFER" onFilesChanged={onFilesChanged} />
         </div>
         <div
           className={cn(
@@ -56,7 +58,7 @@ export function DealOfferContractSection({
           )}
         >
           <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>Contract</p>
-          <DealFilesBlock dealId={dealId} purpose="CONTRACT" />
+          <DealFilesBlock dealId={dealId} purpose="CONTRACT" onFilesChanged={onFilesChanged} />
         </div>
       </div>
     </DetailSheetCollapsibleSection>

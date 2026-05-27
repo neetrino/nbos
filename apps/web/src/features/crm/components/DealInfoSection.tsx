@@ -63,6 +63,7 @@ export function DealInfoProjectBillingFields({
         placeholder="Tax / Tax Free"
         icon={<Receipt size={12} />}
         disabled={disabled}
+        className={dealStageGateFieldClass(gateRequiredFields, 'taxStatus')}
         onValueChange={(v) => patchDraft({ taxStatus: v })}
       />
 
@@ -141,6 +142,7 @@ export function DealInfoDealProductFields({
         options={DEAL_TYPES.map((type) => ({ value: type.value, label: type.label }))}
         icon={<Layers size={12} />}
         disabled={disabled}
+        className={dealStageGateFieldClass(gateRequiredFields, 'type')}
         onValueChange={(v) => {
           if (v) patchDraft({ type: v });
         }}

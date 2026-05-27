@@ -112,6 +112,7 @@ export function DealContactTeamSection({
             multiple
             value={draft.contactIds}
             selectionLabels={draft.contactLabels}
+            className={dealStageGateFieldClass(gateRequiredFields, 'contactId')}
             placeholder="Search or create contact…"
             icon={<User size={12} />}
             disabled={disabled}

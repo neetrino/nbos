@@ -1,4 +1,7 @@
 const KNOWN_FIELD_LABELS: Record<string, string> = {
+  contactId: 'Contact',
+  type: 'Deal type',
+  taxStatus: 'Tax status',
   source: 'From',
   sourceDetail: 'Where',
   sourcePartnerId: 'Partner',
