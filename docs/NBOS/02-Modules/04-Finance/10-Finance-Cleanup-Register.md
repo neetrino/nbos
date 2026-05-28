@@ -79,21 +79,22 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 ### A4. Payroll Run Workspace v2 + Unit Economics Board (2026-05)
 
-Статус: `SHIPPED` (commit `e73b88f4` on `development`) — **multi-view Unit Economics и bonus policy engine — не закрыты**
+Статус: `SHIPPED` (`e73b88f4` … `84d40c50` on `development`) — **per-unit invoice/payment drill-down и bonus policy engine — не закрыты**
 
 **Сделано в runtime + UI:**
 
 - `GET/PATCH` payroll allocation matrix (employees × delivery payable units), layout persistence, cell release edit;
-- matrix: column/row DnD, pin, reset layout, planned bonus edit, recipient reassign, manual gray-cell bonus;
+- matrix: column/row DnD, pin, reset layout, planned bonus edit, recipient reassign, manual gray-cell bonus, validation banner, cell audit read;
 - pre-review/approve matrix validation; carry/KPI notify on matrix attach;
-- `GET /api/unit-economics` + `/finance/unit-economics` Overview + Bonus pools tab;
-- Bonus Board manual create: `title`, `reason`, `originalAmount`, audit log;
-- docs: `05-Bonus-and-Payroll`, `04-Finance-Pages`, `03-Core-Entities` (matrix + UE sections).
+- `GET /api/unit-economics` + `/finance/unit-economics` tabs: Overview, Funding/cash, Expenses, Profitability, Bonus pools;
+- Bonus Board manual create: `title`, `reason`, `originalAmount`, audit log; audit panel on entry sheet + matrix cell dialog;
+- docs: `05-Bonus-and-Payroll`, `04-Finance-Pages`, `03-Core-Entities`, `06-PnL-Reports` (matrix + UE sections).
 
 **Остаётся:**
 
-- Unit Economics views: Invoices & Payments, Expenses, Profitability tabs;
-- bonus recipient history UI (read `audit_logs` on entry);
+- Unit Economics: dedicated Invoices & Payments drill-down per delivery unit (beyond aggregate columns);
+- bonus recipient full history UI (beyond last N audit rows);
+- layout-change audit (optional);
 - full matrix E2E / manual QA checklist in `todo.md` Phase 8.
 
 ### A5. Compensation MVP UX aligned with Bitrix-style flow

@@ -226,7 +226,7 @@ Exit criteria:
 - bonus release and product bonus pool logic are safe;
 - partner payout rules respect Deal Type and Payment Type.
 
-**Compensation slice (2026-05):** salary board, payroll workspace, bonus board, pools, Pay Now payroll linkage, employee wallet MVP — audit [`02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md`](02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md). **Still open for Phase 3 exit:** My Company policy engine (cap/carry-over/burned), expense/subscription canon — [`todo.md`](../../todo.md) at repo root.
+**Compensation slice (2026-05):** salary board, payroll workspace (allocation matrix v2 on run detail), bonus board, pools, unit economics board (`/finance/unit-economics`), Pay Now payroll linkage, employee wallet MVP — audit [`02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md`](02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md). Payroll/UE slice progress: repo root [`todo.md`](../../todo.md). **Still open for Phase 3 exit:** My Company policy engine (cap/carry-over/burned), expense/subscription canon, UE per-unit invoice/payment drill-down.
 
 Key docs:
 
