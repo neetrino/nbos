@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { DragEndEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DraggableAttributes, SyntheticListenerMap } from '@dnd-kit/core';
 import {
   DndContext,
   KeyboardSensor,
@@ -52,6 +52,50 @@ function MatrixLabeledAmount({ label, value }: { label: string; value: string })
       <span>{label} </span>
       <span className="text-foreground font-normal tabular-nums">{value}</span>
     </p>
+  );
+}
+
+function MatrixHeaderDragShell({
+  disabled,
+  dragLabel,
+  onActivate,
+  dragAttributes,
+  dragListeners,
+  children,
+}: {
+  disabled: boolean;
+  dragLabel: string;
+  onActivate: () => void;
+  dragAttributes: DraggableAttributes;
+  dragListeners: SyntheticListenerMap | undefined;
+  children: ReactNode;
+}) {
+  return (
+    <div className="group relative">
+      <button
+        type="button"
+        className="hover:text-primary w-full min-w-0 pr-5 text-left"
+        onClick={onActivate}
+      >
+        {children}
+      </button>
+      {!disabled ? (
+        <button
+          type="button"
+          className={cn(
+            'text-muted-foreground hover:text-foreground absolute top-1 right-1 z-10 rounded p-0.5',
+            'cursor-grab opacity-0 transition-opacity active:cursor-grabbing',
+            'pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100',
+            'focus-visible:pointer-events-auto focus-visible:opacity-100',
+          )}
+          aria-label={dragLabel}
+          {...dragAttributes}
+          {...dragListeners}
+        >
+          <GripVertical size={14} aria-hidden />
+        </button>
+      ) : null}
+    </div>
   );
 }
 
@@ -177,39 +221,29 @@ function SortableMatrixColumnHeader(props: {
         isDragging && 'opacity-70',
       )}
     >
-      <div className="flex gap-1">
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground mt-0.5 shrink-0 cursor-grab active:cursor-grabbing"
-          aria-label="Drag to reorder column"
-          disabled={disabled}
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical size={14} aria-hidden />
-        </button>
-        <button
-          type="button"
-          className="hover:text-primary min-w-0 flex-1 text-left"
-          onClick={onActivate}
-        >
-          <p className={MATRIX_PRIMARY_NAME_CLASS}>
-            {col.pinned ? '📌 ' : ''}
-            {col.primary}
-          </p>
-          {col.kind === 'employee' ? (
-            <>
-              {col.secondary ? <MatrixLabeledAmount label="Role" value={col.secondary} /> : null}
-              <MatrixLabeledAmount label="Bonus" value={col.meta} />
-            </>
-          ) : (
-            <>
-              <MatrixLabeledAmount label="Remaining" value={col.meta} />
-              {col.funding ? <MatrixLabeledAmount label="Avail" value={col.funding} /> : null}
-            </>
-          )}
-        </button>
-      </div>
+      <MatrixHeaderDragShell
+        disabled={disabled}
+        dragLabel="Drag to reorder column"
+        onActivate={onActivate}
+        dragAttributes={attributes}
+        dragListeners={listeners}
+      >
+        <p className={MATRIX_PRIMARY_NAME_CLASS}>
+          {col.pinned ? '📌 ' : ''}
+          {col.primary}
+        </p>
+        {col.kind === 'employee' ? (
+          <>
+            {col.secondary ? <MatrixLabeledAmount label="Role" value={col.secondary} /> : null}
+            <MatrixLabeledAmount label="Bonus" value={col.meta} />
+          </>
+        ) : (
+          <>
+            <MatrixLabeledAmount label="Remaining" value={col.meta} />
+            {col.funding ? <MatrixLabeledAmount label="Avail" value={col.funding} /> : null}
+          </>
+        )}
+      </MatrixHeaderDragShell>
     </th>
   );
 }
@@ -241,39 +275,29 @@ function SortableMatrixRowHeader(props: {
         isDragging && 'opacity-70',
       )}
     >
-      <div className="flex gap-1">
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground mt-0.5 shrink-0 cursor-grab active:cursor-grabbing"
-          aria-label="Drag to reorder row"
-          disabled={disabled}
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical size={14} aria-hidden />
-        </button>
-        <button
-          type="button"
-          className="hover:text-primary min-w-0 flex-1 text-left"
-          onClick={onActivate}
-        >
-          <p className={MATRIX_PRIMARY_NAME_CLASS}>
-            {row.pinned ? '📌 ' : ''}
-            {row.primary}
-          </p>
-          {row.kind === 'employee' ? (
-            <>
-              <MatrixLabeledAmount label="Salary" value={row.secondary} />
-              <MatrixLabeledAmount label="Bonus" value={row.meta} />
-            </>
-          ) : (
-            <>
-              <MatrixLabeledAmount label="Remaining" value={row.meta} />
-              {row.funding ? <MatrixLabeledAmount label="Avail" value={row.funding} /> : null}
-            </>
-          )}
-        </button>
-      </div>
+      <MatrixHeaderDragShell
+        disabled={disabled}
+        dragLabel="Drag to reorder row"
+        onActivate={onActivate}
+        dragAttributes={attributes}
+        dragListeners={listeners}
+      >
+        <p className={MATRIX_PRIMARY_NAME_CLASS}>
+          {row.pinned ? '📌 ' : ''}
+          {row.primary}
+        </p>
+        {row.kind === 'employee' ? (
+          <>
+            <MatrixLabeledAmount label="Salary" value={row.secondary} />
+            <MatrixLabeledAmount label="Bonus" value={row.meta} />
+          </>
+        ) : (
+          <>
+            <MatrixLabeledAmount label="Remaining" value={row.meta} />
+            {row.funding ? <MatrixLabeledAmount label="Avail" value={row.funding} /> : null}
+          </>
+        )}
+      </MatrixHeaderDragShell>
     </th>
   );
 }
