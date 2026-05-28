@@ -117,11 +117,6 @@ export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunI
     }
   };
 
-  const employeeOptions = matrix.employees.map((e) => ({
-    id: e.employeeId,
-    label: `${e.firstName} ${e.lastName}`.trim(),
-  }));
-
   const handleReassignSubmit = async (payload: { toEmployeeId: string; reason: string }) => {
     if (!editCell) return;
     setReassignBusy(true);
@@ -193,6 +188,10 @@ export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunI
     return <ErrorState description={error ?? 'Not found'} onRetry={() => void load()} />;
   }
 
+  const employeeOptions = matrix.employees.map((e) => ({
+    id: e.employeeId,
+    label: `${e.firstName} ${e.lastName}`.trim(),
+  }));
   const employeeIds = matrix.employees.map((e) => e.employeeId);
   const unitIds = matrix.deliveryUnits.map((u) => u.orderId);
   const pinTargetId = viewMode === 'EMPLOYEE_MATRIX' ? activeColumnId : activeRowId;
