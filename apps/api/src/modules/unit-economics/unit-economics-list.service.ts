@@ -44,6 +44,22 @@ function unitLabel(order: {
   return order.code;
 }
 
+function productGroupForOrder(order: {
+  product: { id: string; name: string } | null;
+  extension: { id: string; name: string; product: { id: string; name: string } } | null;
+}): { productGroupId: string | null; productGroupName: string } {
+  if (order.product) {
+    return { productGroupId: order.product.id, productGroupName: order.product.name };
+  }
+  if (order.extension) {
+    return {
+      productGroupId: order.extension.product.id,
+      productGroupName: order.extension.product.name,
+    };
+  }
+  return { productGroupId: null, productGroupName: '' };
+}
+
 async function sumExpensesPaidForOrder(
   prisma: InstanceType<typeof PrismaClient>,
   orderId: string,
@@ -87,7 +103,14 @@ export class UnitEconomicsListService {
         extensionId: true,
         project: { select: { code: true, name: true } },
         product: { select: { id: true, name: true, status: true } },
-        extension: { select: { id: true, name: true, status: true } },
+        extension: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            product: { select: { id: true, name: true } },
+          },
+        },
         productBonusPool: {
           select: {
             totalPlannedAmount: true,
@@ -141,6 +164,7 @@ export class UnitEconomicsListService {
       totalsAcc.outCommitted = totalsAcc.outCommitted.plus(decimalFrom(money.outCommittedAmount));
 
       const label = unitLabel(order);
+      const { productGroupId, productGroupName } = productGroupForOrder(order);
       items.push({
         orderId: order.id,
         orderCode: order.code,
@@ -151,6 +175,8 @@ export class UnitEconomicsListService {
         productId: order.productId,
         extensionId: order.extensionId,
         productLabel: label,
+        productGroupId,
+        productGroupName: productGroupName || label,
         orderType: order.type as 'PRODUCT' | 'EXTENSION',
         deliveryOpen: isDeliveryOpen(order.product?.status, order.extension?.status),
         ...money,

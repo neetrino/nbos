@@ -1,8 +1,7 @@
 export type UnitEconomicsBoardViewMode =
-  | 'list'
+  | 'tree'
+  | 'orders'
   | 'cards'
-  | 'projects'
-  | 'products'
   | 'cash'
   | 'outflows'
   | 'profitability';
@@ -10,24 +9,27 @@ export type UnitEconomicsBoardViewMode =
 const STORAGE_KEY = 'nbos:finance:unit-economics-view';
 
 const VALID_MODES: UnitEconomicsBoardViewMode[] = [
-  'list',
+  'tree',
+  'orders',
   'cards',
-  'projects',
-  'products',
   'cash',
   'outflows',
   'profitability',
 ];
 
-export function readUnitEconomicsBoardViewMode(): UnitEconomicsBoardViewMode {
-  if (typeof window === 'undefined') {
-    return 'list';
-  }
-  const raw = window.localStorage.getItem(STORAGE_KEY);
+function normalizeStoredMode(raw: string | null): UnitEconomicsBoardViewMode {
+  if (raw === 'list' || raw === 'projects' || raw === 'products') return 'tree';
   if (raw && VALID_MODES.includes(raw as UnitEconomicsBoardViewMode)) {
     return raw as UnitEconomicsBoardViewMode;
   }
-  return 'list';
+  return 'tree';
+}
+
+export function readUnitEconomicsBoardViewMode(): UnitEconomicsBoardViewMode {
+  if (typeof window === 'undefined') {
+    return 'tree';
+  }
+  return normalizeStoredMode(window.localStorage.getItem(STORAGE_KEY));
 }
 
 export function writeUnitEconomicsBoardViewMode(mode: UnitEconomicsBoardViewMode): void {

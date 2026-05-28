@@ -49,7 +49,12 @@ describe('UnitEconomicsListService', () => {
             extensionId: 'ext-1',
             project: { code: 'PRJ', name: 'Project' },
             product: null,
-            extension: { id: 'ext-1', name: 'Phase 2', status: 'IN_PROGRESS' },
+            extension: {
+              id: 'ext-1',
+              name: 'Phase 2',
+              status: 'IN_PROGRESS',
+              product: { id: 'prod-x', name: 'Parent App' },
+            },
             productBonusPool: {
               totalPlannedAmount: '1000',
               totalReleasedAmount: '200',
@@ -75,6 +80,8 @@ describe('UnitEconomicsListService', () => {
     expect(result.items[0]?.expensesPaidAmount).toBe('50.00');
     expect(result.items[0]?.deliveryOpen).toBe(true);
     expect(result.items[0]?.extensionId).toBe('ext-1');
+    expect(result.items[0]?.productGroupId).toBe('prod-x');
+    expect(result.items[0]?.productGroupName).toBe('Parent App');
     expect(result.projects).toHaveLength(1);
     expect(result.products).toHaveLength(1);
     expect(result.products[0]?.kind).toBe('EXTENSION');

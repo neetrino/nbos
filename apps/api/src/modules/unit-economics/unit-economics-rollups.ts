@@ -44,9 +44,8 @@ export function rollupUnitEconomicsByProject(
 }
 
 function productRollupKey(row: UnitEconomicsRowDto): string {
-  if (row.productId) return `product:${row.productId}`;
-  if (row.extensionId) return `extension:${row.extensionId}`;
-  return `order:${row.orderId}`;
+  const groupId = row.productGroupId ?? row.orderId;
+  return `${row.projectId}:product:${groupId}`;
 }
 
 export function rollupUnitEconomicsByProduct(
@@ -64,11 +63,12 @@ export function rollupUnitEconomicsByProduct(
     .map(([rollupKey, rows]) => {
       const head = rows[0];
       if (!head) return null;
-      const kind = head.productId ? 'PRODUCT' : head.extensionId ? 'EXTENSION' : 'ORDER';
+      const hasProductOrder = rows.some((row) => row.orderType === 'PRODUCT');
+      const kind = hasProductOrder ? 'PRODUCT' : head.extensionId ? 'EXTENSION' : 'ORDER';
       return {
         rollupKey,
         kind,
-        label: head.productLabel,
+        label: head.productGroupName,
         projectId: head.projectId,
         projectCode: head.projectCode,
         unitCount: rows.length,

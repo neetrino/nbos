@@ -25,6 +25,9 @@ export type UnitEconomicsRowDto = {
   productId: string | null;
   extensionId: string | null;
   productLabel: string;
+  /** Product entity id for grouping extensions with their parent product. */
+  productGroupId: string | null;
+  productGroupName: string;
   orderType: 'PRODUCT' | 'EXTENSION';
   deliveryOpen: boolean;
 } & UnitEconomicsMoneyFields;

@@ -171,7 +171,7 @@ export function UnitEconomicsPageContent() {
     !error &&
     items.length > 0 &&
     filteredItems.length === 0 &&
-    (view === 'list' || view === 'cards');
+    (view === 'tree' || view === 'orders' || view === 'cards');
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">

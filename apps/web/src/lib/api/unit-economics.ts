@@ -28,6 +28,8 @@ export type UnitEconomicsRow = {
   productId: string | null;
   extensionId: string | null;
   productLabel: string;
+  productGroupId: string | null;
+  productGroupName: string;
   orderType: 'PRODUCT' | 'EXTENSION';
   deliveryOpen: boolean;
 } & UnitEconomicsMoneyFields;

@@ -162,7 +162,7 @@ export function UnitEconomicsOverviewTable({
         >
           <thead className="bg-card sticky top-0 z-10">
             <tr className="text-muted-foreground text-left">
-              <th className="border-border border-b px-3 py-2 font-semibold">Delivery unit</th>
+              <th className="border-border border-b px-3 py-2 font-semibold">Order</th>
               {isFunding ? (
                 <>
                   <th className="border-border border-b px-2 py-2 text-right font-semibold">

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { unitEconomicsOrderTypeLabel } from '@/features/finance/components/unit-economics/unit-economics-order-type-label';
 import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
 
 export function UnitEconomicsUnitLinkCell({
@@ -10,30 +11,29 @@ export function UnitEconomicsUnitLinkCell({
   row: UnitEconomicsRow;
   onDrilldown?: (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 }) {
-  const label = onDrilldown ? (
+  const typeLabel = unitEconomicsOrderTypeLabel(row.orderType);
+  const title = onDrilldown ? (
     <button
       type="button"
-      className="hover:text-primary text-left font-medium"
+      className="hover:text-primary text-left font-medium tabular-nums"
       onClick={() => onDrilldown(row.orderId, 'invoices')}
     >
-      {row.label}
+      {row.orderCode}
     </button>
   ) : (
     <Link
       href={`/finance/orders?search=${encodeURIComponent(row.orderCode)}`}
-      className="hover:text-primary font-medium"
+      className="hover:text-primary font-medium tabular-nums"
     >
-      {row.label}
+      {row.orderCode}
     </Link>
   );
 
   return (
     <td className="border-border border-b px-3 py-2">
-      {label}
-      <p className="text-muted-foreground text-[11px]">
-        {row.orderCode} · {row.projectCode}
-        {row.orderType ? ` · ${row.orderType}` : ''}
-        {row.deliveryOpen ? ' · open' : ' · closed'}
+      {title}
+      <p className="text-muted-foreground truncate text-[11px]">
+        {row.label} · {typeLabel} · {row.projectCode} · {row.deliveryOpen ? 'open' : 'closed'}
       </p>
     </td>
   );

@@ -18,6 +18,8 @@ function row(
     productId: partial.productId ?? null,
     extensionId: partial.extensionId ?? null,
     productLabel: partial.productLabel ?? 'Product A',
+    productGroupId: partial.productGroupId ?? partial.productId ?? null,
+    productGroupName: partial.productGroupName ?? partial.productLabel ?? 'Product A',
     orderType: partial.orderType ?? 'PRODUCT',
     deliveryOpen: partial.deliveryOpen ?? true,
     invoicedAmount: partial.invoicedAmount ?? '100.00',
@@ -54,25 +56,29 @@ describe('rollupUnitEconomicsByProject', () => {
 });
 
 describe('rollupUnitEconomicsByProduct', () => {
-  it('groups by product id when present', () => {
+  it('groups extensions under their parent product within a project', () => {
     const items = [
       row({
         orderId: 'o1',
         productId: 'prod-1',
+        productGroupId: 'prod-1',
+        productGroupName: 'App',
         receivedAmount: '40.00',
-        marginAfterCommitments: '10.00',
       }),
       row({
         orderId: 'o2',
-        productId: 'prod-1',
+        productId: null,
+        extensionId: 'ext-1',
+        productGroupId: 'prod-1',
+        productGroupName: 'App',
+        label: 'Phase 2',
+        orderType: 'EXTENSION',
         receivedAmount: '60.00',
-        marginAfterCommitments: '20.00',
       }),
     ];
     const products = rollupUnitEconomicsByProduct(items);
     expect(products).toHaveLength(1);
-    expect(products[0]?.kind).toBe('PRODUCT');
+    expect(products[0]?.unitCount).toBe(2);
     expect(products[0]?.receivedAmount).toBe('100.00');
-    expect(products[0]?.marginAfterCommitments).toBe('30.00');
   });
 });

@@ -35,7 +35,14 @@ function rowMatchesFilters(row: UnitEconomicsRow, filters: UnitEconomicsFilterVa
 
 function rowMatchesSearch(row: UnitEconomicsRow, query: string): boolean {
   if (!query) return true;
-  const fields = [row.orderCode, row.label, row.projectCode, row.projectName, row.productLabel];
+  const fields = [
+    row.orderCode,
+    row.label,
+    row.projectCode,
+    row.projectName,
+    row.productLabel,
+    row.productGroupName,
+  ];
   return fields.some((field) => matchesSearch(field, query));
 }
 
