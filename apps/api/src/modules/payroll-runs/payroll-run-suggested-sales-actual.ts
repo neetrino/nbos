@@ -50,6 +50,17 @@ type PaymentSellerRow = {
   };
 };
 
+type SalesPaymentSourceRow = {
+  id: string;
+  amount: { toString(): string } | number | string;
+  paymentDate: Date;
+  invoice: {
+    id: string;
+    code: string;
+    order: { id: string; code: string; deal: { id: string; sellerId: string } | null } | null;
+  };
+};
+
 /**
  * Per-seller suggested KPI actual: sum of `Payment.amount` in the payroll month (UTC)
  * for invoices on orders whose deal `sellerId` matches the employee.
@@ -104,4 +115,82 @@ export async function sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi(
   }
 
   return totals;
+}
+
+export async function listSalesPaymentFactsForEmployee(
+  prisma: PrismaClient,
+  payrollMonth: string,
+  employeeId: string,
+): Promise<{
+  total: Decimal;
+  payments: Array<{
+    paymentId: string;
+    invoiceId: string;
+    invoiceCode: string;
+    orderId: string;
+    orderCode: string;
+    dealId: string;
+    amount: string;
+    paymentDate: string;
+  }>;
+}> {
+  const range = parsePayrollMonthToUtcRange(payrollMonth);
+  if (!range) {
+    return { total: BONUS_POOL_ZERO, payments: [] };
+  }
+
+  const rows = (await prisma.payment.findMany({
+    where: {
+      paymentDate: { gte: range.gte, lt: range.lt },
+      invoice: {
+        orderId: { not: null },
+        order: {
+          dealId: { not: null },
+          deal: { sellerId: employeeId },
+        },
+      },
+    },
+    select: {
+      id: true,
+      amount: true,
+      paymentDate: true,
+      invoice: {
+        select: {
+          id: true,
+          code: true,
+          order: {
+            select: {
+              id: true,
+              code: true,
+              deal: { select: { id: true, sellerId: true } },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { paymentDate: 'asc' },
+  })) as SalesPaymentSourceRow[];
+
+  let total = BONUS_POOL_ZERO;
+  const payments = rows.flatMap((row) => {
+    const order = row.invoice.order;
+    const deal = order?.deal;
+    if (!order || !deal) return [];
+    const amount = decimalFrom(String(row.amount));
+    total = total.plus(amount);
+    return [
+      {
+        paymentId: row.id,
+        invoiceId: row.invoice.id,
+        invoiceCode: row.invoice.code,
+        orderId: order.id,
+        orderCode: order.code,
+        dealId: deal.id,
+        amount: amount.toFixed(2),
+        paymentDate: row.paymentDate.toISOString(),
+      },
+    ];
+  });
+
+  return { total, payments };
 }

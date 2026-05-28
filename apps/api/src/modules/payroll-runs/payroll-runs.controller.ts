@@ -10,6 +10,7 @@ import type {
   PatchPayrollMatrixReassignBody,
 } from './payroll-allocation-matrix.types';
 import { PayrollRunsService } from './payroll-runs.service';
+import { PayrollRunKpiResultService } from './payroll-run-kpi-result.service';
 
 @ApiTags('Payroll runs')
 @ApiBearerAuth()
@@ -18,6 +19,7 @@ export class PayrollRunsController {
   constructor(
     private readonly payrollRunsService: PayrollRunsService,
     private readonly payrollAllocationMatrixService: PayrollAllocationMatrixService,
+    private readonly payrollRunKpiResultService: PayrollRunKpiResultService,
   ) {}
 
   @Get()
@@ -220,6 +222,26 @@ export class PayrollRunsController {
   })
   async getBonusReleases(@Param('id') id: string) {
     return this.payrollRunsService.getBonusReleases(id);
+  }
+
+  @Get(':id/kpi-results')
+  @ApiOperation({
+    summary: 'Read KPI result snapshots linked to this payroll run',
+    description:
+      'Returns read-only KPI results resolved from My Company KPI policies and source facts. Payroll does not collect KPI targets here.',
+  })
+  async getKpiResults(@Param('id') id: string) {
+    return this.payrollRunKpiResultService.listForPayrollRun(id);
+  }
+
+  @Post(':id/kpi-results/sync-sales')
+  @ApiOperation({
+    summary: 'Resolve sales KPI result snapshots for this payroll run',
+    description:
+      'MVP: stores sales actual source facts from invoice payments for employees with active KPI policies. Target/plan remains policy-owned.',
+  })
+  async syncSalesKpiResults(@Param('id') id: string) {
+    return this.payrollRunKpiResultService.syncSalesForPayrollRun(id);
   }
 
   @Get(':id')
