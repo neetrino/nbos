@@ -51,17 +51,47 @@ export type UnitEconomicsPaymentLineDto = {
   paymentMethod: string | null;
 };
 
+export type UnitEconomicsExpenseLineDto = {
+  journalEntryId: string;
+  expenseId: string;
+  name: string;
+  amount: string;
+  bookedAt: string;
+  sourceType: string;
+};
+
+export type UnitEconomicsBonusLineDto = {
+  bonusEntryId: string;
+  employeeName: string;
+  type: string;
+  status: string;
+  title: string | null;
+  fullAmount: string;
+  payableAmount: string;
+  releasedAmount: string;
+  paidAmount: string;
+  earnedPeriod: string | null;
+};
+
 export type UnitEconomicsOrderDetailDto = {
   orderId: string;
   orderCode: string;
   label: string;
   projectCode: string;
+  projectId: string;
   orderType: 'PRODUCT' | 'EXTENSION';
   summary: {
     invoicedAmount: string;
     receivedAmount: string;
     receivableAmount: string;
+    expensesPaidAmount: string;
+    plannedBonuses: string;
+    releasedBonuses: string;
+    paidBonuses: string;
+    remainingBonuses: string;
   };
   invoices: UnitEconomicsInvoiceLineDto[];
   payments: UnitEconomicsPaymentLineDto[];
+  expenses: UnitEconomicsExpenseLineDto[];
+  bonuses: UnitEconomicsBonusLineDto[];
 };

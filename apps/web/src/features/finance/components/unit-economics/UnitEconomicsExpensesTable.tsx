@@ -5,8 +5,8 @@ import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economics-list';
 import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
+import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
-
 import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
 
 export function UnitEconomicsExpensesTable({
@@ -58,11 +58,21 @@ export function UnitEconomicsExpensesTable({
               sorted.map((row) => (
                 <tr key={row.orderId} className="hover:bg-muted/30">
                   <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
-                  <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                    {formatAmount(Number.parseFloat(row.expensesPaidAmount))}
+                  <td className="border-border border-b px-2 py-2 text-right">
+                    <UnitEconomicsDrilldownAmount
+                      amount={Number.parseFloat(row.expensesPaidAmount)}
+                      orderId={row.orderId}
+                      focus="expenses"
+                      onDrilldown={onDrilldown}
+                    />
                   </td>
-                  <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                    {formatAmount(Number.parseFloat(row.plannedBonuses))}
+                  <td className="border-border border-b px-2 py-2 text-right">
+                    <UnitEconomicsDrilldownAmount
+                      amount={Number.parseFloat(row.plannedBonuses)}
+                      orderId={row.orderId}
+                      focus="bonuses"
+                      onDrilldown={onDrilldown}
+                    />
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
                     {formatAmount(Number.parseFloat(row.releasedBonuses))}

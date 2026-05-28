@@ -36,7 +36,8 @@ export function UnitEconomicsPageContent() {
     <div className="flex flex-col gap-4">
       <p className="text-muted-foreground text-sm">
         Financial state per delivery product or extension: received funds, expenses, bonuses,
-        available cash, and margin indicators. Click invoiced or received amounts to drill down.
+        available cash, and margin indicators. Click amounts to drill down into invoices, payments,
+        expenses, and bonuses.
       </p>
       <ViewModeSwitch
         value={view}

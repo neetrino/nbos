@@ -20,9 +20,20 @@ describe('UnitEconomicsOrderDetailService', () => {
           type: 'PRODUCT',
           product: { name: 'App' },
           extension: null,
+          projectId: 'p1',
           project: { code: 'PRJ' },
+          productBonusPool: {
+            totalPlannedAmount: '500',
+            totalReleasedAmount: '200',
+            totalPaidAmount: '100',
+            totalRemainingAmount: '300',
+          },
         }),
       },
+      operationalJournalEntry: { findMany: vi.fn().mockResolvedValue([]) },
+      bonusEntry: { findMany: vi.fn().mockResolvedValue([]) },
+      expensePayment: { findMany: vi.fn().mockResolvedValue([]) },
+      expense: { findMany: vi.fn().mockResolvedValue([]) },
       invoice: {
         findMany: vi.fn().mockResolvedValue([
           {
@@ -64,5 +75,10 @@ describe('UnitEconomicsOrderDetailService', () => {
     expect(detail.invoices[0]?.receivedOnInvoice).toBe('1000.00');
     expect(detail.payments).toHaveLength(2);
     expect(detail.payments[0]?.id).toBe('pay2');
+    expect(detail.projectId).toBe('p1');
+    expect(detail.expenses).toEqual([]);
+    expect(detail.bonuses).toEqual([]);
+    expect(detail.summary.plannedBonuses).toBe('500.00');
+    expect(detail.summary.expensesPaidAmount).toBe('0.00');
   });
 });

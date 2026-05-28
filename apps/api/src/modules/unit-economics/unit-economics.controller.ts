@@ -22,7 +22,7 @@ export class UnitEconomicsController {
 
   @Get('orders/:orderId')
   @ApiOperation({
-    summary: 'Drill-down: invoices and payments for one delivery unit',
+    summary: 'Drill-down: invoices, payments, expenses, and bonuses for one delivery unit',
   })
   async orderDetail(@Param('orderId') orderId: string) {
     return this.unitEconomicsOrderDetailService.getByOrderId(orderId);

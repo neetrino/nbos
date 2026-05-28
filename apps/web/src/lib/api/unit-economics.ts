@@ -53,22 +53,52 @@ export type UnitEconomicsPaymentLine = {
   paymentMethod: string | null;
 };
 
+export type UnitEconomicsExpenseLine = {
+  journalEntryId: string;
+  expenseId: string;
+  name: string;
+  amount: string;
+  bookedAt: string;
+  sourceType: string;
+};
+
+export type UnitEconomicsBonusLine = {
+  bonusEntryId: string;
+  employeeName: string;
+  type: string;
+  status: string;
+  title: string | null;
+  fullAmount: string;
+  payableAmount: string;
+  releasedAmount: string;
+  paidAmount: string;
+  earnedPeriod: string | null;
+};
+
 export type UnitEconomicsOrderDetail = {
   orderId: string;
   orderCode: string;
   label: string;
   projectCode: string;
+  projectId: string;
   orderType: 'PRODUCT' | 'EXTENSION';
   summary: {
     invoicedAmount: string;
     receivedAmount: string;
     receivableAmount: string;
+    expensesPaidAmount: string;
+    plannedBonuses: string;
+    releasedBonuses: string;
+    paidBonuses: string;
+    remainingBonuses: string;
   };
   invoices: UnitEconomicsInvoiceLine[];
   payments: UnitEconomicsPaymentLine[];
+  expenses: UnitEconomicsExpenseLine[];
+  bonuses: UnitEconomicsBonusLine[];
 };
 
-export type UnitEconomicsDrilldownFocus = 'invoices' | 'payments';
+export type UnitEconomicsDrilldownFocus = 'invoices' | 'payments' | 'expenses' | 'bonuses';
 
 export const unitEconomicsApi = {
   list: () => api.get<UnitEconomicsList>('/api/unit-economics'),

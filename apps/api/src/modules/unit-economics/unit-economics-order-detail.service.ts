@@ -4,6 +4,8 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { sumPaymentsReceivedForOrder } from '../bonus/order-received-payments-sum';
 import { DELIVERY_BONUS_ORDER_TYPES } from '../payroll-runs/delivery-payable-unit.types';
+import { loadUnitEconomicsOrderBonuses } from './load-unit-economics-order-bonuses';
+import { loadUnitEconomicsOrderExpenses } from './load-unit-economics-order-expenses';
 import { computeReceivableAmount, sumInvoicedForOrder } from './order-invoice-totals';
 import type {
   UnitEconomicsOrderDetailDto,
@@ -37,16 +39,27 @@ export class UnitEconomicsOrderDetailService {
         type: true,
         product: { select: { name: true } },
         extension: { select: { name: true } },
+        projectId: true,
         project: { select: { code: true } },
+        productBonusPool: {
+          select: {
+            totalPlannedAmount: true,
+            totalReleasedAmount: true,
+            totalPaidAmount: true,
+            totalRemainingAmount: true,
+          },
+        },
       },
     });
     if (!order) {
       throw new NotFoundException('Delivery unit not found');
     }
 
-    const [invoiced, received, invoiceRows] = await Promise.all([
+    const [invoiced, received, expenses, bonuses, invoiceRows] = await Promise.all([
       sumInvoicedForOrder(this.prisma, orderId),
       sumPaymentsReceivedForOrder(this.prisma, orderId),
+      loadUnitEconomicsOrderExpenses(this.prisma, orderId),
+      loadUnitEconomicsOrderBonuses(this.prisma, orderId),
       this.prisma.invoice.findMany({
         where: { orderId, moneyStatus: { not: 'CANCELLED' } },
         select: {
@@ -95,19 +108,37 @@ export class UnitEconomicsOrderDetailService {
 
     payments.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
 
+    const pool = order.productBonusPool;
+    const planned = pool ? decimalFrom(pool.totalPlannedAmount) : BONUS_POOL_ZERO;
+    const releasedTotal = pool ? decimalFrom(pool.totalReleasedAmount) : BONUS_POOL_ZERO;
+    const paidTotal = pool ? decimalFrom(pool.totalPaidAmount) : BONUS_POOL_ZERO;
+    const remainingTotal = pool ? decimalFrom(pool.totalRemainingAmount) : BONUS_POOL_ZERO;
+    const expensesPaid = expenses.reduce(
+      (sum, line) => sum.plus(decimalFrom(line.amount)),
+      BONUS_POOL_ZERO,
+    );
+
     return {
       orderId: order.id,
       orderCode: order.code,
       label: unitLabel(order),
       projectCode: order.project.code,
+      projectId: order.projectId,
       orderType: order.type as 'PRODUCT' | 'EXTENSION',
       summary: {
         invoicedAmount: invoiced.toFixed(2),
         receivedAmount: received.toFixed(2),
         receivableAmount: receivable.toFixed(2),
+        expensesPaidAmount: expensesPaid.toFixed(2),
+        plannedBonuses: planned.toFixed(2),
+        releasedBonuses: releasedTotal.toFixed(2),
+        paidBonuses: paidTotal.toFixed(2),
+        remainingBonuses: remainingTotal.toFixed(2),
       },
       invoices,
       payments,
+      expenses,
+      bonuses,
     };
   }
 }

@@ -18,3 +18,12 @@ export function bonusBoardHref(projectId?: string | null): string {
   const q = new URLSearchParams({ [BONUS_BOARD_PROJECT_FILTER_QUERY]: id });
   return `${base}?${q.toString()}`;
 }
+
+/** Bonus board URL scoped to project with a specific entry sheet open. */
+export function bonusEntryHref(projectId: string, bonusEntryId: string): string {
+  const q = new URLSearchParams({
+    [BONUS_BOARD_PROJECT_FILTER_QUERY]: projectId,
+    [BONUS_BOARD_OPEN_ENTRY_QUERY]: bonusEntryId,
+  });
+  return `${FINANCE_BONUS_BOARD_PATH}?${q.toString()}`;
+}

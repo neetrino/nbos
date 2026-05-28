@@ -8,6 +8,9 @@ import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/u
 import { buttonVariants } from '@/components/ui/button';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { UnitEconomicsDrilldownBonusesTable } from '@/features/finance/components/unit-economics/unit-economics-drilldown-bonuses-table';
+import { UnitEconomicsDrilldownExpensesTable } from '@/features/finance/components/unit-economics/unit-economics-drilldown-expenses-table';
+import { bonusBoardHref } from '@/features/finance/constants/bonus-board-url';
 import {
   unitEconomicsApi,
   type UnitEconomicsDrilldownFocus,
@@ -218,7 +221,7 @@ export function UnitEconomicsDrilldownSheet({
           <SheetDescription>
             {detail
               ? `${detail.orderCode} · ${detail.projectCode} · ${detail.orderType}`
-              : 'Invoices and payments for the selected delivery unit.'}
+              : 'Invoices, payments, expenses, and bonuses for the selected delivery unit.'}
           </SheetDescription>
         </SheetHeader>
 
@@ -244,22 +247,37 @@ export function UnitEconomicsDrilldownSheet({
                   label={`Payments (${detail.payments.length})`}
                   onSelect={() => setTab('payments')}
                 />
+                <DrilldownTab
+                  active={tab === 'expenses'}
+                  label={`Expenses (${detail.expenses.length})`}
+                  onSelect={() => setTab('expenses')}
+                />
+                <DrilldownTab
+                  active={tab === 'bonuses'}
+                  label={`Bonuses (${detail.bonuses.length})`}
+                  onSelect={() => setTab('bonuses')}
+                />
               </div>
-              {tab === 'invoices' ? (
-                <InvoicesTable detail={detail} />
-              ) : (
-                <PaymentsTable detail={detail} />
-              )}
-              <Link
-                href={`/finance/invoices?search=${encodeURIComponent(detail.orderCode)}`}
-                className={cn(
-                  buttonVariants({ variant: 'outline', size: 'sm' }),
-                  'gap-1.5 self-start',
-                )}
-              >
-                Open in Finance
-                <ExternalLink size={12} className="opacity-70" aria-hidden />
-              </Link>
+              {tab === 'invoices' ? <InvoicesTable detail={detail} /> : null}
+              {tab === 'payments' ? <PaymentsTable detail={detail} /> : null}
+              {tab === 'expenses' ? <UnitEconomicsDrilldownExpensesTable detail={detail} /> : null}
+              {tab === 'bonuses' ? <UnitEconomicsDrilldownBonusesTable detail={detail} /> : null}
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/finance/invoices?search=${encodeURIComponent(detail.orderCode)}`}
+                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+                >
+                  Invoices
+                  <ExternalLink size={12} className="opacity-70" aria-hidden />
+                </Link>
+                <Link
+                  href={bonusBoardHref(detail.projectId)}
+                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+                >
+                  Bonus board
+                  <ExternalLink size={12} className="opacity-70" aria-hidden />
+                </Link>
+              </div>
             </>
           ) : null}
         </div>

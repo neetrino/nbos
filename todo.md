@@ -11,9 +11,9 @@
 | 1 Documentation             | 🟢     | Canon + UI spec + entities + P&L + cleanup/audit/roadmap cross-links (2026-05 slice)      |
 | 2 Payroll Run Detail UX     | 🟢     | Matrix primary UX, row/column DnD, pin, reset, context panels, cell dialogs               |
 | 3 Bonus logic / manual form | 🟡     | KPI payable snapshot shipped; manual adjustment fields on bonus card still pending        |
-| 4 Unit Economics Board      | 🟡     | Five tabs + invoices/payments drill-down sheet; expenses/bonuses source lists pending     |
+| 4 Unit Economics Board      | 🟢     | Five tabs + drill-down sheet (invoices, payments, expenses, bonuses source lists)         |
 | 5 API / data model          | 🟡     | Matrix, UE, KPI payable shipped (`KpiResult`, `BonusEntry` snapshot); canon sync optional |
-| 6 Frontend                  | 🟡     | Payroll matrix + Salary Board KPI UI shipped; UE expenses/bonuses source lists pending    |
+| 6 Frontend                  | 🟡     | Payroll matrix + Salary Board KPI + UE drill-down shipped; manual bonus card UI pending   |
 | 7 Validation / audit        | 🟡     | Matrix validation + bonus audit read shipped; layout-change audit optional                |
 | 8 Tests / QA                | 🟡     | 160+ API unit tests; E2E / manual QA on payroll + Salary Board KPI pending                |
 
@@ -26,7 +26,6 @@ KPI / Sales payable architecture is **done** — do not re-add manual KPI sync, 
 | Area    | Next                                                                                    |
 | ------- | --------------------------------------------------------------------------------------- |
 | Phase 3 | Manual bonus adjustment on bonus card (+/−, audit trail); bonus title polish if missing |
-| Phase 4 | Unit Economics: expenses / bonuses **source lists** (tabs exist; lists not complete)    |
 | Phase 7 | Optional audit for matrix layout changes; approval validation edge cases                |
 | Phase 8 | E2E / manual QA: payroll matrix, Salary Board KPI tabs, attach with delayed payout      |
 | Docs    | Align `05-Bonus-and-Payroll.md` + UI spec with event-driven KPI + `payableAmount`       |
@@ -1118,14 +1117,13 @@ Add tests for:
 - [x] Bonus releases as normal payroll section (not under KPI accordion)
 - [x] Allocation matrix API, layout persistence, manual bonus from gray cell
 - [x] Salary Board KPI strip + month sheet (General / Bonuses / KPI)
-- [x] Unit Economics tabs + invoices/payments drill-down (baseline)
+- [x] Unit Economics tabs + drill-down (invoices, payments, expenses, bonuses)
 
 ### Remaining (recommended order)
 
 1. Manual bonus adjustment module + audit (Phase 3)
-2. Unit Economics expenses / bonuses source lists (Phase 4)
-3. E2E / manual QA — payroll matrix, Salary Board KPI, delayed-payout attach (Phase 8)
-4. Canon doc pass where still out of date (Phase 1)
+2. E2E / manual QA — payroll matrix, Salary Board KPI, delayed-payout attach (Phase 8)
+3. Canon doc pass where still out of date (Phase 1)
 
 ---
 

@@ -52,11 +52,21 @@ function OverviewRowCells({
           onDrilldown={onDrilldown}
         />
       </td>
-      <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(Number.parseFloat(row.expensesPaidAmount))}
+      <td className="border-border border-b px-2 py-2 text-right">
+        <UnitEconomicsDrilldownAmount
+          amount={Number.parseFloat(row.expensesPaidAmount)}
+          orderId={row.orderId}
+          focus="expenses"
+          onDrilldown={onDrilldown}
+        />
       </td>
-      <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(Number.parseFloat(row.plannedBonuses))}
+      <td className="border-border border-b px-2 py-2 text-right">
+        <UnitEconomicsDrilldownAmount
+          amount={Number.parseFloat(row.plannedBonuses)}
+          orderId={row.orderId}
+          focus="bonuses"
+          onDrilldown={onDrilldown}
+        />
       </td>
       <td className="border-border border-b px-2 py-2 text-right tabular-nums">
         {formatAmount(Number.parseFloat(row.releasedBonuses))}
