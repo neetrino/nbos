@@ -156,8 +156,8 @@ export function PayrollRunBonusReleasesSection({
     <section className="border-border bg-card rounded-xl border p-4">
       <h2 className="text-foreground text-sm font-semibold">Bonus releases</h2>
       <p className="text-muted-foreground mt-1 text-xs leading-snug">
-        Attach APPROVED releases while the run is Draft or Review. Included amounts roll into salary
-        line bonuses (sales KPI may adjust included amount).
+        Attach approved releases while the run is Draft or Review. Payroll uses the payable amount
+        already resolved by bonus/KPI policies; it does not collect KPI targets here.
       </p>
 
       {loading ? (

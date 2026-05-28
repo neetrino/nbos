@@ -19,20 +19,22 @@
 
 ## Implementation log (`development`)
 
-| Commit     | Summary                                                                                    |
-| ---------- | ------------------------------------------------------------------------------------------ |
-| `1e984c54` | Phased plan in `todo.md`                                                                   |
-| `11c4930b` | Payroll allocation matrix + unit economics route                                           |
-| `dc9e3942` | Matrix cell releases + column layout controls                                              |
-| `e73b88f4` | Matrix v2 (DnD, planned/reassign, validation), unit economics API, bonus audit, docs slice |
-| `a58237bb` | P&L/cleanup docs, matrix bonus audit panel in cell dialog                                  |
-| `c8c7e404` | Refresh todo.md progress table after matrix commits                                        |
-| `b6c38956` | Unit economics Funding / cash tab                                                          |
-| `84d40c50` | Unit economics Expenses/Profitability tabs, shared bonus audit panel                       |
-| `feef07ec` | Compensation audit, cleanup register, implementation roadmap cross-links                   |
-| `53ff808b` | Bonus entry audit panel pagination + reason display                                        |
-| `10861549` | Unit economics invoices/payments drill-down API + sheet                                    |
-| `01adae4e` | UE drill-down docs; migration `20260528120000_payroll_matrix_layout_bonus_title` applied   |
+| Commit      | Summary                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `1e984c54`  | Phased plan in `todo.md`                                                                   |
+| `11c4930b`  | Payroll allocation matrix + unit economics route                                           |
+| `dc9e3942`  | Matrix cell releases + column layout controls                                              |
+| `e73b88f4`  | Matrix v2 (DnD, planned/reassign, validation), unit economics API, bonus audit, docs slice |
+| `a58237bb`  | P&L/cleanup docs, matrix bonus audit panel in cell dialog                                  |
+| `c8c7e404`  | Refresh todo.md progress table after matrix commits                                        |
+| `b6c38956`  | Unit economics Funding / cash tab                                                          |
+| `84d40c50`  | Unit economics Expenses/Profitability tabs, shared bonus audit panel                       |
+| `feef07ec`  | Compensation audit, cleanup register, implementation roadmap cross-links                   |
+| `53ff808b`  | Bonus entry audit panel pagination + reason display                                        |
+| `10861549`  | Unit economics invoices/payments drill-down API + sheet                                    |
+| `01adae4e`  | UE drill-down docs; migration `20260528120000_payroll_matrix_layout_bonus_title` applied   |
+| `06b231fc`  | Realign payroll plan around KPI policy ownership                                           |
+| _(pending)_ | Remove editable payroll KPI forms; split Bonus Releases into standalone section            |
 
 ---
 

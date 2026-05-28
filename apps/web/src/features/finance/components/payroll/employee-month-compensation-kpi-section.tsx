@@ -11,11 +11,18 @@ export function EmployeeMonthCompensationKpiSection({ detail }: { detail: Salary
     return null;
   }
 
-  const sourceLabel = kpi.source === 'LINE_OVERRIDE' ? 'Employee override' : 'Payroll run default';
+  const sourceLabel =
+    kpi.source === 'LINE_OVERRIDE'
+      ? 'Legacy employee override'
+      : 'Resolved from payroll policy inputs';
 
   return (
-    <DetailSheetSection title="Sales KPI (effective at attach)">
+    <DetailSheetSection title="Sales KPI payout result">
       <p className="text-muted-foreground text-xs">{sourceLabel}</p>
+      <p className="text-muted-foreground mt-2 text-xs leading-snug">
+        KPI policy is managed in My Company. This section is read-only payroll outcome data for
+        already attached bonuses.
+      </p>
       {summary ? (
         <p className="text-muted-foreground mt-2 text-sm leading-snug">{summary}</p>
       ) : null}

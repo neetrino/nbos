@@ -4,13 +4,12 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ErrorState, LoadingState } from '@/components/shared';
+import { buttonVariants } from '@/components/ui/button';
 import { PayrollRunStatusBadge } from '@/features/finance/components/payroll/payroll-run-status-badge';
 import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
 import { PayrollRunBonusReleasesSection } from '@/features/finance/components/payroll/payroll-run-bonus-releases-section';
 import { PayrollRunDetailActions } from '@/features/finance/components/payroll/PayrollRunDetailActions';
-import { PayrollRunEmployeeSalesKpiSection } from '@/features/finance/components/payroll/payroll-run-employee-sales-kpi-section';
-import { PayrollRunSalesKpiSection } from '@/features/finance/components/payroll/payroll-run-sales-kpi-section';
 import { PayrollRunSalaryLinesTable } from '@/features/finance/components/payroll/PayrollRunSalaryLinesTable';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { usePayrollRunJournalAuditCsvExport } from '@/features/finance/components/payroll/use-payroll-run-journal-audit-csv-export';
@@ -19,6 +18,7 @@ import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-
 import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
 import { PAYROLL_JOURNAL_KIND_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import {
   payrollRunsApi,
   type PayrollRunDetail,
@@ -33,6 +33,29 @@ function formatJournalAt(iso: string): string {
 
 function employeeName(emp: { firstName: string; lastName: string }): string {
   return `${emp.firstName} ${emp.lastName}`.trim();
+}
+
+function PayrollKpiPolicyNotice() {
+  return (
+    <section className="border-border bg-muted/20 rounded-xl border p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-foreground text-sm font-semibold">KPI payout policy</h2>
+          <p className="text-muted-foreground mt-1 max-w-3xl text-xs leading-snug">
+            KPI targets and payout gates are configured in My Company. Payroll shows already
+            resolved payable bonus amounts: Sales bonuses may be reduced by KPI policy, while roles
+            without an active KPI policy pay 100% of eligible bonuses.
+          </p>
+        </div>
+        <Link
+          href="/my-company/kpi-policies"
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'shrink-0')}
+        >
+          Open KPI policies
+        </Link>
+      </div>
+    </section>
+  );
 }
 
 export function PayrollRunDetailPageContent({
@@ -177,24 +200,9 @@ export function PayrollRunDetailPageContent({
 
       <PayrollAllocationMatrixWorkspace payrollRunId={payrollRunId} />
 
-      <details className="border-border bg-card group rounded-xl border">
-        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">
-          Sales KPI & bonus releases
-        </summary>
-        <div className="flex flex-col gap-4 px-4 pb-4">
-          <PayrollRunSalesKpiSection
-            run={run}
-            scorecardMetrics={run.salesKpiScorecardMetrics}
-            onUpdated={setRun}
-          />
-          <PayrollRunEmployeeSalesKpiSection
-            run={run}
-            scorecardMetrics={run.salesKpiScorecardMetrics}
-            onUpdated={setRun}
-          />
-          <PayrollRunBonusReleasesSection run={run} onRunUpdated={setRun} />
-        </div>
-      </details>
+      <PayrollKpiPolicyNotice />
+
+      <PayrollRunBonusReleasesSection run={run} onRunUpdated={setRun} />
 
       <PayrollRunSalaryLinesTable lines={run.salaryLines} onOpenMonth={setOpenSalaryLineId} />
 
