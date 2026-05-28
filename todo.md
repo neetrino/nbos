@@ -35,7 +35,9 @@
 | `01adae4e`  | UE drill-down docs; migration `20260528120000_payroll_matrix_layout_bonus_title` applied   |
 | `06b231fc`  | Realign payroll plan around KPI policy ownership                                           |
 | `990d11da`  | Remove editable payroll KPI forms; split Bonus Releases into standalone section            |
-| _(pending)_ | Remove public payroll KPI patch endpoints; keep payroll as KPI result consumer             |
+| `51445b01`  | Remove public payroll KPI patch endpoints; keep payroll as KPI result consumer             |
+| `c50718e3`  | Add `KpiResult` read model schema + migration                                              |
+| _(pending)_ | KPI Result API/service: derive sales plan/actual snapshot from policy/source facts         |
 
 ---
 
