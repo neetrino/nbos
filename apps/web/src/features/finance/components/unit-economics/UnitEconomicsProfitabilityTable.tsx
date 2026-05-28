@@ -5,7 +5,6 @@ import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
 import type { UnitEconomicsRow } from '@/lib/api/unit-economics';
-import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
 import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
 import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
@@ -26,7 +25,7 @@ export function UnitEconomicsProfitabilityTable({
   items: UnitEconomicsRow[];
   onDrilldown?: (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 }) {
-  const { totals, loading, error, reload } = data;
+  const { loading, error, reload } = data;
 
   const sorted = useMemo(
     () =>
@@ -42,7 +41,6 @@ export function UnitEconomicsProfitabilityTable({
 
   return (
     <div className="flex flex-col gap-3">
-      {totals ? <UnitEconomicsTotalsBar totals={totals} /> : null}
       <div className="border-border bg-card overflow-auto rounded-xl border">
         <table className="w-full min-w-[48rem] border-collapse text-xs">
           <thead className="bg-card sticky top-0 z-10">

@@ -175,11 +175,6 @@ export function UnitEconomicsPageContent() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      <p className="text-muted-foreground max-w-3xl text-sm">
-        Money in, money out, and balance per delivery unit. Bonuses are part of outflows. Click
-        amounts to open the detail sheet.
-      </p>
-
       <div className="flex min-h-0 flex-1 flex-col">
         {showFilteredEmpty ? (
           <EmptyState

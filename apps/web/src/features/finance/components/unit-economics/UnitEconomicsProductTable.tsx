@@ -3,7 +3,6 @@
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
-import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
 import { cn } from '@/lib/utils';
 
 function marginClass(margin: string): string {
@@ -20,14 +19,13 @@ const KIND_LABEL: Record<string, string> = {
 };
 
 export function UnitEconomicsProductTable({ data }: { data: UnitEconomicsBoardData }) {
-  const { products, totals, loading, error, reload } = data;
+  const { products, loading, error, reload } = data;
 
   if (loading && products.length === 0) return <LoadingState />;
   if (error) return <ErrorState description={error} onRetry={() => void reload()} />;
 
   return (
     <div className="flex flex-col gap-3">
-      {totals ? <UnitEconomicsTotalsBar totals={totals} /> : null}
       <p className="text-muted-foreground text-sm">
         Roll-up by product or extension within each project. Use By unit or Cards to open a single
         delivery unit.

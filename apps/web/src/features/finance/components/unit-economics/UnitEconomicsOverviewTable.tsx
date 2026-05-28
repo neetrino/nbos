@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
-import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
 import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
 import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
@@ -138,7 +137,7 @@ export function UnitEconomicsOverviewTable({
   variant?: 'overview' | 'funding';
   onDrilldown?: DrilldownHandler;
 }) {
-  const { totals, loading, error, reload } = data;
+  const { loading, error, reload } = data;
 
   const displayItems = useMemo(() => {
     if (variant !== 'funding') return items;
@@ -154,7 +153,6 @@ export function UnitEconomicsOverviewTable({
 
   return (
     <div className="flex flex-col gap-3">
-      {totals ? <UnitEconomicsTotalsBar totals={totals} /> : null}
       <div className="border-border bg-card overflow-auto rounded-xl border">
         <table
           className={cn(
