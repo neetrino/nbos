@@ -3,7 +3,10 @@
 import { useMemo } from 'react';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { PAYROLL_MATRIX_CELL_CLASS } from '@/features/finance/constants/payroll-allocation-matrix-cell';
-import { PAYROLL_MATRIX_BODY_CLASS } from '@/features/finance/constants/payroll-allocation-matrix-layout';
+import {
+  PAYROLL_MATRIX_BODY_CLASS,
+  PAYROLL_MATRIX_BODY_FULLSCREEN_CLASS,
+} from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import {
   PayrollAllocationMatrixTableShell,
   type MatrixHeaderColumn,
@@ -36,6 +39,7 @@ export function PayrollAllocationMatrixGrid(props: {
   onReorderColumns: (orderedIds: string[]) => void;
   onReorderRows: (orderedIds: string[]) => void;
   onCellClick: (cell: PayrollAllocationMatrixCell) => void;
+  fullscreen?: boolean;
 }) {
   const {
     matrix,
@@ -49,6 +53,7 @@ export function PayrollAllocationMatrixGrid(props: {
     onReorderColumns,
     onReorderRows,
     onCellClick,
+    fullscreen = false,
   } = props;
 
   const cellsByKey = useMemo(() => cellMap(matrix.cells), [matrix.cells]);
@@ -106,7 +111,7 @@ export function PayrollAllocationMatrixGrid(props: {
   const cornerLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'Employee' : 'Order';
 
   return (
-    <div className={PAYROLL_MATRIX_BODY_CLASS}>
+    <div className={fullscreen ? PAYROLL_MATRIX_BODY_FULLSCREEN_CLASS : PAYROLL_MATRIX_BODY_CLASS}>
       <PayrollAllocationMatrixTableShell
         columns={headerColumns}
         rows={rows}

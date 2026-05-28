@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Maximize2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   ErrorState,
   IntegratedSearchFilters,
@@ -13,6 +14,7 @@ import {
 import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-layout-hero-actions';
 import { PayrollAllocationMatrixStatsStrip } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-stats-strip';
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
+import { PayrollAllocationMatrixFullscreenControls } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-fullscreen-controls';
 import { PAYROLL_ALLOCATION_MATRIX_VIEW_OPTIONS } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-view-options';
 import { PayrollRunDetailHeroBar } from '@/features/finance/components/payroll/PayrollRunDetailHeroBar';
 import { PayrollRunDetailPageSettingsSheet } from '@/features/finance/components/payroll/PayrollRunDetailPageSettingsSheet';
@@ -55,12 +57,26 @@ export function PayrollRunDetailPageContent({
   const [layoutHeroActions, setLayoutHeroActions] = useState<PayrollMatrixLayoutHeroActions | null>(
     null,
   );
+  const [matrixFullscreen, setMatrixFullscreen] = useState(false);
 
   useEffect(() => {
     setRun(initialRun);
     setLoading(initialLoading);
     setError(initialError);
   }, [initialError, initialLoading, initialRun]);
+
+  useEffect(() => {
+    if (!matrixFullscreen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMatrixFullscreen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [matrixFullscreen]);
 
   const { exportCsvSubmitting, handleExportSalaryLinesCsv } =
     usePayrollRunSalaryLinesCsvExport(run);
@@ -125,7 +141,7 @@ export function PayrollRunDetailPageContent({
           onClearAll={() => setMatrixSearch('')}
         />
       ),
-      viewMode: (
+      viewMode: matrixFullscreen ? undefined : (
         <ViewModeSwitch
           value={matrixViewMode}
           onChange={setMatrixViewMode}
@@ -135,6 +151,16 @@ export function PayrollRunDetailPageContent({
       ),
       trailing: (
         <>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="size-8 shrink-0"
+            aria-label="Open allocation matrix full screen"
+            onClick={() => setMatrixFullscreen(true)}
+          >
+            <Maximize2 className="size-4" aria-hidden />
+          </Button>
           <PayrollRunDetailPageSettingsSheet
             run={run}
             onRefresh={handleReload}
@@ -165,6 +191,7 @@ export function PayrollRunDetailPageContent({
     handleReload,
     journalSubmitting,
     layoutHeroActions,
+    matrixFullscreen,
     matrixSearch,
     matrixViewMode,
     run,
@@ -214,7 +241,7 @@ export function PayrollRunDetailPageContent({
         </p>
       ) : null}
 
-      {statsTotals ? (
+      {statsTotals && !matrixFullscreen ? (
         <PayrollAllocationMatrixStatsStrip
           lineCount={run.salaryLines.length}
           expenseCount={run.materializedExpenseLineCount}
@@ -223,13 +250,32 @@ export function PayrollRunDetailPageContent({
         />
       ) : null}
 
-      <PayrollAllocationMatrixWorkspace
-        payrollRunId={payrollRunId}
-        viewMode={matrixViewMode}
-        search={matrixSearch}
-        onTotalsChange={setMatrixTotals}
-        onLayoutHeroActionsChange={setLayoutHeroActions}
-      />
+      <div
+        className={
+          matrixFullscreen
+            ? 'bg-background fixed inset-0 z-[200] flex min-h-0 flex-col p-3'
+            : 'flex min-h-0 flex-1 flex-col'
+        }
+      >
+        {matrixFullscreen ? (
+          <div className="absolute right-3 bottom-3 z-[210]">
+            <PayrollAllocationMatrixFullscreenControls
+              viewMode={matrixViewMode}
+              onViewModeChange={setMatrixViewMode}
+              onExit={() => setMatrixFullscreen(false)}
+            />
+          </div>
+        ) : null}
+
+        <PayrollAllocationMatrixWorkspace
+          payrollRunId={payrollRunId}
+          viewMode={matrixViewMode}
+          search={matrixSearch}
+          fullscreen={matrixFullscreen}
+          onTotalsChange={setMatrixTotals}
+          onLayoutHeroActionsChange={setLayoutHeroActions}
+        />
+      </div>
     </div>
   );
 }

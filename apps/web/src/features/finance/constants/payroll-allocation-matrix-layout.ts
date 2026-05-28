@@ -13,6 +13,8 @@ export const PAYROLL_MATRIX_STICKY_HEADER_SHADOW = 'shadow-[2px_0_6px_-2px_rgba(
 export const PAYROLL_MATRIX_BODY_CLASS =
   'min-h-0 flex-1 max-h-[min(70vh,48rem)] overflow-auto rounded-lg';
 
+export const PAYROLL_MATRIX_BODY_FULLSCREEN_CLASS = 'min-h-0 flex-1 overflow-auto rounded-lg';
+
 /** `border-collapse: collapse` breaks `position: sticky` on header cells. */
 export const PAYROLL_MATRIX_TABLE_CLASS =
   'w-max min-w-full border-separate border-spacing-0 text-xs';

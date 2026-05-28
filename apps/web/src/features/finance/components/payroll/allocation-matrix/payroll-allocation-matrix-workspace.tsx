@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { filterPayrollAllocationMatrix } from '@/features/finance/components/payroll/allocation-matrix/filter-payroll-allocation-matrix';
+import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ErrorState, LoadingState } from '@/components/shared';
@@ -25,12 +26,14 @@ export function PayrollAllocationMatrixWorkspace({
   payrollRunId,
   viewMode,
   search,
+  fullscreen = false,
   onTotalsChange,
   onLayoutHeroActionsChange,
 }: {
   payrollRunId: string;
   viewMode: PayrollMatrixViewMode;
   search: string;
+  fullscreen?: boolean;
   onTotalsChange?: (totals: PayrollAllocationMatrix['totals'] | null) => void;
   onLayoutHeroActionsChange?: (actions: PayrollMatrixLayoutHeroActions | null) => void;
 }) {
@@ -270,7 +273,12 @@ export function PayrollAllocationMatrixWorkspace({
   const showLayoutToolbar = activeRowId != null || activeColumnId != null;
 
   return (
-    <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl">
+    <section
+      className={cn(
+        'bg-card flex min-h-0 flex-1 flex-col overflow-hidden',
+        fullscreen ? 'h-full rounded-lg' : 'rounded-xl',
+      )}
+    >
       {validationIssues.length > 0 ? (
         <div
           className="border-destructive/40 bg-destructive/5 text-destructive border-b px-4 py-2 text-xs"
@@ -378,6 +386,7 @@ export function PayrollAllocationMatrixWorkspace({
         <PayrollAllocationMatrixGrid
           matrix={displayMatrix}
           viewMode={viewMode}
+          fullscreen={fullscreen}
           pinnedUnitIds={matrix.layout.pinnedUnitIds}
           layoutDisabled={layoutDisabled}
           activeRowId={activeRowId}
