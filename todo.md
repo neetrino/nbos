@@ -39,7 +39,8 @@
 | `c50718e3`  | Add `KpiResult` read model schema + migration                                              |
 | `3c03c58d`  | KPI Result API/service: derive Sales actual snapshot from payment source facts             |
 | `8d0ec889`  | Extend KPI policy parameters with target/plan source and Sales monthly target amount       |
-| _(pending)_ | Wire payroll bonus attach to consume `KpiResult` payoutFactor instead of legacy fields     |
+| `6dbcee54`  | Wire payroll bonus attach to consume `KpiResult` payoutFactor instead of legacy fields     |
+| _(pending)_ | Add payroll UI action/read section for syncing and displaying KPI Result snapshots         |
 
 ---
 
