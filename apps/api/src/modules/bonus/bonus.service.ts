@@ -23,6 +23,10 @@ import { queryBonusPoolTimeline } from './bonus-pool-timeline';
 import { triggerPoolProportionalAutoRelease } from './bonus-pool-auto-release-trigger';
 import { syncProductBonusPoolForPoolKey } from './bonus-pool-sync-trigger';
 import { deriveBonusPoolFundingMetrics, sumPoolLedgerFields } from './bonus-pool-funding-health';
+import {
+  patchBonusEntryPlannedAmount,
+  type PatchBonusEntryPlannedAmountParams,
+} from './patch-bonus-entry-planned-amount';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 
 interface CreateBonusDto {
@@ -198,6 +202,36 @@ export class BonusService {
     });
     await syncProductBonusPoolForOrder(this.prisma, existing.orderId, this.notifications);
     return updated;
+  }
+
+  async patchPlannedAmount(
+    bonusEntryId: string,
+    params: Omit<PatchBonusEntryPlannedAmountParams, 'bonusEntryId'>,
+    actorUserId: string,
+  ) {
+    const result = await patchBonusEntryPlannedAmount(this.prisma, {
+      bonusEntryId,
+      ...params,
+    });
+
+    await this.audit.log({
+      entityType: 'BonusEntry',
+      entityId: result.bonusEntryId,
+      action: 'PLANNED_BONUS_UPDATED',
+      userId: actorUserId,
+      projectId: result.projectId,
+      changes: {
+        orderId: result.orderId,
+        employeeId: result.employeeId,
+        previousAmount: result.previousAmount,
+        nextAmount: result.nextAmount,
+        previousTitle: result.previousTitle,
+        nextTitle: params.title?.trim() ?? result.previousTitle,
+        reason: params.reason.trim(),
+      },
+    });
+
+    return this.findById(bonusEntryId);
   }
 
   async getStats() {

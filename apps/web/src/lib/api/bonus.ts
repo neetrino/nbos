@@ -41,6 +41,8 @@ export interface BonusEntryListRow {
   projectId: string;
   type: BonusType;
   amount: string;
+  originalAmount?: string | null;
+  title?: string | null;
   percent: string;
   status: BonusStatus;
   kpiGatePassed: boolean | null;
@@ -386,6 +388,17 @@ export const bonusesApi = {
   ): Promise<BonusReleaseRow> {
     const resp = await api.patch<BonusReleaseRow>(
       `/api/bonus/entries/${entryId}/releases/${releaseId}`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async patchPlannedAmount(
+    entryId: string,
+    body: { amount: string; reason: string; title?: string },
+  ): Promise<BonusEntryListRow> {
+    const resp = await api.patch<BonusEntryListRow>(
+      `/api/bonus/entries/${entryId}/planned-amount`,
       body,
     );
     return resp.data;

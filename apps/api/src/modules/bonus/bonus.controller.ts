@@ -216,6 +216,23 @@ export class BonusController {
     });
   }
 
+  @Patch('entries/:entryId/planned-amount')
+  @ApiOperation({
+    summary: 'Edit planned bonus amount on entry (preserves originalAmount; audit trail)',
+  })
+  async patchEntryPlannedAmount(
+    @Param('entryId') entryId: string,
+    @Body()
+    body: {
+      amount: string;
+      reason: string;
+      title?: string;
+    },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.bonusService.patchPlannedAmount(entryId, body, user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get bonus entry by ID' })
   async findOne(@Param('id') id: string) {

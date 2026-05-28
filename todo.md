@@ -23,12 +23,12 @@
 
 KPI / Sales payable architecture is **done** — do not re-add manual KPI sync, payroll-month−1 attach, or Payroll Detail KPI forms.
 
-| Area    | Next                                                                                    |
-| ------- | --------------------------------------------------------------------------------------- |
-| Phase 3 | Manual bonus adjustment on bonus card (+/−, audit trail); bonus title polish if missing |
-| Phase 7 | Optional audit for matrix layout changes; approval validation edge cases                |
-| Phase 8 | E2E / manual QA: payroll matrix, Salary Board KPI tabs, attach with delayed payout      |
-| Docs    | Align `05-Bonus-and-Payroll.md` + UI spec with event-driven KPI + `payableAmount`       |
+| Area    | Next                                                                                 |
+| ------- | ------------------------------------------------------------------------------------ |
+| Phase 3 | Planned amount adjust on bonus card shipped; ± quick actions / title polish optional |
+| Phase 7 | Optional audit for matrix layout changes; approval validation edge cases             |
+| Phase 8 | E2E / manual QA: payroll matrix, Salary Board KPI tabs, attach with delayed payout   |
+| Docs    | Align `05-Bonus-and-Payroll.md` + UI spec with event-driven KPI + `payableAmount`    |
 
 **Ops / repair (not daily Finance workflow):** `POST /api/scheduler/sales-kpi-month-close`, `POST /api/scheduler/sales-kpi-backfill-all`.
 

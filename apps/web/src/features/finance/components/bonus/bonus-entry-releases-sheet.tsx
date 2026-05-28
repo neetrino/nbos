@@ -2,10 +2,13 @@
 
 import { useMemo } from 'react';
 import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { EntityDetailSheetContent } from '@/components/shared';
 import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { BonusEntryAuditPanel } from '@/features/finance/components/bonus/bonus-entry-audit-panel';
+import { BonusEntryPlannedAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-planned-adjust-block';
 import { BonusEntryReleaseAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-release-adjust-block';
+import { useBonusEntryPlannedAdjust } from '@/features/finance/components/bonus/use-bonus-entry-planned-adjust';
 import { BonusEntryReleasesSheetSummary } from '@/features/finance/components/bonus/bonus-entry-releases-sheet-summary';
 import { BonusEntryReleasesSheetTable } from '@/features/finance/components/bonus/bonus-entry-releases-sheet-table';
 import { useBonusEntryReleasesLedger } from '@/features/finance/components/bonus/use-bonus-entry-releases-ledger';
@@ -31,6 +34,7 @@ export function BonusEntryReleasesSheet({
   forceNestedBackdrop?: boolean;
 }) {
   const ledger = useBonusEntryReleasesLedger(entry, open, onAfterPatch);
+  const plannedAdjust = useBonusEntryPlannedAdjust(entry, open, onAfterPatch);
 
   const totals = useMemo(() => {
     if (!entry) {
@@ -62,6 +66,23 @@ export function BonusEntryReleasesSheet({
               entry={entry}
               totals={totals}
               releaseCount={ledger.rows.length}
+            />
+          ) : null}
+
+          {entry && !plannedAdjust.editing ? (
+            <Button type="button" variant="outline" size="sm" onClick={plannedAdjust.startEdit}>
+              Adjust planned amount
+            </Button>
+          ) : null}
+
+          {plannedAdjust.editing && plannedAdjust.form && entry ? (
+            <BonusEntryPlannedAdjustBlock
+              entry={entry}
+              form={plannedAdjust.form}
+              onChange={plannedAdjust.setForm}
+              onSubmit={() => void plannedAdjust.submit()}
+              submitting={plannedAdjust.submitting}
+              error={plannedAdjust.submitError}
             />
           ) : null}
 
