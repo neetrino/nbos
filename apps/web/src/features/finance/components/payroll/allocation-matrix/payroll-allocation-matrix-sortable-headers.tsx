@@ -21,6 +21,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+export type MatrixHeaderKind = 'employee' | 'order';
+
 export type MatrixHeaderColumn = {
   id: string;
   primary: string;
@@ -28,6 +30,7 @@ export type MatrixHeaderColumn = {
   meta: string;
   funding: string | null;
   pinned: boolean;
+  kind: MatrixHeaderKind;
 };
 
 export type MatrixRowHeader = {
@@ -36,7 +39,12 @@ export type MatrixRowHeader = {
   secondary: string;
   meta: string;
   pinned: boolean;
+  kind: MatrixHeaderKind;
 };
+
+const MATRIX_EMPLOYEE_NAME_CLASS =
+  'text-sm font-semibold tracking-tight text-foreground leading-snug';
+const MATRIX_ORDER_LABEL_CLASS = 'line-clamp-2 text-xs font-semibold';
 
 export function PayrollAllocationMatrixTableShell(props: {
   columns: MatrixHeaderColumn[];
@@ -98,7 +106,7 @@ export function PayrollAllocationMatrixTableShell(props: {
       <table className="w-max min-w-full border-collapse text-xs">
         <thead className="bg-card sticky top-0 z-20">
           <tr>
-            <th className="bg-card border-border sticky left-0 z-30 min-w-[11rem] border-r border-b px-3 py-2 text-left font-semibold">
+            <th className="bg-card border-border sticky left-0 z-30 min-w-[12.5rem] border-r border-b px-3 py-2 text-left text-xs font-semibold tracking-wide uppercase">
               {cornerLabel}
             </th>
             <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
@@ -176,7 +184,11 @@ function SortableMatrixColumnHeader(props: {
           className="hover:text-primary min-w-0 flex-1 text-left"
           onClick={onActivate}
         >
-          <p className="line-clamp-2 font-semibold">
+          <p
+            className={cn(
+              col.kind === 'employee' ? MATRIX_EMPLOYEE_NAME_CLASS : MATRIX_ORDER_LABEL_CLASS,
+            )}
+          >
             {col.pinned ? '📌 ' : ''}
             {col.primary}
           </p>
@@ -212,7 +224,8 @@ function SortableMatrixRowHeader(props: {
       ref={setNodeRef}
       style={style}
       className={cn(
-        'bg-card border-border sticky left-0 z-10 border-r border-b px-3 py-2 text-left font-medium',
+        'bg-card border-border sticky left-0 z-10 min-w-[12.5rem] border-r border-b px-3 py-2.5 text-left',
+        row.kind === 'employee' && 'bg-muted/20',
         active && 'bg-primary/10',
         isDragging && 'opacity-70',
       )}
@@ -233,12 +246,16 @@ function SortableMatrixRowHeader(props: {
           className="hover:text-primary min-w-0 flex-1 text-left"
           onClick={onActivate}
         >
-          <p>
+          <p
+            className={cn(
+              row.kind === 'employee' ? MATRIX_EMPLOYEE_NAME_CLASS : MATRIX_ORDER_LABEL_CLASS,
+            )}
+          >
             {row.pinned ? '📌 ' : ''}
             {row.primary}
           </p>
-          <p className="text-muted-foreground tabular-nums">{row.secondary}</p>
-          <p className="text-muted-foreground tabular-nums">Bonus {row.meta}</p>
+          <p className="text-muted-foreground text-[11px] tabular-nums">{row.secondary}</p>
+          <p className="text-muted-foreground text-[11px] tabular-nums">Bonus {row.meta}</p>
         </button>
       </div>
     </th>

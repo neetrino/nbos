@@ -60,6 +60,7 @@ export function PayrollAllocationMatrixGrid(props: {
           secondary: formatAmount(Number.parseFloat(e.baseSalary)),
           meta: formatAmount(Number.parseFloat(e.bonusTotalThisRun)),
           pinned: false,
+          kind: 'employee' as const,
         }))
       : matrix.deliveryUnits.map((u) => ({
           id: u.orderId,
@@ -67,6 +68,7 @@ export function PayrollAllocationMatrixGrid(props: {
           secondary: u.projectCode,
           meta: formatAmount(Number.parseFloat(u.totalRemainingBonus)),
           pinned: pinnedUnitIds.includes(u.orderId),
+          kind: 'order' as const,
         }));
 
   const headerColumns: MatrixHeaderColumn[] =
@@ -78,6 +80,7 @@ export function PayrollAllocationMatrixGrid(props: {
           meta: formatAmount(Number.parseFloat(u.totalRemainingBonus)),
           funding: formatAmount(Number.parseFloat(u.availableFunding)),
           pinned: pinnedUnitIds.includes(u.orderId),
+          kind: 'order' as const,
         }))
       : matrix.employees.map((e) => ({
           id: e.employeeId,
@@ -86,6 +89,7 @@ export function PayrollAllocationMatrixGrid(props: {
           meta: formatAmount(Number.parseFloat(e.bonusTotalThisRun)),
           funding: null,
           pinned: false,
+          kind: 'employee' as const,
         }));
 
   const columnIds = headerColumns.map((c) => c.id);
