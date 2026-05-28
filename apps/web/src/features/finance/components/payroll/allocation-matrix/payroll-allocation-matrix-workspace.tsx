@@ -370,52 +370,50 @@ export function PayrollAllocationMatrixWorkspace({
         </div>
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-auto p-4">
-        {displayMatrix.employees.length === 0 && displayMatrix.deliveryUnits.length === 0 ? (
-          <p className="text-muted-foreground px-2 py-8 text-center text-sm">
-            No rows match this search. Clear the search bar to see the full matrix.
-          </p>
-        ) : (
-          <PayrollAllocationMatrixGrid
-            matrix={displayMatrix}
-            viewMode={viewMode}
-            pinnedUnitIds={matrix.layout.pinnedUnitIds}
-            layoutDisabled={layoutDisabled}
-            activeRowId={activeRowId}
-            activeColumnId={activeColumnId}
-            onActivateRow={setActiveRowId}
-            onActivateColumn={setActiveColumnId}
-            onReorderColumns={(orderedIds) => {
-              if (viewMode === 'EMPLOYEE_MATRIX') {
-                void persistLayout({ columnOrder: orderedIds });
-              } else {
-                void persistLayout({ rowOrder: orderedIds });
-              }
-            }}
-            onReorderRows={(orderedIds) => {
-              if (viewMode === 'EMPLOYEE_MATRIX') {
-                void persistLayout({ rowOrder: orderedIds });
-              } else {
-                void persistLayout({ columnOrder: orderedIds });
-              }
-            }}
-            onCellClick={(cell) => {
-              const needsManual =
-                displayMatrix.editable &&
-                (cell.state === 'UNLINKED' ||
-                  (cell.state === 'LINKED_EMPTY' && !cell.bonusEntryId && cell.linked));
-              if (needsManual) {
-                setManualCell(cell);
-                return;
-              }
-              if (!cell.editable) return;
-              if (cell.bonusEntryId || cell.state === 'LINKED_EMPTY') {
-                setEditCell(cell);
-              }
-            }}
-          />
-        )}
-      </div>
+      {displayMatrix.employees.length === 0 && displayMatrix.deliveryUnits.length === 0 ? (
+        <p className="text-muted-foreground min-h-0 flex-1 px-2 py-8 text-center text-sm">
+          No rows match this search. Clear the search bar to see the full matrix.
+        </p>
+      ) : (
+        <PayrollAllocationMatrixGrid
+          matrix={displayMatrix}
+          viewMode={viewMode}
+          pinnedUnitIds={matrix.layout.pinnedUnitIds}
+          layoutDisabled={layoutDisabled}
+          activeRowId={activeRowId}
+          activeColumnId={activeColumnId}
+          onActivateRow={setActiveRowId}
+          onActivateColumn={setActiveColumnId}
+          onReorderColumns={(orderedIds) => {
+            if (viewMode === 'EMPLOYEE_MATRIX') {
+              void persistLayout({ columnOrder: orderedIds });
+            } else {
+              void persistLayout({ rowOrder: orderedIds });
+            }
+          }}
+          onReorderRows={(orderedIds) => {
+            if (viewMode === 'EMPLOYEE_MATRIX') {
+              void persistLayout({ rowOrder: orderedIds });
+            } else {
+              void persistLayout({ columnOrder: orderedIds });
+            }
+          }}
+          onCellClick={(cell) => {
+            const needsManual =
+              displayMatrix.editable &&
+              (cell.state === 'UNLINKED' ||
+                (cell.state === 'LINKED_EMPTY' && !cell.bonusEntryId && cell.linked));
+            if (needsManual) {
+              setManualCell(cell);
+              return;
+            }
+            if (!cell.editable) return;
+            if (cell.bonusEntryId || cell.state === 'LINKED_EMPTY') {
+              setEditCell(cell);
+            }
+          }}
+        />
+      )}
 
       {loading || layoutBusy ? (
         <p className="text-muted-foreground border-border flex items-center gap-2 border-t px-4 py-2 text-xs">

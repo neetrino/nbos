@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { PAYROLL_MATRIX_CELL_CLASS } from '@/features/finance/constants/payroll-allocation-matrix-cell';
+import { PAYROLL_MATRIX_BODY_CLASS } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import {
   PayrollAllocationMatrixTableShell,
   type MatrixHeaderColumn,
@@ -105,7 +106,7 @@ export function PayrollAllocationMatrixGrid(props: {
   const cornerLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'Employee' : 'Order';
 
   return (
-    <div className="max-h-[min(70vh,48rem)] overflow-auto">
+    <div className={PAYROLL_MATRIX_BODY_CLASS}>
       <PayrollAllocationMatrixTableShell
         columns={headerColumns}
         rows={rows}
