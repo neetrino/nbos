@@ -2,7 +2,7 @@
 
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economics-list';
+import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
 import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
 import { cn } from '@/lib/utils';
 
@@ -13,8 +13,8 @@ function marginClass(margin: string): string {
   return 'text-muted-foreground';
 }
 
-export function UnitEconomicsProjectTable() {
-  const { projects, totals, loading, error, reload } = useUnitEconomicsList();
+export function UnitEconomicsProjectTable({ data }: { data: UnitEconomicsBoardData }) {
+  const { projects, totals, loading, error, reload } = data;
 
   if (loading && projects.length === 0) return <LoadingState />;
   if (error) return <ErrorState description={error} onRetry={() => void reload()} />;
@@ -23,8 +23,8 @@ export function UnitEconomicsProjectTable() {
     <div className="flex flex-col gap-3">
       {totals ? <UnitEconomicsTotalsBar totals={totals} /> : null}
       <p className="text-muted-foreground text-sm">
-        Roll-up across delivery units in each project. Open the Overview tab and filter by project
-        code to drill into individual units.
+        Roll-up across delivery units in each project. Switch to By unit or Cards to open a single
+        delivery unit.
       </p>
       <div className="border-border bg-card overflow-auto rounded-xl border">
         <table className="w-full min-w-[52rem] border-collapse text-xs">

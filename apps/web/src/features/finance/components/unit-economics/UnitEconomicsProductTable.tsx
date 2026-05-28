@@ -2,7 +2,7 @@
 
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economics-list';
+import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
 import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
 import { cn } from '@/lib/utils';
 
@@ -19,8 +19,8 @@ const KIND_LABEL: Record<string, string> = {
   ORDER: 'Unit',
 };
 
-export function UnitEconomicsProductTable() {
-  const { products, totals, loading, error, reload } = useUnitEconomicsList();
+export function UnitEconomicsProductTable({ data }: { data: UnitEconomicsBoardData }) {
+  const { products, totals, loading, error, reload } = data;
 
   if (loading && products.length === 0) return <LoadingState />;
   if (error) return <ErrorState description={error} onRetry={() => void reload()} />;
@@ -29,7 +29,7 @@ export function UnitEconomicsProductTable() {
     <div className="flex flex-col gap-3">
       {totals ? <UnitEconomicsTotalsBar totals={totals} /> : null}
       <p className="text-muted-foreground text-sm">
-        Roll-up by product or extension within each project. Use the By unit tab to open a single
+        Roll-up by product or extension within each project. Use By unit or Cards to open a single
         delivery unit.
       </p>
       <div className="border-border bg-card overflow-auto rounded-xl border">

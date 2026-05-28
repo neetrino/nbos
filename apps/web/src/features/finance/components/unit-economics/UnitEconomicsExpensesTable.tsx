@@ -3,18 +3,23 @@
 import { useMemo } from 'react';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economics-list';
+import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
+import type { UnitEconomicsRow } from '@/lib/api/unit-economics';
 import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
 import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
 import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
 
 export function UnitEconomicsExpensesTable({
+  data,
+  items,
   onDrilldown,
 }: {
+  data: UnitEconomicsBoardData;
+  items: UnitEconomicsRow[];
   onDrilldown?: (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 }) {
-  const { items, totals, loading, error, reload } = useUnitEconomicsList();
+  const { totals, loading, error, reload } = data;
 
   const sorted = useMemo(
     () =>

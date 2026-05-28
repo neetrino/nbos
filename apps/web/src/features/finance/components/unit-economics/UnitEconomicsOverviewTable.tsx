@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economics-list';
+import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
 import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
 import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
@@ -128,13 +128,17 @@ function FundingRowCells({
 }
 
 export function UnitEconomicsOverviewTable({
+  data,
+  items,
   variant = 'overview',
   onDrilldown,
 }: {
+  data: UnitEconomicsBoardData;
+  items: UnitEconomicsRow[];
   variant?: 'overview' | 'funding';
   onDrilldown?: DrilldownHandler;
 }) {
-  const { items, totals, loading, error, reload } = useUnitEconomicsList();
+  const { totals, loading, error, reload } = data;
 
   const displayItems = useMemo(() => {
     if (variant !== 'funding') return items;
