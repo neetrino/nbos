@@ -27,8 +27,8 @@ export function employeeWalletPageTitle(): string {
   return 'My wallet';
 }
 
-export function bonusProjectPoolsPageTitle(): string {
-  return 'Bonus pools';
+export function unitEconomicsPageTitle(): string {
+  return 'Unit economics';
 }
 
 export function payrollRunDetailPageTitle(payrollMonth: string | null | undefined): string {

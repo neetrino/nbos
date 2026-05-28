@@ -30,16 +30,16 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 ## Web routes (canon)
 
-| Screen             | Path                                          |
-| ------------------ | --------------------------------------------- |
-| Salary board       | `/finance/salary`                             |
-| Payroll runs index | `/finance/payroll`                            |
-| Payroll run detail | `/finance/payroll/[id]` (allocation matrix)   |
-| Unit economics     | `/finance/unit-economics`                     |
-| Bonus board        | `/finance/bonuses` (legacy `/bonus` redirect) |
-| Bonus pools        | `/finance/bonus-pools` (tab also on UE board) |
-| Pay Now            | `/finance/expenses` (+ payroll preset query)  |
-| Wallet             | `/my-account/wallet`                          |
+| Screen             | Path                                                          |
+| ------------------ | ------------------------------------------------------------- |
+| Salary board       | `/finance/salary`                                             |
+| Payroll runs index | `/finance/payroll`                                            |
+| Payroll run detail | `/finance/payroll/[id]` (allocation matrix)                   |
+| Unit economics     | `/finance/unit-economics`                                     |
+| Bonus board        | `/finance/bonuses` (legacy `/bonus` redirect)                 |
+| Unit economics     | `/finance/unit-economics` (`/finance/bonus-pools` → redirect) |
+| Pay Now            | `/finance/expenses` (+ payroll preset query)                  |
+| Wallet             | `/my-account/wallet`                                          |
 
 ## Policy engine (2026-05 re-audit)
 

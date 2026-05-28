@@ -541,7 +541,8 @@ enum ProductBonusPoolStatusEnum {
   CLOSED
 }
 
-/// NBOS Product Bonus Pool ledger row (one per `Order` that has bonus lines). Release events (`BonusRelease`) — follow-up.
+/// Denormalized bonus totals per delivery `Order` (synced from `BonusEntry` / releases).
+/// Operational UI reads this via Unit Economics; not a separate Finance “bonus pools” product page.
 model ProductBonusPool {
   id                   String                     @id @default(uuid())
   orderId              String                     @unique @map("order_id")

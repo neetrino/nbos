@@ -690,7 +690,7 @@ Operational finance screen at `/finance/unit-economics` (Finance Overview). Show
 | API                             | Purpose                                                                                                                              |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `GET /api/unit-economics`       | Delivery-unit roll-up: payments received, journal expenses (`EXPENSE_PAYMENT` / `EXPENSE_CARD`), bonus pool totals, estimated margin |
-| `GET /api/bonus/products/pools` | Bonus pool drill-down (existing; linked from Unit Economics “Bonus pools” tab)                                                       |
+| `GET /api/bonus/products/pools` | Per-order bonus ledger roll-up; opened from Unit Economics “Bonus breakdown” (not a separate Finance page)                           |
 
 Payroll matrix APIs: `GET/PATCH /api/payroll-runs/:id/allocation-matrix` (+ layout, layout/reset, cells, manual-bonus, planned-bonus, reassign-recipient). Matrix cell patch and reassign trigger carry-over and sales KPI attach notifications where applicable. Planned bonus and recipient changes write `audit_logs` on `BonusEntry`.
 

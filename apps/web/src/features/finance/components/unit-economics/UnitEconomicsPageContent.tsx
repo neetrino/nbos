@@ -2,7 +2,9 @@
 
 import { useCallback, useState } from 'react';
 import { ViewModeSwitch } from '@/components/shared';
+import { ProductBonusPoolSheet } from '@/features/finance/components/bonus/product-bonus-pool-sheet';
 import { UnitEconomicsDrilldownSheet } from '@/features/finance/components/unit-economics/unit-economics-drilldown-sheet';
+import { useUnitEconomicsPoolSheet } from '@/features/finance/hooks/use-unit-economics-pool-sheet';
 import { UnitEconomicsExpensesTable } from '@/features/finance/components/unit-economics/UnitEconomicsExpensesTable';
 import { UnitEconomicsOverviewTable } from '@/features/finance/components/unit-economics/UnitEconomicsOverviewTable';
 import { UnitEconomicsProfitabilityTable } from '@/features/finance/components/unit-economics/UnitEconomicsProfitabilityTable';
@@ -26,11 +28,20 @@ export function UnitEconomicsPageContent() {
   const [drilldownFocus, setDrilldownFocus] = useState<UnitEconomicsDrilldownFocus>('invoices');
   const [drilldownOpen, setDrilldownOpen] = useState(false);
 
+  const poolSheet = useUnitEconomicsPoolSheet();
+
   const onDrilldown = useCallback((orderId: string, focus: UnitEconomicsDrilldownFocus) => {
     setDrilldownOrderId(orderId);
     setDrilldownFocus(focus);
     setDrilldownOpen(true);
   }, []);
+
+  const onOpenPoolDetail = useCallback(
+    (orderId: string) => {
+      void poolSheet.openForOrder(orderId);
+    },
+    [poolSheet],
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -62,7 +73,18 @@ export function UnitEconomicsPageContent() {
         focus={drilldownFocus}
         open={drilldownOpen}
         onOpenChange={setDrilldownOpen}
+        onOpenPoolDetail={onOpenPoolDetail}
       />
+
+      <ProductBonusPoolSheet
+        pool={poolSheet.pool}
+        open={poolSheet.open}
+        onOpenChange={poolSheet.handleOpenChange}
+        onPoolsRefresh={() => void poolSheet.refreshPools()}
+      />
+      {poolSheet.error && poolSheet.open && !poolSheet.pool ? (
+        <p className="text-destructive text-sm">{poolSheet.error}</p>
+      ) : null}
     </div>
   );
 }

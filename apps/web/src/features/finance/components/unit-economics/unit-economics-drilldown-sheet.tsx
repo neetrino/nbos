@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import { EntityDetailSheetContent } from '@/components/shared';
 import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { UnitEconomicsDrilldownBonusesTable } from '@/features/finance/components/unit-economics/unit-economics-drilldown-bonuses-table';
@@ -178,11 +178,13 @@ export function UnitEconomicsDrilldownSheet({
   focus,
   open,
   onOpenChange,
+  onOpenPoolDetail,
 }: {
   orderId: string | null;
   focus: UnitEconomicsDrilldownFocus;
   open: boolean;
   onOpenChange: (next: boolean) => void;
+  onOpenPoolDetail?: (orderId: string) => void;
 }) {
   const [tab, setTab] = useState<UnitEconomicsDrilldownFocus>(focus);
   const [detail, setDetail] = useState<UnitEconomicsOrderDetail | null>(null);
@@ -268,6 +270,16 @@ export function UnitEconomicsDrilldownSheet({
               {tab === 'expenses' ? <UnitEconomicsDrilldownExpensesTable detail={detail} /> : null}
               {tab === 'bonuses' ? <UnitEconomicsDrilldownBonusesTable detail={detail} /> : null}
               <div className="flex flex-wrap gap-2">
+                {onOpenPoolDetail ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onOpenPoolDetail(detail.orderId)}
+                  >
+                    Bonus breakdown
+                  </Button>
+                ) : null}
                 <Link
                   href={`/finance/invoices?search=${encodeURIComponent(detail.orderCode)}`}
                   className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}

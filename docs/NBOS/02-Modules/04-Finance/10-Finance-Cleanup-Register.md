@@ -86,13 +86,13 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 - `GET/PATCH` payroll allocation matrix (employees × delivery payable units), layout persistence, cell release edit;
 - matrix: column/row DnD, pin, reset layout, planned bonus edit, recipient reassign, manual gray-cell bonus, validation banner, cell audit read;
 - pre-review/approve matrix validation; carry/KPI notify on matrix attach;
-- `GET /api/unit-economics` + `/finance/unit-economics` tabs: Overview, Funding/cash, Expenses, Profitability, Bonus pools;
+- `GET /api/unit-economics` + `/finance/unit-economics` (In/Out/Balance per unit, by project); `/finance/bonus-pools` redirects here; legacy bonus-pools page UI removed;
 - Bonus Board manual create: `title`, `reason`, `originalAmount`, audit log; audit panel on entry sheet + matrix cell dialog;
 - docs: `05-Bonus-and-Payroll`, `04-Finance-Pages`, `03-Core-Entities`, `06-PnL-Reports` (matrix + UE sections).
 
 **Остаётся:**
 
-- Unit Economics: expenses/bonuses drill-down per delivery unit (invoices/payments sheet shipped);
+- Unit Economics: product-level roll-up; planned non-bonus expenses in Out (future);
 - bonus recipient full history UI (beyond last N audit rows);
 - layout-change audit (optional);
 - full matrix E2E / manual QA checklist in `todo.md` Phase 8.
@@ -106,7 +106,7 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 - `PayrollRun`, `SalaryLine`, `BonusRelease`, product bonus pool roll-ups;
 - approve → expense card → `Expense Payment` → `syncSalaryLinePaidFromExpenseLedger`;
 - `/finance/salary` (grid/cards/list/board + month sheet), `/finance/payroll/[id]` workspace;
-- `/finance/bonuses` (+ legacy `/bonus` redirect), `/finance/bonus-pools`, `/finance/unit-economics`;
+- `/finance/bonuses` (+ legacy `/bonus` redirect), `/finance/unit-economics` (sole operational money hub; `/finance/bonus-pools` redirects here);
 - Pay Now payroll filters + expense sheet links to month sheet / payroll run;
 - `/my-account/wallet` read-only month cards + month-detail;
 - `GET …/salary-lines/:id/month-detail` (Finance + wallet scope);

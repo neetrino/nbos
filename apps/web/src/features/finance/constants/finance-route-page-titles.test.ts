@@ -10,7 +10,7 @@ import {
   payrollRunDetailPageTitle,
   payrollRunsListPageTitle,
   employeeWalletPageTitle,
-  bonusProjectPoolsPageTitle,
+  unitEconomicsPageTitle,
   subscriptionDetailPageTitle,
   subscriptionsListPageTitle,
 } from './finance-route-page-titles';
@@ -32,8 +32,8 @@ describe('finance route page titles', () => {
     expect(employeeWalletPageTitle()).toBe('My wallet');
   });
 
-  it('bonusProjectPoolsPageTitle', () => {
-    expect(bonusProjectPoolsPageTitle()).toBe('Bonus pools');
+  it('unitEconomicsPageTitle', () => {
+    expect(unitEconomicsPageTitle()).toBe('Unit economics');
   });
 
   it('payrollRunDetailPageTitle', () => {
