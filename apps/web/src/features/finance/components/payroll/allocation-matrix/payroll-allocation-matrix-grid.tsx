@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { PayrollAllocationMatrixCellInput } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-cell-input';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { PAYROLL_MATRIX_CELL_CLASS } from '@/features/finance/constants/payroll-allocation-matrix-cell';
 import {
@@ -35,6 +36,18 @@ function cellMap(cells: PayrollAllocationMatrixCell[]): Map<string, PayrollAlloc
   return new Map(cells.map((c) => [`${c.employeeId}:${c.orderId}`, c]));
 }
 
+function cellKey(cell: PayrollAllocationMatrixCell): string {
+  return `${cell.employeeId}:${cell.orderId}`;
+}
+
+function needsManualBonus(cell: PayrollAllocationMatrixCell, editable: boolean): boolean {
+  return (
+    editable &&
+    (cell.state === 'UNLINKED' ||
+      (cell.state === 'LINKED_EMPTY' && !cell.bonusEntryId && cell.linked))
+  );
+}
+
 export function PayrollAllocationMatrixGrid(props: {
   matrix: PayrollAllocationMatrix;
   viewMode: PayrollMatrixViewMode;
@@ -42,11 +55,16 @@ export function PayrollAllocationMatrixGrid(props: {
   layoutDisabled: boolean;
   activeRowId: string | null;
   activeColumnId: string | null;
+  savingCellKey: string | null;
   onActivateRow: (id: string | null) => void;
   onActivateColumn: (id: string | null) => void;
   onReorderColumns: (orderedIds: string[]) => void;
   onReorderRows: (orderedIds: string[]) => void;
-  onCellClick: (cell: PayrollAllocationMatrixCell) => void;
+  onManualCellRequest: (cell: PayrollAllocationMatrixCell) => void;
+  onReleaseSave: (
+    cell: PayrollAllocationMatrixCell,
+    payload: { releaseThisMonth: string; reason?: string },
+  ) => Promise<void>;
   fullscreen?: boolean;
 }) {
   const {
@@ -56,15 +74,22 @@ export function PayrollAllocationMatrixGrid(props: {
     layoutDisabled,
     activeRowId,
     activeColumnId,
+    savingCellKey,
     onActivateRow,
     onActivateColumn,
     onReorderColumns,
     onReorderRows,
-    onCellClick,
+    onManualCellRequest,
+    onReleaseSave,
     fullscreen = false,
   } = props;
 
   const cellsByKey = useMemo(() => cellMap(matrix.cells), [matrix.cells]);
+  const fundingByOrderId = useMemo(
+    () =>
+      new Map(matrix.deliveryUnits.map((u) => [u.orderId, Number.parseFloat(u.availableFunding)])),
+    [matrix.deliveryUnits],
+  );
 
   const rows: MatrixRowHeader[] =
     viewMode === 'EMPLOYEE_MATRIX'
@@ -156,12 +181,15 @@ export function PayrollAllocationMatrixGrid(props: {
     columnIds.flatMap((colId) => {
       const cell = resolveCell(rowId, colId);
       const columnActive = activeColumnId === colId;
+      const orderId = viewMode === 'EMPLOYEE_MATRIX' ? colId : rowId;
+      const availableFunding = fundingByOrderId.get(orderId) ?? 0;
+
       const dataTd = !cell ? (
         <td
           key={colId}
           className={cn('border-border bg-card border-r border-b', PAYROLL_MATRIX_DATA_COL_WIDTH)}
         />
-      ) : (
+      ) : needsManualBonus(cell, matrix.editable) ? (
         <td
           key={colId}
           className={cn(
@@ -172,22 +200,28 @@ export function PayrollAllocationMatrixGrid(props: {
         >
           <button
             type="button"
-            disabled={!cell.editable && cell.state === 'UNLINKED'}
-            className={cn(
-              'box-border flex h-full min-h-[2.75rem] w-full flex-col items-center justify-center px-1 py-1 tabular-nums',
-              !cell.editable &&
-                cell.state === 'UNLINKED' &&
-                'cursor-not-allowed disabled:opacity-100',
-            )}
-            onClick={() => onCellClick(cell)}
+            className="text-muted-foreground hover:text-foreground box-border flex h-full min-h-[2.75rem] w-full flex-col items-center justify-center px-1 py-1 text-xs"
+            onClick={() => onManualCellRequest(cell)}
           >
-            <span>
-              {Number.parseFloat(cell.releaseThisMonth) > 0
-                ? formatAmount(Number.parseFloat(cell.releaseThisMonth))
-                : '—'}
-            </span>
-            {cell.warning ? <span className="text-[10px] font-medium">{cell.warning}</span> : null}
+            Add bonus
           </button>
+        </td>
+      ) : (
+        <td
+          key={colId}
+          className={cn(
+            'border-border border-r border-b p-0 align-middle',
+            PAYROLL_MATRIX_DATA_COL_WIDTH,
+            PAYROLL_MATRIX_CELL_CLASS[cell.state],
+          )}
+        >
+          <PayrollAllocationMatrixCellInput
+            cell={cell}
+            availableFunding={availableFunding}
+            disabled={layoutDisabled}
+            saving={savingCellKey === cellKey(cell)}
+            onSave={(payload) => onReleaseSave(cell, payload)}
+          />
         </td>
       );
 
