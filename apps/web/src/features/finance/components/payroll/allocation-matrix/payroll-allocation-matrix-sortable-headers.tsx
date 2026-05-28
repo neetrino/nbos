@@ -22,10 +22,13 @@ import { GripVertical } from 'lucide-react';
 import {
   PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
   PAYROLL_MATRIX_DATA_COL_WIDTH,
+  PAYROLL_MATRIX_STICKY_COL_WIDTH,
+  PAYROLL_MATRIX_STICKY_EDGE_DIVIDER,
+  PAYROLL_MATRIX_STICKY_EDGE_STYLE,
   PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
   PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
+  PAYROLL_MATRIX_ROW_HEADER_ACTIVE_MARK,
   PAYROLL_MATRIX_STICKY_HEADER_BG,
-  PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
   PAYROLL_MATRIX_TABLE_CLASS,
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import { cn } from '@/lib/utils';
@@ -57,10 +60,37 @@ const MATRIX_PRIMARY_NAME_CLASS =
 
 function MatrixLabeledAmount({ label, value }: { label: string; value: string }) {
   return (
-    <p className="text-muted-foreground text-[10px] leading-tight font-normal">
+    <p className="text-muted-foreground truncate text-[10px] leading-tight font-normal">
       <span>{label} </span>
       <span className="text-foreground font-normal tabular-nums">{value}</span>
     </p>
+  );
+}
+
+function SortableHeaderBody({
+  setNodeRef,
+  transform,
+  transition,
+  isDragging,
+  children,
+}: {
+  setNodeRef: (node: HTMLElement | null) => void;
+  transform: { x: number; y: number; scaleX: number; scaleY: number } | null;
+  transition: string | undefined;
+  isDragging: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      className={cn('min-w-0', isDragging && 'opacity-70')}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -83,7 +113,7 @@ function MatrixHeaderDragShell({
     <div className="group relative">
       <button
         type="button"
-        className="hover:text-primary w-full min-w-0 overflow-hidden pr-5 text-left"
+        className="hover:text-primary w-full min-w-0 overflow-hidden text-left"
         onClick={onActivate}
       >
         {children}
@@ -172,13 +202,17 @@ export function PayrollAllocationMatrixTableShell(props: {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <table className={PAYROLL_MATRIX_TABLE_CLASS}>
+        <colgroup>
+          <col style={{ width: PAYROLL_MATRIX_STICKY_COL_WIDTH }} />
+        </colgroup>
         <thead>
           <tr>
             <th
+              style={PAYROLL_MATRIX_STICKY_EDGE_STYLE}
               className={cn(
                 PAYROLL_MATRIX_STICKY_HEADER_BG,
                 PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
-                PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
+                PAYROLL_MATRIX_STICKY_EDGE_DIVIDER,
                 'border-border sticky top-0 left-0 z-50 border-r border-b px-3 py-2 text-left text-xs font-semibold tracking-wide uppercase',
               )}
             >
@@ -238,46 +272,45 @@ function SortableMatrixColumnHeader(props: {
     id: col.id,
     disabled,
   });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   return (
     <th
-      ref={setNodeRef}
-      style={style}
       className={cn(
         PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
         PAYROLL_MATRIX_DATA_COL_WIDTH,
         'border-border border-r border-b px-2 py-2 text-left align-bottom',
         expanded ? PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG : PAYROLL_MATRIX_STICKY_HEADER_BG,
-        isDragging && 'opacity-70',
       )}
     >
-      <MatrixHeaderDragShell
-        disabled={disabled}
-        dragLabel="Drag to reorder column"
-        onActivate={onActivate}
-        dragAttributes={attributes}
-        dragListeners={listeners}
+      <SortableHeaderBody
+        setNodeRef={setNodeRef}
+        transform={transform}
+        transition={transition}
+        isDragging={isDragging}
       >
-        <p className={MATRIX_PRIMARY_NAME_CLASS}>
-          {col.pinned ? '📌 ' : ''}
-          {col.primary}
-        </p>
-        {col.kind === 'employee' ? (
-          <>
-            {col.secondary ? <MatrixLabeledAmount label="Role" value={col.secondary} /> : null}
-            <MatrixLabeledAmount label="Bonus" value={col.meta} />
-          </>
-        ) : (
-          <>
-            <MatrixLabeledAmount label="Remaining" value={col.meta} />
-            {col.funding ? <MatrixLabeledAmount label="Avail" value={col.funding} /> : null}
-          </>
-        )}
-      </MatrixHeaderDragShell>
+        <MatrixHeaderDragShell
+          disabled={disabled}
+          dragLabel="Drag to reorder column"
+          onActivate={onActivate}
+          dragAttributes={attributes}
+          dragListeners={listeners}
+        >
+          <p className={MATRIX_PRIMARY_NAME_CLASS}>
+            {col.pinned ? '📌 ' : ''}
+            {col.primary}
+          </p>
+          {col.kind === 'employee' ? (
+            <>
+              {col.secondary ? <MatrixLabeledAmount label="Role" value={col.secondary} /> : null}
+              <MatrixLabeledAmount label="Bonus" value={col.meta} />
+            </>
+          ) : (
+            <>
+              <MatrixLabeledAmount label="Remaining" value={col.meta} />
+              {col.funding ? <MatrixLabeledAmount label="Avail" value={col.funding} /> : null}
+            </>
+          )}
+        </MatrixHeaderDragShell>
+      </SortableHeaderBody>
     </th>
   );
 }
@@ -293,46 +326,47 @@ function SortableMatrixRowHeader(props: {
     id: row.id,
     disabled,
   });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   return (
     <th
-      ref={setNodeRef}
-      style={style}
+      style={PAYROLL_MATRIX_STICKY_EDGE_STYLE}
       className={cn(
         PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
-        PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
+        PAYROLL_MATRIX_STICKY_EDGE_DIVIDER,
         'border-border sticky left-0 z-30 border-r border-b px-3 py-2.5 text-left',
-        expanded ? PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG : PAYROLL_MATRIX_STICKY_HEADER_BG,
-        isDragging && 'opacity-70',
+        PAYROLL_MATRIX_STICKY_HEADER_BG,
+        expanded && PAYROLL_MATRIX_ROW_HEADER_ACTIVE_MARK,
       )}
     >
-      <MatrixHeaderDragShell
-        disabled={disabled}
-        dragLabel="Drag to reorder row"
-        onActivate={onActivate}
-        dragAttributes={attributes}
-        dragListeners={listeners}
+      <SortableHeaderBody
+        setNodeRef={setNodeRef}
+        transform={transform}
+        transition={transition}
+        isDragging={isDragging}
       >
-        <p className={MATRIX_PRIMARY_NAME_CLASS}>
-          {row.pinned ? '📌 ' : ''}
-          {row.primary}
-        </p>
-        {row.kind === 'employee' ? (
-          <>
-            <MatrixLabeledAmount label="Salary" value={row.secondary} />
-            <MatrixLabeledAmount label="Bonus" value={row.meta} />
-          </>
-        ) : (
-          <>
-            <MatrixLabeledAmount label="Remaining" value={row.meta} />
-            {row.funding ? <MatrixLabeledAmount label="Avail" value={row.funding} /> : null}
-          </>
-        )}
-      </MatrixHeaderDragShell>
+        <MatrixHeaderDragShell
+          disabled={disabled}
+          dragLabel="Drag to reorder row"
+          onActivate={onActivate}
+          dragAttributes={attributes}
+          dragListeners={listeners}
+        >
+          <p className={MATRIX_PRIMARY_NAME_CLASS}>
+            {row.pinned ? '📌 ' : ''}
+            {row.primary}
+          </p>
+          {row.kind === 'employee' ? (
+            <>
+              <MatrixLabeledAmount label="Salary" value={row.secondary} />
+              <MatrixLabeledAmount label="Bonus" value={row.meta} />
+            </>
+          ) : (
+            <>
+              <MatrixLabeledAmount label="Remaining" value={row.meta} />
+              {row.funding ? <MatrixLabeledAmount label="Avail" value={row.funding} /> : null}
+            </>
+          )}
+        </MatrixHeaderDragShell>
+      </SortableHeaderBody>
     </th>
   );
 }

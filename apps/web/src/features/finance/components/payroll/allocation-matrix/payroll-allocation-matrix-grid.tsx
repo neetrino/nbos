@@ -132,7 +132,7 @@ export function PayrollAllocationMatrixGrid(props: {
   const renderAfterRow = (rowId: string) => {
     const detailCells = columnIds.map((colId) => {
       const cell = resolveCell(rowId, colId);
-      return <MatrixCellDetailPanel key={`${rowId}-${colId}-d`} cell={cell} />;
+      return <MatrixCellDetailPanel key={`${rowId}-${colId}-d`} cell={cell} layout="row" />;
     });
 
     const orderUnit =

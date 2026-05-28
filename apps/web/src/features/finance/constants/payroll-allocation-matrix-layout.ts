@@ -1,6 +1,15 @@
 /** Fixed sticky row/corner width — same in Employee × Order and Order × Employees views. */
+export const PAYROLL_MATRIX_STICKY_COL_WIDTH = '11.5rem';
+
+/** Inline width lock — colgroup alone can still grow with wide detail-row content. */
+export const PAYROLL_MATRIX_STICKY_EDGE_STYLE = {
+  width: PAYROLL_MATRIX_STICKY_COL_WIDTH,
+  minWidth: PAYROLL_MATRIX_STICKY_COL_WIDTH,
+  maxWidth: PAYROLL_MATRIX_STICKY_COL_WIDTH,
+} as const;
+
 export const PAYROLL_MATRIX_STICKY_EDGE_WIDTH =
-  'w-[11.5rem] max-w-[11.5rem] min-w-[11.5rem] shrink-0';
+  'w-[11.5rem] max-w-[11.5rem] min-w-[11.5rem] shrink-0 overflow-hidden box-border';
 
 /** Opaque sticky edge (employee/order names) — must not show scroll-through. */
 export const PAYROLL_MATRIX_STICKY_HEADER_BG = 'bg-card';
@@ -11,7 +20,8 @@ export const PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG = 'bg-emerald-50 dark:bg-eme
 /** @deprecated Use PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG for column selection. */
 export const PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG = PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG;
 
-export const PAYROLL_MATRIX_STICKY_HEADER_SHADOW = 'shadow-[2px_0_6px_-2px_rgba(0,0,0,0.06)]';
+/** Inset divider — no outward shadow that visually widens the sticky column. */
+export const PAYROLL_MATRIX_STICKY_EDGE_DIVIDER = 'shadow-[inset_-1px_0_0_0_var(--border)]';
 
 /** Scrollable matrix body — replaces outer padding wrapper in workspace. */
 export const PAYROLL_MATRIX_BODY_CLASS =
@@ -19,9 +29,13 @@ export const PAYROLL_MATRIX_BODY_CLASS =
 
 export const PAYROLL_MATRIX_BODY_FULLSCREEN_CLASS = 'min-h-0 flex-1 overflow-auto rounded-lg';
 
-/** `border-collapse: collapse` breaks `position: sticky` on header cells. */
+/** `w-max` lets content widen columns; `border-collapse: collapse` breaks sticky. */
 export const PAYROLL_MATRIX_TABLE_CLASS =
-  'w-max min-w-full border-separate border-spacing-0 text-xs';
+  'w-full min-w-full table-fixed border-separate border-spacing-0 text-xs';
+
+/** Active row header — underline only; same width/background as passive rows. */
+export const PAYROLL_MATRIX_ROW_HEADER_ACTIVE_MARK =
+  'shadow-[inset_0_-2px_0_0_theme(colors.emerald.500)]';
 
 export const PAYROLL_MATRIX_COLUMN_HEADER_STICKY = 'sticky top-0 z-20';
 

@@ -3,8 +3,10 @@
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   PAYROLL_MATRIX_EXPANSION_CELL_CLASS,
+  PAYROLL_MATRIX_EXPANSION_ROW_CELL_CLASS,
   PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS,
   PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS,
+  PAYROLL_MATRIX_EXPANSION_ROW_STICKY_STYLE,
 } from '@/features/finance/constants/payroll-allocation-matrix-expansion';
 import type {
   DeliveryPayableUnit,
@@ -34,9 +36,9 @@ function ExpansionMetricStack({ items }: { items: MetricItem[] }) {
   return (
     <div className="flex w-full flex-col gap-1">
       {items.map((item) => (
-        <div key={item.label} className="min-w-0">
-          <p className={EXPANSION_METRIC_LABEL_CLASS}>{item.label}</p>
-          <p className={cn(EXPANSION_METRIC_VALUE_CLASS, 'mt-0.5')}>{item.value}</p>
+        <div key={item.label} className="max-w-full min-w-0">
+          <p className={cn(EXPANSION_METRIC_LABEL_CLASS, 'truncate')}>{item.label}</p>
+          <p className={cn(EXPANSION_METRIC_VALUE_CLASS, 'mt-0.5 truncate')}>{item.value}</p>
         </div>
       ))}
     </div>
@@ -85,10 +87,13 @@ export function MatrixEmployeeDetailHeader({
   );
 }
 
-/** Row expansion — sticky summary (first cell of detail row). */
+/** Row expansion — pool summary in sticky edge (Planned/Paid or Payable/Bonus). */
 export function MatrixOrderRowDetailSticky({ unit }: { unit: DeliveryPayableUnit }) {
   return (
-    <th className={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS}>
+    <th
+      style={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_STYLE}
+      className={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS}
+    >
       <ExpansionMetricStack items={orderPoolMetrics(unit)} />
     </th>
   );
@@ -100,24 +105,38 @@ export function MatrixEmployeeRowDetailSticky({
   employee: PayrollAllocationMatrixEmployee;
 }) {
   return (
-    <th className={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS}>
+    <th
+      style={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_STYLE}
+      className={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS}
+    >
       <ExpansionMetricStack items={employeeRunMetrics(employee)} />
     </th>
   );
 }
 
 /** Due/Paid — one cell in the detail column (column expand) or detail row (row expand). */
-export function MatrixCellDetailPanel({ cell }: { cell: PayrollAllocationMatrixCell | undefined }) {
+export function MatrixCellDetailPanel({
+  cell,
+  layout = 'column',
+}: {
+  cell: PayrollAllocationMatrixCell | undefined;
+  layout?: 'column' | 'row';
+}) {
+  const cellClass =
+    layout === 'row'
+      ? PAYROLL_MATRIX_EXPANSION_ROW_CELL_CLASS
+      : PAYROLL_MATRIX_EXPANSION_CELL_CLASS;
+
   if (!cell?.linked) {
     return (
-      <td className={PAYROLL_MATRIX_EXPANSION_CELL_CLASS}>
+      <td className={cellClass}>
         <p className="text-muted-foreground text-center text-[10px]">—</p>
       </td>
     );
   }
 
   return (
-    <td className={PAYROLL_MATRIX_EXPANSION_CELL_CLASS}>
+    <td className={cellClass}>
       <ExpansionMetricStack items={intersectionMetrics(cell)} />
     </td>
   );
