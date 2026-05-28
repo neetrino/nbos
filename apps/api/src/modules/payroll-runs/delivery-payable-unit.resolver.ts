@@ -1,5 +1,6 @@
 import { Decimal, type PrismaClient } from '@nbos/database';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
+import { payrollBonusReleaseBase } from './payroll-bonus-release-base';
 import {
   CLOSED_DELIVERY_STATUSES,
   DELIVERY_BONUS_ORDER_TYPES,
@@ -50,6 +51,42 @@ function pickReason(flags: {
   return 'DELIVERY_OPEN';
 }
 
+function entryPlannedAmount(
+  entry: {
+    type: string;
+    amount: Decimal | string;
+    payableAmount: Decimal | string | null;
+    earnedPeriod: string | null;
+  },
+  payrollMonth: string,
+): Decimal {
+  return payrollBonusReleaseBase(
+    {
+      type: entry.type,
+      amount: entry.amount,
+      payableAmount: entry.payableAmount,
+      earnedPeriod: entry.earnedPeriod,
+    },
+    payrollMonth,
+  );
+}
+
+function entryRemainingAmount(
+  entry: {
+    type: string;
+    amount: Decimal | string;
+    payableAmount: Decimal | string | null;
+    earnedPeriod: string | null;
+    status: string;
+  },
+  payrollMonth: string,
+): Decimal {
+  if (entry.status === 'PAID' || entry.status === 'CLAWBACK') {
+    return BONUS_POOL_ZERO;
+  }
+  return entryPlannedAmount(entry, payrollMonth);
+}
+
 /** Resolves delivery payable units visible in a payroll run allocation matrix. */
 export async function resolveDeliveryPayableUnits(
   prisma: InstanceType<typeof PrismaClient>,
@@ -58,7 +95,11 @@ export async function resolveDeliveryPayableUnits(
 ): Promise<DeliveryPayableUnitDto[]> {
   const pinnedSet = new Set(pinnedUnitIds);
 
-  const [runReleaseOrderIds, candidateOrders] = await Promise.all([
+  const [run, runReleaseOrderIds, candidateOrders] = await Promise.all([
+    prisma.payrollRun.findUnique({
+      where: { id: payrollRunId },
+      select: { payrollMonth: true },
+    }),
     prisma.bonusRelease
       .findMany({
         where: {
@@ -90,23 +131,34 @@ export async function resolveDeliveryPayableUnits(
             overFundingAmount: true,
           },
         },
-        bonusEntries: { select: { amount: true, status: true } },
+        bonusEntries: {
+          select: {
+            type: true,
+            amount: true,
+            payableAmount: true,
+            earnedPeriod: true,
+            status: true,
+          },
+        },
       },
     }),
   ]);
 
+  const payrollMonth = run?.payrollMonth ?? '';
   const units: DeliveryPayableUnitDto[] = [];
 
   for (const order of candidateOrders) {
     const pool = order.productBonusPool;
-    const planned = pool
-      ? decimalFrom(pool.totalPlannedAmount)
-      : order.bonusEntries.reduce((s, e) => s.plus(decimalFrom(e.amount)), BONUS_POOL_ZERO);
-    const remaining = pool
-      ? decimalFrom(pool.totalRemainingAmount)
-      : order.bonusEntries
-          .filter((e) => e.status !== 'PAID' && e.status !== 'CLAWBACK')
-          .reduce((s, e) => s.plus(decimalFrom(e.amount)), BONUS_POOL_ZERO);
+    const entryPlanned = order.bonusEntries.reduce(
+      (sum, entry) => sum.plus(entryPlannedAmount(entry, payrollMonth)),
+      BONUS_POOL_ZERO,
+    );
+    const entryRemaining = order.bonusEntries.reduce(
+      (sum, entry) => sum.plus(entryRemainingAmount(entry, payrollMonth)),
+      BONUS_POOL_ZERO,
+    );
+    const planned = pool ? decimalFrom(pool.totalPlannedAmount) : entryPlanned;
+    const remaining = pool ? decimalFrom(pool.totalRemainingAmount) : entryRemaining;
 
     const deliveryOpen = isDeliveryOpen(order.product?.status, order.extension?.status);
     const unpaid = remaining.gt(BONUS_POOL_ZERO);

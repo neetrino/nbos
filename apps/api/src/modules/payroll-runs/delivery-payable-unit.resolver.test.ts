@@ -4,6 +4,9 @@ import { resolveDeliveryPayableUnits } from './delivery-payable-unit.resolver';
 describe('resolveDeliveryPayableUnits', () => {
   it('includes open delivery units and excludes closed units with no unpaid bonus', async () => {
     const prisma = {
+      payrollRun: {
+        findUnique: vi.fn().mockResolvedValue({ payrollMonth: '2026-05' }),
+      },
       bonusRelease: {
         findMany: vi.fn().mockResolvedValue([]),
       },
@@ -61,6 +64,9 @@ describe('resolveDeliveryPayableUnits', () => {
 
   it('includes pinned closed units even when fully paid', async () => {
     const prisma = {
+      payrollRun: {
+        findUnique: vi.fn().mockResolvedValue({ payrollMonth: '2026-05' }),
+      },
       bonusRelease: { findMany: vi.fn().mockResolvedValue([]) },
       order: {
         findMany: vi.fn().mockResolvedValue([

@@ -13,6 +13,10 @@ import {
 } from './payroll-matrix-approval-validation';
 import { resolveDeliveryPayableUnits } from './delivery-payable-unit.resolver';
 import {
+  isPayrollMatrixBonusEntryVisible,
+  payrollBonusReleaseBase,
+} from './payroll-bonus-release-base';
+import {
   applyCustomOrder,
   loadPayrollMatrixLayout,
   savePayrollMatrixLayout,
@@ -111,8 +115,11 @@ export class PayrollAllocationMatrixService {
             id: true,
             employeeId: true,
             title: true,
+            type: true,
             amount: true,
             originalAmount: true,
+            payableAmount: true,
+            earnedPeriod: true,
             status: true,
           },
         },
@@ -169,13 +176,19 @@ export class PayrollAllocationMatrixService {
         const order = orderMeta.get(unit.orderId);
         const linkedIds = new Set<string>();
         if (order) {
-          order.bonusEntries.forEach((b) => linkedIds.add(b.employeeId));
+          order.bonusEntries
+            .filter((b) => isPayrollMatrixBonusEntryVisible(b, run.payrollMonth))
+            .forEach((b) => linkedIds.add(b.employeeId));
           if (order.product?.pmId) linkedIds.add(order.product.pmId);
           if (order.product?.developerId) linkedIds.add(order.product.developerId);
           if (order.product?.designerId) linkedIds.add(order.product.designerId);
         }
         const linked = linkedIds.has(emp.employeeId);
-        const entry = order?.bonusEntries.find((b) => b.employeeId === emp.employeeId);
+        const entry = order?.bonusEntries.find(
+          (b) =>
+            b.employeeId === emp.employeeId &&
+            isPayrollMatrixBonusEntryVisible(b, run.payrollMonth),
+        );
         const entryReleases = releases.filter(
           (r) =>
             r.bonusEntry.employeeId === emp.employeeId && r.bonusEntry.orderId === unit.orderId,
@@ -195,7 +208,17 @@ export class PayrollAllocationMatrixService {
             (s, r) => s.plus(decimalFrom(r.payrollIncludedAmount ?? r.amount)),
             BONUS_POOL_ZERO,
           );
-        const planned = entry ? decimalFrom(entry.amount) : BONUS_POOL_ZERO;
+        const planned = entry
+          ? payrollBonusReleaseBase(
+              {
+                type: entry.type,
+                amount: entry.amount,
+                payableAmount: entry.payableAmount,
+                earnedPeriod: entry.earnedPeriod,
+              },
+              run.payrollMonth,
+            )
+          : BONUS_POOL_ZERO;
         const original = entry?.originalAmount
           ? decimalFrom(entry.originalAmount)
           : entry

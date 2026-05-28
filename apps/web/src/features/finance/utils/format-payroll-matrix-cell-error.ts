@@ -19,7 +19,7 @@ function sanitizePayrollMatrixApiMessage(message: string): string {
   if (legacySnapshot) {
     const period = legacySnapshot[1]?.trim() ?? '—';
     return (
-      `Sales bonus has no KPI payout snapshot for earned month ${period}. ` +
+      `Sales bonus is not ready for payroll (earned month ${period}). ` +
       'Sync Sales KPI for that month, then retry.'
     );
   }

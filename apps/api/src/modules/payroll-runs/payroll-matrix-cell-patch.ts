@@ -8,9 +8,9 @@ import {
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
+import { payrollBonusReleaseBase } from './payroll-bonus-release-base';
 import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detach';
 import { notifyPayrollCarryEventsOnAttach } from './payroll-bonus-carry-notify';
-import { notifySalesKpiReductionsOnAttach } from './payroll-bonus-release-kpi-notify';
 import type { PayrollAttachNotifyEvent } from './payroll-attach-notify.types';
 import {
   refreshBonusEntryStatusesForReleases,
@@ -65,13 +65,24 @@ export async function applyMatrixCellPatch(
   const touched: string[] = [];
   let carryNotifyEvents: PayrollAttachNotifyEvent[] = [];
 
+  const run = await tx.payrollRun.findUnique({
+    where: { id: payrollRunId },
+    select: { payrollMonth: true },
+  });
+  if (!run) {
+    throw new NotFoundException(`Payroll run ${payrollRunId} not found`);
+  }
+
   const entry = await tx.bonusEntry.findFirst({
     where: { employeeId, orderId },
     select: {
       id: true,
       employeeId: true,
       projectId: true,
+      type: true,
       amount: true,
+      payableAmount: true,
+      earnedPeriod: true,
       order: { select: { productId: true, extensionId: true } },
     },
   });
@@ -115,8 +126,16 @@ export async function applyMatrixCellPatch(
     _sum: { amount: true },
   });
   const releasedBefore = decimalFrom(releasedAgg._sum.amount);
-  const planned = decimalFrom(entry.amount);
-  const remaining = Decimal.max(BONUS_POOL_ZERO, planned.minus(releasedBefore));
+  const releaseBase = payrollBonusReleaseBase(
+    {
+      type: entry.type,
+      amount: entry.amount,
+      payableAmount: entry.payableAmount,
+      earnedPeriod: entry.earnedPeriod,
+    },
+    run.payrollMonth,
+  );
+  const remaining = Decimal.max(BONUS_POOL_ZERO, releaseBase.minus(releasedBefore));
 
   const releaseType = resolveMatrixReleaseType(releaseAmount, remaining, availableFunding);
   requireReason(releaseType, reason);
@@ -166,7 +185,6 @@ export async function syncAfterMatrixReleaseMutation(
   if (releaseIds.length > 0) {
     await refreshBonusEntryStatusesForReleases(prisma, releaseIds);
     await syncProductBonusPoolsForBonusReleases(prisma, releaseIds, notifications);
-    await notifySalesKpiReductionsOnAttach(prisma, notifications, releaseIds);
   }
   await notifyPayrollCarryEventsOnAttach(prisma, notifications, carryNotifyEvents);
 }

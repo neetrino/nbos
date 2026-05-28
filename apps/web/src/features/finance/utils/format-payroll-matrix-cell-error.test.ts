@@ -69,7 +69,7 @@ describe('formatPayrollMatrixCellError', () => {
     );
 
     expect(formatPayrollMatrixCellError(caught, 'Could not update release.')).toBe(
-      'Sales bonus has no KPI payout snapshot for earned month 2026-05. Sync Sales KPI for that month, then retry.',
+      'Sales bonus is not ready for payroll (earned month 2026-05). Sync Sales KPI for that month, then retry.',
     );
   });
 

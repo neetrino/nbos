@@ -1,20 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
-import { Decimal, type PrismaClient } from '@nbos/database';
+import { type PrismaClient } from '@nbos/database';
 
 import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
-import {
-  applyPayableSnapshotToSalesEntry,
-  refreshSalesBonusesForEarnedMonth,
-} from './sales-bonus-kpi-payable';
+import { earnedSalesPeriodForPayoutMonth } from '../payroll-runs/earned-sales-kpi-period';
+import { isSalesBonusEligibleForPayrollMonth } from '../payroll-runs/payroll-bonus-release-base';
 
-type AttachDb = Pick<
-  InstanceType<typeof PrismaClient>,
-  'bonusEntry' | 'kpiResult' | 'kpiPolicy' | 'compensationProfile' | 'payment'
->;
+type AttachDb = Pick<InstanceType<typeof PrismaClient>, 'bonusEntry'>;
 
 const entrySelect = {
   id: true,
   title: true,
+  type: true,
   employeeId: true,
   amount: true,
   earnedPeriod: true,
@@ -35,69 +31,43 @@ function formatSalesBonusAttachLabel(entry: SalesBonusAttachEntry): string {
   return employeeName ? `${bonusLabel} (${employeeName})` : bonusLabel;
 }
 
-export type SalesBonusPayableAtAttach = {
-  fullAmount: Decimal;
-  kpiScaledAmount: Decimal;
-  kpiFactor: Decimal;
-};
-
 /**
- * Payroll attach uses frozen `payableAmount` on the bonus entry (earned month KPI),
- * not payroll month − 1.
+ * Payroll attach reads frozen bonus snapshots only — no KPI sync or recalculation here.
  */
-export async function resolveSalesBonusPayableAtAttach(
+export async function assertSalesBonusReadyForPayrollAttach(
   db: AttachDb,
   params: {
     bonusEntryId: string;
+    payrollMonth: string;
     payrollPolicy: CompensationPayrollPolicy;
   },
-): Promise<SalesBonusPayableAtAttach> {
-  let entry = await db.bonusEntry.findUnique({
+): Promise<void> {
+  const entry = await db.bonusEntry.findUnique({
     where: { id: params.bonusEntryId },
     select: entrySelect,
   });
-  if (!entry) {
+  if (!entry || entry.type !== 'SALES') {
     throw new BadRequestException('Sales bonus not found.');
   }
 
   const bonusLabel = formatSalesBonusAttachLabel(entry);
+  const expectedEarnedPeriod = earnedSalesPeriodForPayoutMonth(params.payrollMonth);
 
-  if (
-    (entry.payableAmount == null || entry.kpiPayoutFactor == null) &&
-    entry.earnedPeriod != null
-  ) {
-    await refreshSalesBonusesForEarnedMonth(db, {
-      employeeId: entry.employeeId,
-      earnedPeriod: entry.earnedPeriod,
-    });
-    await applyPayableSnapshotToSalesEntry(db, params.bonusEntryId);
-    entry = await db.bonusEntry.findUnique({
-      where: { id: params.bonusEntryId },
-      select: entrySelect,
-    });
-    if (!entry) {
-      throw new BadRequestException(`${bonusLabel} could not be loaded after KPI sync.`);
-    }
+  if (!isSalesBonusEligibleForPayrollMonth(entry, params.payrollMonth)) {
+    throw new BadRequestException(
+      `${bonusLabel} is not eligible for payroll month ${params.payrollMonth}. ` +
+        `Only bonuses earned in ${expectedEarnedPeriod} can be included.`,
+    );
   }
 
   if (params.payrollPolicy.kpiPolicyId == null) {
-    return {
-      fullAmount: entry.amount,
-      kpiScaledAmount: entry.amount,
-      kpiFactor: new Decimal(1),
-    };
+    return;
   }
 
   if (entry.payableAmount == null || entry.kpiPayoutFactor == null) {
     throw new BadRequestException(
-      `${bonusLabel} has no KPI payout snapshot for earned month ${entry.earnedPeriod ?? '—'}. ` +
-        'Sync Sales KPI for that month, then retry.',
+      `${bonusLabel} is not ready for payroll. ` +
+        `Sync Sales KPI for earned month ${entry.earnedPeriod ?? '—'}, then retry.`,
     );
   }
-
-  return {
-    fullAmount: entry.amount,
-    kpiScaledAmount: entry.payableAmount,
-    kpiFactor: entry.kpiPayoutFactor,
-  };
 }

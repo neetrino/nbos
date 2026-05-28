@@ -5,6 +5,22 @@ import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach'
 
 const BONUS_ENTRY_ID = 'be1';
 
+function salesBonusEntryMock(overrides: Record<string, unknown> = {}) {
+  return {
+    id: BONUS_ENTRY_ID,
+    title: 'Seller bonus',
+    type: 'SALES',
+    employeeId: 'e1',
+    amount: new Decimal(100),
+    earnedPeriod: '2026-04',
+    payableAmount: new Decimal(70),
+    kpiPayoutFactor: new Decimal('0.7'),
+    employee: { firstName: 'Anna', lastName: 'Petrosyan' },
+    order: { code: 'ORD-1' },
+    ...overrides,
+  };
+}
+
 function bonusEntry(type: string) {
   return { id: BONUS_ENTRY_ID, type, order: { code: 'ORD-1' } };
 }
@@ -116,22 +132,17 @@ describe('attachBonusReleasesToPayrollRun', () => {
       gateRules: { bands: [{ minAttainmentPct: 70, payoutFactor: 1 }] },
       bonusCapBaseSalaryMultiplier: new Decimal(2),
     });
-    tx.bonusEntry.findUnique.mockResolvedValue({
-      id: BONUS_ENTRY_ID,
-      employeeId: 'e1',
-      amount: new Decimal(10),
-      earnedPeriod: '2026-03',
-      payableAmount: null,
-      kpiPayoutFactor: null,
-    });
-    tx.compensationProfile.findFirst.mockResolvedValue({ kpiPolicyId: 'kp1' });
+    tx.bonusEntry.findUnique.mockResolvedValue(
+      salesBonusEntryMock({ payableAmount: null, kpiPayoutFactor: null }),
+    );
 
     await expect(
       attachBonusReleasesToPayrollRun(tx as never, {
         payrollRunId: 'run1',
         releaseIds: ['rel1'],
       }),
-    ).rejects.toThrow(/payable snapshot/);
+    ).rejects.toThrow(/not ready for payroll/);
+    expect(tx.kpiResult.findFirst).not.toHaveBeenCalled();
   });
 
   it('updates salary line and release then recalculates run totals', async () => {
@@ -244,7 +255,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
     expect(tx.payrollRun.update).toHaveBeenCalled();
   });
 
-  it('uses frozen payableAmount from bonus entry for SALES (earned month, not payout month)', async () => {
+  it('includes release amount for SALES without payroll-side KPI scaling', async () => {
     const tx = createTxMock();
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
@@ -255,7 +266,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
       {
         id: 'rel1',
         employeeId: 'e1',
-        amount: new Decimal(100),
+        amount: new Decimal(70),
         status: 'APPROVED',
         payrollRunId: null,
         bonusEntry: bonusEntry('SALES'),
@@ -285,21 +296,14 @@ describe('attachBonusReleasesToPayrollRun', () => {
       gateRules: { bands: [{ minAttainmentPct: 70, payoutFactor: 1 }] },
       bonusCapBaseSalaryMultiplier: new Decimal(2),
     });
-    tx.bonusEntry.findUnique.mockResolvedValue({
-      id: BONUS_ENTRY_ID,
-      employeeId: 'e1',
-      amount: new Decimal(100),
-      earnedPeriod: '2026-03',
-      payableAmount: new Decimal(50),
-      kpiPayoutFactor: new Decimal('0.5'),
-    });
+    tx.bonusEntry.findUnique.mockResolvedValue(salesBonusEntryMock());
     tx.salaryLine.aggregate.mockResolvedValue({
       _sum: {
         baseSalary: new Decimal(100),
-        bonusesTotal: new Decimal(50),
+        bonusesTotal: new Decimal(70),
         adjustmentsTotal: new Decimal(0),
         deductionsTotal: new Decimal(0),
-        totalPayable: new Decimal(150),
+        totalPayable: new Decimal(170),
         paidAmount: new Decimal(0),
       },
     });
@@ -310,18 +314,19 @@ describe('attachBonusReleasesToPayrollRun', () => {
     });
 
     expect(tx.kpiResult.findFirst).not.toHaveBeenCalled();
+    expect(tx.bonusEntry.update).not.toHaveBeenCalled();
     expect(tx.salaryLine.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          bonusesTotal: new Decimal(50),
+          bonusesTotal: new Decimal(70),
         }),
       }),
     );
     expect(tx.bonusRelease.update).toHaveBeenCalledWith({
       where: { id: 'rel1' },
       data: expect.objectContaining({
-        payrollIncludedAmount: new Decimal(50),
-        kpiBurnedAmount: new Decimal(50),
+        payrollIncludedAmount: new Decimal(70),
+        kpiBurnedAmount: null,
         payrollCarryOverAmount: null,
         payrollCarryOverRemaining: null,
       }),
@@ -359,14 +364,12 @@ describe('attachBonusReleasesToPayrollRun', () => {
       status: 'PENDING',
       payrollCarryAppliedAmount: null,
     });
-    tx.bonusEntry.findUnique.mockResolvedValue({
-      id: BONUS_ENTRY_ID,
-      employeeId: 'e1',
-      amount: new Decimal(100),
-      earnedPeriod: '2026-04',
-      payableAmount: new Decimal(100),
-      kpiPayoutFactor: new Decimal(1),
-    });
+    tx.bonusEntry.findUnique.mockResolvedValue(
+      salesBonusEntryMock({
+        payableAmount: new Decimal(100),
+        kpiPayoutFactor: new Decimal(1),
+      }),
+    );
     tx.salaryLine.aggregate.mockResolvedValue({
       _sum: {
         baseSalary: new Decimal(100),
