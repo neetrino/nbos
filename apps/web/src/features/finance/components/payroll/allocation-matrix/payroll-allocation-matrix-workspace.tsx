@@ -270,7 +270,7 @@ export function PayrollAllocationMatrixWorkspace({
   const showLayoutToolbar = activeRowId != null || activeColumnId != null;
 
   return (
-    <section className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-sm">
+    <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl">
       {validationIssues.length > 0 ? (
         <div
           className="border-destructive/40 bg-destructive/5 text-destructive border-b px-4 py-2 text-xs"

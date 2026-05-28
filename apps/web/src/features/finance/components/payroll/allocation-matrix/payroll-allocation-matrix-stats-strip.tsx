@@ -62,7 +62,7 @@ export function PayrollAllocationMatrixStatsStrip({
   const remaining = parseMoney(totals.totalRemaining);
 
   return (
-    <div className="border-border bg-border overflow-hidden rounded-lg border">
+    <div className="bg-border overflow-hidden rounded-lg">
       <div className="grid w-full grid-cols-2 gap-px sm:grid-cols-3 lg:grid-cols-6">
         <SummaryCell label="Lines" value={String(lineCount)} />
         <SummaryCell label="Expenses" value={String(expenseCount)} />

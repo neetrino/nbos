@@ -99,7 +99,7 @@ export function PayrollAllocationMatrixGrid(props: {
   const cornerLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'Employee' : 'Order';
 
   return (
-    <div className="border-border bg-card max-h-[min(70vh,48rem)] overflow-auto rounded-xl border">
+    <div className="max-h-[min(70vh,48rem)] overflow-auto">
       <PayrollAllocationMatrixTableShell
         columns={headerColumns}
         rows={rows}
