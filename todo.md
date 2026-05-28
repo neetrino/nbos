@@ -37,7 +37,8 @@
 | `990d11da`  | Remove editable payroll KPI forms; split Bonus Releases into standalone section            |
 | `51445b01`  | Remove public payroll KPI patch endpoints; keep payroll as KPI result consumer             |
 | `c50718e3`  | Add `KpiResult` read model schema + migration                                              |
-| _(pending)_ | KPI Result API/service: derive sales plan/actual snapshot from policy/source facts         |
+| `3c03c58d`  | KPI Result API/service: derive Sales actual snapshot from payment source facts             |
+| _(pending)_ | Extend KPI policy parameters with target/plan source and Sales monthly target amount       |
 
 ---
 
