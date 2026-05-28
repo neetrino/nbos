@@ -12,23 +12,30 @@ enum BonusPolicyStatusEnum {
   ARCHIVED
 }
 
+enum KpiResultSourceEnum {
+  SYSTEM
+  MANUAL
+  IMPORT
+}
+
 /// Active KPI gate parameters (template logic `KPI_GATE_PAYOUT_MULTIPLIER` lives in app code).
 model KpiPolicy {
-  id           String              @id @default(uuid())
-  name         String
-  templateCode String              @map("template_code")
-  gateRules    Json                @map("gate_rules")
+  id                           String              @id @default(uuid())
+  name                         String
+  templateCode                 String              @map("template_code")
+  gateRules                    Json                @map("gate_rules")
   /// Reference scorecard metrics for the role (plan/actual links for payroll SALES KPI).
-  scorecardMetrics Json            @default("[]") @map("scorecard_metrics")
+  scorecardMetrics             Json                @default("[]") @map("scorecard_metrics")
   /// Max variable bonus per month = base salary × this (NBOS default 2 = 200%).
-  bonusCapBaseSalaryMultiplier Decimal @default(2) @map("bonus_cap_base_salary_multiplier") @db.Decimal(4, 2)
-  status       KpiPolicyStatusEnum @default(ACTIVE)
-  scope        String?
-  notes        String?
-  createdAt    DateTime            @default(now()) @map("created_at")
-  updatedAt    DateTime            @updatedAt @map("updated_at")
+  bonusCapBaseSalaryMultiplier Decimal             @default(2) @map("bonus_cap_base_salary_multiplier") @db.Decimal(4, 2)
+  status                       KpiPolicyStatusEnum @default(ACTIVE)
+  scope                        String?
+  notes                        String?
+  createdAt                    DateTime            @default(now()) @map("created_at")
+  updatedAt                    DateTime            @updatedAt @map("updated_at")
 
   compensationProfiles CompensationProfile[]
+  kpiResults           KpiResult[]
 
   @@index([status])
   @@map("kpi_policies")
@@ -59,30 +66,63 @@ enum CompensationProfileStatusEnum {
 }
 
 model CompensationProfile {
-  id              String                        @id @default(uuid())
-  employeeId      String                        @map("employee_id")
-  baseSalary      Decimal                       @map("base_salary") @db.Decimal(12, 2)
-  currency        String                        @default("AMD")
-  payoutSchedule  Json?                         @map("payout_schedule")
-  bonusPolicyId   String?                       @map("bonus_policy_id")
-  kpiPolicyId     String?                       @map("kpi_policy_id")
-  effectiveFrom   DateTime                      @map("effective_from") @db.Date
-  effectiveTo     DateTime?                     @map("effective_to") @db.Date
-  status          CompensationProfileStatusEnum @default(DRAFT)
-  source          String?
-  notes           String?
-  approvedById    String?                       @map("approved_by_id")
-  approvedAt      DateTime?                     @map("approved_at")
-  createdAt       DateTime                      @default(now()) @map("created_at")
-  updatedAt       DateTime                      @updatedAt @map("updated_at")
+  id             String                        @id @default(uuid())
+  employeeId     String                        @map("employee_id")
+  baseSalary     Decimal                       @map("base_salary") @db.Decimal(12, 2)
+  currency       String                        @default("AMD")
+  payoutSchedule Json?                         @map("payout_schedule")
+  bonusPolicyId  String?                       @map("bonus_policy_id")
+  kpiPolicyId    String?                       @map("kpi_policy_id")
+  effectiveFrom  DateTime                      @map("effective_from") @db.Date
+  effectiveTo    DateTime?                     @map("effective_to") @db.Date
+  status         CompensationProfileStatusEnum @default(DRAFT)
+  source         String?
+  notes          String?
+  approvedById   String?                       @map("approved_by_id")
+  approvedAt     DateTime?                     @map("approved_at")
+  createdAt      DateTime                      @default(now()) @map("created_at")
+  updatedAt      DateTime                      @updatedAt @map("updated_at")
 
   employee    Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   bonusPolicy BonusPolicy? @relation(fields: [bonusPolicyId], references: [id], onDelete: SetNull)
   kpiPolicy   KpiPolicy?   @relation(fields: [kpiPolicyId], references: [id], onDelete: SetNull)
   approvedBy  Employee?    @relation("CompensationProfileApprover", fields: [approvedById], references: [id])
   salaryLines SalaryLine[]
+  kpiResults  KpiResult[]
 
   @@index([employeeId, status])
   @@index([employeeId, effectiveFrom])
   @@map("compensation_profiles")
+}
+
+/// Period KPI snapshot produced from policy + source facts; payroll consumes it read-only.
+model KpiResult {
+  id                    String              @id @default(uuid())
+  employeeId            String              @map("employee_id")
+  kpiPolicyId           String?             @map("kpi_policy_id")
+  compensationProfileId String?             @map("compensation_profile_id")
+  payrollRunId          String?             @map("payroll_run_id")
+  salaryLineId          String?             @map("salary_line_id")
+  period                String              @db.VarChar(7)
+  planAmount            Decimal?            @map("plan_amount") @db.Decimal(14, 2)
+  actualAmount          Decimal?            @map("actual_amount") @db.Decimal(14, 2)
+  attainmentPct         Decimal?            @map("attainment_pct") @db.Decimal(7, 2)
+  payoutFactor          Decimal             @default(1) @map("payout_factor") @db.Decimal(7, 4)
+  source                KpiResultSourceEnum @default(SYSTEM)
+  sourceFacts           Json?               @map("source_facts")
+  notes                 String?
+  createdAt             DateTime            @default(now()) @map("created_at")
+  updatedAt             DateTime            @updatedAt @map("updated_at")
+
+  employee            Employee             @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  kpiPolicy           KpiPolicy?           @relation(fields: [kpiPolicyId], references: [id], onDelete: SetNull)
+  compensationProfile CompensationProfile? @relation(fields: [compensationProfileId], references: [id], onDelete: SetNull)
+  payrollRun          PayrollRun?          @relation(fields: [payrollRunId], references: [id], onDelete: SetNull)
+  salaryLine          SalaryLine?          @relation(fields: [salaryLineId], references: [id], onDelete: SetNull)
+
+  @@unique([employeeId, period, kpiPolicyId])
+  @@index([period])
+  @@index([payrollRunId])
+  @@index([salaryLineId])
+  @@map("kpi_results")
 }

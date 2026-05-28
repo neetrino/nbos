@@ -602,6 +602,7 @@ model PayrollRun {
   approvedBy    Employee?      @relation("PayrollRunApprover", fields: [approvedById], references: [id])
   salaryLines                    SalaryLine[]
   bonusReleases                  BonusRelease[]
+  kpiResults                     KpiResult[]
   payrollMatrixLayoutPreferences PayrollMatrixLayoutPreference[]
 
   @@unique([payrollMonth])
@@ -658,6 +659,7 @@ model SalaryLine {
   employee              Employee               @relation(fields: [employeeId], references: [id])
   compensationProfile   CompensationProfile?   @relation(fields: [compensationProfileId], references: [id])
   expense               Expense?               @relation(fields: [expenseId], references: [id])
+  kpiResults            KpiResult[]
 
   @@unique([payrollRunId, employeeId])
   @@index([payrollRunId])

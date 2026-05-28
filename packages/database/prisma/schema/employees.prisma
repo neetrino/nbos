@@ -65,6 +65,7 @@ model Employee {
   payrollMatrixLayouts     PayrollMatrixLayoutPreference[] @relation("PayrollMatrixLayoutUser")
   salaryLines              SalaryLine[]
   compensationProfiles     CompensationProfile[]
+  kpiResults               KpiResult[]
   compensationProfilesApproved CompensationProfile[] @relation("CompensationProfileApprover")
   recurringTasksCreated    RecurringTaskTemplate[] @relation("RecurringTaskCreator")
   recurringTasksAssigned   RecurringTaskTemplate[] @relation("RecurringTaskAssignee")
