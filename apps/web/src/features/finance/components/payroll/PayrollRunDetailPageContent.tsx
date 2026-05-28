@@ -194,11 +194,6 @@ export function PayrollRunDetailPageContent({
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      <p className="text-muted-foreground text-xs">
-        {run.salaryLines.length} lines · {run.materializedExpenseLineCount} expenses ·{' '}
-        {run.includedBonusReleaseCount} bonus releases
-      </p>
-
       {actionError ? <p className="text-destructive text-sm">{actionError}</p> : null}
 
       {run.status === 'APPROVED' || run.status === 'PAYING' || run.status === 'CLOSED' ? (
@@ -219,7 +214,14 @@ export function PayrollRunDetailPageContent({
         </p>
       ) : null}
 
-      {statsTotals ? <PayrollAllocationMatrixStatsStrip totals={statsTotals} /> : null}
+      {statsTotals ? (
+        <PayrollAllocationMatrixStatsStrip
+          lineCount={run.salaryLines.length}
+          expenseCount={run.materializedExpenseLineCount}
+          bonusReleaseCount={run.includedBonusReleaseCount}
+          totals={statsTotals}
+        />
+      ) : null}
 
       <PayrollAllocationMatrixWorkspace
         payrollRunId={payrollRunId}

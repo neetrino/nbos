@@ -12,45 +12,68 @@ function parseMoney(value: string): number {
 
 type MatrixTotals = PayrollAllocationMatrix['totals'];
 
-function StatCard({
+function SummaryCell({
   label,
   value,
   accent,
 }: {
   label: string;
   value: string;
-  accent?: 'default' | 'paid' | 'remaining';
+  accent?: 'paid' | 'remaining';
 }) {
   return (
     <div
       className={cn(
-        'border-border bg-card flex flex-col gap-0.5 rounded-lg border px-3 py-2',
-        accent === 'paid' && 'border-emerald-500/20 bg-emerald-500/5',
-        accent === 'remaining' && 'border-amber-500/20 bg-amber-500/5',
+        'bg-background flex min-w-0 flex-col justify-center gap-0.5 px-3 py-2',
+        accent === 'paid' && 'bg-emerald-500/[0.04]',
+        accent === 'remaining' && 'bg-amber-500/[0.04]',
       )}
     >
-      <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+      <span className="text-muted-foreground truncate text-[10px] font-medium tracking-wide uppercase">
         {label}
       </span>
-      <span className="text-foreground text-base font-semibold tabular-nums">{value}</span>
+      <span
+        className={cn(
+          'text-foreground truncate text-sm font-semibold tabular-nums',
+          accent === 'paid' && 'text-emerald-700 dark:text-emerald-400',
+          accent === 'remaining' && 'text-amber-800 dark:text-amber-400',
+        )}
+      >
+        {value}
+      </span>
     </div>
   );
 }
 
-/** Compact Payable / Paid / Remaining — page body only, not PageHero. */
-export function PayrollAllocationMatrixStatsStrip({ totals }: { totals: MatrixTotals }) {
+/** Run counts + Payable / Paid / Remaining — equal cells across full width. */
+export function PayrollAllocationMatrixStatsStrip({
+  lineCount,
+  expenseCount,
+  bonusReleaseCount,
+  totals,
+}: {
+  lineCount: number;
+  expenseCount: number;
+  bonusReleaseCount: number;
+  totals: MatrixTotals;
+}) {
   const payable = parseMoney(totals.totalPayable);
   const paid = parseMoney(totals.totalPaid);
   const remaining = parseMoney(totals.totalRemaining);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-3 gap-2">
-        <StatCard label="Payable" value={formatAmount(payable)} />
-        <StatCard label="Paid" value={formatAmount(paid)} accent="paid" />
-        <StatCard label="Remaining" value={formatAmount(remaining)} accent="remaining" />
+    <div className="border-border bg-border overflow-hidden rounded-lg border">
+      <div className="grid w-full grid-cols-2 gap-px sm:grid-cols-3 lg:grid-cols-6">
+        <SummaryCell label="Lines" value={String(lineCount)} />
+        <SummaryCell label="Expenses" value={String(expenseCount)} />
+        <SummaryCell label="Bonus releases" value={String(bonusReleaseCount)} />
+        <SummaryCell label="Payable" value={formatAmount(payable)} />
+        <SummaryCell label="Paid" value={formatAmount(paid)} accent="paid" />
+        <SummaryCell label="Remaining" value={formatAmount(remaining)} accent="remaining" />
       </div>
-      <PayrollRunsPaidProgressBar paid={paid} payable={payable} className="h-1.5" />
+      <div className="bg-background px-3 py-1.5">
+        <PayrollRunsPaidProgressBar paid={paid} payable={payable} className="h-1" />
+      </div>
     </div>
   );
 }
