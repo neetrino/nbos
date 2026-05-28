@@ -77,7 +77,26 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 `HOLDBACK` уже удалён из активного канона. Будущий refactor должен убрать legacy `HOLDBACK` / holdback fields из runtime и выровнять выпуск бонусов через `Product Bonus Pool`, `Bonus Release`, `Payroll Run`, `Salary Line`, `Expense Card` и `Employee Wallet`.
 
-### A4. Compensation MVP UX aligned with Bitrix-style flow
+### A4. Payroll Run Workspace v2 + Unit Economics Board (2026-05)
+
+Статус: `SHIPPED` (commit `e73b88f4` on `development`) — **multi-view Unit Economics и bonus policy engine — не закрыты**
+
+**Сделано в runtime + UI:**
+
+- `GET/PATCH` payroll allocation matrix (employees × delivery payable units), layout persistence, cell release edit;
+- matrix: column/row DnD, pin, reset layout, planned bonus edit, recipient reassign, manual gray-cell bonus;
+- pre-review/approve matrix validation; carry/KPI notify on matrix attach;
+- `GET /api/unit-economics` + `/finance/unit-economics` Overview + Bonus pools tab;
+- Bonus Board manual create: `title`, `reason`, `originalAmount`, audit log;
+- docs: `05-Bonus-and-Payroll`, `04-Finance-Pages`, `03-Core-Entities` (matrix + UE sections).
+
+**Остаётся:**
+
+- Unit Economics views: Invoices & Payments, Expenses, Profitability tabs;
+- bonus recipient history UI (read `audit_logs` on entry);
+- full matrix E2E / manual QA checklist in `todo.md` Phase 8.
+
+### A5. Compensation MVP UX aligned with Bitrix-style flow
 
 Статус: `MVP SHIPPED` (2026-05) — **policy engine и My Company policies — не закрыты**
 
@@ -86,7 +105,7 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 - `PayrollRun`, `SalaryLine`, `BonusRelease`, product bonus pool roll-ups;
 - approve → expense card → `Expense Payment` → `syncSalaryLinePaidFromExpenseLedger`;
 - `/finance/salary` (grid/cards/list/board + month sheet), `/finance/payroll/[id]` workspace;
-- `/finance/bonuses` (+ legacy `/bonus` redirect), `/finance/bonus-pools`;
+- `/finance/bonuses` (+ legacy `/bonus` redirect), `/finance/bonus-pools`, `/finance/unit-economics`;
 - Pay Now payroll filters + expense sheet links to month sheet / payroll run;
 - `/my-account/wallet` read-only month cards + month-detail;
 - `GET …/salary-lines/:id/month-detail` (Finance + wallet scope);

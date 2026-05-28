@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { PayrollMatrixBonusAuditPanel } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-bonus-audit-panel';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { PayrollAllocationMatrixCell } from '@/lib/api/payroll-allocation-matrix';
 
@@ -199,6 +200,10 @@ export function PayrollAllocationMatrixCellDialog(props: {
             >
               Save planned bonus
             </Button>
+            <div className="space-y-2 border-t pt-3">
+              <p className="text-sm font-medium">Audit trail</p>
+              <PayrollMatrixBonusAuditPanel bonusEntryId={cell.bonusEntryId} />
+            </div>
             <div className="space-y-3 border-t pt-3">
               <p className="text-sm font-medium">Reassign recipient</p>
               <div className="space-y-1">
