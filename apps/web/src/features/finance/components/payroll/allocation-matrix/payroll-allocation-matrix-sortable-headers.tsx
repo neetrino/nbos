@@ -19,6 +19,12 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
+import {
+  PAYROLL_MATRIX_STICKY_EDGE_MIN_WIDTH,
+  PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
+  PAYROLL_MATRIX_STICKY_HEADER_BG,
+  PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
+} from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import { cn } from '@/lib/utils';
 
 export type MatrixHeaderKind = 'employee' | 'order';
@@ -157,9 +163,16 @@ export function PayrollAllocationMatrixTableShell(props: {
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <table className="w-max min-w-full border-collapse text-xs">
-        <thead className="bg-card sticky top-0 z-20">
+        <thead className="sticky top-0 z-20">
           <tr>
-            <th className="bg-card border-border sticky left-0 z-30 min-w-[12.5rem] border-r border-b px-3 py-2 text-left text-xs font-semibold tracking-wide uppercase">
+            <th
+              className={cn(
+                PAYROLL_MATRIX_STICKY_HEADER_BG,
+                PAYROLL_MATRIX_STICKY_EDGE_MIN_WIDTH,
+                PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
+                'border-border sticky top-0 left-0 z-50 border-r border-b px-3 py-2 text-left text-xs font-semibold tracking-wide uppercase',
+              )}
+            >
               {cornerLabel}
             </th>
             <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
@@ -216,8 +229,9 @@ function SortableMatrixColumnHeader(props: {
       ref={setNodeRef}
       style={style}
       className={cn(
+        PAYROLL_MATRIX_STICKY_HEADER_BG,
         'border-border min-w-[7.5rem] border-r border-b px-2 py-2 text-left align-bottom',
-        active && 'bg-primary/10',
+        active && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
         isDragging && 'opacity-70',
       )}
     >
@@ -269,9 +283,11 @@ function SortableMatrixRowHeader(props: {
       ref={setNodeRef}
       style={style}
       className={cn(
-        'bg-card border-border sticky left-0 z-10 min-w-[12.5rem] border-r border-b px-3 py-2.5 text-left',
-        row.kind === 'employee' && 'bg-muted/20',
-        active && 'bg-primary/10',
+        PAYROLL_MATRIX_STICKY_HEADER_BG,
+        PAYROLL_MATRIX_STICKY_EDGE_MIN_WIDTH,
+        PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
+        'border-border sticky left-0 z-30 border-r border-b px-3 py-2.5 text-left',
+        active && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
         isDragging && 'opacity-70',
       )}
     >

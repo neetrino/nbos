@@ -122,21 +122,28 @@ export function PayrollAllocationMatrixGrid(props: {
           columnIds.map((colId) => {
             const cell = resolveCell(rowId, colId);
             if (!cell) {
-              return <td key={colId} className="border-border border-r border-b" />;
+              return <td key={colId} className="border-border bg-card border-r border-b" />;
             }
             const display =
               Number.parseFloat(cell.releaseThisMonth) > 0
                 ? formatAmount(Number.parseFloat(cell.releaseThisMonth))
                 : '—';
             return (
-              <td key={colId} className="border-border border-r border-b p-0">
+              <td
+                key={colId}
+                className={cn(
+                  'border-border border-r border-b p-0 align-middle',
+                  PAYROLL_MATRIX_CELL_CLASS[cell.state],
+                )}
+              >
                 <button
                   type="button"
                   disabled={!cell.editable && cell.state === 'UNLINKED'}
                   className={cn(
-                    'flex min-h-[2.75rem] w-full flex-col items-center justify-center px-1 py-1 tabular-nums',
-                    PAYROLL_MATRIX_CELL_CLASS[cell.state],
-                    !cell.editable && cell.state === 'UNLINKED' && 'cursor-not-allowed',
+                    'box-border flex h-full min-h-[2.75rem] w-full flex-col items-center justify-center px-1 py-1 tabular-nums',
+                    !cell.editable &&
+                      cell.state === 'UNLINKED' &&
+                      'cursor-not-allowed disabled:opacity-100',
                   )}
                   onClick={() => onCellClick(cell)}
                 >
