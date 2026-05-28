@@ -9,11 +9,7 @@ import type {
   PatchPayrollMatrixPlannedBonusBody,
   PatchPayrollMatrixReassignBody,
 } from './payroll-allocation-matrix.types';
-import {
-  PayrollRunsService,
-  type PatchPayrollRunBody,
-  type PatchSalaryLineSalesKpiBody,
-} from './payroll-runs.service';
+import { PayrollRunsService } from './payroll-runs.service';
 
 @ApiTags('Payroll runs')
 @ApiBearerAuth()
@@ -234,30 +230,6 @@ export class PayrollRunsController {
   })
   async findOne(@Param('id') id: string) {
     return this.payrollRunsService.findById(id);
-  }
-
-  @Patch(':id')
-  @ApiOperation({
-    summary: 'Patch payroll run (sales KPI inputs for seller payout gate)',
-    description:
-      'Updates `kpiSalesPlanAmount` / `kpiSalesActualAmount` (NBOS § KPI to payout). Only while DRAFT/REVIEW and with no bonus releases attached.',
-  })
-  async patchPayrollRun(@Param('id') id: string, @Body() body: PatchPayrollRunBody) {
-    return this.payrollRunsService.patchPayrollRun(id, body);
-  }
-
-  @Patch(':id/salary-lines/:salaryLineId/sales-kpi')
-  @ApiOperation({
-    summary: 'Patch per-employee sales KPI on a salary line',
-    description:
-      'Overrides run-level plan/actual for SALES bonus attach on this employee. DRAFT/REVIEW only; employee must have no INCLUDED_IN_PAYROLL releases.',
-  })
-  async patchSalaryLineSalesKpi(
-    @Param('id') id: string,
-    @Param('salaryLineId') salaryLineId: string,
-    @Body() body: PatchSalaryLineSalesKpiBody,
-  ) {
-    return this.payrollRunsService.patchSalaryLineSalesKpi(id, salaryLineId, body);
   }
 
   @Post()

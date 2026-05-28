@@ -145,16 +145,6 @@ export interface PayrollRunDetail extends PayrollRunListRow {
   auditTrail: PayrollAuditTrailRow[];
 }
 
-export interface PatchPayrollRunBody {
-  kpiSalesPlanAmount?: number | null;
-  kpiSalesActualAmount?: number | null;
-}
-
-export interface PatchSalaryLineSalesKpiBody {
-  kpiSalesPlanAmount?: number | null;
-  kpiSalesActualAmount?: number | null;
-}
-
 export interface EmployeeSalesKpiDetail {
   planAmount: string | null;
   actualAmount: string | null;
@@ -323,23 +313,6 @@ export const payrollRunsApi = {
 
   async updateStatus(id: string, status: PayrollRunStatus): Promise<PayrollRunDetail> {
     const resp = await api.patch<PayrollRunDetail>(`/api/payroll-runs/${id}/status`, { status });
-    return resp.data;
-  },
-
-  async patch(id: string, body: PatchPayrollRunBody): Promise<PayrollRunDetail> {
-    const resp = await api.patch<PayrollRunDetail>(`/api/payroll-runs/${id}`, body);
-    return resp.data;
-  },
-
-  async patchSalaryLineSalesKpi(
-    payrollRunId: string,
-    salaryLineId: string,
-    body: PatchSalaryLineSalesKpiBody,
-  ): Promise<PayrollRunDetail> {
-    const resp = await api.patch<PayrollRunDetail>(
-      `/api/payroll-runs/${payrollRunId}/salary-lines/${salaryLineId}/sales-kpi`,
-      body,
-    );
     return resp.data;
   },
 

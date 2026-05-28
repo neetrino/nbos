@@ -39,11 +39,6 @@ import {
   notifyEmployeesOnPayrollRunClosed,
   notifyEmployeesOnPayrollRunCreated,
 } from './payroll-run-employee-wallet-notify';
-import { applyPayrollRunKpiPatch, type PatchPayrollRunBody } from './payroll-run-kpi-patch';
-import {
-  applySalaryLineSalesKpiPatch,
-  type PatchSalaryLineSalesKpiBody,
-} from './salary-line-sales-kpi-patch';
 import { loadSalaryLinesBlockingPayrollCloseCount } from './payroll-run-close-validation';
 import { validatePayrollMatrixForApproval } from './payroll-matrix-approval-validation';
 import {
@@ -69,11 +64,9 @@ import type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types'
 
 export type { PayrollRunBonusReleasesDto } from './payroll-run-bonus-releases.types';
 export type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types';
-export type { PatchSalaryLineSalesKpiBody } from './salary-line-sales-kpi-patch';
 
 export type { PayrollRunListParams } from './payroll-run-list-queries';
 export type { PayrollRunStatsResult } from './payroll-run-list-stats';
-export type { PatchPayrollRunBody };
 export type { SalaryBoardQueryParams, SalaryBoardResponseDto } from './payroll-salary-board';
 
 export interface CreatePayrollRunBody {
@@ -186,20 +179,6 @@ export class PayrollRunsService {
       kpiSalesPlanSuggestedAmount: kpiSalesPlanSuggestedAmount?.toFixed(2) ?? null,
       salesKpiScorecardMetrics,
     };
-  }
-
-  async patchPayrollRun(id: string, body: PatchPayrollRunBody) {
-    await applyPayrollRunKpiPatch(this.prisma, id, body);
-    return this.findById(id);
-  }
-
-  async patchSalaryLineSalesKpi(
-    payrollRunId: string,
-    salaryLineId: string,
-    body: PatchSalaryLineSalesKpiBody,
-  ) {
-    await applySalaryLineSalesKpiPatch(this.prisma, payrollRunId, salaryLineId, body);
-    return this.findById(payrollRunId);
   }
 
   async create(body: CreatePayrollRunBody, createdById?: string | null) {
