@@ -31,8 +31,8 @@ export const PAYROLL_MATRIX_COLUMN_HEADER_STICKY = 'sticky top-0 z-20';
 
 export const PAYROLL_MATRIX_DATA_COL_WIDTH = 'min-w-[7.5rem]';
 
-/** Inline detail column — wide enough for a 2×2 metric grid without growing row height. */
-export const PAYROLL_MATRIX_DETAIL_COL_WIDTH = 'w-[12rem] min-w-[12rem] max-w-[12rem] shrink-0';
+/** Inline detail column — Due / Paid stack beside the active data column. */
+export const PAYROLL_MATRIX_DETAIL_COL_WIDTH = 'w-[5.5rem] min-w-[5.5rem] max-w-[5.5rem] shrink-0';
 
 /** Below app dialogs (z-50) so matrix cell modals stay visible in full-screen mode. */
 export const PAYROLL_MATRIX_FULLSCREEN_Z = 'z-40';
