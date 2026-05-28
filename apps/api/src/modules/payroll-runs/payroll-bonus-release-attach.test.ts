@@ -291,6 +291,11 @@ describe('attachBonusReleasesToPayrollRun', () => {
       releaseIds: ['rel1'],
     });
 
+    expect(tx.kpiResult.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ period: '2026-04' }),
+      }),
+    );
     expect(tx.salaryLine.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({

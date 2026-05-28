@@ -55,7 +55,7 @@ describe('PayrollRunKpiResultService', () => {
       {
         id: 'pay1',
         amount: new Decimal(300),
-        paymentDate: new Date('2026-05-10T00:00:00.000Z'),
+        paymentDate: new Date('2026-04-10T00:00:00.000Z'),
         invoice: {
           id: 'inv1',
           code: 'INV-1',
@@ -68,7 +68,7 @@ describe('PayrollRunKpiResultService', () => {
       {
         id: 'kr1',
         employeeId: 'e1',
-        period: '2026-05',
+        period: '2026-04',
         kpiPolicyId: 'kp1',
         compensationProfileId: 'cp1',
         planAmount: null,
@@ -89,6 +89,7 @@ describe('PayrollRunKpiResultService', () => {
       expect.objectContaining({
         create: expect.objectContaining({
           employeeId: 'e1',
+          period: '2026-04',
           planAmount: new Decimal(500),
           actualAmount: new Decimal(300),
           attainmentPct: new Decimal(60),

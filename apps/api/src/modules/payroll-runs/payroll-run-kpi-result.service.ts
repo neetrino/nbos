@@ -4,6 +4,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { resolveCompensationProfileForPayrollMonth } from '../compensation-profiles/resolve-active-compensation-profile';
 import { computeKpiGatePayoutFactor } from './kpi-gate-payout';
 import { parseKpiGateRules } from './parse-kpi-gate-rules';
+import { earnedSalesPeriodForPayoutMonth } from './earned-sales-kpi-period';
 import { listSalesPaymentFactsForEmployee } from './payroll-run-suggested-sales-actual';
 import type {
   PayrollRunKpiResultDto,
@@ -102,6 +103,8 @@ export class PayrollRunKpiResultService {
       throw new BadRequestException('Payroll run has no salary lines to resolve KPI results.');
     }
 
+    const earnedPeriod = earnedSalesPeriodForPayoutMonth(run.payrollMonth);
+
     for (const line of run.salaryLines) {
       const profile = await resolveCompensationProfileForPayrollMonth(
         this.prisma,
@@ -124,7 +127,7 @@ export class PayrollRunKpiResultService {
 
       const facts = await listSalesPaymentFactsForEmployee(
         this.prisma,
-        run.payrollMonth,
+        earnedPeriod,
         line.employeeId,
       );
       const plan = policy.targetAmount;
@@ -141,7 +144,7 @@ export class PayrollRunKpiResultService {
         where: {
           employeeId_period_kpiPolicyId: {
             employeeId: line.employeeId,
-            period: run.payrollMonth,
+            period: earnedPeriod,
             kpiPolicyId: policy.id,
           },
         },
@@ -151,7 +154,7 @@ export class PayrollRunKpiResultService {
           compensationProfileId: line.compensationProfileId ?? profile.id,
           payrollRunId: run.id,
           salaryLineId: line.id,
-          period: run.payrollMonth,
+          period: earnedPeriod,
           planAmount: plan,
           actualAmount: actual,
           attainmentPct: pct,

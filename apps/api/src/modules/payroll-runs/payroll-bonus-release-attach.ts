@@ -3,6 +3,7 @@ import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbo
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
 import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
+import { earnedSalesPeriodForPayoutMonth } from './earned-sales-kpi-period';
 import { applyPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
 import { applyPayrollBonusCap } from './payroll-bonus-cap';
 import { computeSalesKpiBurnedAmount } from './sales-kpi-burned-amount';
@@ -57,10 +58,11 @@ async function resolveKpiResultForSalesRelease(params: {
   if (params.payrollPolicy.kpiPolicyId == null) {
     return { factor: new Decimal(1), plan: null, actual: null };
   }
+  const earnedPeriod = earnedSalesPeriodForPayoutMonth(params.payrollMonth);
   const result = await params.tx.kpiResult.findFirst({
     where: {
       employeeId: params.employeeId,
-      period: params.payrollMonth,
+      period: earnedPeriod,
       kpiPolicyId: params.payrollPolicy.kpiPolicyId,
       OR: [{ salaryLineId: params.salaryLineId }, { payrollRunId: params.payrollRunId }],
     },
@@ -68,7 +70,7 @@ async function resolveKpiResultForSalesRelease(params: {
   });
   if (result == null) {
     throw new BadRequestException(
-      `Sales KPI result is missing for employee ${params.employeeId}; sync KPI results before attaching Sales bonuses.`,
+      `Sales KPI result is missing for employee ${params.employeeId} (earned month ${earnedPeriod}); sync KPI results before attaching Sales bonuses.`,
     );
   }
   return {
