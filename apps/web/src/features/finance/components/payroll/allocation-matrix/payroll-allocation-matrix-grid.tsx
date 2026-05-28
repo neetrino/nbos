@@ -59,14 +59,16 @@ export function PayrollAllocationMatrixGrid(props: {
           primary: employeeName(e),
           secondary: formatAmount(Number.parseFloat(e.baseSalary)),
           meta: formatAmount(Number.parseFloat(e.bonusTotalThisRun)),
+          funding: null,
           pinned: false,
           kind: 'employee' as const,
         }))
       : matrix.deliveryUnits.map((u) => ({
           id: u.orderId,
           primary: u.label,
-          secondary: u.projectCode,
+          secondary: '',
           meta: formatAmount(Number.parseFloat(u.totalRemainingBonus)),
+          funding: formatAmount(Number.parseFloat(u.availableFunding)),
           pinned: pinnedUnitIds.includes(u.orderId),
           kind: 'order' as const,
         }));
@@ -76,7 +78,7 @@ export function PayrollAllocationMatrixGrid(props: {
       ? matrix.deliveryUnits.map((u) => ({
           id: u.orderId,
           primary: u.label,
-          secondary: u.projectCode,
+          secondary: '',
           meta: formatAmount(Number.parseFloat(u.totalRemainingBonus)),
           funding: formatAmount(Number.parseFloat(u.availableFunding)),
           pinned: pinnedUnitIds.includes(u.orderId),

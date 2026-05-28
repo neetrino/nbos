@@ -38,13 +38,22 @@ export type MatrixRowHeader = {
   primary: string;
   secondary: string;
   meta: string;
+  funding: string | null;
   pinned: boolean;
   kind: MatrixHeaderKind;
 };
 
-const MATRIX_EMPLOYEE_NAME_CLASS =
-  'text-sm font-semibold tracking-tight text-foreground leading-snug';
-const MATRIX_ORDER_LABEL_CLASS = 'line-clamp-2 text-xs font-semibold';
+const MATRIX_PRIMARY_NAME_CLASS =
+  'text-sm font-semibold tracking-tight text-foreground line-clamp-2 leading-snug';
+
+function MatrixLabeledAmount({ label, value }: { label: string; value: string }) {
+  return (
+    <p className="text-muted-foreground text-[10px] leading-tight font-normal">
+      <span>{label} </span>
+      <span className="text-foreground font-normal tabular-nums">{value}</span>
+    </p>
+  );
+}
 
 export function PayrollAllocationMatrixTableShell(props: {
   columns: MatrixHeaderColumn[];
@@ -184,19 +193,21 @@ function SortableMatrixColumnHeader(props: {
           className="hover:text-primary min-w-0 flex-1 text-left"
           onClick={onActivate}
         >
-          <p
-            className={cn(
-              col.kind === 'employee' ? MATRIX_EMPLOYEE_NAME_CLASS : MATRIX_ORDER_LABEL_CLASS,
-            )}
-          >
+          <p className={MATRIX_PRIMARY_NAME_CLASS}>
             {col.pinned ? '📌 ' : ''}
             {col.primary}
           </p>
-          <p className="text-muted-foreground truncate">{col.secondary}</p>
-          <p className="text-muted-foreground tabular-nums">{col.meta}</p>
-          {col.funding ? (
-            <p className="text-muted-foreground tabular-nums">Avail {col.funding}</p>
-          ) : null}
+          {col.kind === 'employee' ? (
+            <>
+              {col.secondary ? <MatrixLabeledAmount label="Role" value={col.secondary} /> : null}
+              <MatrixLabeledAmount label="Bonus" value={col.meta} />
+            </>
+          ) : (
+            <>
+              <MatrixLabeledAmount label="Remaining" value={col.meta} />
+              {col.funding ? <MatrixLabeledAmount label="Avail" value={col.funding} /> : null}
+            </>
+          )}
         </button>
       </div>
     </th>
@@ -246,16 +257,21 @@ function SortableMatrixRowHeader(props: {
           className="hover:text-primary min-w-0 flex-1 text-left"
           onClick={onActivate}
         >
-          <p
-            className={cn(
-              row.kind === 'employee' ? MATRIX_EMPLOYEE_NAME_CLASS : MATRIX_ORDER_LABEL_CLASS,
-            )}
-          >
+          <p className={MATRIX_PRIMARY_NAME_CLASS}>
             {row.pinned ? '📌 ' : ''}
             {row.primary}
           </p>
-          <p className="text-muted-foreground text-[11px] tabular-nums">{row.secondary}</p>
-          <p className="text-muted-foreground text-[11px] tabular-nums">Bonus {row.meta}</p>
+          {row.kind === 'employee' ? (
+            <>
+              <MatrixLabeledAmount label="Salary" value={row.secondary} />
+              <MatrixLabeledAmount label="Bonus" value={row.meta} />
+            </>
+          ) : (
+            <>
+              <MatrixLabeledAmount label="Remaining" value={row.meta} />
+              {row.funding ? <MatrixLabeledAmount label="Avail" value={row.funding} /> : null}
+            </>
+          )}
         </button>
       </div>
     </th>
