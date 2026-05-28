@@ -6,10 +6,6 @@ import {
   PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS,
   PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS,
 } from '@/features/finance/constants/payroll-allocation-matrix-expansion';
-import {
-  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL,
-  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
-} from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import type {
   DeliveryPayableUnit,
   PayrollAllocationMatrixCell,
@@ -28,29 +24,19 @@ function fmt(value: string): string {
   return formatAmount(parseMoney(value));
 }
 
-const EXPANSION_METRIC_LABEL_CLASS = 'text-left text-[8px] font-bold tracking-wide leading-none';
+const EXPANSION_METRIC_LABEL_CLASS =
+  'text-muted-foreground text-left text-[8px] font-bold tracking-wide leading-none';
 
-const EXPANSION_METRIC_VALUE_CLASS = 'text-right text-[10px] tabular-nums leading-tight';
+const EXPANSION_METRIC_VALUE_CLASS =
+  'text-foreground text-right text-[10px] tabular-nums leading-tight';
 
 function ExpansionMetricStack({ items }: { items: MetricItem[] }) {
   return (
     <div className="flex w-full flex-col gap-1">
       {items.map((item) => (
         <div key={item.label} className="min-w-0">
-          <p
-            className={cn(EXPANSION_METRIC_LABEL_CLASS, PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL)}
-          >
-            {item.label}
-          </p>
-          <p
-            className={cn(
-              EXPANSION_METRIC_VALUE_CLASS,
-              PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
-              'mt-0.5',
-            )}
-          >
-            {item.value}
-          </p>
+          <p className={EXPANSION_METRIC_LABEL_CLASS}>{item.label}</p>
+          <p className={cn(EXPANSION_METRIC_VALUE_CLASS, 'mt-0.5')}>{item.value}</p>
         </div>
       ))}
     </div>
@@ -125,9 +111,7 @@ export function MatrixCellDetailPanel({ cell }: { cell: PayrollAllocationMatrixC
   if (!cell?.linked) {
     return (
       <td className={PAYROLL_MATRIX_EXPANSION_CELL_CLASS}>
-        <p className={cn('text-center text-[10px]', PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL)}>
-          —
-        </p>
+        <p className="text-muted-foreground text-center text-[10px]">—</p>
       </td>
     );
   }

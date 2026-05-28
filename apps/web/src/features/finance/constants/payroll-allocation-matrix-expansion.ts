@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils';
 
 /**
  * Expansion UX (column vs row):
- * - Primary header (clicked row/column label) → active sky tint on that header only.
- * - Detail surface only → extra column strip OR extra detail row, soft orange tint.
+ * - Primary header (clicked row/column label) → active green tint on that header only.
+ * - Detail surface only → extra column strip OR extra detail row, soft green tint.
  * - Main matrix data cells keep normal state colors (not the full column on expand).
  */
 
