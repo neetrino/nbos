@@ -4,6 +4,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { sumPaymentsReceivedForOrder } from '../bonus/order-received-payments-sum';
 import { DELIVERY_BONUS_ORDER_TYPES } from '../payroll-runs/delivery-payable-unit.types';
+import { computeUnitEconomicsMoney, poolSnapshotFromRow } from './compute-unit-economics-money';
 import { loadUnitEconomicsOrderBonuses } from './load-unit-economics-order-bonuses';
 import { loadUnitEconomicsOrderExpenses } from './load-unit-economics-order-expenses';
 import { computeReceivableAmount, sumInvoicedForOrder } from './order-invoice-totals';
@@ -108,15 +109,18 @@ export class UnitEconomicsOrderDetailService {
 
     payments.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
 
-    const pool = order.productBonusPool;
-    const planned = pool ? decimalFrom(pool.totalPlannedAmount) : BONUS_POOL_ZERO;
-    const releasedTotal = pool ? decimalFrom(pool.totalReleasedAmount) : BONUS_POOL_ZERO;
-    const paidTotal = pool ? decimalFrom(pool.totalPaidAmount) : BONUS_POOL_ZERO;
-    const remainingTotal = pool ? decimalFrom(pool.totalRemainingAmount) : BONUS_POOL_ZERO;
     const expensesPaid = expenses.reduce(
       (sum, line) => sum.plus(decimalFrom(line.amount)),
       BONUS_POOL_ZERO,
     );
+    const pool = order.productBonusPool ? poolSnapshotFromRow(order.productBonusPool) : null;
+    const summary = computeUnitEconomicsMoney({
+      invoiced,
+      received,
+      receivable,
+      expensesPaid,
+      pool,
+    });
 
     return {
       orderId: order.id,
@@ -125,16 +129,7 @@ export class UnitEconomicsOrderDetailService {
       projectCode: order.project.code,
       projectId: order.projectId,
       orderType: order.type as 'PRODUCT' | 'EXTENSION',
-      summary: {
-        invoicedAmount: invoiced.toFixed(2),
-        receivedAmount: received.toFixed(2),
-        receivableAmount: receivable.toFixed(2),
-        expensesPaidAmount: expensesPaid.toFixed(2),
-        plannedBonuses: planned.toFixed(2),
-        releasedBonuses: releasedTotal.toFixed(2),
-        paidBonuses: paidTotal.toFixed(2),
-        remainingBonuses: remainingTotal.toFixed(2),
-      },
+      summary,
       invoices,
       payments,
       expenses,

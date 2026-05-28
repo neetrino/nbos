@@ -38,7 +38,6 @@ function isPayrollPath(pathname: string): boolean {
   return (
     pathname.startsWith('/finance/payroll') ||
     pathname.startsWith('/finance/salary') ||
-    pathname.startsWith('/finance/bonus-pools') ||
     pathname.startsWith('/finance/bonuses') ||
     pathname.startsWith('/bonus')
   );

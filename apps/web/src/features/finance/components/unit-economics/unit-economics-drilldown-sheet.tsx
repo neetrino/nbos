@@ -57,11 +57,16 @@ function DrilldownTab({
 function SummaryMetrics({ detail }: { detail: UnitEconomicsOrderDetail }) {
   const { summary } = detail;
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {[
-        { label: 'Invoiced', value: summary.invoicedAmount },
         { label: 'Received', value: summary.receivedAmount },
-        { label: 'Receivable', value: summary.receivableAmount },
+        { label: 'To receive', value: summary.receivableAmount },
+        { label: 'Spent', value: summary.outFactAmount },
+        { label: 'Bonus to pay', value: summary.remainingBonuses },
+        { label: 'Cash balance', value: summary.cashBalance },
+        { label: 'Out committed', value: summary.outCommittedAmount },
+        { label: 'Margin', value: summary.marginAfterCommitments },
+        { label: 'Bonus plan', value: summary.plannedBonuses },
       ].map((cell) => (
         <div key={cell.label} className="border-border bg-card rounded-xl border px-3 py-2">
           <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
@@ -199,11 +204,11 @@ export function UnitEconomicsDrilldownSheet({
     setError(null);
     void unitEconomicsApi
       .orderDetail(orderId)
-      .then((res) => {
-        if (!cancelled) setDetail(res.data);
+      .then((detail) => {
+        if (!cancelled) setDetail(detail);
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(getApiErrorMessage(err));
+        if (!cancelled) setError(getApiErrorMessage(err, 'Could not load unit detail.'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

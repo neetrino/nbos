@@ -80,5 +80,6 @@ describe('UnitEconomicsOrderDetailService', () => {
     expect(detail.bonuses).toEqual([]);
     expect(detail.summary.plannedBonuses).toBe('500.00');
     expect(detail.summary.expensesPaidAmount).toBe('0.00');
+    expect(detail.summary.cashBalance).toBe('1000.00');
   });
 });

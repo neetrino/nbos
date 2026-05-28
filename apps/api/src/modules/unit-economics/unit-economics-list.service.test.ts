@@ -49,8 +49,6 @@ describe('UnitEconomicsListService', () => {
               totalReleasedAmount: '200',
               totalPaidAmount: '100',
               totalRemainingAmount: '800',
-              availableFunding: '500',
-              overFundingAmount: '0',
             },
           },
         ]),

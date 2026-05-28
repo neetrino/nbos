@@ -3,6 +3,7 @@ import { Decimal, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { sumPaymentsReceivedForOrder } from '../bonus/order-received-payments-sum';
+import { computeUnitEconomicsMoney, poolSnapshotFromRow } from './compute-unit-economics-money';
 import { computeReceivableAmount, sumInvoicedForOrder } from './order-invoice-totals';
 import {
   CLOSED_DELIVERY_STATUSES,
@@ -51,7 +52,19 @@ async function sumExpensesPaidForOrder(
     },
     _sum: { functionalAmount: true },
   });
-  return decimalFrom(agg._sum.functionalAmount);
+  return decimalFrom(agg._sum.functionalAmount).abs();
+}
+
+function hasActivity(
+  pool: ReturnType<typeof poolSnapshotFromRow> | null,
+  invoiced: Decimal,
+  received: Decimal,
+  expensesPaid: Decimal,
+): boolean {
+  if (pool && pool.planned.gt(BONUS_POOL_ZERO)) return true;
+  return (
+    invoiced.gt(BONUS_POOL_ZERO) || received.gt(BONUS_POOL_ZERO) || expensesPaid.gt(BONUS_POOL_ZERO)
+  );
 }
 
 @Injectable()
@@ -66,7 +79,7 @@ export class UnitEconomicsListService {
         code: true,
         type: true,
         projectId: true,
-        project: { select: { code: true } },
+        project: { select: { code: true, name: true } },
         product: { select: { name: true, status: true } },
         extension: { select: { name: true, status: true } },
         productBonusPool: {
@@ -75,8 +88,6 @@ export class UnitEconomicsListService {
             totalReleasedAmount: true,
             totalPaidAmount: true,
             totalRemainingAmount: true,
-            availableFunding: true,
-            overFundingAmount: true,
           },
         },
       },
@@ -84,15 +95,18 @@ export class UnitEconomicsListService {
     });
 
     const items: UnitEconomicsRowDto[] = [];
-    let totalInvoiced = BONUS_POOL_ZERO;
-    let totalReceived = BONUS_POOL_ZERO;
-    let totalReceivable = BONUS_POOL_ZERO;
-    let totalExpenses = BONUS_POOL_ZERO;
-    let totalPlanned = BONUS_POOL_ZERO;
-    let totalAvailable = BONUS_POOL_ZERO;
+    const totalsAcc = {
+      invoiced: BONUS_POOL_ZERO,
+      received: BONUS_POOL_ZERO,
+      receivable: BONUS_POOL_ZERO,
+      expensesPaid: BONUS_POOL_ZERO,
+      planned: BONUS_POOL_ZERO,
+      cashBalance: BONUS_POOL_ZERO,
+      outCommitted: BONUS_POOL_ZERO,
+    };
 
     for (const order of orders) {
-      const pool = order.productBonusPool;
+      const pool = order.productBonusPool ? poolSnapshotFromRow(order.productBonusPool) : null;
       const [invoiced, received, expensesPaid] = await Promise.all([
         sumInvoicedForOrder(this.prisma, order.id),
         sumPaymentsReceivedForOrder(this.prisma, order.id),
@@ -100,29 +114,25 @@ export class UnitEconomicsListService {
       ]);
       const receivable = computeReceivableAmount(invoiced, received);
 
-      const planned = pool ? decimalFrom(pool.totalPlannedAmount) : BONUS_POOL_ZERO;
-      const released = pool ? decimalFrom(pool.totalReleasedAmount) : BONUS_POOL_ZERO;
-      const paid = pool ? decimalFrom(pool.totalPaidAmount) : BONUS_POOL_ZERO;
-      const remaining = pool ? decimalFrom(pool.totalRemainingAmount) : BONUS_POOL_ZERO;
-      const available = pool ? decimalFrom(pool.availableFunding) : BONUS_POOL_ZERO;
-      const overFunding = pool ? decimalFrom(pool.overFundingAmount) : BONUS_POOL_ZERO;
-      const margin = received.minus(expensesPaid).minus(released);
-
-      if (
-        !pool &&
-        invoiced.lte(BONUS_POOL_ZERO) &&
-        received.lte(BONUS_POOL_ZERO) &&
-        expensesPaid.lte(BONUS_POOL_ZERO)
-      ) {
+      if (!hasActivity(pool, invoiced, received, expensesPaid)) {
         continue;
       }
 
-      totalInvoiced = totalInvoiced.plus(invoiced);
-      totalReceived = totalReceived.plus(received);
-      totalReceivable = totalReceivable.plus(receivable);
-      totalExpenses = totalExpenses.plus(expensesPaid);
-      totalPlanned = totalPlanned.plus(planned);
-      totalAvailable = totalAvailable.plus(available);
+      const money = computeUnitEconomicsMoney({
+        invoiced,
+        received,
+        receivable,
+        expensesPaid,
+        pool,
+      });
+
+      totalsAcc.invoiced = totalsAcc.invoiced.plus(invoiced);
+      totalsAcc.received = totalsAcc.received.plus(received);
+      totalsAcc.receivable = totalsAcc.receivable.plus(receivable);
+      totalsAcc.expensesPaid = totalsAcc.expensesPaid.plus(expensesPaid);
+      totalsAcc.planned = totalsAcc.planned.plus(pool?.planned ?? BONUS_POOL_ZERO);
+      totalsAcc.cashBalance = totalsAcc.cashBalance.plus(decimalFrom(money.cashBalance));
+      totalsAcc.outCommitted = totalsAcc.outCommitted.plus(decimalFrom(money.outCommittedAmount));
 
       items.push({
         orderId: order.id,
@@ -130,31 +140,23 @@ export class UnitEconomicsListService {
         label: unitLabel(order),
         projectId: order.projectId,
         projectCode: order.project.code,
+        projectName: order.project.name,
         orderType: order.type as 'PRODUCT' | 'EXTENSION',
         deliveryOpen: isDeliveryOpen(order.product?.status, order.extension?.status),
-        invoicedAmount: invoiced.toFixed(2),
-        receivedAmount: received.toFixed(2),
-        receivableAmount: receivable.toFixed(2),
-        expensesPaidAmount: expensesPaid.toFixed(2),
-        plannedBonuses: planned.toFixed(2),
-        releasedBonuses: released.toFixed(2),
-        paidBonuses: paid.toFixed(2),
-        remainingBonuses: remaining.toFixed(2),
-        availableCash: available.toFixed(2),
-        overFundingAmount: overFunding.toFixed(2),
-        estimatedMargin: margin.toFixed(2),
+        ...money,
       });
     }
 
     return {
       items,
       totals: {
-        invoicedAmount: totalInvoiced.toFixed(2),
-        receivedAmount: totalReceived.toFixed(2),
-        receivableAmount: totalReceivable.toFixed(2),
-        expensesPaidAmount: totalExpenses.toFixed(2),
-        plannedBonuses: totalPlanned.toFixed(2),
-        availableCash: totalAvailable.toFixed(2),
+        invoicedAmount: totalsAcc.invoiced.toFixed(2),
+        receivedAmount: totalsAcc.received.toFixed(2),
+        receivableAmount: totalsAcc.receivable.toFixed(2),
+        expensesPaidAmount: totalsAcc.expensesPaid.toFixed(2),
+        plannedBonuses: totalsAcc.planned.toFixed(2),
+        cashBalance: totalsAcc.cashBalance.toFixed(2),
+        outCommittedAmount: totalsAcc.outCommitted.toFixed(2),
       },
     };
   }

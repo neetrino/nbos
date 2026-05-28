@@ -1,11 +1,4 @@
-export type UnitEconomicsRowDto = {
-  orderId: string;
-  orderCode: string;
-  label: string;
-  projectId: string;
-  projectCode: string;
-  orderType: 'PRODUCT' | 'EXTENSION';
-  deliveryOpen: boolean;
+export type UnitEconomicsMoneyFields = {
   invoicedAmount: string;
   receivedAmount: string;
   receivableAmount: string;
@@ -14,10 +7,24 @@ export type UnitEconomicsRowDto = {
   releasedBonuses: string;
   paidBonuses: string;
   remainingBonuses: string;
-  availableCash: string;
-  overFundingAmount: string;
-  estimatedMargin: string;
+  cashBalance: string;
+  outFactAmount: string;
+  outCommittedAmount: string;
+  marginFact: string;
+  marginAfterCommitments: string;
+  overReleaseAmount: string;
 };
+
+export type UnitEconomicsRowDto = {
+  orderId: string;
+  orderCode: string;
+  label: string;
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  orderType: 'PRODUCT' | 'EXTENSION';
+  deliveryOpen: boolean;
+} & UnitEconomicsMoneyFields;
 
 export type UnitEconomicsListDto = {
   items: UnitEconomicsRowDto[];
@@ -27,7 +34,8 @@ export type UnitEconomicsListDto = {
     receivableAmount: string;
     expensesPaidAmount: string;
     plannedBonuses: string;
-    availableCash: string;
+    cashBalance: string;
+    outCommittedAmount: string;
   };
 };
 
@@ -80,16 +88,7 @@ export type UnitEconomicsOrderDetailDto = {
   projectCode: string;
   projectId: string;
   orderType: 'PRODUCT' | 'EXTENSION';
-  summary: {
-    invoicedAmount: string;
-    receivedAmount: string;
-    receivableAmount: string;
-    expensesPaidAmount: string;
-    plannedBonuses: string;
-    releasedBonuses: string;
-    paidBonuses: string;
-    remainingBonuses: string;
-  };
+  summary: UnitEconomicsMoneyFields;
   invoices: UnitEconomicsInvoiceLineDto[];
   payments: UnitEconomicsPaymentLineDto[];
   expenses: UnitEconomicsExpenseLineDto[];

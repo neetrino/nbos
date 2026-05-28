@@ -1,13 +1,7 @@
 import { api } from '../api';
 
-export type UnitEconomicsRow = {
-  orderId: string;
-  orderCode: string;
-  label: string;
-  projectId: string;
-  projectCode: string;
-  orderType: 'PRODUCT' | 'EXTENSION';
-  deliveryOpen: boolean;
+/** Money fields shared by list rows and order detail summary. */
+export type UnitEconomicsMoneyFields = {
   invoicedAmount: string;
   receivedAmount: string;
   receivableAmount: string;
@@ -16,10 +10,24 @@ export type UnitEconomicsRow = {
   releasedBonuses: string;
   paidBonuses: string;
   remainingBonuses: string;
-  availableCash: string;
-  overFundingAmount: string;
-  estimatedMargin: string;
+  cashBalance: string;
+  outFactAmount: string;
+  outCommittedAmount: string;
+  marginFact: string;
+  marginAfterCommitments: string;
+  overReleaseAmount: string;
 };
+
+export type UnitEconomicsRow = {
+  orderId: string;
+  orderCode: string;
+  label: string;
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  orderType: 'PRODUCT' | 'EXTENSION';
+  deliveryOpen: boolean;
+} & UnitEconomicsMoneyFields;
 
 export type UnitEconomicsList = {
   items: UnitEconomicsRow[];
@@ -29,7 +37,8 @@ export type UnitEconomicsList = {
     receivableAmount: string;
     expensesPaidAmount: string;
     plannedBonuses: string;
-    availableCash: string;
+    cashBalance: string;
+    outCommittedAmount: string;
   };
 };
 
@@ -82,16 +91,7 @@ export type UnitEconomicsOrderDetail = {
   projectCode: string;
   projectId: string;
   orderType: 'PRODUCT' | 'EXTENSION';
-  summary: {
-    invoicedAmount: string;
-    receivedAmount: string;
-    receivableAmount: string;
-    expensesPaidAmount: string;
-    plannedBonuses: string;
-    releasedBonuses: string;
-    paidBonuses: string;
-    remainingBonuses: string;
-  };
+  summary: UnitEconomicsMoneyFields;
   invoices: UnitEconomicsInvoiceLine[];
   payments: UnitEconomicsPaymentLine[];
   expenses: UnitEconomicsExpenseLine[];
@@ -101,7 +101,12 @@ export type UnitEconomicsOrderDetail = {
 export type UnitEconomicsDrilldownFocus = 'invoices' | 'payments' | 'expenses' | 'bonuses';
 
 export const unitEconomicsApi = {
-  list: () => api.get<UnitEconomicsList>('/api/unit-economics'),
-  orderDetail: (orderId: string) =>
-    api.get<UnitEconomicsOrderDetail>(`/api/unit-economics/orders/${orderId}`),
+  list: async (): Promise<UnitEconomicsList> => {
+    const resp = await api.get<UnitEconomicsList>('/api/unit-economics');
+    return resp.data;
+  },
+  orderDetail: async (orderId: string): Promise<UnitEconomicsOrderDetail> => {
+    const resp = await api.get<UnitEconomicsOrderDetail>(`/api/unit-economics/orders/${orderId}`);
+    return resp.data;
+  },
 };

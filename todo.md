@@ -6,16 +6,16 @@
 - 🟡 In progress — partial; see notes in phase
 - ⚪ Not started
 
-| Phase                       | Status | Notes                                                                                     |
-| --------------------------- | ------ | ----------------------------------------------------------------------------------------- |
-| 1 Documentation             | 🟢     | Canon + UI spec + entities + P&L + cleanup/audit/roadmap cross-links (2026-05 slice)      |
-| 2 Payroll Run Detail UX     | 🟢     | Matrix primary UX, row/column DnD, pin, reset, context panels, cell dialogs               |
-| 3 Bonus logic / manual form | 🟡     | KPI payable snapshot shipped; manual adjustment fields on bonus card still pending        |
-| 4 Unit Economics Board      | 🟢     | Five tabs + drill-down sheet (invoices, payments, expenses, bonuses source lists)         |
-| 5 API / data model          | 🟡     | Matrix, UE, KPI payable shipped (`KpiResult`, `BonusEntry` snapshot); canon sync optional |
-| 6 Frontend                  | 🟡     | Payroll matrix + Salary Board KPI + UE drill-down shipped; manual bonus card UI pending   |
-| 7 Validation / audit        | 🟡     | Matrix validation + bonus audit read shipped; layout-change audit optional                |
-| 8 Tests / QA                | 🟡     | 160+ API unit tests; E2E / manual QA on payroll + Salary Board KPI pending                |
+| Phase                       | Status | Notes                                                                                |
+| --------------------------- | ------ | ------------------------------------------------------------------------------------ |
+| 1 Documentation             | 🟢     | Canon + UI spec + entities + P&L + cleanup/audit/roadmap cross-links (2026-05 slice) |
+| 2 Payroll Run Detail UX     | 🟢     | Matrix primary UX, row/column DnD, pin, reset, context panels, cell dialogs          |
+| 3 Bonus logic / manual form | 🟢     | KPI payable + free planned-amount edit on bonus card (any sum, reason, audit)        |
+| 4 Unit Economics Board      | 🟡     | UE v2: In/Out/Balance; by project; `/finance/bonus-pools` → redirect only            |
+| 5 API / data model          | 🟡     | Matrix, UE money sides API; KPI payable shipped; canon sync optional                 |
+| 6 Frontend                  | 🟡     | Payroll matrix + Salary Board KPI + UE v2 UI; bonus-pools nav removed                |
+| 7 Validation / audit        | 🟡     | Matrix validation + bonus audit read shipped; layout-change audit optional           |
+| 8 Tests / QA                | 🟡     | 160+ API unit tests; E2E / manual QA on payroll + Salary Board KPI pending           |
 
 ---
 
@@ -23,12 +23,12 @@
 
 KPI / Sales payable architecture is **done** — do not re-add manual KPI sync, payroll-month−1 attach, or Payroll Detail KPI forms.
 
-| Area    | Next                                                                                 |
-| ------- | ------------------------------------------------------------------------------------ |
-| Phase 3 | Planned amount adjust on bonus card shipped; ± quick actions / title polish optional |
-| Phase 7 | Optional audit for matrix layout changes; approval validation edge cases             |
-| Phase 8 | E2E / manual QA: payroll matrix, Salary Board KPI tabs, attach with delayed payout   |
-| Docs    | Align `05-Bonus-and-Payroll.md` + UI spec with event-driven KPI + `payableAmount`    |
+| Area    | Next                                                                               |
+| ------- | ---------------------------------------------------------------------------------- |
+| Phase 4 | UE v2 follow-up: product-level roll-up, planned expenses in Out, richer drill-down |
+| Phase 7 | Optional audit for matrix layout changes; approval validation edge cases           |
+| Phase 8 | E2E / manual QA: payroll matrix, Salary Board KPI tabs, attach with delayed payout |
+| Docs    | Align `05-Bonus-and-Payroll.md` + UI spec with event-driven KPI + `payableAmount`  |
 
 **Ops / repair (not daily Finance workflow):** `POST /api/scheduler/sales-kpi-month-close`, `POST /api/scheduler/sales-kpi-backfill-all`.
 
@@ -48,7 +48,8 @@ KPI / Sales payable architecture is **done** — do not re-add manual KPI sync, 
 - Current `Bonus Pool` concept must be expanded into a wider financial workspace that is not bonus-centric.
 - New financial page name: `Unit Economics Board`.
 - `Unit Economics Board` belongs in Finance Overview / main finance area, not inside Payroll & Bonus.
-- `Bonus Pool` becomes one view/section inside `Unit Economics Board`, not the whole concept.
+- **`/finance/bonus-pools` removed** — redirect to Unit Economics; pool metrics are columns on unit rows, not a separate product hub.
+- Bonuses are **part of money Out**, not the center of finance decisions.
 - KPI configuration belongs in `My Company / Compensation / KPI Policies`, not inside monthly payroll.
 - Payroll must not ask Finance to enter, sync, or calculate KPI plan/actual every month. Payroll consumes already payable bonus releases only.
 - Missing KPI policy/result means 100% payout for that bonus type until a policy exists. This is the current/default behavior for Delivery / PM / Developer / Designer / Marketing.
@@ -115,10 +116,9 @@ Rules:
 - Payroll Run Detail must not show standalone KPI sync/results sections. KPI status is visible in Salary Board employee month card/sheet and employee Wallet.
 - Payroll can show KPI-adjusted payable amounts only as part of bonus release/payment facts, not as a separate KPI workspace.
 
-**Future — manual & rule-based bonus adjustments (not in current slice):**
+**Bonus amount edits (shipped):** Bonus Board → entry sheet → **Adjust planned amount** — Finance enters **any** new sum (up or down), required reason, `originalAmount` preserved, audit `PLANNED_BONUS_UPDATED`. Same rules as payroll matrix planned-bonus edit. Not limited to fixed percentages.
 
-- From Bonus Board / bonus card: optional adjustment fields (default 0) — manual **increase** or **decrease** by amount or dedicated columns; may change full bonus and/or payable without breaking audit trail.
-- Rule examples later: auto **+30%** in some cases, auto **−10%** in others (on top of KPI gate); design when implementing adjustment module.
+**Future (separate, not requested now):** optional rule engine for automatic bonus adjustments on top of KPI (design TBD; no ±30% preset buttons in UI).
 
 ### Unit Economics
 
@@ -1121,9 +1121,8 @@ Add tests for:
 
 ### Remaining (recommended order)
 
-1. Manual bonus adjustment module + audit (Phase 3)
-2. E2E / manual QA — payroll matrix, Salary Board KPI, delayed-payout attach (Phase 8)
-3. Canon doc pass where still out of date (Phase 1)
+1. E2E / manual QA — payroll matrix, Salary Board KPI, delayed-payout attach (Phase 8)
+2. Canon doc pass where still out of date (Phase 1)
 
 ---
 

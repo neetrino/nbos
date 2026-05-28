@@ -19,7 +19,7 @@ export function UnitEconomicsExpensesTable({
   const sorted = useMemo(
     () =>
       [...items].sort(
-        (a, b) => Number.parseFloat(b.expensesPaidAmount) - Number.parseFloat(a.expensesPaidAmount),
+        (a, b) => Number.parseFloat(b.outCommittedAmount) - Number.parseFloat(a.outCommittedAmount),
       ),
     [items],
   );
@@ -35,15 +35,15 @@ export function UnitEconomicsExpensesTable({
           <thead className="bg-card sticky top-0 z-10">
             <tr className="text-muted-foreground text-left">
               <th className="border-border border-b px-3 py-2 font-semibold">Delivery unit</th>
+              <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
               <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Expenses
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">Planned</th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Released
+                Bonus to pay
               </th>
               <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Remaining
+                Out committed
+              </th>
+              <th className="border-border border-b px-2 py-2 text-right font-semibold">
+                Bonus paid
               </th>
             </tr>
           </thead>
@@ -51,7 +51,7 @@ export function UnitEconomicsExpensesTable({
             {sorted.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-muted-foreground px-3 py-8 text-center">
-                  No delivery units with expenses yet.
+                  No delivery units with outflows yet.
                 </td>
               </tr>
             ) : (
@@ -60,7 +60,7 @@ export function UnitEconomicsExpensesTable({
                   <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
                   <td className="border-border border-b px-2 py-2 text-right">
                     <UnitEconomicsDrilldownAmount
-                      amount={Number.parseFloat(row.expensesPaidAmount)}
+                      amount={Number.parseFloat(row.outFactAmount)}
                       orderId={row.orderId}
                       focus="expenses"
                       onDrilldown={onDrilldown}
@@ -68,17 +68,17 @@ export function UnitEconomicsExpensesTable({
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right">
                     <UnitEconomicsDrilldownAmount
-                      amount={Number.parseFloat(row.plannedBonuses)}
+                      amount={Number.parseFloat(row.remainingBonuses)}
                       orderId={row.orderId}
                       focus="bonuses"
                       onDrilldown={onDrilldown}
                     />
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                    {formatAmount(Number.parseFloat(row.releasedBonuses))}
+                    {formatAmount(Number.parseFloat(row.outCommittedAmount))}
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                    {formatAmount(Number.parseFloat(row.remainingBonuses))}
+                    {formatAmount(Number.parseFloat(row.paidBonuses))}
                   </td>
                 </tr>
               ))
