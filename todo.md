@@ -38,7 +38,8 @@
 | `51445b01`  | Remove public payroll KPI patch endpoints; keep payroll as KPI result consumer             |
 | `c50718e3`  | Add `KpiResult` read model schema + migration                                              |
 | `3c03c58d`  | KPI Result API/service: derive Sales actual snapshot from payment source facts             |
-| _(pending)_ | Extend KPI policy parameters with target/plan source and Sales monthly target amount       |
+| `8d0ec889`  | Extend KPI policy parameters with target/plan source and Sales monthly target amount       |
+| _(pending)_ | Wire payroll bonus attach to consume `KpiResult` payoutFactor instead of legacy fields     |
 
 ---
 
