@@ -67,6 +67,13 @@ const DETAIL_PANEL_CLASS = cn(
   'border-border border-r border-b px-1.5 py-1 align-middle',
 );
 
+/** Expanded row/column detail cells — sky tint matching the active header. */
+export const MATRIX_ACTIVE_DETAIL_PANEL_CLASS = cn(
+  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
+  PAYROLL_MATRIX_DETAIL_COL_WIDTH,
+  'border-border border-r border-b px-1.5 py-1 align-middle',
+);
+
 const DETAIL_PANEL_HEADER_CLASS = cn(
   DETAIL_PANEL_CLASS,
   PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
@@ -108,20 +115,37 @@ export function MatrixEmployeeDetailHeader({
   );
 }
 
-/** Per intersection — due and paid before. */
-export function MatrixCellDetailPanel({ cell }: { cell: PayrollAllocationMatrixCell | undefined }) {
+/** Per intersection — due and paid before (column detail or expanded row). */
+export function MatrixCellDetailPanel({
+  cell,
+  activeDetail = false,
+}: {
+  cell: PayrollAllocationMatrixCell | undefined;
+  /** Sky background — expanded row or column detail strip. */
+  activeDetail?: boolean;
+}) {
+  const panelClass = activeDetail ? MATRIX_ACTIVE_DETAIL_PANEL_CLASS : DETAIL_PANEL_CLASS;
+  const tone = activeDetail ? 'header' : 'cell';
+
   if (!cell || !cell.linked) {
     return (
-      <td className={DETAIL_PANEL_CLASS}>
-        <p className="text-muted-foreground text-center text-[10px]">—</p>
+      <td className={panelClass}>
+        <p
+          className={cn(
+            'text-center text-[10px]',
+            activeDetail ? PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL : 'text-muted-foreground',
+          )}
+        >
+          —
+        </p>
       </td>
     );
   }
 
   return (
-    <td className={DETAIL_PANEL_CLASS}>
+    <td className={panelClass}>
       <DetailMetricStack
-        tone="cell"
+        tone={tone}
         items={[
           { label: 'Due', value: fmt(cell.remaining) },
           { label: 'Paid', value: fmt(cell.paidBefore) },
@@ -132,7 +156,7 @@ export function MatrixCellDetailPanel({ cell }: { cell: PayrollAllocationMatrixC
 }
 
 const ROW_DETAIL_STICKY_CLASS = cn(
-  PAYROLL_MATRIX_STICKY_HEADER_BG,
+  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
   'border-border sticky left-0 z-30 min-w-[11.5rem] border-r border-b px-3 py-1 align-middle',
 );
 
@@ -140,7 +164,7 @@ export function MatrixOrderRowDetailSticky({ unit }: { unit: DeliveryPayableUnit
   return (
     <th className={ROW_DETAIL_STICKY_CLASS}>
       <DetailMetricStack
-        tone="cell"
+        tone="header"
         items={[
           { label: 'Planned', value: fmt(unit.totalPlannedBonus) },
           { label: 'Paid', value: fmt(unit.totalPaidBonus) },
@@ -158,7 +182,7 @@ export function MatrixEmployeeRowDetailSticky({
   return (
     <th className={ROW_DETAIL_STICKY_CLASS}>
       <DetailMetricStack
-        tone="cell"
+        tone="header"
         items={[
           { label: 'Payable', value: fmt(employee.payableTotal) },
           { label: 'Bonus', value: fmt(employee.bonusTotalThisRun) },

@@ -40,6 +40,18 @@ export function PayrollAllocationMatrixWorkspace({
   const [error, setError] = useState<string | null>(null);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
+
+  /** Column and row expansion are mutually exclusive — one detail view at a time. */
+  const handleActivateColumn = useCallback((columnId: string | null) => {
+    setActiveRowId(null);
+    setActiveColumnId(columnId);
+  }, []);
+
+  const handleActivateRow = useCallback((rowId: string | null) => {
+    setActiveColumnId(null);
+    setActiveRowId(rowId);
+  }, []);
+
   const [manualCell, setManualCell] = useState<PayrollAllocationMatrixCell | null>(null);
   const [editCell, setEditCell] = useState<PayrollAllocationMatrixCell | null>(null);
   const [manualBusy, setManualBusy] = useState(false);
@@ -289,8 +301,8 @@ export function PayrollAllocationMatrixWorkspace({
           layoutDisabled={layoutDisabled}
           activeRowId={activeRowId}
           activeColumnId={activeColumnId}
-          onActivateRow={setActiveRowId}
-          onActivateColumn={setActiveColumnId}
+          onActivateRow={handleActivateRow}
+          onActivateColumn={handleActivateColumn}
           onReorderColumns={(orderedIds) => {
             if (viewMode === 'EMPLOYEE_MATRIX') {
               void persistLayout({ columnOrder: orderedIds });
