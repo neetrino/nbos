@@ -6,6 +6,7 @@ import {
   type BonusStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import {
   foldBonusProductPools,
@@ -31,6 +32,8 @@ interface CreateBonusDto {
   type: string;
   amount: number;
   percent: number;
+  title?: string;
+  reason?: string;
   status?: string;
   kpiGatePassed?: boolean;
   payoutMonth?: string;
@@ -54,6 +57,7 @@ export class BonusService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
+    private readonly audit: AuditService,
   ) {}
 
   async findAll(params: BonusQueryParams) {
@@ -140,14 +144,18 @@ export class BonusService {
     return bonus;
   }
 
-  async create(data: CreateBonusDto) {
+  async create(data: CreateBonusDto, actorUserId?: string) {
+    const title = data.title?.trim();
+    const reason = data.reason?.trim();
     const created = await this.prisma.bonusEntry.create({
       data: {
+        title: title && title.length > 0 ? title : null,
         employeeId: data.employeeId,
         orderId: data.orderId,
         projectId: data.projectId,
         type: data.type as BonusTypeEnum,
         amount: data.amount,
+        originalAmount: data.amount,
         percent: data.percent,
         status: (data.status as BonusStatusEnum) ?? 'INCOMING',
         kpiGatePassed: data.kpiGatePassed,
@@ -160,6 +168,25 @@ export class BonusService {
       },
     });
     await syncProductBonusPoolForOrder(this.prisma, data.orderId, this.notifications);
+
+    if (actorUserId && reason && reason.length > 0) {
+      await this.audit.log({
+        entityType: 'BonusEntry',
+        entityId: created.id,
+        action: 'MANUAL_BONUS_CREATED',
+        userId: actorUserId,
+        projectId: data.projectId,
+        changes: {
+          employeeId: data.employeeId,
+          orderId: data.orderId,
+          amount: data.amount,
+          type: data.type,
+          title: title ?? null,
+          reason,
+        },
+      });
+    }
+
     return created;
   }
 

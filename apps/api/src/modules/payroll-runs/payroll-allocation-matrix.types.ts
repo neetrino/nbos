@@ -26,6 +26,7 @@ export type PayrollAllocationMatrixCell = {
   orderId: string;
   state: PayrollMatrixCellState;
   linked: boolean;
+  bonusTitle: string | null;
   bonusEntryId: string | null;
   bonusReleaseId: string | null;
   plannedAmount: string;
@@ -85,5 +86,20 @@ export type CreatePayrollMatrixManualBonusBody = {
   orderId: string;
   title: string;
   amount: string;
+  reason: string;
+};
+
+export type PatchPayrollMatrixPlannedBonusBody = {
+  employeeId: string;
+  orderId: string;
+  amount: string;
+  title?: string;
+  reason: string;
+};
+
+export type PatchPayrollMatrixReassignBody = {
+  fromEmployeeId: string;
+  orderId: string;
+  toEmployeeId: string;
   reason: string;
 };

@@ -45,6 +45,7 @@ import {
   type PatchSalaryLineSalesKpiBody,
 } from './salary-line-sales-kpi-patch';
 import { loadSalaryLinesBlockingPayrollCloseCount } from './payroll-run-close-validation';
+import { validatePayrollMatrixForApproval } from './payroll-matrix-approval-validation';
 import {
   sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi,
   sumPaymentsForPayrollMonthSuggestedSalesKpi,
@@ -283,6 +284,16 @@ export class PayrollRunsService {
 
     if (!canTransitionPayrollRun(run.status, status)) {
       throw new ConflictException(`Cannot transition payroll run from ${run.status} to ${status}`);
+    }
+
+    if (status === 'REVIEW' || status === 'APPROVED') {
+      const matrixIssues = await validatePayrollMatrixForApproval(this.prisma, id);
+      if (matrixIssues.length > 0) {
+        throw new BadRequestException({
+          message: 'Payroll matrix validation failed',
+          issues: matrixIssues,
+        });
+      }
     }
 
     if (status === 'CLOSED') {

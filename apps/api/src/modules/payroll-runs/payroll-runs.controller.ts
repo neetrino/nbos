@@ -6,6 +6,8 @@ import type {
   CreatePayrollMatrixManualBonusBody,
   PatchPayrollMatrixCellBody,
   PatchPayrollMatrixLayoutBody,
+  PatchPayrollMatrixPlannedBonusBody,
+  PatchPayrollMatrixReassignBody,
 } from './payroll-allocation-matrix.types';
 import {
   PayrollRunsService,
@@ -125,6 +127,12 @@ export class PayrollRunsController {
     return this.payrollRunsService.getSalaryLineMonthDetail(salaryLineId);
   }
 
+  @Get(':id/allocation-matrix/validation')
+  @ApiOperation({ summary: 'Validate payroll matrix before review/approval' })
+  async getAllocationMatrixValidation(@Param('id') id: string) {
+    return this.payrollAllocationMatrixService.getValidation(id);
+  }
+
   @Get(':id/allocation-matrix')
   @ApiOperation({
     summary: 'Payroll allocation matrix (employees × delivery payable units)',
@@ -176,6 +184,36 @@ export class PayrollRunsController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.payrollAllocationMatrixService.createManualBonus(id, user.id, body);
+  }
+
+  @Patch(':id/allocation-matrix/planned-bonus')
+  @ApiOperation({ summary: 'Edit planned bonus amount/title for a matrix cell' })
+  async patchAllocationMatrixPlannedBonus(
+    @Param('id') id: string,
+    @Body() body: PatchPayrollMatrixPlannedBonusBody,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.patchPlannedBonus(id, user.id, body);
+  }
+
+  @Patch(':id/allocation-matrix/reassign-recipient')
+  @ApiOperation({ summary: 'Reassign bonus recipient before payment (matrix context)' })
+  async patchAllocationMatrixReassignRecipient(
+    @Param('id') id: string,
+    @Body() body: PatchPayrollMatrixReassignBody,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.reassignRecipient(id, user.id, body);
+  }
+
+  @Post(':id/allocation-matrix/layout/reset')
+  @ApiOperation({ summary: 'Reset matrix row/column order and pinned units for current view' })
+  async resetAllocationMatrixLayout(
+    @Param('id') id: string,
+    @Body() body: { viewMode: 'EMPLOYEE_MATRIX' | 'ORDER_MATRIX' },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.resetLayout(id, user.id, body.viewMode);
   }
 
   @Get(':id/bonus-releases')

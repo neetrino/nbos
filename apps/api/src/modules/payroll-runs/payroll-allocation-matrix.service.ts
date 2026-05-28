@@ -1,9 +1,16 @@
-import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import { Decimal, PayrollMatrixViewModeEnum, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { applyMatrixCellPatch, syncAfterMatrixReleaseMutation } from './payroll-matrix-cell-patch';
+import { reassignMatrixBonusRecipientAndSync } from './payroll-matrix-bonus-reassign';
+import { patchMatrixPlannedBonus } from './payroll-matrix-planned-bonus';
+import {
+  validatePayrollMatrixForApproval,
+  type PayrollMatrixValidationIssue,
+} from './payroll-matrix-approval-validation';
 import { resolveDeliveryPayableUnits } from './delivery-payable-unit.resolver';
 import {
   applyCustomOrder,
@@ -14,6 +21,8 @@ import type {
   CreatePayrollMatrixManualBonusBody,
   PatchPayrollMatrixCellBody,
   PatchPayrollMatrixLayoutBody,
+  PatchPayrollMatrixPlannedBonusBody,
+  PatchPayrollMatrixReassignBody,
   PayrollAllocationMatrixCell,
   PayrollAllocationMatrixDto,
   PayrollMatrixCellState,
@@ -50,10 +59,20 @@ function resolveCellState(params: {
 
 @Injectable()
 export class PayrollAllocationMatrixService {
+  private readonly logger = new Logger(PayrollAllocationMatrixService.name);
+
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
+    private readonly audit: AuditService,
   ) {}
+
+  async getValidation(payrollRunId: string): Promise<{ issues: PayrollMatrixValidationIssue[] }> {
+    const run = await this.prisma.payrollRun.findUnique({ where: { id: payrollRunId } });
+    if (!run) throw new NotFoundException('Payroll run not found');
+    const issues = await validatePayrollMatrixForApproval(this.prisma, payrollRunId);
+    return { issues };
+  }
 
   async getMatrix(
     payrollRunId: string,
@@ -88,7 +107,14 @@ export class PayrollAllocationMatrixService {
         id: true,
         product: { select: { pmId: true, developerId: true, designerId: true } },
         bonusEntries: {
-          select: { id: true, employeeId: true, amount: true, originalAmount: true, status: true },
+          select: {
+            id: true,
+            employeeId: true,
+            title: true,
+            amount: true,
+            originalAmount: true,
+            status: true,
+          },
         },
       },
     });
@@ -199,6 +225,7 @@ export class PayrollAllocationMatrixService {
           orderId: unit.orderId,
           state,
           linked,
+          bonusTitle: entry?.title ?? null,
           bonusEntryId: entry?.id ?? null,
           bonusReleaseId: thisRunRelease?.id ?? null,
           plannedAmount: planned.toFixed(2),
@@ -265,34 +292,123 @@ export class PayrollAllocationMatrixService {
     }
 
     const amount = decimalFrom(body.releaseThisMonth);
-    if (amount.lt(BONUS_POOL_ZERO)) {
-      const touched = await this.prisma.$transaction((tx) =>
-        applyMatrixCellPatch(tx, {
-          payrollRunId,
-          employeeId: body.employeeId,
-          orderId: body.orderId,
-          releaseAmount: BONUS_POOL_ZERO,
-          reason: body.reason,
-          approvedById: userId,
-        }),
-      );
-      await syncAfterMatrixReleaseMutation(this.prisma, touched, this.notifications);
-      return this.getMatrix(payrollRunId, userId);
-    }
-
-    const touched = await this.prisma.$transaction((tx) =>
+    const patchResult = await this.prisma.$transaction((tx) =>
       applyMatrixCellPatch(tx, {
         payrollRunId,
         employeeId: body.employeeId,
         orderId: body.orderId,
-        releaseAmount: amount,
+        releaseAmount: amount.lt(BONUS_POOL_ZERO) ? BONUS_POOL_ZERO : amount,
         reason: body.reason,
         approvedById: userId,
       }),
     );
-    await syncAfterMatrixReleaseMutation(this.prisma, touched, this.notifications);
+    await syncAfterMatrixReleaseMutation(this.prisma, patchResult, this.notifications);
 
     return this.getMatrix(payrollRunId, userId);
+  }
+
+  async patchPlannedBonus(
+    payrollRunId: string,
+    userId: string,
+    body: PatchPayrollMatrixPlannedBonusBody,
+  ): Promise<PayrollAllocationMatrixDto> {
+    const run = await this.prisma.payrollRun.findUnique({ where: { id: payrollRunId } });
+    if (!run) throw new NotFoundException('Payroll run not found');
+    if (!EDITABLE_STATUSES.has(run.status)) {
+      throw new BadRequestException('Payroll run is not editable');
+    }
+
+    const patchResult = await patchMatrixPlannedBonus(this.prisma, {
+      employeeId: body.employeeId,
+      orderId: body.orderId,
+      amount: body.amount,
+      title: body.title,
+      reason: body.reason,
+    });
+
+    await this.audit.log({
+      entityType: 'BonusEntry',
+      entityId: patchResult.bonusEntryId,
+      action: 'MATRIX_PLANNED_BONUS_UPDATED',
+      userId,
+      projectId: patchResult.projectId,
+      changes: {
+        payrollRunId,
+        orderId: body.orderId,
+        employeeId: body.employeeId,
+        previousAmount: patchResult.previousAmount,
+        nextAmount: patchResult.nextAmount,
+        previousTitle: patchResult.previousTitle,
+        nextTitle: body.title?.trim() ?? patchResult.previousTitle,
+        reason: body.reason.trim(),
+      },
+    });
+
+    return this.getMatrix(payrollRunId, userId);
+  }
+
+  async reassignRecipient(
+    payrollRunId: string,
+    userId: string,
+    body: PatchPayrollMatrixReassignBody,
+  ): Promise<PayrollAllocationMatrixDto> {
+    const run = await this.prisma.payrollRun.findUnique({ where: { id: payrollRunId } });
+    if (!run) throw new NotFoundException('Payroll run not found');
+    if (!EDITABLE_STATUSES.has(run.status)) {
+      throw new BadRequestException('Payroll run is not editable');
+    }
+
+    const reassignResult = await reassignMatrixBonusRecipientAndSync(this.prisma, {
+      payrollRunId,
+      fromEmployeeId: body.fromEmployeeId,
+      orderId: body.orderId,
+      toEmployeeId: body.toEmployeeId,
+      reason: body.reason,
+    });
+
+    await this.audit.log({
+      entityType: 'BonusEntry',
+      entityId: reassignResult.bonusEntryId,
+      action: 'MATRIX_BONUS_RECIPIENT_REASSIGNED',
+      userId,
+      projectId: reassignResult.projectId,
+      changes: {
+        payrollRunId,
+        orderId: body.orderId,
+        fromEmployeeId: body.fromEmployeeId,
+        toEmployeeId: body.toEmployeeId,
+        reason: body.reason.trim(),
+      },
+    });
+
+    await syncAfterMatrixReleaseMutation(
+      this.prisma,
+      { releaseIds: [], carryNotifyEvents: reassignResult.carryNotifyEvents },
+      this.notifications,
+    );
+
+    this.logger.log({
+      msg: 'matrix_bonus_recipient_reassigned',
+      payrollRunId,
+      bonusEntryId: reassignResult.bonusEntryId,
+      fromEmployeeId: body.fromEmployeeId,
+      toEmployeeId: body.toEmployeeId,
+    });
+
+    return this.getMatrix(payrollRunId, userId);
+  }
+
+  async resetLayout(
+    payrollRunId: string,
+    userId: string,
+    viewMode: PayrollMatrixViewModeEnum,
+  ): Promise<PayrollAllocationMatrixDto> {
+    await savePayrollMatrixLayout(this.prisma, userId, payrollRunId, viewMode, {
+      rowOrder: [],
+      columnOrder: [],
+      pinnedUnitIds: [],
+    });
+    return this.getMatrix(payrollRunId, userId, viewMode);
   }
 
   async createManualBonus(
@@ -330,7 +446,7 @@ export class PayrollAllocationMatrixService {
       },
     });
 
-    const touched = await this.prisma.$transaction((tx) =>
+    const patchResult = await this.prisma.$transaction((tx) =>
       applyMatrixCellPatch(tx, {
         payrollRunId,
         employeeId: body.employeeId,
@@ -340,7 +456,7 @@ export class PayrollAllocationMatrixService {
         approvedById: userId,
       }),
     );
-    await syncAfterMatrixReleaseMutation(this.prisma, touched, this.notifications);
+    await syncAfterMatrixReleaseMutation(this.prisma, patchResult, this.notifications);
 
     return this.getMatrix(payrollRunId, userId);
   }

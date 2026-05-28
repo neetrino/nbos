@@ -46,6 +46,7 @@ export type PayrollAllocationMatrixCell = {
   orderId: string;
   state: PayrollMatrixCellState;
   linked: boolean;
+  bonusTitle: string | null;
   bonusEntryId: string | null;
   bonusReleaseId: string | null;
   plannedAmount: string;
@@ -84,7 +85,22 @@ export type PayrollAllocationMatrix = {
   };
 };
 
+export type PayrollMatrixValidationIssue = {
+  code: string;
+  message: string;
+  releaseId?: string;
+  employeeId?: string;
+  orderId?: string;
+};
+
 export const payrollAllocationMatrixApi = {
+  async getValidation(payrollRunId: string): Promise<{ issues: PayrollMatrixValidationIssue[] }> {
+    const resp = await api.get<{ issues: PayrollMatrixValidationIssue[] }>(
+      `/api/payroll-runs/${payrollRunId}/allocation-matrix/validation`,
+    );
+    return resp.data;
+  },
+
   async get(
     payrollRunId: string,
     viewMode: PayrollMatrixViewMode = 'EMPLOYEE_MATRIX',
@@ -140,6 +156,50 @@ export const payrollAllocationMatrixApi = {
   ): Promise<PayrollAllocationMatrix> {
     const resp = await api.post<PayrollAllocationMatrix>(
       `/api/payroll-runs/${payrollRunId}/allocation-matrix/manual-bonus`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async reassignRecipient(
+    payrollRunId: string,
+    body: {
+      fromEmployeeId: string;
+      orderId: string;
+      toEmployeeId: string;
+      reason: string;
+    },
+  ): Promise<PayrollAllocationMatrix> {
+    const resp = await api.patch<PayrollAllocationMatrix>(
+      `/api/payroll-runs/${payrollRunId}/allocation-matrix/reassign-recipient`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async resetLayout(
+    payrollRunId: string,
+    viewMode: PayrollMatrixViewMode,
+  ): Promise<PayrollAllocationMatrix> {
+    const resp = await api.post<PayrollAllocationMatrix>(
+      `/api/payroll-runs/${payrollRunId}/allocation-matrix/layout/reset`,
+      { viewMode },
+    );
+    return resp.data;
+  },
+
+  async patchPlannedBonus(
+    payrollRunId: string,
+    body: {
+      employeeId: string;
+      orderId: string;
+      amount: string;
+      title?: string;
+      reason: string;
+    },
+  ): Promise<PayrollAllocationMatrix> {
+    const resp = await api.patch<PayrollAllocationMatrix>(
+      `/api/payroll-runs/${payrollRunId}/allocation-matrix/planned-bonus`,
       body,
     );
     return resp.data;

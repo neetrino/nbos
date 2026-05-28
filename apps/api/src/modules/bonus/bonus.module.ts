@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuditModule } from '../audit/audit.module';
 import { NotificationModule } from '../notifications/notification.module';
 import { BonusController } from './bonus.controller';
 import { BonusService } from './bonus.service';
@@ -7,7 +8,7 @@ import { SalesBonusAccrualService } from './sales-bonus-accrual.service';
 import { SalesBonusPolicyService } from './sales-bonus-policy.service';
 
 @Module({
-  imports: [NotificationModule],
+  imports: [NotificationModule, AuditModule],
   controllers: [BonusController],
   providers: [BonusService, BonusReleaseService, SalesBonusAccrualService, SalesBonusPolicyService],
   exports: [BonusService, BonusReleaseService, SalesBonusAccrualService, SalesBonusPolicyService],

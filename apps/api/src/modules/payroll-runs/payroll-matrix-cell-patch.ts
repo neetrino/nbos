@@ -9,12 +9,20 @@ import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detach';
+import { notifyPayrollCarryEventsOnAttach } from './payroll-bonus-carry-notify';
+import { notifySalesKpiReductionsOnAttach } from './payroll-bonus-release-kpi-notify';
+import type { PayrollAttachNotifyEvent } from './payroll-attach-notify.types';
 import {
   refreshBonusEntryStatusesForReleases,
   syncProductBonusPoolsForBonusReleases,
 } from './payroll-run-bonus-release-side-effects';
 
 const COUNTING_STATUSES = ['DRAFT', 'APPROVED', 'INCLUDED_IN_PAYROLL', 'PAID'] as const;
+
+export type MatrixCellPatchResult = {
+  releaseIds: string[];
+  carryNotifyEvents: PayrollAttachNotifyEvent[];
+};
 
 export type MatrixCellPatchParams = {
   payrollRunId: string;
@@ -52,9 +60,10 @@ function requireReason(releaseType: BonusReleaseTypeEnum, reason: string | undef
 export async function applyMatrixCellPatch(
   tx: TransactionClient,
   params: MatrixCellPatchParams,
-): Promise<string[]> {
+): Promise<MatrixCellPatchResult> {
   const { payrollRunId, employeeId, orderId, releaseAmount, reason, approvedById } = params;
   const touched: string[] = [];
+  let carryNotifyEvents: PayrollAttachNotifyEvent[] = [];
 
   const entry = await tx.bonusEntry.findFirst({
     where: { employeeId, orderId },
@@ -79,10 +88,10 @@ export async function applyMatrixCellPatch(
     : null;
 
   if (releaseAmount.lte(BONUS_POOL_ZERO)) {
-    if (!included) return touched;
+    if (!included) return { releaseIds: touched, carryNotifyEvents };
     await detachBonusReleasesFromPayrollRun(tx, { payrollRunId, releaseIds: [included.id] });
     touched.push(included.id);
-    return touched;
+    return { releaseIds: touched, carryNotifyEvents };
   }
 
   if (!entry) {
@@ -117,7 +126,7 @@ export async function applyMatrixCellPatch(
 
   if (included) {
     const current = decimalFrom(included.payrollIncludedAmount ?? included.amount);
-    if (current.equals(releaseAmount)) return touched;
+    if (current.equals(releaseAmount)) return { releaseIds: touched, carryNotifyEvents };
     await detachBonusReleasesFromPayrollRun(tx, { payrollRunId, releaseIds: [included.id] });
     touched.push(included.id);
   }
@@ -138,21 +147,26 @@ export async function applyMatrixCellPatch(
   });
   touched.push(created.id);
 
-  await attachBonusReleasesToPayrollRun(tx, {
+  carryNotifyEvents = await attachBonusReleasesToPayrollRun(tx, {
     payrollRunId,
     releaseIds: [created.id],
   });
 
-  return touched;
+  return { releaseIds: touched, carryNotifyEvents };
 }
 
-/** Post-transaction sync for matrix mutations (pool + bonus entry status). */
+/** Post-transaction sync for matrix mutations (pool, status, carry + KPI notify). */
 export async function syncAfterMatrixReleaseMutation(
   prisma: InstanceType<typeof PrismaClient>,
-  releaseIds: string[],
+  result: MatrixCellPatchResult,
   notifications?: WalletInAppNotifySink,
 ): Promise<void> {
-  if (releaseIds.length === 0) return;
-  await refreshBonusEntryStatusesForReleases(prisma, releaseIds);
-  await syncProductBonusPoolsForBonusReleases(prisma, releaseIds, notifications);
+  const { releaseIds, carryNotifyEvents } = result;
+  if (releaseIds.length === 0 && carryNotifyEvents.length === 0) return;
+  if (releaseIds.length > 0) {
+    await refreshBonusEntryStatusesForReleases(prisma, releaseIds);
+    await syncProductBonusPoolsForBonusReleases(prisma, releaseIds, notifications);
+    await notifySalesKpiReductionsOnAttach(prisma, notifications, releaseIds);
+  }
+  await notifyPayrollCarryEventsOnAttach(prisma, notifications, carryNotifyEvents);
 }

@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import type { BonusReleaseStatusEnum, BonusReleaseTypeEnum } from '@nbos/database';
+import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { BonusService } from './bonus.service';
 import { BonusReleaseService } from './bonus-release.service';
 import {
@@ -232,12 +233,15 @@ export class BonusController {
       type: string;
       amount: number;
       percent: number;
+      title?: string;
+      reason?: string;
       status?: string;
       kpiGatePassed?: boolean;
       payoutMonth?: string;
     },
+    @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.bonusService.create(body);
+    return this.bonusService.create(body, user.id);
   }
 
   @Patch(':id/status')

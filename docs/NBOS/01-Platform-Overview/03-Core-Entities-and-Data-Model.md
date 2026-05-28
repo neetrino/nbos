@@ -456,11 +456,13 @@ Contact (человек)
 | Поле                | Тип           | Описание                                                              |
 | ------------------- | ------------- | --------------------------------------------------------------------- |
 | id                  | UUID          | Уникальный идентификатор                                              |
-| employee_id         | FK → Employee | Сотрудник                                                             |
+| title               | String?       | Человекочитаемое имя бонуса (manual / audit)                          |
+| employee_id         | FK → Employee | Сотрудник (текущий получатель; может быть переназначен до оплаты)     |
 | order_id            | FK → Order    | Заказ, за который начислен                                            |
 | project_id          | FK → Project  | Проект                                                                |
 | type                | Enum          | Sales Bonus, Delivery Bonus, PM Bonus, Design Bonus, Marketing Bonus  |
-| amount              | Decimal       | Сумма бонуса                                                          |
+| amount              | Decimal       | Текущая плановая сумма бонуса                                         |
+| original_amount     | Decimal?      | Снимок суммы при создании / до первого edit                           |
 | percent             | Decimal       | % от суммы заказа                                                     |
 | status              | Enum          | Incoming, Earned, Pending Eligibility, Vested, Active, Paid, Clawback |
 | kpi_gate_result     | JSON          | Результат KPI gate, если применяется                                  |
@@ -534,6 +536,20 @@ Contact (человек)
 | status         | Enum             | Draft, Approved, Included In Payroll, Paid, Cancelled |
 
 `Bonus Release` создаётся автоматически после сдачи Product / Extension, если есть доступный продуктовый фонд, или вручную до сдачи / при исключениях.
+
+### 2.11.3. Delivery Payable Unit & Payroll Matrix Layout
+
+**Delivery Payable Unit** — доменная классификация (не отдельная таблица): `Order` типа `PRODUCT` или `EXTENSION`, участвующий в delivery work и team bonuses. Используется в Payroll Allocation Matrix и Unit Economics Board. Domain/hosting/license orders исключаются, если не моделируются как delivery-payable.
+
+**PayrollMatrixLayoutPreference** — per user, per payroll run, per view mode (`EMPLOYEE_MATRIX` | `ORDER_MATRIX`):
+
+| Поле            | Тип        | Описание                            |
+| --------------- | ---------- | ----------------------------------- |
+| row_order       | JSON array | Порядок строк (employees или units) |
+| column_order    | JSON array | Порядок колонок                     |
+| pinned_unit_ids | JSON array | Закреплённые delivery units         |
+
+**Unit Economics read model** — агрегация по delivery unit: invoiced, received, receivable, journal expenses, bonus pool totals, margin. Источник: `Invoice`, `Payment`, `OperationalJournalEntry`, `ProductBonusPool`, `BonusEntry` / `BonusRelease` — без дублирования фактов.
 
 ---
 

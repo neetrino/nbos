@@ -687,6 +687,13 @@ Row/column order persists per user, per payroll run, per view mode (`PayrollMatr
 
 Operational finance screen at `/finance/unit-economics` (Finance Overview). Shows product/order financial state: received, expenses, bonuses, available cash, margin. Replaces narrow “bonus pool only” thinking; bonus pool metrics are one section of unit economics.
 
+| API                             | Purpose                                                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/unit-economics`       | Delivery-unit roll-up: payments received, journal expenses (`EXPENSE_PAYMENT` / `EXPENSE_CARD`), bonus pool totals, estimated margin |
+| `GET /api/bonus/products/pools` | Bonus pool drill-down (existing; linked from Unit Economics “Bonus pools” tab)                                                       |
+
+Payroll matrix APIs: `GET/PATCH /api/payroll-runs/:id/allocation-matrix` (+ layout, layout/reset, cells, manual-bonus, planned-bonus, reassign-recipient). Matrix cell patch and reassign trigger carry-over and sales KPI attach notifications where applicable. Planned bonus and recipient changes write `audit_logs` on `BonusEntry`.
+
 ---
 
 ## Связи с другими модулями
