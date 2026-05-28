@@ -443,10 +443,15 @@ Layout (row/column order, pins) — в БД per user, per payroll run, per view 
 
 Вкладки:
 
-| Tab         | Содержание                                       |
-| ----------- | ------------------------------------------------ |
-| Overview    | Таблица delivery units + итоги                   |
-| Bonus pools | Существующий bonus pool drill-down (по проектам) |
+| Tab            | Содержание                                       |
+| -------------- | ------------------------------------------------ |
+| Overview       | Таблица delivery units + итоги                   |
+| Funding / cash | Received, available cash, over funding, margin   |
+| Expenses       | Expenses + bonus columns по unit                 |
+| Profitability  | Margin, received, expenses, released             |
+| Bonus pools    | Существующий bonus pool drill-down (по проектам) |
+
+Drill-down: клик по **Invoiced / Received / Receivable** (и названию unit) открывает sheet с вкладками **Invoices** и **Payments**; ссылки ведут на Invoice Card в `/finance/invoices`. API: `GET /api/unit-economics/orders/:orderId`.
 
 Связь с P&L: те же факты; Unit Economics — для работы Finance, P&L — read-only аналитика.
 

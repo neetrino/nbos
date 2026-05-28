@@ -69,6 +69,7 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 | `PATCH …/planned-bonus`, `PATCH …/reassign-recipient`        | Planned amount + recipient change (pre-approval)                    |
 | `GET …/allocation-matrix/validation`                         | Blocks REVIEW/APPROVED when rules fail                              |
 | `GET /api/unit-economics`                                    | Per delivery unit: invoiced, cash, expenses, pools, margin          |
+| `GET /api/unit-economics/orders/:orderId`                    | Drill-down: invoice + payment lines for one delivery unit           |
 
 ### Payroll allocation matrix + unit economics (2026-05)
 
@@ -78,7 +79,7 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 | Manual bonus exceptions | Yes     | Gray/empty cells + Bonus Board dialog (`title`, `reason`, `originalAmount`)              |
 | Bonus audit read        | Yes     | `BonusEntryAuditPanel` in matrix cell dialog and bonus entry releases sheet              |
 | Unit economics board    | Yes     | Overview, Funding/cash, Expenses, Profitability, Bonus pools (`GET /api/unit-economics`) |
-| UE drill-down           | Partial | Aggregate columns; per-unit invoice/payment lists still backlog                          |
+| UE drill-down           | Partial | Invoices/payments sheet per unit; expenses/bonuses source lists still backlog            |
 
 ### Residual (canon backlog)
 

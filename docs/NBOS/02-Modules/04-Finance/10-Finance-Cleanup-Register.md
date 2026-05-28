@@ -92,7 +92,7 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 
 **Остаётся:**
 
-- Unit Economics: dedicated Invoices & Payments drill-down per delivery unit (beyond aggregate columns);
+- Unit Economics: expenses/bonuses drill-down per delivery unit (invoices/payments sheet shipped);
 - bonus recipient full history UI (beyond last N audit rows);
 - layout-change audit (optional);
 - full matrix E2E / manual QA checklist in `todo.md` Phase 8.
