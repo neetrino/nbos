@@ -248,11 +248,10 @@ function SortableMatrixColumnHeader(props: {
       ref={setNodeRef}
       style={style}
       className={cn(
-        PAYROLL_MATRIX_STICKY_HEADER_BG,
         PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
         PAYROLL_MATRIX_DATA_COL_WIDTH,
         'border-border border-r border-b px-2 py-2 text-left align-bottom',
-        expanded && PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
+        expanded ? PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG : PAYROLL_MATRIX_STICKY_HEADER_BG,
         isDragging && 'opacity-70',
       )}
     >
@@ -304,11 +303,10 @@ function SortableMatrixRowHeader(props: {
       ref={setNodeRef}
       style={style}
       className={cn(
-        PAYROLL_MATRIX_STICKY_HEADER_BG,
         PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
         PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
         'border-border sticky left-0 z-30 border-r border-b px-3 py-2.5 text-left',
-        expanded && PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
+        expanded ? PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG : PAYROLL_MATRIX_STICKY_HEADER_BG,
         isDragging && 'opacity-70',
       )}
     >

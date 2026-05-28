@@ -3,6 +3,7 @@ import {
   PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
   PAYROLL_MATRIX_DETAIL_COL_WIDTH,
   PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
+  PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import { cn } from '@/lib/utils';
 
@@ -25,6 +26,7 @@ export const PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS = cn(
 export const PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS = cn(
   PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
   PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
+  PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
   'border-border sticky left-0 z-30 border-r border-b px-3 py-1 align-middle',
 );
 

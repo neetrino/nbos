@@ -2,11 +2,11 @@
 export const PAYROLL_MATRIX_STICKY_EDGE_WIDTH =
   'w-[11.5rem] max-w-[11.5rem] min-w-[11.5rem] shrink-0';
 
-/** Opaque sticky header tint — lighter than `--muted`, darker than `--card`. */
-export const PAYROLL_MATRIX_STICKY_HEADER_BG = 'bg-[oklch(0.982_0.002_90)]';
+/** Opaque sticky edge (employee/order names) — must not show scroll-through. */
+export const PAYROLL_MATRIX_STICKY_HEADER_BG = 'bg-card';
 
-/** Selected / expanded row or column — soft green background only; text stays default. */
-export const PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG = 'bg-emerald-500/12';
+/** Selected / expanded row or column — solid tint; text stays default foreground. */
+export const PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG = 'bg-emerald-50 dark:bg-emerald-950';
 
 /** @deprecated Use PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG for column selection. */
 export const PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG = PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG;
