@@ -27,34 +27,35 @@ function fmt(value: string): string {
   return formatAmount(parseMoney(value));
 }
 
-function MetricCell({ label, value }: MetricItem) {
+const DETAIL_METRIC_LABEL_CLASS = 'text-left text-[8px] font-bold tracking-wide leading-none';
+
+const DETAIL_METRIC_VALUE_CLASS = 'text-right text-[10px] tabular-nums leading-tight';
+
+/** Label left + bold; amount on next line, right-aligned — same in header and body cells. */
+function DetailMetricBlock({ label, value, tone }: MetricItem & { tone: 'header' | 'cell' }) {
+  const labelClass =
+    tone === 'header'
+      ? cn(DETAIL_METRIC_LABEL_CLASS, PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL)
+      : cn(DETAIL_METRIC_LABEL_CLASS, 'text-muted-foreground');
+
+  const valueClass =
+    tone === 'header'
+      ? cn(DETAIL_METRIC_VALUE_CLASS, PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE)
+      : cn(DETAIL_METRIC_VALUE_CLASS, 'text-foreground');
+
   return (
-    <p className="text-muted-foreground min-w-0 leading-tight">
-      <span className="text-[8px] font-medium tracking-wide uppercase">{label} </span>
-      <span className="text-foreground text-[10px] tabular-nums">{value}</span>
-    </p>
+    <div className="min-w-0">
+      <p className={labelClass}>{label}</p>
+      <p className={cn(valueClass, 'mt-0.5')}>{value}</p>
+    </div>
   );
 }
 
-function HeaderMetricStack({ items }: { items: MetricItem[] }) {
+function DetailMetricStack({ items, tone }: { items: MetricItem[]; tone: 'header' | 'cell' }) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex w-full flex-col gap-1">
       {items.map((item) => (
-        <p key={item.label} className="min-w-0 leading-tight">
-          <span
-            className={cn(
-              'text-[8px] font-medium tracking-wide uppercase',
-              PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL,
-            )}
-          >
-            {item.label}{' '}
-          </span>
-          <span
-            className={cn('text-[10px] tabular-nums', PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE)}
-          >
-            {item.value}
-          </span>
-        </p>
+        <DetailMetricBlock key={item.label} label={item.label} value={item.value} tone={tone} />
       ))}
     </div>
   );
@@ -73,11 +74,12 @@ const DETAIL_PANEL_HEADER_CLASS = cn(
   'align-top pt-2 pb-2',
 );
 
-/** Order column — pool totals stacked (Remaining/Avail on main header). */
+/** Order column — pool totals (Remaining/Avail on main header). */
 export function MatrixOrderDetailHeader({ unit }: { unit: DeliveryPayableUnit }) {
   return (
     <th className={DETAIL_PANEL_HEADER_CLASS}>
-      <HeaderMetricStack
+      <DetailMetricStack
+        tone="header"
         items={[
           { label: 'Planned', value: fmt(unit.totalPlannedBonus) },
           { label: 'Paid', value: fmt(unit.totalPaidBonus) },
@@ -87,7 +89,7 @@ export function MatrixOrderDetailHeader({ unit }: { unit: DeliveryPayableUnit })
   );
 }
 
-/** Employee column — run totals stacked. */
+/** Employee column — run totals. */
 export function MatrixEmployeeDetailHeader({
   employee,
 }: {
@@ -95,7 +97,8 @@ export function MatrixEmployeeDetailHeader({
 }) {
   return (
     <th className={DETAIL_PANEL_HEADER_CLASS}>
-      <HeaderMetricStack
+      <DetailMetricStack
+        tone="header"
         items={[
           { label: 'Payable', value: fmt(employee.payableTotal) },
           { label: 'Bonus', value: fmt(employee.bonusTotalThisRun) },
@@ -105,7 +108,7 @@ export function MatrixEmployeeDetailHeader({
   );
 }
 
-/** Per intersection — remaining due and paid before. */
+/** Per intersection — due and paid before. */
 export function MatrixCellDetailPanel({ cell }: { cell: PayrollAllocationMatrixCell | undefined }) {
   if (!cell || !cell.linked) {
     return (
@@ -117,10 +120,13 @@ export function MatrixCellDetailPanel({ cell }: { cell: PayrollAllocationMatrixC
 
   return (
     <td className={DETAIL_PANEL_CLASS}>
-      <div className="flex flex-col gap-0.5">
-        <MetricCell label="Due" value={fmt(cell.remaining)} />
-        <MetricCell label="Paid" value={fmt(cell.paidBefore)} />
-      </div>
+      <DetailMetricStack
+        tone="cell"
+        items={[
+          { label: 'Due', value: fmt(cell.remaining) },
+          { label: 'Paid', value: fmt(cell.paidBefore) },
+        ]}
+      />
     </td>
   );
 }
@@ -133,10 +139,13 @@ const ROW_DETAIL_STICKY_CLASS = cn(
 export function MatrixOrderRowDetailSticky({ unit }: { unit: DeliveryPayableUnit }) {
   return (
     <th className={ROW_DETAIL_STICKY_CLASS}>
-      <div className="flex flex-col gap-0.5">
-        <MetricCell label="Planned" value={fmt(unit.totalPlannedBonus)} />
-        <MetricCell label="Paid" value={fmt(unit.totalPaidBonus)} />
-      </div>
+      <DetailMetricStack
+        tone="cell"
+        items={[
+          { label: 'Planned', value: fmt(unit.totalPlannedBonus) },
+          { label: 'Paid', value: fmt(unit.totalPaidBonus) },
+        ]}
+      />
     </th>
   );
 }
@@ -148,10 +157,13 @@ export function MatrixEmployeeRowDetailSticky({
 }) {
   return (
     <th className={ROW_DETAIL_STICKY_CLASS}>
-      <div className="flex flex-col gap-0.5">
-        <MetricCell label="Payable" value={fmt(employee.payableTotal)} />
-        <MetricCell label="Bonus" value={fmt(employee.bonusTotalThisRun)} />
-      </div>
+      <DetailMetricStack
+        tone="cell"
+        items={[
+          { label: 'Payable', value: fmt(employee.payableTotal) },
+          { label: 'Bonus', value: fmt(employee.bonusTotalThisRun) },
+        ]}
+      />
     </th>
   );
 }
