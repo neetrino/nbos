@@ -112,6 +112,22 @@ export const payrollAllocationMatrixApi = {
     return resp.data;
   },
 
+  async patchCell(
+    payrollRunId: string,
+    body: {
+      employeeId: string;
+      orderId: string;
+      releaseThisMonth: string;
+      reason?: string;
+    },
+  ): Promise<PayrollAllocationMatrix> {
+    const resp = await api.patch<PayrollAllocationMatrix>(
+      `/api/payroll-runs/${payrollRunId}/allocation-matrix/cells`,
+      body,
+    );
+    return resp.data;
+  },
+
   async createManualBonus(
     payrollRunId: string,
     body: {

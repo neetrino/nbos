@@ -21,6 +21,7 @@ function cellMap(cells: PayrollAllocationMatrixCell[]): Map<string, PayrollAlloc
 export function PayrollAllocationMatrixGrid(props: {
   matrix: PayrollAllocationMatrix;
   viewMode: PayrollMatrixViewMode;
+  pinnedUnitIds: string[];
   activeRowId: string | null;
   activeColumnId: string | null;
   onActivateRow: (id: string | null) => void;
@@ -30,6 +31,7 @@ export function PayrollAllocationMatrixGrid(props: {
   const {
     matrix,
     viewMode,
+    pinnedUnitIds,
     activeRowId,
     activeColumnId,
     onActivateRow,
@@ -98,7 +100,10 @@ export function PayrollAllocationMatrixGrid(props: {
                   className="hover:text-primary w-full text-left"
                   onClick={() => onActivateColumn(activeColumnId === col.id ? null : col.id)}
                 >
-                  <p className="line-clamp-2 font-semibold">{col.primary}</p>
+                  <p className="line-clamp-2 font-semibold">
+                    {pinnedUnitIds.includes(col.id) ? '📌 ' : ''}
+                    {col.primary}
+                  </p>
                   <p className="text-muted-foreground truncate">{col.secondary}</p>
                   <p className="text-muted-foreground tabular-nums">{col.meta}</p>
                   {col.funding ? (

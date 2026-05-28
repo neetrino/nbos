@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Decimal, PayrollMatrixViewModeEnum, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { NotificationService } from '../notifications/notification.service';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
+import { applyMatrixCellPatch, syncAfterMatrixReleaseMutation } from './payroll-matrix-cell-patch';
 import { resolveDeliveryPayableUnits } from './delivery-payable-unit.resolver';
 import {
   applyCustomOrder,
@@ -48,7 +50,10 @@ function resolveCellState(params: {
 
 @Injectable()
 export class PayrollAllocationMatrixService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly notifications: NotificationService,
+  ) {}
 
   async getMatrix(
     payrollRunId: string,
@@ -261,13 +266,31 @@ export class PayrollAllocationMatrixService {
 
     const amount = decimalFrom(body.releaseThisMonth);
     if (amount.lt(BONUS_POOL_ZERO)) {
-      throw new BadRequestException('Release amount cannot be negative');
+      const touched = await this.prisma.$transaction((tx) =>
+        applyMatrixCellPatch(tx, {
+          payrollRunId,
+          employeeId: body.employeeId,
+          orderId: body.orderId,
+          releaseAmount: BONUS_POOL_ZERO,
+          reason: body.reason,
+          approvedById: userId,
+        }),
+      );
+      await syncAfterMatrixReleaseMutation(this.prisma, touched, this.notifications);
+      return this.getMatrix(payrollRunId, userId);
     }
 
-    // Cell patch delegates to bonus release attach flow in a follow-up slice.
-    // For now validate and return refreshed matrix (release wiring in next commit).
-    void userId;
-    void body.reason;
+    const touched = await this.prisma.$transaction((tx) =>
+      applyMatrixCellPatch(tx, {
+        payrollRunId,
+        employeeId: body.employeeId,
+        orderId: body.orderId,
+        releaseAmount: amount,
+        reason: body.reason,
+        approvedById: userId,
+      }),
+    );
+    await syncAfterMatrixReleaseMutation(this.prisma, touched, this.notifications);
 
     return this.getMatrix(payrollRunId, userId);
   }
@@ -307,8 +330,17 @@ export class PayrollAllocationMatrixService {
       },
     });
 
-    void userId;
-    void body.reason;
+    const touched = await this.prisma.$transaction((tx) =>
+      applyMatrixCellPatch(tx, {
+        payrollRunId,
+        employeeId: body.employeeId,
+        orderId: body.orderId,
+        releaseAmount: amount,
+        reason: body.reason,
+        approvedById: userId,
+      }),
+    );
+    await syncAfterMatrixReleaseMutation(this.prisma, touched, this.notifications);
 
     return this.getMatrix(payrollRunId, userId);
   }

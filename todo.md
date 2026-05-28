@@ -9,13 +9,13 @@
 | Phase                       | Status | Notes                                                                                 |
 | --------------------------- | ------ | ------------------------------------------------------------------------------------- |
 | 1 Documentation             | 🟡     | Canon section in `05-Bonus-and-Payroll.md`; UI spec / entities / cleanup docs pending |
-| 2 Payroll Run Detail UX     | 🟡     | Allocation matrix + sticky grid + views; drag-reorder UI pending                      |
-| 3 Bonus logic / manual form | 🟡     | Matrix manual bonus API; full bonus title/originalAmount + reassignment pending       |
+| 2 Payroll Run Detail UX     | 🟡     | Matrix + cell edit + column reorder/pin; row reorder + full DnD pending               |
+| 3 Bonus logic / manual form | 🟡     | Matrix manual bonus + release attach; global bonus form/reassignment pending          |
 | 4 Unit Economics Board      | 🟡     | `/finance/unit-economics` + Overview nav; full multi-view board pending               |
-| 5 API / data model          | 🟢     | Schema, resolver, matrix GET, layout PATCH, manual bonus POST                         |
-| 6 Frontend                  | 🟡     | Matrix workspace on run detail; cell release edit + DnD pending                       |
+| 5 API / data model          | 🟢     | Schema, resolver, matrix GET/PATCH cells, layout, manual bonus + attach               |
+| 6 Frontend                  | 🟡     | Matrix workspace + cell dialog + column toolbar; row reorder pending                  |
 | 7 Validation / audit        | ⚪     |                                                                                       |
-| 8 Tests / QA                | 🟡     | Resolver + layout unit tests; matrix integration tests pending                        |
+| 8 Tests / QA                | 🟡     | Resolver, layout, release-type unit tests; matrix integration tests pending           |
 
 ---
 
