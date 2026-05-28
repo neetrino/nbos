@@ -42,7 +42,8 @@
 | `6dbcee54`  | Wire payroll bonus attach to consume `KpiResult` payoutFactor instead of legacy fields        |
 | `d45e8baa`  | Add payroll UI action/read section for syncing and displaying KPI Result snapshots            |
 | `62163ccf`  | Align employee month KPI sheet with `KpiResult` read model; drop legacy fields from month API |
-| _(pending)_ | Remove legacy `kpiSales*` hints from payroll run list/detail API and salary line rows         |
+| `59dd9e49`  | Remove legacy `kpiSales*` hints from payroll run list/detail API and salary line rows         |
+| _(pending)_ | Rename KPI scorecard `payrollField` codes away from legacy `kpiSales*` column names           |
 
 ---
 
