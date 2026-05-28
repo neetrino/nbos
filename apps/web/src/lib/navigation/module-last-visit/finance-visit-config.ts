@@ -15,6 +15,7 @@ const EXPENSES_PREFIX = '/finance/expenses';
 function isOverviewPath(pathname: string): boolean {
   return (
     pathname.startsWith('/finance/dashboard') ||
+    pathname.startsWith('/finance/unit-economics') ||
     pathname.startsWith('/finance/reports') ||
     pathname.startsWith('/finance/journal')
   );

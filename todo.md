@@ -1,5 +1,24 @@
 # NBOS Finance / Payroll / Unit Economics Plan
 
+## Progress legend
+
+- 🟢 Done — shipped in code/docs for this slice
+- 🟡 In progress — partial; see notes in phase
+- ⚪ Not started
+
+| Phase                       | Status | Notes                                                                                 |
+| --------------------------- | ------ | ------------------------------------------------------------------------------------- |
+| 1 Documentation             | 🟡     | Canon section in `05-Bonus-and-Payroll.md`; UI spec / entities / cleanup docs pending |
+| 2 Payroll Run Detail UX     | 🟡     | Allocation matrix + sticky grid + views; drag-reorder UI pending                      |
+| 3 Bonus logic / manual form | 🟡     | Matrix manual bonus API; full bonus title/originalAmount + reassignment pending       |
+| 4 Unit Economics Board      | 🟡     | `/finance/unit-economics` + Overview nav; full multi-view board pending               |
+| 5 API / data model          | 🟢     | Schema, resolver, matrix GET, layout PATCH, manual bonus POST                         |
+| 6 Frontend                  | 🟡     | Matrix workspace on run detail; cell release edit + DnD pending                       |
+| 7 Validation / audit        | ⚪     |                                                                                       |
+| 8 Tests / QA                | 🟡     | Resolver + layout unit tests; matrix integration tests pending                        |
+
+---
+
 ## Decisions Locked
 
 - `Payroll Run` list page (`/finance/payroll`) stays conceptually as the run index: list/calendar/board of monthly payroll runs.

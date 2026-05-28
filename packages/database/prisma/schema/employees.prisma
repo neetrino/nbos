@@ -62,6 +62,7 @@ model Employee {
   bonusReleasesApproved    BonusRelease[]          @relation("BonusReleaseApprover")
   payrollRunsCreated       PayrollRun[]            @relation("PayrollRunCreator")
   payrollRunsApproved      PayrollRun[]            @relation("PayrollRunApprover")
+  payrollMatrixLayouts     PayrollMatrixLayoutPreference[] @relation("PayrollMatrixLayoutUser")
   salaryLines              SalaryLine[]
   compensationProfiles     CompensationProfile[]
   compensationProfilesApproved CompensationProfile[] @relation("CompensationProfileApprover")

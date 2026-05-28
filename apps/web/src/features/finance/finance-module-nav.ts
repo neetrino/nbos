@@ -21,6 +21,7 @@ const FINANCE_EXPENSES_PREFIX = '/finance/expenses';
 
 export const FINANCE_OVERVIEW_NAV: PageHeroNavLinkItem[] = [
   { href: '/finance/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/finance/unit-economics', label: 'Unit economics', icon: PieChart },
   { href: '/finance/reports', label: 'Reports', icon: FileChartColumn },
   { href: '/finance/journal', label: 'Journal', icon: ScrollText },
 ];

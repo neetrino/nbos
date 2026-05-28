@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { PayrollRunStatusBadge } from '@/features/finance/components/payroll/payroll-run-status-badge';
 import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
+import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
 import { PayrollRunBonusReleasesSection } from '@/features/finance/components/payroll/payroll-run-bonus-releases-section';
 import { PayrollRunDetailActions } from '@/features/finance/components/payroll/PayrollRunDetailActions';
 import { PayrollRunEmployeeSalesKpiSection } from '@/features/finance/components/payroll/payroll-run-employee-sales-kpi-section';
@@ -174,19 +175,26 @@ export function PayrollRunDetailPageContent({
         </p>
       ) : null}
 
-      <PayrollRunSalesKpiSection
-        run={run}
-        scorecardMetrics={run.salesKpiScorecardMetrics}
-        onUpdated={setRun}
-      />
+      <PayrollAllocationMatrixWorkspace payrollRunId={payrollRunId} />
 
-      <PayrollRunEmployeeSalesKpiSection
-        run={run}
-        scorecardMetrics={run.salesKpiScorecardMetrics}
-        onUpdated={setRun}
-      />
-
-      <PayrollRunBonusReleasesSection run={run} onRunUpdated={setRun} />
+      <details className="border-border bg-card group rounded-xl border">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">
+          Sales KPI & bonus releases
+        </summary>
+        <div className="flex flex-col gap-4 px-4 pb-4">
+          <PayrollRunSalesKpiSection
+            run={run}
+            scorecardMetrics={run.salesKpiScorecardMetrics}
+            onUpdated={setRun}
+          />
+          <PayrollRunEmployeeSalesKpiSection
+            run={run}
+            scorecardMetrics={run.salesKpiScorecardMetrics}
+            onUpdated={setRun}
+          />
+          <PayrollRunBonusReleasesSection run={run} onRunUpdated={setRun} />
+        </div>
+      </details>
 
       <PayrollRunSalaryLinesTable lines={run.salaryLines} onOpenMonth={setOpenSalaryLineId} />
 

@@ -1,6 +1,12 @@
 import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
+import { PayrollAllocationMatrixService } from './payroll-allocation-matrix.service';
+import type {
+  CreatePayrollMatrixManualBonusBody,
+  PatchPayrollMatrixCellBody,
+  PatchPayrollMatrixLayoutBody,
+} from './payroll-allocation-matrix.types';
 import {
   PayrollRunsService,
   type PatchPayrollRunBody,
@@ -11,7 +17,10 @@ import {
 @ApiBearerAuth()
 @Controller('payroll-runs')
 export class PayrollRunsController {
-  constructor(private readonly payrollRunsService: PayrollRunsService) {}
+  constructor(
+    private readonly payrollRunsService: PayrollRunsService,
+    private readonly payrollAllocationMatrixService: PayrollAllocationMatrixService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -114,6 +123,59 @@ export class PayrollRunsController {
   })
   async getSalaryLineMonthDetail(@Param('salaryLineId') salaryLineId: string) {
     return this.payrollRunsService.getSalaryLineMonthDetail(salaryLineId);
+  }
+
+  @Get(':id/allocation-matrix')
+  @ApiOperation({
+    summary: 'Payroll allocation matrix (employees × delivery payable units)',
+    description:
+      'Employee-centered or order-centered matrix data with cells, layout preference, and delivery unit funding totals.',
+  })
+  @ApiQuery({
+    name: 'viewMode',
+    required: false,
+    enum: ['EMPLOYEE_MATRIX', 'ORDER_MATRIX'],
+  })
+  async getAllocationMatrix(
+    @Param('id') id: string,
+    @Query('viewMode') viewMode: 'EMPLOYEE_MATRIX' | 'ORDER_MATRIX' | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.getMatrix(
+      id,
+      user.id,
+      viewMode ?? 'EMPLOYEE_MATRIX',
+    );
+  }
+
+  @Patch(':id/allocation-matrix/layout')
+  @ApiOperation({ summary: 'Persist payroll matrix row/column order and pinned units' })
+  async patchAllocationMatrixLayout(
+    @Param('id') id: string,
+    @Body() body: PatchPayrollMatrixLayoutBody,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.patchLayout(id, user.id, body);
+  }
+
+  @Patch(':id/allocation-matrix/cells')
+  @ApiOperation({ summary: 'Update bonus release amount for a matrix cell' })
+  async patchAllocationMatrixCell(
+    @Param('id') id: string,
+    @Body() body: PatchPayrollMatrixCellBody,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.patchCell(id, user.id, body);
+  }
+
+  @Post(':id/allocation-matrix/manual-bonus')
+  @ApiOperation({ summary: 'Create manual bonus from a gray matrix cell' })
+  async createAllocationMatrixManualBonus(
+    @Param('id') id: string,
+    @Body() body: CreatePayrollMatrixManualBonusBody,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.createManualBonus(id, user.id, body);
   }
 
   @Get(':id/bonus-releases')

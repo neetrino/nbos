@@ -43,8 +43,8 @@ const INITIAL_FILTERS = {
   [BONUS_POOLS_FILTER_STATUS_KEY]: 'all',
 };
 
-export function BonusPoolsPageContent() {
-  useFinanceDocumentTitle(bonusProjectPoolsPageTitle());
+export function BonusPoolsPageContent(props: { documentTitle?: string }) {
+  useFinanceDocumentTitle(props.documentTitle ?? bonusProjectPoolsPageTitle());
 
   const [rows, setRows] = useState<BonusProductPoolRow[]>([]);
   const [loading, setLoading] = useState(true);

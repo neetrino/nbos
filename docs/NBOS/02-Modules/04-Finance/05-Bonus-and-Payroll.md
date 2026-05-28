@@ -653,6 +653,42 @@ Payroll status:
 
 ---
 
+## Payroll Run Workspace v2 (Allocation Matrix)
+
+`/finance/payroll` remains the payroll run index. `/finance/payroll/[id]` is the monthly work screen.
+
+### Delivery Payable Unit
+
+Matrix columns are **Delivery Payable Units**: `Order` rows of type `PRODUCT` or `EXTENSION` that represent delivery work and team bonuses. Domain, hosting, license, and pass-through service orders are excluded unless explicitly modeled as delivery-payable.
+
+Units included in the matrix:
+
+- open / in-progress delivery units;
+- closed units with unpaid bonus remaining;
+- units pinned for extra/manual bonus;
+- units with releases already on the current payroll run.
+
+### Allocation Matrix views
+
+Inside payroll run detail:
+
+| View            | Rows                     | Columns                |
+| --------------- | ------------------------ | ---------------------- |
+| Employee matrix | Employees (+ fix salary) | Delivery payable units |
+| Order matrix    | Delivery payable units   | Employees              |
+
+Cell states: unlinked (gray), linked empty (blue), release set (green), manual (orange), extra bonus, over funding.
+
+Finance edits **Bonus Release** amounts before approval. Partial release carries remainder forward. Extra / over funding require reason. Gray cells create manual bonuses.
+
+Row/column order persists per user, per payroll run, per view mode (`PayrollMatrixLayoutPreference`).
+
+### Unit Economics Board
+
+Operational finance screen at `/finance/unit-economics` (Finance Overview). Shows product/order financial state: received, expenses, bonuses, available cash, margin. Replaces narrow “bonus pool only” thinking; bonus pool metrics are one section of unit economics.
+
+---
+
 ## Связи с другими модулями
 
 ```text
