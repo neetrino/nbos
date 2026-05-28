@@ -20,10 +20,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import {
+  PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
   PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
   PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
   PAYROLL_MATRIX_STICKY_HEADER_BG,
   PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
+  PAYROLL_MATRIX_TABLE_CLASS,
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import { cn } from '@/lib/utils';
 
@@ -162,8 +164,8 @@ export function PayrollAllocationMatrixTableShell(props: {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <table className="w-max min-w-full border-collapse text-xs">
-        <thead className="sticky top-0 z-20">
+      <table className={PAYROLL_MATRIX_TABLE_CLASS}>
+        <thead>
           <tr>
             <th
               className={cn(
@@ -230,6 +232,7 @@ function SortableMatrixColumnHeader(props: {
       style={style}
       className={cn(
         PAYROLL_MATRIX_STICKY_HEADER_BG,
+        PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
         'border-border min-w-[7.5rem] border-r border-b px-2 py-2 text-left align-bottom',
         active && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
         isDragging && 'opacity-70',
