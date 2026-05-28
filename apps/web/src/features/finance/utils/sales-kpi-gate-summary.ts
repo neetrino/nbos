@@ -28,7 +28,7 @@ export function buildSalesKpiGateSummary(
     return null;
   }
   if (!hasPlan || !hasActual || plan < 0 || actual < 0) {
-    return 'Sales KPI inputs are set on this payroll run. Included sales bonuses scale at attach per run KPI (see Payroll run workspace).';
+    return 'Sales KPI plan/actual are incomplete in the synced snapshot. Included Sales bonuses scale at attach per KPI policy.';
   }
   const pct = plan > 0 ? Math.round((actual / plan) * 100) : 0;
   const scale = salesKpiPayoutScaleLabel(plan, actual);

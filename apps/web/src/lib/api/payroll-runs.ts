@@ -145,10 +145,14 @@ export interface PayrollRunDetail extends PayrollRunListRow {
   auditTrail: PayrollAuditTrailRow[];
 }
 
+export type EmployeeSalesKpiSource = 'KPI_RESULT' | 'NO_KPI_POLICY' | 'NOT_SYNCED';
+
 export interface EmployeeSalesKpiDetail {
   planAmount: string | null;
   actualAmount: string | null;
-  source: 'RUN_DEFAULT' | 'LINE_OVERRIDE';
+  attainmentPct: string | null;
+  payoutFactor: string | null;
+  source: EmployeeSalesKpiSource;
   effectivePayoutScaleLabel: string | null;
 }
 
@@ -220,8 +224,6 @@ export interface SalaryLineMonthDetail {
   payrollRun: {
     id: string;
     status: PayrollRunStatus;
-    kpiSalesPlanAmount: string | null;
-    kpiSalesActualAmount: string | null;
   };
   employeeSalesKpi: EmployeeSalesKpiDetail;
   salaryLine: {
@@ -236,8 +238,6 @@ export interface SalaryLineMonthDetail {
     paidAmount: string;
     remainingAmount: string;
     compensationProfileId: string | null;
-    kpiSalesPlanAmount: string | null;
-    kpiSalesActualAmount: string | null;
   };
   expense: {
     id: string;

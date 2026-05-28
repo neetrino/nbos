@@ -7,12 +7,8 @@ import {
   deriveBonusPolicyBreakdownStatuses,
 } from './bonus-policy-breakdown-status';
 import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
-import {
-  resolveEmployeeSalesKpi,
-  salesKpiPayoutFactorFromSnapshot,
-} from './resolve-employee-sales-kpi';
 import { sumPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
-import { buildEmployeeSalesKpiDetail } from './employee-sales-kpi-month-detail';
+import { buildEmployeeSalesKpiDetailFromResult } from './employee-sales-kpi-month-detail';
 import type {
   SalaryLineMonthBonusRow,
   SalaryLineMonthDetailDto,
@@ -188,8 +184,6 @@ export async function querySalaryLineMonthDetail(
       remainingAmount: true,
       status: true,
       payrollCarryAppliedAmount: true,
-      kpiSalesPlanAmount: true,
-      kpiSalesActualAmount: true,
       employee: {
         select: { id: true, firstName: true, lastName: true, email: true, position: true },
       },
@@ -198,8 +192,6 @@ export async function querySalaryLineMonthDetail(
           id: true,
           payrollMonth: true,
           status: true,
-          kpiSalesPlanAmount: true,
-          kpiSalesActualAmount: true,
         },
       },
       expense: {
@@ -227,23 +219,32 @@ export async function querySalaryLineMonthDetail(
     line.employeeId,
     line.payrollRun.payrollMonth,
   );
-  const resolvedKpi = resolveEmployeeSalesKpi(
-    {
-      kpiSalesPlanAmount: line.kpiSalesPlanAmount,
-      kpiSalesActualAmount: line.kpiSalesActualAmount,
-    },
-    {
-      kpiSalesPlanAmount: line.payrollRun.kpiSalesPlanAmount,
-      kpiSalesActualAmount: line.payrollRun.kpiSalesActualAmount,
-    },
-  );
   const payrollPolicy = await resolveCompensationPayrollPolicyForEmployee(
     prisma,
     line.employeeId,
     line.payrollRun.payrollMonth,
   );
-  const kpiFactor = salesKpiPayoutFactorFromSnapshot(resolvedKpi, payrollPolicy.gateRules);
-  const employeeSalesKpi = buildEmployeeSalesKpiDetail(resolvedKpi, kpiFactor);
+  const kpiResultRow =
+    payrollPolicy.kpiPolicyId != null
+      ? await prisma.kpiResult.findFirst({
+          where: {
+            employeeId: line.employeeId,
+            period: line.payrollRun.payrollMonth,
+            kpiPolicyId: payrollPolicy.kpiPolicyId,
+            OR: [{ salaryLineId: line.id }, { payrollRunId: line.payrollRunId }],
+          },
+          select: {
+            planAmount: true,
+            actualAmount: true,
+            attainmentPct: true,
+            payoutFactor: true,
+          },
+        })
+      : null;
+  const employeeSalesKpi = buildEmployeeSalesKpiDetailFromResult({
+    kpiPolicyId: payrollPolicy.kpiPolicyId,
+    result: kpiResultRow,
+  });
 
   const summaryAgg = aggregateBonusBreakdownSummary(
     bonusBreakdown.map((row) => ({
@@ -276,8 +277,6 @@ export async function querySalaryLineMonthDetail(
     payrollRun: {
       id: line.payrollRun.id,
       status: line.payrollRun.status,
-      kpiSalesPlanAmount: line.payrollRun.kpiSalesPlanAmount?.toFixed(2) ?? null,
-      kpiSalesActualAmount: line.payrollRun.kpiSalesActualAmount?.toFixed(2) ?? null,
     },
     salaryLine: {
       id: line.id,
@@ -294,14 +293,6 @@ export async function querySalaryLineMonthDetail(
       paidAmount: money(line.paidAmount),
       remainingAmount: money(line.remainingAmount),
       compensationProfileId: line.compensationProfileId,
-      kpiSalesPlanAmount:
-        line.kpiSalesPlanAmount != null && line.kpiSalesPlanAmount.gt(0)
-          ? money(line.kpiSalesPlanAmount)
-          : null,
-      kpiSalesActualAmount:
-        line.kpiSalesActualAmount != null && line.kpiSalesActualAmount.gt(0)
-          ? money(line.kpiSalesActualAmount)
-          : null,
     },
     expense: line.expense
       ? {
