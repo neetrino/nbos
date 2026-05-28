@@ -54,36 +54,36 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 
 ### API (compensation / policy)
 
-| Route                                                        | Purpose                                                             |
-| ------------------------------------------------------------ | ------------------------------------------------------------------- |
-| `GET/POST/PATCH /api/bonus-policies`                         | List, create, update bonus policy bundles                           |
-| `GET/POST/PATCH /api/compensation-profiles`                  | Profile versions + `bonusPolicyId` / `kpiPolicyId`                  |
-| `GET/POST/PATCH /api/kpi-policies`                           | KPI gate templates                                                  |
-| `GET /api/payroll-runs/:id`                                  | Run detail + scorecard metrics + payment KPI hints (run + per line) |
-| `PATCH /api/payroll-runs/:id`                                | Run-level sales KPI plan/actual                                     |
-| `PATCH /api/payroll-runs/:id/salary-lines/:lineId/sales-kpi` | Per-employee sales KPI override                                     |
-| `GET /api/payroll-runs/salary-lines/:id/month-detail`        | Month sheet + `employeeSalesKpi` + breakdown                        |
-| `GET /api/payroll-runs/:id/allocation-matrix`                | Matrix read (`viewMode` employee \| order)                          |
-| `PATCH …/allocation-matrix/layout`, `POST …/layout/reset`    | Column/row order + pin persistence                                  |
-| `PATCH …/allocation-matrix/cells`, `POST …/manual-bonus`     | Release edit + gray-cell manual bonus                               |
-| `PATCH …/planned-bonus`, `PATCH …/reassign-recipient`        | Planned amount + recipient change (pre-approval)                    |
-| `GET …/allocation-matrix/validation`                         | Blocks REVIEW/APPROVED when rules fail                              |
-| `GET /api/unit-economics`                                    | Per delivery unit: invoiced, cash, expenses, pools, margin          |
-| `GET /api/unit-economics/orders/:orderId`                    | Drill-down: invoice + payment lines for one delivery unit           |
+| Route                                                        | Purpose                                                              |
+| ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| `GET/POST/PATCH /api/bonus-policies`                         | List, create, update bonus policy bundles                            |
+| `GET/POST/PATCH /api/compensation-profiles`                  | Profile versions + `bonusPolicyId` / `kpiPolicyId`                   |
+| `GET/POST/PATCH /api/kpi-policies`                           | KPI gate templates                                                   |
+| `GET /api/payroll-runs/:id`                                  | Run detail + scorecard metrics + payment KPI hints (run + per line)  |
+| `PATCH /api/payroll-runs/:id`                                | Run-level sales KPI plan/actual                                      |
+| `PATCH /api/payroll-runs/:id/salary-lines/:lineId/sales-kpi` | Per-employee sales KPI override                                      |
+| `GET /api/payroll-runs/salary-lines/:id/month-detail`        | Month sheet + `employeeSalesKpi` + breakdown                         |
+| `GET /api/payroll-runs/:id/allocation-matrix`                | Matrix read (`viewMode` employee \| order)                           |
+| `PATCH …/allocation-matrix/layout`, `POST …/layout/reset`    | Column/row order + pin persistence                                   |
+| `PATCH …/allocation-matrix/cells`, `POST …/manual-bonus`     | Release edit + gray-cell manual bonus                                |
+| `PATCH …/planned-bonus`, `PATCH …/reassign-recipient`        | Planned amount + recipient change (pre-approval)                     |
+| `GET …/allocation-matrix/validation`                         | Blocks REVIEW/APPROVED when rules fail                               |
+| `GET /api/unit-economics`                                    | Per delivery unit + `projects` / `products` roll-ups; In/Out/Balance |
+| `GET /api/unit-economics/orders/:orderId`                    | Drill-down + `bonusBreakdown` for Bonus breakdown sheet              |
 
 ### Payroll allocation matrix + unit economics (2026-05)
 
-| Area                    | Shipped | Notes                                                                                    |
-| ----------------------- | ------- | ---------------------------------------------------------------------------------------- |
-| Matrix primary UX       | Yes     | Run detail; employee/order views; DnD, pin, reset; validation banner                     |
-| Manual bonus exceptions | Yes     | Gray/empty cells + Bonus Board dialog (`title`, `reason`, `originalAmount`)              |
-| Bonus audit read        | Yes     | `BonusEntryAuditPanel` in matrix cell dialog and bonus entry releases sheet              |
-| Unit economics board    | Yes     | Overview, Funding/cash, Expenses, Profitability, Bonus pools (`GET /api/unit-economics`) |
-| UE drill-down           | Partial | Invoices/payments sheet per unit; expenses/bonuses source lists still backlog            |
+| Area                    | Shipped | Notes                                                                                |
+| ----------------------- | ------- | ------------------------------------------------------------------------------------ |
+| Matrix primary UX       | Yes     | Run detail; employee/order views; DnD, pin, reset; validation banner                 |
+| Manual bonus exceptions | Yes     | Gray/empty cells + Bonus Board dialog (`title`, `reason`, `originalAmount`)          |
+| Bonus audit read        | Yes     | `BonusEntryAuditPanel` in matrix cell dialog and bonus entry releases sheet          |
+| Unit economics board    | Yes     | By unit, project, product, Cash, Outflows, Profitability (`GET /api/unit-economics`) |
+| UE drill-down           | Yes     | Invoices, payments, expenses, bonuses; Bonus breakdown via order `bonusBreakdown`    |
 
 ### Residual (canon backlog)
 
-- Per-delivery-unit invoice/payment drill-down on Unit Economics (canon in `06-PnL-Reports.md`).
+- Planned non-bonus expenses in Unit Economics Out (future; expense plans are project-scoped).
 - Full bonus recipient audit timeline (beyond last N rows in sheet).
 - Bonus policy template parameters beyond name/notes (per-template config UI).
 - KPI scorecard metrics per non-sales role (sales plan/actual links ship on `kpi_policies`).
@@ -103,7 +103,7 @@ Use after deploy or large UX change:
 4. **Bonus board** — release ledger; Early/Extra/Over funding badges; payroll month grouping.
 5. **Wallet** — read-only month sheet; no Finance edit links.
 6. **Payroll run** — allocation matrix: reorder columns/rows, edit release, planned bonus, reassign; validation before REVIEW; manual bonus from gray cell; audit in cell dialog.
-7. **Unit economics** — five tabs; totals bar; links to delivery units; bonus pools tab matches committed pools.
+7. **Unit economics** — By unit / project / product tabs; Cash = received − spent; drill-down all tabs; Bonus breakdown from order detail; `/finance/bonus-pools` → redirect only.
 
 ## Follow-up (out of MVP roadmap closure)
 

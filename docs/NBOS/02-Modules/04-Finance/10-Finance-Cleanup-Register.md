@@ -86,13 +86,14 @@ Runtime ещё содержит расширенный `BonusStatusEnum`:
 - `GET/PATCH` payroll allocation matrix (employees × delivery payable units), layout persistence, cell release edit;
 - matrix: column/row DnD, pin, reset layout, planned bonus edit, recipient reassign, manual gray-cell bonus, validation banner, cell audit read;
 - pre-review/approve matrix validation; carry/KPI notify on matrix attach;
-- `GET /api/unit-economics` + `/finance/unit-economics` (In/Out/Balance per unit, by project); `/finance/bonus-pools` redirects here; legacy bonus-pools page UI removed;
+- `GET /api/unit-economics` + `/finance/unit-economics` (In/Out/Balance; by project + by product); `/finance/bonus-pools` redirects here; legacy bonus-pools page UI removed;
+- order detail `bonusBreakdown`; Bonus breakdown sheet loads from UE order detail (not full product pools list);
 - Bonus Board manual create: `title`, `reason`, `originalAmount`, audit log; audit panel on entry sheet + matrix cell dialog;
 - docs: `05-Bonus-and-Payroll`, `04-Finance-Pages`, `03-Core-Entities`, `06-PnL-Reports` (matrix + UE sections).
 
 **Остаётся:**
 
-- Unit Economics: product-level roll-up; planned non-bonus expenses in Out (future);
+- Unit Economics: planned non-bonus expenses in Out (future — project-scoped expense plans need allocation rule);
 - bonus recipient full history UI (beyond last N audit rows);
 - layout-change audit (optional);
 - full matrix E2E / manual QA checklist in `todo.md` Phase 8.

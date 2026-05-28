@@ -11,9 +11,9 @@
 | 1 Documentation             | 🟢     | Canon + UI spec + entities + P&L + cleanup/audit/roadmap cross-links (2026-05 slice) |
 | 2 Payroll Run Detail UX     | 🟢     | Matrix primary UX, row/column DnD, pin, reset, context panels, cell dialogs          |
 | 3 Bonus logic / manual form | 🟢     | KPI payable + free planned-amount edit on bonus card (any sum, reason, audit)        |
-| 4 Unit Economics Board      | 🟡     | UE v2: In/Out/Balance; by project; `/finance/bonus-pools` → redirect only            |
-| 5 API / data model          | 🟡     | Matrix, UE money sides API; KPI payable shipped; canon sync optional                 |
-| 6 Frontend                  | 🟡     | Payroll matrix + Salary Board KPI + UE v2 UI; bonus-pools nav removed                |
+| 4 Unit Economics Board      | 🟡     | UE v2 In/Out/Balance; by project + product; bonus-pools removed; planned exp. future |
+| 5 API / data model          | 🟡     | Matrix + UE roll-ups + order bonusBreakdown shipped; planned expenses in Out future  |
+| 6 Frontend                  | 🟡     | Payroll matrix + Salary Board KPI + UE v2 tabs; bonus-pools nav removed              |
 | 7 Validation / audit        | 🟡     | Matrix validation + bonus audit read shipped; layout-change audit optional           |
 | 8 Tests / QA                | 🟡     | 160+ API unit tests; E2E / manual QA on payroll + Salary Board KPI pending           |
 
@@ -25,10 +25,10 @@ KPI / Sales payable architecture is **done** — do not re-add manual KPI sync, 
 
 | Area    | Next                                                                               |
 | ------- | ---------------------------------------------------------------------------------- |
-| Phase 4 | UE v2 follow-up: product-level roll-up, planned expenses in Out, richer drill-down |
+| Phase 4 | Planned non-bonus expenses in Out (future — needs project→unit allocation rule)    |
 | Phase 7 | Optional audit for matrix layout changes; approval validation edge cases           |
 | Phase 8 | E2E / manual QA: payroll matrix, Salary Board KPI tabs, attach with delayed payout |
-| Docs    | Align `05-Bonus-and-Payroll.md` + UI spec with event-driven KPI + `payableAmount`  |
+| Docs    | Keep `05-Bonus-and-Payroll.md` + audit register aligned after UE API v2 slice      |
 
 **Ops / repair (not daily Finance workflow):** `POST /api/scheduler/sales-kpi-month-close`, `POST /api/scheduler/sales-kpi-backfill-all`.
 
@@ -122,21 +122,20 @@ Rules:
 
 ### Unit Economics
 
-`Unit Economics` is the financial state of a Product / Extension / Order.
+`Unit Economics` is the **operational money hub** for a Product / Extension / Order.
 
-It includes:
+Money sides:
 
-- invoices;
-- payments received;
-- receivables remaining;
-- expenses;
-- planned bonuses;
-- released bonuses;
-- paid bonuses;
-- available cash;
-- expected profitability;
-- actual profitability;
-- over-funding risks.
+- **In:** received + receivable (invoiced, not yet paid);
+- **Out (fact):** journal expenses booked on the unit;
+- **Out (committed):** fact out + remaining bonus plan;
+- **Balance:** cash = received − fact out; margin after commitments = received − out committed.
+
+It includes drill-down to invoices, payments, expenses, bonuses, and order-scoped **Bonus breakdown** (not a separate Finance page).
+
+Roll-ups: by delivery unit, by project, by product/extension (`GET /api/unit-economics` → `projects`, `products`).
+
+Future: planned non-bonus expenses in Out (expense plans are project-scoped today — allocation rule TBD).
 
 ---
 
@@ -1105,6 +1104,13 @@ Add tests for:
 3. Order-centered view → approve run → expense cards → partial Pay Now → line paid/remaining.
 4. Close run (read-only) → Unit Economics drill-down to invoices/payments/expenses/bonuses.
 
+**Unit Economics v2 (regression):**
+
+1. By unit / By project / By product tabs show consistent totals.
+2. Cash tab: cash balance = received − spent (not legacy available funding as hub metric).
+3. Drill-down sheet: all four tabs load; Bonus breakdown opens pool sheet without loading all product pools.
+4. `/finance/bonus-pools` redirects to Unit Economics only.
+
 ---
 
 ## Phase 9 - Implementation Order
@@ -1118,11 +1124,13 @@ Add tests for:
 - [x] Allocation matrix API, layout persistence, manual bonus from gray cell
 - [x] Salary Board KPI strip + month sheet (General / Bonuses / KPI)
 - [x] Unit Economics tabs + drill-down (invoices, payments, expenses, bonuses)
+- [x] UE API v2: project/product roll-ups; order `bonusBreakdown`; bonus sheet from order detail
 
 ### Remaining (recommended order)
 
-1. E2E / manual QA — payroll matrix, Salary Board KPI, delayed-payout attach (Phase 8)
-2. Canon doc pass where still out of date (Phase 1)
+1. E2E / manual QA — payroll matrix, Salary Board KPI, delayed-payout attach, UE v2 tabs (Phase 8)
+2. Planned non-bonus expenses in Out when allocation rule is decided (Phase 4)
+3. Canon doc pass where still out of date (Phase 1)
 
 ---
 

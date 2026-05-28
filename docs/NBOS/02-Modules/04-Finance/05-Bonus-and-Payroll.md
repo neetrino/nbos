@@ -683,14 +683,34 @@ Finance edits **Bonus Release** amounts before approval. Partial release carries
 
 Row/column order persists per user, per payroll run, per view mode (`PayrollMatrixLayoutPreference`).
 
+### Sales KPI payable snapshot (event-driven)
+
+KPI configuration lives in **My Company / Compensation / KPI Policies**, not in Payroll Run Detail.
+
+| Concept        | Role                                                                         |
+| -------------- | ---------------------------------------------------------------------------- |
+| KPI Policy     | Reusable gate rules (bands, cap multiplier)                                  |
+| KPI Result     | Earned-month snapshot: plan, actual, attainment %, payout factor             |
+| BonusEntry     | `earnedPeriod`, `amount`, `kpiPayoutFactorAtFreeze`, `payableAmount`         |
+| Payroll attach | Uses **bonus earned period** + frozen `payableAmount`, not payroll month − 1 |
+
+Rules:
+
+- KPI snapshots refresh on business events (client payment, sales accrual) — not Finance manual month-close.
+- Calendar month roll-over implicitly freezes prior-month bonuses; optional scheduler repair endpoints only for ops.
+- Payroll shows KPI-adjusted amounts as part of bonus release facts (Salary Board month sheet, Wallet) — no standalone KPI workspace on payroll detail.
+- Bonus Board / matrix: **Adjust planned amount** — any sum, required reason, audit `PLANNED_BONUS_UPDATED`.
+
 ### Unit Economics Board
 
-Operational finance screen at `/finance/unit-economics` (Finance Overview). Shows product/order financial state: received, expenses, bonuses, available cash, margin. Replaces narrow “bonus pool only” thinking; bonus pool metrics are one section of unit economics.
+Operational finance hub at `/finance/unit-economics` (Finance Overview). **In / Out / Balance** per delivery unit; bonuses are part of Out, not a separate product area. `/finance/bonus-pools` redirects here.
 
-| API                             | Purpose                                                                                                                              |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `GET /api/unit-economics`       | Delivery-unit roll-up: payments received, journal expenses (`EXPENSE_PAYMENT` / `EXPENSE_CARD`), bonus pool totals, estimated margin |
-| `GET /api/bonus/products/pools` | Per-order bonus ledger roll-up; opened from Unit Economics “Bonus breakdown” (not a separate Finance page)                           |
+| API                                       | Purpose                                                                                                     |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `GET /api/unit-economics`                 | Items + `projects` + `products` roll-ups + totals (In/Out/Balance fields per unit)                          |
+| `GET /api/unit-economics/orders/:orderId` | Drill-down: invoices, payments, expenses, bonuses, `bonusBreakdown` (order-scoped pool for Bonus breakdown) |
+
+Web tabs: By unit, By project, By product, Cash, Outflows, Profitability. Bonus breakdown uses order detail — not `GET /api/bonus/products/pools` list.
 
 Payroll matrix APIs: `GET/PATCH /api/payroll-runs/:id/allocation-matrix` (+ layout, layout/reset, cells, manual-bonus, planned-bonus, reassign-recipient). Matrix cell patch and reassign trigger carry-over and sales KPI attach notifications where applicable. Planned bonus and recipient changes write `audit_logs` on `BonusEntry`.
 
