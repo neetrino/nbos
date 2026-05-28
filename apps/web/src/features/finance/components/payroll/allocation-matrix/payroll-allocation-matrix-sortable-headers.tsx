@@ -22,7 +22,6 @@ import { GripVertical } from 'lucide-react';
 import {
   PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
   PAYROLL_MATRIX_DATA_COL_WIDTH,
-  PAYROLL_MATRIX_DATA_COL_WIDTH_EXPANDED,
   PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
   PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
   PAYROLL_MATRIX_STICKY_HEADER_BG,
@@ -252,7 +251,6 @@ function SortableMatrixColumnHeader(props: {
         PAYROLL_MATRIX_STICKY_HEADER_BG,
         PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
         PAYROLL_MATRIX_DATA_COL_WIDTH,
-        expanded && PAYROLL_MATRIX_DATA_COL_WIDTH_EXPANDED,
         'border-border border-r border-b px-2 py-2 text-left align-bottom',
         expanded && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
         isDragging && 'opacity-70',
