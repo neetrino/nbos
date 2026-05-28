@@ -338,7 +338,42 @@ export const payrollRunsApi = {
     );
     return resp.data;
   },
+
+  async getKpiResults(payrollRunId: string): Promise<PayrollRunKpiResults> {
+    const resp = await api.get<PayrollRunKpiResults>(
+      `/api/payroll-runs/${payrollRunId}/kpi-results`,
+    );
+    return resp.data;
+  },
+
+  async syncSalesKpiResults(payrollRunId: string): Promise<PayrollRunKpiResults> {
+    const resp = await api.post<PayrollRunKpiResults>(
+      `/api/payroll-runs/${payrollRunId}/kpi-results/sync-sales`,
+    );
+    return resp.data;
+  },
 };
+
+export interface PayrollRunKpiResultRow {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  period: string;
+  kpiPolicyId: string | null;
+  compensationProfileId: string | null;
+  planAmount: string | null;
+  actualAmount: string | null;
+  attainmentPct: string | null;
+  payoutFactor: string;
+  source: string;
+  sourceFacts: unknown;
+}
+
+export interface PayrollRunKpiResults {
+  payrollRunId: string;
+  payrollMonth: string;
+  items: PayrollRunKpiResultRow[];
+}
 
 export interface PayrollRunBonusReleaseRow {
   id: string;
