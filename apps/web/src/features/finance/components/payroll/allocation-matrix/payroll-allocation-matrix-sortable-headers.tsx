@@ -111,6 +111,7 @@ export function PayrollAllocationMatrixTableShell(props: {
   columns: MatrixHeaderColumn[];
   rows: MatrixRowHeader[];
   cornerLabel: string;
+  cornerCount: number;
   activeColumnId: string | null;
   activeRowId: string | null;
   disabled: boolean;
@@ -124,6 +125,7 @@ export function PayrollAllocationMatrixTableShell(props: {
     columns,
     rows,
     cornerLabel,
+    cornerCount,
     activeColumnId,
     activeRowId,
     disabled,
@@ -175,7 +177,12 @@ export function PayrollAllocationMatrixTableShell(props: {
                 'border-border sticky top-0 left-0 z-50 border-r border-b px-3 py-2 text-left text-xs font-semibold tracking-wide uppercase',
               )}
             >
-              {cornerLabel}
+              <span className="flex items-baseline gap-1.5">
+                <span>{cornerLabel}</span>
+                <span className="text-muted-foreground text-[10px] font-medium normal-case tabular-nums">
+                  {cornerCount}
+                </span>
+              </span>
             </th>
             <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
               {columns.map((col) => (

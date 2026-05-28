@@ -111,6 +111,7 @@ export function PayrollAllocationMatrixGrid(props: {
         columns={headerColumns}
         rows={rows}
         cornerLabel={cornerLabel}
+        cornerCount={rows.length}
         activeColumnId={activeColumnId}
         activeRowId={activeRowId}
         disabled={layoutDisabled}
