@@ -7,7 +7,12 @@ vi.mock('./sync-sales-kpi-line', () => ({
   syncSalesKpiForEarnedPeriodEmployee: vi.fn(),
 }));
 
+vi.mock('../bonus/sales-bonus-kpi-payable', () => ({
+  backfillSalesBonusPayablesForEarnedPeriod: vi.fn().mockResolvedValue(3),
+}));
+
 import { syncSalesKpiForEarnedPeriodEmployee } from './sync-sales-kpi-line';
+import { backfillSalesBonusPayablesForEarnedPeriod } from '../bonus/sales-bonus-kpi-payable';
 
 describe('runSalesKpiMonthClose', () => {
   it('syncs KPI for each distinct employee with an active KPI policy', async () => {
@@ -26,7 +31,9 @@ describe('runSalesKpiMonthClose', () => {
       earnedPeriod: '2026-03',
       syncedCount: 1,
       skippedCount: 1,
+      refreshedPayableCount: 3,
     });
+    expect(backfillSalesBonusPayablesForEarnedPeriod).toHaveBeenCalledWith(prisma, '2026-03');
     expect(syncSalesKpiForEarnedPeriodEmployee).toHaveBeenCalledTimes(2);
     expect(syncSalesKpiForEarnedPeriodEmployee).toHaveBeenCalledWith(prisma, {
       employeeId: 'e1',

@@ -84,6 +84,17 @@ export class SchedulerController {
     return this.schedulerService.runSalesKpiMonthClose(body);
   }
 
+  @Post('sales-kpi-backfill-all')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Repair Sales KPI + payable snapshots for every earned month with Sales bonuses',
+    description:
+      'Runs month-close sync + open-bonus payable refresh for each distinct `earnedPeriod` on Sales bonus entries. Use after migrations or data fixes.',
+  })
+  async runSalesKpiBackfillAll() {
+    return this.schedulerService.runSalesKpiBackfillAll();
+  }
+
   @Post('support-sla-escalation')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

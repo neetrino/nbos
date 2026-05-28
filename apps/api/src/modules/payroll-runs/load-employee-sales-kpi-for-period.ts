@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@nbos/database';
+import { type Decimal, type PrismaClient } from '@nbos/database';
 
 import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
 import {
@@ -18,10 +18,10 @@ type Db = Pick<
 >;
 
 type KpiResultRow = {
-  planAmount: { toFixed: (n: number) => string } | null;
-  actualAmount: { toFixed: (n: number) => string } | null;
-  attainmentPct: { toFixed: (n: number) => string } | null;
-  payoutFactor: { toFixed: (n: number) => string };
+  planAmount: Decimal | null;
+  actualAmount: Decimal | null;
+  attainmentPct: Decimal | null;
+  payoutFactor: Decimal;
 };
 
 export type EmployeeSalesKpiForPayoutMonth = EmployeeSalesKpiDetailDto & {

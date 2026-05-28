@@ -1,4 +1,4 @@
-import { Decimal, type PrismaClient } from '@nbos/database';
+import { Decimal, type InputJsonValue, type PrismaClient } from '@nbos/database';
 
 import { resolveCompensationProfileForPayrollMonth } from '../compensation-profiles/resolve-active-compensation-profile';
 import { computeKpiGatePayoutFactor } from './kpi-gate-payout';
@@ -7,7 +7,7 @@ import { listSalesPaymentFactsForEmployee } from './payroll-run-suggested-sales-
 
 type Db = Pick<
   InstanceType<typeof PrismaClient>,
-  'kpiResult' | 'kpiPolicy' | 'compensationProfile'
+  'kpiResult' | 'kpiPolicy' | 'compensationProfile' | 'payment'
 >;
 
 type ActiveKpiPolicy = {
@@ -92,7 +92,7 @@ async function upsertSalesKpiResult(
       attainmentPct: params.pct,
       payoutFactor: params.factor,
       source: 'SYSTEM',
-      sourceFacts: params.sourceFacts,
+      sourceFacts: params.sourceFacts as InputJsonValue,
       ...payrollLink,
     },
     update: {
@@ -102,7 +102,7 @@ async function upsertSalesKpiResult(
       attainmentPct: params.pct,
       payoutFactor: params.factor,
       source: 'SYSTEM',
-      sourceFacts: params.sourceFacts,
+      sourceFacts: params.sourceFacts as InputJsonValue,
       ...payrollLink,
     },
   });
@@ -118,7 +118,11 @@ export async function syncSalesKpiForEarnedPeriodEmployee(
     return false;
   }
 
-  const facts = await listSalesPaymentFactsForEmployee(db, params.earnedPeriod, params.employeeId);
+  const facts = await listSalesPaymentFactsForEmployee(
+    db as InstanceType<typeof PrismaClient>,
+    params.earnedPeriod,
+    params.employeeId,
+  );
   const plan = loaded.policy.targetAmount;
   const actual = facts.total;
   const sourceFacts = {

@@ -2,6 +2,7 @@ import type { PrismaClient } from '@nbos/database';
 
 import { earnedSalesPeriodForPayoutMonth } from './earned-sales-kpi-period';
 import { isValidPayrollMonth } from './payroll-runs.constants';
+import { backfillSalesBonusPayablesForEarnedPeriod } from '../bonus/sales-bonus-kpi-payable';
 import { syncSalesKpiForEarnedPeriodEmployee } from './sync-sales-kpi-line';
 import type { SalesKpiMonthCloseResultDto } from './sales-kpi-month-close.types';
 
@@ -48,5 +49,32 @@ export async function runSalesKpiMonthClose(
     }
   }
 
-  return { earnedPeriod, syncedCount, skippedCount };
+  const refreshedPayableCount = await backfillSalesBonusPayablesForEarnedPeriod(
+    prisma,
+    earnedPeriod,
+  );
+
+  return { earnedPeriod, syncedCount, skippedCount, refreshedPayableCount };
+}
+
+/** Repair all earned months that have Sales bonus rows (post-migration backfill). */
+export async function backfillSalesKpiAndPayablesForAllEarnedPeriods(
+  prisma: InstanceType<typeof PrismaClient>,
+): Promise<SalesKpiMonthCloseResultDto[]> {
+  const periods = await prisma.bonusEntry.findMany({
+    where: { type: 'SALES', earnedPeriod: { not: null } },
+    select: { earnedPeriod: true },
+    distinct: ['earnedPeriod'],
+    orderBy: { earnedPeriod: 'asc' },
+  });
+
+  const results: SalesKpiMonthCloseResultDto[] = [];
+  for (const row of periods) {
+    const earnedPeriod = row.earnedPeriod?.trim();
+    if (earnedPeriod == null || !isValidPayrollMonth(earnedPeriod)) {
+      continue;
+    }
+    results.push(await runSalesKpiMonthClose(prisma, { earnedPeriod }));
+  }
+  return results;
 }

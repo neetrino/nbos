@@ -5,7 +5,7 @@ import { refreshSalesBonusesForEarnedMonth } from './sales-bonus-kpi-payable';
 
 type AttachDb = Pick<
   InstanceType<typeof PrismaClient>,
-  'bonusEntry' | 'kpiResult' | 'kpiPolicy' | 'compensationProfile'
+  'bonusEntry' | 'kpiResult' | 'kpiPolicy' | 'compensationProfile' | 'payment'
 >;
 
 export type SalesBonusPayableAtAttach = {

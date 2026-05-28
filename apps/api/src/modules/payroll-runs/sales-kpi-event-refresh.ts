@@ -13,7 +13,7 @@ export { earnedPeriodFromUtcDate };
 
 type Db = Pick<
   InstanceType<typeof PrismaClient>,
-  'bonusEntry' | 'kpiResult' | 'kpiPolicy' | 'compensationProfile' | 'invoice'
+  'bonusEntry' | 'kpiResult' | 'kpiPolicy' | 'compensationProfile' | 'payment' | 'invoice'
 >;
 
 /**

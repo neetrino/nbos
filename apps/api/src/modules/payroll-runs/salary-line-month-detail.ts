@@ -62,6 +62,9 @@ function mapBonusRow(
       status: string;
       type: string;
       amount: Decimal;
+      earnedPeriod: string | null;
+      payableAmount: Decimal | null;
+      kpiPayoutFactor: Decimal | null;
       orderId: string;
       project: { id: string; code: string; name: string };
       order: { code: string };
@@ -86,6 +89,12 @@ function mapBonusRow(
     kpiBurnedAmount: kpiBurned,
     payrollCarryOverAmount: carryOver,
   });
+  const isSales = release.bonusEntry.type === 'SALES';
+  const kpiFactor = release.bonusEntry.kpiPayoutFactor;
+  const kpiPayoutFactorPct =
+    isSales && kpiFactor != null
+      ? kpiFactor.mul(100).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toString()
+      : null;
   return {
     bonusEntryId: release.bonusEntry.id,
     bonusReleaseId: release.id,
@@ -104,6 +113,13 @@ function mapBonusRow(
       release.extension?.name ?? null,
     ),
     plannedAmount: money(planned),
+    earnedPeriod: isSales ? release.bonusEntry.earnedPeriod : null,
+    fullAmount: isSales ? money(release.bonusEntry.amount) : null,
+    payableAmount:
+      isSales && release.bonusEntry.payableAmount != null
+        ? money(release.bonusEntry.payableAmount)
+        : null,
+    kpiPayoutFactorPct,
     releaseAmount: money(release.amount),
     includedAmount: release.payrollIncludedAmount ? money(release.payrollIncludedAmount) : null,
     kpiBurnedAmount: kpiBurned ? money(kpiBurned) : null,
@@ -135,6 +151,9 @@ async function loadBonusBreakdown(
           status: true,
           type: true,
           amount: true,
+          earnedPeriod: true,
+          payableAmount: true,
+          kpiPayoutFactor: true,
           orderId: true,
           project: { select: { id: true, code: true, name: true } },
           order: { select: { code: true } },

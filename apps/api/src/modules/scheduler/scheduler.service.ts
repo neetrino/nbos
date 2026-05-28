@@ -7,6 +7,7 @@ import { ExpenseBacklogRemindersService } from '../expenses/expense-backlog-remi
 import { ExpensePlansService } from '../expenses/expense-plans.service';
 import { ReportsScheduleRunnerService } from '../reports/reports-schedule-runner.service';
 import { SalesKpiMonthCloseService } from '../payroll-runs/sales-kpi-month-close.service';
+import { backfillSalesKpiAndPayablesForAllEarnedPeriods } from '../payroll-runs/run-sales-kpi-month-close';
 import { SupportSlaOrchestrationService } from '../support/support-sla-orchestration.service';
 
 interface OverdueResult {
@@ -136,13 +137,20 @@ export class SchedulerService {
    * Sales KPI month-close: sync earned-month snapshots for all employees with an active KPI policy.
    * Same logic as optional in-process cron when {@link SALES_KPI_MONTH_CLOSE_ENABLED_ENV} is set.
    */
+  async runSalesKpiBackfillAll() {
+    this.logger.log('Scheduler: sales KPI + payable backfill (all earned periods)');
+    const results = await backfillSalesKpiAndPayablesForAllEarnedPeriods(this.prisma);
+    this.logger.log(`Sales KPI backfill: ${results.length} period(s) processed`);
+    return { periodsProcessed: results.length, results };
+  }
+
   async runSalesKpiMonthClose(body?: { earnedPeriod?: string }) {
     this.logger.log('Scheduler: sales KPI month-close');
     const result = await this.salesKpiMonthClose.run(
       body?.earnedPeriod != null ? { earnedPeriod: body.earnedPeriod } : undefined,
     );
     this.logger.log(
-      `Sales KPI month-close: earned=${result.earnedPeriod}, synced=${result.syncedCount}, skipped=${result.skippedCount}`,
+      `Sales KPI month-close: earned=${result.earnedPeriod}, synced=${result.syncedCount}, skipped=${result.skippedCount}, payables=${result.refreshedPayableCount}`,
     );
     return result;
   }

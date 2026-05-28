@@ -190,6 +190,10 @@ export interface SalaryLineMonthBonusRow {
   orderCode: string;
   productLabel: string;
   plannedAmount: string;
+  earnedPeriod: string | null;
+  fullAmount: string | null;
+  payableAmount: string | null;
+  kpiPayoutFactorPct: string | null;
   releaseAmount: string;
   includedAmount: string | null;
   kpiBurnedAmount: string | null;

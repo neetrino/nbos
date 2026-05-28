@@ -8,7 +8,7 @@ const logger = new Logger('SalesBonusKpiPayable');
 
 type Db = Pick<
   InstanceType<typeof PrismaClient>,
-  'bonusEntry' | 'kpiResult' | 'kpiPolicy' | 'compensationProfile'
+  'bonusEntry' | 'kpiResult' | 'kpiPolicy' | 'compensationProfile' | 'payment'
 >;
 
 /** Calendar earned month (UTC) for a payment or accrual timestamp. */
@@ -104,4 +104,20 @@ export async function refreshSalesBonusesForEmployeesEarnedMonth(
   for (const employeeId of unique) {
     await refreshSalesBonusesForEarnedMonth(db, { employeeId, earnedPeriod });
   }
+}
+
+/** Repair: refresh payable snapshots for every employee with Sales entries in the month. */
+export async function backfillSalesBonusPayablesForEarnedPeriod(
+  db: Db,
+  earnedPeriod: string,
+): Promise<number> {
+  const rows = await db.bonusEntry.findMany({
+    where: { type: 'SALES', earnedPeriod },
+    select: { employeeId: true },
+    distinct: ['employeeId'],
+  });
+  for (const row of rows) {
+    await refreshSalesBonusesForEarnedMonth(db, { employeeId: row.employeeId, earnedPeriod });
+  }
+  return rows.length;
 }

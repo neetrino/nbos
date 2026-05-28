@@ -51,6 +51,14 @@ export interface SalaryLineMonthBonusRow {
   orderCode: string;
   productLabel: string;
   plannedAmount: string;
+  /** Sales: calendar month when bonus was earned (`YYYY-MM`). */
+  earnedPeriod: string | null;
+  /** Sales: 100% policy amount before KPI gate. */
+  fullAmount: string | null;
+  /** Sales: amount × month KPI % (frozen when month rolls). */
+  payableAmount: string | null;
+  /** Sales: whole-number payout % (e.g. 50 for factor 0.5). */
+  kpiPayoutFactorPct: string | null;
   releaseAmount: string;
   includedAmount: string | null;
   /** Persisted SALES KPI reduction at payroll attach. */

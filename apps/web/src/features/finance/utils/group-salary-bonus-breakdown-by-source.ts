@@ -14,6 +14,7 @@ export type SalaryBonusBreakdownSourceGroup = {
   productLabel: string;
   orderCode: string;
   planned: number;
+  payable: number;
   released: number;
   burned: number;
   carryOver: number;
@@ -25,6 +26,7 @@ export type SalaryBonusBreakdownSourceGroup = {
 
 type GroupAcc = SalaryBonusBreakdownSourceGroup & {
   plannedByEntry: Map<string, number>;
+  payableByEntry: Map<string, number>;
 };
 
 function sourceKey(row: SalaryLineMonthBonusRow): string {
@@ -51,6 +53,7 @@ export function groupSalaryBonusBreakdownBySource(
         productLabel: row.productLabel,
         orderCode: row.orderCode,
         planned: 0,
+        payable: 0,
         released: 0,
         burned: 0,
         carryOver: 0,
@@ -59,11 +62,15 @@ export function groupSalaryBonusBreakdownBySource(
         remaining: 0,
         releaseCount: 0,
         plannedByEntry: new Map(),
+        payableByEntry: new Map(),
       };
       map.set(key, acc);
     }
 
-    acc.plannedByEntry.set(row.bonusEntryId, parseAmount(row.plannedAmount));
+    acc.plannedByEntry.set(row.bonusEntryId, parseAmount(row.fullAmount ?? row.plannedAmount));
+    if (row.payableAmount != null) {
+      acc.payableByEntry.set(row.bonusEntryId, parseAmount(row.payableAmount));
+    }
     acc.released += parseAmount(row.releaseAmount);
     if (row.kpiBurnedAmount) {
       acc.burned += parseAmount(row.kpiBurnedAmount);
@@ -88,6 +95,7 @@ export function groupSalaryBonusBreakdownBySource(
       productLabel: acc.productLabel,
       orderCode: acc.orderCode,
       planned: [...acc.plannedByEntry.values()].reduce((sum, v) => sum + v, 0),
+      payable: [...acc.payableByEntry.values()].reduce((sum, v) => sum + v, 0),
       released: acc.released,
       burned: acc.burned,
       carryOver: acc.carryOver,

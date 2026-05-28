@@ -27,6 +27,7 @@ export type BonusReleaseAttachTx = Pick<
   | 'compensationProfile'
   | 'kpiPolicy'
   | 'kpiResult'
+  | 'payment'
 >;
 
 export interface AttachBonusReleasesParams {
