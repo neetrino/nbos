@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { PageHero } from './PageHero';
 
 export type ModuleHeroSlots = {
-  /** When set, replaces layout-level zone tabs (e.g. payroll run detail title row). */
+  /** Replaces layout-level zone tabs (e.g. payroll run detail header). */
   tabs?: ReactNode;
   search?: ReactNode;
   viewMode?: ReactNode;

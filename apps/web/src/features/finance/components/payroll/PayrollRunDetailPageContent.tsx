@@ -12,9 +12,9 @@ import {
 } from '@/components/shared';
 import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-layout-hero-actions';
 import { PayrollAllocationMatrixStatsStrip } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-stats-strip';
-import { PayrollRunDetailHeroHeading } from '@/features/finance/components/payroll/PayrollRunDetailHeroHeading';
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
 import { PAYROLL_ALLOCATION_MATRIX_VIEW_OPTIONS } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-view-options';
+import { PayrollRunDetailHeroBar } from '@/features/finance/components/payroll/PayrollRunDetailHeroBar';
 import { PayrollRunDetailPageSettingsSheet } from '@/features/finance/components/payroll/PayrollRunDetailPageSettingsSheet';
 import { PayrollRunDetailStatusActions } from '@/features/finance/components/payroll/PayrollRunDetailStatusActions';
 import type {
@@ -24,7 +24,6 @@ import type {
 import { usePayrollRunJournalAuditCsvExport } from '@/features/finance/components/payroll/use-payroll-run-journal-audit-csv-export';
 import { usePayrollRunSalaryLinesCsvExport } from '@/features/finance/components/payroll/use-payroll-run-salary-lines-csv-export';
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
-import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   payrollRunsApi,
@@ -112,41 +111,12 @@ export function PayrollRunDetailPageContent({
     };
   }, [matrixTotals, run]);
 
-  const listHrefForRunMonth = run
-    ? payrollRunsListHref(undefined, {
-        payrollMonthFrom: run.payrollMonth,
-        payrollMonthTo: run.payrollMonth,
-      })
-    : '/finance/payroll';
-
   const moduleHeroSlots = useMemo(() => {
     if (!run) {
-      return {
-        tabs: (
-          <Link
-            href="/finance/payroll"
-            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm font-medium"
-          >
-            <ArrowLeft size={16} aria-hidden />
-            Back
-          </Link>
-        ),
-      };
+      return {};
     }
     return {
-      tabs: (
-        <PayrollRunDetailHeroHeading
-          payrollMonth={run.payrollMonth}
-          status={run.status}
-          backHref={listHrefForRunMonth}
-          lineCount={run.salaryLines.length}
-          expenseCount={run.materializedExpenseLineCount}
-          bonusReleaseCount={run.includedBonusReleaseCount}
-        />
-      ),
-      secondaryTabs: statsTotals ? (
-        <PayrollAllocationMatrixStatsStrip totals={statsTotals} variant="hero" />
-      ) : null,
+      tabs: <PayrollRunDetailHeroBar run={run} backHref="/finance/payroll" />,
       search: (
         <IntegratedSearchFilters
           search={matrixSearch}
@@ -195,11 +165,9 @@ export function PayrollRunDetailPageContent({
     handleReload,
     journalSubmitting,
     layoutHeroActions,
-    listHrefForRunMonth,
     matrixSearch,
     matrixViewMode,
     run,
-    statsTotals,
     statusBusy,
   ]);
 
@@ -225,7 +193,12 @@ export function PayrollRunDetailPageContent({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4">
+    <div className="flex h-full min-h-0 flex-col gap-5">
+      <p className="text-muted-foreground text-xs">
+        {run.salaryLines.length} lines · {run.materializedExpenseLineCount} expenses ·{' '}
+        {run.includedBonusReleaseCount} bonus releases
+      </p>
+
       {actionError ? <p className="text-destructive text-sm">{actionError}</p> : null}
 
       {run.status === 'APPROVED' || run.status === 'PAYING' || run.status === 'CLOSED' ? (
@@ -245,6 +218,8 @@ export function PayrollRunDetailPageContent({
           ) : null}
         </p>
       ) : null}
+
+      {statsTotals ? <PayrollAllocationMatrixStatsStrip totals={statsTotals} /> : null}
 
       <PayrollAllocationMatrixWorkspace
         payrollRunId={payrollRunId}
