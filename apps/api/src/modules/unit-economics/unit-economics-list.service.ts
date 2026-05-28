@@ -4,61 +4,19 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { sumPaymentsReceivedForOrder } from '../bonus/order-received-payments-sum';
 import { computeUnitEconomicsMoney, poolSnapshotFromRow } from './compute-unit-economics-money';
-import { computeReceivableAmount, sumInvoicedForOrder } from './order-invoice-totals';
 import {
-  CLOSED_DELIVERY_STATUSES,
-  DELIVERY_BONUS_ORDER_TYPES,
-} from '../payroll-runs/delivery-payable-unit.types';
+  isUnitEconomicsOrderOpen,
+  orderDisplayLabel,
+  productGroupForOrder,
+  UNIT_ECONOMICS_ORDER_TYPES,
+  type UnitEconomicsOrderType,
+} from './unit-economics-order.types';
+import { computeReceivableAmount, sumInvoicedForOrder } from './order-invoice-totals';
 import {
   rollupUnitEconomicsByProduct,
   rollupUnitEconomicsByProject,
 } from './unit-economics-rollups';
 import type { UnitEconomicsListDto, UnitEconomicsRowDto } from './unit-economics.types';
-
-function isDeliveryOpen(
-  productStatus: string | undefined,
-  extensionStatus: string | undefined,
-): boolean {
-  if (
-    productStatus &&
-    !CLOSED_DELIVERY_STATUSES.includes(productStatus as (typeof CLOSED_DELIVERY_STATUSES)[number])
-  ) {
-    return true;
-  }
-  if (
-    extensionStatus &&
-    !CLOSED_DELIVERY_STATUSES.includes(extensionStatus as (typeof CLOSED_DELIVERY_STATUSES)[number])
-  ) {
-    return true;
-  }
-  return false;
-}
-
-function unitLabel(order: {
-  code: string;
-  product: { name: string } | null;
-  extension: { name: string } | null;
-}): string {
-  if (order.product) return order.product.name;
-  if (order.extension) return order.extension.name;
-  return order.code;
-}
-
-function productGroupForOrder(order: {
-  product: { id: string; name: string } | null;
-  extension: { id: string; name: string; product: { id: string; name: string } } | null;
-}): { productGroupId: string | null; productGroupName: string } {
-  if (order.product) {
-    return { productGroupId: order.product.id, productGroupName: order.product.name };
-  }
-  if (order.extension) {
-    return {
-      productGroupId: order.extension.product.id,
-      productGroupName: order.extension.product.name,
-    };
-  }
-  return { productGroupId: null, productGroupName: '' };
-}
 
 async function sumExpensesPaidForOrder(
   prisma: InstanceType<typeof PrismaClient>,
@@ -93,15 +51,17 @@ export class UnitEconomicsListService {
 
   async list(): Promise<UnitEconomicsListDto> {
     const orders = await this.prisma.order.findMany({
-      where: { type: { in: [...DELIVERY_BONUS_ORDER_TYPES] } },
+      where: { type: { in: [...UNIT_ECONOMICS_ORDER_TYPES] } },
       select: {
         id: true,
         code: true,
         type: true,
+        status: true,
         projectId: true,
         productId: true,
         extensionId: true,
         project: { select: { code: true, name: true } },
+        deal: { select: { name: true, code: true, productType: true } },
         product: { select: { id: true, name: true, status: true } },
         extension: {
           select: {
@@ -163,7 +123,7 @@ export class UnitEconomicsListService {
       totalsAcc.cashBalance = totalsAcc.cashBalance.plus(decimalFrom(money.cashBalance));
       totalsAcc.outCommitted = totalsAcc.outCommitted.plus(decimalFrom(money.outCommittedAmount));
 
-      const label = unitLabel(order);
+      const label = orderDisplayLabel(order);
       const { productGroupId, productGroupName } = productGroupForOrder(order);
       items.push({
         orderId: order.id,
@@ -176,9 +136,14 @@ export class UnitEconomicsListService {
         extensionId: order.extensionId,
         productLabel: label,
         productGroupId,
-        productGroupName: productGroupName || label,
-        orderType: order.type as 'PRODUCT' | 'EXTENSION',
-        deliveryOpen: isDeliveryOpen(order.product?.status, order.extension?.status),
+        productGroupName,
+        orderType: order.type as UnitEconomicsOrderType,
+        deliveryOpen: isUnitEconomicsOrderOpen(
+          order.type,
+          order.status,
+          order.product?.status,
+          order.extension?.status,
+        ),
         ...money,
       });
     }

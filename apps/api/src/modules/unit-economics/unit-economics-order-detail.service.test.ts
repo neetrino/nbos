@@ -26,8 +26,10 @@ describe('UnitEconomicsOrderDetailService', () => {
           id: 'o1',
           code: 'ORD-1',
           type: 'PRODUCT',
-          product: { id: 'prod-1', name: 'App' },
+          status: 'ACTIVE',
+          product: { id: 'prod-1', name: 'App', status: 'DONE' },
           extension: null,
+          deal: null,
           projectId: 'p1',
           project: { code: 'PRJ', name: 'Project' },
           productBonusPool: {

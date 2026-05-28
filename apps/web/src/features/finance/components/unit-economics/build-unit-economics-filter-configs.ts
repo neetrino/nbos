@@ -20,6 +20,8 @@ export function buildUnitEconomicsFilterConfigs(
       options: [
         { value: 'PRODUCT', label: 'Product' },
         { value: 'EXTENSION', label: 'Extension' },
+        { value: 'OUTSOURCE', label: 'Outsource' },
+        { value: 'MAINTENANCE', label: 'Maintenance' },
       ],
     },
     {

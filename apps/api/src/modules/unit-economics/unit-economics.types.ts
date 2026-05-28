@@ -28,7 +28,7 @@ export type UnitEconomicsRowDto = {
   /** Product entity id for grouping extensions with their parent product. */
   productGroupId: string | null;
   productGroupName: string;
-  orderType: 'PRODUCT' | 'EXTENSION';
+  orderType: 'PRODUCT' | 'EXTENSION' | 'OUTSOURCE' | 'MAINTENANCE';
   deliveryOpen: boolean;
 } & UnitEconomicsMoneyFields;
 
@@ -179,7 +179,7 @@ export type UnitEconomicsOrderDetailDto = {
   label: string;
   projectCode: string;
   projectId: string;
-  orderType: 'PRODUCT' | 'EXTENSION';
+  orderType: 'PRODUCT' | 'EXTENSION' | 'OUTSOURCE' | 'MAINTENANCE';
   summary: UnitEconomicsMoneyFields;
   invoices: UnitEconomicsInvoiceLineDto[];
   payments: UnitEconomicsPaymentLineDto[];

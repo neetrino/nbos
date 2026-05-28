@@ -3,26 +3,20 @@ import { Decimal, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { sumPaymentsReceivedForOrder } from '../bonus/order-received-payments-sum';
-import { DELIVERY_BONUS_ORDER_TYPES } from '../payroll-runs/delivery-payable-unit.types';
-import { computeUnitEconomicsMoney, poolSnapshotFromRow } from './compute-unit-economics-money';
+import {
+  orderDisplayLabel,
+  UNIT_ECONOMICS_ORDER_TYPES,
+  type UnitEconomicsOrderType,
+} from './unit-economics-order.types';
 import { loadUnitEconomicsOrderBonusBreakdown } from './load-unit-economics-order-bonus-breakdown';
 import { loadUnitEconomicsOrderBonuses } from './load-unit-economics-order-bonuses';
 import { loadUnitEconomicsOrderExpenses } from './load-unit-economics-order-expenses';
 import { computeReceivableAmount, sumInvoicedForOrder } from './order-invoice-totals';
+import { computeUnitEconomicsMoney, poolSnapshotFromRow } from './compute-unit-economics-money';
 import type {
   UnitEconomicsOrderDetailDto,
   UnitEconomicsPaymentLineDto,
 } from './unit-economics.types';
-
-function unitLabel(order: {
-  code: string;
-  product: { name: string } | null;
-  extension: { name: string } | null;
-}): string {
-  if (order.product) return order.product.name;
-  if (order.extension) return order.extension.name;
-  return order.code;
-}
 
 function sumPaymentsOnInvoice(payments: { amount: Decimal }[]): Decimal {
   return payments.reduce((sum, p) => sum.plus(decimalFrom(p.amount)), BONUS_POOL_ZERO);
@@ -34,13 +28,22 @@ export class UnitEconomicsOrderDetailService {
 
   async getByOrderId(orderId: string): Promise<UnitEconomicsOrderDetailDto> {
     const order = await this.prisma.order.findFirst({
-      where: { id: orderId, type: { in: [...DELIVERY_BONUS_ORDER_TYPES] } },
+      where: { id: orderId, type: { in: [...UNIT_ECONOMICS_ORDER_TYPES] } },
       select: {
         id: true,
         code: true,
         type: true,
-        product: { select: { id: true, name: true } },
-        extension: { select: { id: true, name: true } },
+        status: true,
+        product: { select: { id: true, name: true, status: true } },
+        extension: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            product: { select: { id: true, name: true } },
+          },
+        },
+        deal: { select: { name: true, code: true, productType: true } },
         projectId: true,
         project: { select: { code: true, name: true } },
         productBonusPool: {
@@ -54,10 +57,10 @@ export class UnitEconomicsOrderDetailService {
       },
     });
     if (!order) {
-      throw new NotFoundException('Delivery unit not found');
+      throw new NotFoundException('Order not found in unit economics scope');
     }
 
-    const label = unitLabel(order);
+    const label = orderDisplayLabel(order);
     const [invoiced, received, expenses, bonuses, bonusBreakdown, invoiceRows] = await Promise.all([
       sumInvoicedForOrder(this.prisma, orderId),
       sumPaymentsReceivedForOrder(this.prisma, orderId),
@@ -131,7 +134,7 @@ export class UnitEconomicsOrderDetailService {
       label,
       projectCode: order.project.code,
       projectId: order.projectId,
-      orderType: order.type as 'PRODUCT' | 'EXTENSION',
+      orderType: order.type as UnitEconomicsOrderType,
       summary,
       invoices,
       payments,

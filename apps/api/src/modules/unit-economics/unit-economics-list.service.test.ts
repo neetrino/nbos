@@ -10,10 +10,12 @@ describe('UnitEconomicsListService', () => {
             id: 'o1',
             code: 'ORD-1',
             type: 'PRODUCT',
+            status: 'ACTIVE',
             projectId: 'p1',
             productId: 'prod-1',
             extensionId: null,
             project: { code: 'PRJ', name: 'Project' },
+            deal: null,
             product: { id: 'prod-1', name: 'App', status: 'DONE' },
             extension: null,
             productBonusPool: null,
@@ -44,10 +46,12 @@ describe('UnitEconomicsListService', () => {
             id: 'o2',
             code: 'ORD-2',
             type: 'EXTENSION',
+            status: 'ACTIVE',
             projectId: 'p1',
             productId: null,
             extensionId: 'ext-1',
             project: { code: 'PRJ', name: 'Project' },
+            deal: null,
             product: null,
             extension: {
               id: 'ext-1',
@@ -85,5 +89,42 @@ describe('UnitEconomicsListService', () => {
     expect(result.projects).toHaveLength(1);
     expect(result.products).toHaveLength(1);
     expect(result.products[0]?.kind).toBe('EXTENSION');
+  });
+
+  it('includes maintenance order when it has invoiced activity', async () => {
+    const prisma = {
+      order: {
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: 'o-maint',
+            code: 'ORD-M1',
+            type: 'MAINTENANCE',
+            status: 'ACTIVE',
+            projectId: 'p1',
+            productId: null,
+            extensionId: null,
+            project: { code: 'PRJ', name: 'Project' },
+            deal: { name: 'Support plan', code: 'D-9', productType: null },
+            product: null,
+            extension: null,
+            productBonusPool: null,
+          },
+        ]),
+      },
+      invoice: { aggregate: vi.fn().mockResolvedValue({ _sum: { amount: '150000' } }) },
+      payment: { aggregate: vi.fn().mockResolvedValue({ _sum: { amount: '50000' } }) },
+      operationalJournalEntry: {
+        aggregate: vi.fn().mockResolvedValue({ _sum: { functionalAmount: null } }),
+      },
+    };
+
+    const service = new UnitEconomicsListService(prisma as never);
+    const result = await service.list();
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.orderType).toBe('MAINTENANCE');
+    expect(result.items[0]?.label).toBe('Support plan');
+    expect(result.items[0]?.productGroupId).toBe('o-maint');
+    expect(result.items[0]?.receivedAmount).toBe('50000.00');
   });
 });
