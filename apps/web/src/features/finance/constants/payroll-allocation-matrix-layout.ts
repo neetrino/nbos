@@ -5,12 +5,13 @@ export const PAYROLL_MATRIX_STICKY_EDGE_WIDTH =
 /** Opaque sticky header tint — lighter than `--muted`, darker than `--card`. */
 export const PAYROLL_MATRIX_STICKY_HEADER_BG = 'bg-[oklch(0.982_0.002_90)]';
 
-/** Selected / expanded column header — matches matrix linked-cell sky tint. */
-export const PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG = 'bg-sky-500/15';
+/** Selected / expanded row or column — soft orange tint (distinct from linked-cell sky). */
+export const PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG = 'bg-orange-500/12';
 
-export const PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE = 'text-sky-800 dark:text-sky-100';
+export const PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE = 'text-orange-900 dark:text-orange-100';
 
-export const PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL = 'text-sky-700/80 dark:text-sky-200/80';
+export const PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL =
+  'text-orange-800/75 dark:text-orange-200/80';
 
 /** @deprecated Use PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG for column selection. */
 export const PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG = PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG;

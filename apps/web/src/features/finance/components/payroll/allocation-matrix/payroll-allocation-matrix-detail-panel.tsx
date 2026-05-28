@@ -2,12 +2,13 @@
 
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
-  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
+  PAYROLL_MATRIX_EXPANSION_CELL_CLASS,
+  PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS,
+  PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS,
+} from '@/features/finance/constants/payroll-allocation-matrix-expansion';
+import {
   PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL,
   PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
-  PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
-  PAYROLL_MATRIX_DETAIL_COL_WIDTH,
-  PAYROLL_MATRIX_STICKY_HEADER_BG,
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import type {
   DeliveryPayableUnit,
@@ -27,149 +28,82 @@ function fmt(value: string): string {
   return formatAmount(parseMoney(value));
 }
 
-const DETAIL_METRIC_LABEL_CLASS = 'text-left text-[8px] font-bold tracking-wide leading-none';
+const EXPANSION_METRIC_LABEL_CLASS = 'text-left text-[8px] font-bold tracking-wide leading-none';
 
-const DETAIL_METRIC_VALUE_CLASS = 'text-right text-[10px] tabular-nums leading-tight';
+const EXPANSION_METRIC_VALUE_CLASS = 'text-right text-[10px] tabular-nums leading-tight';
 
-/** Label left + bold; amount on next line, right-aligned — same in header and body cells. */
-function DetailMetricBlock({ label, value, tone }: MetricItem & { tone: 'header' | 'cell' }) {
-  const labelClass =
-    tone === 'header'
-      ? cn(DETAIL_METRIC_LABEL_CLASS, PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL)
-      : cn(DETAIL_METRIC_LABEL_CLASS, 'text-muted-foreground');
-
-  const valueClass =
-    tone === 'header'
-      ? cn(DETAIL_METRIC_VALUE_CLASS, PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE)
-      : cn(DETAIL_METRIC_VALUE_CLASS, 'text-foreground');
-
-  return (
-    <div className="min-w-0">
-      <p className={labelClass}>{label}</p>
-      <p className={cn(valueClass, 'mt-0.5')}>{value}</p>
-    </div>
-  );
-}
-
-function DetailMetricStack({ items, tone }: { items: MetricItem[]; tone: 'header' | 'cell' }) {
+function ExpansionMetricStack({ items }: { items: MetricItem[] }) {
   return (
     <div className="flex w-full flex-col gap-1">
       {items.map((item) => (
-        <DetailMetricBlock key={item.label} label={item.label} value={item.value} tone={tone} />
+        <div key={item.label} className="min-w-0">
+          <p
+            className={cn(EXPANSION_METRIC_LABEL_CLASS, PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL)}
+          >
+            {item.label}
+          </p>
+          <p
+            className={cn(
+              EXPANSION_METRIC_VALUE_CLASS,
+              PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
+              'mt-0.5',
+            )}
+          >
+            {item.value}
+          </p>
+        </div>
       ))}
     </div>
   );
 }
 
-const DETAIL_PANEL_CLASS = cn(
-  PAYROLL_MATRIX_STICKY_HEADER_BG,
-  PAYROLL_MATRIX_DETAIL_COL_WIDTH,
-  'border-border border-r border-b px-1.5 py-1 align-middle',
-);
+function orderPoolMetrics(unit: DeliveryPayableUnit): MetricItem[] {
+  return [
+    { label: 'Planned', value: fmt(unit.totalPlannedBonus) },
+    { label: 'Paid', value: fmt(unit.totalPaidBonus) },
+  ];
+}
 
-/** Expanded row/column detail cells — sky tint matching the active header. */
-export const MATRIX_ACTIVE_DETAIL_PANEL_CLASS = cn(
-  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
-  PAYROLL_MATRIX_DETAIL_COL_WIDTH,
-  'border-border border-r border-b px-1.5 py-1 align-middle',
-);
+function employeeRunMetrics(employee: PayrollAllocationMatrixEmployee): MetricItem[] {
+  return [
+    { label: 'Payable', value: fmt(employee.payableTotal) },
+    { label: 'Bonus', value: fmt(employee.bonusTotalThisRun) },
+  ];
+}
 
-const DETAIL_PANEL_HEADER_CLASS = cn(
-  DETAIL_PANEL_CLASS,
-  PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
-  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
-  'align-top pt-2 pb-2',
-);
+function intersectionMetrics(cell: PayrollAllocationMatrixCell): MetricItem[] {
+  return [
+    { label: 'Due', value: fmt(cell.remaining) },
+    { label: 'Paid', value: fmt(cell.paidBefore) },
+  ];
+}
 
-/** Order column — pool totals (Remaining/Avail on main header). */
+/** Column expansion — pool summary header (thead). */
 export function MatrixOrderDetailHeader({ unit }: { unit: DeliveryPayableUnit }) {
   return (
-    <th className={DETAIL_PANEL_HEADER_CLASS}>
-      <DetailMetricStack
-        tone="header"
-        items={[
-          { label: 'Planned', value: fmt(unit.totalPlannedBonus) },
-          { label: 'Paid', value: fmt(unit.totalPaidBonus) },
-        ]}
-      />
+    <th className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}>
+      <ExpansionMetricStack items={orderPoolMetrics(unit)} />
     </th>
   );
 }
 
-/** Employee column — run totals. */
 export function MatrixEmployeeDetailHeader({
   employee,
 }: {
   employee: PayrollAllocationMatrixEmployee;
 }) {
   return (
-    <th className={DETAIL_PANEL_HEADER_CLASS}>
-      <DetailMetricStack
-        tone="header"
-        items={[
-          { label: 'Payable', value: fmt(employee.payableTotal) },
-          { label: 'Bonus', value: fmt(employee.bonusTotalThisRun) },
-        ]}
-      />
+    <th className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}>
+      <ExpansionMetricStack items={employeeRunMetrics(employee)} />
     </th>
   );
 }
 
-/** Per intersection — due and paid before (column detail or expanded row). */
-export function MatrixCellDetailPanel({
-  cell,
-  activeDetail = false,
-}: {
-  cell: PayrollAllocationMatrixCell | undefined;
-  /** Sky background — expanded row or column detail strip. */
-  activeDetail?: boolean;
-}) {
-  const panelClass = activeDetail ? MATRIX_ACTIVE_DETAIL_PANEL_CLASS : DETAIL_PANEL_CLASS;
-  const tone = activeDetail ? 'header' : 'cell';
-
-  if (!cell || !cell.linked) {
-    return (
-      <td className={panelClass}>
-        <p
-          className={cn(
-            'text-center text-[10px]',
-            activeDetail ? PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL : 'text-muted-foreground',
-          )}
-        >
-          —
-        </p>
-      </td>
-    );
-  }
-
-  return (
-    <td className={panelClass}>
-      <DetailMetricStack
-        tone={tone}
-        items={[
-          { label: 'Due', value: fmt(cell.remaining) },
-          { label: 'Paid', value: fmt(cell.paidBefore) },
-        ]}
-      />
-    </td>
-  );
-}
-
-const ROW_DETAIL_STICKY_CLASS = cn(
-  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
-  'border-border sticky left-0 z-30 min-w-[11.5rem] border-r border-b px-3 py-1 align-middle',
-);
-
+/** Row expansion — sticky summary (first cell of detail row). */
 export function MatrixOrderRowDetailSticky({ unit }: { unit: DeliveryPayableUnit }) {
   return (
-    <th className={ROW_DETAIL_STICKY_CLASS}>
-      <DetailMetricStack
-        tone="header"
-        items={[
-          { label: 'Planned', value: fmt(unit.totalPlannedBonus) },
-          { label: 'Paid', value: fmt(unit.totalPaidBonus) },
-        ]}
-      />
+    <th className={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS}>
+      <ExpansionMetricStack items={orderPoolMetrics(unit)} />
     </th>
   );
 }
@@ -180,14 +114,27 @@ export function MatrixEmployeeRowDetailSticky({
   employee: PayrollAllocationMatrixEmployee;
 }) {
   return (
-    <th className={ROW_DETAIL_STICKY_CLASS}>
-      <DetailMetricStack
-        tone="header"
-        items={[
-          { label: 'Payable', value: fmt(employee.payableTotal) },
-          { label: 'Bonus', value: fmt(employee.bonusTotalThisRun) },
-        ]}
-      />
+    <th className={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS}>
+      <ExpansionMetricStack items={employeeRunMetrics(employee)} />
     </th>
+  );
+}
+
+/** Due/Paid — one cell in the detail column (column expand) or detail row (row expand). */
+export function MatrixCellDetailPanel({ cell }: { cell: PayrollAllocationMatrixCell | undefined }) {
+  if (!cell?.linked) {
+    return (
+      <td className={PAYROLL_MATRIX_EXPANSION_CELL_CLASS}>
+        <p className={cn('text-center text-[10px]', PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL)}>
+          —
+        </p>
+      </td>
+    );
+  }
+
+  return (
+    <td className={PAYROLL_MATRIX_EXPANSION_CELL_CLASS}>
+      <ExpansionMetricStack items={intersectionMetrics(cell)} />
+    </td>
   );
 }

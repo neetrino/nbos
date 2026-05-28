@@ -13,9 +13,7 @@ import {
 import {
   PAYROLL_MATRIX_BODY_CLASS,
   PAYROLL_MATRIX_BODY_FULLSCREEN_CLASS,
-  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
   PAYROLL_MATRIX_DATA_COL_WIDTH,
-  PAYROLL_MATRIX_DETAIL_COL_WIDTH,
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import {
   PayrollAllocationMatrixTableShell,
@@ -132,24 +130,9 @@ export function PayrollAllocationMatrixGrid(props: {
   };
 
   const renderAfterRow = (rowId: string) => {
-    const detailCells = columnIds.flatMap((colId) => {
+    const detailCells = columnIds.map((colId) => {
       const cell = resolveCell(rowId, colId);
-      const items = [
-        <MatrixCellDetailPanel key={`${rowId}-${colId}-d`} cell={cell} activeDetail />,
-      ];
-      if (activeColumnId === colId) {
-        items.push(
-          <td
-            key={`${rowId}-${colId}-pad`}
-            className={cn(
-              'border-border border-r border-b',
-              PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
-              PAYROLL_MATRIX_DETAIL_COL_WIDTH,
-            )}
-          />,
-        );
-      }
-      return items;
+      return <MatrixCellDetailPanel key={`${rowId}-${colId}-d`} cell={cell} />;
     });
 
     const orderUnit =
@@ -209,7 +192,7 @@ export function PayrollAllocationMatrixGrid(props: {
       );
 
       const detailTd = columnActive ? (
-        <MatrixCellDetailPanel key={`${colId}-inline`} cell={cell} activeDetail />
+        <MatrixCellDetailPanel key={`${colId}-inline`} cell={cell} />
       ) : null;
 
       return detailTd ? [dataTd, detailTd] : [dataTd];
