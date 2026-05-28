@@ -6,29 +6,31 @@
 - 🟡 In progress — partial; see notes in phase
 - ⚪ Not started
 
-| Phase                       | Status | Notes                                                                                       |
-| --------------------------- | ------ | ------------------------------------------------------------------------------------------- |
-| 1 Documentation             | 🟡     | Canon + UI spec + entities + P&L UE section + cleanup register; roadmap cross-links pending |
-| 2 Payroll Run Detail UX     | 🟢     | Matrix primary UX, row/column DnD, pin, reset, context panels, cell dialogs                 |
-| 3 Bonus logic / manual form | 🟢     | Matrix + Bonus Board manual + audit in matrix dialog and bonus entry sheet                  |
-| 4 Unit Economics Board      | 🟡     | Five tabs shipped; per-unit drill-down to invoices/payments still pending                   |
-| 5 API / data model          | 🟢     | Matrix CRUD, layout, planned/reassign, validation, unit-economics GET                       |
-| 6 Frontend                  | 🟢     | Matrix workspace, unit economics page, manual bonus form fields                             |
-| 7 Validation / audit        | 🟡     | Pre-review validation + audit writes + matrix cell audit read; layout audit optional        |
-| 8 Tests / QA                | 🟡     | 147+ unit tests (resolver, matrix, validation, reassign, planned); E2E/manual QA pending    |
+| Phase                       | Status | Notes                                                                                    |
+| --------------------------- | ------ | ---------------------------------------------------------------------------------------- |
+| 1 Documentation             | 🟢     | Canon + UI spec + entities + P&L + cleanup/audit/roadmap cross-links (2026-05 slice)     |
+| 2 Payroll Run Detail UX     | 🟢     | Matrix primary UX, row/column DnD, pin, reset, context panels, cell dialogs              |
+| 3 Bonus logic / manual form | 🟢     | Matrix + Bonus Board manual + audit in matrix dialog and bonus entry sheet               |
+| 4 Unit Economics Board      | 🟡     | Five tabs shipped; per-unit drill-down to invoices/payments still pending                |
+| 5 API / data model          | 🟢     | Matrix CRUD, layout, planned/reassign, validation, unit-economics GET                    |
+| 6 Frontend                  | 🟢     | Matrix workspace, unit economics page, manual bonus form fields                          |
+| 7 Validation / audit        | 🟡     | Pre-review validation + audit writes + matrix cell audit read; layout audit optional     |
+| 8 Tests / QA                | 🟡     | 147+ unit tests (resolver, matrix, validation, reassign, planned); E2E/manual QA pending |
 
 ## Implementation log (`development`)
 
-| Commit     | Summary                                                                                    |
-| ---------- | ------------------------------------------------------------------------------------------ |
-| `1e984c54` | Phased plan in `todo.md`                                                                   |
-| `11c4930b` | Payroll allocation matrix + unit economics route                                           |
-| `dc9e3942` | Matrix cell releases + column layout controls                                              |
-| `e73b88f4` | Matrix v2 (DnD, planned/reassign, validation), unit economics API, bonus audit, docs slice |
-| `a58237bb` | P&L/cleanup docs, matrix bonus audit panel in cell dialog                                  |
-| `c8c7e404` | Refresh todo.md progress table after matrix commits                                        |
-| `b6c38956` | Unit economics Funding / cash tab                                                          |
-| `84d40c50` | Unit economics Expenses/Profitability tabs, shared bonus audit panel                       |
+| Commit      | Summary                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `1e984c54`  | Phased plan in `todo.md`                                                                   |
+| `11c4930b`  | Payroll allocation matrix + unit economics route                                           |
+| `dc9e3942`  | Matrix cell releases + column layout controls                                              |
+| `e73b88f4`  | Matrix v2 (DnD, planned/reassign, validation), unit economics API, bonus audit, docs slice |
+| `a58237bb`  | P&L/cleanup docs, matrix bonus audit panel in cell dialog                                  |
+| `c8c7e404`  | Refresh todo.md progress table after matrix commits                                        |
+| `b6c38956`  | Unit economics Funding / cash tab                                                          |
+| `84d40c50`  | Unit economics Expenses/Profitability tabs, shared bonus audit panel                       |
+| `feef07ec`  | Compensation audit, cleanup register, implementation roadmap cross-links                   |
+| _(pending)_ | Bonus entry audit panel pagination + reason display                                        |
 
 ---
 
