@@ -23,7 +23,9 @@ import {
   PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
   PAYROLL_MATRIX_DATA_COL_WIDTH,
   PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
-  PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
+  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
+  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL,
+  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
   PAYROLL_MATRIX_STICKY_HEADER_BG,
   PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
   PAYROLL_MATRIX_TABLE_CLASS,
@@ -55,11 +57,31 @@ export type MatrixRowHeader = {
 const MATRIX_PRIMARY_NAME_CLASS =
   'block truncate text-sm font-semibold tracking-tight text-foreground leading-snug';
 
-function MatrixLabeledAmount({ label, value }: { label: string; value: string }) {
+function MatrixLabeledAmount({
+  label,
+  value,
+  active = false,
+}: {
+  label: string;
+  value: string;
+  active?: boolean;
+}) {
   return (
-    <p className="text-muted-foreground text-[10px] leading-tight font-normal">
+    <p
+      className={cn(
+        'text-[10px] leading-tight font-normal',
+        active ? PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL : 'text-muted-foreground',
+      )}
+    >
       <span>{label} </span>
-      <span className="text-foreground font-normal tabular-nums">{value}</span>
+      <span
+        className={cn(
+          'font-normal tabular-nums',
+          active ? PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE : 'text-foreground',
+        )}
+      >
+        {value}
+      </span>
     </p>
   );
 }
@@ -252,7 +274,7 @@ function SortableMatrixColumnHeader(props: {
         PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
         PAYROLL_MATRIX_DATA_COL_WIDTH,
         'border-border border-r border-b px-2 py-2 text-left align-bottom',
-        expanded && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
+        expanded && PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
         isDragging && 'opacity-70',
       )}
     >
@@ -263,19 +285,28 @@ function SortableMatrixColumnHeader(props: {
         dragAttributes={attributes}
         dragListeners={listeners}
       >
-        <p className={MATRIX_PRIMARY_NAME_CLASS}>
+        <p
+          className={cn(
+            MATRIX_PRIMARY_NAME_CLASS,
+            expanded && PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
+          )}
+        >
           {col.pinned ? '📌 ' : ''}
           {col.primary}
         </p>
         {col.kind === 'employee' ? (
           <>
-            {col.secondary ? <MatrixLabeledAmount label="Role" value={col.secondary} /> : null}
-            <MatrixLabeledAmount label="Bonus" value={col.meta} />
+            {col.secondary ? (
+              <MatrixLabeledAmount label="Role" value={col.secondary} active={expanded} />
+            ) : null}
+            <MatrixLabeledAmount label="Bonus" value={col.meta} active={expanded} />
           </>
         ) : (
           <>
-            <MatrixLabeledAmount label="Remaining" value={col.meta} />
-            {col.funding ? <MatrixLabeledAmount label="Avail" value={col.funding} /> : null}
+            <MatrixLabeledAmount label="Remaining" value={col.meta} active={expanded} />
+            {col.funding ? (
+              <MatrixLabeledAmount label="Avail" value={col.funding} active={expanded} />
+            ) : null}
           </>
         )}
       </MatrixHeaderDragShell>
@@ -308,7 +339,7 @@ function SortableMatrixRowHeader(props: {
         PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
         PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
         'border-border sticky left-0 z-30 border-r border-b px-3 py-2.5 text-left',
-        expanded && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
+        expanded && PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
         isDragging && 'opacity-70',
       )}
     >
@@ -319,19 +350,26 @@ function SortableMatrixRowHeader(props: {
         dragAttributes={attributes}
         dragListeners={listeners}
       >
-        <p className={MATRIX_PRIMARY_NAME_CLASS}>
+        <p
+          className={cn(
+            MATRIX_PRIMARY_NAME_CLASS,
+            expanded && PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
+          )}
+        >
           {row.pinned ? '📌 ' : ''}
           {row.primary}
         </p>
         {row.kind === 'employee' ? (
           <>
-            <MatrixLabeledAmount label="Salary" value={row.secondary} />
-            <MatrixLabeledAmount label="Bonus" value={row.meta} />
+            <MatrixLabeledAmount label="Salary" value={row.secondary} active={expanded} />
+            <MatrixLabeledAmount label="Bonus" value={row.meta} active={expanded} />
           </>
         ) : (
           <>
-            <MatrixLabeledAmount label="Remaining" value={row.meta} />
-            {row.funding ? <MatrixLabeledAmount label="Avail" value={row.funding} /> : null}
+            <MatrixLabeledAmount label="Remaining" value={row.meta} active={expanded} />
+            {row.funding ? (
+              <MatrixLabeledAmount label="Avail" value={row.funding} active={expanded} />
+            ) : null}
           </>
         )}
       </MatrixHeaderDragShell>

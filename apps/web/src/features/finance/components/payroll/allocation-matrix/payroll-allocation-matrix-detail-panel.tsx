@@ -1,8 +1,14 @@
 'use client';
 
 import { formatAmount } from '@/features/finance/constants/finance';
-import { PAYROLL_MATRIX_DETAIL_COL_WIDTH } from '@/features/finance/constants/payroll-allocation-matrix-layout';
-import { PAYROLL_MATRIX_STICKY_HEADER_BG } from '@/features/finance/constants/payroll-allocation-matrix-layout';
+import {
+  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
+  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL,
+  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
+  PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
+  PAYROLL_MATRIX_DETAIL_COL_WIDTH,
+  PAYROLL_MATRIX_STICKY_HEADER_BG,
+} from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import type {
   DeliveryPayableUnit,
   PayrollAllocationMatrixCell,
@@ -69,15 +75,27 @@ const DETAIL_PANEL_CLASS = cn(
   'border-border border-r border-b px-2 py-1 align-middle',
 );
 
-const DETAIL_PANEL_HEADER_CLASS = cn(DETAIL_PANEL_CLASS, 'align-top pt-2 pb-2 text-center');
+const DETAIL_PANEL_HEADER_CLASS = cn(
+  DETAIL_PANEL_CLASS,
+  PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
+  PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG,
+  'align-top pt-2 pb-2 text-center',
+);
 
 function HeaderMetricCell({ label, value }: MetricItem) {
   return (
     <div className="min-w-0 leading-none">
-      <p className="text-muted-foreground text-[8px] font-medium tracking-wide uppercase">
+      <p
+        className={cn(
+          'text-[8px] font-medium tracking-wide uppercase',
+          PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_LABEL,
+        )}
+      >
         {label}
       </p>
-      <p className="text-foreground text-[10px] tabular-nums">{value}</p>
+      <p className={cn('text-[10px] tabular-nums', PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE)}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -95,7 +113,12 @@ function HeaderMetricGrid1x2({ left, right }: { left: MetricItem; right: MetricI
 export function MatrixOrderDetailHeader({ unit }: { unit: DeliveryPayableUnit }) {
   return (
     <th className={DETAIL_PANEL_HEADER_CLASS}>
-      <p className="text-muted-foreground mb-1 text-[8px] font-medium tracking-wide uppercase">
+      <p
+        className={cn(
+          'mb-1 text-[8px] font-semibold tracking-wide uppercase',
+          PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
+        )}
+      >
         Bonus pool
       </p>
       <HeaderMetricGrid1x2
@@ -114,7 +137,12 @@ export function MatrixEmployeeDetailHeader({
 }) {
   return (
     <th className={DETAIL_PANEL_HEADER_CLASS}>
-      <p className="text-muted-foreground mb-1 text-[8px] font-medium tracking-wide uppercase">
+      <p
+        className={cn(
+          'mb-1 text-[8px] font-semibold tracking-wide uppercase',
+          PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_TITLE,
+        )}
+      >
         Pay run
       </p>
       <HeaderMetricGrid1x2
