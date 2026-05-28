@@ -3,8 +3,10 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 
+const BONUS_ENTRY_ID = 'be1';
+
 function bonusEntry(type: string) {
-  return { type, order: { code: 'ORD-1' } };
+  return { id: BONUS_ENTRY_ID, type, order: { code: 'ORD-1' } };
 }
 
 function mockAttachReleaseFindMany(
@@ -27,6 +29,11 @@ function createTxMock() {
     },
     bonusRelease: {
       findMany: vi.fn(),
+      update: vi.fn().mockResolvedValue({}),
+    },
+    bonusEntry: {
+      findUnique: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
       update: vi.fn().mockResolvedValue({}),
     },
     salaryLine: {
@@ -73,7 +80,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
     ).rejects.toThrow(NotFoundException);
   });
 
-  it('throws when SALES release has a KPI policy but no KPI result snapshot', async () => {
+  it('throws when SALES release has no payable snapshot on bonus entry', async () => {
     const tx = createTxMock();
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
@@ -109,14 +116,22 @@ describe('attachBonusReleasesToPayrollRun', () => {
       gateRules: { bands: [{ minAttainmentPct: 70, payoutFactor: 1 }] },
       bonusCapBaseSalaryMultiplier: new Decimal(2),
     });
-    tx.kpiResult.findFirst.mockResolvedValue(null);
+    tx.bonusEntry.findUnique.mockResolvedValue({
+      id: BONUS_ENTRY_ID,
+      employeeId: 'e1',
+      amount: new Decimal(10),
+      earnedPeriod: '2026-03',
+      payableAmount: null,
+      kpiPayoutFactor: null,
+    });
+    tx.compensationProfile.findFirst.mockResolvedValue({ kpiPolicyId: 'kp1' });
 
     await expect(
       attachBonusReleasesToPayrollRun(tx as never, {
         payrollRunId: 'run1',
         releaseIds: ['rel1'],
       }),
-    ).rejects.toThrow(BadRequestException);
+    ).rejects.toThrow(/payable snapshot/);
   });
 
   it('updates salary line and release then recalculates run totals', async () => {
@@ -229,7 +244,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
     expect(tx.payrollRun.update).toHaveBeenCalled();
   });
 
-  it('applies sales KPI result payoutFactor to SALES releases', async () => {
+  it('uses frozen payableAmount from bonus entry for SALES (earned month, not payout month)', async () => {
     const tx = createTxMock();
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
@@ -270,10 +285,13 @@ describe('attachBonusReleasesToPayrollRun', () => {
       gateRules: { bands: [{ minAttainmentPct: 70, payoutFactor: 1 }] },
       bonusCapBaseSalaryMultiplier: new Decimal(2),
     });
-    tx.kpiResult.findFirst.mockResolvedValue({
-      planAmount: new Decimal(1000),
-      actualAmount: new Decimal(600),
-      payoutFactor: new Decimal('0.5'),
+    tx.bonusEntry.findUnique.mockResolvedValue({
+      id: BONUS_ENTRY_ID,
+      employeeId: 'e1',
+      amount: new Decimal(100),
+      earnedPeriod: '2026-03',
+      payableAmount: new Decimal(50),
+      kpiPayoutFactor: new Decimal('0.5'),
     });
     tx.salaryLine.aggregate.mockResolvedValue({
       _sum: {
@@ -291,11 +309,7 @@ describe('attachBonusReleasesToPayrollRun', () => {
       releaseIds: ['rel1'],
     });
 
-    expect(tx.kpiResult.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ period: '2026-04' }),
-      }),
-    );
+    expect(tx.kpiResult.findFirst).not.toHaveBeenCalled();
     expect(tx.salaryLine.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -344,6 +358,14 @@ describe('attachBonusReleasesToPayrollRun', () => {
       remainingAmount: new Decimal(100),
       status: 'PENDING',
       payrollCarryAppliedAmount: null,
+    });
+    tx.bonusEntry.findUnique.mockResolvedValue({
+      id: BONUS_ENTRY_ID,
+      employeeId: 'e1',
+      amount: new Decimal(100),
+      earnedPeriod: '2026-04',
+      payableAmount: new Decimal(100),
+      kpiPayoutFactor: new Decimal(1),
     });
     tx.salaryLine.aggregate.mockResolvedValue({
       _sum: {

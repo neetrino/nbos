@@ -39,7 +39,7 @@ export function EmployeeMonthCompensationKpiSection({ detail }: { detail: Salary
         <Link href="/my-company/compensation" className="text-primary font-medium hover:underline">
           My Company → Compensation
         </Link>
-        . Payroll consumes finalized snapshots when attaching Sales bonuses.
+        . Snapshots refresh automatically on client payments, bonus accrual, and payroll attach.
       </p>
       {kpi.source === 'NOT_SYNCED' ? (
         <p className="text-muted-foreground mt-2 text-xs leading-snug">

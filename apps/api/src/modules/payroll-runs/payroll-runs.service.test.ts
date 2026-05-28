@@ -9,7 +9,6 @@ describe('PayrollRunsService', () => {
   let service: PayrollRunsService;
   let prisma: MockPrisma;
   let notifications: NotificationService;
-
   beforeEach(() => {
     prisma = createMockPrisma();
     notifications = { create: vi.fn() } as unknown as NotificationService;

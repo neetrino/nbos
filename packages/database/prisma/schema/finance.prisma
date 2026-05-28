@@ -471,6 +471,12 @@ model BonusEntry {
   percent               Decimal             @db.Decimal(5, 2)
   status                BonusStatusEnum     @default(INCOMING)
   kpiGatePassed         Boolean?            @map("kpi_gate_passed")
+  /// Earned sales month `YYYY-MM` (KPI gate applies to this month, not payroll month).
+  earnedPeriod          String?             @map("earned_period") @db.VarChar(7)
+  /// Month KPI payout factor snapshot on this entry (0–1).
+  kpiPayoutFactor       Decimal?            @map("kpi_payout_factor") @db.Decimal(7, 4)
+  /// `amount × kpiPayoutFactor` while month is open; frozen when calendar month rolls.
+  payableAmount         Decimal?            @map("payable_amount") @db.Decimal(12, 2)
   payoutMonth           DateTime?           @map("payout_month")
   createdAt             DateTime            @default(now()) @map("created_at")
   updatedAt             DateTime            @updatedAt @map("updated_at")

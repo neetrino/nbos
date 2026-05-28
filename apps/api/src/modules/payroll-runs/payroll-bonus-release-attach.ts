@@ -3,7 +3,10 @@ import { Decimal, type PayrollRunStatusEnum, type TransactionClient } from '@nbo
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
 import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
-import { earnedSalesPeriodForPayoutMonth } from './earned-sales-kpi-period';
+import {
+  resolveSalesBonusPayableAtAttach,
+  type SalesBonusPayableAtAttach,
+} from '../bonus/resolve-sales-bonus-payable-at-attach';
 import { applyPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
 import { applyPayrollBonusCap } from './payroll-bonus-cap';
 import { computeSalesKpiBurnedAmount } from './sales-kpi-burned-amount';
@@ -14,16 +17,16 @@ import type { PayrollAttachNotifyEvent } from './payroll-attach-notify.types';
 
 const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
-type SalesKpiAttachSnapshot = {
-  factor: Decimal;
-  plan: Decimal | null;
-  actual: Decimal | null;
-};
-
 /** Minimal DB surface for attaching bonus releases (transaction or full client). */
 export type BonusReleaseAttachTx = Pick<
   TransactionClient,
-  'payrollRun' | 'bonusRelease' | 'salaryLine' | 'compensationProfile' | 'kpiPolicy' | 'kpiResult'
+  | 'payrollRun'
+  | 'bonusRelease'
+  | 'bonusEntry'
+  | 'salaryLine'
+  | 'compensationProfile'
+  | 'kpiPolicy'
+  | 'kpiResult'
 >;
 
 export interface AttachBonusReleasesParams {
@@ -41,43 +44,6 @@ function computeLineTotalPayable(line: {
     .plus(line.bonusesTotal)
     .plus(line.adjustmentsTotal)
     .minus(line.deductionsTotal);
-}
-
-async function resolveKpiResultForSalesRelease(params: {
-  tx: BonusReleaseAttachTx;
-  payrollRunId: string;
-  payrollMonth: string;
-  salaryLineId: string;
-  employeeId: string;
-  payrollPolicy: CompensationPayrollPolicy;
-}): Promise<{
-  factor: Decimal;
-  plan: Decimal | null;
-  actual: Decimal | null;
-}> {
-  if (params.payrollPolicy.kpiPolicyId == null) {
-    return { factor: new Decimal(1), plan: null, actual: null };
-  }
-  const earnedPeriod = earnedSalesPeriodForPayoutMonth(params.payrollMonth);
-  const result = await params.tx.kpiResult.findFirst({
-    where: {
-      employeeId: params.employeeId,
-      period: earnedPeriod,
-      kpiPolicyId: params.payrollPolicy.kpiPolicyId,
-      OR: [{ salaryLineId: params.salaryLineId }, { payrollRunId: params.payrollRunId }],
-    },
-    select: { planAmount: true, actualAmount: true, payoutFactor: true },
-  });
-  if (result == null) {
-    throw new BadRequestException(
-      `Sales KPI result is missing for employee ${params.employeeId} (earned month ${earnedPeriod}); sync KPI results before attaching Sales bonuses.`,
-    );
-  }
-  return {
-    factor: result.payoutFactor,
-    plan: result.planAmount,
-    actual: result.actualAmount,
-  };
 }
 
 /**
@@ -121,7 +87,9 @@ export async function attachBonusReleasesToPayrollRun(
       amount: true,
       status: true,
       payrollRunId: true,
-      bonusEntry: { select: { type: true, order: { select: { code: true } } } },
+      bonusEntry: {
+        select: { id: true, type: true, order: { select: { code: true } } },
+      },
     },
   });
   if (releases.length !== uniqueIds.length) {
@@ -151,7 +119,7 @@ export async function attachBonusReleasesToPayrollRun(
   }
 
   const payrollPolicyByEmployee = new Map<string, CompensationPayrollPolicy>();
-  const salesKpiByEmployee = new Map<string, SalesKpiAttachSnapshot>();
+  const salesPayableByEntryId = new Map<string, SalesBonusPayableAtAttach>();
   const carryAppliedEmployees = new Set<string>();
 
   for (const rel of releasesToAttach) {
@@ -161,6 +129,7 @@ export async function attachBonusReleasesToPayrollRun(
       },
       select: {
         id: true,
+        compensationProfileId: true,
         baseSalary: true,
         bonusesTotal: true,
         adjustmentsTotal: true,
@@ -212,6 +181,7 @@ export async function attachBonusReleasesToPayrollRun(
         },
         select: {
           id: true,
+          compensationProfileId: true,
           baseSalary: true,
           bonusesTotal: true,
           adjustmentsTotal: true,
@@ -225,36 +195,29 @@ export async function attachBonusReleasesToPayrollRun(
       }
     }
 
-    let kpiPlan: Decimal | null = null;
-    let kpiActual: Decimal | null = null;
+    let kpiScaled: Decimal;
     let kpiFactor = new Decimal(1);
+    const kpiPlan: Decimal | null = null;
+    const kpiActual: Decimal | null = null;
+
     if (rel.bonusEntry.type === 'SALES') {
-      const cached = salesKpiByEmployee.get(rel.employeeId);
-      if (cached != null) {
-        kpiFactor = cached.factor;
-        kpiPlan = cached.plan;
-        kpiActual = cached.actual;
-      } else {
-        const result = await resolveKpiResultForSalesRelease({
-          tx,
-          payrollRunId,
-          payrollMonth: run.payrollMonth,
-          salaryLineId: line.id,
-          employeeId: rel.employeeId,
+      let payable = salesPayableByEntryId.get(rel.bonusEntry.id);
+      if (payable == null) {
+        payable = await resolveSalesBonusPayableAtAttach(tx, {
+          bonusEntryId: rel.bonusEntry.id,
           payrollPolicy,
         });
-        kpiFactor = result.factor;
-        kpiPlan = result.plan;
-        kpiActual = result.actual;
-        salesKpiByEmployee.set(rel.employeeId, result);
+        salesPayableByEntryId.set(rel.bonusEntry.id, payable);
       }
+      kpiScaled = payable.kpiScaledAmount;
+      kpiFactor = payable.kpiFactor;
+    } else {
+      kpiScaled = computePayrollIncludedBonusAmount({
+        releaseAmount: rel.amount,
+        bonusType: rel.bonusEntry.type,
+        kpiFactor: new Decimal(1),
+      });
     }
-
-    const kpiScaled = computePayrollIncludedBonusAmount({
-      releaseAmount: rel.amount,
-      bonusType: rel.bonusEntry.type,
-      kpiFactor,
-    });
     const capped = applyPayrollBonusCap({
       kpiScaledAmount: kpiScaled,
       currentBonusesTotal: line.bonusesTotal,
@@ -284,8 +247,12 @@ export async function attachBonusReleasesToPayrollRun(
       },
     });
 
+    const fullForBurned =
+      rel.bonusEntry.type === 'SALES'
+        ? (salesPayableByEntryId.get(rel.bonusEntry.id)?.fullAmount ?? rel.amount)
+        : rel.amount;
     const kpiBurnedAmount = computeSalesKpiBurnedAmount({
-      releaseAmount: rel.amount,
+      releaseAmount: fullForBurned,
       kpiScaledAmount: kpiScaled,
       bonusType: rel.bonusEntry.type,
     });

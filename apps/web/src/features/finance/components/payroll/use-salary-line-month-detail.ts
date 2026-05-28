@@ -46,5 +46,5 @@ export function useSalaryLineMonthDetail(
     void reload();
   }, [open, salaryLineId, reload]);
 
-  return { detail, loading, loadError, reload };
+  return { detail, loading, loadError, reload, setDetail };
 }

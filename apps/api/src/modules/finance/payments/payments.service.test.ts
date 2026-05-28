@@ -4,6 +4,10 @@ import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-pris
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { NotificationService } from '../../notifications/notification.service';
 
+vi.mock('../../payroll-runs/sales-kpi-event-refresh', () => ({
+  refreshSalesKpiAfterClientPayment: vi.fn().mockResolvedValue(undefined),
+}));
+
 /** Row returned by `findById` after `create` completes sync helpers. */
 function mockPaymentFindByIdRow(
   id: string,

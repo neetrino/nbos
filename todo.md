@@ -19,35 +19,35 @@
 
 ## Implementation log (`development`)
 
-| Commit      | Summary                                                                                       |
-| ----------- | --------------------------------------------------------------------------------------------- |
-| `1e984c54`  | Phased plan in `todo.md`                                                                      |
-| `11c4930b`  | Payroll allocation matrix + unit economics route                                              |
-| `dc9e3942`  | Matrix cell releases + column layout controls                                                 |
-| `e73b88f4`  | Matrix v2 (DnD, planned/reassign, validation), unit economics API, bonus audit, docs slice    |
-| `a58237bb`  | P&L/cleanup docs, matrix bonus audit panel in cell dialog                                     |
-| `c8c7e404`  | Refresh todo.md progress table after matrix commits                                           |
-| `b6c38956`  | Unit economics Funding / cash tab                                                             |
-| `84d40c50`  | Unit economics Expenses/Profitability tabs, shared bonus audit panel                          |
-| `feef07ec`  | Compensation audit, cleanup register, implementation roadmap cross-links                      |
-| `53ff808b`  | Bonus entry audit panel pagination + reason display                                           |
-| `10861549`  | Unit economics invoices/payments drill-down API + sheet                                       |
-| `01adae4e`  | UE drill-down docs; migration `20260528120000_payroll_matrix_layout_bonus_title` applied      |
-| `06b231fc`  | Realign payroll plan around KPI policy ownership                                              |
-| `990d11da`  | Remove editable payroll KPI forms; split Bonus Releases into standalone section               |
-| `51445b01`  | Remove public payroll KPI patch endpoints; keep payroll as KPI result consumer                |
-| `c50718e3`  | Add `KpiResult` read model schema + migration                                                 |
-| `3c03c58d`  | KPI Result API/service: derive Sales actual snapshot from payment source facts                |
-| `8d0ec889`  | Extend KPI policy parameters with target/plan source and Sales monthly target amount          |
-| `6dbcee54`  | Wire payroll bonus attach to consume `KpiResult` payoutFactor instead of legacy fields        |
-| `d45e8baa`  | Add payroll UI action/read section for syncing and displaying KPI Result snapshots            |
-| `62163ccf`  | Align employee month KPI sheet with `KpiResult` read model; drop legacy fields from month API |
-| `59dd9e49`  | Remove legacy `kpiSales*` hints from payroll run list/detail API and salary line rows         |
-| `26e0594b`  | Realign plan: KPI belongs in Salary Board/Wallet, not Payroll Run Detail                      |
-| `60158cfd`  | Remove Payroll-owned KPI sync/results UI/API and clean Payroll Detail to matrix workspace     |
-| `531282fe`  | Salary Board KPI strip; month sheet tabs (General/Bonuses/KPI); earned-period read model      |
-| `63313b01`  | Align `KpiResult` sync + bonus attach to earned sales month (not payout payroll month)        |
-| _(pending)_ | Salary Board KPI finalize/sync outside Payroll; month-close job                               |
+| Commit          | Summary                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| `1e984c54`      | Phased plan in `todo.md`                                                                                |
+| `11c4930b`      | Payroll allocation matrix + unit economics route                                                        |
+| `dc9e3942`      | Matrix cell releases + column layout controls                                                           |
+| `e73b88f4`      | Matrix v2 (DnD, planned/reassign, validation), unit economics API, bonus audit, docs slice              |
+| `a58237bb`      | P&L/cleanup docs, matrix bonus audit panel in cell dialog                                               |
+| `c8c7e404`      | Refresh todo.md progress table after matrix commits                                                     |
+| `b6c38956`      | Unit economics Funding / cash tab                                                                       |
+| `84d40c50`      | Unit economics Expenses/Profitability tabs, shared bonus audit panel                                    |
+| `feef07ec`      | Compensation audit, cleanup register, implementation roadmap cross-links                                |
+| `53ff808b`      | Bonus entry audit panel pagination + reason display                                                     |
+| `10861549`      | Unit economics invoices/payments drill-down API + sheet                                                 |
+| `01adae4e`      | UE drill-down docs; migration `20260528120000_payroll_matrix_layout_bonus_title` applied                |
+| `06b231fc`      | Realign payroll plan around KPI policy ownership                                                        |
+| `990d11da`      | Remove editable payroll KPI forms; split Bonus Releases into standalone section                         |
+| `51445b01`      | Remove public payroll KPI patch endpoints; keep payroll as KPI result consumer                          |
+| `c50718e3`      | Add `KpiResult` read model schema + migration                                                           |
+| `3c03c58d`      | KPI Result API/service: derive Sales actual snapshot from payment source facts                          |
+| `8d0ec889`      | Extend KPI policy parameters with target/plan source and Sales monthly target amount                    |
+| `6dbcee54`      | Wire payroll bonus attach to consume `KpiResult` payoutFactor instead of legacy fields                  |
+| `d45e8baa`      | Add payroll UI action/read section for syncing and displaying KPI Result snapshots                      |
+| `62163ccf`      | Align employee month KPI sheet with `KpiResult` read model; drop legacy fields from month API           |
+| `59dd9e49`      | Remove legacy `kpiSales*` hints from payroll run list/detail API and salary line rows                   |
+| `26e0594b`      | Realign plan: KPI belongs in Salary Board/Wallet, not Payroll Run Detail                                |
+| `60158cfd`      | Remove Payroll-owned KPI sync/results UI/API and clean Payroll Detail to matrix workspace               |
+| `531282fe`      | Salary Board KPI strip; month sheet tabs (General/Bonuses/KPI); earned-period read model                |
+| `63313b01`      | Align `KpiResult` sync + bonus attach to earned sales month (not payout payroll month)                  |
+| _(this commit)_ | Event-driven KPI + `BonusEntry` payable snapshot; attach by `earnedPeriod`; remove manual sync API/cron |
 
 ---
 
@@ -120,18 +120,21 @@ Rules:
 
 - KPI policies live in `My Company / Compensation`, not in Finance Payroll UI.
 - KPI policies can be role-level first, with employee-level overrides later when needed.
-- KPI month-close/finalization is owned outside Payroll (system job / Salary Board / Wallet-facing KPI result process), not by a Payroll Run button.
+- Sales KPI snapshots refresh **on business events** (client payment, sales bonus accrual) — not via Finance manual month-close buttons or mandatory “close month” actions.
+- **Month boundary = implicit freeze:** when calendar month changes, new sales/KPI apply only to the new `YYYY-MM`. Prior-month bonuses keep their last running KPI % and payable amounts (month/year no longer match → naturally read-only). No forced “close March” workflow for normal ops.
+- Optional `POST /api/scheduler/sales-kpi-month-close` = **repair/backfill only** (not part of daily process).
 - Sales currently has KPI gate rules; other roles default to 100% payout until their own KPI policies are introduced.
 - If no KPI policy/result applies, the employee receives 100% of the bonus that is otherwise eligible.
-- If KPI applies, the bonus record/release must show:
-  - original bonus amount at 100%;
-  - KPI payout factor;
-  - payable amount after KPI;
-  - burned/forfeited amount if policy says it does not carry forward;
-  - source policy/result.
+- **Per earned month (running):** one KPI payout % for the employee → recalculates **payable** on all open Sales bonuses for that month (`full amount × month KPI %`). New sale updates month KPI; all same-month bonuses move together until month rolls over.
+- **Per bonus (frozen after month roll):** store `earnedPeriod` (`YYYY-MM`), `amount` (100% policy), `kpiPayoutFactorAtFreeze`, `payableAmount` (active). Payroll attach uses **bonus earned period**, not payroll month − 1 (supports delayed payout: March bonuses paid in May keep March KPI).
+- If KPI applies, the bonus record/release must show: full amount, month KPI %, payable amount, burned/forfeited (if any), policy/result reference.
 - Payroll Run Detail must not show standalone KPI sync/results sections. KPI status is visible in Salary Board employee month card/sheet and employee Wallet.
-- KPI lookup for a payout month uses **earned period = prior calendar month** (`earnedSalesPeriodForPayoutMonth`); `KpiResult.period` must align to earned month (sync job follow-up).
 - Payroll can show KPI-adjusted payable amounts only as part of bonus release/payment facts, not as a separate KPI workspace.
+
+**Future — manual & rule-based bonus adjustments (not in current slice):**
+
+- From Bonus Board / bonus card: optional adjustment fields (default 0) — manual **increase** or **decrease** by amount or dedicated columns; may change full bonus and/or payable without breaking audit trail.
+- Rule examples later: auto **+30%** in some cases, auto **−10%** in others (on top of KPI gate); design when implementing adjustment module.
 
 ### Unit Economics
 

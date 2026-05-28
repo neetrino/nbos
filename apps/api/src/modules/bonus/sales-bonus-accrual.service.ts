@@ -10,6 +10,10 @@ import {
   hasSlottedSalesBonusOnOrder,
 } from './sales-bonus-accrual-idempotency';
 import { buildSalesBonusAmountRows, persistSalesBonusRows } from './sales-bonus-accrual-rows';
+import {
+  earnedPeriodFromUtcDate,
+  refreshSalesBonusesForEmployeesEarnedMonth,
+} from './sales-bonus-kpi-payable';
 
 type SlottedPaymentModel = 'CLASSIC' | 'SUBSCRIPTION_FIRST_MONTH';
 type PolicyPaymentModel = SlottedPaymentModel | 'SUBSCRIPTION_RECURRING';
@@ -66,6 +70,7 @@ export class SalesBonusAccrualService {
       where: { id: invoiceId },
       select: {
         id: true,
+        paidDate: true,
         moneyStatus: true,
         amount: true,
         orderId: true,
@@ -122,37 +127,51 @@ export class SalesBonusAccrualService {
       },
     };
 
+    const earnedPeriod =
+      invoice.paidDate != null
+        ? earnedPeriodFromUtcDate(invoice.paidDate)
+        : earnedPeriodFromUtcDate(new Date());
     const invoiceCore = { id: invoice.id, amount: decimalFrom(invoice.amount) };
 
+    let created = false;
     if (order.paymentType === 'SUBSCRIPTION') {
-      const created = await this.runSubscriptionAccrual(invoiceCore, order);
-      return created ? order.id : null;
+      created = await this.runSubscriptionAccrual(invoiceCore, order, earnedPeriod);
+    } else {
+      created = await this.runSlottedAccrual(invoiceCore, order, 'CLASSIC', earnedPeriod, {
+        baseAmount: order.totalAmount,
+        basis: 'ORDER_TOTAL',
+      });
     }
 
-    const created = await this.runSlottedAccrual(invoiceCore, order, 'CLASSIC', {
-      baseAmount: order.totalAmount,
-      basis: 'ORDER_TOTAL',
-    });
+    const deal = order.deal;
+    await refreshSalesBonusesForEmployeesEarnedMonth(
+      this.prisma,
+      [deal.sellerId, deal.sellerAssistantId ?? ''].filter(Boolean),
+      earnedPeriod,
+    );
+
     return created ? order.id : null;
   }
 
   private async runSubscriptionAccrual(
     invoice: { id: string; amount: Decimal },
     order: AccrualOrder,
+    earnedPeriod: string,
   ): Promise<boolean> {
     const firstMonthDone = await hasSlottedSalesBonusOnOrder(this.prisma, order.id);
     if (!firstMonthDone) {
-      return this.runSlottedAccrual(invoice, order, 'SUBSCRIPTION_FIRST_MONTH', {
+      return this.runSlottedAccrual(invoice, order, 'SUBSCRIPTION_FIRST_MONTH', earnedPeriod, {
         baseAmount: decimalFrom(invoice.amount),
         basis: 'FIRST_PAID_INVOICE_AMOUNT',
       });
     }
-    return this.runSubscriptionRecurringAccrual(invoice, order);
+    return this.runSubscriptionRecurringAccrual(invoice, order, earnedPeriod);
   }
 
   private async runSubscriptionRecurringAccrual(
     invoice: { id: string; amount: Decimal },
     order: AccrualOrder,
+    earnedPeriod: string,
   ): Promise<boolean> {
     const policy = await this.loadPolicy(order.deal.source, 'SUBSCRIPTION_RECURRING');
     if (!policy) {
@@ -206,6 +225,7 @@ export class SalesBonusAccrualService {
       snapshotJson,
       invoice.id,
       null,
+      earnedPeriod,
     );
   }
 
@@ -233,6 +253,7 @@ export class SalesBonusAccrualService {
     invoice: { id: string; amount: Decimal },
     order: AccrualOrder,
     paymentModel: SlottedPaymentModel,
+    earnedPeriod: string,
     params: { baseAmount: Decimal; basis: AccrualBasis },
   ): Promise<boolean> {
     if (await hasSalesAccrualForInvoice(this.prisma, order.id, invoice.id)) {
@@ -277,6 +298,7 @@ export class SalesBonusAccrualService {
       snapshotJson,
       invoice.id,
       'slot',
+      earnedPeriod,
     );
   }
 }
