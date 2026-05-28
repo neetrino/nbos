@@ -10,8 +10,6 @@ import { formatAmount } from '@/features/finance/constants/finance';
 import { PayrollAllocationMatrixCellDialog } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-cell-dialog';
 import { PayrollAllocationMatrixGrid } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-grid';
 import { PayrollAllocationMatrixManualDialog } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-manual-dialog';
-import { PayrollAllocationMatrixToolbar } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-toolbar';
-import { moveLayoutId, togglePinnedId } from '@/features/finance/utils/payroll-matrix-layout-order';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-layout-hero-actions';
 import {
@@ -249,28 +247,11 @@ export function PayrollAllocationMatrixWorkspace({
     id: e.employeeId,
     label: `${e.firstName} ${e.lastName}`.trim(),
   }));
-  const employeeIds = displayMatrix.employees.map((e) => e.employeeId);
-  const unitIds = displayMatrix.deliveryUnits.map((u) => u.orderId);
-  const pinTargetId = viewMode === 'EMPLOYEE_MATRIX' ? activeColumnId : activeRowId;
-  const activeUnitId = viewMode === 'EMPLOYEE_MATRIX' ? activeColumnId : activeRowId;
-  const activeEmployeeId = viewMode === 'EMPLOYEE_MATRIX' ? activeRowId : activeColumnId;
-
-  const activeUnit =
-    activeUnitId != null
-      ? displayMatrix.deliveryUnits.find((u) => u.orderId === activeUnitId)
-      : null;
-  const activeEmployee =
-    activeEmployeeId != null
-      ? displayMatrix.employees.find((e) => e.employeeId === activeEmployeeId)
-      : null;
-
   const employeeLabel = (id: string) => {
     const e = matrix.employees.find((x) => x.employeeId === id);
     return e ? `${e.firstName} ${e.lastName}`.trim() : id;
   };
   const unitLabel = (id: string) => matrix.deliveryUnits.find((u) => u.orderId === id)?.label ?? id;
-
-  const showLayoutToolbar = activeRowId != null || activeColumnId != null;
 
   return (
     <section
@@ -292,89 +273,6 @@ export function PayrollAllocationMatrixWorkspace({
               </li>
             ))}
           </ul>
-        </div>
-      ) : null}
-
-      {showLayoutToolbar ? (
-        <div className="border-border border-b px-4 py-2">
-          <PayrollAllocationMatrixToolbar
-            viewMode={viewMode}
-            disabled={layoutDisabled}
-            activeRowId={activeRowId}
-            activeColumnId={activeColumnId}
-            columnPinned={pinTargetId != null && matrix.layout.pinnedUnitIds.includes(pinTargetId)}
-            onMoveColumn={(direction) => {
-              if (!activeColumnId) return;
-              if (viewMode === 'EMPLOYEE_MATRIX') {
-                const next = moveLayoutId(
-                  matrix.layout.columnOrder,
-                  activeColumnId,
-                  direction,
-                  unitIds,
-                );
-                void persistLayout({ columnOrder: next });
-              } else {
-                const next = moveLayoutId(
-                  matrix.layout.rowOrder,
-                  activeColumnId,
-                  direction,
-                  employeeIds,
-                );
-                void persistLayout({ rowOrder: next });
-              }
-            }}
-            onMoveRow={(direction) => {
-              if (!activeRowId) return;
-              if (viewMode === 'EMPLOYEE_MATRIX') {
-                const next = moveLayoutId(
-                  matrix.layout.rowOrder,
-                  activeRowId,
-                  direction,
-                  employeeIds,
-                );
-                void persistLayout({ rowOrder: next });
-              } else {
-                const next = moveLayoutId(
-                  matrix.layout.columnOrder,
-                  activeRowId,
-                  direction,
-                  unitIds,
-                );
-                void persistLayout({ columnOrder: next });
-              }
-            }}
-            onTogglePin={() => {
-              if (!pinTargetId) return;
-              const next = togglePinnedId(matrix.layout.pinnedUnitIds, pinTargetId);
-              void persistLayout({ pinnedUnitIds: next });
-            }}
-          />
-        </div>
-      ) : null}
-
-      {activeUnit || activeEmployee ? (
-        <div className="border-border bg-muted/30 flex flex-wrap gap-2 border-b px-4 py-2">
-          {activeUnit ? (
-            <div className="border-border bg-background rounded-lg border px-3 py-2 text-xs shadow-sm">
-              <p className="font-semibold">{activeUnit.label}</p>
-              <p className="text-muted-foreground tabular-nums">
-                Planned {formatAmount(Number.parseFloat(activeUnit.totalPlannedBonus))} · Remaining{' '}
-                {formatAmount(Number.parseFloat(activeUnit.totalRemainingBonus))} · Available{' '}
-                {formatAmount(Number.parseFloat(activeUnit.availableFunding))}
-              </p>
-            </div>
-          ) : null}
-          {activeEmployee ? (
-            <div className="border-border bg-background rounded-lg border px-3 py-2 text-xs shadow-sm">
-              <p className="font-semibold">
-                {activeEmployee.firstName} {activeEmployee.lastName}
-              </p>
-              <p className="text-muted-foreground tabular-nums">
-                Fix {formatAmount(Number.parseFloat(activeEmployee.baseSalary))} · Bonus this run{' '}
-                {formatAmount(Number.parseFloat(activeEmployee.bonusTotalThisRun))}
-              </p>
-            </div>
-          ) : null}
         </div>
       ) : null}
 

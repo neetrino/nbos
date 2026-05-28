@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import type { DragEndEvent, DraggableAttributes, SyntheticListenerMap } from '@dnd-kit/core';
 import {
   DndContext,
@@ -21,6 +21,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import {
   PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
+  PAYROLL_MATRIX_DATA_COL_WIDTH,
+  PAYROLL_MATRIX_DATA_COL_WIDTH_EXPANDED,
   PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
   PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
   PAYROLL_MATRIX_STICKY_HEADER_BG,
@@ -119,6 +121,8 @@ export function PayrollAllocationMatrixTableShell(props: {
   onActivateRow: (id: string | null) => void;
   onReorderColumns: (orderedIds: string[]) => void;
   onReorderRows: (orderedIds: string[]) => void;
+  renderAfterColumn?: (columnId: string) => ReactNode;
+  renderAfterRow?: (rowId: string) => ReactNode;
   children: (rowId: string) => ReactNode;
 }) {
   const {
@@ -133,6 +137,8 @@ export function PayrollAllocationMatrixTableShell(props: {
     onActivateRow,
     onReorderColumns,
     onReorderRows,
+    renderAfterColumn,
+    renderAfterRow,
     children,
   } = props;
 
@@ -186,13 +192,15 @@ export function PayrollAllocationMatrixTableShell(props: {
             </th>
             <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
               {columns.map((col) => (
-                <SortableMatrixColumnHeader
-                  key={col.id}
-                  col={col}
-                  active={activeColumnId === col.id}
-                  disabled={disabled}
-                  onActivate={() => onActivateColumn(activeColumnId === col.id ? null : col.id)}
-                />
+                <Fragment key={col.id}>
+                  <SortableMatrixColumnHeader
+                    col={col}
+                    expanded={activeColumnId === col.id}
+                    disabled={disabled}
+                    onActivate={() => onActivateColumn(activeColumnId === col.id ? null : col.id)}
+                  />
+                  {activeColumnId === col.id ? renderAfterColumn?.(col.id) : null}
+                </Fragment>
               ))}
             </SortableContext>
           </tr>
@@ -200,15 +208,18 @@ export function PayrollAllocationMatrixTableShell(props: {
         <tbody>
           <SortableContext items={rowIds} strategy={verticalListSortingStrategy}>
             {rows.map((row) => (
-              <tr key={row.id}>
-                <SortableMatrixRowHeader
-                  row={row}
-                  active={activeRowId === row.id}
-                  disabled={disabled}
-                  onActivate={() => onActivateRow(activeRowId === row.id ? null : row.id)}
-                />
-                {children(row.id)}
-              </tr>
+              <Fragment key={row.id}>
+                <tr>
+                  <SortableMatrixRowHeader
+                    row={row}
+                    expanded={activeRowId === row.id}
+                    disabled={disabled}
+                    onActivate={() => onActivateRow(activeRowId === row.id ? null : row.id)}
+                  />
+                  {children(row.id)}
+                </tr>
+                {activeRowId === row.id ? renderAfterRow?.(row.id) : null}
+              </Fragment>
             ))}
           </SortableContext>
         </tbody>
@@ -219,11 +230,11 @@ export function PayrollAllocationMatrixTableShell(props: {
 
 function SortableMatrixColumnHeader(props: {
   col: MatrixHeaderColumn;
-  active: boolean;
+  expanded: boolean;
   disabled: boolean;
   onActivate: () => void;
 }) {
-  const { col, active, disabled, onActivate } = props;
+  const { col, expanded, disabled, onActivate } = props;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: col.id,
     disabled,
@@ -240,8 +251,10 @@ function SortableMatrixColumnHeader(props: {
       className={cn(
         PAYROLL_MATRIX_STICKY_HEADER_BG,
         PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
-        'border-border min-w-[7.5rem] border-r border-b px-2 py-2 text-left align-bottom',
-        active && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
+        PAYROLL_MATRIX_DATA_COL_WIDTH,
+        expanded && PAYROLL_MATRIX_DATA_COL_WIDTH_EXPANDED,
+        'border-border border-r border-b px-2 py-2 text-left align-bottom',
+        expanded && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
         isDragging && 'opacity-70',
       )}
     >
@@ -274,11 +287,11 @@ function SortableMatrixColumnHeader(props: {
 
 function SortableMatrixRowHeader(props: {
   row: MatrixRowHeader;
-  active: boolean;
+  expanded: boolean;
   disabled: boolean;
   onActivate: () => void;
 }) {
-  const { row, active, disabled, onActivate } = props;
+  const { row, expanded, disabled, onActivate } = props;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: row.id,
     disabled,
@@ -297,7 +310,7 @@ function SortableMatrixRowHeader(props: {
         PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
         PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
         'border-border sticky left-0 z-30 border-r border-b px-3 py-2.5 text-left',
-        active && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
+        expanded && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
         isDragging && 'opacity-70',
       )}
     >

@@ -21,5 +21,9 @@ export const PAYROLL_MATRIX_TABLE_CLASS =
 
 export const PAYROLL_MATRIX_COLUMN_HEADER_STICKY = 'sticky top-0 z-20';
 
+export const PAYROLL_MATRIX_DATA_COL_WIDTH = 'min-w-[7.5rem]';
+
+export const PAYROLL_MATRIX_DATA_COL_WIDTH_EXPANDED = 'min-w-[15rem]';
+
 /** Below app dialogs (z-50) so matrix cell modals stay visible in full-screen mode. */
 export const PAYROLL_MATRIX_FULLSCREEN_Z = 'z-40';
