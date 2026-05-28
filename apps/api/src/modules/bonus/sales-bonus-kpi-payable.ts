@@ -43,6 +43,68 @@ async function loadKpiPayoutFactor(
   return row?.payoutFactor ?? new Decimal(1);
 }
 
+async function resolveSalesKpiPayoutFactor(
+  db: Db,
+  employeeId: string,
+  earnedPeriod: string,
+): Promise<Decimal> {
+  const profile = await db.compensationProfile.findFirst({
+    where: { employeeId, status: 'ACTIVE' },
+    select: { kpiPolicyId: true },
+    orderBy: { effectiveFrom: 'desc' },
+  });
+
+  if (profile?.kpiPolicyId == null) {
+    return new Decimal(1);
+  }
+
+  return loadKpiPayoutFactor(db, employeeId, earnedPeriod, profile.kpiPolicyId);
+}
+
+/**
+ * Writes payableAmount/kpiPayoutFactor on one Sales entry when month refresh skipped it
+ * (e.g. status is EARNED rather than INCOMING).
+ */
+export async function applyPayableSnapshotToSalesEntry(
+  db: Db,
+  bonusEntryId: string,
+): Promise<boolean> {
+  const entry = await db.bonusEntry.findUnique({
+    where: { id: bonusEntryId },
+    select: {
+      id: true,
+      type: true,
+      employeeId: true,
+      amount: true,
+      earnedPeriod: true,
+      payableAmount: true,
+      kpiPayoutFactor: true,
+    },
+  });
+  if (!entry || entry.type !== 'SALES') {
+    return false;
+  }
+  if (entry.payableAmount != null && entry.kpiPayoutFactor != null) {
+    return true;
+  }
+  const earnedPeriod = entry.earnedPeriod?.trim() ?? '';
+  if (!isValidPayrollMonth(earnedPeriod)) {
+    return false;
+  }
+
+  const factor = await resolveSalesKpiPayoutFactor(db, entry.employeeId, earnedPeriod);
+  const payable = entry.amount.mul(factor).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+  await db.bonusEntry.update({
+    where: { id: entry.id },
+    data: {
+      kpiPayoutFactor: factor,
+      payableAmount: payable,
+      kpiGatePassed: factor.gt(0),
+    },
+  });
+  return true;
+}
+
 /**
  * Syncs month KPI from payment facts, then updates payable on all open Sales bonuses
  * for that employee and earned month (one KPI % for the whole month).

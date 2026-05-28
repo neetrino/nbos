@@ -1,12 +1,39 @@
+import { BadRequestException } from '@nestjs/common';
 import { Decimal, type PrismaClient } from '@nbos/database';
 
 import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
-import { refreshSalesBonusesForEarnedMonth } from './sales-bonus-kpi-payable';
+import {
+  applyPayableSnapshotToSalesEntry,
+  refreshSalesBonusesForEarnedMonth,
+} from './sales-bonus-kpi-payable';
 
 type AttachDb = Pick<
   InstanceType<typeof PrismaClient>,
   'bonusEntry' | 'kpiResult' | 'kpiPolicy' | 'compensationProfile' | 'payment'
 >;
+
+const entrySelect = {
+  id: true,
+  title: true,
+  employeeId: true,
+  amount: true,
+  earnedPeriod: true,
+  payableAmount: true,
+  kpiPayoutFactor: true,
+  employee: { select: { firstName: true, lastName: true } },
+  order: { select: { code: true } },
+} as const;
+
+type SalesBonusAttachEntry = NonNullable<Awaited<ReturnType<AttachDb['bonusEntry']['findUnique']>>>;
+
+function formatSalesBonusAttachLabel(entry: SalesBonusAttachEntry): string {
+  const employeeName = [entry.employee.firstName, entry.employee.lastName]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+  const bonusLabel = entry.title?.trim() || `Order ${entry.order.code}`;
+  return employeeName ? `${bonusLabel} (${employeeName})` : bonusLabel;
+}
 
 export type SalesBonusPayableAtAttach = {
   fullAmount: Decimal;
@@ -27,18 +54,13 @@ export async function resolveSalesBonusPayableAtAttach(
 ): Promise<SalesBonusPayableAtAttach> {
   let entry = await db.bonusEntry.findUnique({
     where: { id: params.bonusEntryId },
-    select: {
-      id: true,
-      employeeId: true,
-      amount: true,
-      earnedPeriod: true,
-      payableAmount: true,
-      kpiPayoutFactor: true,
-    },
+    select: entrySelect,
   });
   if (!entry) {
-    throw new Error(`Bonus entry ${params.bonusEntryId} not found`);
+    throw new BadRequestException('Sales bonus not found.');
   }
+
+  const bonusLabel = formatSalesBonusAttachLabel(entry);
 
   if (
     (entry.payableAmount == null || entry.kpiPayoutFactor == null) &&
@@ -48,19 +70,13 @@ export async function resolveSalesBonusPayableAtAttach(
       employeeId: entry.employeeId,
       earnedPeriod: entry.earnedPeriod,
     });
+    await applyPayableSnapshotToSalesEntry(db, params.bonusEntryId);
     entry = await db.bonusEntry.findUnique({
       where: { id: params.bonusEntryId },
-      select: {
-        id: true,
-        employeeId: true,
-        amount: true,
-        earnedPeriod: true,
-        payableAmount: true,
-        kpiPayoutFactor: true,
-      },
+      select: entrySelect,
     });
     if (!entry) {
-      throw new Error(`Bonus entry ${params.bonusEntryId} not found after KPI refresh`);
+      throw new BadRequestException(`${bonusLabel} could not be loaded after KPI sync.`);
     }
   }
 
@@ -73,8 +89,9 @@ export async function resolveSalesBonusPayableAtAttach(
   }
 
   if (entry.payableAmount == null || entry.kpiPayoutFactor == null) {
-    throw new Error(
-      `Sales bonus ${params.bonusEntryId} has no payable snapshot for earned period ${entry.earnedPeriod ?? '—'}`,
+    throw new BadRequestException(
+      `${bonusLabel} has no KPI payout snapshot for earned month ${entry.earnedPeriod ?? '—'}. ` +
+        'Sync Sales KPI for that month, then retry.',
     );
   }
 

@@ -9,6 +9,7 @@ import { ErrorState, LoadingState } from '@/components/shared';
 import { PayrollAllocationMatrixGrid } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-grid';
 import { PayrollAllocationMatrixManualDialog } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-manual-dialog';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { formatPayrollMatrixCellError } from '@/features/finance/utils/format-payroll-matrix-cell-error';
 import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-layout-hero-actions';
 import {
   payrollAllocationMatrixApi,
@@ -169,13 +170,18 @@ export function PayrollAllocationMatrixWorkspace({
         setMatrix(updated);
         void refreshValidation();
       } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Could not update release.'));
+        toast.error(
+          formatPayrollMatrixCellError(caught, 'Could not update release.', {
+            cell,
+            matrix,
+          }),
+        );
         throw caught;
       } finally {
         setSavingCellKey(null);
       }
     },
-    [payrollRunId, refreshValidation],
+    [matrix, payrollRunId, refreshValidation],
   );
 
   const handleResetLayout = useCallback(() => {
