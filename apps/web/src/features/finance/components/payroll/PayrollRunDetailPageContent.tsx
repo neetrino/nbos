@@ -15,6 +15,7 @@ import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/componen
 import { PayrollAllocationMatrixStatsStrip } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-stats-strip';
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
 import { PayrollAllocationMatrixFullscreenControls } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-fullscreen-controls';
+import { PAYROLL_MATRIX_FULLSCREEN_Z } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import { PAYROLL_ALLOCATION_MATRIX_VIEW_OPTIONS } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-view-options';
 import { PayrollRunDetailHeroBar } from '@/features/finance/components/payroll/PayrollRunDetailHeroBar';
 import { PayrollRunDetailPageSettingsSheet } from '@/features/finance/components/payroll/PayrollRunDetailPageSettingsSheet';
@@ -32,6 +33,7 @@ import {
   type PayrollRunDetail,
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
+import { cn } from '@/lib/utils';
 
 export function PayrollRunDetailPageContent({
   payrollRunId,
@@ -253,12 +255,15 @@ export function PayrollRunDetailPageContent({
       <div
         className={
           matrixFullscreen
-            ? 'bg-background fixed inset-0 z-[200] flex min-h-0 flex-col p-3'
+            ? cn(
+                'bg-background fixed inset-0 flex min-h-0 flex-col p-3',
+                PAYROLL_MATRIX_FULLSCREEN_Z,
+              )
             : 'flex min-h-0 flex-1 flex-col'
         }
       >
         {matrixFullscreen ? (
-          <div className="absolute right-3 bottom-3 z-[210]">
+          <div className="absolute right-3 bottom-3 z-10">
             <PayrollAllocationMatrixFullscreenControls
               viewMode={matrixViewMode}
               onViewModeChange={setMatrixViewMode}

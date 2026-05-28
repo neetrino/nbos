@@ -20,3 +20,6 @@ export const PAYROLL_MATRIX_TABLE_CLASS =
   'w-max min-w-full border-separate border-spacing-0 text-xs';
 
 export const PAYROLL_MATRIX_COLUMN_HEADER_STICKY = 'sticky top-0 z-20';
+
+/** Below app dialogs (z-50) so matrix cell modals stay visible in full-screen mode. */
+export const PAYROLL_MATRIX_FULLSCREEN_Z = 'z-40';
