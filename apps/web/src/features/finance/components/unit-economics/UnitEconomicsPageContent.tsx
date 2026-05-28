@@ -3,11 +3,15 @@
 import { useState } from 'react';
 import { ViewModeSwitch } from '@/components/shared';
 import { BonusPoolsPageContent } from '@/features/finance/components/bonus/BonusPoolsPageContent';
+import { UnitEconomicsExpensesTable } from '@/features/finance/components/unit-economics/UnitEconomicsExpensesTable';
 import { UnitEconomicsOverviewTable } from '@/features/finance/components/unit-economics/UnitEconomicsOverviewTable';
+import { UnitEconomicsProfitabilityTable } from '@/features/finance/components/unit-economics/UnitEconomicsProfitabilityTable';
 
 const UNIT_ECONOMICS_VIEWS = [
   { value: 'overview' as const, label: 'Overview' },
   { value: 'funding' as const, label: 'Funding / cash' },
+  { value: 'expenses' as const, label: 'Expenses' },
+  { value: 'profitability' as const, label: 'Profitability' },
   { value: 'bonus-pools' as const, label: 'Bonus pools' },
 ];
 
@@ -31,6 +35,8 @@ export function UnitEconomicsPageContent() {
       />
       {view === 'overview' ? <UnitEconomicsOverviewTable variant="overview" /> : null}
       {view === 'funding' ? <UnitEconomicsOverviewTable variant="funding" /> : null}
+      {view === 'expenses' ? <UnitEconomicsExpensesTable /> : null}
+      {view === 'profitability' ? <UnitEconomicsProfitabilityTable /> : null}
       {view === 'bonus-pools' ? (
         <BonusPoolsPageContent documentTitle="Unit economics — bonus pools" />
       ) : null}

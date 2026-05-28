@@ -1,15 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { getApiErrorMessage } from '@/lib/api-errors';
-import {
-  unitEconomicsApi,
-  type UnitEconomicsList,
-  type UnitEconomicsRow,
-} from '@/lib/api/unit-economics';
+import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economics-list';
+import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
+import type { UnitEconomicsRow } from '@/lib/api/unit-economics';
 import { cn } from '@/lib/utils';
 
 function marginClass(margin: number): string {
@@ -18,7 +15,7 @@ function marginClass(margin: number): string {
   return 'text-muted-foreground';
 }
 
-function UnitEconomicsRowCells({ row }: { row: UnitEconomicsRow }) {
+function OverviewRowCells({ row }: { row: UnitEconomicsRow }) {
   const margin = Number.parseFloat(row.estimatedMargin);
   return (
     <>
@@ -117,30 +114,7 @@ export function UnitEconomicsOverviewTable({
 }: {
   variant?: 'overview' | 'funding';
 }) {
-  const [items, setItems] = useState<UnitEconomicsRow[]>([]);
-  const [totals, setTotals] = useState<UnitEconomicsList['totals'] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await unitEconomicsApi.list();
-      setItems(data.items);
-      setTotals(data.totals);
-    } catch (caught) {
-      setItems([]);
-      setTotals(null);
-      setError(getApiErrorMessage(caught, 'Unit economics could not be loaded.'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const { items, totals, loading, error, reload } = useUnitEconomicsList();
 
   const displayItems = useMemo(() => {
     if (variant !== 'funding') return items;
@@ -150,24 +124,13 @@ export function UnitEconomicsOverviewTable({
   }, [items, variant]);
 
   if (loading && items.length === 0) return <LoadingState />;
-  if (error) {
-    return <ErrorState description={error} onRetry={() => void load()} />;
-  }
+  if (error) return <ErrorState description={error} onRetry={() => void reload()} />;
 
   const isFunding = variant === 'funding';
 
   return (
     <div className="flex flex-col gap-3">
-      {totals ? (
-        <div className="text-muted-foreground flex flex-wrap gap-4 text-xs tabular-nums">
-          <span>Invoiced {formatAmount(Number.parseFloat(totals.invoicedAmount))}</span>
-          <span>Received {formatAmount(Number.parseFloat(totals.receivedAmount))}</span>
-          <span>Receivable {formatAmount(Number.parseFloat(totals.receivableAmount))}</span>
-          <span>Expenses {formatAmount(Number.parseFloat(totals.expensesPaidAmount))}</span>
-          <span>Planned bonuses {formatAmount(Number.parseFloat(totals.plannedBonuses))}</span>
-          <span>Available cash {formatAmount(Number.parseFloat(totals.availableCash))}</span>
-        </div>
-      ) : null}
+      {totals ? <UnitEconomicsTotalsBar totals={totals} /> : null}
       <div className="border-border bg-card overflow-auto rounded-xl border">
         <table
           className={cn(
@@ -239,7 +202,7 @@ export function UnitEconomicsOverviewTable({
             ) : (
               displayItems.map((row) => (
                 <tr key={row.orderId} className="hover:bg-muted/30">
-                  {isFunding ? <FundingRowCells row={row} /> : <UnitEconomicsRowCells row={row} />}
+                  {isFunding ? <FundingRowCells row={row} /> : <OverviewRowCells row={row} />}
                 </tr>
               ))
             )}

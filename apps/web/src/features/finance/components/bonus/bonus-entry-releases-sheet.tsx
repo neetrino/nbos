@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { Loader2 } from 'lucide-react';
 import { EntityDetailSheetContent } from '@/components/shared';
 import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { BonusEntryAuditPanel } from '@/features/finance/components/bonus/bonus-entry-audit-panel';
 import { BonusEntryReleaseAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-release-adjust-block';
 import { BonusEntryReleasesSheetSummary } from '@/features/finance/components/bonus/bonus-entry-releases-sheet-summary';
 import { BonusEntryReleasesSheetTable } from '@/features/finance/components/bonus/bonus-entry-releases-sheet-table';
@@ -62,6 +63,13 @@ export function BonusEntryReleasesSheet({
               totals={totals}
               releaseCount={ledger.rows.length}
             />
+          ) : null}
+
+          {entry ? (
+            <section aria-label="Audit trail" className="space-y-2">
+              <h3 className="text-foreground text-sm font-semibold">Audit trail</h3>
+              <BonusEntryAuditPanel bonusEntryId={entry.id} />
+            </section>
           ) : null}
 
           {ledger.loading ? (

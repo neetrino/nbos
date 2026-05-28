@@ -19,13 +19,16 @@
 
 ## Implementation log (`development`)
 
-| Commit     | Summary                                                                                    |
-| ---------- | ------------------------------------------------------------------------------------------ |
-| `1e984c54` | Phased plan in `todo.md`                                                                   |
-| `11c4930b` | Payroll allocation matrix + unit economics route                                           |
-| `dc9e3942` | Matrix cell releases + column layout controls                                              |
-| `e73b88f4` | Matrix v2 (DnD, planned/reassign, validation), unit economics API, bonus audit, docs slice |
-| `a58237bb` | P&L/cleanup docs, matrix bonus audit panel in cell dialog                                  |
+| Commit      | Summary                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `1e984c54`  | Phased plan in `todo.md`                                                                   |
+| `11c4930b`  | Payroll allocation matrix + unit economics route                                           |
+| `dc9e3942`  | Matrix cell releases + column layout controls                                              |
+| `e73b88f4`  | Matrix v2 (DnD, planned/reassign, validation), unit economics API, bonus audit, docs slice |
+| `a58237bb`  | P&L/cleanup docs, matrix bonus audit panel in cell dialog                                  |
+| `c8c7e404`  | Refresh todo.md progress table after matrix commits                                        |
+| `b6c38956`  | Unit economics Funding / cash tab                                                          |
+| _(pending)_ | Unit economics Expenses/Profitability tabs, shared bonus audit panel                       |
 
 ---
 

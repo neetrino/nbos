@@ -12,7 +12,7 @@ function actorLabel(entry: AuditLogEntry): string {
   return `${entry.actor.firstName} ${entry.actor.lastName}`.trim();
 }
 
-export function PayrollMatrixBonusAuditPanel({ bonusEntryId }: { bonusEntryId: string }) {
+export function BonusEntryAuditPanel({ bonusEntryId }: { bonusEntryId: string }) {
   const [items, setItems] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
