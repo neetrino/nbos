@@ -96,7 +96,7 @@ export function PayrollAllocationMatrixGrid(props: {
     return cellsByKey.get(`${employeeId}:${orderId}`);
   };
 
-  const cornerLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'Employee' : 'Delivery unit';
+  const cornerLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'Employee' : 'Order';
 
   return (
     <div className="border-border bg-card max-h-[min(70vh,48rem)] overflow-auto rounded-xl border">

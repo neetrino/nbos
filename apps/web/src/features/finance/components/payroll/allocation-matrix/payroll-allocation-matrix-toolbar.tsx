@@ -27,8 +27,8 @@ export function PayrollAllocationMatrixToolbar(props: {
     onResetLayout,
   } = props;
 
-  const columnLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'delivery unit column' : 'employee column';
-  const rowLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'employee row' : 'delivery unit row';
+  const columnLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'order column' : 'employee column';
+  const rowLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'employee row' : 'order row';
   const pinUnitId = viewMode === 'EMPLOYEE_MATRIX' ? activeColumnId : activeRowId;
 
   return (

@@ -5,34 +5,18 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { PayrollRunStatusBadge } from '@/features/finance/components/payroll/payroll-run-status-badge';
-import { PayrollAuditTrailEntry } from '@/features/finance/components/payroll/PayrollAuditTrailEntry';
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
-import { PayrollRunBonusReleasesSection } from '@/features/finance/components/payroll/payroll-run-bonus-releases-section';
-import { PayrollRunKpiResultsSection } from '@/features/finance/components/payroll/payroll-run-kpi-results-section';
 import { PayrollRunDetailActions } from '@/features/finance/components/payroll/PayrollRunDetailActions';
-import { PayrollRunSalaryLinesTable } from '@/features/finance/components/payroll/PayrollRunSalaryLinesTable';
-import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { usePayrollRunJournalAuditCsvExport } from '@/features/finance/components/payroll/use-payroll-run-journal-audit-csv-export';
 import { usePayrollRunSalaryLinesCsvExport } from '@/features/finance/components/payroll/use-payroll-run-salary-lines-csv-export';
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import { payrollRunsListHref } from '@/features/finance/constants/payroll-runs-list-url';
-import { PAYROLL_JOURNAL_KIND_LABEL } from '@/features/finance/constants/payroll-run-ui';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   payrollRunsApi,
   type PayrollRunDetail,
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
-
-function formatJournalAt(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-}
-
-function employeeName(emp: { firstName: string; lastName: string }): string {
-  return `${emp.firstName} ${emp.lastName}`.trim();
-}
 
 export function PayrollRunDetailPageContent({
   payrollRunId,
@@ -52,7 +36,6 @@ export function PayrollRunDetailPageContent({
   const [error, setError] = useState<string | null>(initialError);
   const [actionError, setActionError] = useState<string | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
-  const [openSalaryLineId, setOpenSalaryLineId] = useState<string | null>(null);
 
   useEffect(() => {
     setRun(initialRun);
@@ -175,61 +158,6 @@ export function PayrollRunDetailPageContent({
       ) : null}
 
       <PayrollAllocationMatrixWorkspace payrollRunId={payrollRunId} />
-
-      <PayrollRunKpiResultsSection run={run} />
-
-      <PayrollRunBonusReleasesSection run={run} onRunUpdated={setRun} />
-
-      <PayrollRunSalaryLinesTable lines={run.salaryLines} onOpenMonth={setOpenSalaryLineId} />
-
-      {run.auditTrail.length > 0 ? (
-        <section className="border-border bg-card rounded-xl border p-4">
-          <h2 className="text-foreground text-sm font-semibold">Audit trail</h2>
-          <ul className="mt-3 space-y-0">
-            {run.auditTrail.map((row) => (
-              <PayrollAuditTrailEntry
-                key={row.id}
-                row={row}
-                actorLabel={employeeName(row.actor)}
-                formatAt={formatJournalAt}
-              />
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      <section className="border-border bg-card rounded-xl border p-4">
-        <h2 className="text-foreground text-sm font-semibold">Run journal</h2>
-        <ul className="mt-3 space-y-0">
-          {run.journal.map((entry) => (
-            <li
-              key={`${entry.kind}-${entry.at}`}
-              className="border-border flex flex-wrap items-start justify-between gap-2 border-t py-3 first:border-t-0 first:pt-0"
-            >
-              <div className="min-w-0">
-                <p className="text-foreground text-sm font-medium">
-                  {PAYROLL_JOURNAL_KIND_LABEL[entry.kind]}
-                </p>
-                <p className="text-muted-foreground mt-0.5 text-xs">{entry.summary}</p>
-              </div>
-              <time
-                className="text-muted-foreground shrink-0 text-xs tabular-nums"
-                dateTime={entry.at}
-              >
-                {formatJournalAt(entry.at)}
-              </time>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <EmployeeMonthCompensationSheet
-        salaryLineId={openSalaryLineId}
-        open={Boolean(openSalaryLineId)}
-        onOpenChange={(next) => {
-          if (!next) setOpenSalaryLineId(null);
-        }}
-      />
     </div>
   );
 }

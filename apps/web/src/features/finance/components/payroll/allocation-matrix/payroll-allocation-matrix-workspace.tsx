@@ -20,8 +20,8 @@ import {
 } from '@/lib/api/payroll-allocation-matrix';
 
 const VIEW_OPTIONS = [
-  { value: 'EMPLOYEE_MATRIX' as const, label: 'By employee' },
-  { value: 'ORDER_MATRIX' as const, label: 'By order' },
+  { value: 'EMPLOYEE_MATRIX' as const, label: 'Employee × Order' },
+  { value: 'ORDER_MATRIX' as const, label: 'Order × Employees' },
 ];
 
 export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunId: string }) {
@@ -215,6 +215,14 @@ export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunI
 
   return (
     <section className="flex flex-col gap-4">
+      <div>
+        <h2 className="text-foreground text-sm font-semibold">Payment allocation matrix</h2>
+        <p className="text-muted-foreground mt-1 text-xs leading-snug">
+          Payroll is the payment workspace: choose who receives how much this month from each
+          project/order. KPI status lives in Salary Board and employee Wallet.
+        </p>
+      </div>
+
       {validationIssues.length > 0 ? (
         <div
           className="border-destructive/40 bg-destructive/5 text-destructive rounded-lg border px-3 py-2 text-xs"

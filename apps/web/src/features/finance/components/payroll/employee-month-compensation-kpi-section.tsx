@@ -42,14 +42,14 @@ export function EmployeeMonthCompensationKpiSection({ detail }: { detail: Salary
       </p>
       {kpi.source === 'NOT_SYNCED' ? (
         <p className="text-muted-foreground mt-2 text-xs leading-snug">
-          Sync Sales KPI on the{' '}
+          Finalize the Sales KPI month result outside Payroll. This{' '}
           <Link
             href={payrollRunDetailHref(detail.payrollRun.id)}
             className="text-primary font-medium hover:underline"
           >
             payroll run
           </Link>{' '}
-          before attaching Sales bonus releases.
+          can only consume the finalized payable result.
         </p>
       ) : null}
       {summary ? (
