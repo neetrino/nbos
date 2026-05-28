@@ -43,7 +43,9 @@
 | `d45e8baa`  | Add payroll UI action/read section for syncing and displaying KPI Result snapshots            |
 | `62163ccf`  | Align employee month KPI sheet with `KpiResult` read model; drop legacy fields from month API |
 | `59dd9e49`  | Remove legacy `kpiSales*` hints from payroll run list/detail API and salary line rows         |
-| _(pending)_ | Remove Payroll-owned KPI sync/results UI/API; move KPI status to Salary Board + Wallet        |
+| `26e0594b`  | Realign plan: KPI belongs in Salary Board/Wallet, not Payroll Run Detail                      |
+| `60158cfd`  | Remove Payroll-owned KPI sync/results UI/API and clean Payroll Detail to matrix workspace     |
+| _(pending)_ | Implement KPI status display in Salary Board employee month card/sheet and Wallet             |
 
 ---
 
