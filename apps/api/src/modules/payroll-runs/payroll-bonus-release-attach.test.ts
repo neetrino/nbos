@@ -40,6 +40,9 @@ function createTxMock() {
     kpiPolicy: {
       findFirst: vi.fn(),
     },
+    kpiResult: {
+      findFirst: vi.fn(),
+    },
   };
 }
 
@@ -70,14 +73,12 @@ describe('attachBonusReleasesToPayrollRun', () => {
     ).rejects.toThrow(NotFoundException);
   });
 
-  it('throws when SALES release attached but KPI actual missing', async () => {
+  it('throws when SALES release has a KPI policy but no KPI result snapshot', async () => {
     const tx = createTxMock();
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
       status: 'DRAFT',
       payrollMonth: '2026-05',
-      kpiSalesPlanAmount: new Decimal(1000),
-      kpiSalesActualAmount: null,
     });
     mockAttachReleaseFindMany(tx, [
       {
@@ -89,6 +90,27 @@ describe('attachBonusReleasesToPayrollRun', () => {
         bonusEntry: bonusEntry('SALES'),
       },
     ]);
+    tx.salaryLine.findUnique.mockResolvedValue({
+      id: 'sl1',
+      baseSalary: new Decimal(100),
+      bonusesTotal: new Decimal(0),
+      adjustmentsTotal: new Decimal(0),
+      deductionsTotal: new Decimal(0),
+      paidAmount: new Decimal(0),
+      payrollCarryAppliedAmount: null,
+    });
+    tx.compensationProfile.findFirst.mockResolvedValue({
+      id: 'cp1',
+      baseSalary: new Decimal(100),
+      currency: 'AMD',
+      kpiPolicyId: 'kp1',
+    });
+    tx.kpiPolicy.findFirst.mockResolvedValue({
+      gateRules: { bands: [{ minAttainmentPct: 70, payoutFactor: 1 }] },
+      bonusCapBaseSalaryMultiplier: new Decimal(2),
+    });
+    tx.kpiResult.findFirst.mockResolvedValue(null);
+
     await expect(
       attachBonusReleasesToPayrollRun(tx as never, {
         payrollRunId: 'run1',
@@ -103,8 +125,6 @@ describe('attachBonusReleasesToPayrollRun', () => {
       id: 'run1',
       status: 'DRAFT',
       payrollMonth: '2026-05',
-      kpiSalesPlanAmount: null,
-      kpiSalesActualAmount: null,
     });
     mockAttachReleaseFindMany(tx, [
       {
@@ -177,8 +197,6 @@ describe('attachBonusReleasesToPayrollRun', () => {
       id: 'run1',
       status: 'DRAFT',
       payrollMonth: '2026-05',
-      kpiSalesPlanAmount: null,
-      kpiSalesActualAmount: null,
     });
     mockAttachReleaseFindMany(tx, [
       {
@@ -211,14 +229,12 @@ describe('attachBonusReleasesToPayrollRun', () => {
     expect(tx.payrollRun.update).toHaveBeenCalled();
   });
 
-  it('applies sales KPI factor to SALES releases when plan/actual set', async () => {
+  it('applies sales KPI result payoutFactor to SALES releases', async () => {
     const tx = createTxMock();
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
       status: 'DRAFT',
       payrollMonth: '2026-05',
-      kpiSalesPlanAmount: new Decimal(1000),
-      kpiSalesActualAmount: new Decimal(600),
     });
     mockAttachReleaseFindMany(tx, [
       {
@@ -243,8 +259,21 @@ describe('attachBonusReleasesToPayrollRun', () => {
       remainingAmount: new Decimal(100),
       status: 'PENDING',
       payrollCarryAppliedAmount: null,
-      kpiSalesPlanAmount: null,
-      kpiSalesActualAmount: null,
+    });
+    tx.compensationProfile.findFirst.mockResolvedValue({
+      id: 'cp1',
+      baseSalary: new Decimal(100),
+      currency: 'AMD',
+      kpiPolicyId: 'kp1',
+    });
+    tx.kpiPolicy.findFirst.mockResolvedValue({
+      gateRules: { bands: [{ minAttainmentPct: 70, payoutFactor: 1 }] },
+      bonusCapBaseSalaryMultiplier: new Decimal(2),
+    });
+    tx.kpiResult.findFirst.mockResolvedValue({
+      planAmount: new Decimal(1000),
+      actualAmount: new Decimal(600),
+      payoutFactor: new Decimal('0.5'),
     });
     tx.salaryLine.aggregate.mockResolvedValue({
       _sum: {
@@ -280,14 +309,12 @@ describe('attachBonusReleasesToPayrollRun', () => {
     });
   });
 
-  it('uses per-employee sales KPI override instead of run defaults', async () => {
+  it('pays SALES release at 100% when employee has no KPI policy', async () => {
     const tx = createTxMock();
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
       status: 'DRAFT',
       payrollMonth: '2026-05',
-      kpiSalesPlanAmount: new Decimal(1000),
-      kpiSalesActualAmount: new Decimal(600),
     });
     mockAttachReleaseFindMany(tx, [
       {
@@ -312,8 +339,6 @@ describe('attachBonusReleasesToPayrollRun', () => {
       remainingAmount: new Decimal(100),
       status: 'PENDING',
       payrollCarryAppliedAmount: null,
-      kpiSalesPlanAmount: new Decimal(500),
-      kpiSalesActualAmount: new Decimal(500),
     });
     tx.salaryLine.aggregate.mockResolvedValue({
       _sum: {
@@ -346,8 +371,6 @@ describe('attachBonusReleasesToPayrollRun', () => {
       id: 'run1',
       status: 'DRAFT',
       payrollMonth: '2026-05',
-      kpiSalesPlanAmount: null,
-      kpiSalesActualAmount: null,
     });
     mockAttachReleaseFindMany(tx, [
       {
