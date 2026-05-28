@@ -1,13 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { Target } from 'lucide-react';
 import { DetailSheetSection } from '@/components/shared';
 import { buildSalesKpiGateSummary } from '@/features/finance/utils/sales-kpi-gate-summary';
+import { formatPayrollMonthShort } from '@/features/finance/utils/salary-board-month-utils';
 import type { EmployeeSalesKpiSource, SalaryLineMonthDetail } from '@/lib/api/payroll-runs';
-
-function payrollRunDetailHref(runId: string): string {
-  return `/finance/payroll/${runId}`;
-}
 
 function sourceLabel(source: EmployeeSalesKpiSource): string {
   switch (source) {
@@ -21,35 +19,32 @@ function sourceLabel(source: EmployeeSalesKpiSource): string {
 }
 
 export function EmployeeMonthCompensationKpiSection({ detail }: { detail: SalaryLineMonthDetail }) {
-  const kpi = detail.employeeSalesKpi;
-  const summary = buildSalesKpiGateSummary(kpi.planAmount, kpi.actualAmount);
-  const showSection =
-    kpi.source === 'NOT_SYNCED' ||
-    kpi.source === 'NO_KPI_POLICY' ||
-    summary != null ||
-    kpi.effectivePayoutScaleLabel != null;
-
-  if (!showSection) {
+  if (!detail.hasKpiPolicy) {
     return null;
   }
 
+  const kpi = detail.employeeSalesKpi;
+  const summary = buildSalesKpiGateSummary(kpi.planAmount, kpi.actualAmount);
+  const earnedLabel =
+    detail.earnedPeriod != null ? formatPayrollMonthShort(detail.earnedPeriod) : '—';
+
   return (
-    <DetailSheetSection title="Sales KPI payout result">
-      <p className="text-muted-foreground text-xs">{sourceLabel(kpi.source)}</p>
+    <DetailSheetSection title="Sales KPI" icon={<Target className="size-4" aria-hidden />}>
+      <p className="text-muted-foreground text-xs">
+        Earned month {earnedLabel} · payout month {formatPayrollMonthShort(detail.payrollMonth)}
+      </p>
+      <p className="text-muted-foreground mt-2 text-xs">{sourceLabel(kpi.source)}</p>
       <p className="text-muted-foreground mt-2 text-xs leading-snug">
-        KPI policy is managed in My Company. Payroll uses synced monthly snapshots when attaching
-        Sales bonuses.
+        KPI policy is managed in{' '}
+        <Link href="/my-company/compensation" className="text-primary font-medium hover:underline">
+          My Company → Compensation
+        </Link>
+        . Payroll consumes finalized snapshots when attaching Sales bonuses.
       </p>
       {kpi.source === 'NOT_SYNCED' ? (
         <p className="text-muted-foreground mt-2 text-xs leading-snug">
-          Finalize the Sales KPI month result outside Payroll. This{' '}
-          <Link
-            href={payrollRunDetailHref(detail.payrollRun.id)}
-            className="text-primary font-medium hover:underline"
-          >
-            payroll run
-          </Link>{' '}
-          can only consume the finalized payable result.
+          No KPI snapshot for earned month {earnedLabel} yet. Included Sales bonuses will scale at
+          attach once the month result is available.
         </p>
       ) : null}
       {summary ? (

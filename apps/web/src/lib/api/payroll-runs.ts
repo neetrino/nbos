@@ -23,6 +23,17 @@ export interface PayrollAuditTrailRow {
 
 export type SalaryLineStatus = 'PENDING' | 'APPROVED' | 'PARTIALLY_PAID' | 'PAID' | 'HELD';
 
+export type EmployeeSalesKpiSource = 'KPI_RESULT' | 'NO_KPI_POLICY' | 'NOT_SYNCED';
+
+export interface SalaryBoardSalesKpiSummary {
+  earnedPeriod: string;
+  source: EmployeeSalesKpiSource;
+  planAmount: string | null;
+  actualAmount: string | null;
+  attainmentPct: string | null;
+  payoutFactorPct: string | null;
+}
+
 export interface SalaryBoardCell {
   salaryLineId: string;
   payrollRunId: string;
@@ -33,6 +44,7 @@ export interface SalaryBoardCell {
   totalPayable: string;
   paidAmount: string;
   remainingAmount: string;
+  salesKpiSummary?: SalaryBoardSalesKpiSummary;
 }
 
 export interface SalaryBoardColumn {
@@ -125,8 +137,6 @@ export interface PayrollRunDetail extends PayrollRunListRow {
   auditTrail: PayrollAuditTrailRow[];
 }
 
-export type EmployeeSalesKpiSource = 'KPI_RESULT' | 'NO_KPI_POLICY' | 'NOT_SYNCED';
-
 export interface EmployeeSalesKpiDetail {
   planAmount: string | null;
   actualAmount: string | null;
@@ -205,6 +215,8 @@ export interface SalaryLineMonthDetail {
     id: string;
     status: PayrollRunStatus;
   };
+  hasKpiPolicy: boolean;
+  earnedPeriod: string | null;
   employeeSalesKpi: EmployeeSalesKpiDetail;
   salaryLine: {
     id: string;

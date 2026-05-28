@@ -19,6 +19,17 @@ export interface EmployeeSalesKpiDetailDto {
   effectivePayoutScaleLabel: string | null;
 }
 
+/** Compact KPI read model on Salary Board month cards (Sales with KPI policy only). */
+export interface SalaryBoardSalesKpiSummaryDto {
+  earnedPeriod: string;
+  source: EmployeeSalesKpiSourceDto;
+  planAmount: string | null;
+  actualAmount: string | null;
+  attainmentPct: string | null;
+  /** Whole-number percent derived from payout factor (e.g. 50 for 0.5). */
+  payoutFactorPct: string | null;
+}
+
 export interface BonusBreakdownSummaryDto {
   incomingCount: number;
   burnedTotal: string;
@@ -67,6 +78,10 @@ export interface SalaryLineMonthDetailDto {
   };
   /** Cap carry-over from earlier payroll months not yet applied to this line. */
   pendingPayrollCarryOver: string | null;
+  /** True when compensation profile has an active KPI policy for this payout month. */
+  hasKpiPolicy: boolean;
+  /** Earned sales month for KPI lookup (prior month when `hasKpiPolicy`). */
+  earnedPeriod: string | null;
   employeeSalesKpi: EmployeeSalesKpiDetailDto;
   salaryLine: {
     id: string;

@@ -53,6 +53,27 @@ describe('querySalaryBoard', () => {
         status: 'PENDING',
       },
     ]);
+    prisma.compensationProfile.findMany.mockResolvedValue([
+      {
+        employeeId: 'e1',
+        kpiPolicyId: 'kp1',
+        effectiveFrom: new Date('2026-01-01T00:00:00.000Z'),
+        effectiveTo: null,
+      },
+    ]);
+    prisma.kpiResult.findMany.mockResolvedValue([
+      {
+        employeeId: 'e1',
+        period: '2026-03',
+        kpiPolicyId: 'kp1',
+        salaryLineId: 'sl1',
+        payrollRunId: 'r1',
+        planAmount: new Decimal('10000'),
+        actualAmount: new Decimal('7000'),
+        attainmentPct: new Decimal('70'),
+        payoutFactor: new Decimal('1'),
+      },
+    ]);
 
     const result = await querySalaryBoard(prisma as never, {
       payrollMonthFrom: '2026-04',
@@ -75,6 +96,11 @@ describe('querySalaryBoard', () => {
       payrollRunId: 'r1',
       lineStatus: 'PENDING',
       totalPayable: '100.00',
+      salesKpiSummary: {
+        earnedPeriod: '2026-03',
+        source: 'KPI_RESULT',
+        payoutFactorPct: '100',
+      },
     });
   });
 

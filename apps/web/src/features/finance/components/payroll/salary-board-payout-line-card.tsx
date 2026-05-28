@@ -10,6 +10,7 @@ import {
   formatPayrollMonthShort,
   parseSalaryBoardAmount,
 } from '@/features/finance/utils/salary-board-month-utils';
+import { SalaryBoardSalesKpiStrip } from '@/features/finance/components/payroll/salary-board-sales-kpi-strip';
 
 export function SalaryBoardPayoutLineCard({
   entry,
@@ -47,6 +48,7 @@ export function SalaryBoardPayoutLineCard({
         {formatAmount(parseSalaryBoardAmount(entry.cell.paidAmount))} paid ·{' '}
         {formatAmount(remaining)} left
       </p>
+      <SalaryBoardSalesKpiStrip summary={entry.cell.salesKpiSummary} />
       <div className="mt-2 flex flex-wrap gap-1">
         <StatusBadge label={lineUi.label} variant={lineUi.variant} />
       </div>

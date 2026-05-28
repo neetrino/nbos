@@ -6,9 +6,8 @@ import {
   aggregateBonusBreakdownSummary,
   deriveBonusPolicyBreakdownStatuses,
 } from './bonus-policy-breakdown-status';
-import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
 import { sumPendingPayrollCarryOver } from './payroll-bonus-carry-over-apply';
-import { buildEmployeeSalesKpiDetailFromResult } from './employee-sales-kpi-month-detail';
+import { resolveEmployeeSalesKpiForPayoutMonth } from './load-employee-sales-kpi-for-period';
 import type {
   SalaryLineMonthBonusRow,
   SalaryLineMonthDetailDto,
@@ -219,32 +218,13 @@ export async function querySalaryLineMonthDetail(
     line.employeeId,
     line.payrollRun.payrollMonth,
   );
-  const payrollPolicy = await resolveCompensationPayrollPolicyForEmployee(
-    prisma,
-    line.employeeId,
-    line.payrollRun.payrollMonth,
-  );
-  const kpiResultRow =
-    payrollPolicy.kpiPolicyId != null
-      ? await prisma.kpiResult.findFirst({
-          where: {
-            employeeId: line.employeeId,
-            period: line.payrollRun.payrollMonth,
-            kpiPolicyId: payrollPolicy.kpiPolicyId,
-            OR: [{ salaryLineId: line.id }, { payrollRunId: line.payrollRunId }],
-          },
-          select: {
-            planAmount: true,
-            actualAmount: true,
-            attainmentPct: true,
-            payoutFactor: true,
-          },
-        })
-      : null;
-  const employeeSalesKpi = buildEmployeeSalesKpiDetailFromResult({
-    kpiPolicyId: payrollPolicy.kpiPolicyId,
-    result: kpiResultRow,
+  const salesKpi = await resolveEmployeeSalesKpiForPayoutMonth(prisma, {
+    employeeId: line.employeeId,
+    payoutMonth: line.payrollRun.payrollMonth,
+    salaryLineId: line.id,
+    payrollRunId: line.payrollRunId,
   });
+  const { earnedPeriod, hasKpiPolicy, ...employeeSalesKpi } = salesKpi;
 
   const summaryAgg = aggregateBonusBreakdownSummary(
     bonusBreakdown.map((row) => ({
@@ -271,6 +251,8 @@ export async function querySalaryLineMonthDetail(
   return {
     payoutPhase,
     pendingPayrollCarryOver: pendingCarry.gt(0) ? money(pendingCarry) : null,
+    hasKpiPolicy,
+    earnedPeriod,
     employeeSalesKpi,
     employee: line.employee,
     payrollMonth: line.payrollRun.payrollMonth,

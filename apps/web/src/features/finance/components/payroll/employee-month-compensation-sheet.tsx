@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Banknote, Loader2, Wallet } from 'lucide-react';
 import { DetailSheetSection, EntityDetailSheetContent, StatusBadge } from '@/components/shared';
 import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -19,6 +20,7 @@ import { PAYROLL_RUN_STATUS_LABEL } from '@/features/finance/constants/payroll-r
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import { salaryLineStatusBoardUi } from '@/features/finance/constants/salary-board-line-status';
 import { EmployeeMonthCompensationKpiSection } from '@/features/finance/components/payroll/employee-month-compensation-kpi-section';
+import { EmployeeMonthCompensationKpiSummaryLine } from '@/features/finance/components/payroll/employee-month-compensation-kpi-summary-line';
 import { SalaryMonthBonusBreakdown } from '@/features/finance/components/payroll/salary-month-bonus-breakdown';
 import { WalletMonthSheetHints } from '@/features/finance/components/payroll/wallet-month-sheet-hints';
 import {
@@ -201,9 +203,11 @@ export function EmployeeMonthCompensationSheet({
     ? 'Select a month on your wallet.'
     : 'Select a month cell on the salary board.';
 
+  const showKpiTab = detail?.hasKpiPolicy === true;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent open={open} layout="auxiliary" className="gap-0">
+      <EntityDetailSheetContent open={open} layout="full" width="wide" className="gap-0">
         <SheetHeader>
           <SheetTitle>
             {readOnly ? 'Your month compensation' : 'Employee month compensation'}
@@ -225,20 +229,42 @@ export function EmployeeMonthCompensationSheet({
           {!loading && !loadError && detail ? (
             <>
               {readOnly ? <WalletMonthSheetHints detail={detail} /> : null}
-              <SummaryGrid detail={detail} readOnly={readOnly} />
-              <EmployeeMonthCompensationKpiSection detail={detail} />
-              <DetailSheetSection
-                title="Bonus breakdown"
-                icon={<Banknote className="size-4" aria-hidden />}
-              >
-                <SalaryMonthBonusBreakdown detail={detail} />
-              </DetailSheetSection>
-              <DetailSheetSection
-                title={readOnly ? 'Payments' : 'Pay Now / payments'}
-                icon={<Banknote className="size-4" aria-hidden />}
-              >
-                <ExpensePaymentsSection detail={detail} readOnly={readOnly} />
-              </DetailSheetSection>
+              <Tabs defaultValue="general" className="flex min-h-0 flex-1 flex-col">
+                <TabsList variant="line" className="shrink-0">
+                  <TabsTrigger value="general">General</TabsTrigger>
+                  <TabsTrigger value="bonuses">Bonuses</TabsTrigger>
+                  {showKpiTab ? <TabsTrigger value="kpi">KPI</TabsTrigger> : null}
+                </TabsList>
+                <TabsContent value="general" className="min-h-0 flex-1 overflow-y-auto">
+                  <div className="flex flex-col gap-4 pt-2">
+                    <SummaryGrid detail={detail} readOnly={readOnly} />
+                    <EmployeeMonthCompensationKpiSummaryLine detail={detail} />
+                    <DetailSheetSection
+                      title={readOnly ? 'Payments' : 'Pay Now / payments'}
+                      icon={<Banknote className="size-4" aria-hidden />}
+                    >
+                      <ExpensePaymentsSection detail={detail} readOnly={readOnly} />
+                    </DetailSheetSection>
+                  </div>
+                </TabsContent>
+                <TabsContent value="bonuses" className="min-h-0 flex-1 overflow-y-auto">
+                  <div className="pt-2">
+                    <DetailSheetSection
+                      title="Bonus breakdown"
+                      icon={<Banknote className="size-4" aria-hidden />}
+                    >
+                      <SalaryMonthBonusBreakdown detail={detail} />
+                    </DetailSheetSection>
+                  </div>
+                </TabsContent>
+                {showKpiTab ? (
+                  <TabsContent value="kpi" className="min-h-0 flex-1 overflow-y-auto">
+                    <div className="pt-2">
+                      <EmployeeMonthCompensationKpiSection detail={detail} />
+                    </div>
+                  </TabsContent>
+                ) : null}
+              </Tabs>
             </>
           ) : null}
         </div>
