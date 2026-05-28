@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, ClipboardList, Download, Loader2, RefreshCcw } from 'lucide-react';
+import { BookOpen, ClipboardList, Download, LayoutGrid, Loader2, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageSettingsSheet } from '@/components/shared/PageSettingsSheet';
 import type { PayrollRunDetail } from '@/lib/api/payroll-runs';
@@ -14,6 +14,8 @@ export interface PayrollRunDetailPageSettingsSheetProps {
   onExportJournal: () => void;
   auditSubmitting: boolean;
   onExportAudit: () => void;
+  resetLayoutDisabled: boolean;
+  onResetLayout: () => void;
 }
 
 export function PayrollRunDetailPageSettingsSheet({
@@ -25,11 +27,13 @@ export function PayrollRunDetailPageSettingsSheet({
   onExportJournal,
   auditSubmitting,
   onExportAudit,
+  resetLayoutDisabled,
+  onResetLayout,
 }: PayrollRunDetailPageSettingsSheetProps) {
   return (
     <PageSettingsSheet
       title="Payroll run — settings"
-      description="Refresh data and export run artifacts."
+      description="Refresh data, reset matrix layout, and export run artifacts."
       triggerAriaLabel="Payroll run settings"
     >
       <Button
@@ -40,6 +44,16 @@ export function PayrollRunDetailPageSettingsSheet({
       >
         <RefreshCcw className="size-4 shrink-0" aria-hidden />
         Refresh run
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        className="justify-start gap-2"
+        disabled={resetLayoutDisabled}
+        onClick={() => onResetLayout()}
+      >
+        <LayoutGrid className="size-4 shrink-0" aria-hidden />
+        Reset allocation layout
       </Button>
       <Button
         type="button"

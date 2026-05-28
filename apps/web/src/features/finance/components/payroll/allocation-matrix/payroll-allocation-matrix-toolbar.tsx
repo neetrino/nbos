@@ -13,7 +13,6 @@ export function PayrollAllocationMatrixToolbar(props: {
   onMoveColumn: (direction: -1 | 1) => void;
   onMoveRow: (direction: -1 | 1) => void;
   onTogglePin: () => void;
-  onResetLayout: () => void;
 }) {
   const {
     viewMode,
@@ -24,31 +23,18 @@ export function PayrollAllocationMatrixToolbar(props: {
     onMoveColumn,
     onMoveRow,
     onTogglePin,
-    onResetLayout,
   } = props;
 
   const columnLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'order column' : 'employee column';
   const rowLabel = viewMode === 'EMPLOYEE_MATRIX' ? 'employee row' : 'order row';
   const pinUnitId = viewMode === 'EMPLOYEE_MATRIX' ? activeColumnId : activeRowId;
 
+  if (!activeColumnId && !activeRowId) {
+    return null;
+  }
+
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={disabled}
-          onClick={onResetLayout}
-        >
-          Reset layout
-        </Button>
-        {!activeColumnId && !activeRowId ? (
-          <span className="text-muted-foreground text-xs">
-            Select a header to reorder, or drag row/column grips.
-          </span>
-        ) : null}
-      </div>
+    <div className="flex flex-wrap items-center gap-2">
       {activeColumnId ? (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted-foreground text-xs">Column ({columnLabel})</span>
@@ -91,7 +77,7 @@ export function PayrollAllocationMatrixToolbar(props: {
         </div>
       ) : null}
       {activeRowId ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <>
           <span className="text-muted-foreground text-xs">Row ({rowLabel})</span>
           <Button
             type="button"
@@ -129,7 +115,7 @@ export function PayrollAllocationMatrixToolbar(props: {
               {columnPinned ? 'Unpin unit' : 'Pin unit'}
             </Button>
           ) : null}
-        </div>
+        </>
       ) : null}
     </div>
   );

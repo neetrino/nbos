@@ -10,6 +10,7 @@ import {
   useModuleHeroSlots,
   ViewModeSwitch,
 } from '@/components/shared';
+import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-layout-hero-actions';
 import { PayrollAllocationMatrixStatsStrip } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-stats-strip';
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
 import { PAYROLL_ALLOCATION_MATRIX_VIEW_OPTIONS } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-view-options';
@@ -52,6 +53,9 @@ export function PayrollRunDetailPageContent({
   const [matrixViewMode, setMatrixViewMode] = useState<PayrollMatrixViewMode>('EMPLOYEE_MATRIX');
   const [matrixSearch, setMatrixSearch] = useState('');
   const [matrixTotals, setMatrixTotals] = useState<PayrollAllocationMatrix['totals'] | null>(null);
+  const [layoutHeroActions, setLayoutHeroActions] = useState<PayrollMatrixLayoutHeroActions | null>(
+    null,
+  );
 
   useEffect(() => {
     setRun(initialRun);
@@ -140,6 +144,8 @@ export function PayrollRunDetailPageContent({
             onExportJournal={handleExportJournalCsv}
             auditSubmitting={auditSubmitting}
             onExportAudit={handleExportAuditCsv}
+            resetLayoutDisabled={layoutHeroActions?.resetDisabled ?? true}
+            onResetLayout={() => layoutHeroActions?.onResetLayout()}
           />
           <PayrollRunDetailStatusActions
             run={run}
@@ -158,6 +164,7 @@ export function PayrollRunDetailPageContent({
     handleExportSalaryLinesCsv,
     handleReload,
     journalSubmitting,
+    layoutHeroActions,
     matrixSearch,
     matrixViewMode,
     run,
@@ -240,6 +247,7 @@ export function PayrollRunDetailPageContent({
         viewMode={matrixViewMode}
         search={matrixSearch}
         onTotalsChange={setMatrixTotals}
+        onLayoutHeroActionsChange={setLayoutHeroActions}
       />
     </div>
   );

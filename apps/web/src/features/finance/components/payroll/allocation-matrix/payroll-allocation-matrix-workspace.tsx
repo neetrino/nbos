@@ -12,6 +12,7 @@ import { PayrollAllocationMatrixManualDialog } from '@/features/finance/componen
 import { PayrollAllocationMatrixToolbar } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-toolbar';
 import { moveLayoutId, togglePinnedId } from '@/features/finance/utils/payroll-matrix-layout-order';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-layout-hero-actions';
 import {
   payrollAllocationMatrixApi,
   type PayrollAllocationMatrix,
@@ -25,11 +26,13 @@ export function PayrollAllocationMatrixWorkspace({
   viewMode,
   search,
   onTotalsChange,
+  onLayoutHeroActionsChange,
 }: {
   payrollRunId: string;
   viewMode: PayrollMatrixViewMode;
   search: string;
   onTotalsChange?: (totals: PayrollAllocationMatrix['totals'] | null) => void;
+  onLayoutHeroActionsChange?: (actions: PayrollMatrixLayoutHeroActions | null) => void;
 }) {
   const [matrix, setMatrix] = useState<PayrollAllocationMatrix | null>(null);
   const [loading, setLoading] = useState(true);
@@ -203,6 +206,37 @@ export function PayrollAllocationMatrixWorkspace({
     }
   };
 
+  const handleResetLayout = useCallback(() => {
+    void (async () => {
+      setLayoutBusy(true);
+      try {
+        const updated = await payrollAllocationMatrixApi.resetLayout(payrollRunId, viewMode);
+        setMatrix(updated);
+        setActiveRowId(null);
+        setActiveColumnId(null);
+        toast.success('Layout reset');
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Layout could not be reset.'));
+      } finally {
+        setLayoutBusy(false);
+      }
+    })();
+  }, [payrollRunId, viewMode]);
+
+  const layoutDisabled = !matrix?.editable || layoutBusy;
+
+  useEffect(() => {
+    if (!matrix) {
+      onLayoutHeroActionsChange?.(null);
+      return;
+    }
+    onLayoutHeroActionsChange?.({
+      resetDisabled: layoutDisabled,
+      onResetLayout: handleResetLayout,
+    });
+    return () => onLayoutHeroActionsChange?.(null);
+  }, [handleResetLayout, layoutDisabled, matrix, onLayoutHeroActionsChange]);
+
   if (loading && !matrix) return <LoadingState />;
   if (error || !matrix || !displayMatrix) {
     return <ErrorState description={error ?? 'Not found'} onRetry={() => void load()} />;
@@ -233,86 +267,10 @@ export function PayrollAllocationMatrixWorkspace({
   };
   const unitLabel = (id: string) => matrix.deliveryUnits.find((u) => u.orderId === id)?.label ?? id;
 
-  const layoutDisabled = !matrix.editable || layoutBusy;
+  const showLayoutToolbar = activeRowId != null || activeColumnId != null;
 
   return (
     <section className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-sm">
-      <header className="border-border flex flex-col gap-3 border-b px-4 py-3">
-        <div>
-          <h2 className="text-foreground text-sm font-semibold">Payment allocation matrix</h2>
-          <p className="text-muted-foreground mt-0.5 text-xs leading-snug">
-            Allocate who receives how much this month from each project or order. KPI status lives
-            in Salary Board and Wallet.
-          </p>
-        </div>
-        <PayrollAllocationMatrixToolbar
-          viewMode={viewMode}
-          disabled={layoutDisabled}
-          activeRowId={activeRowId}
-          activeColumnId={activeColumnId}
-          columnPinned={pinTargetId != null && matrix.layout.pinnedUnitIds.includes(pinTargetId)}
-          onMoveColumn={(direction) => {
-            if (!activeColumnId) return;
-            if (viewMode === 'EMPLOYEE_MATRIX') {
-              const next = moveLayoutId(
-                matrix.layout.columnOrder,
-                activeColumnId,
-                direction,
-                unitIds,
-              );
-              void persistLayout({ columnOrder: next });
-            } else {
-              const next = moveLayoutId(
-                matrix.layout.rowOrder,
-                activeColumnId,
-                direction,
-                employeeIds,
-              );
-              void persistLayout({ rowOrder: next });
-            }
-          }}
-          onMoveRow={(direction) => {
-            if (!activeRowId) return;
-            if (viewMode === 'EMPLOYEE_MATRIX') {
-              const next = moveLayoutId(
-                matrix.layout.rowOrder,
-                activeRowId,
-                direction,
-                employeeIds,
-              );
-              void persistLayout({ rowOrder: next });
-            } else {
-              const next = moveLayoutId(matrix.layout.columnOrder, activeRowId, direction, unitIds);
-              void persistLayout({ columnOrder: next });
-            }
-          }}
-          onTogglePin={() => {
-            if (!pinTargetId) return;
-            const next = togglePinnedId(matrix.layout.pinnedUnitIds, pinTargetId);
-            void persistLayout({ pinnedUnitIds: next });
-          }}
-          onResetLayout={() => {
-            void (async () => {
-              setLayoutBusy(true);
-              try {
-                const updated = await payrollAllocationMatrixApi.resetLayout(
-                  payrollRunId,
-                  viewMode,
-                );
-                setMatrix(updated);
-                setActiveRowId(null);
-                setActiveColumnId(null);
-                toast.success('Layout reset');
-              } catch (caught) {
-                toast.error(getApiErrorMessage(caught, 'Layout could not be reset.'));
-              } finally {
-                setLayoutBusy(false);
-              }
-            })();
-          }}
-        />
-      </header>
-
       {validationIssues.length > 0 ? (
         <div
           className="border-destructive/40 bg-destructive/5 text-destructive border-b px-4 py-2 text-xs"
@@ -326,6 +284,63 @@ export function PayrollAllocationMatrixWorkspace({
               </li>
             ))}
           </ul>
+        </div>
+      ) : null}
+
+      {showLayoutToolbar ? (
+        <div className="border-border border-b px-4 py-2">
+          <PayrollAllocationMatrixToolbar
+            viewMode={viewMode}
+            disabled={layoutDisabled}
+            activeRowId={activeRowId}
+            activeColumnId={activeColumnId}
+            columnPinned={pinTargetId != null && matrix.layout.pinnedUnitIds.includes(pinTargetId)}
+            onMoveColumn={(direction) => {
+              if (!activeColumnId) return;
+              if (viewMode === 'EMPLOYEE_MATRIX') {
+                const next = moveLayoutId(
+                  matrix.layout.columnOrder,
+                  activeColumnId,
+                  direction,
+                  unitIds,
+                );
+                void persistLayout({ columnOrder: next });
+              } else {
+                const next = moveLayoutId(
+                  matrix.layout.rowOrder,
+                  activeColumnId,
+                  direction,
+                  employeeIds,
+                );
+                void persistLayout({ rowOrder: next });
+              }
+            }}
+            onMoveRow={(direction) => {
+              if (!activeRowId) return;
+              if (viewMode === 'EMPLOYEE_MATRIX') {
+                const next = moveLayoutId(
+                  matrix.layout.rowOrder,
+                  activeRowId,
+                  direction,
+                  employeeIds,
+                );
+                void persistLayout({ rowOrder: next });
+              } else {
+                const next = moveLayoutId(
+                  matrix.layout.columnOrder,
+                  activeRowId,
+                  direction,
+                  unitIds,
+                );
+                void persistLayout({ columnOrder: next });
+              }
+            }}
+            onTogglePin={() => {
+              if (!pinTargetId) return;
+              const next = togglePinnedId(matrix.layout.pinnedUnitIds, pinTargetId);
+              void persistLayout({ pinnedUnitIds: next });
+            }}
+          />
         </div>
       ) : null}
 
