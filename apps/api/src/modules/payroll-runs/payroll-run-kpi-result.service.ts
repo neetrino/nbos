@@ -112,7 +112,13 @@ export class PayrollRunKpiResultService {
 
       const policy = await this.prisma.kpiPolicy.findFirst({
         where: { id: profile.kpiPolicyId, status: 'ACTIVE' },
-        select: { id: true, gateRules: true },
+        select: {
+          id: true,
+          gateRules: true,
+          targetAmount: true,
+          targetSource: true,
+          resultSource: true,
+        },
       });
       if (!policy) continue;
 
@@ -121,10 +127,15 @@ export class PayrollRunKpiResultService {
         run.payrollMonth,
         line.employeeId,
       );
-      const plan = null;
+      const plan = policy.targetAmount;
       const actual = facts.total;
       const pct = attainmentPct(plan, actual);
       const factor = payoutFactor(plan, actual, policy.gateRules);
+      const sourceFacts = {
+        targetSource: policy.targetSource,
+        resultSource: policy.resultSource ?? 'SALES_PAYMENTS',
+        salesPayments: facts.payments,
+      };
 
       await this.prisma.kpiResult.upsert({
         where: {
@@ -146,7 +157,7 @@ export class PayrollRunKpiResultService {
           attainmentPct: pct,
           payoutFactor: factor,
           source: 'SYSTEM',
-          sourceFacts: { salesPayments: facts.payments },
+          sourceFacts,
         },
         update: {
           compensationProfileId: line.compensationProfileId ?? profile.id,
@@ -157,7 +168,7 @@ export class PayrollRunKpiResultService {
           attainmentPct: pct,
           payoutFactor: factor,
           source: 'SYSTEM',
-          sourceFacts: { salesPayments: facts.payments },
+          sourceFacts,
         },
       });
     }

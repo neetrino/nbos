@@ -19,6 +19,9 @@ function serializeKpiPolicy(
     templateCode: string;
     gateRules: unknown;
     scorecardMetrics: unknown;
+    targetAmount: Decimal | null;
+    targetSource: string | null;
+    resultSource: string | null;
     bonusCapBaseSalaryMultiplier: Decimal;
     status: KpiPolicyStatusEnum;
     scope: string | null;
@@ -34,6 +37,9 @@ function serializeKpiPolicy(
     templateCode: row.templateCode,
     gateRules: parseKpiGateRules(row.gateRules),
     scorecardMetrics: parseKpiScorecardMetrics(row.scorecardMetrics),
+    targetAmount: row.targetAmount?.toFixed(2) ?? null,
+    targetSource: row.targetSource,
+    resultSource: row.resultSource,
     bonusCapBaseSalaryMultiplier: bonusCapMultiplierToApiString(
       new Decimal(row.bonusCapBaseSalaryMultiplier),
     ),
@@ -52,6 +58,24 @@ function assertPolicyName(name: string): string {
     throw new BadRequestException('name must be between 2 and 120 characters');
   }
   return trimmed;
+}
+
+function assertOptionalMoney(
+  label: string,
+  value: number | null | undefined,
+): Decimal | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  if (!Number.isFinite(value) || value < 0) {
+    throw new BadRequestException(`${label} must be a non-negative finite number`);
+  }
+  return new Decimal(value);
+}
+
+function optionalText(value: string | null | undefined): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  return value.trim() || null;
 }
 
 @Injectable()
@@ -92,6 +116,9 @@ export class KpiPoliciesService {
         templateCode: KPI_POLICY_TEMPLATE_GATE_PAYOUT,
         gateRules,
         scorecardMetrics,
+        targetAmount: assertOptionalMoney('targetAmount', body.targetAmount),
+        targetSource: body.targetSource?.trim() || null,
+        resultSource: body.resultSource?.trim() || null,
         bonusCapBaseSalaryMultiplier: capMultiplier,
         status: 'ACTIVE',
         scope: body.scope?.trim() || null,
@@ -119,6 +146,9 @@ export class KpiPoliciesService {
           body.scorecardMetrics !== undefined
             ? parseKpiScorecardMetrics(body.scorecardMetrics)
             : undefined,
+        targetAmount: assertOptionalMoney('targetAmount', body.targetAmount),
+        targetSource: optionalText(body.targetSource),
+        resultSource: optionalText(body.resultSource),
         bonusCapBaseSalaryMultiplier:
           body.bonusCapBaseSalaryMultiplier != null
             ? assertBonusCapBaseSalaryMultiplierInput(body.bonusCapBaseSalaryMultiplier)

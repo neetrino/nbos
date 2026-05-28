@@ -10,6 +10,7 @@ import { parseDraftsToRules, rulesToDrafts, type KpiGateBandDraft } from './kpi-
 import { KpiPolicyCapField, parseCapMultiplierDraft } from './kpi-policy-cap-field';
 import { KPI_POLICY_CAP_MULTIPLIER_DEFAULT } from './kpi-policy-cap.constants';
 import { KpiPolicyScorecardMetrics } from './kpi-policy-scorecard-metrics';
+import { KpiPolicyTargetField, parseTargetAmountDraft } from './kpi-policy-target-field';
 
 const STATUS_VARIANT: Record<string, 'green' | 'amber' | 'gray' | 'red'> = {
   ACTIVE: 'green',
@@ -29,6 +30,9 @@ export function KpiPolicyEditorCard({
     payload: {
       name: string;
       gateRules: KpiPolicyRow['gateRules'];
+      targetAmount: number | null;
+      targetSource: string;
+      resultSource: string;
       bonusCapBaseSalaryMultiplier: number;
       status: KpiPolicyRow['status'];
     },
@@ -39,6 +43,7 @@ export function KpiPolicyEditorCard({
   const [capMultiplier, setCapMultiplier] = useState(
     () => policy.bonusCapBaseSalaryMultiplier || String(KPI_POLICY_CAP_MULTIPLIER_DEFAULT),
   );
+  const [targetAmount, setTargetAmount] = useState(() => policy.targetAmount ?? '');
   const [status, setStatus] = useState(policy.status);
 
   const handleSave = async () => {
@@ -50,6 +55,9 @@ export function KpiPolicyEditorCard({
     await onSave(policy.id, {
       name: name.trim(),
       gateRules,
+      targetAmount: parseTargetAmountDraft(targetAmount),
+      targetSource: 'MANUAL_POLICY',
+      resultSource: 'SALES_PAYMENTS',
       bonusCapBaseSalaryMultiplier: cap,
       status,
     });
@@ -88,6 +96,9 @@ export function KpiPolicyEditorCard({
       </div>
       <div className="mb-4 max-w-xs">
         <KpiPolicyCapField value={capMultiplier} disabled={saving} onChange={setCapMultiplier} />
+      </div>
+      <div className="mb-4 max-w-xs">
+        <KpiPolicyTargetField value={targetAmount} disabled={saving} onChange={setTargetAmount} />
       </div>
       <KpiGateBandEditor bands={bands} onChange={setBands} disabled={saving} />
       <KpiPolicyScorecardMetrics metrics={policy.scorecardMetrics} />

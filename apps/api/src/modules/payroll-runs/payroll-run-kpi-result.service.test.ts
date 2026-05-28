@@ -47,6 +47,9 @@ describe('PayrollRunKpiResultService', () => {
     prisma.kpiPolicy.findFirst.mockResolvedValue({
       id: 'kp1',
       gateRules: { bands: [{ minAttainmentPct: 70, payoutFactor: 1 }] },
+      targetAmount: new Decimal(500),
+      targetSource: 'MANUAL_POLICY',
+      resultSource: 'SALES_PAYMENTS',
     });
     prisma.payment.findMany.mockResolvedValue([
       {
@@ -86,8 +89,13 @@ describe('PayrollRunKpiResultService', () => {
       expect.objectContaining({
         create: expect.objectContaining({
           employeeId: 'e1',
+          planAmount: new Decimal(500),
           actualAmount: new Decimal(300),
+          attainmentPct: new Decimal(60),
+          payoutFactor: new Decimal('0.0000'),
           sourceFacts: {
+            targetSource: 'MANUAL_POLICY',
+            resultSource: 'SALES_PAYMENTS',
             salesPayments: [
               expect.objectContaining({
                 paymentId: 'pay1',

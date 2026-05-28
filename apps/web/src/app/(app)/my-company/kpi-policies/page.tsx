@@ -16,6 +16,10 @@ import {
 } from '@/features/my-company/kpi-policies/kpi-policy-cap-field';
 import { KPI_POLICY_CAP_MULTIPLIER_DEFAULT } from '@/features/my-company/kpi-policies/kpi-policy-cap.constants';
 import { DEFAULT_SALES_SCORECARD_METRICS } from '@/features/my-company/kpi-policies/kpi-scorecard-metrics.types';
+import {
+  KpiPolicyTargetField,
+  parseTargetAmountDraft,
+} from '@/features/my-company/kpi-policies/kpi-policy-target-field';
 import { kpiPoliciesApi, type KpiPolicyRow, type KpiPolicyStatus } from '@/lib/api/kpi-policies';
 
 export default function KpiPoliciesPage() {
@@ -29,6 +33,7 @@ export default function KpiPoliciesPage() {
   const [newCapMultiplier, setNewCapMultiplier] = useState(
     String(KPI_POLICY_CAP_MULTIPLIER_DEFAULT),
   );
+  const [newTargetAmount, setNewTargetAmount] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,6 +58,9 @@ export default function KpiPoliciesPage() {
       name: string;
       gateRules: KpiPolicyRow['gateRules'];
       status: KpiPolicyStatus;
+      targetAmount: number | null;
+      targetSource: string;
+      resultSource: string;
       bonusCapBaseSalaryMultiplier: number;
     },
   ) => {
@@ -71,6 +79,7 @@ export default function KpiPoliciesPage() {
   const handleCreate = async () => {
     const gateRules = parseDraftsToRules(newBands);
     const cap = parseCapMultiplierDraft(newCapMultiplier);
+    const targetAmount = parseTargetAmountDraft(newTargetAmount);
     if (gateRules == null || cap == null || newName.trim().length < 2) {
       setError('Enter a policy name, valid cap (1–3), and valid bands before creating.');
       return;
@@ -81,12 +90,16 @@ export default function KpiPoliciesPage() {
         name: newName.trim(),
         gateRules,
         scorecardMetrics: DEFAULT_SALES_SCORECARD_METRICS,
+        targetAmount,
+        targetSource: 'MANUAL_POLICY',
+        resultSource: 'SALES_PAYMENTS',
         bonusCapBaseSalaryMultiplier: cap,
         scope: 'COMPANY',
       });
       setItems((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
       setNewName('');
       setNewBands(DEFAULT_GATE_BAND_DRAFTS);
+      setNewTargetAmount('');
       setError(null);
     } catch {
       setError('Could not create policy.');
@@ -139,6 +152,13 @@ export default function KpiPoliciesPage() {
                 value={newCapMultiplier}
                 disabled={creating}
                 onChange={setNewCapMultiplier}
+              />
+            </div>
+            <div className="mb-4 max-w-xs">
+              <KpiPolicyTargetField
+                value={newTargetAmount}
+                disabled={creating}
+                onChange={setNewTargetAmount}
               />
             </div>
             <KpiGateBandEditor bands={newBands} onChange={setNewBands} disabled={creating} />

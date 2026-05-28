@@ -26,6 +26,12 @@ model KpiPolicy {
   gateRules                    Json                @map("gate_rules")
   /// Reference scorecard metrics for the role (plan/actual links for payroll SALES KPI).
   scorecardMetrics             Json                @default("[]") @map("scorecard_metrics")
+  /// Policy-owned KPI target for the period (e.g. monthly Sales target). Payroll does not edit this.
+  targetAmount                 Decimal?            @map("target_amount") @db.Decimal(14, 2)
+  /// Human/source code for the target value, e.g. MANUAL_POLICY.
+  targetSource                 String?             @map("target_source")
+  /// Human/source code for actual facts, e.g. SALES_PAYMENTS.
+  resultSource                 String?             @map("result_source")
   /// Max variable bonus per month = base salary × this (NBOS default 2 = 200%).
   bonusCapBaseSalaryMultiplier Decimal             @default(2) @map("bonus_cap_base_salary_multiplier") @db.Decimal(4, 2)
   status                       KpiPolicyStatusEnum @default(ACTIVE)
