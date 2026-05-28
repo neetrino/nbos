@@ -9,6 +9,10 @@ import {
   CLOSED_DELIVERY_STATUSES,
   DELIVERY_BONUS_ORDER_TYPES,
 } from '../payroll-runs/delivery-payable-unit.types';
+import {
+  rollupUnitEconomicsByProduct,
+  rollupUnitEconomicsByProject,
+} from './unit-economics-rollups';
 import type { UnitEconomicsListDto, UnitEconomicsRowDto } from './unit-economics.types';
 
 function isDeliveryOpen(
@@ -79,9 +83,11 @@ export class UnitEconomicsListService {
         code: true,
         type: true,
         projectId: true,
+        productId: true,
+        extensionId: true,
         project: { select: { code: true, name: true } },
-        product: { select: { name: true, status: true } },
-        extension: { select: { name: true, status: true } },
+        product: { select: { id: true, name: true, status: true } },
+        extension: { select: { id: true, name: true, status: true } },
         productBonusPool: {
           select: {
             totalPlannedAmount: true,
@@ -134,13 +140,17 @@ export class UnitEconomicsListService {
       totalsAcc.cashBalance = totalsAcc.cashBalance.plus(decimalFrom(money.cashBalance));
       totalsAcc.outCommitted = totalsAcc.outCommitted.plus(decimalFrom(money.outCommittedAmount));
 
+      const label = unitLabel(order);
       items.push({
         orderId: order.id,
         orderCode: order.code,
-        label: unitLabel(order),
+        label,
         projectId: order.projectId,
         projectCode: order.project.code,
         projectName: order.project.name,
+        productId: order.productId,
+        extensionId: order.extensionId,
+        productLabel: label,
         orderType: order.type as 'PRODUCT' | 'EXTENSION',
         deliveryOpen: isDeliveryOpen(order.product?.status, order.extension?.status),
         ...money,
@@ -149,6 +159,8 @@ export class UnitEconomicsListService {
 
     return {
       items,
+      projects: rollupUnitEconomicsByProject(items),
+      products: rollupUnitEconomicsByProduct(items),
       totals: {
         invoicedAmount: totalsAcc.invoiced.toFixed(2),
         receivedAmount: totalsAcc.received.toFixed(2),

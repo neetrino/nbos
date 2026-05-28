@@ -439,19 +439,22 @@ Layout (row/column order, pins) — в БД per user, per payroll run, per view 
 
 **Путь:** `/finance/unit-economics` (зона Finance Overview).
 
-Операционный экран финансового состояния delivery unit (Product / Extension): invoiced, received, receivable, expenses, bonuses, available cash, margin.
+Операционный hub денег по delivery unit (Product / Extension): **In** (received + receivable), **Out** (spent + bonus to pay + committed), **Balance** (cash, margin). Bonuses — часть Out, не отдельный продукт.
 
 Вкладки:
 
-| Tab            | Содержание                                     |
-| -------------- | ---------------------------------------------- |
-| Overview       | Таблица delivery units + итоги                 |
-| Funding / cash | Received, available cash, over funding, margin |
-| Expenses       | Expenses + bonus columns по unit               |
-| Profitability  | Margin, received, expenses, released           |
-| By project     | Roll-up received / spent / margin по проекту   |
+| Tab           | Содержание                                    |
+| ------------- | --------------------------------------------- |
+| By unit       | Таблица delivery units + итоги                |
+| By project    | Roll-up In/Out/Balance по проекту (с API)     |
+| By product    | Roll-up по product / extension внутри проекта |
+| Cash          | Received, cash balance, margin                |
+| Outflows      | Spent + bonus columns по unit                 |
+| Profitability | Margin, received, expenses, bonus commitments |
 
-Drill-down: клик по суммам In/Out открывает sheet (**Invoices**, **Payments**, **Expenses**, **Bonuses**); кнопка **Bonus breakdown** — детальный ledger по unit (`ProductBonusPoolSheet`). `/finance/bonus-pools` редиректит сюда. API: `GET /api/unit-economics`, `GET /api/unit-economics/orders/:orderId`.
+Drill-down: клик по суммам In/Out открывает sheet (**Invoices**, **Payments**, **Expenses**, **Bonuses**); кнопка **Bonus breakdown** — order-scoped pool (`ProductBonusPoolSheet`, данные из order detail, не `GET /api/bonus/products/pools`). `/finance/bonus-pools` редиректит сюда.
+
+API: `GET /api/unit-economics` (items + `projects` + `products` roll-ups + totals), `GET /api/unit-economics/orders/:orderId` (drill-down + `bonusBreakdown`).
 
 Связь с P&L: те же факты; Unit Economics — для работы Finance, P&L — read-only аналитика.
 

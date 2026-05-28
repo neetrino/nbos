@@ -22,9 +22,96 @@ export type UnitEconomicsRowDto = {
   projectId: string;
   projectCode: string;
   projectName: string;
+  productId: string | null;
+  extensionId: string | null;
+  productLabel: string;
   orderType: 'PRODUCT' | 'EXTENSION';
   deliveryOpen: boolean;
 } & UnitEconomicsMoneyFields;
+
+export type UnitEconomicsProjectRollupDto = {
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  unitCount: number;
+  receivedAmount: string;
+  receivableAmount: string;
+  expensesPaidAmount: string;
+  remainingBonuses: string;
+  cashBalance: string;
+  outCommittedAmount: string;
+  marginAfterCommitments: string;
+};
+
+export type UnitEconomicsProductRollupDto = {
+  rollupKey: string;
+  kind: 'PRODUCT' | 'EXTENSION' | 'ORDER';
+  label: string;
+  projectId: string;
+  projectCode: string;
+  unitCount: number;
+  receivedAmount: string;
+  receivableAmount: string;
+  expensesPaidAmount: string;
+  remainingBonuses: string;
+  cashBalance: string;
+  outCommittedAmount: string;
+  marginAfterCommitments: string;
+};
+
+export type UnitEconomicsBonusEmployeeLineDto = {
+  employeeId: string;
+  employeeName: string;
+  role: string | null;
+  bonusTypes: string[];
+  entryCount: number;
+  plannedAmount: string;
+  pipelineAmount: string;
+  releasedAmount: string;
+  includedInPayrollAmount: string;
+  paidAmount: string;
+  remainingAmount: string;
+  burnedAmount: string | null;
+  carryOverAmount: string | null;
+  suggestedReleaseAmount: string | null;
+  kpiGatePassed: boolean | null;
+  primaryStatus: string | null;
+};
+
+/** Order-scoped bonus ledger for Unit Economics drill-down (not a separate Finance page). */
+export type UnitEconomicsBonusPoolDto = {
+  poolKey: string;
+  poolKind: 'ORDER';
+  anchorOrderId: string;
+  poolName: string;
+  orderCode: string;
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  entryCount: number;
+  employeeCount: number;
+  sumTotalAmount: string;
+  sumPipelineAmount: string;
+  sumPaidAmount: string;
+  sumClawbackAmount: string;
+  ledgerPlannedAmount: string | null;
+  ledgerReleasedAmount: string | null;
+  ledgerRemainingAmount: string | null;
+  ledgerAvailableFunding: string | null;
+  ledgerOverFundingAmount: string | null;
+  ledgerReceivedAmount: string | null;
+  ledgerPoolStatus: string | null;
+  orderIds: string[];
+  orderCodes: string[];
+  fundingHealth: string;
+  fundingFillPercent: number | null;
+};
+
+export type UnitEconomicsBonusBreakdownDto = {
+  poolKey: string;
+  pool: UnitEconomicsBonusPoolDto | null;
+  employeeLines: UnitEconomicsBonusEmployeeLineDto[];
+};
 
 export type UnitEconomicsListDto = {
   items: UnitEconomicsRowDto[];
@@ -37,6 +124,8 @@ export type UnitEconomicsListDto = {
     cashBalance: string;
     outCommittedAmount: string;
   };
+  projects: UnitEconomicsProjectRollupDto[];
+  products: UnitEconomicsProductRollupDto[];
 };
 
 export type UnitEconomicsInvoiceLineDto = {
@@ -93,4 +182,5 @@ export type UnitEconomicsOrderDetailDto = {
   payments: UnitEconomicsPaymentLineDto[];
   expenses: UnitEconomicsExpenseLineDto[];
   bonuses: UnitEconomicsBonusLineDto[];
+  bonusBreakdown: UnitEconomicsBonusBreakdownDto;
 };

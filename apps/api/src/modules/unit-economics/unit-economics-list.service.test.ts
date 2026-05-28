@@ -11,8 +11,10 @@ describe('UnitEconomicsListService', () => {
             code: 'ORD-1',
             type: 'PRODUCT',
             projectId: 'p1',
-            project: { code: 'PRJ' },
-            product: { name: 'App', status: 'DONE' },
+            productId: 'prod-1',
+            extensionId: null,
+            project: { code: 'PRJ', name: 'Project' },
+            product: { id: 'prod-1', name: 'App', status: 'DONE' },
             extension: null,
             productBonusPool: null,
           },
@@ -29,6 +31,8 @@ describe('UnitEconomicsListService', () => {
     const result = await service.list();
 
     expect(result.items).toEqual([]);
+    expect(result.projects).toEqual([]);
+    expect(result.products).toEqual([]);
     expect(result.totals.receivedAmount).toBe('0.00');
   });
 
@@ -41,9 +45,11 @@ describe('UnitEconomicsListService', () => {
             code: 'ORD-2',
             type: 'EXTENSION',
             projectId: 'p1',
-            project: { code: 'PRJ' },
+            productId: null,
+            extensionId: 'ext-1',
+            project: { code: 'PRJ', name: 'Project' },
             product: null,
-            extension: { name: 'Phase 2', status: 'IN_PROGRESS' },
+            extension: { id: 'ext-1', name: 'Phase 2', status: 'IN_PROGRESS' },
             productBonusPool: {
               totalPlannedAmount: '1000',
               totalReleasedAmount: '200',
@@ -68,5 +74,9 @@ describe('UnitEconomicsListService', () => {
     expect(result.items[0]?.plannedBonuses).toBe('1000.00');
     expect(result.items[0]?.expensesPaidAmount).toBe('50.00');
     expect(result.items[0]?.deliveryOpen).toBe(true);
+    expect(result.items[0]?.extensionId).toBe('ext-1');
+    expect(result.projects).toHaveLength(1);
+    expect(result.products).toHaveLength(1);
+    expect(result.products[0]?.kind).toBe('EXTENSION');
   });
 });

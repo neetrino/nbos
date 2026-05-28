@@ -25,9 +25,76 @@ export type UnitEconomicsRow = {
   projectId: string;
   projectCode: string;
   projectName: string;
+  productId: string | null;
+  extensionId: string | null;
+  productLabel: string;
   orderType: 'PRODUCT' | 'EXTENSION';
   deliveryOpen: boolean;
 } & UnitEconomicsMoneyFields;
+
+export type UnitEconomicsProjectRollup = {
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  unitCount: number;
+  receivedAmount: string;
+  receivableAmount: string;
+  expensesPaidAmount: string;
+  remainingBonuses: string;
+  cashBalance: string;
+  outCommittedAmount: string;
+  marginAfterCommitments: string;
+};
+
+export type UnitEconomicsProductRollup = {
+  rollupKey: string;
+  kind: 'PRODUCT' | 'EXTENSION' | 'ORDER';
+  label: string;
+  projectId: string;
+  projectCode: string;
+  unitCount: number;
+  receivedAmount: string;
+  receivableAmount: string;
+  expensesPaidAmount: string;
+  remainingBonuses: string;
+  cashBalance: string;
+  outCommittedAmount: string;
+  marginAfterCommitments: string;
+};
+
+export type UnitEconomicsBonusPool = {
+  poolKey: string;
+  poolKind: 'ORDER';
+  anchorOrderId: string;
+  poolName: string;
+  orderCode: string;
+  projectId: string;
+  projectCode: string;
+  projectName: string;
+  entryCount: number;
+  employeeCount: number;
+  sumTotalAmount: string;
+  sumPipelineAmount: string;
+  sumPaidAmount: string;
+  sumClawbackAmount: string;
+  ledgerPlannedAmount: string | null;
+  ledgerReleasedAmount: string | null;
+  ledgerRemainingAmount: string | null;
+  ledgerAvailableFunding: string | null;
+  ledgerOverFundingAmount: string | null;
+  ledgerReceivedAmount: string | null;
+  ledgerPoolStatus: string | null;
+  orderIds: string[];
+  orderCodes: string[];
+  fundingHealth: string;
+  fundingFillPercent: number | null;
+};
+
+export type UnitEconomicsBonusBreakdown = {
+  poolKey: string;
+  pool: UnitEconomicsBonusPool | null;
+  employeeLines: unknown[];
+};
 
 export type UnitEconomicsList = {
   items: UnitEconomicsRow[];
@@ -40,6 +107,8 @@ export type UnitEconomicsList = {
     cashBalance: string;
     outCommittedAmount: string;
   };
+  projects: UnitEconomicsProjectRollup[];
+  products: UnitEconomicsProductRollup[];
 };
 
 export type UnitEconomicsInvoiceLine = {
@@ -96,6 +165,7 @@ export type UnitEconomicsOrderDetail = {
   payments: UnitEconomicsPaymentLine[];
   expenses: UnitEconomicsExpenseLine[];
   bonuses: UnitEconomicsBonusLine[];
+  bonusBreakdown: UnitEconomicsBonusBreakdown;
 };
 
 export type UnitEconomicsDrilldownFocus = 'invoices' | 'payments' | 'expenses' | 'bonuses';

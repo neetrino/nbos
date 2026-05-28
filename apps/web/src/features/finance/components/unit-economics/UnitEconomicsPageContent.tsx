@@ -8,12 +8,14 @@ import { useUnitEconomicsPoolSheet } from '@/features/finance/hooks/use-unit-eco
 import { UnitEconomicsExpensesTable } from '@/features/finance/components/unit-economics/UnitEconomicsExpensesTable';
 import { UnitEconomicsOverviewTable } from '@/features/finance/components/unit-economics/UnitEconomicsOverviewTable';
 import { UnitEconomicsProfitabilityTable } from '@/features/finance/components/unit-economics/UnitEconomicsProfitabilityTable';
+import { UnitEconomicsProductTable } from '@/features/finance/components/unit-economics/UnitEconomicsProductTable';
 import { UnitEconomicsProjectTable } from '@/features/finance/components/unit-economics/UnitEconomicsProjectTable';
 import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
 
 const UNIT_ECONOMICS_VIEWS = [
   { value: 'overview' as const, label: 'By unit' },
   { value: 'projects' as const, label: 'By project' },
+  { value: 'products' as const, label: 'By product' },
   { value: 'funding' as const, label: 'Cash' },
   { value: 'expenses' as const, label: 'Outflows' },
   { value: 'profitability' as const, label: 'Profitability' },
@@ -60,6 +62,7 @@ export function UnitEconomicsPageContent() {
         <UnitEconomicsOverviewTable variant="overview" onDrilldown={onDrilldown} />
       ) : null}
       {view === 'projects' ? <UnitEconomicsProjectTable /> : null}
+      {view === 'products' ? <UnitEconomicsProductTable /> : null}
       {view === 'funding' ? (
         <UnitEconomicsOverviewTable variant="funding" onDrilldown={onDrilldown} />
       ) : null}

@@ -5,6 +5,7 @@ import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { sumPaymentsReceivedForOrder } from '../bonus/order-received-payments-sum';
 import { DELIVERY_BONUS_ORDER_TYPES } from '../payroll-runs/delivery-payable-unit.types';
 import { computeUnitEconomicsMoney, poolSnapshotFromRow } from './compute-unit-economics-money';
+import { loadUnitEconomicsOrderBonusBreakdown } from './load-unit-economics-order-bonus-breakdown';
 import { loadUnitEconomicsOrderBonuses } from './load-unit-economics-order-bonuses';
 import { loadUnitEconomicsOrderExpenses } from './load-unit-economics-order-expenses';
 import { computeReceivableAmount, sumInvoicedForOrder } from './order-invoice-totals';
@@ -38,10 +39,10 @@ export class UnitEconomicsOrderDetailService {
         id: true,
         code: true,
         type: true,
-        product: { select: { name: true } },
-        extension: { select: { name: true } },
+        product: { select: { id: true, name: true } },
+        extension: { select: { id: true, name: true } },
         projectId: true,
-        project: { select: { code: true } },
+        project: { select: { code: true, name: true } },
         productBonusPool: {
           select: {
             totalPlannedAmount: true,
@@ -56,11 +57,13 @@ export class UnitEconomicsOrderDetailService {
       throw new NotFoundException('Delivery unit not found');
     }
 
-    const [invoiced, received, expenses, bonuses, invoiceRows] = await Promise.all([
+    const label = unitLabel(order);
+    const [invoiced, received, expenses, bonuses, bonusBreakdown, invoiceRows] = await Promise.all([
       sumInvoicedForOrder(this.prisma, orderId),
       sumPaymentsReceivedForOrder(this.prisma, orderId),
       loadUnitEconomicsOrderExpenses(this.prisma, orderId),
       loadUnitEconomicsOrderBonuses(this.prisma, orderId),
+      loadUnitEconomicsOrderBonusBreakdown(this.prisma, order, label),
       this.prisma.invoice.findMany({
         where: { orderId, moneyStatus: { not: 'CANCELLED' } },
         select: {
@@ -125,7 +128,7 @@ export class UnitEconomicsOrderDetailService {
     return {
       orderId: order.id,
       orderCode: order.code,
-      label: unitLabel(order),
+      label,
       projectCode: order.project.code,
       projectId: order.projectId,
       orderType: order.type as 'PRODUCT' | 'EXTENSION',
@@ -134,6 +137,7 @@ export class UnitEconomicsOrderDetailService {
       payments,
       expenses,
       bonuses,
+      bonusBreakdown,
     };
   }
 }

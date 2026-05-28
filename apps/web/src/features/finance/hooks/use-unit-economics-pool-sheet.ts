@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { bonusesApi, type BonusProductPoolRow } from '@/lib/api/bonus';
+import type { BonusProductPoolRow } from '@/lib/api/bonus';
+import { unitEconomicsApi } from '@/lib/api/unit-economics';
+import { mapUeBonusPoolToProductRow } from '@/features/finance/utils/map-ue-bonus-pool-to-product-row';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 export function orderBonusPoolKey(orderId: string): string {
@@ -19,15 +21,14 @@ export function useUnitEconomicsPoolSheet(onPoolsRefresh?: () => void) {
     setError(null);
     setOpen(true);
     try {
-      const pools = await bonusesApi.getProductPools();
-      const key = orderBonusPoolKey(orderId);
-      const row = pools.find((p) => p.poolKey === key) ?? null;
-      if (!row) {
-        setError('No bonus pool data for this delivery unit yet.');
+      const detail = await unitEconomicsApi.orderDetail(orderId);
+      const uePool = detail.bonusBreakdown.pool;
+      if (!uePool) {
+        setError('No bonus data for this delivery unit yet.');
         setPool(null);
         return;
       }
-      setPool(row);
+      setPool(mapUeBonusPoolToProductRow(uePool));
     } catch (caught: unknown) {
       setPool(null);
       setError(getApiErrorMessage(caught, 'Could not load bonus pool detail.'));

@@ -2,6 +2,14 @@ import { NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { UnitEconomicsOrderDetailService } from './unit-economics-order-detail.service';
 
+vi.mock('./load-unit-economics-order-bonus-breakdown', () => ({
+  loadUnitEconomicsOrderBonusBreakdown: vi.fn().mockResolvedValue({
+    poolKey: 'order:o1',
+    pool: null,
+    employeeLines: [],
+  }),
+}));
+
 describe('UnitEconomicsOrderDetailService', () => {
   it('throws when order is not a delivery unit', async () => {
     const prisma = {
@@ -18,10 +26,10 @@ describe('UnitEconomicsOrderDetailService', () => {
           id: 'o1',
           code: 'ORD-1',
           type: 'PRODUCT',
-          product: { name: 'App' },
+          product: { id: 'prod-1', name: 'App' },
           extension: null,
           projectId: 'p1',
-          project: { code: 'PRJ' },
+          project: { code: 'PRJ', name: 'Project' },
           productBonusPool: {
             totalPlannedAmount: '500',
             totalReleasedAmount: '200',
@@ -81,5 +89,7 @@ describe('UnitEconomicsOrderDetailService', () => {
     expect(detail.summary.plannedBonuses).toBe('500.00');
     expect(detail.summary.expensesPaidAmount).toBe('0.00');
     expect(detail.summary.cashBalance).toBe('1000.00');
+    expect(detail.bonusBreakdown.poolKey).toBe('order:o1');
+    expect(detail.bonusBreakdown.employeeLines).toEqual([]);
   });
 });

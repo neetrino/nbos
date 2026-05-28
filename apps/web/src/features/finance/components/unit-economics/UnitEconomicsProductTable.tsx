@@ -13,24 +13,31 @@ function marginClass(margin: string): string {
   return 'text-muted-foreground';
 }
 
-export function UnitEconomicsProjectTable() {
-  const { projects, totals, loading, error, reload } = useUnitEconomicsList();
+const KIND_LABEL: Record<string, string> = {
+  PRODUCT: 'Product',
+  EXTENSION: 'Extension',
+  ORDER: 'Unit',
+};
 
-  if (loading && projects.length === 0) return <LoadingState />;
+export function UnitEconomicsProductTable() {
+  const { products, totals, loading, error, reload } = useUnitEconomicsList();
+
+  if (loading && products.length === 0) return <LoadingState />;
   if (error) return <ErrorState description={error} onRetry={() => void reload()} />;
 
   return (
     <div className="flex flex-col gap-3">
       {totals ? <UnitEconomicsTotalsBar totals={totals} /> : null}
       <p className="text-muted-foreground text-sm">
-        Roll-up across delivery units in each project. Open the Overview tab and filter by project
-        code to drill into individual units.
+        Roll-up by product or extension within each project. Use the By unit tab to open a single
+        delivery unit.
       </p>
       <div className="border-border bg-card overflow-auto rounded-xl border">
         <table className="w-full min-w-[52rem] border-collapse text-xs">
           <thead className="bg-card sticky top-0 z-10">
             <tr className="text-muted-foreground text-left">
-              <th className="border-border border-b px-3 py-2 font-semibold">Project</th>
+              <th className="border-border border-b px-3 py-2 font-semibold">Product / unit</th>
+              <th className="border-border border-b px-2 py-2 font-semibold">Kind</th>
               <th className="border-border border-b px-2 py-2 text-right font-semibold">Units</th>
               <th className="border-border border-b px-2 py-2 text-right font-semibold">
                 Received
@@ -47,18 +54,21 @@ export function UnitEconomicsProjectTable() {
             </tr>
           </thead>
           <tbody>
-            {projects.length === 0 ? (
+            {products.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-muted-foreground px-3 py-8 text-center">
-                  No projects with unit economics activity yet.
+                <td colSpan={9} className="text-muted-foreground px-3 py-8 text-center">
+                  No product roll-ups yet.
                 </td>
               </tr>
             ) : (
-              projects.map((row) => (
-                <tr key={row.projectId} className="hover:bg-muted/30">
+              products.map((row) => (
+                <tr key={row.rollupKey} className="hover:bg-muted/30">
                   <td className="border-border border-b px-3 py-2">
-                    <p className="font-medium">{row.projectName}</p>
+                    <p className="font-medium">{row.label}</p>
                     <p className="text-muted-foreground text-[11px]">{row.projectCode}</p>
+                  </td>
+                  <td className="border-border border-b px-2 py-2">
+                    {KIND_LABEL[row.kind] ?? row.kind}
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
                     {row.unitCount}
