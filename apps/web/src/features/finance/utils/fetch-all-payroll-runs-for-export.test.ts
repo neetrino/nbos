@@ -19,8 +19,6 @@ const mockRun = (id: string): PayrollRunListRow => ({
   totalDeductions: '0',
   totalPayable: '0',
   totalPaid: '0',
-  kpiSalesPlanAmount: null,
-  kpiSalesActualAmount: null,
   createdAt: '2026-04-01T00:00:00.000Z',
   updatedAt: '2026-04-01T00:00:00.000Z',
   _count: { salaryLines: 1 },

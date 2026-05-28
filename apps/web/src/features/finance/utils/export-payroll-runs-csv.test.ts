@@ -12,8 +12,6 @@ const sampleRow: PayrollRunListRow = {
   totalDeductions: '0.00',
   totalPayable: '100.00',
   totalPaid: '0.00',
-  kpiSalesPlanAmount: null,
-  kpiSalesActualAmount: null,
   createdAt: '2026-04-01T00:00:00.000Z',
   updatedAt: '2026-04-02T00:00:00.000Z',
   _count: { salaryLines: 5 },

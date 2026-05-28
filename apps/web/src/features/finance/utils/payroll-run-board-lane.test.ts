@@ -12,8 +12,6 @@ const run = (month: string, status: PayrollRunListRow['status']): PayrollRunList
   totalDeductions: '0',
   totalPayable: '1000',
   totalPaid: '0',
-  kpiSalesPlanAmount: null,
-  kpiSalesActualAmount: null,
   createdAt: '',
   updatedAt: '',
   _count: { salaryLines: 1 },

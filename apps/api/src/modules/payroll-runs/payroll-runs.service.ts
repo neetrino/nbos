@@ -41,16 +41,7 @@ import {
 } from './payroll-run-employee-wallet-notify';
 import { loadSalaryLinesBlockingPayrollCloseCount } from './payroll-run-close-validation';
 import { validatePayrollMatrixForApproval } from './payroll-matrix-approval-validation';
-import {
-  sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi,
-  sumPaymentsForPayrollMonthSuggestedSalesKpi,
-} from './payroll-run-suggested-sales-actual';
-import {
-  resolvePriorPayrollRunSalesPlanAmount,
-  resolveSuggestedSalesPlanByEmployee,
-} from './payroll-run-suggested-sales-plan';
-import { BONUS_POOL_ZERO } from '../bonus/bonus-pool-decimal';
-import { resolvePayrollRunSalesKpiScorecardMetrics } from './resolve-payroll-run-sales-kpi-scorecard';
+import { omitLegacyPayrollKpiFields } from './payroll-run-api-response';
 import {
   querySalaryBoard,
   type SalaryBoardQueryParams,
@@ -130,54 +121,23 @@ export class PayrollRunsService {
     });
     if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
 
-    const employeeIds = run.salaryLines.map((line) => line.employeeId);
-
-    const [
-      materializedByRun,
-      auditTrail,
-      includedBonusReleaseCount,
-      kpiSalesActualSuggestedAmount,
-      salesKpiScorecardMetrics,
-      suggestedActualBySeller,
-      kpiSalesPlanSuggestedAmount,
-      suggestedPlanByEmployee,
-    ] = await Promise.all([
+    const [materializedByRun, auditTrail, includedBonusReleaseCount] = await Promise.all([
       fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
       loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
       this.prisma.bonusRelease.count({
         where: { payrollRunId: id, status: 'INCLUDED_IN_PAYROLL' },
       }),
-      sumPaymentsForPayrollMonthSuggestedSalesKpi(this.prisma, run.payrollMonth),
-      resolvePayrollRunSalesKpiScorecardMetrics(this.prisma, run.payrollMonth, employeeIds),
-      sumPaymentsBySellerForPayrollMonthSuggestedSalesKpi(
-        this.prisma,
-        run.payrollMonth,
-        employeeIds,
-      ),
-      resolvePriorPayrollRunSalesPlanAmount(this.prisma, run.payrollMonth),
-      resolveSuggestedSalesPlanByEmployee(this.prisma, run.payrollMonth, employeeIds),
     ]);
 
-    const salaryLines = run.salaryLines.map((line) => ({
-      ...line,
-      kpiSalesPlanSuggestedAmount: (
-        suggestedPlanByEmployee.get(line.employeeId) ?? BONUS_POOL_ZERO
-      ).toFixed(2),
-      kpiSalesActualSuggestedAmount: (
-        suggestedActualBySeller.get(line.employeeId) ?? BONUS_POOL_ZERO
-      ).toFixed(2),
-    }));
+    const salaryLines = run.salaryLines.map((line) => omitLegacyPayrollKpiFields(line));
 
     return {
-      ...run,
+      ...omitLegacyPayrollKpiFields(run),
       salaryLines,
       materializedExpenseLineCount: materializedByRun.get(id) ?? 0,
       journal: buildPayrollRunJournal(run),
       auditTrail,
       includedBonusReleaseCount,
-      kpiSalesActualSuggestedAmount: kpiSalesActualSuggestedAmount.toFixed(2),
-      kpiSalesPlanSuggestedAmount: kpiSalesPlanSuggestedAmount?.toFixed(2) ?? null,
-      salesKpiScorecardMetrics,
     };
   }
 

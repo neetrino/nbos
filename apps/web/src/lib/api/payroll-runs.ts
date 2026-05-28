@@ -1,5 +1,4 @@
 import { api } from '../api';
-import type { KpiScorecardMetric } from '@/features/my-company/kpi-policies/kpi-scorecard-metrics.types';
 import type { ListData } from './finance-common';
 
 export type PayrollRunStatus = 'DRAFT' | 'REVIEW' | 'APPROVED' | 'PAYING' | 'CLOSED';
@@ -72,9 +71,6 @@ export interface PayrollRunListRow {
   totalDeductions: string;
   totalPayable: string;
   totalPaid: string;
-  /** Monthly sales plan (major units) for seller KPI payout gate; pair with `kpiSalesActualAmount`. */
-  kpiSalesPlanAmount: string | null;
-  kpiSalesActualAmount: string | null;
   createdAt: string;
   updatedAt: string;
   _count: { salaryLines: number };
@@ -109,13 +105,6 @@ export interface SalaryLineRow {
   remainingAmount: string;
   status: SalaryLineStatus;
   expenseId: string | null;
-  /** Per-employee sales KPI override; null uses payroll run defaults at SALES attach. */
-  kpiSalesPlanAmount: string | null;
-  kpiSalesActualAmount: string | null;
-  /** Prior-month line plan or that run's default; hint until saved. */
-  kpiSalesPlanSuggestedAmount: string;
-  /** Seller-attributed payment sum for run month (deal.sellerId); hint until saved. */
-  kpiSalesActualSuggestedAmount: string;
   createdAt: string;
   updatedAt: string;
   employee: PayrollRunEmployeeRef;
@@ -130,15 +119,6 @@ export interface PayrollRunDetail extends PayrollRunListRow {
   closedAt: string | null;
   /** Bonus releases currently INCLUDED_IN_PAYROLL on this run (KPI inputs locked until detached). */
   includedBonusReleaseCount: number;
-  /**
-   * Sum of `Payment.amount` with `paymentDate` in the run’s calendar month (UTC).
-   * Hint for sales actual; does not persist until saved via PATCH.
-   */
-  kpiSalesActualSuggestedAmount: string;
-  /** Prior payroll month run-level plan; null when unavailable. */
-  kpiSalesPlanSuggestedAmount: string | null;
-  /** Labels/links from dominant active KPI policy on run salary lines. */
-  salesKpiScorecardMetrics: KpiScorecardMetric[];
   /** Read-only milestones from run timestamps (no intermediate status audit yet). */
   journal: PayrollJournalEntry[];
   /** Audit log rows for this run (`CREATED`, `STATUS_CHANGED`, …). */
