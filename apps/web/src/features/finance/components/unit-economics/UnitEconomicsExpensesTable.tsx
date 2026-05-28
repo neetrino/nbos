@@ -7,7 +7,13 @@ import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economic
 import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
 
-export function UnitEconomicsExpensesTable() {
+import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
+
+export function UnitEconomicsExpensesTable({
+  onDrilldown,
+}: {
+  onDrilldown?: (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
+}) {
   const { items, totals, loading, error, reload } = useUnitEconomicsList();
 
   const sorted = useMemo(
@@ -51,7 +57,7 @@ export function UnitEconomicsExpensesTable() {
             ) : (
               sorted.map((row) => (
                 <tr key={row.orderId} className="hover:bg-muted/30">
-                  <UnitEconomicsUnitLinkCell row={row} />
+                  <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
                     {formatAmount(Number.parseFloat(row.expensesPaidAmount))}
                   </td>

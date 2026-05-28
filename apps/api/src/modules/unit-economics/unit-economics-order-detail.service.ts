@@ -1,0 +1,113 @@
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Decimal, PrismaClient } from '@nbos/database';
+import { PRISMA_TOKEN } from '../../database.module';
+import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
+import { sumPaymentsReceivedForOrder } from '../bonus/order-received-payments-sum';
+import { DELIVERY_BONUS_ORDER_TYPES } from '../payroll-runs/delivery-payable-unit.types';
+import { computeReceivableAmount, sumInvoicedForOrder } from './order-invoice-totals';
+import type {
+  UnitEconomicsOrderDetailDto,
+  UnitEconomicsPaymentLineDto,
+} from './unit-economics.types';
+
+function unitLabel(order: {
+  code: string;
+  product: { name: string } | null;
+  extension: { name: string } | null;
+}): string {
+  if (order.product) return order.product.name;
+  if (order.extension) return order.extension.name;
+  return order.code;
+}
+
+function sumPaymentsOnInvoice(payments: { amount: Decimal }[]): Decimal {
+  return payments.reduce((sum, p) => sum.plus(decimalFrom(p.amount)), BONUS_POOL_ZERO);
+}
+
+@Injectable()
+export class UnitEconomicsOrderDetailService {
+  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+
+  async getByOrderId(orderId: string): Promise<UnitEconomicsOrderDetailDto> {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, type: { in: [...DELIVERY_BONUS_ORDER_TYPES] } },
+      select: {
+        id: true,
+        code: true,
+        type: true,
+        product: { select: { name: true } },
+        extension: { select: { name: true } },
+        project: { select: { code: true } },
+      },
+    });
+    if (!order) {
+      throw new NotFoundException('Delivery unit not found');
+    }
+
+    const [invoiced, received, invoiceRows] = await Promise.all([
+      sumInvoicedForOrder(this.prisma, orderId),
+      sumPaymentsReceivedForOrder(this.prisma, orderId),
+      this.prisma.invoice.findMany({
+        where: { orderId, moneyStatus: { not: 'CANCELLED' } },
+        select: {
+          id: true,
+          code: true,
+          amount: true,
+          moneyStatus: true,
+          type: true,
+          dueDate: true,
+          paidDate: true,
+          payments: {
+            select: { id: true, amount: true, paymentDate: true, paymentMethod: true },
+            orderBy: { paymentDate: 'desc' },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    const receivable = computeReceivableAmount(invoiced, received);
+    const payments: UnitEconomicsPaymentLineDto[] = [];
+
+    const invoices = invoiceRows.map((inv) => {
+      const receivedOnInvoice = sumPaymentsOnInvoice(inv.payments);
+      for (const payment of inv.payments) {
+        payments.push({
+          id: payment.id,
+          invoiceId: inv.id,
+          invoiceCode: inv.code,
+          amount: decimalFrom(payment.amount).toFixed(2),
+          paymentDate: payment.paymentDate.toISOString(),
+          paymentMethod: payment.paymentMethod,
+        });
+      }
+      return {
+        id: inv.id,
+        code: inv.code,
+        amount: decimalFrom(inv.amount).toFixed(2),
+        moneyStatus: inv.moneyStatus,
+        type: inv.type,
+        dueDate: inv.dueDate?.toISOString() ?? null,
+        paidDate: inv.paidDate?.toISOString() ?? null,
+        receivedOnInvoice: receivedOnInvoice.toFixed(2),
+      };
+    });
+
+    payments.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime());
+
+    return {
+      orderId: order.id,
+      orderCode: order.code,
+      label: unitLabel(order),
+      projectCode: order.project.code,
+      orderType: order.type as 'PRODUCT' | 'EXTENSION',
+      summary: {
+        invoicedAmount: invoiced.toFixed(2),
+        receivedAmount: received.toFixed(2),
+        receivableAmount: receivable.toFixed(2),
+      },
+      invoices,
+      payments,
+    };
+  }
+}

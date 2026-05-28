@@ -33,6 +33,45 @@ export type UnitEconomicsList = {
   };
 };
 
+export type UnitEconomicsInvoiceLine = {
+  id: string;
+  code: string;
+  amount: string;
+  moneyStatus: string;
+  type: string;
+  dueDate: string | null;
+  paidDate: string | null;
+  receivedOnInvoice: string;
+};
+
+export type UnitEconomicsPaymentLine = {
+  id: string;
+  invoiceId: string;
+  invoiceCode: string;
+  amount: string;
+  paymentDate: string;
+  paymentMethod: string | null;
+};
+
+export type UnitEconomicsOrderDetail = {
+  orderId: string;
+  orderCode: string;
+  label: string;
+  projectCode: string;
+  orderType: 'PRODUCT' | 'EXTENSION';
+  summary: {
+    invoicedAmount: string;
+    receivedAmount: string;
+    receivableAmount: string;
+  };
+  invoices: UnitEconomicsInvoiceLine[];
+  payments: UnitEconomicsPaymentLine[];
+};
+
+export type UnitEconomicsDrilldownFocus = 'invoices' | 'payments';
+
 export const unitEconomicsApi = {
   list: () => api.get<UnitEconomicsList>('/api/unit-economics'),
+  orderDetail: (orderId: string) =>
+    api.get<UnitEconomicsOrderDetail>(`/api/unit-economics/orders/${orderId}`),
 };

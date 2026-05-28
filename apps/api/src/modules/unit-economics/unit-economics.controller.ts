@@ -1,12 +1,16 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UnitEconomicsListService } from './unit-economics-list.service';
+import { UnitEconomicsOrderDetailService } from './unit-economics-order-detail.service';
 
 @ApiTags('Unit economics')
 @ApiBearerAuth()
 @Controller('unit-economics')
 export class UnitEconomicsController {
-  constructor(private readonly unitEconomicsListService: UnitEconomicsListService) {}
+  constructor(
+    private readonly unitEconomicsListService: UnitEconomicsListService,
+    private readonly unitEconomicsOrderDetailService: UnitEconomicsOrderDetailService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -14,5 +18,13 @@ export class UnitEconomicsController {
   })
   async list() {
     return this.unitEconomicsListService.list();
+  }
+
+  @Get('orders/:orderId')
+  @ApiOperation({
+    summary: 'Drill-down: invoices and payments for one delivery unit',
+  })
+  async orderDetail(@Param('orderId') orderId: string) {
+    return this.unitEconomicsOrderDetailService.getByOrderId(orderId);
   }
 }

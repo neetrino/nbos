@@ -1,13 +1,15 @@
 'use client';
 
 import { useMemo } from 'react';
-import Link from 'next/link';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { useUnitEconomicsList } from '@/features/finance/hooks/use-unit-economics-list';
 import { UnitEconomicsTotalsBar } from '@/features/finance/components/unit-economics/unit-economics-totals-bar';
-import type { UnitEconomicsRow } from '@/lib/api/unit-economics';
+import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
+import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
 import { cn } from '@/lib/utils';
+
+type DrilldownHandler = (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 
 function marginClass(margin: number): string {
   if (margin < 0) return 'text-destructive';
@@ -15,30 +17,40 @@ function marginClass(margin: number): string {
   return 'text-muted-foreground';
 }
 
-function OverviewRowCells({ row }: { row: UnitEconomicsRow }) {
+function OverviewRowCells({
+  row,
+  onDrilldown,
+}: {
+  row: UnitEconomicsRow;
+  onDrilldown?: DrilldownHandler;
+}) {
   const margin = Number.parseFloat(row.estimatedMargin);
   return (
     <>
-      <td className="border-border border-b px-3 py-2">
-        <Link
-          href={`/finance/orders?search=${encodeURIComponent(row.orderCode)}`}
-          className="hover:text-primary font-medium"
-        >
-          {row.label}
-        </Link>
-        <p className="text-muted-foreground text-[11px]">
-          {row.orderCode} · {row.projectCode} · {row.orderType}
-          {row.deliveryOpen ? ' · open' : ' · closed'}
-        </p>
+      <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
+      <td className="border-border border-b px-2 py-2 text-right">
+        <UnitEconomicsDrilldownAmount
+          amount={Number.parseFloat(row.invoicedAmount)}
+          orderId={row.orderId}
+          focus="invoices"
+          onDrilldown={onDrilldown}
+        />
       </td>
-      <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(Number.parseFloat(row.invoicedAmount))}
+      <td className="border-border border-b px-2 py-2 text-right">
+        <UnitEconomicsDrilldownAmount
+          amount={Number.parseFloat(row.receivedAmount)}
+          orderId={row.orderId}
+          focus="payments"
+          onDrilldown={onDrilldown}
+        />
       </td>
-      <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(Number.parseFloat(row.receivedAmount))}
-      </td>
-      <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(Number.parseFloat(row.receivableAmount))}
+      <td className="border-border border-b px-2 py-2 text-right">
+        <UnitEconomicsDrilldownAmount
+          amount={Number.parseFloat(row.receivableAmount)}
+          orderId={row.orderId}
+          focus="invoices"
+          onDrilldown={onDrilldown}
+        />
       </td>
       <td className="border-border border-b px-2 py-2 text-right tabular-nums">
         {formatAmount(Number.parseFloat(row.expensesPaidAmount))}
@@ -67,24 +79,25 @@ function OverviewRowCells({ row }: { row: UnitEconomicsRow }) {
   );
 }
 
-function FundingRowCells({ row }: { row: UnitEconomicsRow }) {
+function FundingRowCells({
+  row,
+  onDrilldown,
+}: {
+  row: UnitEconomicsRow;
+  onDrilldown?: DrilldownHandler;
+}) {
   const margin = Number.parseFloat(row.estimatedMargin);
   const overFunding = Number.parseFloat(row.overFundingAmount);
   return (
     <>
-      <td className="border-border border-b px-3 py-2">
-        <Link
-          href={`/finance/orders?search=${encodeURIComponent(row.orderCode)}`}
-          className="hover:text-primary font-medium"
-        >
-          {row.label}
-        </Link>
-        <p className="text-muted-foreground text-[11px]">
-          {row.orderCode} · {row.projectCode}
-        </p>
-      </td>
-      <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(Number.parseFloat(row.receivedAmount))}
+      <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
+      <td className="border-border border-b px-2 py-2 text-right">
+        <UnitEconomicsDrilldownAmount
+          amount={Number.parseFloat(row.receivedAmount)}
+          orderId={row.orderId}
+          focus="payments"
+          onDrilldown={onDrilldown}
+        />
       </td>
       <td className="border-border border-b px-2 py-2 text-right font-medium tabular-nums">
         {formatAmount(Number.parseFloat(row.availableCash))}
@@ -111,8 +124,10 @@ function FundingRowCells({ row }: { row: UnitEconomicsRow }) {
 
 export function UnitEconomicsOverviewTable({
   variant = 'overview',
+  onDrilldown,
 }: {
   variant?: 'overview' | 'funding';
+  onDrilldown?: DrilldownHandler;
 }) {
   const { items, totals, loading, error, reload } = useUnitEconomicsList();
 
@@ -202,7 +217,11 @@ export function UnitEconomicsOverviewTable({
             ) : (
               displayItems.map((row) => (
                 <tr key={row.orderId} className="hover:bg-muted/30">
-                  {isFunding ? <FundingRowCells row={row} /> : <OverviewRowCells row={row} />}
+                  {isFunding ? (
+                    <FundingRowCells row={row} onDrilldown={onDrilldown} />
+                  ) : (
+                    <OverviewRowCells row={row} onDrilldown={onDrilldown} />
+                  )}
                 </tr>
               ))
             )}
