@@ -103,7 +103,7 @@ function renderProductRows(
   productOpen: boolean,
   onDrilldown?: DrilldownHandler,
 ) {
-  if (!productOpen) return null;
+  if (!productOpen) return [];
   return product.orders.map((row) => (
     <tr key={row.orderId} className="hover:bg-muted/30">
       <OrderLabelCell row={row} indent={2} onDrilldown={onDrilldown} />
@@ -119,7 +119,7 @@ function renderProjectRows(
   onToggleProduct: (key: string) => void,
   onDrilldown?: DrilldownHandler,
 ) {
-  if (!projectOpen) return null;
+  if (!projectOpen) return [];
   return project.products.flatMap((product) => {
     const productOpen = productOpenKeys.has(product.key);
     return [

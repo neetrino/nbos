@@ -12,11 +12,11 @@ import {
 } from '@/components/shared';
 import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-layout-hero-actions';
 import { PayrollAllocationMatrixStatsStrip } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-stats-strip';
+import { PayrollRunDetailHeroHeading } from '@/features/finance/components/payroll/PayrollRunDetailHeroHeading';
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
 import { PAYROLL_ALLOCATION_MATRIX_VIEW_OPTIONS } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-view-options';
 import { PayrollRunDetailPageSettingsSheet } from '@/features/finance/components/payroll/PayrollRunDetailPageSettingsSheet';
 import { PayrollRunDetailStatusActions } from '@/features/finance/components/payroll/PayrollRunDetailStatusActions';
-import { PayrollRunStatusBadge } from '@/features/finance/components/payroll/payroll-run-status-badge';
 import type {
   PayrollAllocationMatrix,
   PayrollMatrixViewMode,
@@ -112,11 +112,41 @@ export function PayrollRunDetailPageContent({
     };
   }, [matrixTotals, run]);
 
+  const listHrefForRunMonth = run
+    ? payrollRunsListHref(undefined, {
+        payrollMonthFrom: run.payrollMonth,
+        payrollMonthTo: run.payrollMonth,
+      })
+    : '/finance/payroll';
+
   const moduleHeroSlots = useMemo(() => {
     if (!run) {
-      return {};
+      return {
+        tabs: (
+          <Link
+            href="/finance/payroll"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm font-medium"
+          >
+            <ArrowLeft size={16} aria-hidden />
+            Back
+          </Link>
+        ),
+      };
     }
     return {
+      tabs: (
+        <PayrollRunDetailHeroHeading
+          payrollMonth={run.payrollMonth}
+          status={run.status}
+          backHref={listHrefForRunMonth}
+          lineCount={run.salaryLines.length}
+          expenseCount={run.materializedExpenseLineCount}
+          bonusReleaseCount={run.includedBonusReleaseCount}
+        />
+      ),
+      secondaryTabs: statsTotals ? (
+        <PayrollAllocationMatrixStatsStrip totals={statsTotals} variant="hero" />
+      ) : null,
       search: (
         <IntegratedSearchFilters
           search={matrixSearch}
@@ -165,9 +195,11 @@ export function PayrollRunDetailPageContent({
     handleReload,
     journalSubmitting,
     layoutHeroActions,
+    listHrefForRunMonth,
     matrixSearch,
     matrixViewMode,
     run,
+    statsTotals,
     statusBusy,
   ]);
 
@@ -192,34 +224,8 @@ export function PayrollRunDetailPageContent({
     );
   }
 
-  const listHrefForRunMonth = payrollRunsListHref(undefined, {
-    payrollMonthFrom: run.payrollMonth,
-    payrollMonthTo: run.payrollMonth,
-  });
-
   return (
-    <div className="flex h-full min-h-0 flex-col gap-5">
-      <div className="flex flex-wrap items-center gap-3">
-        <Link
-          href={listHrefForRunMonth}
-          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
-        >
-          <ArrowLeft size={14} />
-          Back to list
-        </Link>
-        <span className="text-muted-foreground" aria-hidden>
-          ·
-        </span>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-foreground text-lg font-semibold">Payroll · {run.payrollMonth}</h1>
-          <PayrollRunStatusBadge status={run.status} />
-        </div>
-        <p className="text-muted-foreground w-full text-xs sm:ml-auto sm:w-auto">
-          {run.salaryLines.length} lines · {run.materializedExpenseLineCount} expenses ·{' '}
-          {run.includedBonusReleaseCount} bonus releases
-        </p>
-      </div>
-
+    <div className="flex h-full min-h-0 flex-col gap-4">
       {actionError ? <p className="text-destructive text-sm">{actionError}</p> : null}
 
       {run.status === 'APPROVED' || run.status === 'PAYING' || run.status === 'CLOSED' ? (
@@ -239,8 +245,6 @@ export function PayrollRunDetailPageContent({
           ) : null}
         </p>
       ) : null}
-
-      {statsTotals ? <PayrollAllocationMatrixStatsStrip totals={statsTotals} /> : null}
 
       <PayrollAllocationMatrixWorkspace
         payrollRunId={payrollRunId}

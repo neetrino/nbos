@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils';
 import { PageHero } from './PageHero';
 
 export type ModuleHeroSlots = {
+  /** When set, replaces layout-level zone tabs (e.g. payroll run detail title row). */
+  tabs?: ReactNode;
   search?: ReactNode;
   viewMode?: ReactNode;
   trailing?: ReactNode;
@@ -54,6 +56,7 @@ export function ModuleHeroSlotProvider({
   const setSlots = useCallback((next: ModuleHeroSlots) => {
     setSlotsState((prev) => {
       if (
+        prev.tabs === next.tabs &&
         prev.search === next.search &&
         prev.viewMode === next.viewMode &&
         prev.trailing === next.trailing &&
@@ -78,7 +81,7 @@ export function ModuleHeroSlotProvider({
         >
           <PageHero
             title={title}
-            tabs={tabs}
+            tabs={slots.tabs ?? tabs}
             search={slots.search}
             viewMode={slots.viewMode}
             trailing={slots.trailing}
@@ -106,7 +109,7 @@ export function useModuleHeroSlots(slots: ModuleHeroSlots): void {
 
   useLayoutEffect(() => {
     setSlots(slots);
-  }, [setSlots, slots.search, slots.viewMode, slots.trailing, slots.secondaryTabs]);
+  }, [setSlots, slots.tabs, slots.search, slots.viewMode, slots.trailing, slots.secondaryTabs]);
 
   useLayoutEffect(() => {
     return () => setSlots(EMPTY_SLOTS);
