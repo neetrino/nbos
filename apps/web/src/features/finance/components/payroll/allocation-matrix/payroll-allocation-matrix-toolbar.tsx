@@ -34,7 +34,13 @@ export function PayrollAllocationMatrixToolbar(props: {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" size="sm" variant="ghost" disabled={disabled} onClick={onResetLayout}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={disabled}
+          onClick={onResetLayout}
+        >
           Reset layout
         </Button>
         {!activeColumnId && !activeRowId ? (

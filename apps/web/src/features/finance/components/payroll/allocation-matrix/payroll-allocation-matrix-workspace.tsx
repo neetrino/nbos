@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { filterPayrollAllocationMatrix } from '@/features/finance/components/payroll/allocation-matrix/filter-payroll-allocation-matrix';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ErrorState, LoadingState, ViewModeSwitch } from '@/components/shared';
+import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { PayrollAllocationMatrixCellDialog } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-cell-dialog';
 import { PayrollAllocationMatrixGrid } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-grid';
@@ -19,13 +20,17 @@ import {
   type PayrollMatrixViewMode,
 } from '@/lib/api/payroll-allocation-matrix';
 
-const VIEW_OPTIONS = [
-  { value: 'EMPLOYEE_MATRIX' as const, label: 'Employee × Order' },
-  { value: 'ORDER_MATRIX' as const, label: 'Order × Employees' },
-];
-
-export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunId: string }) {
-  const [viewMode, setViewMode] = useState<PayrollMatrixViewMode>('EMPLOYEE_MATRIX');
+export function PayrollAllocationMatrixWorkspace({
+  payrollRunId,
+  viewMode,
+  search,
+  onTotalsChange,
+}: {
+  payrollRunId: string;
+  viewMode: PayrollMatrixViewMode;
+  search: string;
+  onTotalsChange?: (totals: PayrollAllocationMatrix['totals'] | null) => void;
+}) {
   const [matrix, setMatrix] = useState<PayrollAllocationMatrix | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +62,21 @@ export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunI
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    onTotalsChange?.(matrix?.totals ?? null);
+    return () => onTotalsChange?.(null);
+  }, [matrix?.totals, onTotalsChange]);
+
+  useEffect(() => {
+    setActiveRowId(null);
+    setActiveColumnId(null);
+  }, [viewMode, search]);
+
+  const displayMatrix = useMemo(() => {
+    if (!matrix) return null;
+    return filterPayrollAllocationMatrix(matrix, search);
+  }, [matrix, search]);
 
   const refreshValidation = useCallback(async () => {
     if (!matrix?.editable) {
@@ -184,7 +204,7 @@ export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunI
   };
 
   if (loading && !matrix) return <LoadingState />;
-  if (error || !matrix) {
+  if (error || !matrix || !displayMatrix) {
     return <ErrorState description={error ?? 'Not found'} onRetry={() => void load()} />;
   }
 
@@ -192,17 +212,19 @@ export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunI
     id: e.employeeId,
     label: `${e.firstName} ${e.lastName}`.trim(),
   }));
-  const employeeIds = matrix.employees.map((e) => e.employeeId);
-  const unitIds = matrix.deliveryUnits.map((u) => u.orderId);
+  const employeeIds = displayMatrix.employees.map((e) => e.employeeId);
+  const unitIds = displayMatrix.deliveryUnits.map((u) => u.orderId);
   const pinTargetId = viewMode === 'EMPLOYEE_MATRIX' ? activeColumnId : activeRowId;
   const activeUnitId = viewMode === 'EMPLOYEE_MATRIX' ? activeColumnId : activeRowId;
   const activeEmployeeId = viewMode === 'EMPLOYEE_MATRIX' ? activeRowId : activeColumnId;
 
   const activeUnit =
-    activeUnitId != null ? matrix.deliveryUnits.find((u) => u.orderId === activeUnitId) : null;
+    activeUnitId != null
+      ? displayMatrix.deliveryUnits.find((u) => u.orderId === activeUnitId)
+      : null;
   const activeEmployee =
     activeEmployeeId != null
-      ? matrix.employees.find((e) => e.employeeId === activeEmployeeId)
+      ? displayMatrix.employees.find((e) => e.employeeId === activeEmployeeId)
       : null;
 
   const employeeLabel = (id: string) => {
@@ -214,18 +236,86 @@ export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunI
   const layoutDisabled = !matrix.editable || layoutBusy;
 
   return (
-    <section className="flex flex-col gap-4">
-      <div>
-        <h2 className="text-foreground text-sm font-semibold">Payment allocation matrix</h2>
-        <p className="text-muted-foreground mt-1 text-xs leading-snug">
-          Payroll is the payment workspace: choose who receives how much this month from each
-          project/order. KPI status lives in Salary Board and employee Wallet.
-        </p>
-      </div>
+    <section className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-sm">
+      <header className="border-border flex flex-col gap-3 border-b px-4 py-3">
+        <div>
+          <h2 className="text-foreground text-sm font-semibold">Payment allocation matrix</h2>
+          <p className="text-muted-foreground mt-0.5 text-xs leading-snug">
+            Allocate who receives how much this month from each project or order. KPI status lives
+            in Salary Board and Wallet.
+          </p>
+        </div>
+        <PayrollAllocationMatrixToolbar
+          viewMode={viewMode}
+          disabled={layoutDisabled}
+          activeRowId={activeRowId}
+          activeColumnId={activeColumnId}
+          columnPinned={pinTargetId != null && matrix.layout.pinnedUnitIds.includes(pinTargetId)}
+          onMoveColumn={(direction) => {
+            if (!activeColumnId) return;
+            if (viewMode === 'EMPLOYEE_MATRIX') {
+              const next = moveLayoutId(
+                matrix.layout.columnOrder,
+                activeColumnId,
+                direction,
+                unitIds,
+              );
+              void persistLayout({ columnOrder: next });
+            } else {
+              const next = moveLayoutId(
+                matrix.layout.rowOrder,
+                activeColumnId,
+                direction,
+                employeeIds,
+              );
+              void persistLayout({ rowOrder: next });
+            }
+          }}
+          onMoveRow={(direction) => {
+            if (!activeRowId) return;
+            if (viewMode === 'EMPLOYEE_MATRIX') {
+              const next = moveLayoutId(
+                matrix.layout.rowOrder,
+                activeRowId,
+                direction,
+                employeeIds,
+              );
+              void persistLayout({ rowOrder: next });
+            } else {
+              const next = moveLayoutId(matrix.layout.columnOrder, activeRowId, direction, unitIds);
+              void persistLayout({ columnOrder: next });
+            }
+          }}
+          onTogglePin={() => {
+            if (!pinTargetId) return;
+            const next = togglePinnedId(matrix.layout.pinnedUnitIds, pinTargetId);
+            void persistLayout({ pinnedUnitIds: next });
+          }}
+          onResetLayout={() => {
+            void (async () => {
+              setLayoutBusy(true);
+              try {
+                const updated = await payrollAllocationMatrixApi.resetLayout(
+                  payrollRunId,
+                  viewMode,
+                );
+                setMatrix(updated);
+                setActiveRowId(null);
+                setActiveColumnId(null);
+                toast.success('Layout reset');
+              } catch (caught) {
+                toast.error(getApiErrorMessage(caught, 'Layout could not be reset.'));
+              } finally {
+                setLayoutBusy(false);
+              }
+            })();
+          }}
+        />
+      </header>
 
       {validationIssues.length > 0 ? (
         <div
-          className="border-destructive/40 bg-destructive/5 text-destructive rounded-lg border px-3 py-2 text-xs"
+          className="border-destructive/40 bg-destructive/5 text-destructive border-b px-4 py-2 text-xs"
           role="alert"
         >
           <p className="font-semibold">Resolve before review/approval</p>
@@ -239,147 +329,81 @@ export function PayrollAllocationMatrixWorkspace({ payrollRunId }: { payrollRunI
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <ViewModeSwitch
-          value={viewMode}
-          options={VIEW_OPTIONS}
-          onChange={(next) => {
-            setViewMode(next);
-            setActiveRowId(null);
-            setActiveColumnId(null);
-          }}
-          ariaLabel="Allocation matrix view"
-        />
-        <div className="text-muted-foreground flex flex-wrap gap-4 text-xs tabular-nums">
-          <span>Payable {formatAmount(Number.parseFloat(matrix.totals.totalPayable))}</span>
-          <span>Paid {formatAmount(Number.parseFloat(matrix.totals.totalPaid))}</span>
-          <span>Remaining {formatAmount(Number.parseFloat(matrix.totals.totalRemaining))}</span>
+      {activeUnit || activeEmployee ? (
+        <div className="border-border bg-muted/30 flex flex-wrap gap-2 border-b px-4 py-2">
+          {activeUnit ? (
+            <div className="border-border bg-background rounded-lg border px-3 py-2 text-xs shadow-sm">
+              <p className="font-semibold">{activeUnit.label}</p>
+              <p className="text-muted-foreground tabular-nums">
+                Planned {formatAmount(Number.parseFloat(activeUnit.totalPlannedBonus))} · Remaining{' '}
+                {formatAmount(Number.parseFloat(activeUnit.totalRemainingBonus))} · Available{' '}
+                {formatAmount(Number.parseFloat(activeUnit.availableFunding))}
+              </p>
+            </div>
+          ) : null}
+          {activeEmployee ? (
+            <div className="border-border bg-background rounded-lg border px-3 py-2 text-xs shadow-sm">
+              <p className="font-semibold">
+                {activeEmployee.firstName} {activeEmployee.lastName}
+              </p>
+              <p className="text-muted-foreground tabular-nums">
+                Fix {formatAmount(Number.parseFloat(activeEmployee.baseSalary))} · Bonus this run{' '}
+                {formatAmount(Number.parseFloat(activeEmployee.bonusTotalThisRun))}
+              </p>
+            </div>
+          ) : null}
         </div>
+      ) : null}
+
+      <div className="min-h-0 flex-1 overflow-auto p-4">
+        {displayMatrix.employees.length === 0 && displayMatrix.deliveryUnits.length === 0 ? (
+          <p className="text-muted-foreground px-2 py-8 text-center text-sm">
+            No rows match this search. Clear the search bar to see the full matrix.
+          </p>
+        ) : (
+          <PayrollAllocationMatrixGrid
+            matrix={displayMatrix}
+            viewMode={viewMode}
+            pinnedUnitIds={matrix.layout.pinnedUnitIds}
+            layoutDisabled={layoutDisabled}
+            activeRowId={activeRowId}
+            activeColumnId={activeColumnId}
+            onActivateRow={setActiveRowId}
+            onActivateColumn={setActiveColumnId}
+            onReorderColumns={(orderedIds) => {
+              if (viewMode === 'EMPLOYEE_MATRIX') {
+                void persistLayout({ columnOrder: orderedIds });
+              } else {
+                void persistLayout({ rowOrder: orderedIds });
+              }
+            }}
+            onReorderRows={(orderedIds) => {
+              if (viewMode === 'EMPLOYEE_MATRIX') {
+                void persistLayout({ rowOrder: orderedIds });
+              } else {
+                void persistLayout({ columnOrder: orderedIds });
+              }
+            }}
+            onCellClick={(cell) => {
+              const needsManual =
+                displayMatrix.editable &&
+                (cell.state === 'UNLINKED' ||
+                  (cell.state === 'LINKED_EMPTY' && !cell.bonusEntryId && cell.linked));
+              if (needsManual) {
+                setManualCell(cell);
+                return;
+              }
+              if (!cell.editable) return;
+              if (cell.bonusEntryId || cell.state === 'LINKED_EMPTY') {
+                setEditCell(cell);
+              }
+            }}
+          />
+        )}
       </div>
 
-      <PayrollAllocationMatrixToolbar
-        viewMode={viewMode}
-        disabled={layoutDisabled}
-        activeRowId={activeRowId}
-        activeColumnId={activeColumnId}
-        columnPinned={pinTargetId != null && matrix.layout.pinnedUnitIds.includes(pinTargetId)}
-        onMoveColumn={(direction) => {
-          if (!activeColumnId) return;
-          if (viewMode === 'EMPLOYEE_MATRIX') {
-            const next = moveLayoutId(
-              matrix.layout.columnOrder,
-              activeColumnId,
-              direction,
-              unitIds,
-            );
-            void persistLayout({ columnOrder: next });
-          } else {
-            const next = moveLayoutId(
-              matrix.layout.rowOrder,
-              activeColumnId,
-              direction,
-              employeeIds,
-            );
-            void persistLayout({ rowOrder: next });
-          }
-        }}
-        onMoveRow={(direction) => {
-          if (!activeRowId) return;
-          if (viewMode === 'EMPLOYEE_MATRIX') {
-            const next = moveLayoutId(matrix.layout.rowOrder, activeRowId, direction, employeeIds);
-            void persistLayout({ rowOrder: next });
-          } else {
-            const next = moveLayoutId(matrix.layout.columnOrder, activeRowId, direction, unitIds);
-            void persistLayout({ columnOrder: next });
-          }
-        }}
-        onTogglePin={() => {
-          if (!pinTargetId) return;
-          const next = togglePinnedId(matrix.layout.pinnedUnitIds, pinTargetId);
-          void persistLayout({ pinnedUnitIds: next });
-        }}
-        onResetLayout={() => {
-          void (async () => {
-            setLayoutBusy(true);
-            try {
-              const updated = await payrollAllocationMatrixApi.resetLayout(payrollRunId, viewMode);
-              setMatrix(updated);
-              setActiveRowId(null);
-              setActiveColumnId(null);
-              toast.success('Layout reset');
-            } catch (caught) {
-              toast.error(getApiErrorMessage(caught, 'Layout could not be reset.'));
-            } finally {
-              setLayoutBusy(false);
-            }
-          })();
-        }}
-      />
-
-      {activeUnit ? (
-        <div className="border-border bg-muted/20 rounded-lg border px-3 py-2 text-xs">
-          <p className="font-semibold">{activeUnit.label}</p>
-          <p className="text-muted-foreground tabular-nums">
-            Planned {formatAmount(Number.parseFloat(activeUnit.totalPlannedBonus))} · Remaining{' '}
-            {formatAmount(Number.parseFloat(activeUnit.totalRemainingBonus))} · Available{' '}
-            {formatAmount(Number.parseFloat(activeUnit.availableFunding))}
-          </p>
-        </div>
-      ) : null}
-
-      {activeEmployee ? (
-        <div className="border-border bg-muted/20 rounded-lg border px-3 py-2 text-xs">
-          <p className="font-semibold">
-            {activeEmployee.firstName} {activeEmployee.lastName}
-          </p>
-          <p className="text-muted-foreground tabular-nums">
-            Fix {formatAmount(Number.parseFloat(activeEmployee.baseSalary))} · Bonus this run{' '}
-            {formatAmount(Number.parseFloat(activeEmployee.bonusTotalThisRun))}
-          </p>
-        </div>
-      ) : null}
-
-      <PayrollAllocationMatrixGrid
-        matrix={matrix}
-        viewMode={viewMode}
-        pinnedUnitIds={matrix.layout.pinnedUnitIds}
-        layoutDisabled={layoutDisabled}
-        activeRowId={activeRowId}
-        activeColumnId={activeColumnId}
-        onActivateRow={setActiveRowId}
-        onActivateColumn={setActiveColumnId}
-        onReorderColumns={(orderedIds) => {
-          if (viewMode === 'EMPLOYEE_MATRIX') {
-            void persistLayout({ columnOrder: orderedIds });
-          } else {
-            void persistLayout({ rowOrder: orderedIds });
-          }
-        }}
-        onReorderRows={(orderedIds) => {
-          if (viewMode === 'EMPLOYEE_MATRIX') {
-            void persistLayout({ rowOrder: orderedIds });
-          } else {
-            void persistLayout({ columnOrder: orderedIds });
-          }
-        }}
-        onCellClick={(cell) => {
-          const needsManual =
-            matrix.editable &&
-            (cell.state === 'UNLINKED' ||
-              (cell.state === 'LINKED_EMPTY' && !cell.bonusEntryId && cell.linked));
-          if (needsManual) {
-            setManualCell(cell);
-            return;
-          }
-          if (!cell.editable) return;
-          if (cell.bonusEntryId || cell.state === 'LINKED_EMPTY') {
-            setEditCell(cell);
-          }
-        }}
-      />
-
       {loading || layoutBusy ? (
-        <p className="text-muted-foreground flex items-center gap-2 text-xs">
+        <p className="text-muted-foreground border-border flex items-center gap-2 border-t px-4 py-2 text-xs">
           <Loader2 className="size-3 animate-spin" aria-hidden />
           Updating…
         </p>
