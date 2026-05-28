@@ -20,7 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import {
-  PAYROLL_MATRIX_STICKY_EDGE_MIN_WIDTH,
+  PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
   PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,
   PAYROLL_MATRIX_STICKY_HEADER_BG,
   PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
@@ -50,7 +50,7 @@ export type MatrixRowHeader = {
 };
 
 const MATRIX_PRIMARY_NAME_CLASS =
-  'text-sm font-semibold tracking-tight text-foreground line-clamp-2 leading-snug';
+  'block truncate text-sm font-semibold tracking-tight text-foreground leading-snug';
 
 function MatrixLabeledAmount({ label, value }: { label: string; value: string }) {
   return (
@@ -80,7 +80,7 @@ function MatrixHeaderDragShell({
     <div className="group relative">
       <button
         type="button"
-        className="hover:text-primary w-full min-w-0 pr-5 text-left"
+        className="hover:text-primary w-full min-w-0 overflow-hidden pr-5 text-left"
         onClick={onActivate}
       >
         {children}
@@ -168,7 +168,7 @@ export function PayrollAllocationMatrixTableShell(props: {
             <th
               className={cn(
                 PAYROLL_MATRIX_STICKY_HEADER_BG,
-                PAYROLL_MATRIX_STICKY_EDGE_MIN_WIDTH,
+                PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
                 PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
                 'border-border sticky top-0 left-0 z-50 border-r border-b px-3 py-2 text-left text-xs font-semibold tracking-wide uppercase',
               )}
@@ -284,7 +284,7 @@ function SortableMatrixRowHeader(props: {
       style={style}
       className={cn(
         PAYROLL_MATRIX_STICKY_HEADER_BG,
-        PAYROLL_MATRIX_STICKY_EDGE_MIN_WIDTH,
+        PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
         PAYROLL_MATRIX_STICKY_HEADER_SHADOW,
         'border-border sticky left-0 z-30 border-r border-b px-3 py-2.5 text-left',
         active && PAYROLL_MATRIX_STICKY_HEADER_ACTIVE_BG,

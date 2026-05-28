@@ -1,5 +1,6 @@
-/** Sticky row/corner width — same in Employee × Order and Order × Employees views. */
-export const PAYROLL_MATRIX_STICKY_EDGE_MIN_WIDTH = 'min-w-[12.5rem]';
+/** Fixed sticky row/corner width — same in Employee × Order and Order × Employees views. */
+export const PAYROLL_MATRIX_STICKY_EDGE_WIDTH =
+  'w-[10.5rem] max-w-[10.5rem] min-w-[10.5rem] shrink-0';
 
 /** Opaque sticky header tint — lighter than `--muted`, darker than `--card`. */
 export const PAYROLL_MATRIX_STICKY_HEADER_BG = 'bg-[oklch(0.982_0.002_90)]';
