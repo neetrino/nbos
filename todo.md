@@ -43,7 +43,7 @@
 | `d45e8baa`  | Add payroll UI action/read section for syncing and displaying KPI Result snapshots            |
 | `62163ccf`  | Align employee month KPI sheet with `KpiResult` read model; drop legacy fields from month API |
 | `59dd9e49`  | Remove legacy `kpiSales*` hints from payroll run list/detail API and salary line rows         |
-| _(pending)_ | Rename KPI scorecard `payrollField` codes away from legacy `kpiSales*` column names           |
+| _(pending)_ | Remove Payroll-owned KPI sync/results UI/API; move KPI status to Salary Board + Wallet        |
 
 ---
 
@@ -63,10 +63,12 @@
 - `Unit Economics Board` belongs in Finance Overview / main finance area, not inside Payroll & Bonus.
 - `Bonus Pool` becomes one view/section inside `Unit Economics Board`, not the whole concept.
 - KPI configuration belongs in `My Company / Compensation / KPI Policies`, not inside monthly payroll.
-- Payroll must not ask Finance to enter KPI plan/actual every month. Payroll consumes effective KPI rules and monthly KPI results, then shows read-only payout outcome.
+- Payroll must not ask Finance to enter, sync, or calculate KPI plan/actual every month. Payroll consumes already payable bonus releases only.
 - Missing KPI policy/result means 100% payout for that bonus type until a policy exists. This is the current/default behavior for Delivery / PM / Developer / Designer / Marketing.
 - For Sales, KPI policy can reduce the payable part of a sales bonus. The system must preserve both the original 100% bonus amount and the KPI-adjusted payable amount.
 - Burned/forfeited KPI amount is a business result of KPI gate rules, not a manual payroll edit.
+- Sales KPI result/status belongs in employee Salary Board month card/sheet and employee Wallet, not Payroll Run Detail.
+- Sales bonus is created active when deal is won and is payable in the next payroll month; its payable percentage is fixed by the finalized KPI result for the earned sales month.
 
 ---
 
@@ -105,13 +107,14 @@ Payroll Run must not directly mean "money was paid". Payroll Run decides what en
 These concepts must stay separate.
 
 - `KPI Policy` = reusable rule configured in `My Company` for company / department / role / level / employee override.
-- `KPI Result` = monthly/period snapshot: plan, actual, attainment %, payout factor, source facts, and effective policy.
-- `Payroll Run` = consumer of already resolved payable bonus amounts. It is not the place to configure KPI targets.
+- `KPI Result` = earned sales month snapshot: plan, actual, attainment %, payout factor, source facts, status/finalization time, and effective policy.
+- `Payroll Run` = payment workspace: who gets paid, from which project/order, how much is included this month, and payment/expense status. It is not the place to configure, sync, or calculate KPI.
 
 Rules:
 
 - KPI policies live in `My Company / Compensation`, not in Finance Payroll UI.
 - KPI policies can be role-level first, with employee-level overrides later when needed.
+- KPI month-close/finalization is owned outside Payroll (system job / Salary Board / Wallet-facing KPI result process), not by a Payroll Run button.
 - Sales currently has KPI gate rules; other roles default to 100% payout until their own KPI policies are introduced.
 - If no KPI policy/result applies, the employee receives 100% of the bonus that is otherwise eligible.
 - If KPI applies, the bonus record/release must show:
@@ -120,7 +123,8 @@ Rules:
   - payable amount after KPI;
   - burned/forfeited amount if policy says it does not carry forward;
   - source policy/result.
-- Payroll may show KPI outcome read-only, but must not be the monthly KPI input form.
+- Payroll Run Detail must not show standalone KPI sync/results sections. KPI status is visible in Salary Board employee month card/sheet and employee Wallet.
+- Payroll can show KPI-adjusted payable amounts only as part of bonus release/payment facts, not as a separate KPI workspace.
 
 ### Unit Economics
 
