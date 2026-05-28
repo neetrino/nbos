@@ -11,7 +11,7 @@
 | 1 Documentation             | 🟡     | Canon + UI spec + entities + P&L UE section + cleanup register; roadmap cross-links pending  |
 | 2 Payroll Run Detail UX     | 🟢     | Matrix primary UX, row/column DnD, pin, reset, context panels, cell dialogs                  |
 | 3 Bonus logic / manual form | 🟡     | Matrix + Bonus Board manual + audit panel in cell dialog; global bonus sheet history pending |
-| 4 Unit Economics Board      | 🟡     | Overview API/table + bonus pools tab; multi-view (invoices/expenses) pending                 |
+| 4 Unit Economics Board      | 🟡     | Overview + Funding/cash + bonus pools tabs; invoices/expenses/profitability views pending    |
 | 5 API / data model          | 🟢     | Matrix CRUD, layout, planned/reassign, validation, unit-economics GET                        |
 | 6 Frontend                  | 🟢     | Matrix workspace, unit economics page, manual bonus form fields                              |
 | 7 Validation / audit        | 🟡     | Pre-review validation + audit writes + matrix cell audit read; layout audit optional         |
