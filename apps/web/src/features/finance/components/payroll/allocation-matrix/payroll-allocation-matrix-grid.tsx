@@ -200,11 +200,10 @@ export function PayrollAllocationMatrixGrid(props: {
         >
           <button
             type="button"
-            className="text-muted-foreground hover:text-foreground box-border flex h-full min-h-[2.75rem] w-full flex-col items-center justify-center px-1 py-1 text-xs"
+            aria-label="Create manual bonus"
+            className="box-border flex h-full min-h-[2.75rem] w-full cursor-pointer px-1 py-1 hover:bg-sky-500/10"
             onClick={() => onManualCellRequest(cell)}
-          >
-            Add bonus
-          </button>
+          />
         </td>
       ) : (
         <td

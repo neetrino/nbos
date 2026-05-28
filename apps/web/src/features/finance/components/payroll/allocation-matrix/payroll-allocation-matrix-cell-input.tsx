@@ -15,6 +15,7 @@ import { formatAmount } from '@/features/finance/constants/finance';
 import {
   PAYROLL_MATRIX_CELL_INPUT_CLASS,
   PAYROLL_MATRIX_CELL_REASON_CLASS,
+  PAYROLL_MATRIX_CELL_RELEASE_PLACEHOLDER,
 } from '@/features/finance/constants/payroll-allocation-matrix-cell-input';
 import { payrollMatrixReleaseNeedsReason } from '@/features/finance/utils/payroll-matrix-release-needs-reason';
 import type { PayrollAllocationMatrixCell } from '@/lib/api/payroll-allocation-matrix';
@@ -103,13 +104,13 @@ export function PayrollAllocationMatrixCellInput(props: {
   };
 
   if (!cell.editable) {
+    const hasRelease = parseMoney(cell.releaseThisMonth) > 0;
+    if (!hasRelease) {
+      return <div className="min-h-[2.75rem]" aria-hidden />;
+    }
     return (
       <div className="flex min-h-[2.75rem] flex-col items-center justify-center px-1 py-1 tabular-nums">
-        <span>
-          {parseMoney(cell.releaseThisMonth) > 0
-            ? formatAmount(parseMoney(cell.releaseThisMonth))
-            : '—'}
-        </span>
+        <span>{formatAmount(parseMoney(cell.releaseThisMonth))}</span>
         {cell.warning ? <span className="text-[10px] font-medium">{cell.warning}</span> : null}
       </div>
     );
@@ -125,7 +126,7 @@ export function PayrollAllocationMatrixCellInput(props: {
           value={amount}
           onChange={setAmount}
           disabled={disabled || saving}
-          placeholder="—"
+          placeholder={cell.bonusEntryId ? PAYROLL_MATRIX_CELL_RELEASE_PLACEHOLDER : undefined}
           aria-label="Bonus release this month"
           className={PAYROLL_MATRIX_CELL_INPUT_CLASS}
           onKeyDown={handleKeyDown}
