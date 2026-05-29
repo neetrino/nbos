@@ -6,7 +6,6 @@ import {
   type TransactionClient,
 } from '@nbos/database';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
-import { resolveCompensationPayrollPolicyForEmployee } from '../compensation-profiles/resolve-compensation-payroll-policy';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 import { payrollBonusReleaseBase } from './payroll-bonus-release-base';
@@ -127,18 +126,12 @@ export async function applyMatrixCellPatch(
     _sum: { amount: true },
   });
   const releasedBefore = decimalFrom(releasedAgg._sum.amount);
-  const payrollPolicy = await resolveCompensationPayrollPolicyForEmployee(
-    tx,
-    entry.employeeId,
-    run.payrollMonth,
-  );
   const releaseBase = payrollBonusReleaseBase(
     {
       type: entry.type,
       amount: entry.amount,
       payableAmount: entry.payableAmount,
       earnedPeriod: entry.earnedPeriod,
-      hasKpiPolicy: payrollPolicy.kpiPolicyId != null,
     },
     run.payrollMonth,
   );

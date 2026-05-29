@@ -233,6 +233,22 @@ export class BonusController {
     return this.bonusService.patchPlannedAmount(entryId, body, user.id);
   }
 
+  @Patch('entries/:entryId/payable-adjustment')
+  @ApiOperation({
+    summary: 'Set manual payable adjustment (+/− delta on top of KPI auto payable)',
+  })
+  async patchEntryPayableAdjustment(
+    @Param('entryId') entryId: string,
+    @Body()
+    body: {
+      adjustment: string;
+      reason: string;
+    },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.bonusService.patchPayableAdjustment(entryId, body, user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get bonus entry by ID' })
   async findOne(@Param('id') id: string) {

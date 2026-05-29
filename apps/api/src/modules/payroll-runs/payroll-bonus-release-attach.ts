@@ -153,7 +153,6 @@ export async function attachBonusReleasesToPayrollRun(
       await assertSalesBonusReadyForPayrollAttach(tx, {
         bonusEntryId: rel.bonusEntry.id,
         payrollMonth: run.payrollMonth,
-        payrollPolicy,
       });
     }
 

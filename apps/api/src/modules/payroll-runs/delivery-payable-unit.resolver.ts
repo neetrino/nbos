@@ -1,6 +1,5 @@
 import { Decimal, type PrismaClient } from '@nbos/database';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
-import { loadEmployeeHasKpiPolicyMap } from '../compensation-profiles/load-employee-has-kpi-policy-map';
 import { payrollBonusReleaseBase } from './payroll-bonus-release-base';
 import {
   CLOSED_DELIVERY_STATUSES,
@@ -54,14 +53,12 @@ function pickReason(flags: {
 
 function entryPlannedAmount(
   entry: {
-    employeeId: string;
     type: string;
     amount: Decimal | string;
     payableAmount: Decimal | string | null;
     earnedPeriod: string | null;
   },
   payrollMonth: string,
-  kpiPolicyByEmployee: Map<string, boolean>,
 ): Decimal {
   return payrollBonusReleaseBase(
     {
@@ -69,7 +66,6 @@ function entryPlannedAmount(
       amount: entry.amount,
       payableAmount: entry.payableAmount,
       earnedPeriod: entry.earnedPeriod,
-      hasKpiPolicy: kpiPolicyByEmployee.get(entry.employeeId) ?? true,
     },
     payrollMonth,
   );
@@ -77,7 +73,6 @@ function entryPlannedAmount(
 
 function entryRemainingAmount(
   entry: {
-    employeeId: string;
     type: string;
     amount: Decimal | string;
     payableAmount: Decimal | string | null;
@@ -85,12 +80,11 @@ function entryRemainingAmount(
     status: string;
   },
   payrollMonth: string,
-  kpiPolicyByEmployee: Map<string, boolean>,
 ): Decimal {
   if (entry.status === 'PAID' || entry.status === 'CLAWBACK') {
     return BONUS_POOL_ZERO;
   }
-  return entryPlannedAmount(entry, payrollMonth, kpiPolicyByEmployee);
+  return entryPlannedAmount(entry, payrollMonth);
 }
 
 /** Resolves delivery payable units visible in a payroll run allocation matrix. */
@@ -139,7 +133,6 @@ export async function resolveDeliveryPayableUnits(
         },
         bonusEntries: {
           select: {
-            employeeId: true,
             type: true,
             amount: true,
             payableAmount: true,
@@ -152,22 +145,16 @@ export async function resolveDeliveryPayableUnits(
   ]);
 
   const payrollMonth = run?.payrollMonth ?? '';
-  const bonusEmployeeIds = candidateOrders.flatMap((o) => o.bonusEntries.map((e) => e.employeeId));
-  const kpiPolicyByEmployee = await loadEmployeeHasKpiPolicyMap(
-    prisma,
-    bonusEmployeeIds,
-    payrollMonth,
-  );
   const units: DeliveryPayableUnitDto[] = [];
 
   for (const order of candidateOrders) {
     const pool = order.productBonusPool;
     const entryPlanned = order.bonusEntries.reduce(
-      (sum, entry) => sum.plus(entryPlannedAmount(entry, payrollMonth, kpiPolicyByEmployee)),
+      (sum, entry) => sum.plus(entryPlannedAmount(entry, payrollMonth)),
       BONUS_POOL_ZERO,
     );
     const entryRemaining = order.bonusEntries.reduce(
-      (sum, entry) => sum.plus(entryRemainingAmount(entry, payrollMonth, kpiPolicyByEmployee)),
+      (sum, entry) => sum.plus(entryRemainingAmount(entry, payrollMonth)),
       BONUS_POOL_ZERO,
     );
     const planned = pool ? decimalFrom(pool.totalPlannedAmount) : entryPlanned;

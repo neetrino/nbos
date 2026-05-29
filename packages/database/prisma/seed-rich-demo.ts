@@ -922,6 +922,36 @@ async function seedMay2026PayrollMatrix(
   }
 }
 
+async function ensurePayableSnapshots(prisma: PrismaClient): Promise<void> {
+  const entries = await prisma.bonusEntry.findMany({
+    select: {
+      id: true,
+      amount: true,
+      payableAmount: true,
+      kpiPayoutFactor: true,
+      payableAdjustment: true,
+    },
+  });
+
+  for (const entry of entries) {
+    if (entry.payableAmount != null) {
+      continue;
+    }
+    const factor = entry.kpiPayoutFactor != null ? Number(entry.kpiPayoutFactor) : 1;
+    const auto = Number(entry.amount) * factor;
+    const adjustment = Number(entry.payableAdjustment);
+    const payable = Math.max(0, Math.round((auto + adjustment) * 100) / 100);
+    await prisma.bonusEntry.update({
+      where: { id: entry.id },
+      data: {
+        kpiPayoutFactor: factor,
+        payableAmount: payable,
+        kpiGatePassed: factor > 0,
+      },
+    });
+  }
+}
+
 /**
  * Expands NBOS demo data: ~20 projects, rich finance (orders→invoices→payments),
  * subscriptions, payroll, bonus pools, client services, expenses.
@@ -971,6 +1001,7 @@ export async function seedRichDemo(prisma: PrismaClient, ctx: SeedRichDemoContex
   await seedPayrollAndSalaries(prisma, ctx, compensationByEmployee);
   await seedBonusPoolsAndReleases(prisma, ctx);
   await seedMay2026PayrollMatrix(prisma, ctx);
+  await ensurePayableSnapshots(prisma);
   await archiveHalfOfProjects(prisma);
 
   console.log(

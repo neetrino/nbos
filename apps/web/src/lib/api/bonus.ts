@@ -46,6 +46,10 @@ export interface BonusEntryListRow {
   percent: string;
   status: BonusStatus;
   kpiGatePassed: boolean | null;
+  earnedPeriod?: string | null;
+  kpiPayoutFactor?: string | null;
+  payableAdjustment?: string;
+  payableAmount?: string | null;
   payoutMonth: string | null;
   createdAt: string;
   updatedAt: string;
@@ -399,6 +403,17 @@ export const bonusesApi = {
   ): Promise<BonusEntryListRow> {
     const resp = await api.patch<BonusEntryListRow>(
       `/api/bonus/entries/${entryId}/planned-amount`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async patchPayableAdjustment(
+    entryId: string,
+    body: { adjustment: string; reason: string },
+  ): Promise<BonusEntryListRow> {
+    const resp = await api.patch<BonusEntryListRow>(
+      `/api/bonus/entries/${entryId}/payable-adjustment`,
       body,
     );
     return resp.data;

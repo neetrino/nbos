@@ -475,7 +475,9 @@ model BonusEntry {
   earnedPeriod          String?             @map("earned_period") @db.VarChar(7)
   /// Month KPI payout factor snapshot on this entry (0–1).
   kpiPayoutFactor       Decimal?            @map("kpi_payout_factor") @db.Decimal(7, 4)
-  /// `amount × kpiPayoutFactor` while month is open; frozen when calendar month rolls.
+  /// Manual +/- delta on top of `amount × kpiPayoutFactor` (Finance correction).
+  payableAdjustment     Decimal             @default(0) @map("payable_adjustment") @db.Decimal(12, 2)
+  /// `amount × kpiPayoutFactor + payableAdjustment` — payroll release ceiling.
   payableAmount         Decimal?            @map("payable_amount") @db.Decimal(12, 2)
   payoutMonth           DateTime?           @map("payout_month")
   createdAt             DateTime            @default(now()) @map("created_at")

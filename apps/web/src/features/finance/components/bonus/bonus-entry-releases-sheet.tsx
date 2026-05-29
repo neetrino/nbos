@@ -7,8 +7,10 @@ import { EntityDetailSheetContent } from '@/components/shared';
 import { Sheet, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { BonusEntryAuditPanel } from '@/features/finance/components/bonus/bonus-entry-audit-panel';
 import { BonusEntryPlannedAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-planned-adjust-block';
+import { BonusEntryPayableAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-payable-adjust-block';
 import { BonusEntryReleaseAdjustBlock } from '@/features/finance/components/bonus/bonus-entry-release-adjust-block';
 import { useBonusEntryPlannedAdjust } from '@/features/finance/components/bonus/use-bonus-entry-planned-adjust';
+import { useBonusEntryPayableAdjust } from '@/features/finance/components/bonus/use-bonus-entry-payable-adjust';
 import { BonusEntryReleasesSheetSummary } from '@/features/finance/components/bonus/bonus-entry-releases-sheet-summary';
 import { BonusEntryReleasesSheetTable } from '@/features/finance/components/bonus/bonus-entry-releases-sheet-table';
 import { useBonusEntryReleasesLedger } from '@/features/finance/components/bonus/use-bonus-entry-releases-ledger';
@@ -18,6 +20,7 @@ import {
 } from '@/features/finance/components/bonus/bonus-board-widgets';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { computeBonusEntryReleaseTotals } from '@/features/finance/utils/bonus-entry-release-totals';
+import { bonusEntryPayableCeiling } from '@/features/finance/utils/bonus-entry-payable';
 import type { BonusEntryListRow } from '@/lib/api/bonus';
 
 export function BonusEntryReleasesSheet({
@@ -35,12 +38,13 @@ export function BonusEntryReleasesSheet({
 }) {
   const ledger = useBonusEntryReleasesLedger(entry, open, onAfterPatch);
   const plannedAdjust = useBonusEntryPlannedAdjust(entry, open, onAfterPatch);
+  const payableAdjust = useBonusEntryPayableAdjust(entry, open, onAfterPatch);
 
   const totals = useMemo(() => {
     if (!entry) {
       return computeBonusEntryReleaseTotals('0', []);
     }
-    return computeBonusEntryReleaseTotals(entry.amount, ledger.rows);
+    return computeBonusEntryReleaseTotals(String(bonusEntryPayableCeiling(entry)), ledger.rows);
   }, [entry, ledger.rows]);
 
   return (
@@ -73,6 +77,23 @@ export function BonusEntryReleasesSheet({
             <Button type="button" variant="outline" size="sm" onClick={plannedAdjust.startEdit}>
               Adjust planned amount
             </Button>
+          ) : null}
+
+          {entry && !payableAdjust.editing ? (
+            <Button type="button" variant="outline" size="sm" onClick={payableAdjust.startEdit}>
+              Payable adjustment
+            </Button>
+          ) : null}
+
+          {payableAdjust.editing && payableAdjust.form && entry ? (
+            <BonusEntryPayableAdjustBlock
+              entry={entry}
+              form={payableAdjust.form}
+              onChange={payableAdjust.setForm}
+              onSubmit={() => void payableAdjust.submit()}
+              submitting={payableAdjust.submitting}
+              error={payableAdjust.submitError}
+            />
           ) : null}
 
           {plannedAdjust.editing && plannedAdjust.form && entry ? (

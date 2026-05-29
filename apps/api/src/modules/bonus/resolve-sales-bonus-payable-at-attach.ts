@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Prisma, type PrismaClient } from '@nbos/database';
 
-import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
 import { earnedSalesPeriodForPayoutMonth } from '../payroll-runs/earned-sales-kpi-period';
 import { isSalesBonusEligibleForPayrollMonth } from '../payroll-runs/payroll-bonus-release-base';
 
@@ -33,15 +32,12 @@ function formatSalesBonusAttachLabel(entry: SalesBonusAttachEntry): string {
   return employeeName ? `${bonusLabel} (${employeeName})` : bonusLabel;
 }
 
-/**
- * Payroll attach reads frozen bonus snapshots only — no KPI sync or recalculation here.
- */
+/** Payroll attach reads frozen bonus payable snapshots only — no KPI sync here. */
 export async function assertSalesBonusReadyForPayrollAttach(
   db: AttachDb,
   params: {
     bonusEntryId: string;
     payrollMonth: string;
-    payrollPolicy: CompensationPayrollPolicy;
   },
 ): Promise<void> {
   const entry = await db.bonusEntry.findUnique({
@@ -62,11 +58,7 @@ export async function assertSalesBonusReadyForPayrollAttach(
     );
   }
 
-  if (params.payrollPolicy.kpiPolicyId == null) {
-    return;
-  }
-
-  if (entry.payableAmount == null || entry.kpiPayoutFactor == null) {
+  if (entry.payableAmount == null) {
     throw new BadRequestException(
       `${bonusLabel} is not ready for payroll. ` +
         `Sync Sales KPI for earned month ${entry.earnedPeriod ?? '—'}, then retry.`,

@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { Decimal, type PrismaClient } from '@nbos/database';
 import { BONUS_POOL_ZERO, decimalFrom } from './bonus-pool-decimal';
+import { applyPayableSnapshotToBonusEntry } from './bonus-payable-snapshot';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
-import { refreshSalesBonusesForEmployeesEarnedMonth } from './sales-bonus-kpi-payable';
 
 const COUNTING_STATUSES = ['DRAFT', 'APPROVED', 'INCLUDED_IN_PAYROLL', 'PAID'] as const;
 
@@ -109,14 +109,7 @@ export async function patchBonusEntryPlannedAmount(
   });
 
   await syncProductBonusPoolForOrder(prisma, entry.orderId);
-
-  if (entry.type === 'SALES' && entry.earnedPeriod) {
-    await refreshSalesBonusesForEmployeesEarnedMonth(
-      prisma,
-      [entry.employeeId],
-      entry.earnedPeriod,
-    );
-  }
+  await applyPayableSnapshotToBonusEntry(prisma, entry.id);
 
   return {
     bonusEntryId: entry.id,

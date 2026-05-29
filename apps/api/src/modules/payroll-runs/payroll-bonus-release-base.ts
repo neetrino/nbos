@@ -8,8 +8,6 @@ export type PayrollBonusReleaseBaseInput = {
   amount: Decimal | string | number;
   payableAmount: Decimal | string | number | null;
   earnedPeriod?: string | null;
-  /** When false, Sales bonus uses full `amount` (no KPI policy on compensation profile). */
-  hasKpiPolicy?: boolean;
 };
 
 /** Sales bonuses for payroll month M use earned period M−1 only. */
@@ -32,14 +30,11 @@ export function payrollBonusReleaseBase(
   entry: PayrollBonusReleaseBaseInput,
   payrollMonth: string,
 ): Decimal {
-  if (entry.type === 'SALES') {
-    if (!isSalesBonusEligibleForPayrollMonth(entry, payrollMonth)) {
-      return BONUS_POOL_ZERO;
-    }
-    if (entry.hasKpiPolicy === false) {
-      return decimalFrom(entry.amount);
-    }
-    return entry.payableAmount != null ? decimalFrom(entry.payableAmount) : BONUS_POOL_ZERO;
+  if (entry.type === 'SALES' && !isSalesBonusEligibleForPayrollMonth(entry, payrollMonth)) {
+    return BONUS_POOL_ZERO;
+  }
+  if (entry.payableAmount != null) {
+    return decimalFrom(entry.payableAmount);
   }
   return decimalFrom(entry.amount);
 }
@@ -49,14 +44,11 @@ export function isPayrollMatrixBonusEntryVisible(
   entry: PayrollBonusReleaseBaseInput,
   payrollMonth: string,
 ): boolean {
-  if (entry.type !== 'SALES') {
-    return true;
-  }
-  if (!isSalesBonusEligibleForPayrollMonth(entry, payrollMonth)) {
+  if (entry.type === 'SALES' && !isSalesBonusEligibleForPayrollMonth(entry, payrollMonth)) {
     return false;
   }
-  if (entry.hasKpiPolicy === false) {
-    return true;
+  if (entry.type === 'SALES') {
+    return entry.payableAmount != null;
   }
-  return entry.payableAmount != null;
+  return true;
 }

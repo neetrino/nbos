@@ -36,22 +36,20 @@ describe('payrollBonusReleaseBase', () => {
     ).toBe(true);
   });
 
-  it('uses full amount for SALES without KPI policy', () => {
+  it('uses payableAmount for delivery entries', () => {
     expect(
       payrollBonusReleaseBase(
         {
-          type: 'SALES',
-          amount: new Decimal(100_000),
-          payableAmount: null,
-          earnedPeriod: '2026-04',
-          hasKpiPolicy: false,
+          type: 'DELIVERY',
+          amount: new Decimal(50_000),
+          payableAmount: new Decimal(55_000),
         },
         '2026-05',
       ).toString(),
-    ).toBe('100000');
+    ).toBe('55000');
   });
 
-  it('uses amount for delivery entries', () => {
+  it('falls back to amount when payableAmount is missing', () => {
     expect(
       payrollBonusReleaseBase(
         {
@@ -74,7 +72,7 @@ describe('isSalesBonusEligibleForPayrollMonth', () => {
 });
 
 describe('isPayrollMatrixBonusEntryVisible', () => {
-  it('hides SALES with KPI policy until payable snapshot exists', () => {
+  it('hides SALES until payable snapshot exists', () => {
     expect(
       isPayrollMatrixBonusEntryVisible(
         {
@@ -82,22 +80,20 @@ describe('isPayrollMatrixBonusEntryVisible', () => {
           amount: new Decimal(100),
           payableAmount: null,
           earnedPeriod: '2026-04',
-          hasKpiPolicy: true,
         },
         '2026-05',
       ),
     ).toBe(false);
   });
 
-  it('shows SALES without KPI policy even when payable snapshot is missing', () => {
+  it('shows SALES when payable snapshot exists', () => {
     expect(
       isPayrollMatrixBonusEntryVisible(
         {
           type: 'SALES',
           amount: new Decimal(100),
-          payableAmount: null,
+          payableAmount: new Decimal(90),
           earnedPeriod: '2026-04',
-          hasKpiPolicy: false,
         },
         '2026-05',
       ),

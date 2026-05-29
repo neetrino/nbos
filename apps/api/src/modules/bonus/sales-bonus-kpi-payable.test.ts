@@ -16,6 +16,7 @@ describe('applyPayableSnapshotToSalesEntry', () => {
           earnedPeriod: '2026-05',
           payableAmount: null,
           kpiPayoutFactor: null,
+          payableAdjustment: new Decimal(0),
         }),
         update,
       },

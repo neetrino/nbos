@@ -27,6 +27,11 @@ import {
   patchBonusEntryPlannedAmount,
   type PatchBonusEntryPlannedAmountParams,
 } from './patch-bonus-entry-planned-amount';
+import {
+  patchBonusEntryPayableAdjustment,
+  type PatchBonusEntryPayableAdjustmentParams,
+} from './patch-bonus-entry-payable-adjustment';
+import { applyPayableSnapshotToBonusEntry } from './bonus-payable-snapshot';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 
 interface CreateBonusDto {
@@ -172,6 +177,7 @@ export class BonusService {
       },
     });
     await syncProductBonusPoolForOrder(this.prisma, data.orderId, this.notifications);
+    await applyPayableSnapshotToBonusEntry(this.prisma, created.id);
 
     if (actorUserId && reason && reason.length > 0) {
       await this.audit.log({
@@ -227,6 +233,37 @@ export class BonusService {
         nextAmount: result.nextAmount,
         previousTitle: result.previousTitle,
         nextTitle: params.title?.trim() ?? result.previousTitle,
+        reason: params.reason.trim(),
+      },
+    });
+
+    return this.findById(bonusEntryId);
+  }
+
+  async patchPayableAdjustment(
+    bonusEntryId: string,
+    params: Omit<PatchBonusEntryPayableAdjustmentParams, 'bonusEntryId'>,
+    actorUserId: string,
+  ) {
+    const result = await patchBonusEntryPayableAdjustment(this.prisma, {
+      bonusEntryId,
+      ...params,
+    });
+
+    await this.audit.log({
+      entityType: 'BonusEntry',
+      entityId: result.bonusEntryId,
+      action: 'PAYABLE_ADJUSTMENT_UPDATED',
+      userId: actorUserId,
+      projectId: result.projectId,
+      changes: {
+        orderId: result.orderId,
+        employeeId: result.employeeId,
+        previousAdjustment: result.previousAdjustment,
+        nextAdjustment: result.nextAdjustment,
+        previousPayableAmount: result.previousPayableAmount,
+        nextPayableAmount: result.nextPayableAmount,
+        autoPayable: result.autoPayable,
         reason: params.reason.trim(),
       },
     });
