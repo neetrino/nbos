@@ -65,7 +65,7 @@ PayrollRun → SalaryLine → (APPROVED) → Expense → ExpensePayment → sync
 | `GET /api/payroll-runs/salary-lines/:id/month-detail`        | Month sheet + `employeeSalesKpi` + breakdown                         |
 | `GET /api/payroll-runs/:id/allocation-matrix`                | Matrix read (`viewMode` employee \| order)                           |
 | `PATCH …/allocation-matrix/layout`, `POST …/layout/reset`    | Column/row order + pin persistence                                   |
-| `PATCH …/allocation-matrix/cells`, `POST …/manual-bonus`     | Release edit + gray-cell manual bonus                                |
+| `PATCH …/allocation-matrix/cells`, `POST …/manual-bonus`     | Draft allocation edit + gray-cell manual bonus draft                 |
 | `PATCH …/planned-bonus`, `PATCH …/reassign-recipient`        | Planned amount + recipient change (pre-approval)                     |
 | `GET …/allocation-matrix/validation`                         | Blocks REVIEW/APPROVED when rules fail                               |
 | `GET /api/unit-economics`                                    | Per delivery unit + `projects` / `products` roll-ups; In/Out/Balance |

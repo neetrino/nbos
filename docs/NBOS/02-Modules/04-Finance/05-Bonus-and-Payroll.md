@@ -677,9 +677,9 @@ Inside payroll run detail:
 | Employee matrix | Employees (+ fix salary) | Delivery payable units |
 | Order matrix    | Delivery payable units   | Employees              |
 
-Cell states: unlinked (gray), linked empty (blue), release set (green), manual (orange), extra bonus, over funding.
+Cell states: unlinked (gray), linked empty (blue), ready / partially funded / progress (green), manual bonus (orange), extra bonus, over funding.
 
-Finance edits **Bonus Release** amounts before approval. Partial release carries remainder forward. Extra / over funding require reason. Gray cells create manual bonuses.
+Finance edits **Payroll Bonus Allocation Draft** rows while the run is `DRAFT`. `REVIEW` locks the draft for read-only review. `APPROVED` materializes draft allocations into real `BonusRelease` rows and salary line totals. Partial release carries remainder forward. Extra / over funding require reason. Gray cells create manual bonus drafts.
 
 Row/column order persists per user, per payroll run, per view mode (`PayrollMatrixLayoutPreference`).
 
@@ -712,7 +712,7 @@ Operational finance hub at `/finance/unit-economics` (Finance Overview). **In / 
 
 Web tabs: By unit, By project, By product, Cash, Outflows, Profitability. Bonus breakdown uses order detail — not `GET /api/bonus/products/pools` list.
 
-Payroll matrix APIs: `GET/PATCH /api/payroll-runs/:id/allocation-matrix` (+ layout, layout/reset, cells, manual-bonus, planned-bonus, reassign-recipient). Matrix cell patch and reassign trigger carry-over and sales KPI attach notifications where applicable. Planned bonus and recipient changes write `audit_logs` on `BonusEntry`.
+Payroll matrix APIs: `GET/PATCH /api/payroll-runs/:id/allocation-matrix` (+ layout, layout/reset, cells, manual-bonus, planned-bonus, reassign-recipient). Matrix cell patch writes draft allocations only; approval materializes them and triggers carry-over / sales KPI attach notifications where applicable. Planned bonus and recipient changes write `audit_logs` on `BonusEntry`.
 
 ---
 

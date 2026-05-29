@@ -212,16 +212,6 @@ export class PayrollRunsController {
     return this.payrollAllocationMatrixService.resetLayout(id, user.id, body.viewMode);
   }
 
-  @Get(':id/bonus-releases')
-  @ApiOperation({
-    summary: 'Bonus releases for payroll run workspace',
-    description:
-      'Returns INCLUDED_IN_PAYROLL rows on this run and APPROVED releases available to attach while DRAFT/REVIEW.',
-  })
-  async getBonusReleases(@Param('id') id: string) {
-    return this.payrollRunsService.getBonusReleases(id);
-  }
-
   @Get(':id')
   @ApiOperation({
     summary: 'Get payroll run with salary lines',
@@ -239,26 +229,6 @@ export class PayrollRunsController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.payrollRunsService.create(body, user.id);
-  }
-
-  @Post(':id/bonus-releases/attach')
-  @ApiOperation({
-    summary: 'Attach approved bonus releases to salary lines (DRAFT/REVIEW run only)',
-    description:
-      'Each release must be APPROVED; optional `payrollRunId` on the release must match this run when set. Updates `SalaryLine.bonusesTotal` and sets release status to INCLUDED_IN_PAYROLL.',
-  })
-  async attachBonusReleases(@Param('id') id: string, @Body() body: { releaseIds: string[] }) {
-    return this.payrollRunsService.attachBonusReleases(id, body);
-  }
-
-  @Post(':id/bonus-releases/detach')
-  @ApiOperation({
-    summary: 'Detach INCLUDED_IN_PAYROLL bonus releases from salary lines (DRAFT/REVIEW run only)',
-    description:
-      'Subtracts amounts from `SalaryLine.bonusesTotal`, sets each release back to APPROVED, and clears `payrollRunId`.',
-  })
-  async detachBonusReleases(@Param('id') id: string, @Body() body: { releaseIds: string[] }) {
-    return this.payrollRunsService.detachBonusReleases(id, body);
   }
 
   @Patch(':id/status')

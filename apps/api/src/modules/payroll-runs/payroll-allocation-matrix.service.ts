@@ -9,9 +9,9 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
-import { syncAfterMatrixReleaseMutation } from './payroll-matrix-cell-patch';
 import { reassignMatrixBonusRecipientAndSync } from './payroll-matrix-bonus-reassign';
 import { patchMatrixPlannedBonus } from './payroll-matrix-planned-bonus';
+import { syncAfterBonusReleaseMutation } from './payroll-run-bonus-release-side-effects';
 import {
   validatePayrollMatrixForApproval,
   type PayrollMatrixValidationIssue,
@@ -592,7 +592,7 @@ export class PayrollAllocationMatrixService {
       },
     });
 
-    await syncAfterMatrixReleaseMutation(
+    await syncAfterBonusReleaseMutation(
       this.prisma,
       { releaseIds: [], carryNotifyEvents: reassignResult.carryNotifyEvents },
       this.notifications,
