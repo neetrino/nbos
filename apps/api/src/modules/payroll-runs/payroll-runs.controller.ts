@@ -160,21 +160,6 @@ export class PayrollRunsController {
     );
   }
 
-  @Get(':id/employee-bonus-history')
-  @ApiOperation({
-    summary: 'Employee × project bonus history (12 months, includes matrix)',
-    description:
-      'Legacy combined payload. Prefer meta + slice + client-side matrix for faster tab switches.',
-  })
-  @ApiQuery({ name: 'employeeId', required: false })
-  async getEmployeeBonusHistory(
-    @Param('id') id: string,
-    @Query('employeeId') employeeId: string | undefined,
-    @CurrentUser() user: CurrentUserPayload,
-  ) {
-    return this.payrollAllocationMatrixService.getEmployeeBonusHistory(id, user.id, employeeId);
-  }
-
   @Get(':id/allocation-matrix')
   @ApiOperation({
     summary: 'Payroll allocation matrix (employees × delivery payable units)',

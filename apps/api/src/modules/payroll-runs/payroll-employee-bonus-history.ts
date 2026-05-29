@@ -7,10 +7,8 @@ import { addPayrollMonths, enumeratePayrollMonths } from './payroll-salary-board
 import type { PayrollAllocationMatrixCell } from './payroll-allocation-matrix.types';
 import {
   PAYROLL_EMPLOYEE_BONUS_HISTORY_MONTH_COUNT,
-  type PayrollEmployeeBonusHistoryDto,
   type PayrollEmployeeBonusHistoryEmployeeDto,
   type PayrollEmployeeBonusHistoryMetaDto,
-  type PayrollEmployeeBonusHistoryMonthDto,
   type PayrollEmployeeBonusHistoryProjectDto,
   type PayrollEmployeeBonusHistorySliceDto,
 } from './payroll-employee-bonus-history.types';
@@ -114,25 +112,6 @@ async function loadRunContext(
     runByMonth,
     runIds: runsInWindow.map((r) => r.id),
   };
-}
-
-function buildMonthHeaders(
-  ctx: RunContext,
-  monthBonusTotals?: Map<string, string>,
-): PayrollEmployeeBonusHistoryMonthDto[] {
-  const editable = EDITABLE_STATUSES.has(ctx.run.status);
-  return ctx.monthKeys.map((payrollMonth) => {
-    const monthRun = ctx.runByMonth.get(payrollMonth) ?? null;
-    const isFocusMonth = payrollMonth === ctx.payrollMonthTo;
-    return {
-      payrollMonth,
-      payrollRunId: monthRun?.id ?? null,
-      runStatus: monthRun?.status ?? null,
-      isFocusMonth,
-      monthBonusTotal: monthBonusTotals?.get(payrollMonth) ?? '0.00',
-      readOnly: isFocusMonth ? !editable : true,
-    };
-  });
 }
 
 function buildMetaMonths(ctx: RunContext): PayrollEmployeeBonusHistoryMetaDto['months'] {
@@ -413,50 +392,5 @@ export async function queryPayrollEmployeeBonusHistorySlice(
       monthBonusTotal: monthBonusTotals.get(payrollMonth) ?? '0.00',
     })),
     projects: projects.map(({ focusCell: _fc, ...rest }) => rest),
-  };
-}
-
-/** Full payload (legacy) — includes matrix focus cells. */
-export async function queryPayrollEmployeeBonusHistory(
-  prisma: InstanceType<typeof PrismaClient>,
-  payrollRunId: string,
-  employeeId: string | undefined,
-  focusCells: PayrollAllocationMatrixCell[],
-  focusUnits: DeliveryPayableUnitDto[],
-): Promise<PayrollEmployeeBonusHistoryDto> {
-  const ctx = await loadRunContext(prisma, payrollRunId);
-  const selectedEmployeeId =
-    employeeId && ctx.employees.some((e) => e.employeeId === employeeId)
-      ? employeeId
-      : ctx.employees[0].employeeId;
-
-  const amountByMonthOrder = await loadAmountByMonthOrder(prisma, ctx, selectedEmployeeId);
-  const focusCellsByOrder = new Map(
-    focusCells.filter((c) => c.employeeId === selectedEmployeeId).map((c) => [c.orderId, c]),
-  );
-
-  let projects = buildProjectsForEmployee({
-    ctx,
-    selectedEmployeeId,
-    amountByMonthOrder,
-    focusCellsByOrder,
-    focusUnits,
-    includeFocusCells: true,
-  });
-  projects = await enrichProjectLabels(prisma, ctx, selectedEmployeeId, projects, focusUnits);
-
-  const monthBonusTotals = computeMonthBonusTotals(ctx, amountByMonthOrder, focusCellsByOrder);
-
-  return {
-    payrollRunId: ctx.run.id,
-    payrollMonth: ctx.run.payrollMonth,
-    runStatus: ctx.run.status,
-    editable: EDITABLE_STATUSES.has(ctx.run.status),
-    payrollMonthFrom: ctx.payrollMonthFrom,
-    payrollMonthTo: ctx.payrollMonthTo,
-    months: buildMonthHeaders(ctx, monthBonusTotals),
-    employees: ctx.employees,
-    selectedEmployeeId,
-    projects,
   };
 }

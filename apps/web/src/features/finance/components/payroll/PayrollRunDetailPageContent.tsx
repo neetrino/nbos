@@ -17,12 +17,14 @@ import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/
 import { PAYROLL_MATRIX_FULLSCREEN_Z } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import {
   PAYROLL_RUN_DETAIL_VIEW_OPTIONS,
+  isPayrollMatrixViewMode,
   isPayrollRunFullscreenViewMode,
   readPayrollRunDetailViewMode,
   type PayrollRunDetailViewMode,
   writePayrollRunDetailViewMode,
 } from '@/features/finance/components/payroll/payroll-run-detail-view-options';
 import { PayrollEmployeeBonusHistoryWorkspace } from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-workspace';
+import { usePayrollRunMatrixCache } from '@/features/finance/components/payroll/use-payroll-run-matrix-cache';
 import { PayrollRunSalaryLinesView } from '@/features/finance/components/payroll/payroll-run-salary-lines-view';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { PayrollRunDetailHeroBar } from '@/features/finance/components/payroll/PayrollRunDetailHeroBar';
@@ -73,6 +75,9 @@ export function PayrollRunDetailPageContent({
   );
   const [matrixFullscreen, setMatrixFullscreen] = useState(false);
 
+  const usesMatrixFamily = detailViewMode !== 'SALARY_LINES';
+  const matrixCache = usePayrollRunMatrixCache(payrollRunId, usesMatrixFamily);
+
   useEffect(() => {
     setRun(initialRun);
     setLoading(initialLoading);
@@ -119,6 +124,7 @@ export function PayrollRunDetailPageContent({
   );
 
   const handleReload = useCallback(async () => {
+    matrixCache.reset();
     setLoading(true);
     setError(null);
     try {
@@ -131,7 +137,7 @@ export function PayrollRunDetailPageContent({
     } finally {
       setLoading(false);
     }
-  }, [onReload, payrollRunId]);
+  }, [matrixCache, onReload, payrollRunId]);
 
   const statsTotals = useMemo((): PayrollAllocationMatrix['totals'] | null => {
     if (matrixTotals) return matrixTotals;
@@ -164,6 +170,11 @@ export function PayrollRunDetailPageContent({
 
   const matrixViewMode: PayrollMatrixViewMode =
     detailViewMode === 'ORDER_MATRIX' ? 'ORDER_MATRIX' : 'EMPLOYEE_MATRIX';
+
+  useEffect(() => {
+    if (!usesMatrixFamily || !isPayrollMatrixViewMode(detailViewMode)) return;
+    void matrixCache.ensureMatrix(matrixViewMode);
+  }, [detailViewMode, matrixCache, matrixViewMode, usesMatrixFamily]);
 
   const moduleHeroSlots = useMemo(() => {
     if (!run) {
@@ -341,6 +352,12 @@ export function PayrollRunDetailPageContent({
             <PayrollEmployeeBonusHistoryWorkspace
               payrollRunId={payrollRunId}
               search={matrixSearch}
+              sharedMeta={matrixCache.meta}
+              sharedEmployeeMatrix={matrixCache.matrixByMode.EMPLOYEE_MATRIX}
+              onSharedMatrixChange={(matrix) =>
+                matrixCache.setMatrixForMode('EMPLOYEE_MATRIX', matrix)
+              }
+              sharedMetaError={matrixCache.metaError}
               onSalaryLinesStale={() => void refreshRunQuiet()}
             />
           </section>
@@ -350,6 +367,8 @@ export function PayrollRunDetailPageContent({
             viewMode={matrixViewMode}
             search={matrixSearch}
             fullscreen={matrixFullscreen}
+            initialMatrix={matrixCache.matrixByMode[matrixViewMode]}
+            onMatrixChange={(matrix) => matrixCache.setMatrixForMode(matrixViewMode, matrix)}
             onTotalsChange={setMatrixTotals}
             onLayoutHeroActionsChange={setLayoutHeroActions}
             onOpenSalaryLine={handleOpenSalaryLine}

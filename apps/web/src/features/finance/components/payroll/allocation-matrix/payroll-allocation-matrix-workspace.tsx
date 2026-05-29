@@ -23,11 +23,23 @@ function matrixCellKey(cell: PayrollAllocationMatrixCell): string {
   return `${cell.employeeId}:${cell.orderId}`;
 }
 
+function matrixMatchesView(
+  matrix: PayrollAllocationMatrix | null | undefined,
+  payrollRunId: string,
+  viewMode: PayrollMatrixViewMode,
+): matrix is PayrollAllocationMatrix {
+  return (
+    matrix != null && matrix.payrollRunId === payrollRunId && matrix.layout.viewMode === viewMode
+  );
+}
+
 export function PayrollAllocationMatrixWorkspace({
   payrollRunId,
   viewMode,
   search,
   fullscreen = false,
+  initialMatrix = null,
+  onMatrixChange,
   onTotalsChange,
   onLayoutHeroActionsChange,
   onOpenSalaryLine,
@@ -37,13 +49,20 @@ export function PayrollAllocationMatrixWorkspace({
   viewMode: PayrollMatrixViewMode;
   search: string;
   fullscreen?: boolean;
+  /** Shared cache from payroll run detail — avoids reload when switching views. */
+  initialMatrix?: PayrollAllocationMatrix | null;
+  onMatrixChange?: (matrix: PayrollAllocationMatrix) => void;
   onTotalsChange?: (totals: PayrollAllocationMatrix['totals'] | null) => void;
   onLayoutHeroActionsChange?: (actions: PayrollMatrixLayoutHeroActions | null) => void;
   onOpenSalaryLine?: (salaryLineId: string) => void;
   onSalaryLinesStale?: () => void;
 }) {
-  const [matrix, setMatrix] = useState<PayrollAllocationMatrix | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [matrix, setMatrix] = useState<PayrollAllocationMatrix | null>(() =>
+    matrixMatchesView(initialMatrix, payrollRunId, viewMode) ? initialMatrix : null,
+  );
+  const [loading, setLoading] = useState(
+    () => !matrixMatchesView(initialMatrix, payrollRunId, viewMode),
+  );
   const [error, setError] = useState<string | null>(null);
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
@@ -65,23 +84,37 @@ export function PayrollAllocationMatrixWorkspace({
   const [validationIssues, setValidationIssues] = useState<PayrollMatrixValidationIssue[]>([]);
   const [layoutBusy, setLayoutBusy] = useState(false);
 
+  const applyMatrix = useCallback(
+    (next: PayrollAllocationMatrix) => {
+      setMatrix(next);
+      onMatrixChange?.(next);
+    },
+    [onMatrixChange],
+  );
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await payrollAllocationMatrixApi.get(payrollRunId, viewMode);
-      setMatrix(data);
+      applyMatrix(data);
     } catch (caught) {
       setMatrix(null);
       setError(getApiErrorMessage(caught, 'Allocation matrix could not be loaded.'));
     } finally {
       setLoading(false);
     }
-  }, [payrollRunId, viewMode]);
+  }, [applyMatrix, payrollRunId, viewMode]);
 
   useEffect(() => {
+    if (matrixMatchesView(initialMatrix, payrollRunId, viewMode)) {
+      setMatrix(initialMatrix);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     void load();
-  }, [load]);
+  }, [initialMatrix, load, payrollRunId, viewMode]);
 
   useEffect(() => {
     onTotalsChange?.(matrix?.totals ?? null);
@@ -129,7 +162,7 @@ export function PayrollAllocationMatrixWorkspace({
         columnOrder: patch.columnOrder ?? matrix.layout.columnOrder,
         pinnedUnitIds: patch.pinnedUnitIds ?? matrix.layout.pinnedUnitIds,
       });
-      setMatrix(updated);
+      applyMatrix(updated);
     } catch (caught) {
       toast.error(getApiErrorMessage(caught, 'Layout could not be saved.'));
     } finally {
@@ -146,7 +179,7 @@ export function PayrollAllocationMatrixWorkspace({
         orderId: manualCell.orderId,
         ...payload,
       });
-      setMatrix(updated);
+      applyMatrix(updated);
       setManualCell(null);
       toast.success('Manual bonus created and attached');
       void refreshValidation();
@@ -171,7 +204,7 @@ export function PayrollAllocationMatrixWorkspace({
           releaseThisMonth: payload.releaseThisMonth,
           reason: payload.reason,
         });
-        setMatrix(updated);
+        applyMatrix(updated);
         onSalaryLinesStale?.();
         void refreshValidation();
       } catch (caught) {
@@ -194,7 +227,7 @@ export function PayrollAllocationMatrixWorkspace({
       setLayoutBusy(true);
       try {
         const updated = await payrollAllocationMatrixApi.resetLayout(payrollRunId, viewMode);
-        setMatrix(updated);
+        applyMatrix(updated);
         setActiveRowId(null);
         setActiveColumnId(null);
         toast.success('Layout reset');

@@ -43,19 +43,6 @@ export type PayrollEmployeeBonusHistoryEmployeeDto = {
   bonusTotalThisRun: string;
 };
 
-export type PayrollEmployeeBonusHistoryDto = {
-  payrollRunId: string;
-  payrollMonth: string;
-  runStatus: PayrollRunStatusEnum;
-  editable: boolean;
-  payrollMonthFrom: string;
-  payrollMonthTo: string;
-  months: PayrollEmployeeBonusHistoryMonthDto[];
-  employees: PayrollEmployeeBonusHistoryEmployeeDto[];
-  selectedEmployeeId: string;
-  projects: PayrollEmployeeBonusHistoryProjectDto[];
-};
-
 /** Shared run context — load once per payroll run view (no matrix). */
 export type PayrollEmployeeBonusHistoryMetaDto = {
   payrollRunId: string;

@@ -31,14 +31,33 @@ function historyEmployeeName(employee: { firstName: string; lastName: string }):
   return `${employee.firstName} ${employee.lastName}`.trim();
 }
 
+function sharedEmployeeMatrixReady(
+  matrix: PayrollAllocationMatrix | null | undefined,
+  payrollRunId: string,
+): matrix is PayrollAllocationMatrix {
+  return (
+    matrix != null &&
+    matrix.payrollRunId === payrollRunId &&
+    matrix.layout.viewMode === 'EMPLOYEE_MATRIX'
+  );
+}
+
 export function PayrollEmployeeBonusHistoryWorkspace({
   payrollRunId,
   search,
+  sharedMeta = null,
+  sharedEmployeeMatrix = null,
+  onSharedMatrixChange,
+  sharedMetaError = null,
   onTotalsChange,
   onSalaryLinesStale,
 }: {
   payrollRunId: string;
   search: string;
+  sharedMeta?: PayrollEmployeeBonusHistoryMeta | null;
+  sharedEmployeeMatrix?: PayrollAllocationMatrix | null;
+  onSharedMatrixChange?: (matrix: PayrollAllocationMatrix) => void;
+  sharedMetaError?: string | null;
   onTotalsChange?: (bonusTotal: string | null) => void;
   onSalaryLinesStale?: () => void;
 }) {
@@ -53,6 +72,7 @@ export function PayrollEmployeeBonusHistoryWorkspace({
 
   const sliceCacheRef = useRef<Map<string, PayrollEmployeeBonusHistorySlice>>(new Map());
   const sliceRequestRef = useRef(0);
+  const initializedRunIdRef = useRef<string | null>(null);
 
   const loadSlice = useCallback(
     async (
@@ -100,16 +120,8 @@ export function PayrollEmployeeBonusHistoryWorkspace({
     [payrollRunId],
   );
 
-  const bootstrap = useCallback(async () => {
-    setBootstrapLoading(true);
-    setError(null);
-    sliceCacheRef.current.clear();
-    sliceRequestRef.current += 1;
-    try {
-      const [metaResult, matrixResult] = await Promise.all([
-        payrollEmployeeBonusHistoryApi.getMeta(payrollRunId),
-        payrollAllocationMatrixApi.get(payrollRunId, 'EMPLOYEE_MATRIX'),
-      ]);
+  const startWithContext = useCallback(
+    (metaResult: PayrollEmployeeBonusHistoryMeta, matrixResult: PayrollAllocationMatrix) => {
       setMeta(metaResult);
       setMatrix(matrixResult);
       const firstId = metaResult.employees[0]?.employeeId ?? null;
@@ -121,6 +133,32 @@ export function PayrollEmployeeBonusHistoryWorkspace({
       } else {
         setDisplayData(null);
       }
+    },
+    [loadSlice],
+  );
+
+  const initialize = useCallback(async () => {
+    setBootstrapLoading(true);
+    setError(sharedMetaError);
+    sliceCacheRef.current.clear();
+    sliceRequestRef.current += 1;
+
+    try {
+      if (sharedMeta && sharedEmployeeMatrixReady(sharedEmployeeMatrix, payrollRunId)) {
+        startWithContext(sharedMeta, sharedEmployeeMatrix);
+        return;
+      }
+
+      const metaResult = sharedMeta ?? (await payrollEmployeeBonusHistoryApi.getMeta(payrollRunId));
+      const matrixResult = sharedEmployeeMatrixReady(sharedEmployeeMatrix, payrollRunId)
+        ? sharedEmployeeMatrix
+        : await payrollAllocationMatrixApi.get(payrollRunId, 'EMPLOYEE_MATRIX');
+
+      if (!sharedEmployeeMatrixReady(sharedEmployeeMatrix, payrollRunId)) {
+        onSharedMatrixChange?.(matrixResult);
+      }
+
+      startWithContext(metaResult, matrixResult);
     } catch (caught) {
       setMeta(null);
       setMatrix(null);
@@ -129,11 +167,37 @@ export function PayrollEmployeeBonusHistoryWorkspace({
     } finally {
       setBootstrapLoading(false);
     }
-  }, [loadSlice, payrollRunId]);
+  }, [
+    onSharedMatrixChange,
+    payrollRunId,
+    sharedEmployeeMatrix,
+    sharedMeta,
+    sharedMetaError,
+    startWithContext,
+  ]);
 
   useEffect(() => {
-    void bootstrap();
-  }, [bootstrap]);
+    if (initializedRunIdRef.current === payrollRunId) return;
+    initializedRunIdRef.current = payrollRunId;
+    void initialize();
+  }, [initialize, payrollRunId]);
+
+  useEffect(() => {
+    if (!meta || !sharedEmployeeMatrixReady(sharedEmployeeMatrix, payrollRunId)) return;
+    if (matrix === sharedEmployeeMatrix) return;
+
+    setMatrix(sharedEmployeeMatrix);
+    sliceCacheRef.current.clear();
+    if (!selectedEmployeeId) return;
+
+    const optimistic = buildOptimisticEmployeeBonusHistory(
+      meta,
+      sharedEmployeeMatrix,
+      selectedEmployeeId,
+    );
+    setDisplayData(optimistic);
+    void loadSlice(selectedEmployeeId, meta, sharedEmployeeMatrix, true);
+  }, [loadSlice, matrix, meta, payrollRunId, selectedEmployeeId, sharedEmployeeMatrix]);
 
   const handleEmployeeSelect = useCallback(
     (employeeId: string) => {
@@ -188,6 +252,7 @@ export function PayrollEmployeeBonusHistoryWorkspace({
           reason: payload.reason,
         });
         setMatrix(updatedMatrix);
+        onSharedMatrixChange?.(updatedMatrix);
         sliceCacheRef.current.delete(selectedEmployeeId);
         const optimistic = buildOptimisticEmployeeBonusHistory(
           meta,
@@ -203,7 +268,15 @@ export function PayrollEmployeeBonusHistoryWorkspace({
         setSavingCellKey(null);
       }
     },
-    [loadSlice, matrix, meta, onSalaryLinesStale, payrollRunId, selectedEmployeeId],
+    [
+      loadSlice,
+      matrix,
+      meta,
+      onSalaryLinesStale,
+      onSharedMatrixChange,
+      payrollRunId,
+      selectedEmployeeId,
+    ],
   );
 
   if (bootstrapLoading && !displayData) {
@@ -213,8 +286,11 @@ export function PayrollEmployeeBonusHistoryWorkspace({
   if (error || !meta || !matrix || !gridData) {
     return (
       <ErrorState
-        description={error ?? 'Employee bonus history could not be loaded.'}
-        onRetry={() => void bootstrap()}
+        description={error ?? sharedMetaError ?? 'Employee bonus history could not be loaded.'}
+        onRetry={() => {
+          initializedRunIdRef.current = null;
+          void initialize();
+        }}
       />
     );
   }
