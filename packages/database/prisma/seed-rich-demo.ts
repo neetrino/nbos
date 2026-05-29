@@ -878,15 +878,15 @@ async function seedMay2026PayrollMatrix(
 
   const orderShopify = await prisma.order.findFirst({ where: { code: 'ORD-2026-0021' } });
   if (orderShopify) {
-    const annaSales = await prisma.bonusEntry.findFirst({
-      where: { orderId: orderShopify.id, employeeId: ctx.seller.id, type: 'SALES' },
+    const shopifySales = await prisma.bonusEntry.findFirst({
+      where: { orderId: orderShopify.id, type: 'SALES' },
     });
-    if (annaSales) {
+    if (shopifySales) {
       await prisma.bonusRelease.create({
         data: {
-          bonusEntryId: annaSales.id,
+          bonusEntryId: shopifySales.id,
           payrollRunId: mayRun.id,
-          employeeId: ctx.seller.id,
+          employeeId: shopifySales.employeeId,
           projectId: orderShopify.projectId,
           amount: 85_500,
           payrollIncludedAmount: 85_500,
@@ -1054,9 +1054,12 @@ export async function seedRichDemo(prisma: PrismaClient, ctx: SeedRichDemoContex
   await seedPayrollAndSalaries(prisma, ctx, compensationByEmployee);
   await seedBonusPoolsAndReleases(prisma, ctx);
   await seedMay2026PayrollMatrix(prisma, ctx);
-  const mayRun = await prisma.payrollRun.findUnique({ where: { payrollMonth: '2026-05' } });
-  if (mayRun) {
-    await syncSalaryLinesBonusesFromReleases(prisma, mayRun.id);
+  const runsWithIncludedReleases = await prisma.payrollRun.findMany({
+    where: { bonusReleases: { some: { status: 'INCLUDED_IN_PAYROLL' } } },
+    select: { id: true },
+  });
+  for (const run of runsWithIncludedReleases) {
+    await syncSalaryLinesBonusesFromReleases(prisma, run.id);
   }
   await ensurePayableSnapshots(prisma);
   await archiveHalfOfProjects(prisma);
