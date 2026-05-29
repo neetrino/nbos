@@ -186,7 +186,7 @@ export function writeModuleLastVisitFromPathname(pathname: string): void {
   }
 
   const state = getSectionState(moduleKey, config);
-  state.sectionPaths[sectionId] = path;
+  state.sectionPaths[sectionId] = config.resolveStoredPath?.(path, sectionId) ?? path;
   state.lastSection = sectionId;
   payload[moduleKey] = state;
   writePayload(payload);

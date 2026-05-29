@@ -19,7 +19,9 @@ import { PAYROLL_MATRIX_FULLSCREEN_Z } from '@/features/finance/constants/payrol
 import {
   PAYROLL_RUN_DETAIL_VIEW_OPTIONS,
   isPayrollMatrixViewMode,
+  readPayrollRunDetailViewMode,
   type PayrollRunDetailViewMode,
+  writePayrollRunDetailViewMode,
 } from '@/features/finance/components/payroll/payroll-run-detail-view-options';
 import { PayrollRunSalaryLinesView } from '@/features/finance/components/payroll/payroll-run-salary-lines-view';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
@@ -59,7 +61,9 @@ export function PayrollRunDetailPageContent({
   const [error, setError] = useState<string | null>(initialError);
   const [actionError, setActionError] = useState<string | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
-  const [detailViewMode, setDetailViewMode] = useState<PayrollRunDetailViewMode>('SALARY_LINES');
+  const [detailViewMode, setDetailViewMode] = useState<PayrollRunDetailViewMode>(() =>
+    readPayrollRunDetailViewMode(),
+  );
   const [matrixSearch, setMatrixSearch] = useState('');
   const [matrixTotals, setMatrixTotals] = useState<PayrollAllocationMatrix['totals'] | null>(null);
   const [sheetSalaryLineId, setSheetSalaryLineId] = useState<string | null>(null);
@@ -87,6 +91,11 @@ export function PayrollRunDetailPageContent({
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [matrixFullscreen]);
+
+  const handleDetailViewModeChange = useCallback((mode: PayrollRunDetailViewMode) => {
+    setDetailViewMode(mode);
+    writePayrollRunDetailViewMode(mode);
+  }, []);
 
   const { exportCsvSubmitting, handleExportSalaryLinesCsv } =
     usePayrollRunSalaryLinesCsvExport(run);
@@ -177,7 +186,7 @@ export function PayrollRunDetailPageContent({
       viewMode: matrixFullscreen ? undefined : (
         <ViewModeSwitch
           value={detailViewMode}
-          onChange={setDetailViewMode}
+          onChange={handleDetailViewModeChange}
           options={PAYROLL_RUN_DETAIL_VIEW_OPTIONS}
           ariaLabel="Payroll run view"
         />
@@ -223,6 +232,7 @@ export function PayrollRunDetailPageContent({
     handleExportJournalCsv,
     handleExportSalaryLinesCsv,
     handleReload,
+    handleDetailViewModeChange,
     journalSubmitting,
     layoutHeroActions,
     matrixFullscreen,
@@ -299,7 +309,7 @@ export function PayrollRunDetailPageContent({
           <div className="absolute right-3 bottom-3 z-10">
             <PayrollAllocationMatrixFullscreenControls
               viewMode={matrixViewMode}
-              onViewModeChange={(mode) => setDetailViewMode(mode)}
+              onViewModeChange={handleDetailViewModeChange}
               onExit={() => setMatrixFullscreen(false)}
             />
           </div>

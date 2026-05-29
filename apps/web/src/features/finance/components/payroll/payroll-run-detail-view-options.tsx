@@ -4,6 +4,9 @@ import type { PayrollMatrixViewMode } from '@/lib/api/payroll-allocation-matrix'
 
 export type PayrollRunDetailViewMode = 'SALARY_LINES' | PayrollMatrixViewMode;
 
+const STORAGE_KEY = 'nbos:finance:payroll-run-detail-view';
+const DEFAULT_VIEW_MODE: PayrollRunDetailViewMode = 'EMPLOYEE_MATRIX';
+
 export const PAYROLL_RUN_DETAIL_VIEW_OPTIONS: ViewModeOption<PayrollRunDetailViewMode>[] = [
   {
     value: 'SALARY_LINES',
@@ -29,4 +32,23 @@ export function isPayrollMatrixViewMode(
   mode: PayrollRunDetailViewMode,
 ): mode is PayrollMatrixViewMode {
   return mode === 'EMPLOYEE_MATRIX' || mode === 'ORDER_MATRIX';
+}
+
+export function readPayrollRunDetailViewMode(): PayrollRunDetailViewMode {
+  if (typeof window === 'undefined') {
+    return DEFAULT_VIEW_MODE;
+  }
+  const raw = window.localStorage.getItem(STORAGE_KEY);
+  return isPayrollRunDetailViewMode(raw) ? raw : DEFAULT_VIEW_MODE;
+}
+
+export function writePayrollRunDetailViewMode(mode: PayrollRunDetailViewMode): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  window.localStorage.setItem(STORAGE_KEY, mode);
+}
+
+function isPayrollRunDetailViewMode(value: string | null): value is PayrollRunDetailViewMode {
+  return value === 'SALARY_LINES' || isPayrollMatrixViewMode(value);
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,6 +25,13 @@ export function PayrollAllocationMatrixManualDialog(props: {
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    setTitle('');
+    setAmount('');
+    setReason('');
+  }, [open, employeeLabel, unitLabel]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
