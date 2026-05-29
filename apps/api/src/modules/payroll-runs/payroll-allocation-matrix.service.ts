@@ -50,11 +50,15 @@ function resolveCellState(params: {
 }): PayrollMatrixCellState {
   if (!params.linked && params.releaseAmount.lte(BONUS_POOL_ZERO)) return 'UNLINKED';
   if (params.releaseAmount.lte(BONUS_POOL_ZERO)) return params.linked ? 'LINKED_EMPTY' : 'UNLINKED';
-  if (params.releaseType === 'OVER_FUNDING' || params.releaseAmount.gt(params.availableFunding)) {
-    return 'OVER_FUNDING';
-  }
   if (params.releaseType === 'EXTRA' || params.releaseAmount.gt(params.remaining)) {
     return 'EXTRA_BONUS';
+  }
+  if (
+    params.releaseType === 'OVER_FUNDING' ||
+    (params.availableFunding.gt(BONUS_POOL_ZERO) &&
+      params.releaseAmount.gt(params.availableFunding))
+  ) {
+    return 'OVER_FUNDING';
   }
   if (params.manual || params.releaseType === 'MANUAL' || params.releaseType === 'EARLY') {
     return 'MANUAL';

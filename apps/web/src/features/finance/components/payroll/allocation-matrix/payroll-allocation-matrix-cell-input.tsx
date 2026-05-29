@@ -21,7 +21,10 @@ import {
   PAYROLL_MATRIX_CELL_REASON_CLASS,
   PAYROLL_MATRIX_CELL_RELEASE_PLACEHOLDER,
 } from '@/features/finance/constants/payroll-allocation-matrix-cell-input';
-import { payrollMatrixReleaseNeedsReason } from '@/features/finance/utils/payroll-matrix-release-needs-reason';
+import {
+  payrollMatrixReleaseNeedsReason,
+  payrollMatrixReleaseReasonPlaceholder,
+} from '@/features/finance/utils/payroll-matrix-release-needs-reason';
 import type { PayrollAllocationMatrixCell } from '@/lib/api/payroll-allocation-matrix';
 import { cn } from '@/lib/utils';
 
@@ -31,7 +34,11 @@ function parseMoney(value: string): number {
 }
 
 function releaseDraftFromCell(cell: PayrollAllocationMatrixCell): string {
-  return parseMoney(cell.releaseThisMonth) > 0 ? cell.releaseThisMonth : '';
+  const amount = parseMoney(cell.releaseThisMonth);
+  if (amount <= 0) {
+    return '';
+  }
+  return Number.isInteger(amount) ? String(Math.round(amount)) : String(amount);
 }
 
 export function PayrollAllocationMatrixCellInput(props: {
@@ -56,6 +63,12 @@ export function PayrollAllocationMatrixCellInput(props: {
   }, [cell.employeeId, cell.orderId, cell.releaseThisMonth]);
 
   const showCurrency = focused || amount.trim().length > 0;
+  const remaining = parseMoney(cell.remaining);
+  const reasonPlaceholder = payrollMatrixReleaseReasonPlaceholder(
+    parseMoney(amount),
+    remaining,
+    availableFunding,
+  );
 
   const submit = useCallback(async () => {
     if (disabled || saving) return;
@@ -65,11 +78,7 @@ export function PayrollAllocationMatrixCellInput(props: {
     const current = parseMoney(cell.releaseThisMonth);
     if (next === current && !reasonOpen) return;
 
-    const needsReason = payrollMatrixReleaseNeedsReason(
-      next,
-      parseMoney(cell.remaining),
-      availableFunding,
-    );
+    const needsReason = payrollMatrixReleaseNeedsReason(next, remaining, availableFunding);
     if (needsReason && !reason.trim()) {
       setReasonOpen(true);
       return;
@@ -86,6 +95,7 @@ export function PayrollAllocationMatrixCellInput(props: {
     availableFunding,
     cell.releaseThisMonth,
     cell.remaining,
+    remaining,
     disabled,
     onSave,
     reason,
@@ -164,7 +174,7 @@ export function PayrollAllocationMatrixCellInput(props: {
           id={reasonId}
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Reason required"
+          placeholder={reasonPlaceholder}
           rows={2}
           disabled={disabled || saving}
           className={PAYROLL_MATRIX_CELL_REASON_CLASS}

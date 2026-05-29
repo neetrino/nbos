@@ -39,8 +39,8 @@ export function resolveMatrixReleaseType(
   remaining: Decimal,
   availableFunding: Decimal,
 ): BonusReleaseTypeEnum {
-  if (amount.gt(availableFunding)) return 'OVER_FUNDING';
   if (amount.gt(remaining)) return 'EXTRA';
+  if (availableFunding.gt(BONUS_POOL_ZERO) && amount.gt(availableFunding)) return 'OVER_FUNDING';
   return 'MANUAL';
 }
 

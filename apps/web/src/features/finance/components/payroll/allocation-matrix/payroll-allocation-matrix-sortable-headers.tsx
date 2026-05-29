@@ -71,7 +71,7 @@ const MATRIX_PRIMARY_NAME_CLASS =
   'block truncate text-xs font-semibold tracking-tight text-foreground leading-tight';
 
 const MATRIX_HEADER_HOVER_ACTION_CLASS =
-  'text-muted-foreground hover:text-foreground absolute top-1 z-10 rounded p-0.5 opacity-0 transition-opacity pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100';
+  'text-muted-foreground hover:text-foreground pointer-events-none absolute top-0.5 z-20 rounded p-0.5 opacity-0 shadow-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 bg-card/95';
 
 function MatrixLabeledAmount({ label, value }: { label: string; value: string }) {
   return (
@@ -138,7 +138,7 @@ function MatrixHeaderDragShell({
   children: ReactNode;
 }) {
   return (
-    <div className="group relative pr-6">
+    <div className="group relative">
       <button
         type="button"
         className="hover:text-primary w-full min-w-0 overflow-hidden text-left"
@@ -149,7 +149,7 @@ function MatrixHeaderDragShell({
       {!disabled && onOpenDetail ? (
         <button
           type="button"
-          className={cn(MATRIX_HEADER_HOVER_ACTION_CLASS, 'right-6')}
+          className={cn(MATRIX_HEADER_HOVER_ACTION_CLASS, 'right-5')}
           aria-label={detailAriaLabel ?? 'Open salary detail'}
           onClick={(event) => {
             event.stopPropagation();
@@ -164,7 +164,7 @@ function MatrixHeaderDragShell({
           type="button"
           className={cn(
             MATRIX_HEADER_HOVER_ACTION_CLASS,
-            'right-1 cursor-grab active:cursor-grabbing',
+            'right-0.5 cursor-grab active:cursor-grabbing',
           )}
           aria-label={dragLabel}
           {...dragAttributes}
