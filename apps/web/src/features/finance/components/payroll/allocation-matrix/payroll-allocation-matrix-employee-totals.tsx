@@ -19,16 +19,19 @@ function parseMoney(value: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+const MATRIX_TOTALS_LABEL_CLASS =
+  'text-foreground block w-full text-center text-[10px] font-bold tracking-wide uppercase';
+
 export function MatrixEmployeeTotalsHeader() {
   return (
     <th
       className={cn(
         PAYROLL_MATRIX_TOTALS_STICKY_CLASS,
         PAYROLL_MATRIX_STICKY_HEADER_BG,
-        'border-border sticky top-0 right-0 z-30 border-b border-l px-2 py-1.5 text-right align-bottom',
+        'border-border sticky top-0 right-0 z-30 border-b border-l px-2 py-1.5 text-center align-middle',
       )}
     >
-      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">Total</p>
+      <span className={MATRIX_TOTALS_LABEL_CLASS}>Total</span>
     </th>
   );
 }
@@ -75,12 +78,10 @@ export function MatrixEmployeeTotalsFooterCorner() {
         PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
         PAYROLL_MATRIX_STICKY_EDGE_DIVIDER,
         PAYROLL_MATRIX_STICKY_HEADER_BG,
-        'border-border sticky bottom-0 left-0 z-40 border-t border-r px-2.5 py-1.5 text-left',
+        'border-border sticky bottom-0 left-0 z-40 border-t border-r px-2.5 py-1.5 text-center align-middle',
       )}
     >
-      <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-        Total
-      </span>
+      <span className={MATRIX_TOTALS_LABEL_CLASS}>Total</span>
     </th>
   );
 }
