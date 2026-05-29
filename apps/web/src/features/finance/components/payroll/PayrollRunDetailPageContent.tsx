@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Maximize2 } from 'lucide-react';
+import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   ErrorState,
@@ -14,15 +14,15 @@ import {
 import type { PayrollMatrixLayoutHeroActions } from '@/features/finance/components/payroll/allocation-matrix/payroll-matrix-layout-hero-actions';
 import { PayrollAllocationMatrixStatsStrip } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-stats-strip';
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
-import { PayrollAllocationMatrixFullscreenControls } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-fullscreen-controls';
 import { PAYROLL_MATRIX_FULLSCREEN_Z } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import {
   PAYROLL_RUN_DETAIL_VIEW_OPTIONS,
-  isPayrollMatrixViewMode,
+  isPayrollRunFullscreenViewMode,
   readPayrollRunDetailViewMode,
   type PayrollRunDetailViewMode,
   writePayrollRunDetailViewMode,
 } from '@/features/finance/components/payroll/payroll-run-detail-view-options';
+import { PayrollEmployeeBonusHistoryWorkspace } from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-workspace';
 import { PayrollRunSalaryLinesView } from '@/features/finance/components/payroll/payroll-run-salary-lines-view';
 import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { PayrollRunDetailHeroBar } from '@/features/finance/components/payroll/PayrollRunDetailHeroBar';
@@ -178,7 +178,9 @@ export function PayrollRunDetailPageContent({
           searchPlaceholder={
             detailViewMode === 'SALARY_LINES'
               ? 'Search employee…'
-              : 'Search project, order, or employee…'
+              : detailViewMode === 'EMPLOYEE_BONUS_HISTORY'
+                ? 'Search project…'
+                : 'Search project, order, or employee…'
           }
           onClearAll={() => setMatrixSearch('')}
         />
@@ -200,7 +202,7 @@ export function PayrollRunDetailPageContent({
             className="size-8 shrink-0"
             aria-label="Open allocation matrix full screen"
             onClick={() => setMatrixFullscreen(true)}
-            disabled={!isPayrollMatrixViewMode(detailViewMode)}
+            disabled={!isPayrollRunFullscreenViewMode(detailViewMode)}
           >
             <Maximize2 className="size-4" aria-hidden />
           </Button>
@@ -286,7 +288,7 @@ export function PayrollRunDetailPageContent({
         </p>
       ) : null}
 
-      {statsTotals && !matrixFullscreen ? (
+      {statsTotals && !matrixFullscreen && detailViewMode !== 'EMPLOYEE_BONUS_HISTORY' ? (
         <PayrollAllocationMatrixStatsStrip
           lineCount={run.salaryLines.length}
           expenseCount={run.materializedExpenseLineCount}
@@ -306,12 +308,23 @@ export function PayrollRunDetailPageContent({
         }
       >
         {matrixFullscreen ? (
-          <div className="absolute right-3 bottom-3 z-10">
-            <PayrollAllocationMatrixFullscreenControls
-              viewMode={matrixViewMode}
-              onViewModeChange={handleDetailViewModeChange}
-              onExit={() => setMatrixFullscreen(false)}
+          <div className="border-border bg-card absolute right-3 bottom-3 z-10 flex items-center gap-2 rounded-lg border p-1.5 shadow-md">
+            <ViewModeSwitch
+              value={detailViewMode}
+              onChange={handleDetailViewModeChange}
+              options={PAYROLL_RUN_DETAIL_VIEW_OPTIONS}
+              ariaLabel="Payroll run view"
             />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-8 shrink-0"
+              aria-label="Exit full screen"
+              onClick={() => setMatrixFullscreen(false)}
+            >
+              <Minimize2 className="size-4" aria-hidden />
+            </Button>
           </div>
         ) : null}
 
@@ -321,6 +334,14 @@ export function PayrollRunDetailPageContent({
               lines={run.salaryLines}
               search={matrixSearch}
               onOpenSalaryLine={handleOpenSalaryLine}
+            />
+          </section>
+        ) : detailViewMode === 'EMPLOYEE_BONUS_HISTORY' ? (
+          <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl p-1">
+            <PayrollEmployeeBonusHistoryWorkspace
+              payrollRunId={payrollRunId}
+              search={matrixSearch}
+              onSalaryLinesStale={() => void refreshRunQuiet()}
             />
           </section>
         ) : (

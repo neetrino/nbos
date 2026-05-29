@@ -129,6 +129,21 @@ export class PayrollRunsController {
     return this.payrollAllocationMatrixService.getValidation(id);
   }
 
+  @Get(':id/employee-bonus-history')
+  @ApiOperation({
+    summary: 'Employee × project bonus history (12 months)',
+    description:
+      'Per-employee project rows with rolling 12 payroll months ending on this run. Focus month cells mirror allocation matrix (editable in DRAFT).',
+  })
+  @ApiQuery({ name: 'employeeId', required: false })
+  async getEmployeeBonusHistory(
+    @Param('id') id: string,
+    @Query('employeeId') employeeId: string | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.getEmployeeBonusHistory(id, user.id, employeeId);
+  }
+
   @Get(':id/allocation-matrix')
   @ApiOperation({
     summary: 'Payroll allocation matrix (employees × delivery payable units)',

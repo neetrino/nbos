@@ -17,6 +17,8 @@ import {
   type PayrollMatrixValidationIssue,
 } from './payroll-matrix-approval-validation';
 import { resolveDeliveryPayableUnits } from './delivery-payable-unit.resolver';
+import { queryPayrollEmployeeBonusHistory } from './payroll-employee-bonus-history';
+import type { PayrollEmployeeBonusHistoryDto } from './payroll-employee-bonus-history.types';
 import {
   isPayrollMatrixBonusEntryVisible,
   payrollBonusReleaseBase,
@@ -678,5 +680,26 @@ export class PayrollAllocationMatrixService {
     });
 
     return this.getMatrix(payrollRunId, userId);
+  }
+
+  async getEmployeeBonusHistory(
+    payrollRunId: string,
+    userId: string,
+    employeeId?: string,
+  ): Promise<PayrollEmployeeBonusHistoryDto> {
+    const matrix = await this.getMatrix(payrollRunId, userId, 'EMPLOYEE_MATRIX');
+    const layout = matrix.layout;
+    const deliveryUnits = await resolveDeliveryPayableUnits(
+      this.prisma,
+      payrollRunId,
+      layout.pinnedUnitIds,
+    );
+    return queryPayrollEmployeeBonusHistory(
+      this.prisma,
+      payrollRunId,
+      employeeId,
+      matrix.cells,
+      deliveryUnits,
+    );
   }
 }
