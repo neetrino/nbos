@@ -149,16 +149,21 @@ export function PayrollEmployeeBonusHistoryWorkspace({
               role="tab"
               aria-selected={active}
               className={cn(
-                'shrink-0 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+                'shrink-0 rounded-lg border px-3 py-2 text-left text-sm transition-colors',
                 active
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:bg-card/60 hover:text-foreground',
+                  ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:border-border hover:bg-card/80 hover:text-foreground border-transparent',
               )}
               onClick={() => handleEmployeeSelect(employee.employeeId)}
             >
-              <span className="block font-medium">{historyEmployeeName(employee)}</span>
+              <span className="block font-semibold">{historyEmployeeName(employee)}</span>
               {employee.position ? (
-                <span className="text-muted-foreground block max-w-[12rem] truncate text-xs">
+                <span
+                  className={cn(
+                    'block max-w-[12rem] truncate text-xs',
+                    active ? 'text-primary-foreground/80' : 'text-muted-foreground',
+                  )}
+                >
                   {employee.position}
                 </span>
               ) : null}
