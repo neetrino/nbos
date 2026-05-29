@@ -39,6 +39,7 @@ import type {
 } from './payroll-allocation-matrix.types';
 
 const EDITABLE_STATUSES = new Set(['DRAFT']);
+const DRAFT_PREVIEW_STATUSES = new Set(['DRAFT', 'REVIEW']);
 
 function cellKey(employeeId: string, orderId: string): string {
   return `${employeeId}:${orderId}`;
@@ -197,7 +198,7 @@ export class PayrollAllocationMatrixService {
     );
 
     const draftBonusesByEmployee = new Map<string, Decimal>();
-    if (EDITABLE_STATUSES.has(run.status)) {
+    if (DRAFT_PREVIEW_STATUSES.has(run.status)) {
       for (const draft of draftAllocations) {
         const current = draftBonusesByEmployee.get(draft.employeeId) ?? BONUS_POOL_ZERO;
         draftBonusesByEmployee.set(draft.employeeId, current.plus(decimalFrom(draft.amount)));
@@ -288,7 +289,7 @@ export class PayrollAllocationMatrixService {
             : null;
         const remaining = Decimal.max(BONUS_POOL_ZERO, planned.minus(releasedBefore));
         const releaseThisMonth =
-          editable && draft
+          DRAFT_PREVIEW_STATUSES.has(run.status) && draft
             ? decimalFrom(draft.amount)
             : thisRunRelease
               ? decimalFrom(thisRunRelease.payrollIncludedAmount ?? thisRunRelease.amount)
@@ -340,7 +341,7 @@ export class PayrollAllocationMatrixService {
       }
     }
 
-    const draftBonusTotal = editable
+    const draftBonusTotal = DRAFT_PREVIEW_STATUSES.has(run.status)
       ? sumMoney(cells.map((cell) => cell.releaseThisMonth))
       : decimalFrom(run.totalBonuses);
     const totalBaseSalary = decimalFrom(run.totalBaseSalary);

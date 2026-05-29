@@ -260,7 +260,7 @@ export class PayrollRunsService {
     }
 
     await this.prisma.$transaction(async (tx) => {
-      if (run.status === 'DRAFT' && status === 'REVIEW') {
+      if (run.status === 'REVIEW' && status === 'APPROVED') {
         materializedBonusResult = await materializePayrollBonusAllocationDrafts(tx, {
           payrollRunId: id,
           payrollMonth: run.payrollMonth,

@@ -4,6 +4,11 @@ import { Decimal } from '@nbos/database';
 import { PayrollRunsService } from './payroll-runs.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import type { NotificationService } from '../notifications/notification.service';
+import { materializePayrollBonusAllocationDrafts } from './payroll-bonus-allocation-materialize';
+
+vi.mock('./payroll-bonus-allocation-materialize', () => ({
+  materializePayrollBonusAllocationDrafts: vi.fn(),
+}));
 
 describe('PayrollRunsService', () => {
   let service: PayrollRunsService;
@@ -219,6 +224,58 @@ describe('PayrollRunsService', () => {
       prisma.payrollRun.findUnique.mockResolvedValue({ id: 'existing', payrollMonth: '2026-03' });
       await expect(service.create({ payrollMonth: '2026-03' }, 'emp-1')).rejects.toThrow(
         ConflictException,
+      );
+    });
+  });
+
+  describe('updateStatus', () => {
+    beforeEach(() => {
+      vi.mocked(materializePayrollBonusAllocationDrafts).mockResolvedValue({
+        releaseIds: [],
+        carryNotifyEvents: [],
+      });
+      prisma.payrollRun.update.mockResolvedValue({});
+      prisma.auditLog.create.mockResolvedValue({});
+      prisma.payrollRun.findUnique.mockResolvedValue({
+        id: 'run-1',
+        payrollMonth: '2026-05',
+        status: 'DRAFT',
+      });
+    });
+
+    it('does not materialize draft allocations when moving Draft to Review', async () => {
+      await service.updateStatus('run-1', 'REVIEW', { actorUserId: 'emp-1' });
+
+      expect(materializePayrollBonusAllocationDrafts).not.toHaveBeenCalled();
+      expect(prisma.payrollRun.update).toHaveBeenCalledWith({
+        where: { id: 'run-1' },
+        data: { status: 'REVIEW' },
+      });
+    });
+
+    it('materializes draft allocations when moving Review to Approved', async () => {
+      prisma.payrollRun.findUnique.mockResolvedValue({
+        id: 'run-1',
+        payrollMonth: '2026-05',
+        status: 'REVIEW',
+      });
+      prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: {} });
+      prisma.salaryLine.findMany.mockResolvedValue([]);
+      prisma.salaryLine.update.mockResolvedValue({});
+      prisma.expense.create.mockResolvedValue({ id: 'expense-1' });
+
+      await service.updateStatus('run-1', 'APPROVED', {
+        actorUserId: 'emp-1',
+        approvedById: 'emp-1',
+      });
+
+      expect(materializePayrollBonusAllocationDrafts).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          payrollRunId: 'run-1',
+          payrollMonth: '2026-05',
+          actorUserId: 'emp-1',
+        }),
       );
     });
   });
