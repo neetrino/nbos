@@ -1,30 +1,19 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useState,
-  type FocusEvent,
-  type KeyboardEvent,
-} from 'react';
+import { useCallback, useEffect, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { Loader2 } from 'lucide-react';
 import { AmdCurrencyIcon } from '@/components/shared/AmdCurrencyIcon';
 import { MoneyInput } from '@/components/shared/MoneyInput';
-import { Textarea } from '@/components/ui/textarea';
 import { formatAmountDramSuffix } from '@/features/finance/constants/finance';
 import {
   PAYROLL_MATRIX_CELL_AMOUNT_DISPLAY_CLASS,
   PAYROLL_MATRIX_CELL_CURRENCY_SLOT_CLASS,
   PAYROLL_MATRIX_CELL_FIELD_SHELL_CLASS,
   PAYROLL_MATRIX_CELL_MONEY_INPUT_CLASS,
-  PAYROLL_MATRIX_CELL_REASON_CLASS,
   PAYROLL_MATRIX_CELL_RELEASE_PLACEHOLDER,
+  PAYROLL_MATRIX_CELL_WARNING_CLASS,
 } from '@/features/finance/constants/payroll-allocation-matrix-cell-input';
-import {
-  payrollMatrixReleaseNeedsReason,
-  payrollMatrixReleaseReasonPlaceholder,
-} from '@/features/finance/utils/payroll-matrix-release-needs-reason';
+import { matrixReleaseWarningForAmount } from '@/features/finance/utils/payroll-matrix-release-warning';
 import type { PayrollAllocationMatrixCell } from '@/lib/api/payroll-allocation-matrix';
 import { cn } from '@/lib/utils';
 
@@ -49,26 +38,19 @@ export function PayrollAllocationMatrixCellInput(props: {
   onSave: (payload: { releaseThisMonth: string; reason?: string }) => Promise<void>;
 }) {
   const { cell, availableFunding, disabled, saving, onSave } = props;
-  const reasonId = useId();
   const [amount, setAmount] = useState(() => releaseDraftFromCell(cell));
-  const [reason, setReason] = useState('');
-  const [reasonOpen, setReasonOpen] = useState(false);
   const [focused, setFocused] = useState(false);
 
   useEffect(() => {
     setAmount(releaseDraftFromCell(cell));
-    setReason('');
-    setReasonOpen(false);
     setFocused(false);
   }, [cell.employeeId, cell.orderId, cell.releaseThisMonth]);
 
   const showCurrency = focused || amount.trim().length > 0;
   const remaining = parseMoney(cell.remaining);
-  const reasonPlaceholder = payrollMatrixReleaseReasonPlaceholder(
-    parseMoney(amount),
-    remaining,
-    availableFunding,
-  );
+  const draftAmount = parseMoney(amount);
+  const editWarning =
+    matrixReleaseWarningForAmount(draftAmount, remaining, availableFunding) ?? cell.warning;
 
   const submit = useCallback(async () => {
     if (disabled || saving) return;
@@ -76,32 +58,10 @@ export function PayrollAllocationMatrixCellInput(props: {
     const releaseThisMonth = amount.trim() || '0';
     const next = parseMoney(releaseThisMonth);
     const current = parseMoney(cell.releaseThisMonth);
-    if (next === current && !reasonOpen) return;
+    if (next === current) return;
 
-    const needsReason = payrollMatrixReleaseNeedsReason(next, remaining, availableFunding);
-    if (needsReason && !reason.trim()) {
-      setReasonOpen(true);
-      return;
-    }
-
-    await onSave({
-      releaseThisMonth,
-      reason: needsReason ? reason.trim() : undefined,
-    });
-    setReason('');
-    setReasonOpen(false);
-  }, [
-    amount,
-    availableFunding,
-    cell.releaseThisMonth,
-    cell.remaining,
-    remaining,
-    disabled,
-    onSave,
-    reason,
-    reasonOpen,
-    saving,
-  ]);
+    await onSave({ releaseThisMonth });
+  }, [amount, cell.releaseThisMonth, disabled, onSave, saving]);
 
   const handleContainerBlur = (event: FocusEvent<HTMLDivElement>) => {
     const next = event.relatedTarget;
@@ -110,15 +70,13 @@ export function PayrollAllocationMatrixCellInput(props: {
     void submit();
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault();
       void submit();
     }
     if (event.key === 'Escape') {
       setAmount(releaseDraftFromCell(cell));
-      setReason('');
-      setReasonOpen(false);
       setFocused(false);
     }
   };
@@ -134,7 +92,7 @@ export function PayrollAllocationMatrixCellInput(props: {
           {formatAmountDramSuffix(parseMoney(cell.releaseThisMonth))}
         </span>
         {cell.warning ? (
-          <span className="truncate text-center text-[10px] font-medium">{cell.warning}</span>
+          <span className={PAYROLL_MATRIX_CELL_WARNING_CLASS}>{cell.warning}</span>
         ) : null}
       </div>
     );
@@ -142,7 +100,7 @@ export function PayrollAllocationMatrixCellInput(props: {
 
   return (
     <div
-      className="relative flex min-h-[2.25rem] min-w-0 flex-col items-stretch justify-center gap-1 overflow-hidden px-1 py-1"
+      className="relative flex min-h-[2.25rem] min-w-0 flex-col items-stretch justify-center gap-0.5 overflow-hidden px-1 py-1"
       onBlur={handleContainerBlur}
     >
       <div className={cn(PAYROLL_MATRIX_CELL_FIELD_SHELL_CLASS, 'relative')}>
@@ -169,20 +127,10 @@ export function PayrollAllocationMatrixCellInput(props: {
           />
         ) : null}
       </div>
-      {reasonOpen ? (
-        <Textarea
-          id={reasonId}
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder={reasonPlaceholder}
-          rows={2}
-          disabled={disabled || saving}
-          className={PAYROLL_MATRIX_CELL_REASON_CLASS}
-          onKeyDown={handleKeyDown}
-        />
-      ) : null}
-      {cell.warning ? (
-        <span className={cn('text-center text-[10px] font-medium')}>{cell.warning}</span>
+      {editWarning ? (
+        <span className={PAYROLL_MATRIX_CELL_WARNING_CLASS} role="status">
+          {editWarning}
+        </span>
       ) : null}
     </div>
   );

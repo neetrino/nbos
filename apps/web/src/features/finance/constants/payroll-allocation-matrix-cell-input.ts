@@ -23,10 +23,8 @@ export const PAYROLL_MATRIX_CELL_MONEY_INPUT_CLASS = cn(
   'min-w-0 flex-1 text-right text-xs tabular-nums placeholder:text-muted-foreground placeholder:text-[10px]',
 );
 
-export const PAYROLL_MATRIX_CELL_REASON_CLASS = cn(
-  DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
-  'min-h-[2rem] w-full resize-none rounded-lg border px-2 py-1 text-[10px] shadow-none focus-visible:ring-0',
-);
+export const PAYROLL_MATRIX_CELL_WARNING_CLASS =
+  'truncate text-center text-[10px] font-medium text-amber-700 dark:text-amber-400';
 
 /** Read-only release amount in grid cells (`3 500 000֏`). */
 export const PAYROLL_MATRIX_CELL_AMOUNT_DISPLAY_CLASS =

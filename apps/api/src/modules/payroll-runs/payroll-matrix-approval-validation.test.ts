@@ -3,19 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { validatePayrollMatrixForApproval } from './payroll-matrix-approval-validation';
 
 describe('validatePayrollMatrixForApproval', () => {
-  it('flags EXTRA release without reason', async () => {
+  it('does not block EXTRA or OVER_FUNDING releases without reason', async () => {
     const prisma = {
       bonusRelease: {
-        findMany: vi.fn().mockResolvedValue([
-          {
-            id: 'r1',
-            employeeId: 'e1',
-            releaseType: 'EXTRA',
-            reason: null,
-            approvedById: null,
-            bonusEntry: { orderId: 'o1' },
-          },
-        ]),
+        findMany: vi.fn(),
+        aggregate: vi.fn(),
       },
       salaryLine: {
         findMany: vi.fn().mockResolvedValue([]),
@@ -23,7 +15,7 @@ describe('validatePayrollMatrixForApproval', () => {
     };
 
     const issues = await validatePayrollMatrixForApproval(prisma as never, 'run1');
-    expect(issues.some((i) => i.code === 'RELEASE_REASON_REQUIRED')).toBe(true);
+    expect(issues).toHaveLength(0);
   });
 
   it('flags salary line bonus mismatch', async () => {

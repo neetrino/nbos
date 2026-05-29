@@ -1,7 +1,5 @@
 import type { PrismaClient } from '@nbos/database';
 
-const REASON_REQUIRED_TYPES = ['EXTRA', 'OVER_FUNDING', 'EARLY'] as const;
-
 export type PayrollMatrixValidationIssue = {
   code: string;
   message: string;
@@ -15,45 +13,6 @@ export async function validatePayrollMatrixForApproval(
   payrollRunId: string,
 ): Promise<PayrollMatrixValidationIssue[]> {
   const issues: PayrollMatrixValidationIssue[] = [];
-
-  const includedReleases = await prisma.bonusRelease.findMany({
-    where: { payrollRunId, status: 'INCLUDED_IN_PAYROLL' },
-    select: {
-      id: true,
-      employeeId: true,
-      releaseType: true,
-      reason: true,
-      approvedById: true,
-      bonusEntry: { select: { orderId: true } },
-    },
-  });
-
-  for (const release of includedReleases) {
-    const orderId = release.bonusEntry.orderId;
-    if (
-      REASON_REQUIRED_TYPES.includes(
-        release.releaseType as (typeof REASON_REQUIRED_TYPES)[number],
-      ) &&
-      !(release.reason?.trim().length ?? 0)
-    ) {
-      issues.push({
-        code: 'RELEASE_REASON_REQUIRED',
-        message: `${release.releaseType} release requires a reason before approval`,
-        releaseId: release.id,
-        employeeId: release.employeeId,
-        orderId,
-      });
-    }
-    if (release.releaseType === 'OVER_FUNDING' && !release.approvedById) {
-      issues.push({
-        code: 'OVER_FUNDING_APPROVAL_REQUIRED',
-        message: 'Over funding release requires approver before payroll approval',
-        releaseId: release.id,
-        employeeId: release.employeeId,
-        orderId,
-      });
-    }
-  }
 
   const lines = await prisma.salaryLine.findMany({
     where: { payrollRunId },

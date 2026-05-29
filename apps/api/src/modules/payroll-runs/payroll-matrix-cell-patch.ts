@@ -9,6 +9,10 @@ import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 import { payrollBonusReleaseBase } from './payroll-bonus-release-base';
+import {
+  PAYROLL_BONUS_RELEASE_LEDGER_STATUSES,
+  sumBonusEntryReleasedBefore,
+} from './payroll-bonus-entry-released-before';
 import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detach';
 import { notifyPayrollCarryEventsOnAttach } from './payroll-bonus-carry-notify';
 import type { PayrollAttachNotifyEvent } from './payroll-attach-notify.types';
@@ -17,7 +21,7 @@ import {
   syncProductBonusPoolsForBonusReleases,
 } from './payroll-run-bonus-release-side-effects';
 
-const COUNTING_STATUSES = ['DRAFT', 'APPROVED', 'INCLUDED_IN_PAYROLL', 'PAID'] as const;
+const COUNTING_STATUSES = PAYROLL_BONUS_RELEASE_LEDGER_STATUSES;
 
 export type MatrixCellPatchResult = {
   releaseIds: string[];
@@ -42,15 +46,6 @@ export function resolveMatrixReleaseType(
   if (amount.gt(remaining)) return 'EXTRA';
   if (availableFunding.gt(BONUS_POOL_ZERO) && amount.gt(availableFunding)) return 'OVER_FUNDING';
   return 'MANUAL';
-}
-
-function requireReason(releaseType: BonusReleaseTypeEnum, reason: string | undefined): void {
-  if (releaseType === 'EXTRA' || releaseType === 'OVER_FUNDING') {
-    const r = reason?.trim() ?? '';
-    if (r.length === 0) {
-      throw new BadRequestException(`reason is required for ${releaseType} release`);
-    }
-  }
 }
 
 /**
@@ -117,15 +112,19 @@ export async function applyMatrixCellPatch(
   });
   const availableFunding = pool ? decimalFrom(pool.availableFunding) : BONUS_POOL_ZERO;
 
-  const releasedAgg = await tx.bonusRelease.aggregate({
+  const ledgerReleases = await tx.bonusRelease.findMany({
     where: {
       bonusEntryId: entry.id,
       status: { in: [...COUNTING_STATUSES] },
-      ...(included ? { id: { not: included.id } } : {}),
     },
-    _sum: { amount: true },
+    select: {
+      payrollRunId: true,
+      status: true,
+      amount: true,
+      payrollIncludedAmount: true,
+    },
   });
-  const releasedBefore = decimalFrom(releasedAgg._sum.amount);
+  const releasedBefore = sumBonusEntryReleasedBefore(ledgerReleases, payrollRunId);
   const releaseBase = payrollBonusReleaseBase(
     {
       type: entry.type,
@@ -138,10 +137,6 @@ export async function applyMatrixCellPatch(
   const remaining = Decimal.max(BONUS_POOL_ZERO, releaseBase.minus(releasedBefore));
 
   const releaseType = resolveMatrixReleaseType(releaseAmount, remaining, availableFunding);
-  requireReason(releaseType, reason);
-  if (releaseType === 'OVER_FUNDING' && !approvedById.trim()) {
-    throw new BadRequestException('approvedById is required for over funding');
-  }
 
   if (included) {
     const current = decimalFrom(included.payrollIncludedAmount ?? included.amount);

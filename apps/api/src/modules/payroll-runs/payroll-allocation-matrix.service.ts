@@ -17,6 +17,7 @@ import {
   isPayrollMatrixBonusEntryVisible,
   payrollBonusReleaseBase,
 } from './payroll-bonus-release-base';
+import { sumBonusEntryReleasedBefore } from './payroll-bonus-entry-released-before';
 import {
   applyCustomOrder,
   loadPayrollMatrixLayout,
@@ -201,12 +202,7 @@ export class PayrollAllocationMatrixService {
         const thisRunRelease = entryReleases.find(
           (r) => r.payrollRunId === payrollRunId && r.status === 'INCLUDED_IN_PAYROLL',
         );
-        const releasedBefore = entryReleases
-          .filter((r) => r.payrollRunId !== payrollRunId || r.status === 'PAID')
-          .reduce(
-            (s, r) => s.plus(decimalFrom(r.payrollIncludedAmount ?? r.amount)),
-            BONUS_POOL_ZERO,
-          );
+        const releasedBefore = sumBonusEntryReleasedBefore(entryReleases, payrollRunId);
         const paidBefore = entryReleases
           .filter((r) => r.status === 'PAID')
           .reduce(
@@ -270,7 +266,7 @@ export class PayrollAllocationMatrixService {
               : state === 'EXTRA_BONUS'
                 ? 'Extra bonus'
                 : null,
-          reasonRequired: state === 'OVER_FUNDING' || state === 'EXTRA_BONUS',
+          reasonRequired: false,
           editable: editable && (linked || state !== 'UNLINKED'),
         });
       }
