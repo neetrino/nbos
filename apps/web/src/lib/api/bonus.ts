@@ -254,6 +254,7 @@ export interface CreateBonusEntryPayload {
   title?: string;
   reason?: string;
   status?: BonusStatus;
+  earnedPeriod?: string;
   payoutMonth?: string;
 }
 

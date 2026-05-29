@@ -60,6 +60,9 @@ model Employee {
   bonusEntries             BonusEntry[]
   bonusReleases            BonusRelease[]          @relation("BonusReleaseEmployee")
   bonusReleasesApproved    BonusRelease[]          @relation("BonusReleaseApprover")
+  payrollBonusAllocations  PayrollBonusAllocationDraft[] @relation("PayrollBonusAllocationEmployee")
+  payrollBonusAllocationsCreated PayrollBonusAllocationDraft[] @relation("PayrollBonusAllocationCreatedBy")
+  payrollBonusAllocationsUpdated PayrollBonusAllocationDraft[] @relation("PayrollBonusAllocationUpdatedBy")
   payrollRunsCreated       PayrollRun[]            @relation("PayrollRunCreator")
   payrollRunsApproved      PayrollRun[]            @relation("PayrollRunApprover")
   payrollMatrixLayouts     PayrollMatrixLayoutPreference[] @relation("PayrollMatrixLayoutUser")

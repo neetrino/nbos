@@ -5,8 +5,11 @@ export type PayrollMatrixViewMode = 'EMPLOYEE_MATRIX' | 'ORDER_MATRIX';
 export type PayrollMatrixCellState =
   | 'UNLINKED'
   | 'LINKED_EMPTY'
+  | 'READY'
+  | 'PARTIALLY_FUNDED'
+  | 'PROGRESS'
+  | 'MANUAL_BONUS'
   | 'RELEASE_SET'
-  | 'MANUAL'
   | 'EXTRA_BONUS'
   | 'OVER_FUNDING'
   | 'INVALID';

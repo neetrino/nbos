@@ -1,11 +1,15 @@
 import { BadRequestException, Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
-import { Decimal, PayrollMatrixViewModeEnum, PrismaClient } from '@nbos/database';
+import {
+  Decimal,
+  PayrollMatrixViewModeEnum,
+  PrismaClient,
+  type PayrollBonusAllocationKindEnum,
+} from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
-import { applyPayableSnapshotToBonusEntry } from '../bonus/bonus-payable-snapshot';
-import { applyMatrixCellPatch, syncAfterMatrixReleaseMutation } from './payroll-matrix-cell-patch';
+import { syncAfterMatrixReleaseMutation } from './payroll-matrix-cell-patch';
 import { reassignMatrixBonusRecipientAndSync } from './payroll-matrix-bonus-reassign';
 import { patchMatrixPlannedBonus } from './payroll-matrix-planned-bonus';
 import {
@@ -34,37 +38,57 @@ import type {
   PayrollMatrixCellState,
 } from './payroll-allocation-matrix.types';
 
-const EDITABLE_STATUSES = new Set(['DRAFT', 'REVIEW']);
+const EDITABLE_STATUSES = new Set(['DRAFT']);
 
 function cellKey(employeeId: string, orderId: string): string {
   return `${employeeId}:${orderId}`;
 }
 
-function resolveCellState(params: {
+export function resolvePayrollMatrixCellState(params: {
   linked: boolean;
+  hasBonusEntry: boolean;
   releaseAmount: ReturnType<typeof decimalFrom>;
-  planned: ReturnType<typeof decimalFrom>;
   remaining: ReturnType<typeof decimalFrom>;
   availableFunding: ReturnType<typeof decimalFrom>;
-  releaseType: string | null;
-  manual: boolean;
+  deliveryOpen: boolean;
+  manualBonus: boolean;
 }): PayrollMatrixCellState {
-  if (!params.linked && params.releaseAmount.lte(BONUS_POOL_ZERO)) return 'UNLINKED';
-  if (params.releaseAmount.lte(BONUS_POOL_ZERO)) return params.linked ? 'LINKED_EMPTY' : 'UNLINKED';
-  if (params.releaseType === 'EXTRA' || params.releaseAmount.gt(params.remaining)) {
-    return 'EXTRA_BONUS';
+  if (!params.linked && params.releaseAmount.lte(BONUS_POOL_ZERO)) {
+    return 'UNLINKED';
+  }
+  if (!params.hasBonusEntry && !params.manualBonus) {
+    return params.linked ? 'LINKED_EMPTY' : 'UNLINKED';
   }
   if (
-    params.releaseType === 'OVER_FUNDING' ||
-    (params.availableFunding.gt(BONUS_POOL_ZERO) &&
-      params.releaseAmount.gt(params.availableFunding))
+    params.availableFunding.gt(BONUS_POOL_ZERO) &&
+    params.releaseAmount.gt(params.availableFunding)
   ) {
     return 'OVER_FUNDING';
   }
-  if (params.manual || params.releaseType === 'MANUAL' || params.releaseType === 'EARLY') {
-    return 'MANUAL';
+  if (params.manualBonus) {
+    return 'MANUAL_BONUS';
   }
-  return 'RELEASE_SET';
+  if (params.releaseAmount.gt(params.remaining)) {
+    return 'EXTRA_BONUS';
+  }
+  if (params.deliveryOpen) return 'PROGRESS';
+  if (params.availableFunding.lt(params.remaining)) return 'PARTIALLY_FUNDED';
+  return 'READY';
+}
+
+function sumMoney(values: string[]): Decimal {
+  return values.reduce((sum, value) => sum.plus(decimalFrom(value)), BONUS_POOL_ZERO);
+}
+
+function allocationKindFromCellState(
+  state: PayrollMatrixCellState,
+): PayrollBonusAllocationKindEnum {
+  if (state === 'EXTRA_BONUS') return 'EXTRA_BONUS';
+  if (state === 'OVER_FUNDING') return 'OVER_FUNDING';
+  if (state === 'MANUAL_BONUS') return 'MANUAL_BONUS';
+  if (state === 'PROGRESS') return 'PROGRESS';
+  if (state === 'PARTIALLY_FUNDED') return 'PARTIALLY_FUNDED';
+  return 'READY';
 }
 
 @Injectable()
@@ -127,6 +151,9 @@ export class PayrollAllocationMatrixService {
             payableAmount: true,
             earnedPeriod: true,
             status: true,
+            dealId: true,
+            salesAccrualInvoiceId: true,
+            calculationSnapshot: true,
           },
         },
       },
@@ -149,18 +176,50 @@ export class PayrollAllocationMatrixService {
         },
       },
     });
+    const draftAllocations = await this.prisma.payrollBonusAllocationDraft.findMany({
+      where: { payrollRunId },
+      select: {
+        id: true,
+        employeeId: true,
+        orderId: true,
+        bonusEntryId: true,
+        amount: true,
+        kind: true,
+      },
+    });
+    const draftByCell = new Map(
+      draftAllocations.map((draft) => [cellKey(draft.employeeId, draft.orderId), draft]),
+    );
+    const manualDraftKeys = new Set(
+      draftAllocations
+        .filter((draft) => draft.bonusEntryId == null)
+        .map((draft) => cellKey(draft.employeeId, draft.orderId)),
+    );
 
-    const employeeRows = run.salaryLines.map((line) => ({
-      id: line.employee.id,
-      employeeId: line.employee.id,
-      firstName: line.employee.firstName,
-      lastName: line.employee.lastName,
-      position: line.employee.position,
-      baseSalary: decimalFrom(line.baseSalary).toFixed(2),
-      salaryLineId: line.id,
-      bonusTotalThisRun: decimalFrom(line.bonusesTotal).toFixed(2),
-      payableTotal: decimalFrom(line.totalPayable).toFixed(2),
-    }));
+    const draftBonusesByEmployee = new Map<string, Decimal>();
+    if (EDITABLE_STATUSES.has(run.status)) {
+      for (const draft of draftAllocations) {
+        const current = draftBonusesByEmployee.get(draft.employeeId) ?? BONUS_POOL_ZERO;
+        draftBonusesByEmployee.set(draft.employeeId, current.plus(decimalFrom(draft.amount)));
+      }
+    }
+
+    const employeeRows = run.salaryLines.map((line) => {
+      const baseSalary = decimalFrom(line.baseSalary);
+      const bonusesTotal =
+        draftBonusesByEmployee.get(line.employee.id) ?? decimalFrom(line.bonusesTotal);
+      return {
+        id: line.employee.id,
+        employeeId: line.employee.id,
+        firstName: line.employee.firstName,
+        lastName: line.employee.lastName,
+        position: line.employee.position,
+        baseSalary: baseSalary.toFixed(2),
+        salaryLineId: line.id,
+        bonusTotalThisRun: bonusesTotal.toFixed(2),
+        payableTotal: baseSalary.plus(bonusesTotal).toFixed(2),
+      };
+    });
 
     const orderedEmployees = applyCustomOrder(
       employeeRows.map((e) => ({ ...e, id: e.employeeId })),
@@ -189,7 +248,8 @@ export class PayrollAllocationMatrixService {
           if (order.product?.developerId) linkedIds.add(order.product.developerId);
           if (order.product?.designerId) linkedIds.add(order.product.designerId);
         }
-        const linked = linkedIds.has(emp.employeeId);
+        const key = cellKey(emp.employeeId, unit.orderId);
+        const linked = linkedIds.has(emp.employeeId) || manualDraftKeys.has(key);
         const entry = order?.bonusEntries.find(
           (b) =>
             b.employeeId === emp.employeeId &&
@@ -202,6 +262,7 @@ export class PayrollAllocationMatrixService {
         const thisRunRelease = entryReleases.find(
           (r) => r.payrollRunId === payrollRunId && r.status === 'INCLUDED_IN_PAYROLL',
         );
+        const draft = draftByCell.get(key);
         const releasedBefore = sumBonusEntryReleasedBefore(entryReleases, payrollRunId);
         const paidBefore = entryReleases
           .filter((r) => r.status === 'PAID')
@@ -226,22 +287,29 @@ export class PayrollAllocationMatrixService {
             ? decimalFrom(entry.amount)
             : null;
         const remaining = Decimal.max(BONUS_POOL_ZERO, planned.minus(releasedBefore));
-        const releaseThisMonth = thisRunRelease
-          ? decimalFrom(thisRunRelease.payrollIncludedAmount ?? thisRunRelease.amount)
-          : BONUS_POOL_ZERO;
+        const releaseThisMonth =
+          editable && draft
+            ? decimalFrom(draft.amount)
+            : thisRunRelease
+              ? decimalFrom(thisRunRelease.payrollIncludedAmount ?? thisRunRelease.amount)
+              : BONUS_POOL_ZERO;
         const pool = unitByOrderId.get(unit.orderId);
         const availableFunding = pool ? decimalFrom(pool.availableFunding) : BONUS_POOL_ZERO;
-        const manual = entryReleases.some(
-          (r) => r.releaseType === 'MANUAL' || r.releaseType === 'EARLY',
-        );
-        const state = resolveCellState({
+        const manualBonus =
+          draft?.bonusEntryId == null && draft != null
+            ? true
+            : entry != null &&
+              entry.dealId == null &&
+              entry.salesAccrualInvoiceId == null &&
+              entry.calculationSnapshot == null;
+        const state = resolvePayrollMatrixCellState({
           linked,
+          hasBonusEntry: entry != null,
           releaseAmount: releaseThisMonth,
-          planned,
           remaining,
           availableFunding,
-          releaseType: thisRunRelease?.releaseType ?? null,
-          manual,
+          deliveryOpen: unit.deliveryOpen,
+          manualBonus,
         });
 
         cells.push({
@@ -272,6 +340,13 @@ export class PayrollAllocationMatrixService {
       }
     }
 
+    const draftBonusTotal = editable
+      ? sumMoney(cells.map((cell) => cell.releaseThisMonth))
+      : decimalFrom(run.totalBonuses);
+    const totalBaseSalary = decimalFrom(run.totalBaseSalary);
+    const totalPaid = decimalFrom(run.totalPaid);
+    const totalPayable = totalBaseSalary.plus(draftBonusTotal);
+
     return {
       payrollRunId: run.id,
       payrollMonth: run.payrollMonth,
@@ -282,11 +357,11 @@ export class PayrollAllocationMatrixService {
       cells,
       layout: { viewMode, ...layout },
       totals: {
-        totalBaseSalary: decimalFrom(run.totalBaseSalary).toFixed(2),
-        totalBonuses: decimalFrom(run.totalBonuses).toFixed(2),
-        totalPayable: decimalFrom(run.totalPayable).toFixed(2),
-        totalPaid: decimalFrom(run.totalPaid).toFixed(2),
-        totalRemaining: decimalFrom(run.totalPayable).minus(decimalFrom(run.totalPaid)).toFixed(2),
+        totalBaseSalary: totalBaseSalary.toFixed(2),
+        totalBonuses: draftBonusTotal.toFixed(2),
+        totalPayable: totalPayable.toFixed(2),
+        totalPaid: totalPaid.toFixed(2),
+        totalRemaining: totalPayable.minus(totalPaid).toFixed(2),
       },
     };
   }
@@ -309,24 +384,132 @@ export class PayrollAllocationMatrixService {
     userId: string,
     body: PatchPayrollMatrixCellBody,
   ): Promise<PayrollAllocationMatrixDto> {
-    const run = await this.prisma.payrollRun.findUnique({ where: { id: payrollRunId } });
+    const run = await this.prisma.payrollRun.findUnique({
+      where: { id: payrollRunId },
+      select: { id: true, status: true, payrollMonth: true },
+    });
     if (!run) throw new NotFoundException('Payroll run not found');
     if (!EDITABLE_STATUSES.has(run.status)) {
-      throw new BadRequestException('Payroll run is not editable');
+      throw new BadRequestException('Payroll matrix draft can only be edited while run is DRAFT');
     }
 
     const amount = decimalFrom(body.releaseThisMonth);
-    const patchResult = await this.prisma.$transaction((tx) =>
-      applyMatrixCellPatch(tx, {
+    const releaseAmount = amount.lt(BONUS_POOL_ZERO) ? BONUS_POOL_ZERO : amount;
+    if (releaseAmount.lte(BONUS_POOL_ZERO)) {
+      await this.prisma.payrollBonusAllocationDraft.deleteMany({
+        where: { payrollRunId, employeeId: body.employeeId, orderId: body.orderId },
+      });
+      return this.getMatrix(payrollRunId, userId);
+    }
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: body.orderId },
+      select: {
+        id: true,
+        projectId: true,
+        product: { select: { status: true } },
+        extension: { select: { status: true } },
+        productBonusPool: { select: { availableFunding: true } },
+        bonusEntries: {
+          where: { employeeId: body.employeeId },
+          select: {
+            id: true,
+            employeeId: true,
+            type: true,
+            amount: true,
+            payableAmount: true,
+            earnedPeriod: true,
+            dealId: true,
+            salesAccrualInvoiceId: true,
+            calculationSnapshot: true,
+          },
+        },
+      },
+    });
+    if (!order) throw new BadRequestException('Delivery unit not found');
+
+    const entry =
+      order.bonusEntries.find((b) => isPayrollMatrixBonusEntryVisible(b, run.payrollMonth)) ?? null;
+    if (!entry) {
+      throw new BadRequestException(
+        'No bonus entry for this employee and delivery unit. Create a manual bonus first.',
+      );
+    }
+
+    const entryReleases = await this.prisma.bonusRelease.findMany({
+      where: {
+        bonusEntryId: entry.id,
+        status: { in: ['DRAFT', 'APPROVED', 'INCLUDED_IN_PAYROLL', 'PAID'] },
+      },
+      select: {
+        payrollRunId: true,
+        status: true,
+        amount: true,
+        payrollIncludedAmount: true,
+      },
+    });
+    const releasedBefore = sumBonusEntryReleasedBefore(entryReleases, payrollRunId);
+    const releaseBase = payrollBonusReleaseBase(
+      {
+        type: entry.type,
+        amount: entry.amount,
+        payableAmount: entry.payableAmount,
+        earnedPeriod: entry.earnedPeriod,
+      },
+      run.payrollMonth,
+    );
+    const remaining = Decimal.max(BONUS_POOL_ZERO, releaseBase.minus(releasedBefore));
+    const availableFunding = order.productBonusPool
+      ? decimalFrom(order.productBonusPool.availableFunding)
+      : BONUS_POOL_ZERO;
+    const deliveryOpen =
+      (order.product?.status != null &&
+        !['DONE', 'LOST', 'TRANSFER'].includes(order.product.status)) ||
+      (order.extension?.status != null &&
+        !['DONE', 'LOST', 'TRANSFER'].includes(order.extension.status));
+    const manualBonus =
+      entry.dealId == null &&
+      entry.salesAccrualInvoiceId == null &&
+      entry.calculationSnapshot == null;
+    const state = resolvePayrollMatrixCellState({
+      linked: true,
+      hasBonusEntry: true,
+      releaseAmount,
+      remaining,
+      availableFunding,
+      deliveryOpen,
+      manualBonus,
+    });
+
+    await this.prisma.payrollBonusAllocationDraft.upsert({
+      where: {
+        payrollRunId_employeeId_orderId: {
+          payrollRunId,
+          employeeId: body.employeeId,
+          orderId: body.orderId,
+        },
+      },
+      create: {
         payrollRunId,
         employeeId: body.employeeId,
         orderId: body.orderId,
-        releaseAmount: amount.lt(BONUS_POOL_ZERO) ? BONUS_POOL_ZERO : amount,
-        reason: body.reason,
-        approvedById: userId,
-      }),
-    );
-    await syncAfterMatrixReleaseMutation(this.prisma, patchResult, this.notifications);
+        projectId: order.projectId,
+        bonusEntryId: entry.id,
+        amount: releaseAmount,
+        kind: allocationKindFromCellState(state),
+        reason: body.reason?.trim() || null,
+        createdById: userId,
+        updatedById: userId,
+      },
+      update: {
+        bonusEntryId: entry.id,
+        projectId: order.projectId,
+        amount: releaseAmount,
+        kind: allocationKindFromCellState(state),
+        reason: body.reason?.trim() || null,
+        updatedById: userId,
+      },
+    });
 
     return this.getMatrix(payrollRunId, userId);
   }
@@ -455,33 +638,40 @@ export class PayrollAllocationMatrixService {
     }
 
     const amount = decimalFrom(body.amount);
-    const created = await this.prisma.bonusEntry.create({
-      data: {
-        title: body.title,
-        employeeId: body.employeeId,
-        orderId: body.orderId,
-        projectId: order.projectId,
-        type: 'DELIVERY',
-        amount,
-        originalAmount: amount,
-        percent: BONUS_POOL_ZERO,
-        status: 'ACTIVE',
-        payoutMonth: new Date(`${run.payrollMonth}-01T00:00:00.000Z`),
-      },
-    });
-    await applyPayableSnapshotToBonusEntry(this.prisma, created.id);
+    if (amount.lte(BONUS_POOL_ZERO)) {
+      throw new BadRequestException('Manual bonus amount must be greater than zero');
+    }
 
-    const patchResult = await this.prisma.$transaction((tx) =>
-      applyMatrixCellPatch(tx, {
+    await this.prisma.payrollBonusAllocationDraft.upsert({
+      where: {
+        payrollRunId_employeeId_orderId: {
+          payrollRunId,
+          employeeId: body.employeeId,
+          orderId: body.orderId,
+        },
+      },
+      create: {
         payrollRunId,
         employeeId: body.employeeId,
         orderId: body.orderId,
-        releaseAmount: amount,
-        reason: body.reason,
-        approvedById: userId,
-      }),
-    );
-    await syncAfterMatrixReleaseMutation(this.prisma, patchResult, this.notifications);
+        projectId: order.projectId,
+        bonusEntryId: null,
+        amount,
+        kind: 'MANUAL_BONUS',
+        title: body.title.trim(),
+        reason: body.reason.trim(),
+        createdById: userId,
+        updatedById: userId,
+      },
+      update: {
+        bonusEntryId: null,
+        amount,
+        kind: 'MANUAL_BONUS',
+        title: body.title.trim(),
+        reason: body.reason.trim(),
+        updatedById: userId,
+      },
+    });
 
     return this.getMatrix(payrollRunId, userId);
   }

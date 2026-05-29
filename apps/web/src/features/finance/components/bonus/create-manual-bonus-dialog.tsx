@@ -140,6 +140,7 @@ export function CreateManualBonusDialog({
         amount: parsedAmount,
         percent: 0,
         status,
+        earnedPeriod: payoutMonth.trim(),
         payoutMonth: payoutMonth.trim() ? `${payoutMonth.trim()}-01` : undefined,
       };
       const created = await bonusesApi.create(payload);
@@ -262,7 +263,7 @@ export function CreateManualBonusDialog({
               </select>
             </div>
             <div>
-              <Label>Payroll month</Label>
+              <Label>Earned month</Label>
               <Input
                 type="month"
                 value={payoutMonth}

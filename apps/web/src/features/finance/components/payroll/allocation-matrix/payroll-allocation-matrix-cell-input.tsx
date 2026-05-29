@@ -30,6 +30,15 @@ function releaseDraftFromCell(cell: PayrollAllocationMatrixCell): string {
   return Number.isInteger(amount) ? String(Math.round(amount)) : String(amount);
 }
 
+function cellStateLabel(cell: PayrollAllocationMatrixCell): string | null {
+  if (cell.warning) return cell.warning;
+  if (cell.state === 'READY') return 'Ready';
+  if (cell.state === 'PARTIALLY_FUNDED') return 'Partially funded';
+  if (cell.state === 'PROGRESS') return 'Progress';
+  if (cell.state === 'MANUAL_BONUS') return 'Manual bonus';
+  return null;
+}
+
 export function PayrollAllocationMatrixCellInput(props: {
   cell: PayrollAllocationMatrixCell;
   availableFunding: number;
@@ -51,6 +60,7 @@ export function PayrollAllocationMatrixCellInput(props: {
   const draftAmount = parseMoney(amount);
   const editWarning =
     matrixReleaseWarningForAmount(draftAmount, remaining, availableFunding) ?? cell.warning;
+  const stateLabel = editWarning ?? cellStateLabel(cell);
 
   const submit = useCallback(async () => {
     if (disabled || saving) return;
@@ -91,8 +101,8 @@ export function PayrollAllocationMatrixCellInput(props: {
         <span className={PAYROLL_MATRIX_CELL_AMOUNT_DISPLAY_CLASS}>
           {formatAmountDramSuffix(parseMoney(cell.releaseThisMonth))}
         </span>
-        {cell.warning ? (
-          <span className={PAYROLL_MATRIX_CELL_WARNING_CLASS}>{cell.warning}</span>
+        {cellStateLabel(cell) ? (
+          <span className={PAYROLL_MATRIX_CELL_WARNING_CLASS}>{cellStateLabel(cell)}</span>
         ) : null}
       </div>
     );
@@ -127,9 +137,9 @@ export function PayrollAllocationMatrixCellInput(props: {
           />
         ) : null}
       </div>
-      {editWarning ? (
+      {stateLabel ? (
         <span className={PAYROLL_MATRIX_CELL_WARNING_CLASS} role="status">
-          {editWarning}
+          {stateLabel}
         </span>
       ) : null}
     </div>

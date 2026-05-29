@@ -1607,6 +1607,7 @@ async function main() {
       percent: 2,
       status: 'INCOMING',
       kpiGatePassed: null,
+      earnedPeriod: '2026-04',
     },
   });
   await prisma.bonusEntry.create({

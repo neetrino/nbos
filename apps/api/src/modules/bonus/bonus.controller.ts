@@ -270,6 +270,7 @@ export class BonusController {
       reason?: string;
       status?: string;
       kpiGatePassed?: boolean;
+      earnedPeriod?: string;
       payoutMonth?: string;
     },
     @CurrentUser() user: CurrentUserPayload,

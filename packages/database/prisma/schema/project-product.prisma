@@ -27,6 +27,7 @@ model Project {
   bonusEntries              BonusEntry[]
   bonusReleases             BonusRelease[]
   productBonusPools         ProductBonusPool[]
+  payrollBonusAllocationDrafts PayrollBonusAllocationDraft[]
   auditLogs                 AuditLog[]
   kickoffChecklistItems     ProjectKickoffChecklistItem[]
   technicalProfiles         ProductTechnicalProfile[]

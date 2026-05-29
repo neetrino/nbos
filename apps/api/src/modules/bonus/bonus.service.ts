@@ -45,6 +45,7 @@ interface CreateBonusDto {
   reason?: string;
   status?: string;
   kpiGatePassed?: boolean;
+  earnedPeriod?: string;
   payoutMonth?: string;
 }
 
@@ -168,6 +169,7 @@ export class BonusService {
         percent: data.percent,
         status: (data.status as BonusStatusEnum) ?? 'INCOMING',
         kpiGatePassed: data.kpiGatePassed,
+        earnedPeriod: data.earnedPeriod,
         payoutMonth: data.payoutMonth ? new Date(data.payoutMonth) : undefined,
       },
       include: {

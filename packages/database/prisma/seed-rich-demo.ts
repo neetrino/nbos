@@ -2,8 +2,104 @@ import type { PrismaClient } from '../src/generated/prisma/client';
 import type {
   InvoiceMoneyStatusEnum,
   OrderStatusEnum,
+  ProductBonusPoolStatusEnum,
   ProductStatusEnum,
 } from '../src/generated/prisma/enums';
+
+const BONUS_RELEASE_COUNTING_STATUSES = [
+  'DRAFT',
+  'APPROVED',
+  'INCLUDED_IN_PAYROLL',
+  'PAID',
+] as const;
+
+function deriveProductBonusPoolStatus(
+  planned: number,
+  released: number,
+  remaining: number,
+): ProductBonusPoolStatusEnum {
+  if (planned <= 0) {
+    return 'ACTIVE';
+  }
+  if (remaining <= 0) {
+    return 'CLOSED';
+  }
+  if (released > 0) {
+    return 'PARTIALLY_RELEASED';
+  }
+  return 'ACTIVE';
+}
+
+/** Recompute pools from payments + releases so matrix Avail matches ledger. */
+async function syncAllProductBonusPools(prisma: PrismaClient): Promise<void> {
+  const orders = await prisma.order.findMany({
+    where: { type: { in: ['PRODUCT', 'EXTENSION'] } },
+    select: {
+      id: true,
+      projectId: true,
+      productId: true,
+      extensionId: true,
+    },
+  });
+
+  for (const order of orders) {
+    const [plannedAgg, paidEntryAgg, releasedAgg, paymentsAgg] = await Promise.all([
+      prisma.bonusEntry.aggregate({ where: { orderId: order.id }, _sum: { amount: true } }),
+      prisma.bonusEntry.aggregate({
+        where: { orderId: order.id, status: 'PAID' },
+        _sum: { amount: true },
+      }),
+      prisma.bonusRelease.aggregate({
+        where: {
+          status: { in: [...BONUS_RELEASE_COUNTING_STATUSES] },
+          bonusEntry: { orderId: order.id },
+        },
+        _sum: { amount: true },
+      }),
+      prisma.payment.aggregate({
+        where: { invoice: { orderId: order.id } },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    const planned = Number(plannedAgg._sum.amount ?? 0);
+    const released = Number(releasedAgg._sum.amount ?? 0);
+    const received = Number(paymentsAgg._sum.amount ?? 0);
+    const remaining = Math.max(0, planned - released);
+    const availableFunding = Math.max(0, received - released);
+    const overFundingAmount = Math.max(0, released - received);
+    const status = deriveProductBonusPoolStatus(planned, released, remaining);
+
+    await prisma.productBonusPool.upsert({
+      where: { orderId: order.id },
+      create: {
+        orderId: order.id,
+        projectId: order.projectId,
+        productId: order.productId,
+        extensionId: order.extensionId,
+        totalPlannedAmount: planned,
+        totalReleasedAmount: released,
+        totalPaidAmount: Number(paidEntryAgg._sum.amount ?? 0),
+        totalRemainingAmount: remaining,
+        availableFunding,
+        overFundingAmount,
+        status,
+      },
+      update: {
+        projectId: order.projectId,
+        productId: order.productId,
+        extensionId: order.extensionId,
+        totalPlannedAmount: planned,
+        totalReleasedAmount: released,
+        totalPaidAmount: Number(paidEntryAgg._sum.amount ?? 0),
+        totalRemainingAmount: remaining,
+        availableFunding,
+        overFundingAmount,
+        status,
+      },
+    });
+  }
+}
 
 const RICH_PROJECT_START = 6;
 const RICH_PROJECT_END = 20;
@@ -570,7 +666,8 @@ async function createRichProjectBundle(
   });
 
   const slice = suffix;
-  const firstPaid = archived || slice % 2 === 0;
+  const isActiveRichProject = !archived;
+  const firstPaid = isActiveRichProject || slice % 2 === 0;
   const inv1 = await prisma.invoice.create({
     data: {
       code: `INV-2026-${padCode(30 + suffix * 2)}`,
@@ -618,6 +715,27 @@ async function createRichProjectBundle(
         paymentMethod: 'BANK_TRANSFER',
         confirmedBy: ctx.ceo.id,
       },
+    });
+  }
+
+  if (isActiveRichProject) {
+    await prisma.payment.create({
+      data: {
+        invoiceId: inv2.id,
+        amount: inv2.amount,
+        paymentDate: monthStart(2026, 4),
+        paymentMethod: 'BANK_TRANSFER',
+        confirmedBy: ctx.ceo.id,
+        notes: 'Rich demo — fully funded for payroll matrix Avail',
+      },
+    });
+    await prisma.invoice.update({
+      where: { id: inv2.id },
+      data: { moneyStatus: 'PAID', paidDate: monthStart(2026, 4) },
+    });
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { status: 'FULLY_PAID' },
     });
   }
 
@@ -681,6 +799,7 @@ async function createRichProjectBundle(
         amount: Math.round(dealAmount * 0.02),
         percent: 2,
         status: firstPaid ? 'EARNED' : 'INCOMING',
+        earnedPeriod: firstPaid ? '2026-04' : null,
       },
     });
   }
@@ -816,6 +935,10 @@ async function seedMay2026PayrollMatrix(
       where: { orderId: orderAcme.id, employeeId: ctx.pm.id, type: 'DELIVERY' },
     });
     if (pmDelivery) {
+      await prisma.bonusEntry.update({
+        where: { id: pmDelivery.id },
+        data: { earnedPeriod: '2026-04' },
+      });
       await prisma.bonusRelease.create({
         data: {
           bonusEntryId: pmDelivery.id,
@@ -858,6 +981,10 @@ async function seedMay2026PayrollMatrix(
       where: { orderId: orderStripe.id, type: 'DELIVERY' },
     });
     if (deliveryEntry) {
+      await prisma.bonusEntry.update({
+        where: { id: deliveryEntry.id },
+        data: { earnedPeriod: '2026-04' },
+      });
       const base = Number(deliveryEntry.amount);
       await prisma.bonusRelease.create({
         data: {
@@ -1061,6 +1188,7 @@ export async function seedRichDemo(prisma: PrismaClient, ctx: SeedRichDemoContex
   for (const run of runsWithIncludedReleases) {
     await syncSalaryLinesBonusesFromReleases(prisma, run.id);
   }
+  await syncAllProductBonusPools(prisma);
   await ensurePayableSnapshots(prisma);
   await archiveHalfOfProjects(prisma);
 

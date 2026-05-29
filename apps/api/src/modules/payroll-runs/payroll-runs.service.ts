@@ -17,6 +17,10 @@ import {
 } from './payroll-run-list-queries';
 import { canTransitionPayrollRun } from './payroll-run-status-transitions';
 import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
+import {
+  materializePayrollBonusAllocationDrafts,
+  type PayrollBonusAllocationMaterializeResult,
+} from './payroll-bonus-allocation-materialize';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { buildPayrollRunJournal } from './payroll-run-journal';
 import {
@@ -222,7 +226,7 @@ export class PayrollRunsService {
       throw new ConflictException(`Cannot transition payroll run from ${run.status} to ${status}`);
     }
 
-    if (status === 'REVIEW' || status === 'APPROVED') {
+    if (status === 'APPROVED') {
       const matrixIssues = await validatePayrollMatrixForApproval(this.prisma, id);
       if (matrixIssues.length > 0) {
         throw new BadRequestException({
@@ -242,6 +246,7 @@ export class PayrollRunsService {
     }
 
     const data: Prisma.PayrollRunUpdateInput = { status };
+    let materializedBonusResult: PayrollBonusAllocationMaterializeResult | undefined;
 
     if (status === 'APPROVED') {
       data.approvedAt = new Date();
@@ -255,6 +260,13 @@ export class PayrollRunsService {
     }
 
     await this.prisma.$transaction(async (tx) => {
+      if (run.status === 'DRAFT' && status === 'REVIEW') {
+        materializedBonusResult = await materializePayrollBonusAllocationDrafts(tx, {
+          payrollRunId: id,
+          payrollMonth: run.payrollMonth,
+          actorUserId: meta.actorUserId,
+        });
+      }
       await tx.payrollRun.update({ where: { id }, data });
       let materializedExpenseIds: string[] | undefined;
       if (status === 'APPROVED') {
@@ -279,6 +291,21 @@ export class PayrollRunsService {
         },
       });
     });
+
+    const bonusResult = materializedBonusResult;
+    if (bonusResult !== undefined) {
+      await refreshBonusEntryStatusesForReleases(this.prisma, bonusResult.releaseIds);
+      await syncProductBonusPoolsForBonusReleases(
+        this.prisma,
+        bonusResult.releaseIds,
+        this.notifications,
+      );
+      await notifyPayrollCarryEventsOnAttach(
+        this.prisma,
+        this.notifications,
+        bonusResult.carryNotifyEvents,
+      );
+    }
 
     if (status === 'CLOSED') {
       await notifyEmployeesOnPayrollRunClosed(

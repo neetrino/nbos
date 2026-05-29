@@ -1,7 +1,7 @@
 import { Decimal } from '@nbos/database';
 
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
-import { earnedSalesPeriodForPayoutMonth } from './earned-sales-kpi-period';
+import { earnedBonusPeriodForPayoutMonth } from './earned-sales-kpi-period';
 
 export type PayrollBonusReleaseBaseInput = {
   type: string;
@@ -10,19 +10,24 @@ export type PayrollBonusReleaseBaseInput = {
   earnedPeriod?: string | null;
 };
 
-/** Sales bonuses for payroll month M use earned period M−1 only. */
-export function isSalesBonusEligibleForPayrollMonth(
+/** Bonuses for payroll month M use earned period M−1 only. */
+export function isBonusEligibleForPayrollMonth(
   entry: Pick<PayrollBonusReleaseBaseInput, 'type' | 'earnedPeriod'>,
   payrollMonth: string,
 ): boolean {
-  if (entry.type !== 'SALES') {
-    return true;
-  }
   const earnedPeriod = entry.earnedPeriod?.trim() ?? '';
   if (earnedPeriod.length === 0) {
     return false;
   }
-  return earnedPeriod === earnedSalesPeriodForPayoutMonth(payrollMonth);
+  return earnedPeriod === earnedBonusPeriodForPayoutMonth(payrollMonth);
+}
+
+/** @deprecated Use `isBonusEligibleForPayrollMonth`; kept for Sales KPI attach copy. */
+export function isSalesBonusEligibleForPayrollMonth(
+  entry: Pick<PayrollBonusReleaseBaseInput, 'type' | 'earnedPeriod'>,
+  payrollMonth: string,
+): boolean {
+  return entry.type === 'SALES' && isBonusEligibleForPayrollMonth(entry, payrollMonth);
 }
 
 /** Amount Finance can release in payroll for this bonus entry. */
@@ -30,7 +35,7 @@ export function payrollBonusReleaseBase(
   entry: PayrollBonusReleaseBaseInput,
   payrollMonth: string,
 ): Decimal {
-  if (entry.type === 'SALES' && !isSalesBonusEligibleForPayrollMonth(entry, payrollMonth)) {
+  if (!isBonusEligibleForPayrollMonth(entry, payrollMonth)) {
     return BONUS_POOL_ZERO;
   }
   if (entry.payableAmount != null) {
@@ -44,7 +49,7 @@ export function isPayrollMatrixBonusEntryVisible(
   entry: PayrollBonusReleaseBaseInput,
   payrollMonth: string,
 ): boolean {
-  if (entry.type === 'SALES' && !isSalesBonusEligibleForPayrollMonth(entry, payrollMonth)) {
+  if (!isBonusEligibleForPayrollMonth(entry, payrollMonth)) {
     return false;
   }
   if (entry.type === 'SALES') {

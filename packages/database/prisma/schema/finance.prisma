@@ -65,6 +65,7 @@ model Order {
   productBonusPool          ProductBonusPool?
   operationalJournalEntries OperationalJournalEntry[]
   partnerAccruals           PartnerAccrual[]
+  payrollBonusAllocationDrafts PayrollBonusAllocationDraft[]
 
   @@map("orders")
 }
@@ -488,6 +489,7 @@ model BonusEntry {
   project       Project        @relation(fields: [projectId], references: [id])
   deal          Deal?          @relation("DealSalesBonusEntries", fields: [dealId], references: [id])
   bonusReleases BonusRelease[]
+  payrollBonusAllocationDrafts PayrollBonusAllocationDraft[]
 
   @@index([orderId, salesBonusSlot])
   @@index([orderId, salesAccrualInvoiceId])
@@ -578,6 +580,15 @@ enum PayrollRunStatusEnum {
   CLOSED
 }
 
+enum PayrollBonusAllocationKindEnum {
+  READY
+  PARTIALLY_FUNDED
+  PROGRESS
+  MANUAL_BONUS
+  EXTRA_BONUS
+  OVER_FUNDING
+}
+
 enum SalaryLineStatusEnum {
   PENDING
   APPROVED
@@ -609,6 +620,7 @@ model PayrollRun {
   approvedBy    Employee?      @relation("PayrollRunApprover", fields: [approvedById], references: [id])
   salaryLines                    SalaryLine[]
   bonusReleases                  BonusRelease[]
+  bonusAllocationDrafts          PayrollBonusAllocationDraft[]
   kpiResults                     KpiResult[]
   payrollMatrixLayoutPreferences PayrollMatrixLayoutPreference[]
 
@@ -638,6 +650,37 @@ model PayrollMatrixLayoutPreference {
 
   @@unique([userId, payrollRunId, viewMode])
   @@map("payroll_matrix_layout_preferences")
+}
+
+/// Draft-only payroll matrix bonus plan. Materialized to BonusRelease when the run leaves DRAFT.
+model PayrollBonusAllocationDraft {
+  id            String                         @id @default(uuid())
+  payrollRunId  String                         @map("payroll_run_id")
+  employeeId    String                         @map("employee_id")
+  orderId       String                         @map("order_id")
+  projectId     String                         @map("project_id")
+  bonusEntryId  String?                        @map("bonus_entry_id")
+  amount        Decimal                        @db.Decimal(12, 2)
+  kind          PayrollBonusAllocationKindEnum
+  title         String?
+  reason        String?
+  createdById   String?                        @map("created_by_id")
+  updatedById   String?                        @map("updated_by_id")
+  createdAt     DateTime                       @default(now()) @map("created_at")
+  updatedAt     DateTime                       @updatedAt @map("updated_at")
+
+  payrollRun PayrollRun  @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee   Employee    @relation("PayrollBonusAllocationEmployee", fields: [employeeId], references: [id])
+  order      Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  bonusEntry BonusEntry? @relation(fields: [bonusEntryId], references: [id], onDelete: Cascade)
+  createdBy  Employee?   @relation("PayrollBonusAllocationCreatedBy", fields: [createdById], references: [id])
+  updatedBy  Employee?   @relation("PayrollBonusAllocationUpdatedBy", fields: [updatedById], references: [id])
+
+  @@unique([payrollRunId, employeeId, orderId])
+  @@index([payrollRunId])
+  @@index([bonusEntryId])
+  @@map("payroll_bonus_allocation_drafts")
 }
 
 model SalaryLine {
