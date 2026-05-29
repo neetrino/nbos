@@ -74,6 +74,20 @@ describe('resolvePayrollMatrixCellState', () => {
     ).toBe('MANUAL_BONUS');
   });
 
+  it('does not classify manual bonuses as extra when they have no previous remaining amount', () => {
+    expect(
+      resolvePayrollMatrixCellState({
+        linked: true,
+        hasBonusEntry: false,
+        releaseAmount: new Decimal(50_000),
+        remaining: new Decimal(0),
+        availableFunding: new Decimal(100_000),
+        deliveryOpen: false,
+        manualBonus: true,
+      }),
+    ).toBe('MANUAL_BONUS');
+  });
+
   it('keeps extra and over-funding warnings above normal states', () => {
     expect(
       resolvePayrollMatrixCellState({

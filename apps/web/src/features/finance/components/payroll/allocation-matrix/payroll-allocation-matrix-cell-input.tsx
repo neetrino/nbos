@@ -39,6 +39,10 @@ function cellStateLabel(cell: PayrollAllocationMatrixCell): string | null {
   return null;
 }
 
+function shouldPreviewAmountWarning(cell: PayrollAllocationMatrixCell): boolean {
+  return cell.state !== 'MANUAL_BONUS';
+}
+
 export function PayrollAllocationMatrixCellInput(props: {
   cell: PayrollAllocationMatrixCell;
   availableFunding: number;
@@ -58,8 +62,9 @@ export function PayrollAllocationMatrixCellInput(props: {
   const showCurrency = focused || amount.trim().length > 0;
   const remaining = parseMoney(cell.remaining);
   const draftAmount = parseMoney(amount);
-  const editWarning =
-    matrixReleaseWarningForAmount(draftAmount, remaining, availableFunding) ?? cell.warning;
+  const editWarning = shouldPreviewAmountWarning(cell)
+    ? (matrixReleaseWarningForAmount(draftAmount, remaining, availableFunding) ?? cell.warning)
+    : cell.warning;
   const stateLabel = editWarning ?? cellStateLabel(cell);
 
   const submit = useCallback(async () => {
