@@ -18,6 +18,20 @@ describe('resolvePayrollMatrixCellState', () => {
     ).toBe('READY');
   });
 
+  it('keeps unfinished delivery bonus cells blue until an amount is drafted', () => {
+    expect(
+      resolvePayrollMatrixCellState({
+        linked: true,
+        hasBonusEntry: true,
+        releaseAmount: new Decimal(0),
+        remaining: new Decimal(50_000),
+        availableFunding: new Decimal(100_000),
+        deliveryOpen: true,
+        manualBonus: false,
+      }),
+    ).toBe('LINKED_EMPTY');
+  });
+
   it('shows delivery progress payouts as a normal green state', () => {
     expect(
       resolvePayrollMatrixCellState({

@@ -60,6 +60,9 @@ export function resolvePayrollMatrixCellState(params: {
   if (!params.hasBonusEntry && !params.manualBonus) {
     return params.linked ? 'LINKED_EMPTY' : 'UNLINKED';
   }
+  if (params.hasBonusEntry && params.deliveryOpen && params.releaseAmount.lte(BONUS_POOL_ZERO)) {
+    return 'LINKED_EMPTY';
+  }
   if (
     params.availableFunding.gt(BONUS_POOL_ZERO) &&
     params.releaseAmount.gt(params.availableFunding)

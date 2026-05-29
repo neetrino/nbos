@@ -24,8 +24,8 @@ export const PAYROLL_MATRIX_CELL_MONEY_INPUT_CLASS = cn(
 );
 
 export const PAYROLL_MATRIX_CELL_WARNING_CLASS =
-  'truncate text-center text-[10px] font-medium text-amber-700 dark:text-amber-400';
+  'truncate text-center text-[10px] font-medium text-black dark:text-black';
 
 /** Read-only release amount in grid cells (`3 500 000֏`). */
 export const PAYROLL_MATRIX_CELL_AMOUNT_DISPLAY_CLASS =
-  'block w-full min-w-0 truncate text-right text-xs tabular-nums';
+  'block w-full min-w-0 truncate text-right text-xs tabular-nums text-black dark:text-black';
