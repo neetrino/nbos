@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { formatAmountDramSuffix } from '@/features/finance/constants/finance';
 import {
   PAYROLL_MATRIX_CELL_AMOUNT_DISPLAY_CLASS,
+  PAYROLL_MATRIX_CELL_CURRENCY_SLOT_CLASS,
   PAYROLL_MATRIX_CELL_FIELD_SHELL_CLASS,
   PAYROLL_MATRIX_CELL_MONEY_INPUT_CLASS,
   PAYROLL_MATRIX_CELL_REASON_CLASS,
@@ -118,18 +119,20 @@ export function PayrollAllocationMatrixCellInput(props: {
       return <div className="min-h-[2.25rem]" aria-hidden />;
     }
     return (
-      <div className="flex min-h-[2.25rem] flex-col items-end justify-center px-2 py-1">
+      <div className="flex min-h-[2.25rem] min-w-0 flex-col items-stretch justify-center overflow-hidden px-2 py-1">
         <span className={PAYROLL_MATRIX_CELL_AMOUNT_DISPLAY_CLASS}>
           {formatAmountDramSuffix(parseMoney(cell.releaseThisMonth))}
         </span>
-        {cell.warning ? <span className="text-[10px] font-medium">{cell.warning}</span> : null}
+        {cell.warning ? (
+          <span className="truncate text-center text-[10px] font-medium">{cell.warning}</span>
+        ) : null}
       </div>
     );
   }
 
   return (
     <div
-      className="relative flex min-h-[2.25rem] flex-col items-stretch justify-center gap-1 px-1 py-1"
+      className="relative flex min-h-[2.25rem] min-w-0 flex-col items-stretch justify-center gap-1 overflow-hidden px-1 py-1"
       onBlur={handleContainerBlur}
     >
       <div className={cn(PAYROLL_MATRIX_CELL_FIELD_SHELL_CLASS, 'relative')}>
@@ -143,7 +146,12 @@ export function PayrollAllocationMatrixCellInput(props: {
           onFocus={() => setFocused(true)}
           onKeyDown={handleKeyDown}
         />
-        {showCurrency ? <AmdCurrencyIcon className="text-muted-foreground shrink-0" /> : null}
+        <span
+          className={cn(PAYROLL_MATRIX_CELL_CURRENCY_SLOT_CLASS, !showCurrency && 'invisible')}
+          aria-hidden
+        >
+          <AmdCurrencyIcon className="text-muted-foreground" />
+        </span>
         {saving ? (
           <Loader2
             className="text-muted-foreground pointer-events-none absolute top-1/2 left-1 size-3 -translate-y-1/2 animate-spin"

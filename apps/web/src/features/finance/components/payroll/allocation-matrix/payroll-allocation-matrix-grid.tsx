@@ -14,6 +14,7 @@ import {
 import {
   PAYROLL_MATRIX_BODY_CLASS,
   PAYROLL_MATRIX_BODY_FULLSCREEN_CLASS,
+  PAYROLL_MATRIX_DATA_COL_STYLE,
   PAYROLL_MATRIX_DATA_COL_WIDTH,
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import {
@@ -215,11 +216,13 @@ export function PayrollAllocationMatrixGrid(props: {
       const dataTd = !cell ? (
         <td
           key={colId}
+          style={PAYROLL_MATRIX_DATA_COL_STYLE}
           className={cn('border-border bg-card border-r border-b', PAYROLL_MATRIX_DATA_COL_WIDTH)}
         />
       ) : needsManualBonus(cell, matrix.editable) ? (
         <td
           key={colId}
+          style={PAYROLL_MATRIX_DATA_COL_STYLE}
           className={cn(
             'border-border border-r border-b p-0 align-middle',
             PAYROLL_MATRIX_DATA_COL_WIDTH,
@@ -229,13 +232,14 @@ export function PayrollAllocationMatrixGrid(props: {
           <button
             type="button"
             aria-label="Create manual bonus"
-            className="box-border flex h-full min-h-[2.25rem] w-full cursor-pointer px-1 py-0.5 hover:bg-sky-500/10"
+            className="box-border flex h-full min-h-[2.25rem] w-full min-w-0 cursor-pointer px-1 py-0.5 hover:bg-sky-500/10"
             onClick={() => onManualCellRequest(cell)}
           />
         </td>
       ) : (
         <td
           key={colId}
+          style={PAYROLL_MATRIX_DATA_COL_STYLE}
           className={cn(
             'border-border border-r border-b p-0 align-middle',
             PAYROLL_MATRIX_DATA_COL_WIDTH,
@@ -272,6 +276,7 @@ export function PayrollAllocationMatrixGrid(props: {
                 ) : (
                   <td
                     key={colId}
+                    style={PAYROLL_MATRIX_DATA_COL_STYLE}
                     className={cn(PAYROLL_MATRIX_DATA_COL_WIDTH, 'border-border border-t border-r')}
                   />
                 ),

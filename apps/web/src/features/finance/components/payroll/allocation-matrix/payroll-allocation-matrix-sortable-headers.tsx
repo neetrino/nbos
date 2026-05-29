@@ -21,8 +21,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, PanelRightOpen } from 'lucide-react';
 import {
   PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
+  PAYROLL_MATRIX_DATA_COL_STYLE,
   PAYROLL_MATRIX_DATA_COL_WIDTH,
-  PAYROLL_MATRIX_STICKY_COL_WIDTH,
+  PAYROLL_MATRIX_DETAIL_COL_STYLE,
   PAYROLL_MATRIX_STICKY_EDGE_DIVIDER,
   PAYROLL_MATRIX_STICKY_EDGE_STYLE,
   PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
@@ -30,6 +31,7 @@ import {
   PAYROLL_MATRIX_ROW_HEADER_ACTIVE_MARK,
   PAYROLL_MATRIX_STICKY_HEADER_BG,
   PAYROLL_MATRIX_TABLE_CLASS,
+  PAYROLL_MATRIX_TOTALS_COL_STYLE,
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import { cn } from '@/lib/utils';
 
@@ -248,7 +250,15 @@ export function PayrollAllocationMatrixTableShell(props: {
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <table className={PAYROLL_MATRIX_TABLE_CLASS}>
         <colgroup>
-          <col style={{ width: PAYROLL_MATRIX_STICKY_COL_WIDTH }} />
+          <col style={PAYROLL_MATRIX_STICKY_EDGE_STYLE} />
+          {columns.flatMap((col) => {
+            const cols = [<col key={col.id} style={PAYROLL_MATRIX_DATA_COL_STYLE} />];
+            if (activeColumnId === col.id) {
+              cols.push(<col key={`${col.id}-detail`} style={PAYROLL_MATRIX_DETAIL_COL_STYLE} />);
+            }
+            return cols;
+          })}
+          {renderTotalsHeader ? <col key="totals" style={PAYROLL_MATRIX_TOTALS_COL_STYLE} /> : null}
         </colgroup>
         <thead>
           <tr>
@@ -325,6 +335,7 @@ function SortableMatrixColumnHeader(props: {
   });
   return (
     <th
+      style={PAYROLL_MATRIX_DATA_COL_STYLE}
       className={cn(
         PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
         PAYROLL_MATRIX_DATA_COL_WIDTH,

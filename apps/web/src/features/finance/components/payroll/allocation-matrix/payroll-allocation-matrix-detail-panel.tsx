@@ -8,6 +8,10 @@ import {
   PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS,
   PAYROLL_MATRIX_EXPANSION_ROW_STICKY_STYLE,
 } from '@/features/finance/constants/payroll-allocation-matrix-expansion';
+import {
+  PAYROLL_MATRIX_DATA_COL_STYLE,
+  PAYROLL_MATRIX_DETAIL_COL_STYLE,
+} from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import type {
   DeliveryPayableUnit,
   PayrollAllocationMatrixCell,
@@ -70,7 +74,10 @@ function intersectionMetrics(cell: PayrollAllocationMatrixCell): MetricItem[] {
 /** Column expansion — pool summary header (thead). */
 export function MatrixOrderDetailHeader({ unit }: { unit: DeliveryPayableUnit }) {
   return (
-    <th className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}>
+    <th
+      style={PAYROLL_MATRIX_DETAIL_COL_STYLE}
+      className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}
+    >
       <ExpansionMetricStack items={orderPoolMetrics(unit)} />
     </th>
   );
@@ -82,7 +89,10 @@ export function MatrixEmployeeDetailHeader({
   employee: PayrollAllocationMatrixEmployee;
 }) {
   return (
-    <th className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}>
+    <th
+      style={PAYROLL_MATRIX_DETAIL_COL_STYLE}
+      className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}
+    >
       <ExpansionMetricStack items={employeeRunMetrics(employee)} />
     </th>
   );
@@ -130,14 +140,20 @@ export function MatrixCellDetailPanel({
 
   if (!cell?.linked) {
     return (
-      <td className={cellClass}>
+      <td
+        style={layout === 'row' ? PAYROLL_MATRIX_DATA_COL_STYLE : PAYROLL_MATRIX_DETAIL_COL_STYLE}
+        className={cellClass}
+      >
         <p className="text-muted-foreground text-center text-[10px]">—</p>
       </td>
     );
   }
 
   return (
-    <td className={cellClass}>
+    <td
+      style={layout === 'row' ? PAYROLL_MATRIX_DATA_COL_STYLE : PAYROLL_MATRIX_DETAIL_COL_STYLE}
+      className={cellClass}
+    >
       <ExpansionMetricStack items={intersectionMetrics(cell)} />
     </td>
   );

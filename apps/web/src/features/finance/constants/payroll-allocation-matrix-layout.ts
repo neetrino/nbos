@@ -40,15 +40,43 @@ export const PAYROLL_MATRIX_ROW_HEADER_ACTIVE_MARK =
 
 export const PAYROLL_MATRIX_COLUMN_HEADER_STICKY = 'sticky top-0 z-20';
 
-export const PAYROLL_MATRIX_DATA_COL_WIDTH = 'min-w-[7.5rem]';
+/** Data column — fixed width; amounts and headers truncate inside. */
+export const PAYROLL_MATRIX_DATA_COL_WIDTH_REM = '7.5rem';
+
+export const PAYROLL_MATRIX_DATA_COL_STYLE = {
+  width: PAYROLL_MATRIX_DATA_COL_WIDTH_REM,
+  minWidth: PAYROLL_MATRIX_DATA_COL_WIDTH_REM,
+  maxWidth: PAYROLL_MATRIX_DATA_COL_WIDTH_REM,
+} as const;
+
+export const PAYROLL_MATRIX_DATA_COL_WIDTH =
+  'w-[7.5rem] max-w-[7.5rem] min-w-[7.5rem] shrink-0 overflow-hidden box-border';
 
 /** Sticky employee totals column at the right edge of the matrix. */
-export const PAYROLL_MATRIX_TOTALS_COL_WIDTH = 'w-[5rem] min-w-[5rem] max-w-[5rem] shrink-0';
+export const PAYROLL_MATRIX_TOTALS_COL_WIDTH_REM = '5rem';
+
+export const PAYROLL_MATRIX_TOTALS_COL_STYLE = {
+  width: PAYROLL_MATRIX_TOTALS_COL_WIDTH_REM,
+  minWidth: PAYROLL_MATRIX_TOTALS_COL_WIDTH_REM,
+  maxWidth: PAYROLL_MATRIX_TOTALS_COL_WIDTH_REM,
+} as const;
+
+export const PAYROLL_MATRIX_TOTALS_COL_WIDTH =
+  'w-[5rem] min-w-[5rem] max-w-[5rem] shrink-0 overflow-hidden box-border';
 
 export const PAYROLL_MATRIX_TOTALS_STICKY_CLASS = PAYROLL_MATRIX_TOTALS_COL_WIDTH;
 
 /** Inline detail column — Due / Paid stack beside the active data column. */
-export const PAYROLL_MATRIX_DETAIL_COL_WIDTH = 'w-[5.5rem] min-w-[5.5rem] max-w-[5.5rem] shrink-0';
+export const PAYROLL_MATRIX_DETAIL_COL_WIDTH_REM = '5.5rem';
+
+export const PAYROLL_MATRIX_DETAIL_COL_STYLE = {
+  width: PAYROLL_MATRIX_DETAIL_COL_WIDTH_REM,
+  minWidth: PAYROLL_MATRIX_DETAIL_COL_WIDTH_REM,
+  maxWidth: PAYROLL_MATRIX_DETAIL_COL_WIDTH_REM,
+} as const;
+
+export const PAYROLL_MATRIX_DETAIL_COL_WIDTH =
+  'w-[5.5rem] min-w-[5.5rem] max-w-[5.5rem] shrink-0 overflow-hidden box-border';
 
 /** Below app dialogs (z-50) so matrix cell modals stay visible in full-screen mode. */
 export const PAYROLL_MATRIX_FULLSCREEN_Z = 'z-40';

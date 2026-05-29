@@ -2,14 +2,16 @@
 
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
-  PAYROLL_MATRIX_STICKY_HEADER_BG,
-  PAYROLL_MATRIX_TOTALS_COL_WIDTH,
-  PAYROLL_MATRIX_TOTALS_STICKY_CLASS,
+  PAYROLL_MATRIX_DATA_COL_STYLE,
   PAYROLL_MATRIX_DATA_COL_WIDTH,
   PAYROLL_MATRIX_DETAIL_COL_WIDTH,
   PAYROLL_MATRIX_STICKY_EDGE_DIVIDER,
   PAYROLL_MATRIX_STICKY_EDGE_STYLE,
   PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
+  PAYROLL_MATRIX_STICKY_HEADER_BG,
+  PAYROLL_MATRIX_TOTALS_COL_STYLE,
+  PAYROLL_MATRIX_TOTALS_COL_WIDTH,
+  PAYROLL_MATRIX_TOTALS_STICKY_CLASS,
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import type { PayrollAllocationMatrixEmployee } from '@/lib/api/payroll-allocation-matrix';
 import { cn } from '@/lib/utils';
@@ -25,6 +27,7 @@ const MATRIX_TOTALS_LABEL_CLASS =
 export function MatrixEmployeeTotalsHeader() {
   return (
     <th
+      style={PAYROLL_MATRIX_TOTALS_COL_STYLE}
       className={cn(
         PAYROLL_MATRIX_TOTALS_STICKY_CLASS,
         PAYROLL_MATRIX_STICKY_HEADER_BG,
@@ -43,13 +46,14 @@ export function MatrixEmployeeTotalsCell({
 }) {
   return (
     <td
+      style={PAYROLL_MATRIX_TOTALS_COL_STYLE}
       className={cn(
         PAYROLL_MATRIX_TOTALS_STICKY_CLASS,
         PAYROLL_MATRIX_STICKY_HEADER_BG,
         'border-border sticky right-0 z-10 border-r border-b border-l px-2 py-1.5 text-right align-middle',
       )}
     >
-      <span className="text-foreground text-xs font-semibold tabular-nums">
+      <span className="text-foreground block min-w-0 truncate text-xs font-semibold tabular-nums">
         {formatAmount(parseMoney(employee.payableTotal))}
       </span>
     </td>
@@ -59,6 +63,7 @@ export function MatrixEmployeeTotalsCell({
 export function MatrixEmployeeTotalsSpacerCell() {
   return (
     <td
+      style={PAYROLL_MATRIX_TOTALS_COL_STYLE}
       className={cn(
         PAYROLL_MATRIX_TOTALS_COL_WIDTH,
         PAYROLL_MATRIX_STICKY_HEADER_BG,
@@ -93,13 +98,14 @@ export function MatrixEmployeeTotalsFooterCell({
 }) {
   return (
     <td
+      style={PAYROLL_MATRIX_DATA_COL_STYLE}
       className={cn(
         PAYROLL_MATRIX_STICKY_HEADER_BG,
         PAYROLL_MATRIX_DATA_COL_WIDTH,
         'border-border sticky bottom-0 z-20 border-t border-r px-2 py-1.5 text-right align-middle',
       )}
     >
-      <span className="text-foreground text-xs font-semibold tabular-nums">
+      <span className="text-foreground block min-w-0 truncate text-xs font-semibold tabular-nums">
         {formatAmount(parseMoney(employee.payableTotal))}
       </span>
     </td>
@@ -109,6 +115,7 @@ export function MatrixEmployeeTotalsFooterCell({
 export function MatrixEmployeeTotalsFooterDetailSpacer() {
   return (
     <td
+      style={PAYROLL_MATRIX_DETAIL_COL_STYLE}
       className={cn(
         PAYROLL_MATRIX_DETAIL_COL_WIDTH,
         PAYROLL_MATRIX_STICKY_HEADER_BG,
