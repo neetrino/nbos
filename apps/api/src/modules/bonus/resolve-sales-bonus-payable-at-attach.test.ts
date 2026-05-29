@@ -1,8 +1,20 @@
-import { BadRequestException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { describe, expect, it, vi } from 'vitest';
 
+import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
+import { DEFAULT_KPI_GATE_RULES } from '../payroll-runs/default-kpi-gate-rules';
 import { assertSalesBonusReadyForPayrollAttach } from './resolve-sales-bonus-payable-at-attach';
+
+function payrollPolicy(
+  overrides: Partial<CompensationPayrollPolicy> = {},
+): CompensationPayrollPolicy {
+  return {
+    kpiPolicyId: 'kp1',
+    gateRules: DEFAULT_KPI_GATE_RULES,
+    bonusCapBaseSalaryMultiplier: new Decimal(2),
+    ...overrides,
+  };
+}
 
 const entryRow = {
   id: 'be1',
@@ -29,7 +41,7 @@ describe('assertSalesBonusReadyForPayrollAttach', () => {
       assertSalesBonusReadyForPayrollAttach(db as never, {
         bonusEntryId: 'be1',
         payrollMonth: '2026-05',
-        payrollPolicy: { kpiPolicyId: 'kp1', bonusCapBaseSalaryMultiplier: new Decimal(2) },
+        payrollPolicy: payrollPolicy(),
       }),
     ).resolves.toBeUndefined();
   });
@@ -49,7 +61,7 @@ describe('assertSalesBonusReadyForPayrollAttach', () => {
       assertSalesBonusReadyForPayrollAttach(db as never, {
         bonusEntryId: 'be1',
         payrollMonth: '2026-05',
-        payrollPolicy: { kpiPolicyId: 'kp1', bonusCapBaseSalaryMultiplier: new Decimal(2) },
+        payrollPolicy: payrollPolicy(),
       }),
     ).rejects.toThrow(/not ready for payroll/);
   });
@@ -68,7 +80,7 @@ describe('assertSalesBonusReadyForPayrollAttach', () => {
       assertSalesBonusReadyForPayrollAttach(db as never, {
         bonusEntryId: 'be1',
         payrollMonth: '2026-05',
-        payrollPolicy: { kpiPolicyId: 'kp1', bonusCapBaseSalaryMultiplier: new Decimal(2) },
+        payrollPolicy: payrollPolicy(),
       }),
     ).rejects.toThrow(/not eligible for payroll month/);
   });
@@ -88,7 +100,7 @@ describe('assertSalesBonusReadyForPayrollAttach', () => {
       assertSalesBonusReadyForPayrollAttach(db as never, {
         bonusEntryId: 'be1',
         payrollMonth: '2026-05',
-        payrollPolicy: { kpiPolicyId: null, bonusCapBaseSalaryMultiplier: new Decimal(2) },
+        payrollPolicy: payrollPolicy({ kpiPolicyId: null }),
       }),
     ).resolves.toBeUndefined();
   });

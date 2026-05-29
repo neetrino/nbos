@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { type PrismaClient } from '@nbos/database';
+import { Prisma, type PrismaClient } from '@nbos/database';
 
 import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
 import { earnedSalesPeriodForPayoutMonth } from '../payroll-runs/earned-sales-kpi-period';
@@ -20,7 +20,9 @@ const entrySelect = {
   order: { select: { code: true } },
 } as const;
 
-type SalesBonusAttachEntry = NonNullable<Awaited<ReturnType<AttachDb['bonusEntry']['findUnique']>>>;
+type SalesBonusAttachEntry = Prisma.BonusEntryGetPayload<{
+  select: typeof entrySelect;
+}>;
 
 function formatSalesBonusAttachLabel(entry: SalesBonusAttachEntry): string {
   const employeeName = [entry.employee.firstName, entry.employee.lastName]
