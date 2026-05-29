@@ -15,8 +15,6 @@ const mockRun = (id: string): PayrollRunListRow => ({
   status: 'DRAFT',
   totalBaseSalary: '0',
   totalBonuses: '0',
-  totalAdjustments: '0',
-  totalDeductions: '0',
   totalPayable: '0',
   totalPaid: '0',
   createdAt: '2026-04-01T00:00:00.000Z',

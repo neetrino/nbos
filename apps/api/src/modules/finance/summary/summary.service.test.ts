@@ -10,8 +10,6 @@ function emptyPayrollRunStats() {
     totals: {
       totalBaseSalary: '0.00',
       totalBonuses: '0.00',
-      totalAdjustments: '0.00',
-      totalDeductions: '0.00',
       totalPayable: '0.00',
       totalPaid: '0.00',
       totalRemaining: '0.00',

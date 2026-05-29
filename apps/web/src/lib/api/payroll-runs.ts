@@ -79,8 +79,6 @@ export interface PayrollRunListRow {
   status: PayrollRunStatus;
   totalBaseSalary: string;
   totalBonuses: string;
-  totalAdjustments: string;
-  totalDeductions: string;
   totalPayable: string;
   totalPaid: string;
   createdAt: string;
@@ -110,8 +108,6 @@ export interface SalaryLineRow {
   employeeId: string;
   baseSalary: string;
   bonusesTotal: string;
-  adjustmentsTotal: string;
-  deductionsTotal: string;
   totalPayable: string;
   paidAmount: string;
   remainingAmount: string;
@@ -228,8 +224,6 @@ export interface SalaryLineMonthDetail {
     baseSalary: string;
     bonusesTotal: string;
     payrollCarryAppliedAmount: string | null;
-    adjustmentsTotal: string;
-    deductionsTotal: string;
     totalPayable: string;
     paidAmount: string;
     remainingAmount: string;
@@ -254,8 +248,6 @@ export interface PayrollRunStats {
   totals: {
     totalBaseSalary: string;
     totalBonuses: string;
-    totalAdjustments: string;
-    totalDeductions: string;
     totalPayable: string;
     totalPaid: string;
     totalRemaining: string;

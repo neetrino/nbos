@@ -592,8 +592,6 @@ model PayrollRun {
   status               PayrollRunStatusEnum @default(DRAFT)
   totalBaseSalary      Decimal              @default(0) @map("total_base_salary") @db.Decimal(14, 2)
   totalBonuses         Decimal              @default(0) @map("total_bonuses") @db.Decimal(14, 2)
-  totalAdjustments     Decimal              @default(0) @map("total_adjustments") @db.Decimal(14, 2)
-  totalDeductions      Decimal              @default(0) @map("total_deductions") @db.Decimal(14, 2)
   totalPayable         Decimal              @default(0) @map("total_payable") @db.Decimal(14, 2)
   totalPaid            Decimal              @default(0) @map("total_paid") @db.Decimal(14, 2)
   /// Monthly sales plan (major units) for seller KPI payout gate; pair with `kpiSalesActualAmount` (NBOS § KPI).
@@ -654,8 +652,6 @@ model SalaryLine {
   /// Employee sales KPI override; null uses payroll run-level plan/actual at attach.
   kpiSalesPlanAmount        Decimal?     @map("kpi_sales_plan_amount") @db.Decimal(14, 2)
   kpiSalesActualAmount      Decimal?     @map("kpi_sales_actual_amount") @db.Decimal(14, 2)
-  adjustmentsTotal Decimal              @default(0) @map("adjustments_total") @db.Decimal(12, 2)
-  deductionsTotal  Decimal              @default(0) @map("deductions_total") @db.Decimal(12, 2)
   totalPayable     Decimal              @default(0) @map("total_payable") @db.Decimal(12, 2)
   paidAmount       Decimal              @default(0) @map("paid_amount") @db.Decimal(12, 2)
   remainingAmount  Decimal              @default(0) @map("remaining_amount") @db.Decimal(12, 2)

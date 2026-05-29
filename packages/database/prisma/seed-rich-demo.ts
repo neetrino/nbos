@@ -278,8 +278,7 @@ async function seedPayrollAndSalaries(
         : null;
       const base = profile ? Number(profile.baseSalary) : 400_000;
       const bonuses = emp.id === ctx.seller.id && month.key === '2026-03' ? 125_000 : 0;
-      const deductions = emp.id === ctx.ceo.id ? 0 : 15_000;
-      const payable = base + bonuses - deductions;
+      const payable = base + bonuses;
       const paid = month.paySalaries ? payable : 0;
       const lineStatus = month.paySalaries
         ? 'PAID'
@@ -314,7 +313,6 @@ async function seedPayrollAndSalaries(
           compensationProfileId: profileId ?? null,
           baseSalary: base,
           bonusesTotal: bonuses,
-          deductionsTotal: deductions,
           totalPayable: payable,
           paidAmount: paid,
           remainingAmount: payable - paid,
@@ -340,7 +338,6 @@ async function seedPayrollAndSalaries(
       data: {
         totalBaseSalary: totalBase,
         totalBonuses,
-        totalDeductions: employees.length * 15_000 - 15_000,
         totalPayable,
         totalPaid,
       },
@@ -922,6 +919,62 @@ async function seedMay2026PayrollMatrix(
   }
 }
 
+async function syncSalaryLinesBonusesFromReleases(
+  prisma: PrismaClient,
+  payrollRunId: string,
+): Promise<void> {
+  const lines = await prisma.salaryLine.findMany({
+    where: { payrollRunId },
+    select: { id: true, employeeId: true, baseSalary: true, paidAmount: true, status: true },
+  });
+
+  let runTotalBonuses = 0;
+  let runTotalPayable = 0;
+  let runTotalPaid = 0;
+
+  for (const line of lines) {
+    const releases = await prisma.bonusRelease.findMany({
+      where: {
+        payrollRunId,
+        employeeId: line.employeeId,
+        status: 'INCLUDED_IN_PAYROLL',
+      },
+      select: { amount: true, payrollIncludedAmount: true },
+    });
+
+    const bonusesTotal = releases.reduce(
+      (sum, rel) => sum + Number(rel.payrollIncludedAmount ?? rel.amount),
+      0,
+    );
+    const base = Number(line.baseSalary);
+    const totalPayable = base + bonusesTotal;
+    const paid = Number(line.paidAmount);
+    const remaining = Math.max(0, totalPayable - paid);
+
+    await prisma.salaryLine.update({
+      where: { id: line.id },
+      data: {
+        bonusesTotal,
+        totalPayable,
+        remainingAmount: remaining,
+      },
+    });
+
+    runTotalBonuses += bonusesTotal;
+    runTotalPayable += totalPayable;
+    runTotalPaid += paid;
+  }
+
+  await prisma.payrollRun.update({
+    where: { id: payrollRunId },
+    data: {
+      totalBonuses: runTotalBonuses,
+      totalPayable: runTotalPayable,
+      totalPaid: runTotalPaid,
+    },
+  });
+}
+
 async function ensurePayableSnapshots(prisma: PrismaClient): Promise<void> {
   const entries = await prisma.bonusEntry.findMany({
     select: {
@@ -1001,6 +1054,10 @@ export async function seedRichDemo(prisma: PrismaClient, ctx: SeedRichDemoContex
   await seedPayrollAndSalaries(prisma, ctx, compensationByEmployee);
   await seedBonusPoolsAndReleases(prisma, ctx);
   await seedMay2026PayrollMatrix(prisma, ctx);
+  const mayRun = await prisma.payrollRun.findUnique({ where: { payrollMonth: '2026-05' } });
+  if (mayRun) {
+    await syncSalaryLinesBonusesFromReleases(prisma, mayRun.id);
+  }
   await ensurePayableSnapshots(prisma);
   await archiveHalfOfProjects(prisma);
 

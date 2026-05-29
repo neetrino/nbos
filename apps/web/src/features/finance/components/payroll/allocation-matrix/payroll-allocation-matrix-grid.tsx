@@ -18,9 +18,15 @@ import {
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import {
   PayrollAllocationMatrixTableShell,
+  type MatrixEmployeeAmounts,
   type MatrixHeaderColumn,
   type MatrixRowHeader,
 } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-sortable-headers';
+import {
+  MatrixEmployeeTotalsCell,
+  MatrixEmployeeTotalsHeader,
+  MatrixEmployeeTotalsSpacerCell,
+} from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-employee-totals';
 import type {
   PayrollAllocationMatrix,
   PayrollAllocationMatrixCell,
@@ -48,6 +54,18 @@ function needsManualBonus(cell: PayrollAllocationMatrixCell, editable: boolean):
   );
 }
 
+function employeeAmounts(e: {
+  baseSalary: string;
+  bonusTotalThisRun: string;
+  payableTotal: string;
+}): MatrixEmployeeAmounts {
+  return {
+    baseSalary: formatAmount(Number.parseFloat(e.baseSalary)),
+    bonusTotal: formatAmount(Number.parseFloat(e.bonusTotalThisRun)),
+    payableTotal: formatAmount(Number.parseFloat(e.payableTotal)),
+  };
+}
+
 export function PayrollAllocationMatrixGrid(props: {
   matrix: PayrollAllocationMatrix;
   viewMode: PayrollMatrixViewMode;
@@ -65,6 +83,7 @@ export function PayrollAllocationMatrixGrid(props: {
     cell: PayrollAllocationMatrixCell,
     payload: { releaseThisMonth: string; reason?: string },
   ) => Promise<void>;
+  onOpenSalaryLine?: (salaryLineId: string) => void;
   fullscreen?: boolean;
 }) {
   const {
@@ -81,6 +100,7 @@ export function PayrollAllocationMatrixGrid(props: {
     onReorderRows,
     onManualCellRequest,
     onReleaseSave,
+    onOpenSalaryLine,
     fullscreen = false,
   } = props;
 
@@ -98,6 +118,7 @@ export function PayrollAllocationMatrixGrid(props: {
           primary: employeeName(e),
           secondary: formatAmount(Number.parseFloat(e.baseSalary)),
           meta: formatAmount(Number.parseFloat(e.bonusTotalThisRun)),
+          employeeAmounts: employeeAmounts(e),
           funding: null,
           pinned: false,
           kind: 'employee' as const,
@@ -128,6 +149,7 @@ export function PayrollAllocationMatrixGrid(props: {
           primary: employeeName(e),
           secondary: e.position ?? '—',
           meta: formatAmount(Number.parseFloat(e.bonusTotalThisRun)),
+          employeeAmounts: employeeAmounts(e),
           funding: null,
           pinned: false,
           kind: 'employee' as const,
@@ -150,7 +172,11 @@ export function PayrollAllocationMatrixGrid(props: {
     }
     const employee = matrix.employees.find((e) => e.employeeId === columnId);
     return employee ? (
-      <MatrixEmployeeDetailHeader key={`${columnId}-emp`} employee={employee} />
+      <MatrixEmployeeDetailHeader
+        key={`${columnId}-emp`}
+        employee={employee}
+        onOpenSalaryLine={onOpenSalaryLine}
+      />
     ) : null;
   };
 
@@ -173,6 +199,7 @@ export function PayrollAllocationMatrixGrid(props: {
           <MatrixEmployeeRowDetailSticky employee={employee} />
         ) : null}
         {detailCells}
+        {viewMode === 'EMPLOYEE_MATRIX' ? <MatrixEmployeeTotalsSpacerCell /> : null}
       </tr>
     );
   };
@@ -247,6 +274,22 @@ export function PayrollAllocationMatrixGrid(props: {
         onReorderRows={onReorderRows}
         renderAfterColumn={activeColumnId ? renderAfterColumn : undefined}
         renderAfterRow={activeRowId ? renderAfterRow : undefined}
+        renderTotalsHeader={
+          viewMode === 'EMPLOYEE_MATRIX' ? () => <MatrixEmployeeTotalsHeader /> : undefined
+        }
+        renderRowTotals={
+          viewMode === 'EMPLOYEE_MATRIX'
+            ? (rowId) => {
+                const employee = matrix.employees.find((e) => e.employeeId === rowId);
+                return employee ? (
+                  <MatrixEmployeeTotalsCell
+                    employee={employee}
+                    onOpenSalaryLine={onOpenSalaryLine}
+                  />
+                ) : null;
+              }
+            : undefined
+        }
       >
         {(rowId) => renderDataCells(rowId)}
       </PayrollAllocationMatrixTableShell>

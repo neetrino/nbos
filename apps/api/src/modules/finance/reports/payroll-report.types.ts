@@ -25,8 +25,6 @@ export interface PayrollReport {
     salaryLineCount: number;
     totalBaseSalary: string;
     totalBonuses: string;
-    totalAdjustments: string;
-    totalDeductions: string;
     totalPayable: string;
     totalPaid: string;
     totalRemaining: string;

@@ -285,18 +285,6 @@ export function EmployeeWalletPage() {
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Adjustments</dt>
-                  <dd className="text-foreground font-medium tabular-nums">
-                    {formatAmount(parseAmount(data.nextPayroll.adjustmentsTotal))}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-muted-foreground">Deductions</dt>
-                  <dd className="text-foreground font-medium tabular-nums">
-                    {formatAmount(parseAmount(data.nextPayroll.deductionsTotal))}
-                  </dd>
-                </div>
-                <div>
                   <dt className="text-muted-foreground">Total payable</dt>
                   <dd className="text-foreground font-semibold tabular-nums">
                     {formatAmount(parseAmount(data.nextPayroll.totalPayable))}

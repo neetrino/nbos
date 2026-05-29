@@ -35,6 +35,12 @@ import { cn } from '@/lib/utils';
 
 export type MatrixHeaderKind = 'employee' | 'order';
 
+export type MatrixEmployeeAmounts = {
+  baseSalary: string;
+  bonusTotal: string;
+  payableTotal: string;
+};
+
 export type MatrixHeaderColumn = {
   id: string;
   primary: string;
@@ -43,6 +49,7 @@ export type MatrixHeaderColumn = {
   funding: string | null;
   pinned: boolean;
   kind: MatrixHeaderKind;
+  employeeAmounts?: MatrixEmployeeAmounts;
 };
 
 export type MatrixRowHeader = {
@@ -53,6 +60,7 @@ export type MatrixRowHeader = {
   funding: string | null;
   pinned: boolean;
   kind: MatrixHeaderKind;
+  employeeAmounts?: MatrixEmployeeAmounts;
 };
 
 const MATRIX_PRIMARY_NAME_CLASS =
@@ -64,6 +72,16 @@ function MatrixLabeledAmount({ label, value }: { label: string; value: string })
       <span>{label} </span>
       <span className="text-foreground font-normal tabular-nums">{value}</span>
     </p>
+  );
+}
+
+function MatrixEmployeeAmountStack({ amounts }: { amounts: MatrixEmployeeAmounts }) {
+  return (
+    <>
+      <MatrixLabeledAmount label="Salary" value={amounts.baseSalary} />
+      <MatrixLabeledAmount label="Bonus" value={amounts.bonusTotal} />
+      <MatrixLabeledAmount label="Total" value={amounts.payableTotal} />
+    </>
   );
 }
 
@@ -152,6 +170,8 @@ export function PayrollAllocationMatrixTableShell(props: {
   onReorderRows: (orderedIds: string[]) => void;
   renderAfterColumn?: (columnId: string) => ReactNode;
   renderAfterRow?: (rowId: string) => ReactNode;
+  renderTotalsHeader?: () => ReactNode;
+  renderRowTotals?: (rowId: string) => ReactNode;
   children: (rowId: string) => ReactNode;
 }) {
   const {
@@ -168,6 +188,8 @@ export function PayrollAllocationMatrixTableShell(props: {
     onReorderRows,
     renderAfterColumn,
     renderAfterRow,
+    renderTotalsHeader,
+    renderRowTotals,
     children,
   } = props;
 
@@ -236,6 +258,7 @@ export function PayrollAllocationMatrixTableShell(props: {
                 </Fragment>
               ))}
             </SortableContext>
+            {renderTotalsHeader?.() ?? null}
           </tr>
         </thead>
         <tbody>
@@ -250,6 +273,7 @@ export function PayrollAllocationMatrixTableShell(props: {
                     onActivate={() => onActivateRow(activeRowId === row.id ? null : row.id)}
                   />
                   {children(row.id)}
+                  {renderRowTotals?.(row.id) ?? null}
                 </tr>
                 {activeRowId === row.id ? renderAfterRow?.(row.id) : null}
               </Fragment>
@@ -299,10 +323,14 @@ function SortableMatrixColumnHeader(props: {
             {col.primary}
           </p>
           {col.kind === 'employee' ? (
-            <>
-              {col.secondary ? <MatrixLabeledAmount label="Role" value={col.secondary} /> : null}
-              <MatrixLabeledAmount label="Bonus" value={col.meta} />
-            </>
+            col.employeeAmounts ? (
+              <MatrixEmployeeAmountStack amounts={col.employeeAmounts} />
+            ) : (
+              <>
+                {col.secondary ? <MatrixLabeledAmount label="Role" value={col.secondary} /> : null}
+                <MatrixLabeledAmount label="Bonus" value={col.meta} />
+              </>
+            )
           ) : (
             <>
               <MatrixLabeledAmount label="Remaining" value={col.meta} />
@@ -355,10 +383,14 @@ function SortableMatrixRowHeader(props: {
             {row.primary}
           </p>
           {row.kind === 'employee' ? (
-            <>
-              <MatrixLabeledAmount label="Salary" value={row.secondary} />
-              <MatrixLabeledAmount label="Bonus" value={row.meta} />
-            </>
+            row.employeeAmounts ? (
+              <MatrixEmployeeAmountStack amounts={row.employeeAmounts} />
+            ) : (
+              <>
+                <MatrixLabeledAmount label="Salary" value={row.secondary} />
+                <MatrixLabeledAmount label="Bonus" value={row.meta} />
+              </>
+            )
           ) : (
             <>
               <MatrixLabeledAmount label="Remaining" value={row.meta} />

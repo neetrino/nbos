@@ -68,8 +68,6 @@ export class PayrollReportService {
         _sum: {
           totalBaseSalary: true,
           totalBonuses: true,
-          totalAdjustments: true,
-          totalDeductions: true,
           totalPayable: true,
           totalPaid: true,
         },
@@ -89,8 +87,6 @@ export class PayrollReportService {
         payrollRunCount,
         totalBaseSalary: decimalString(sums._sum.totalBaseSalary),
         totalBonuses: decimalString(sums._sum.totalBonuses),
-        totalAdjustments: decimalString(sums._sum.totalAdjustments),
-        totalDeductions: decimalString(sums._sum.totalDeductions),
         totalPayable: decimalString(totalPayable),
         totalPaid: decimalString(totalPaid),
         totalRemaining: decimalString(totalPayable.minus(totalPaid)),

@@ -17,8 +17,6 @@ const SAMPLE_STATS: PayrollRunStats = {
   totals: {
     totalBaseSalary: '10000.00',
     totalBonuses: '500.00',
-    totalAdjustments: '0.00',
-    totalDeductions: '200.00',
     totalPayable: '10300.00',
     totalPaid: '3000.00',
     totalRemaining: '7300.00',

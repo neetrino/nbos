@@ -181,8 +181,6 @@ export class PayrollRunsService {
               compensationProfileId: profile?.id ?? null,
               baseSalary: base,
               bonusesTotal: zero,
-              adjustmentsTotal: zero,
-              deductionsTotal: zero,
               totalPayable,
               paidAmount: zero,
               remainingAmount: totalPayable,

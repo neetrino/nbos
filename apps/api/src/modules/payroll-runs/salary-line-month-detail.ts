@@ -195,8 +195,6 @@ export async function querySalaryLineMonthDetail(
       compensationProfileId: true,
       baseSalary: true,
       bonusesTotal: true,
-      adjustmentsTotal: true,
-      deductionsTotal: true,
       totalPayable: true,
       paidAmount: true,
       remainingAmount: true,
@@ -288,8 +286,6 @@ export async function querySalaryLineMonthDetail(
         line.payrollCarryAppliedAmount != null && line.payrollCarryAppliedAmount.gt(0)
           ? money(line.payrollCarryAppliedAmount)
           : null,
-      adjustmentsTotal: money(line.adjustmentsTotal),
-      deductionsTotal: money(line.deductionsTotal),
       totalPayable: money(line.totalPayable),
       paidAmount: money(line.paidAmount),
       remainingAmount: money(line.remainingAmount),

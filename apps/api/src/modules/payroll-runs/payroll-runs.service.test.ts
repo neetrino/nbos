@@ -74,8 +74,6 @@ describe('PayrollRunsService', () => {
         _sum: {
           totalBaseSalary: new Decimal('100.50'),
           totalBonuses: new Decimal('0'),
-          totalAdjustments: new Decimal('0'),
-          totalDeductions: new Decimal('10.00'),
           totalPayable: new Decimal('90.50'),
           totalPaid: new Decimal('40.00'),
         },
@@ -111,8 +109,6 @@ describe('PayrollRunsService', () => {
         _sum: {
           totalBaseSalary: new Decimal('0'),
           totalBonuses: new Decimal('0'),
-          totalAdjustments: new Decimal('0'),
-          totalDeductions: new Decimal('0'),
           totalPayable: new Decimal('10.00'),
           totalPaid: new Decimal('25.00'),
         },
@@ -130,8 +126,6 @@ describe('PayrollRunsService', () => {
         _sum: {
           totalBaseSalary: new Decimal('0'),
           totalBonuses: new Decimal('0'),
-          totalAdjustments: new Decimal('0'),
-          totalDeductions: new Decimal('0'),
           totalPayable: new Decimal('100.00'),
           totalPaid: new Decimal('0'),
         },
@@ -188,8 +182,6 @@ describe('PayrollRunsService', () => {
             status: 'CLOSED',
             totalBaseSalary: 0,
             totalBonuses: 0,
-            totalAdjustments: 0,
-            totalDeductions: 0,
             totalPayable: 0,
             totalPaid: 0,
             createdAt: new Date('2026-04-01T10:00:00.000Z'),

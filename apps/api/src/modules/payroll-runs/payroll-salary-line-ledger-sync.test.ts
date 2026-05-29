@@ -9,8 +9,6 @@ function buildPrismaMock(payments: { amount: Decimal }[]) {
     _sum: {
       baseSalary: new Decimal(100),
       bonusesTotal: new Decimal(0),
-      adjustmentsTotal: new Decimal(0),
-      deductionsTotal: new Decimal(0),
       totalPayable: new Decimal(100),
       paidAmount: sumPayments(payments),
     },

@@ -9,6 +9,7 @@ import { applyPayrollBonusCap } from './payroll-bonus-cap';
 import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
 import { computePayrollIncludedBonusAmount } from './sales-kpi-payroll-payout';
 import type { PayrollAttachNotifyEvent } from './payroll-attach-notify.types';
+import { computeSalaryLineTotalPayable } from './payroll-salary-line-total-payable';
 
 const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
@@ -28,18 +29,6 @@ export type BonusReleaseAttachTx = Pick<
 export interface AttachBonusReleasesParams {
   payrollRunId: string;
   releaseIds: string[];
-}
-
-function computeLineTotalPayable(line: {
-  baseSalary: Decimal;
-  bonusesTotal: Decimal;
-  adjustmentsTotal: Decimal;
-  deductionsTotal: Decimal;
-}): Decimal {
-  return line.baseSalary
-    .plus(line.bonusesTotal)
-    .plus(line.adjustmentsTotal)
-    .minus(line.deductionsTotal);
 }
 
 /**
@@ -127,8 +116,6 @@ export async function attachBonusReleasesToPayrollRun(
         compensationProfileId: true,
         baseSalary: true,
         bonusesTotal: true,
-        adjustmentsTotal: true,
-        deductionsTotal: true,
         paidAmount: true,
         payrollCarryAppliedAmount: true,
       },
@@ -186,8 +173,6 @@ export async function attachBonusReleasesToPayrollRun(
           compensationProfileId: true,
           baseSalary: true,
           bonusesTotal: true,
-          adjustmentsTotal: true,
-          deductionsTotal: true,
           paidAmount: true,
           payrollCarryAppliedAmount: true,
         },
@@ -211,11 +196,9 @@ export async function attachBonusReleasesToPayrollRun(
     const included = capped.payrollIncludedAmount;
 
     const nextBonuses = line.bonusesTotal.plus(included);
-    const nextTotal = computeLineTotalPayable({
+    const nextTotal = computeSalaryLineTotalPayable({
       baseSalary: line.baseSalary,
       bonusesTotal: nextBonuses,
-      adjustmentsTotal: line.adjustmentsTotal,
-      deductionsTotal: line.deductionsTotal,
     });
     const paid = line.paidAmount;
     const nextRemaining = Decimal.max(new Decimal(0), nextTotal.minus(paid));

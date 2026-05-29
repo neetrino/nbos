@@ -245,8 +245,6 @@ export class EmployeeWalletService {
       runStatus: line.payrollRun.status,
       baseSalary: line.baseSalary.toString(),
       bonusesTotal: line.bonusesTotal.toString(),
-      adjustmentsTotal: line.adjustmentsTotal.toString(),
-      deductionsTotal: line.deductionsTotal.toString(),
       totalPayable: line.totalPayable.toString(),
       paidAmount: line.paidAmount.toString(),
       remainingAmount: line.remainingAmount.toString(),

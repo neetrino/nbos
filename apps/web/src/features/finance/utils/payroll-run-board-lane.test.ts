@@ -8,8 +8,6 @@ const run = (month: string, status: PayrollRunListRow['status']): PayrollRunList
   status,
   totalBaseSalary: '0',
   totalBonuses: '0',
-  totalAdjustments: '0',
-  totalDeductions: '0',
   totalPayable: '1000',
   totalPaid: '0',
   createdAt: '',

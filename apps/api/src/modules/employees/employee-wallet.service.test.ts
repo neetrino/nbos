@@ -91,8 +91,6 @@ describe('EmployeeWalletService', () => {
         payrollRunId: 'run-1',
         baseSalary: new Decimal(100_000),
         bonusesTotal: new Decimal(0),
-        adjustmentsTotal: new Decimal(0),
-        deductionsTotal: new Decimal(0),
         totalPayable: new Decimal(100_000),
         paidAmount: new Decimal(0),
         remainingAmount: new Decimal(100_000),

@@ -42,6 +42,11 @@ export const PAYROLL_MATRIX_COLUMN_HEADER_STICKY = 'sticky top-0 z-20';
 
 export const PAYROLL_MATRIX_DATA_COL_WIDTH = 'min-w-[7.5rem]';
 
+/** Sticky employee totals column at the right edge of the matrix. */
+export const PAYROLL_MATRIX_TOTALS_COL_WIDTH = 'w-[6.5rem] min-w-[6.5rem] max-w-[6.5rem] shrink-0';
+
+export const PAYROLL_MATRIX_TOTALS_STICKY_CLASS = PAYROLL_MATRIX_TOTALS_COL_WIDTH;
+
 /** Inline detail column — Due / Paid stack beside the active data column. */
 export const PAYROLL_MATRIX_DETAIL_COL_WIDTH = 'w-[5.5rem] min-w-[5.5rem] max-w-[5.5rem] shrink-0';
 

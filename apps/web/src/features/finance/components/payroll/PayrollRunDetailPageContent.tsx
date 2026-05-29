@@ -16,7 +16,13 @@ import { PayrollAllocationMatrixStatsStrip } from '@/features/finance/components
 import { PayrollAllocationMatrixWorkspace } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-workspace';
 import { PayrollAllocationMatrixFullscreenControls } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-fullscreen-controls';
 import { PAYROLL_MATRIX_FULLSCREEN_Z } from '@/features/finance/constants/payroll-allocation-matrix-layout';
-import { PAYROLL_ALLOCATION_MATRIX_VIEW_OPTIONS } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-view-options';
+import {
+  PAYROLL_RUN_DETAIL_VIEW_OPTIONS,
+  isPayrollMatrixViewMode,
+  type PayrollRunDetailViewMode,
+} from '@/features/finance/components/payroll/payroll-run-detail-view-options';
+import { PayrollRunSalaryLinesView } from '@/features/finance/components/payroll/payroll-run-salary-lines-view';
+import { EmployeeMonthCompensationSheet } from '@/features/finance/components/payroll/employee-month-compensation-sheet';
 import { PayrollRunDetailHeroBar } from '@/features/finance/components/payroll/PayrollRunDetailHeroBar';
 import { PayrollRunDetailPageSettingsSheet } from '@/features/finance/components/payroll/PayrollRunDetailPageSettingsSheet';
 import { PayrollRunDetailStatusActions } from '@/features/finance/components/payroll/PayrollRunDetailStatusActions';
@@ -53,9 +59,11 @@ export function PayrollRunDetailPageContent({
   const [error, setError] = useState<string | null>(initialError);
   const [actionError, setActionError] = useState<string | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
-  const [matrixViewMode, setMatrixViewMode] = useState<PayrollMatrixViewMode>('EMPLOYEE_MATRIX');
+  const [detailViewMode, setDetailViewMode] = useState<PayrollRunDetailViewMode>('SALARY_LINES');
   const [matrixSearch, setMatrixSearch] = useState('');
   const [matrixTotals, setMatrixTotals] = useState<PayrollAllocationMatrix['totals'] | null>(null);
+  const [sheetSalaryLineId, setSheetSalaryLineId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [layoutHeroActions, setLayoutHeroActions] = useState<PayrollMatrixLayoutHeroActions | null>(
     null,
   );
@@ -123,11 +131,30 @@ export function PayrollRunDetailPageContent({
     const paid = Number.parseFloat(run.totalPaid);
     if (!Number.isFinite(payable)) return null;
     return {
+      totalBaseSalary: run.totalBaseSalary,
+      totalBonuses: run.totalBonuses,
       totalPayable: run.totalPayable,
       totalPaid: run.totalPaid,
       totalRemaining: String(Math.max(0, payable - (Number.isFinite(paid) ? paid : 0))),
     };
   }, [matrixTotals, run]);
+
+  const refreshRunQuiet = useCallback(async () => {
+    try {
+      const data = await payrollRunsApi.getById(payrollRunId);
+      setRun(data);
+    } catch {
+      /* keep current run on background refresh failure */
+    }
+  }, [payrollRunId]);
+
+  const handleOpenSalaryLine = useCallback((salaryLineId: string) => {
+    setSheetSalaryLineId(salaryLineId);
+    setSheetOpen(true);
+  }, []);
+
+  const matrixViewMode: PayrollMatrixViewMode =
+    detailViewMode === 'ORDER_MATRIX' ? 'ORDER_MATRIX' : 'EMPLOYEE_MATRIX';
 
   const moduleHeroSlots = useMemo(() => {
     if (!run) {
@@ -139,16 +166,20 @@ export function PayrollRunDetailPageContent({
         <IntegratedSearchFilters
           search={matrixSearch}
           onSearchChange={setMatrixSearch}
-          searchPlaceholder="Search project, order, or employee…"
+          searchPlaceholder={
+            detailViewMode === 'SALARY_LINES'
+              ? 'Search employee…'
+              : 'Search project, order, or employee…'
+          }
           onClearAll={() => setMatrixSearch('')}
         />
       ),
       viewMode: matrixFullscreen ? undefined : (
         <ViewModeSwitch
-          value={matrixViewMode}
-          onChange={setMatrixViewMode}
-          options={PAYROLL_ALLOCATION_MATRIX_VIEW_OPTIONS}
-          ariaLabel="Allocation matrix view"
+          value={detailViewMode}
+          onChange={setDetailViewMode}
+          options={PAYROLL_RUN_DETAIL_VIEW_OPTIONS}
+          ariaLabel="Payroll run view"
         />
       ),
       trailing: (
@@ -160,6 +191,7 @@ export function PayrollRunDetailPageContent({
             className="size-8 shrink-0"
             aria-label="Open allocation matrix full screen"
             onClick={() => setMatrixFullscreen(true)}
+            disabled={!isPayrollMatrixViewMode(detailViewMode)}
           >
             <Maximize2 className="size-4" aria-hidden />
           </Button>
@@ -195,7 +227,8 @@ export function PayrollRunDetailPageContent({
     layoutHeroActions,
     matrixFullscreen,
     matrixSearch,
-    matrixViewMode,
+    detailViewMode,
+    refreshRunQuiet,
     run,
     statusBusy,
   ]);
@@ -266,21 +299,39 @@ export function PayrollRunDetailPageContent({
           <div className="absolute right-3 bottom-3 z-10">
             <PayrollAllocationMatrixFullscreenControls
               viewMode={matrixViewMode}
-              onViewModeChange={setMatrixViewMode}
+              onViewModeChange={(mode) => setDetailViewMode(mode)}
               onExit={() => setMatrixFullscreen(false)}
             />
           </div>
         ) : null}
 
-        <PayrollAllocationMatrixWorkspace
-          payrollRunId={payrollRunId}
-          viewMode={matrixViewMode}
-          search={matrixSearch}
-          fullscreen={matrixFullscreen}
-          onTotalsChange={setMatrixTotals}
-          onLayoutHeroActionsChange={setLayoutHeroActions}
-        />
+        {detailViewMode === 'SALARY_LINES' ? (
+          <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl">
+            <PayrollRunSalaryLinesView
+              lines={run.salaryLines}
+              search={matrixSearch}
+              onOpenSalaryLine={handleOpenSalaryLine}
+            />
+          </section>
+        ) : (
+          <PayrollAllocationMatrixWorkspace
+            payrollRunId={payrollRunId}
+            viewMode={matrixViewMode}
+            search={matrixSearch}
+            fullscreen={matrixFullscreen}
+            onTotalsChange={setMatrixTotals}
+            onLayoutHeroActionsChange={setLayoutHeroActions}
+            onOpenSalaryLine={handleOpenSalaryLine}
+            onSalaryLinesStale={() => void refreshRunQuiet()}
+          />
+        )}
       </div>
+
+      <EmployeeMonthCompensationSheet
+        salaryLineId={sheetSalaryLineId}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+      />
     </div>
   );
 }

@@ -50,38 +50,49 @@ function employeeName(detail: SalaryLineMonthDetail): string {
 function SummaryGrid({ detail, readOnly }: { detail: SalaryLineMonthDetail; readOnly: boolean }) {
   const lineUi = salaryLineStatusBoardUi(detail.salaryLine.status);
   const phaseUi = COMPENSATION_PAYOUT_PHASE_UI[detail.payoutPhase];
-  const rows: Array<{ label: string; value: string }> = [
-    { label: 'Base salary', value: formatAmount(parseAmount(detail.salaryLine.baseSalary)) },
-    ...(detail.pendingPayrollCarryOver
-      ? [
-          {
-            label: 'Pending carry-over',
-            value: formatAmount(parseAmount(detail.pendingPayrollCarryOver)),
-          },
-        ]
-      : []),
-    { label: 'Bonuses', value: formatAmount(parseAmount(detail.salaryLine.bonusesTotal)) },
-    { label: 'Adjustments', value: formatAmount(parseAmount(detail.salaryLine.adjustmentsTotal)) },
-    { label: 'Deductions', value: formatAmount(parseAmount(detail.salaryLine.deductionsTotal)) },
-    { label: 'Total payable', value: formatAmount(parseAmount(detail.salaryLine.totalPayable)) },
-    { label: 'Paid', value: formatAmount(parseAmount(detail.salaryLine.paidAmount)) },
-    { label: 'Remaining', value: formatAmount(parseAmount(detail.salaryLine.remainingAmount)) },
-  ];
+  const base = parseAmount(detail.salaryLine.baseSalary);
+  const bonuses = parseAmount(detail.salaryLine.bonusesTotal);
+  const total = parseAmount(detail.salaryLine.totalPayable);
+  const paid = parseAmount(detail.salaryLine.paidAmount);
+  const remaining = parseAmount(detail.salaryLine.remainingAmount);
+  const carry = detail.pendingPayrollCarryOver ? parseAmount(detail.pendingPayrollCarryOver) : null;
 
   return (
     <DetailSheetSection title="Month summary" icon={<Wallet className="size-4" aria-hidden />}>
-      <div className="flex flex-wrap items-center gap-2 pb-3">
+      <div className="flex flex-wrap items-center gap-2 pb-4">
         <StatusBadge label={phaseUi.label} variant={phaseUi.variant} />
         <StatusBadge label={lineUi.label} variant={lineUi.variant} />
         <span className="text-muted-foreground text-xs">{phaseUi.description}</span>
       </div>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
-        {rows.map((row) => (
-          <div key={row.label}>
-            <dt className="text-muted-foreground text-xs">{row.label}</dt>
-            <dd className="font-medium tabular-nums">{row.value}</dd>
+      <dl className="flex flex-col gap-2 text-sm">
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="text-muted-foreground">Base salary</dt>
+          <dd className="font-medium tabular-nums">{formatAmount(base)}</dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="text-muted-foreground">Bonuses</dt>
+          <dd className="font-medium tabular-nums">{formatAmount(bonuses)}</dd>
+        </div>
+        {carry != null && carry > 0 ? (
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="text-muted-foreground">Pending carry-over</dt>
+            <dd className="font-medium tabular-nums">{formatAmount(carry)}</dd>
           </div>
-        ))}
+        ) : null}
+        <div className="border-border flex items-baseline justify-between gap-4 border-t pt-2">
+          <dt className="text-foreground font-semibold">Total payable</dt>
+          <dd className="text-foreground text-base font-semibold tabular-nums">
+            {formatAmount(total)}
+          </dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="text-muted-foreground">Paid</dt>
+          <dd className="font-medium tabular-nums">{formatAmount(paid)}</dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="text-muted-foreground">Remaining</dt>
+          <dd className="font-medium tabular-nums">{formatAmount(remaining)}</dd>
+        </div>
       </dl>
       <p className="text-muted-foreground pt-3 text-xs">
         {readOnly ? (

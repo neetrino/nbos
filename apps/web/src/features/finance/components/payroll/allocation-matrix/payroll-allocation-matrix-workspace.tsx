@@ -30,6 +30,8 @@ export function PayrollAllocationMatrixWorkspace({
   fullscreen = false,
   onTotalsChange,
   onLayoutHeroActionsChange,
+  onOpenSalaryLine,
+  onSalaryLinesStale,
 }: {
   payrollRunId: string;
   viewMode: PayrollMatrixViewMode;
@@ -37,6 +39,8 @@ export function PayrollAllocationMatrixWorkspace({
   fullscreen?: boolean;
   onTotalsChange?: (totals: PayrollAllocationMatrix['totals'] | null) => void;
   onLayoutHeroActionsChange?: (actions: PayrollMatrixLayoutHeroActions | null) => void;
+  onOpenSalaryLine?: (salaryLineId: string) => void;
+  onSalaryLinesStale?: () => void;
 }) {
   const [matrix, setMatrix] = useState<PayrollAllocationMatrix | null>(null);
   const [loading, setLoading] = useState(true);
@@ -168,6 +172,7 @@ export function PayrollAllocationMatrixWorkspace({
           reason: payload.reason,
         });
         setMatrix(updated);
+        onSalaryLinesStale?.();
         void refreshValidation();
       } catch (caught) {
         toast.error(
@@ -181,7 +186,7 @@ export function PayrollAllocationMatrixWorkspace({
         setSavingCellKey(null);
       }
     },
-    [matrix, payrollRunId, refreshValidation],
+    [matrix, onSalaryLinesStale, payrollRunId, refreshValidation],
   );
 
   const handleResetLayout = useCallback(() => {
@@ -281,6 +286,7 @@ export function PayrollAllocationMatrixWorkspace({
           }}
           onManualCellRequest={setManualCell}
           onReleaseSave={handleReleaseSave}
+          onOpenSalaryLine={onOpenSalaryLine}
         />
       )}
 

@@ -13,8 +13,6 @@ const CSV_HEADERS = [
   'materializedExpenseLineCount',
   'totalBaseSalary',
   'totalBonuses',
-  'totalAdjustments',
-  'totalDeductions',
   'totalPayable',
   'totalPaid',
   'totalRemaining',
@@ -40,8 +38,6 @@ function rowToCsvCells(row: PayrollRunListRow): string[] {
     String(row.materializedExpenseLineCount),
     row.totalBaseSalary,
     row.totalBonuses,
-    row.totalAdjustments,
-    row.totalDeductions,
     row.totalPayable,
     row.totalPaid,
     payrollRunRemainingString2dp(row.totalPayable, row.totalPaid),
@@ -56,8 +52,6 @@ function grandTotalPayrollRunsCsvLine(rows: PayrollRunListRow[]): string {
   const materialized = rows.reduce((acc, r) => acc + r.materializedExpenseLineCount, 0);
   const base = sumMoneyStringsMajorUnits(rows.map((r) => r.totalBaseSalary)).toFixed(2);
   const bonuses = sumMoneyStringsMajorUnits(rows.map((r) => r.totalBonuses)).toFixed(2);
-  const adjustments = sumMoneyStringsMajorUnits(rows.map((r) => r.totalAdjustments)).toFixed(2);
-  const deductions = sumMoneyStringsMajorUnits(rows.map((r) => r.totalDeductions)).toFixed(2);
   const payable = sumMoneyStringsMajorUnits(rows.map((r) => r.totalPayable)).toFixed(2);
   const paid = sumMoneyStringsMajorUnits(rows.map((r) => r.totalPaid)).toFixed(2);
   const remaining = sumPayrollRunsRemainingMajorUnits(rows).toFixed(2);
@@ -69,8 +63,6 @@ function grandTotalPayrollRunsCsvLine(rows: PayrollRunListRow[]): string {
     String(materialized),
     base,
     bonuses,
-    adjustments,
-    deductions,
     payable,
     paid,
     remaining,

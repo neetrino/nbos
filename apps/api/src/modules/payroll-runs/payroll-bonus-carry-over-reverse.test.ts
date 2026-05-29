@@ -55,8 +55,6 @@ describe('reversePayrollCarryAppliedOnSalaryLine', () => {
         id: 'sl1',
         baseSalary: new Decimal(100),
         bonusesTotal: new Decimal(25),
-        adjustmentsTotal: new Decimal(0),
-        deductionsTotal: new Decimal(0),
         paidAmount: new Decimal(0),
         payrollCarryAppliedAmount: new Decimal(25),
       },
