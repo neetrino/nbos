@@ -5,6 +5,11 @@ import {
   PAYROLL_MATRIX_STICKY_HEADER_BG,
   PAYROLL_MATRIX_TOTALS_COL_WIDTH,
   PAYROLL_MATRIX_TOTALS_STICKY_CLASS,
+  PAYROLL_MATRIX_DATA_COL_WIDTH,
+  PAYROLL_MATRIX_DETAIL_COL_WIDTH,
+  PAYROLL_MATRIX_STICKY_EDGE_DIVIDER,
+  PAYROLL_MATRIX_STICKY_EDGE_STYLE,
+  PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
 } from '@/features/finance/constants/payroll-allocation-matrix-layout';
 import type { PayrollAllocationMatrixEmployee } from '@/lib/api/payroll-allocation-matrix';
 import { cn } from '@/lib/utils';
@@ -55,6 +60,58 @@ export function MatrixEmployeeTotalsSpacerCell() {
         PAYROLL_MATRIX_TOTALS_COL_WIDTH,
         PAYROLL_MATRIX_STICKY_HEADER_BG,
         'border-border sticky right-0 z-10 border-r border-b border-l',
+      )}
+      aria-hidden
+    />
+  );
+}
+
+/** Sticky bottom-left corner for Order × Employees totals row. */
+export function MatrixEmployeeTotalsFooterCorner() {
+  return (
+    <th
+      style={PAYROLL_MATRIX_STICKY_EDGE_STYLE}
+      className={cn(
+        PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
+        PAYROLL_MATRIX_STICKY_EDGE_DIVIDER,
+        PAYROLL_MATRIX_STICKY_HEADER_BG,
+        'border-border sticky bottom-0 left-0 z-40 border-t border-r px-2.5 py-1.5 text-left',
+      )}
+    >
+      <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+        Total
+      </span>
+    </th>
+  );
+}
+
+export function MatrixEmployeeTotalsFooterCell({
+  employee,
+}: {
+  employee: PayrollAllocationMatrixEmployee;
+}) {
+  return (
+    <td
+      className={cn(
+        PAYROLL_MATRIX_STICKY_HEADER_BG,
+        PAYROLL_MATRIX_DATA_COL_WIDTH,
+        'border-border sticky bottom-0 z-20 border-t border-r px-2 py-1.5 text-right align-middle',
+      )}
+    >
+      <span className="text-foreground text-xs font-semibold tabular-nums">
+        {formatAmount(parseMoney(employee.payableTotal))}
+      </span>
+    </td>
+  );
+}
+
+export function MatrixEmployeeTotalsFooterDetailSpacer() {
+  return (
+    <td
+      className={cn(
+        PAYROLL_MATRIX_DETAIL_COL_WIDTH,
+        PAYROLL_MATRIX_STICKY_HEADER_BG,
+        'border-border sticky bottom-0 z-20 border-t border-r',
       )}
       aria-hidden
     />

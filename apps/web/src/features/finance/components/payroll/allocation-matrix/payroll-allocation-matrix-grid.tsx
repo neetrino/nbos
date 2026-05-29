@@ -24,6 +24,9 @@ import {
 } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-sortable-headers';
 import {
   MatrixEmployeeTotalsCell,
+  MatrixEmployeeTotalsFooterCell,
+  MatrixEmployeeTotalsFooterCorner,
+  MatrixEmployeeTotalsFooterDetailSpacer,
   MatrixEmployeeTotalsHeader,
   MatrixEmployeeTotalsSpacerCell,
 } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-employee-totals';
@@ -256,6 +259,32 @@ export function PayrollAllocationMatrixGrid(props: {
       return detailTd ? [dataTd, detailTd] : [dataTd];
     });
 
+  const renderFooterRow =
+    viewMode === 'ORDER_MATRIX'
+      ? () => (
+          <tr>
+            <MatrixEmployeeTotalsFooterCorner />
+            {columnIds.flatMap((colId) => {
+              const employee = matrix.employees.find((e) => e.employeeId === colId);
+              const cells = [
+                employee ? (
+                  <MatrixEmployeeTotalsFooterCell key={colId} employee={employee} />
+                ) : (
+                  <td
+                    key={colId}
+                    className={cn(PAYROLL_MATRIX_DATA_COL_WIDTH, 'border-border border-t border-r')}
+                  />
+                ),
+              ];
+              if (activeColumnId === colId) {
+                cells.push(<MatrixEmployeeTotalsFooterDetailSpacer key={`${colId}-detail`} />);
+              }
+              return cells;
+            })}
+          </tr>
+        )
+      : undefined;
+
   return (
     <div className={fullscreen ? PAYROLL_MATRIX_BODY_FULLSCREEN_CLASS : PAYROLL_MATRIX_BODY_CLASS}>
       <PayrollAllocationMatrixTableShell
@@ -284,6 +313,7 @@ export function PayrollAllocationMatrixGrid(props: {
               }
             : undefined
         }
+        renderFooterRow={renderFooterRow}
       >
         {(rowId) => renderDataCells(rowId)}
       </PayrollAllocationMatrixTableShell>

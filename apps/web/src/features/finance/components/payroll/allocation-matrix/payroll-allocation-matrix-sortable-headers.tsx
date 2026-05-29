@@ -191,6 +191,7 @@ export function PayrollAllocationMatrixTableShell(props: {
   renderAfterRow?: (rowId: string) => ReactNode;
   renderTotalsHeader?: () => ReactNode;
   renderRowTotals?: (rowId: string) => ReactNode;
+  renderFooterRow?: () => ReactNode;
   onOpenSalaryLine?: (salaryLineId: string) => void;
   children: (rowId: string) => ReactNode;
 }) {
@@ -210,6 +211,7 @@ export function PayrollAllocationMatrixTableShell(props: {
     renderAfterRow,
     renderTotalsHeader,
     renderRowTotals,
+    renderFooterRow,
     onOpenSalaryLine,
     children,
   } = props;
@@ -303,6 +305,7 @@ export function PayrollAllocationMatrixTableShell(props: {
             ))}
           </SortableContext>
         </tbody>
+        {renderFooterRow ? <tfoot>{renderFooterRow()}</tfoot> : null}
       </table>
     </DndContext>
   );
