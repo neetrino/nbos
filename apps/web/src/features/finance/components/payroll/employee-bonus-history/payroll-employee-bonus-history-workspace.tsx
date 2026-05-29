@@ -1,15 +1,24 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Users } from 'lucide-react';
 import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { PayrollEmployeeBonusHistoryGrid } from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-grid';
+import {
+  buildOptimisticEmployeeBonusHistory,
+  mergeEmployeeBonusHistorySlice,
+} from '@/features/finance/utils/build-employee-bonus-history-view';
 import { formatPayrollMatrixCellError } from '@/features/finance/utils/format-payroll-matrix-cell-error';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { payrollAllocationMatrixApi } from '@/lib/api/payroll-allocation-matrix';
+import {
+  payrollAllocationMatrixApi,
+  type PayrollAllocationMatrix,
+} from '@/lib/api/payroll-allocation-matrix';
 import {
   payrollEmployeeBonusHistoryApi,
   type PayrollEmployeeBonusHistory,
+  type PayrollEmployeeBonusHistoryMeta,
+  type PayrollEmployeeBonusHistorySlice,
 } from '@/lib/api/payroll-employee-bonus-history';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -33,81 +42,160 @@ export function PayrollEmployeeBonusHistoryWorkspace({
   onTotalsChange?: (bonusTotal: string | null) => void;
   onSalaryLinesStale?: () => void;
 }) {
-  const [data, setData] = useState<PayrollEmployeeBonusHistory | null>(null);
+  const [meta, setMeta] = useState<PayrollEmployeeBonusHistoryMeta | null>(null);
+  const [matrix, setMatrix] = useState<PayrollAllocationMatrix | null>(null);
+  const [displayData, setDisplayData] = useState<PayrollEmployeeBonusHistory | null>(null);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [bootstrapLoading, setBootstrapLoading] = useState(true);
+  const [historyMonthsLoading, setHistoryMonthsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savingCellKey, setSavingCellKey] = useState<string | null>(null);
 
-  const load = useCallback(
-    async (employeeId?: string) => {
-      setLoading(true);
-      setError(null);
+  const sliceCacheRef = useRef<Map<string, PayrollEmployeeBonusHistorySlice>>(new Map());
+  const sliceRequestRef = useRef(0);
+
+  const loadSlice = useCallback(
+    async (
+      employeeId: string,
+      metaSnapshot: PayrollEmployeeBonusHistoryMeta,
+      matrixSnapshot: PayrollAllocationMatrix,
+      showHistoryLoading: boolean,
+    ) => {
+      const cached = sliceCacheRef.current.get(employeeId);
+      if (cached) {
+        const optimistic = buildOptimisticEmployeeBonusHistory(
+          metaSnapshot,
+          matrixSnapshot,
+          employeeId,
+        );
+        setDisplayData(mergeEmployeeBonusHistorySlice(optimistic, cached, matrixSnapshot));
+        return;
+      }
+
+      const requestId = sliceRequestRef.current + 1;
+      sliceRequestRef.current = requestId;
+      if (showHistoryLoading) {
+        setHistoryMonthsLoading(true);
+      }
+
       try {
-        const next = await payrollEmployeeBonusHistoryApi.get(payrollRunId, employeeId);
-        setData(next);
-        setSelectedEmployeeId(next.selectedEmployeeId);
+        const slice = await payrollEmployeeBonusHistoryApi.getSlice(payrollRunId, employeeId);
+        if (sliceRequestRef.current !== requestId) return;
+        sliceCacheRef.current.set(employeeId, slice);
+        const optimistic = buildOptimisticEmployeeBonusHistory(
+          metaSnapshot,
+          matrixSnapshot,
+          employeeId,
+        );
+        setDisplayData(mergeEmployeeBonusHistorySlice(optimistic, slice, matrixSnapshot));
       } catch (caught) {
-        setData(null);
-        setError(getApiErrorMessage(caught, 'Employee bonus history could not be loaded.'));
+        if (sliceRequestRef.current !== requestId) return;
+        toast.error(getApiErrorMessage(caught, 'Bonus history could not be loaded.'));
       } finally {
-        setLoading(false);
+        if (sliceRequestRef.current === requestId) {
+          setHistoryMonthsLoading(false);
+        }
       }
     },
     [payrollRunId],
   );
 
+  const bootstrap = useCallback(async () => {
+    setBootstrapLoading(true);
+    setError(null);
+    sliceCacheRef.current.clear();
+    sliceRequestRef.current += 1;
+    try {
+      const [metaResult, matrixResult] = await Promise.all([
+        payrollEmployeeBonusHistoryApi.getMeta(payrollRunId),
+        payrollAllocationMatrixApi.get(payrollRunId, 'EMPLOYEE_MATRIX'),
+      ]);
+      setMeta(metaResult);
+      setMatrix(matrixResult);
+      const firstId = metaResult.employees[0]?.employeeId ?? null;
+      setSelectedEmployeeId(firstId);
+      if (firstId) {
+        const optimistic = buildOptimisticEmployeeBonusHistory(metaResult, matrixResult, firstId);
+        setDisplayData(optimistic);
+        void loadSlice(firstId, metaResult, matrixResult, true);
+      } else {
+        setDisplayData(null);
+      }
+    } catch (caught) {
+      setMeta(null);
+      setMatrix(null);
+      setDisplayData(null);
+      setError(getApiErrorMessage(caught, 'Employee bonus history could not be loaded.'));
+    } finally {
+      setBootstrapLoading(false);
+    }
+  }, [loadSlice, payrollRunId]);
+
   useEffect(() => {
-    void load();
-  }, [load]);
+    void bootstrap();
+  }, [bootstrap]);
+
+  const handleEmployeeSelect = useCallback(
+    (employeeId: string) => {
+      if (!meta || !matrix || employeeId === selectedEmployeeId) return;
+
+      setSelectedEmployeeId(employeeId);
+      const optimistic = buildOptimisticEmployeeBonusHistory(meta, matrix, employeeId);
+      setDisplayData(optimistic);
+      void loadSlice(employeeId, meta, matrix, !sliceCacheRef.current.has(employeeId));
+    },
+    [loadSlice, matrix, meta, selectedEmployeeId],
+  );
 
   const filteredProjects = useMemo(() => {
-    if (!data) return [];
+    if (!displayData) return [];
     const q = search.trim().toLowerCase();
-    if (!q) return data.projects;
-    return data.projects.filter(
+    if (!q) return displayData.projects;
+    return displayData.projects.filter(
       (p) =>
         p.label.toLowerCase().includes(q) ||
         p.projectCode.toLowerCase().includes(q) ||
         p.orderId.toLowerCase().includes(q),
     );
-  }, [data, search]);
+  }, [displayData, search]);
 
-  const displayData = useMemo(() => {
-    if (!data) return null;
-    return { ...data, projects: filteredProjects };
-  }, [data, filteredProjects]);
+  const gridData = useMemo(() => {
+    if (!displayData) return null;
+    return { ...displayData, projects: filteredProjects };
+  }, [displayData, filteredProjects]);
 
-  const focusEmployee = data?.employees.find((e) => e.employeeId === selectedEmployeeId);
+  const focusEmployee = meta?.employees.find((e) => e.employeeId === selectedEmployeeId);
 
   useEffect(() => {
     onTotalsChange?.(focusEmployee?.bonusTotalThisRun ?? null);
     return () => onTotalsChange?.(null);
   }, [focusEmployee?.bonusTotalThisRun, onTotalsChange]);
 
-  const handleEmployeeSelect = useCallback(
-    (employeeId: string) => {
-      if (employeeId === selectedEmployeeId) return;
-      void load(employeeId);
-    },
-    [load, selectedEmployeeId],
-  );
-
   const handleCellSave = useCallback(
     async (
       cell: NonNullable<PayrollEmployeeBonusHistory['projects'][0]['focusCell']>,
       payload: { releaseThisMonth: string; reason?: string },
     ) => {
+      if (!meta || !matrix || !selectedEmployeeId) return;
+
       const key = cellKey(cell.employeeId, cell.orderId);
       setSavingCellKey(key);
       try {
-        await payrollAllocationMatrixApi.patchCell(payrollRunId, {
+        const updatedMatrix = await payrollAllocationMatrixApi.patchCell(payrollRunId, {
           employeeId: cell.employeeId,
           orderId: cell.orderId,
           releaseThisMonth: payload.releaseThisMonth,
           reason: payload.reason,
         });
-        await load(selectedEmployeeId ?? undefined);
+        setMatrix(updatedMatrix);
+        sliceCacheRef.current.delete(selectedEmployeeId);
+        const optimistic = buildOptimisticEmployeeBonusHistory(
+          meta,
+          updatedMatrix,
+          selectedEmployeeId,
+        );
+        setDisplayData(optimistic);
+        void loadSlice(selectedEmployeeId, meta, updatedMatrix, true);
         onSalaryLinesStale?.();
       } catch (caught) {
         toast.error(formatPayrollMatrixCellError(caught, 'Could not update release.'));
@@ -115,23 +203,23 @@ export function PayrollEmployeeBonusHistoryWorkspace({
         setSavingCellKey(null);
       }
     },
-    [load, onSalaryLinesStale, payrollRunId, selectedEmployeeId],
+    [loadSlice, matrix, meta, onSalaryLinesStale, payrollRunId, selectedEmployeeId],
   );
 
-  if (loading && !data) {
+  if (bootstrapLoading && !displayData) {
     return <LoadingState />;
   }
 
-  if (error || !data || !displayData) {
+  if (error || !meta || !matrix || !gridData) {
     return (
       <ErrorState
         description={error ?? 'Employee bonus history could not be loaded.'}
-        onRetry={() => void load(selectedEmployeeId ?? undefined)}
+        onRetry={() => void bootstrap()}
       />
     );
   }
 
-  const scrollKey = `${displayData.selectedEmployeeId}:${displayData.projects.length}`;
+  const scrollKey = `${gridData.selectedEmployeeId}:${gridData.projects.length}:${historyMonthsLoading}`;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
@@ -140,7 +228,7 @@ export function PayrollEmployeeBonusHistoryWorkspace({
         role="tablist"
         aria-label="Employees"
       >
-        {data.employees.map((employee) => {
+        {meta.employees.map((employee) => {
           const active = employee.employeeId === selectedEmployeeId;
           return (
             <button
@@ -155,6 +243,14 @@ export function PayrollEmployeeBonusHistoryWorkspace({
                   : 'text-muted-foreground hover:border-border hover:bg-card/80 hover:text-foreground border-transparent',
               )}
               onClick={() => handleEmployeeSelect(employee.employeeId)}
+              onMouseEnter={() => {
+                if (
+                  employee.employeeId !== selectedEmployeeId &&
+                  !sliceCacheRef.current.has(employee.employeeId)
+                ) {
+                  void loadSlice(employee.employeeId, meta, matrix, false);
+                }
+              }}
             >
               <span className="block font-semibold">{historyEmployeeName(employee)}</span>
               {employee.position ? (
@@ -172,7 +268,7 @@ export function PayrollEmployeeBonusHistoryWorkspace({
         })}
       </div>
 
-      {displayData.projects.length === 0 ? (
+      {gridData.projects.length === 0 ? (
         <EmptyState
           icon={Users}
           title="No projects"
@@ -184,8 +280,9 @@ export function PayrollEmployeeBonusHistoryWorkspace({
         />
       ) : (
         <PayrollEmployeeBonusHistoryGrid
-          data={displayData}
+          data={gridData}
           savingCellKey={savingCellKey}
+          historyMonthsLoading={historyMonthsLoading}
           onCellSave={handleCellSave}
           scrollToFocusKey={scrollKey}
         />

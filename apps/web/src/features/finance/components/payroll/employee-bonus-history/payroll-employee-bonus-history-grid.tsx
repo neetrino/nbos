@@ -58,14 +58,17 @@ function MonthHeader({
   runStatus,
   isFocusMonth,
   monthBonusTotal,
+  historyLoading,
 }: {
   payrollMonth: string;
   runStatus: PayrollRunStatus | null;
   isFocusMonth: boolean;
   monthBonusTotal: string;
+  historyLoading: boolean;
 }) {
   const statusLabel =
     runStatus != null ? payrollRunStatusUi(runStatus).label : isFocusMonth ? 'Current' : null;
+  const showTotalSkeleton = historyLoading && !isFocusMonth;
 
   return (
     <div className="flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-0.5 py-1">
@@ -82,9 +85,13 @@ function MonthHeader({
           {statusLabel}
         </span>
       ) : null}
-      <span className="text-foreground text-[10px] font-bold tabular-nums">
-        {fmt(monthBonusTotal)}
-      </span>
+      {showTotalSkeleton ? (
+        <span className="bg-muted/60 h-3 w-10 animate-pulse rounded" aria-hidden />
+      ) : (
+        <span className="text-foreground text-[10px] font-bold tabular-nums">
+          {fmt(monthBonusTotal)}
+        </span>
+      )}
     </div>
   );
 }
@@ -96,6 +103,7 @@ function HistoryMonthCell({
   focusCell,
   availableFunding,
   saving,
+  historyLoading,
   onSave,
 }: {
   amount: string | null;
@@ -104,8 +112,19 @@ function HistoryMonthCell({
   focusCell: PayrollAllocationMatrixCell | null;
   availableFunding: number;
   saving: boolean;
+  historyLoading: boolean;
   onSave: (payload: { releaseThisMonth: string; reason?: string }) => Promise<void>;
 }) {
+  if (historyLoading && !isFocusMonth) {
+    return (
+      <div
+        className="border-border bg-muted/30 flex h-14 w-full items-center justify-center rounded-md border border-dashed"
+        aria-hidden
+      >
+        <span className="bg-muted/50 h-3 w-12 animate-pulse rounded" />
+      </div>
+    );
+  }
   if (isFocusMonth && focusCell?.editable && !readOnly) {
     return (
       <PayrollAllocationMatrixCellInput
@@ -152,11 +171,13 @@ function ProjectDetailMetrics({ project }: { project: PayrollEmployeeBonusHistor
 export function PayrollEmployeeBonusHistoryGrid({
   data,
   savingCellKey,
+  historyMonthsLoading = false,
   onCellSave,
   scrollToFocusKey,
 }: {
   data: PayrollEmployeeBonusHistory;
   savingCellKey: string | null;
+  historyMonthsLoading?: boolean;
   onCellSave: (
     cell: PayrollAllocationMatrixCell,
     payload: { releaseThisMonth: string; reason?: string },
@@ -209,6 +230,7 @@ export function PayrollEmployeeBonusHistoryGrid({
                       runStatus={col.runStatus}
                       isFocusMonth={col.isFocusMonth}
                       monthBonusTotal={col.monthBonusTotal}
+                      historyLoading={historyMonthsLoading}
                     />
                   </Link>
                 ) : (
@@ -217,6 +239,7 @@ export function PayrollEmployeeBonusHistoryGrid({
                     runStatus={col.runStatus}
                     isFocusMonth={col.isFocusMonth}
                     monthBonusTotal={col.monthBonusTotal}
+                    historyLoading={historyMonthsLoading}
                   />
                 )}
               </th>
@@ -259,6 +282,7 @@ export function PayrollEmployeeBonusHistoryGrid({
                       focusCell={project.focusCell}
                       availableFunding={funding}
                       saving={cellKey != null && savingCellKey === cellKey}
+                      historyLoading={historyMonthsLoading}
                       onSave={(payload) => {
                         if (!project.focusCell) return Promise.resolve();
                         return onCellSave(project.focusCell, payload);

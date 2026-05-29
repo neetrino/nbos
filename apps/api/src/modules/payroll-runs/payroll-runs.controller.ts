@@ -129,11 +129,42 @@ export class PayrollRunsController {
     return this.payrollAllocationMatrixService.getValidation(id);
   }
 
+  @Get(':id/employee-bonus-history/meta')
+  @ApiOperation({
+    summary: 'Employee bonus history shared context (no matrix)',
+    description: 'Employees, month columns, and delivery units — load once per payroll run view.',
+  })
+  async getEmployeeBonusHistoryMeta(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.getEmployeeBonusHistoryMeta(id, user.id);
+  }
+
+  @Get(':id/employee-bonus-history/slice')
+  @ApiOperation({
+    summary: 'Employee bonus history slice (12-month amounts, no matrix)',
+    description:
+      'Per-employee project rows and month totals; merge focus cells from allocation matrix on the client.',
+  })
+  @ApiQuery({ name: 'employeeId', required: true })
+  async getEmployeeBonusHistorySlice(
+    @Param('id') id: string,
+    @Query('employeeId') employeeId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.payrollAllocationMatrixService.getEmployeeBonusHistorySlice(
+      id,
+      user.id,
+      employeeId,
+    );
+  }
+
   @Get(':id/employee-bonus-history')
   @ApiOperation({
-    summary: 'Employee × project bonus history (12 months)',
+    summary: 'Employee × project bonus history (12 months, includes matrix)',
     description:
-      'Per-employee project rows with rolling 12 payroll months ending on this run. Focus month cells mirror allocation matrix (editable in DRAFT).',
+      'Legacy combined payload. Prefer meta + slice + client-side matrix for faster tab switches.',
   })
   @ApiQuery({ name: 'employeeId', required: false })
   async getEmployeeBonusHistory(

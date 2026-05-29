@@ -1,4 +1,5 @@
 import type { PayrollRunStatusEnum } from '@nbos/database';
+import type { DeliveryPayableUnitDto } from './delivery-payable-unit.types';
 import type { PayrollAllocationMatrixCell } from './payroll-allocation-matrix.types';
 
 /** Rolling month window ending on the focus payroll run month (inclusive). */
@@ -53,4 +54,28 @@ export type PayrollEmployeeBonusHistoryDto = {
   employees: PayrollEmployeeBonusHistoryEmployeeDto[];
   selectedEmployeeId: string;
   projects: PayrollEmployeeBonusHistoryProjectDto[];
+};
+
+/** Shared run context — load once per payroll run view (no matrix). */
+export type PayrollEmployeeBonusHistoryMetaDto = {
+  payrollRunId: string;
+  payrollMonth: string;
+  runStatus: PayrollRunStatusEnum;
+  editable: boolean;
+  payrollMonthFrom: string;
+  payrollMonthTo: string;
+  months: Omit<PayrollEmployeeBonusHistoryMonthDto, 'monthBonusTotal'>[];
+  employees: PayrollEmployeeBonusHistoryEmployeeDto[];
+  deliveryUnits: DeliveryPayableUnitDto[];
+};
+
+/** Per-employee history — load on tab switch (no matrix). */
+export type PayrollEmployeeBonusHistorySliceDto = {
+  employeeId: string;
+  months: Array<Pick<PayrollEmployeeBonusHistoryMonthDto, 'payrollMonth' | 'monthBonusTotal'>>;
+  projects: Array<
+    Omit<PayrollEmployeeBonusHistoryProjectDto, 'focusCell' | 'monthAmounts'> & {
+      monthAmounts: (string | null)[];
+    }
+  >;
 };

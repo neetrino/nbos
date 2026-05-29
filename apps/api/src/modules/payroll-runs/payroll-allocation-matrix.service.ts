@@ -17,8 +17,16 @@ import {
   type PayrollMatrixValidationIssue,
 } from './payroll-matrix-approval-validation';
 import { resolveDeliveryPayableUnits } from './delivery-payable-unit.resolver';
-import { queryPayrollEmployeeBonusHistory } from './payroll-employee-bonus-history';
-import type { PayrollEmployeeBonusHistoryDto } from './payroll-employee-bonus-history.types';
+import {
+  queryPayrollEmployeeBonusHistory,
+  queryPayrollEmployeeBonusHistoryMeta,
+  queryPayrollEmployeeBonusHistorySlice,
+} from './payroll-employee-bonus-history';
+import type {
+  PayrollEmployeeBonusHistoryDto,
+  PayrollEmployeeBonusHistoryMetaDto,
+  PayrollEmployeeBonusHistorySliceDto,
+} from './payroll-employee-bonus-history.types';
 import {
   isPayrollMatrixBonusEntryVisible,
   payrollBonusReleaseBase,
@@ -699,6 +707,41 @@ export class PayrollAllocationMatrixService {
       payrollRunId,
       employeeId,
       matrix.cells,
+      deliveryUnits,
+    );
+  }
+
+  private async resolveHistoryDeliveryUnits(
+    payrollRunId: string,
+    userId: string,
+  ): Promise<Awaited<ReturnType<typeof resolveDeliveryPayableUnits>>> {
+    const layout = await loadPayrollMatrixLayout(
+      this.prisma,
+      userId,
+      payrollRunId,
+      'EMPLOYEE_MATRIX',
+    );
+    return resolveDeliveryPayableUnits(this.prisma, payrollRunId, layout.pinnedUnitIds);
+  }
+
+  async getEmployeeBonusHistoryMeta(
+    payrollRunId: string,
+    userId: string,
+  ): Promise<PayrollEmployeeBonusHistoryMetaDto> {
+    const deliveryUnits = await this.resolveHistoryDeliveryUnits(payrollRunId, userId);
+    return queryPayrollEmployeeBonusHistoryMeta(this.prisma, payrollRunId, deliveryUnits);
+  }
+
+  async getEmployeeBonusHistorySlice(
+    payrollRunId: string,
+    userId: string,
+    employeeId: string,
+  ): Promise<PayrollEmployeeBonusHistorySliceDto> {
+    const deliveryUnits = await this.resolveHistoryDeliveryUnits(payrollRunId, userId);
+    return queryPayrollEmployeeBonusHistorySlice(
+      this.prisma,
+      payrollRunId,
+      employeeId,
       deliveryUnits,
     );
   }
