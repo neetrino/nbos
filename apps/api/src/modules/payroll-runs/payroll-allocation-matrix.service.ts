@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Inject, Logger, NotFoundException } fr
 import { Decimal, PayrollMatrixViewModeEnum, PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
+import { loadEmployeeHasKpiPolicyMap } from '../compensation-profiles/load-employee-has-kpi-policy-map';
 import { NotificationService } from '../notifications/notification.service';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { applyMatrixCellPatch, syncAfterMatrixReleaseMutation } from './payroll-matrix-cell-patch';
@@ -156,6 +157,27 @@ export class PayrollAllocationMatrixService {
       payableTotal: decimalFrom(line.totalPayable).toFixed(2),
     }));
 
+    const bonusEmployeeIds = orders.flatMap((o) => o.bonusEntries.map((b) => b.employeeId));
+    const kpiPolicyByEmployee = await loadEmployeeHasKpiPolicyMap(
+      this.prisma,
+      [...employeeRows.map((e) => e.employeeId), ...bonusEmployeeIds],
+      run.payrollMonth,
+    );
+
+    const bonusReleaseBaseInput = (entry: {
+      type: string;
+      amount: Decimal | string;
+      payableAmount: Decimal | string | null;
+      earnedPeriod: string | null;
+      employeeId: string;
+    }) => ({
+      type: entry.type,
+      amount: entry.amount,
+      payableAmount: entry.payableAmount,
+      earnedPeriod: entry.earnedPeriod,
+      hasKpiPolicy: kpiPolicyByEmployee.get(entry.employeeId) ?? true,
+    });
+
     const orderedEmployees = applyCustomOrder(
       employeeRows.map((e) => ({ ...e, id: e.employeeId })),
       layout.rowOrder,
@@ -177,7 +199,9 @@ export class PayrollAllocationMatrixService {
         const linkedIds = new Set<string>();
         if (order) {
           order.bonusEntries
-            .filter((b) => isPayrollMatrixBonusEntryVisible(b, run.payrollMonth))
+            .filter((b) =>
+              isPayrollMatrixBonusEntryVisible(bonusReleaseBaseInput(b), run.payrollMonth),
+            )
             .forEach((b) => linkedIds.add(b.employeeId));
           if (order.product?.pmId) linkedIds.add(order.product.pmId);
           if (order.product?.developerId) linkedIds.add(order.product.developerId);
@@ -187,7 +211,7 @@ export class PayrollAllocationMatrixService {
         const entry = order?.bonusEntries.find(
           (b) =>
             b.employeeId === emp.employeeId &&
-            isPayrollMatrixBonusEntryVisible(b, run.payrollMonth),
+            isPayrollMatrixBonusEntryVisible(bonusReleaseBaseInput(b), run.payrollMonth),
         );
         const entryReleases = releases.filter(
           (r) =>
@@ -209,15 +233,7 @@ export class PayrollAllocationMatrixService {
             BONUS_POOL_ZERO,
           );
         const planned = entry
-          ? payrollBonusReleaseBase(
-              {
-                type: entry.type,
-                amount: entry.amount,
-                payableAmount: entry.payableAmount,
-                earnedPeriod: entry.earnedPeriod,
-              },
-              run.payrollMonth,
-            )
+          ? payrollBonusReleaseBase(bonusReleaseBaseInput(entry), run.payrollMonth)
           : BONUS_POOL_ZERO;
         const original = entry?.originalAmount
           ? decimalFrom(entry.originalAmount)

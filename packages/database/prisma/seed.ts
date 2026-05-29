@@ -112,6 +112,18 @@ async function main() {
       status: 'ACTIVE',
     },
   });
+  const seller2 = await prisma.employee.upsert({
+    where: { email: 'levon@neetrino.com' },
+    update: {},
+    create: {
+      firstName: 'Levon',
+      lastName: 'Minasyan',
+      email: 'levon@neetrino.com',
+      roleId: 'role-seller',
+      level: 'MIDDLE',
+      status: 'ACTIVE',
+    },
+  });
   const pm = await prisma.employee.upsert({
     where: { email: 'artur@neetrino.com' },
     update: {},
@@ -172,7 +184,7 @@ async function main() {
       status: 'ACTIVE',
     },
   });
-  console.log('  ✓ Employees (7)');
+  console.log('  ✓ Employees (8)');
 
   await seedMessenger(prisma, { ceo, seller, pm, pm2, dev, designer });
   console.log('  ✓ Messenger (channels + sample messages + DM threads)');
@@ -387,7 +399,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000020',
       projectId: project1.id,
-      name: 'Corporate Website',
+      name: 'acme.com',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
       status: 'DEVELOPMENT',
@@ -399,7 +411,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000021',
       projectId: project1.id,
-      name: 'ACME Logo Redesign',
+      name: 'ACME Brand Identity',
       productCategory: 'MARKETING',
       productType: 'LOGO',
       status: 'DONE',
@@ -423,7 +435,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000022',
       projectId: project2.id,
-      name: 'TechStart iOS/Android App',
+      name: 'techstart.app',
       productCategory: 'CODE',
       productType: 'MOBILE_APP',
       status: 'CREATING',
@@ -435,7 +447,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000029',
       projectId: project2.id,
-      name: 'TechStart Landing Page',
+      name: 'get.techstart.am',
       productCategory: 'CODE',
       productType: 'LANDING',
       status: 'DONE',
@@ -448,7 +460,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000023',
       projectId: project3.id,
-      name: 'GlobalCorp CRM',
+      name: 'globalcrm.io',
       productCategory: 'CODE',
       productType: 'CRM',
       status: 'NEW',
@@ -473,7 +485,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000024',
       projectId: project4.id,
-      name: 'Patient Portal Web App',
+      name: 'medtech.health',
       productCategory: 'CODE',
       productType: 'WEB_APP',
       status: 'DEVELOPMENT',
@@ -485,7 +497,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000025',
       projectId: project4.id,
-      name: 'MedTech WordPress Blog',
+      name: 'blog.medtech.am',
       productCategory: 'WORDPRESS',
       productType: 'COMPANY_WEBSITE',
       status: 'QA',
@@ -509,7 +521,7 @@ async function main() {
     data: {
       id: '00000000-0000-0000-0000-000000000026',
       projectId: project5.id,
-      name: 'Fleet Dashboard',
+      name: 'fleet.logisticspro.am',
       productCategory: 'CODE',
       productType: 'WEB_APP',
       status: 'CREATING',
@@ -815,7 +827,7 @@ async function main() {
       status: 'WON',
       amount: 3500000,
       paymentType: 'CLASSIC',
-      sellerId: seller.id,
+      sellerId: seller2.id,
       source: 'MARKETING',
       productCategory: 'CODE',
       productType: 'MOBILE_APP',
@@ -835,7 +847,7 @@ async function main() {
       status: 'WON',
       amount: 400000,
       paymentType: 'CLASSIC',
-      sellerId: seller.id,
+      sellerId: seller2.id,
       productCategory: 'CODE',
       productType: 'LANDING',
       pmId: pm.id,
@@ -1578,8 +1590,11 @@ async function main() {
       amount: 75000,
       percent: 3,
       status: 'EARNED',
+      earnedPeriod: '2026-04',
       kpiGatePassed: true,
-      payoutMonth: new Date('2026-04-01'),
+      kpiPayoutFactor: 0.7,
+      payableAmount: 52500,
+      payoutMonth: new Date('2026-05-01'),
     },
   });
   await prisma.bonusEntry.create({
@@ -1596,13 +1611,14 @@ async function main() {
   });
   await prisma.bonusEntry.create({
     data: {
-      employeeId: seller.id,
+      employeeId: seller2.id,
       orderId: order3.id,
       projectId: project2.id,
       type: 'SALES',
       amount: 105000,
       percent: 3,
-      status: 'PENDING_ELIGIBILITY',
+      status: 'EARNED',
+      earnedPeriod: '2026-04',
       kpiGatePassed: null,
     },
   });
@@ -1611,6 +1627,7 @@ async function main() {
   await seedRichDemo(prisma, {
     ceo,
     seller,
+    seller2,
     pm,
     pm2,
     dev,

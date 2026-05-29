@@ -61,6 +61,7 @@ function employeeRunMetrics(employee: PayrollAllocationMatrixEmployee): MetricIt
 
 function intersectionMetrics(cell: PayrollAllocationMatrixCell): MetricItem[] {
   return [
+    { label: 'Payable', value: fmt(cell.plannedAmount) },
     { label: 'Due', value: fmt(cell.remaining) },
     { label: 'Paid', value: fmt(cell.paidBefore) },
   ];

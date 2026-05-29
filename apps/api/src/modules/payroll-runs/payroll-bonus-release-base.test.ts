@@ -36,6 +36,21 @@ describe('payrollBonusReleaseBase', () => {
     ).toBe(true);
   });
 
+  it('uses full amount for SALES without KPI policy', () => {
+    expect(
+      payrollBonusReleaseBase(
+        {
+          type: 'SALES',
+          amount: new Decimal(100_000),
+          payableAmount: null,
+          earnedPeriod: '2026-04',
+          hasKpiPolicy: false,
+        },
+        '2026-05',
+      ).toString(),
+    ).toBe('100000');
+  });
+
   it('uses amount for delivery entries', () => {
     expect(
       payrollBonusReleaseBase(
@@ -59,7 +74,7 @@ describe('isSalesBonusEligibleForPayrollMonth', () => {
 });
 
 describe('isPayrollMatrixBonusEntryVisible', () => {
-  it('hides SALES without payable snapshot', () => {
+  it('hides SALES with KPI policy until payable snapshot exists', () => {
     expect(
       isPayrollMatrixBonusEntryVisible(
         {
@@ -67,9 +82,25 @@ describe('isPayrollMatrixBonusEntryVisible', () => {
           amount: new Decimal(100),
           payableAmount: null,
           earnedPeriod: '2026-04',
+          hasKpiPolicy: true,
         },
         '2026-05',
       ),
     ).toBe(false);
+  });
+
+  it('shows SALES without KPI policy even when payable snapshot is missing', () => {
+    expect(
+      isPayrollMatrixBonusEntryVisible(
+        {
+          type: 'SALES',
+          amount: new Decimal(100),
+          payableAmount: null,
+          earnedPeriod: '2026-04',
+          hasKpiPolicy: false,
+        },
+        '2026-05',
+      ),
+    ).toBe(true);
   });
 });

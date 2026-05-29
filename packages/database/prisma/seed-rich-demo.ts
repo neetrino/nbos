@@ -9,6 +9,85 @@ const RICH_PROJECT_START = 6;
 const RICH_PROJECT_END = 20;
 const ARCHIVED_PROJECT_SUFFIXES = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
 
+/** Realistic client engagements for rich demo matrix columns. */
+const RICH_DEMO_ENGAGEMENTS = [
+  {
+    project: 'Nike Digital',
+    product: 'nike.com',
+    category: 'CODE' as const,
+    type: 'COMPANY_WEBSITE' as const,
+  },
+  {
+    project: 'Apple Enterprise',
+    product: 'apple.com',
+    category: 'CODE' as const,
+    type: 'COMPANY_WEBSITE' as const,
+  },
+  {
+    project: 'Spotify',
+    product: 'Spotify iOS App',
+    category: 'CODE' as const,
+    type: 'MOBILE_APP' as const,
+  },
+  { project: 'Airbnb', product: 'airbnb.com', category: 'CODE' as const, type: 'WEB_APP' as const },
+  {
+    project: 'Stripe',
+    product: 'stripe.com',
+    category: 'CODE' as const,
+    type: 'COMPANY_WEBSITE' as const,
+  },
+  {
+    project: 'Shopify',
+    product: 'Shopify Admin',
+    category: 'CODE' as const,
+    type: 'WEB_APP' as const,
+  },
+  {
+    project: 'Netflix',
+    product: 'Netflix tvOS App',
+    category: 'CODE' as const,
+    type: 'MOBILE_APP' as const,
+  },
+  { project: 'Uber', product: 'uber.com', category: 'CODE' as const, type: 'WEB_APP' as const },
+  {
+    project: 'Tesla',
+    product: 'tesla.com',
+    category: 'CODE' as const,
+    type: 'COMPANY_WEBSITE' as const,
+  },
+  {
+    project: 'Meta',
+    product: 'Meta Ads Portal',
+    category: 'CODE' as const,
+    type: 'WEB_APP' as const,
+  },
+  {
+    project: 'Amazon',
+    product: 'amazon.sc',
+    category: 'SHOPIFY' as const,
+    type: 'ECOMMERCE' as const,
+  },
+  {
+    project: 'Adobe',
+    product: 'adobe.com',
+    category: 'CODE' as const,
+    type: 'COMPANY_WEBSITE' as const,
+  },
+  {
+    project: 'Slack',
+    product: 'Slack Desktop',
+    category: 'CODE' as const,
+    type: 'WEB_APP' as const,
+  },
+  { project: 'Figma', product: 'figma.com', category: 'CODE' as const, type: 'WEB_APP' as const },
+  {
+    project: 'Notion',
+    product: 'Notion Mobile',
+    category: 'CODE' as const,
+    type: 'MOBILE_APP' as const,
+  },
+];
+
 const PRODUCT_STATUSES_ACTIVE: ProductStatusEnum[] = [
   'NEW',
   'CREATING',
@@ -23,6 +102,7 @@ type SeedEmp = { id: string; email: string };
 export type SeedRichDemoContext = {
   ceo: SeedEmp;
   seller: SeedEmp;
+  seller2: SeedEmp;
   pm: SeedEmp;
   pm2: SeedEmp;
   dev: SeedEmp;
@@ -86,13 +166,50 @@ async function seedCompensationProfiles(
     employeeId: string;
     baseSalary: number;
     notes: string;
+    kpiPolicyId: string | null;
   }> = [
-    { employeeId: ctx.ceo.id, baseSalary: 850_000, notes: 'CEO fixed monthly' },
-    { employeeId: ctx.seller.id, baseSalary: 480_000, notes: 'Senior seller base' },
-    { employeeId: ctx.pm.id, baseSalary: 620_000, notes: 'Senior PM base' },
-    { employeeId: ctx.pm2.id, baseSalary: 520_000, notes: 'Middle PM base' },
-    { employeeId: ctx.dev.id, baseSalary: 580_000, notes: 'Middle developer base' },
-    { employeeId: ctx.designer.id, baseSalary: 450_000, notes: 'Designer base' },
+    {
+      employeeId: ctx.ceo.id,
+      baseSalary: 850_000,
+      notes: 'CEO fixed monthly',
+      kpiPolicyId: 'a0000000-0000-4000-8000-000000000001',
+    },
+    {
+      employeeId: ctx.seller.id,
+      baseSalary: 480_000,
+      notes: 'Senior seller — KPI policy active',
+      kpiPolicyId: 'a0000000-0000-4000-8000-000000000001',
+    },
+    {
+      employeeId: ctx.seller2.id,
+      baseSalary: 420_000,
+      notes: 'Seller — no KPI policy (full bonus payable)',
+      kpiPolicyId: null,
+    },
+    {
+      employeeId: ctx.pm.id,
+      baseSalary: 620_000,
+      notes: 'Senior PM base',
+      kpiPolicyId: 'a0000000-0000-4000-8000-000000000001',
+    },
+    {
+      employeeId: ctx.pm2.id,
+      baseSalary: 520_000,
+      notes: 'Middle PM base',
+      kpiPolicyId: 'a0000000-0000-4000-8000-000000000001',
+    },
+    {
+      employeeId: ctx.dev.id,
+      baseSalary: 580_000,
+      notes: 'Middle developer base',
+      kpiPolicyId: 'a0000000-0000-4000-8000-000000000001',
+    },
+    {
+      employeeId: ctx.designer.id,
+      baseSalary: 450_000,
+      notes: 'Designer base',
+      kpiPolicyId: 'a0000000-0000-4000-8000-000000000001',
+    },
   ];
 
   const byEmployee: Record<string, string> = {};
@@ -102,7 +219,7 @@ async function seedCompensationProfiles(
         employeeId: row.employeeId,
         baseSalary: row.baseSalary,
         currency: 'AMD',
-        kpiPolicyId: 'a0000000-0000-4000-8000-000000000001',
+        kpiPolicyId: row.kpiPolicyId,
         effectiveFrom: monthStart(2026, 1),
         status: 'ACTIVE',
         approvedById: ctx.ceo.id,
@@ -121,7 +238,7 @@ async function seedPayrollAndSalaries(
   ctx: SeedRichDemoContext,
   compensationByEmployee: Record<string, string>,
 ): Promise<void> {
-  const employees = [ctx.ceo, ctx.seller, ctx.pm, ctx.pm2, ctx.dev, ctx.designer];
+  const employees = [ctx.ceo, ctx.seller, ctx.seller2, ctx.pm, ctx.pm2, ctx.dev, ctx.designer];
   const months: Array<{
     key: string;
     status: 'CLOSED' | 'APPROVED' | 'DRAFT';
@@ -384,10 +501,13 @@ async function createRichProjectBundle(
   const suffix = index;
   const code = `P-2026-${padCode(suffix)}`;
   const archived = ARCHIVED_PROJECT_SUFFIXES.includes(suffix);
+  const engagement =
+    RICH_DEMO_ENGAGEMENTS[(suffix - RICH_PROJECT_START) % RICH_DEMO_ENGAGEMENTS.length]!;
+  const assignedSeller = suffix % 2 === 0 ? ctx.seller.id : ctx.seller2.id;
   const project = await prisma.project.create({
     data: {
       code,
-      name: `Demo Client ${suffix} — ${archived ? 'Closed engagement' : 'Active engagement'}`,
+      name: engagement.project,
       contactId,
       companyId: companyId ?? undefined,
       description: archived
@@ -402,9 +522,9 @@ async function createRichProjectBundle(
   const product = await prisma.product.create({
     data: {
       projectId: project.id,
-      name: `${project.name} — Primary deliverable`,
-      productCategory: suffix % 2 === 0 ? 'CODE' : 'MARKETING',
-      productType: suffix % 2 === 0 ? 'WEB_APP' : 'COMPANY_WEBSITE',
+      name: engagement.product,
+      productCategory: engagement.category,
+      productType: engagement.type,
       status: productStatuses[suffix % productStatuses.length]!,
       pmId: suffix % 2 === 0 ? ctx.pm.id : ctx.pm2.id,
       deadline: new Date('2026-09-30'),
@@ -422,7 +542,7 @@ async function createRichProjectBundle(
       status: 'WON',
       amount: dealAmount,
       paymentType: suffix % 3 === 0 ? 'SUBSCRIPTION' : 'CLASSIC',
-      sellerId: ctx.seller.id,
+      sellerId: assignedSeller,
       source: 'MARKETING',
       productCategory: product.productCategory,
       productType: product.productType,
@@ -534,19 +654,39 @@ async function createRichProjectBundle(
     });
   }
 
+  const salesBonusAmount = Math.round(dealAmount * 0.03);
+  const salesEarned = archived || firstPaid;
+  const sellerHasKpi = assignedSeller === ctx.seller.id;
   await prisma.bonusEntry.create({
     data: {
-      employeeId: ctx.seller.id,
+      employeeId: assignedSeller,
       orderId: order.id,
       projectId: project.id,
       dealId: deal.id,
       type: 'SALES',
-      amount: Math.round(dealAmount * 0.03),
+      amount: salesBonusAmount,
       percent: 3,
       status: archived ? 'PAID' : firstPaid ? 'EARNED' : 'INCOMING',
+      earnedPeriod: salesEarned ? '2026-04' : null,
       kpiGatePassed: archived ? true : null,
+      kpiPayoutFactor: salesEarned && sellerHasKpi ? 0.7 : null,
+      payableAmount: salesEarned && sellerHasKpi ? Math.round(salesBonusAmount * 0.7) : null,
     },
   });
+
+  if (!archived && suffix % 3 === 1) {
+    await prisma.bonusEntry.create({
+      data: {
+        employeeId: product.pmId ?? ctx.pm.id,
+        orderId: order.id,
+        projectId: project.id,
+        type: 'DELIVERY',
+        amount: Math.round(dealAmount * 0.02),
+        percent: 2,
+        status: firstPaid ? 'EARNED' : 'INCOMING',
+      },
+    });
+  }
 
   return {
     id: project.id,
@@ -647,6 +787,141 @@ async function seedExpensePlansAndMoreExpenses(
   });
 }
 
+async function seedMay2026PayrollMatrix(
+  prisma: PrismaClient,
+  ctx: SeedRichDemoContext,
+): Promise<void> {
+  const mayRun = await prisma.payrollRun.findUnique({ where: { payrollMonth: '2026-05' } });
+  if (!mayRun) return;
+
+  const orderAcme = await prisma.order.findFirst({ where: { code: 'ORD-2026-0001' } });
+  if (orderAcme) {
+    const poolExists = await prisma.productBonusPool.findFirst({
+      where: { orderId: orderAcme.id },
+    });
+    if (!poolExists) {
+      await prisma.productBonusPool.create({
+        data: {
+          orderId: orderAcme.id,
+          projectId: orderAcme.projectId,
+          productId: orderAcme.productId,
+          totalPlannedAmount: 125_000,
+          totalReleasedAmount: 50_000,
+          totalPaidAmount: 0,
+          totalRemainingAmount: 75_000,
+          availableFunding: 2_500_000,
+          status: 'PARTIALLY_RELEASED',
+        },
+      });
+    }
+
+    const pmDelivery = await prisma.bonusEntry.findFirst({
+      where: { orderId: orderAcme.id, employeeId: ctx.pm.id, type: 'DELIVERY' },
+    });
+    if (pmDelivery) {
+      await prisma.bonusRelease.create({
+        data: {
+          bonusEntryId: pmDelivery.id,
+          payrollRunId: mayRun.id,
+          employeeId: ctx.pm.id,
+          projectId: orderAcme.projectId,
+          amount: 50_000,
+          payrollIncludedAmount: 50_000,
+          releaseType: 'MANUAL',
+          status: 'INCLUDED_IN_PAYROLL',
+          reason: 'Early delivery bonus — May payroll seed',
+          approvedById: ctx.ceo.id,
+        },
+      });
+    }
+
+    const annaSales = await prisma.bonusEntry.findFirst({
+      where: { orderId: orderAcme.id, employeeId: ctx.seller.id, type: 'SALES' },
+    });
+    if (annaSales) {
+      await prisma.bonusRelease.create({
+        data: {
+          bonusEntryId: annaSales.id,
+          payrollRunId: mayRun.id,
+          employeeId: ctx.seller.id,
+          projectId: orderAcme.projectId,
+          amount: 25_000,
+          payrollIncludedAmount: 25_000,
+          releaseType: 'AUTO',
+          status: 'INCLUDED_IN_PAYROLL',
+          approvedById: ctx.ceo.id,
+        },
+      });
+    }
+  }
+
+  const orderStripe = await prisma.order.findFirst({ where: { code: 'ORD-2026-0020' } });
+  if (orderStripe) {
+    const deliveryEntry = await prisma.bonusEntry.findFirst({
+      where: { orderId: orderStripe.id, type: 'DELIVERY' },
+    });
+    if (deliveryEntry) {
+      const base = Number(deliveryEntry.amount);
+      await prisma.bonusRelease.create({
+        data: {
+          bonusEntryId: deliveryEntry.id,
+          payrollRunId: mayRun.id,
+          employeeId: deliveryEntry.employeeId,
+          projectId: orderStripe.projectId,
+          amount: base + 5_000,
+          payrollIncludedAmount: base + 5_000,
+          releaseType: 'EXTRA',
+          status: 'INCLUDED_IN_PAYROLL',
+          reason: 'Extra bonus — May payroll seed',
+          approvedById: ctx.ceo.id,
+        },
+      });
+    }
+  }
+
+  const orderShopify = await prisma.order.findFirst({ where: { code: 'ORD-2026-0021' } });
+  if (orderShopify) {
+    const annaSales = await prisma.bonusEntry.findFirst({
+      where: { orderId: orderShopify.id, employeeId: ctx.seller.id, type: 'SALES' },
+    });
+    if (annaSales) {
+      await prisma.bonusRelease.create({
+        data: {
+          bonusEntryId: annaSales.id,
+          payrollRunId: mayRun.id,
+          employeeId: ctx.seller.id,
+          projectId: orderShopify.projectId,
+          amount: 85_500,
+          payrollIncludedAmount: 85_500,
+          releaseType: 'OVER_FUNDING',
+          status: 'INCLUDED_IN_PAYROLL',
+          reason: 'Over funding demo — May payroll seed',
+          approvedById: ctx.ceo.id,
+        },
+      });
+    }
+  }
+
+  const levonSales = await prisma.bonusEntry.findFirst({
+    where: { employeeId: ctx.seller2.id, type: 'SALES', earnedPeriod: '2026-04' },
+  });
+  if (levonSales) {
+    await prisma.bonusRelease.create({
+      data: {
+        bonusEntryId: levonSales.id,
+        payrollRunId: mayRun.id,
+        employeeId: ctx.seller2.id,
+        projectId: levonSales.projectId,
+        amount: 40_000,
+        payrollIncludedAmount: 40_000,
+        releaseType: 'AUTO',
+        status: 'INCLUDED_IN_PAYROLL',
+        approvedById: ctx.ceo.id,
+      },
+    });
+  }
+}
+
 /**
  * Expands NBOS demo data: ~20 projects, rich finance (orders→invoices→payments),
  * subscriptions, payroll, bonus pools, client services, expenses.
@@ -695,6 +970,7 @@ export async function seedRichDemo(prisma: PrismaClient, ctx: SeedRichDemoContex
   const compensationByEmployee = await seedCompensationProfiles(prisma, ctx);
   await seedPayrollAndSalaries(prisma, ctx, compensationByEmployee);
   await seedBonusPoolsAndReleases(prisma, ctx);
+  await seedMay2026PayrollMatrix(prisma, ctx);
   await archiveHalfOfProjects(prisma);
 
   console.log(
