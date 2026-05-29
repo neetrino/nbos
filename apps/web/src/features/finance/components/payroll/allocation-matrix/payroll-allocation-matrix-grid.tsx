@@ -119,6 +119,7 @@ export function PayrollAllocationMatrixGrid(props: {
           secondary: formatAmount(Number.parseFloat(e.baseSalary)),
           meta: formatAmount(Number.parseFloat(e.bonusTotalThisRun)),
           employeeAmounts: employeeAmounts(e),
+          salaryLineId: e.salaryLineId,
           funding: null,
           pinned: false,
           kind: 'employee' as const,
@@ -150,6 +151,7 @@ export function PayrollAllocationMatrixGrid(props: {
           secondary: e.position ?? '—',
           meta: formatAmount(Number.parseFloat(e.bonusTotalThisRun)),
           employeeAmounts: employeeAmounts(e),
+          salaryLineId: e.salaryLineId,
           funding: null,
           pinned: false,
           kind: 'employee' as const,
@@ -172,11 +174,7 @@ export function PayrollAllocationMatrixGrid(props: {
     }
     const employee = matrix.employees.find((e) => e.employeeId === columnId);
     return employee ? (
-      <MatrixEmployeeDetailHeader
-        key={`${columnId}-emp`}
-        employee={employee}
-        onOpenSalaryLine={onOpenSalaryLine}
-      />
+      <MatrixEmployeeDetailHeader key={`${columnId}-emp`} employee={employee} />
     ) : null;
   };
 
@@ -228,7 +226,7 @@ export function PayrollAllocationMatrixGrid(props: {
           <button
             type="button"
             aria-label="Create manual bonus"
-            className="box-border flex h-full min-h-[2.75rem] w-full cursor-pointer px-1 py-1 hover:bg-sky-500/10"
+            className="box-border flex h-full min-h-[2.25rem] w-full cursor-pointer px-1 py-0.5 hover:bg-sky-500/10"
             onClick={() => onManualCellRequest(cell)}
           />
         </td>
@@ -272,6 +270,7 @@ export function PayrollAllocationMatrixGrid(props: {
         onActivateRow={onActivateRow}
         onReorderColumns={onReorderColumns}
         onReorderRows={onReorderRows}
+        onOpenSalaryLine={onOpenSalaryLine}
         renderAfterColumn={activeColumnId ? renderAfterColumn : undefined}
         renderAfterRow={activeRowId ? renderAfterRow : undefined}
         renderTotalsHeader={
@@ -281,12 +280,7 @@ export function PayrollAllocationMatrixGrid(props: {
           viewMode === 'EMPLOYEE_MATRIX'
             ? (rowId) => {
                 const employee = matrix.employees.find((e) => e.employeeId === rowId);
-                return employee ? (
-                  <MatrixEmployeeTotalsCell
-                    employee={employee}
-                    onOpenSalaryLine={onOpenSalaryLine}
-                  />
-                ) : null;
+                return employee ? <MatrixEmployeeTotalsCell employee={employee} /> : null;
               }
             : undefined
         }

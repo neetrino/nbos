@@ -115,10 +115,10 @@ export function PayrollAllocationMatrixCellInput(props: {
   if (!cell.editable) {
     const hasRelease = parseMoney(cell.releaseThisMonth) > 0;
     if (!hasRelease) {
-      return <div className="min-h-[2.75rem]" aria-hidden />;
+      return <div className="min-h-[2.25rem]" aria-hidden />;
     }
     return (
-      <div className="flex min-h-[2.75rem] flex-col items-end justify-center px-2 py-1">
+      <div className="flex min-h-[2.25rem] flex-col items-end justify-center px-2 py-1">
         <span className={PAYROLL_MATRIX_CELL_AMOUNT_DISPLAY_CLASS}>
           {formatAmountDramSuffix(parseMoney(cell.releaseThisMonth))}
         </span>
@@ -129,7 +129,7 @@ export function PayrollAllocationMatrixCellInput(props: {
 
   return (
     <div
-      className="relative flex min-h-[2.75rem] flex-col items-stretch justify-center gap-1 px-1 py-1"
+      className="relative flex min-h-[2.25rem] flex-col items-stretch justify-center gap-1 px-1 py-1"
       onBlur={handleContainerBlur}
     >
       <div className={cn(PAYROLL_MATRIX_CELL_FIELD_SHELL_CLASS, 'relative')}>

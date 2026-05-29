@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, PanelRightOpen } from 'lucide-react';
 import {
   PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
   PAYROLL_MATRIX_DATA_COL_WIDTH,
@@ -50,6 +50,7 @@ export type MatrixHeaderColumn = {
   pinned: boolean;
   kind: MatrixHeaderKind;
   employeeAmounts?: MatrixEmployeeAmounts;
+  salaryLineId?: string | null;
 };
 
 export type MatrixRowHeader = {
@@ -61,10 +62,14 @@ export type MatrixRowHeader = {
   pinned: boolean;
   kind: MatrixHeaderKind;
   employeeAmounts?: MatrixEmployeeAmounts;
+  salaryLineId?: string | null;
 };
 
 const MATRIX_PRIMARY_NAME_CLASS =
-  'block truncate text-sm font-semibold tracking-tight text-foreground leading-snug';
+  'block truncate text-xs font-semibold tracking-tight text-foreground leading-tight';
+
+const MATRIX_HEADER_HOVER_ACTION_CLASS =
+  'text-muted-foreground hover:text-foreground absolute top-1 z-10 rounded p-0.5 opacity-0 transition-opacity pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100';
 
 function MatrixLabeledAmount({ label, value }: { label: string; value: string }) {
   return (
@@ -80,7 +85,6 @@ function MatrixEmployeeAmountStack({ amounts }: { amounts: MatrixEmployeeAmounts
     <>
       <MatrixLabeledAmount label="Salary" value={amounts.baseSalary} />
       <MatrixLabeledAmount label="Bonus" value={amounts.bonusTotal} />
-      <MatrixLabeledAmount label="Total" value={amounts.payableTotal} />
     </>
   );
 }
@@ -118,6 +122,8 @@ function MatrixHeaderDragShell({
   onActivate,
   dragAttributes,
   dragListeners,
+  onOpenDetail,
+  detailAriaLabel,
   children,
 }: {
   disabled: boolean;
@@ -125,10 +131,12 @@ function MatrixHeaderDragShell({
   onActivate: () => void;
   dragAttributes: DraggableAttributes;
   dragListeners: SyntheticListenerMap | undefined;
+  onOpenDetail?: () => void;
+  detailAriaLabel?: string;
   children: ReactNode;
 }) {
   return (
-    <div className="group relative">
+    <div className="group relative pr-6">
       <button
         type="button"
         className="hover:text-primary w-full min-w-0 overflow-hidden text-left"
@@ -136,14 +144,25 @@ function MatrixHeaderDragShell({
       >
         {children}
       </button>
+      {!disabled && onOpenDetail ? (
+        <button
+          type="button"
+          className={cn(MATRIX_HEADER_HOVER_ACTION_CLASS, 'right-6')}
+          aria-label={detailAriaLabel ?? 'Open salary detail'}
+          onClick={(event) => {
+            event.stopPropagation();
+            onOpenDetail();
+          }}
+        >
+          <PanelRightOpen size={14} aria-hidden />
+        </button>
+      ) : null}
       {!disabled ? (
         <button
           type="button"
           className={cn(
-            'text-muted-foreground hover:text-foreground absolute top-1 right-1 z-10 rounded p-0.5',
-            'cursor-grab opacity-0 transition-opacity active:cursor-grabbing',
-            'pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100',
-            'focus-visible:pointer-events-auto focus-visible:opacity-100',
+            MATRIX_HEADER_HOVER_ACTION_CLASS,
+            'right-1 cursor-grab active:cursor-grabbing',
           )}
           aria-label={dragLabel}
           {...dragAttributes}
@@ -172,6 +191,7 @@ export function PayrollAllocationMatrixTableShell(props: {
   renderAfterRow?: (rowId: string) => ReactNode;
   renderTotalsHeader?: () => ReactNode;
   renderRowTotals?: (rowId: string) => ReactNode;
+  onOpenSalaryLine?: (salaryLineId: string) => void;
   children: (rowId: string) => ReactNode;
 }) {
   const {
@@ -190,6 +210,7 @@ export function PayrollAllocationMatrixTableShell(props: {
     renderAfterRow,
     renderTotalsHeader,
     renderRowTotals,
+    onOpenSalaryLine,
     children,
   } = props;
 
@@ -253,6 +274,7 @@ export function PayrollAllocationMatrixTableShell(props: {
                     expanded={activeColumnId === col.id}
                     disabled={disabled}
                     onActivate={() => onActivateColumn(activeColumnId === col.id ? null : col.id)}
+                    onOpenSalaryLine={onOpenSalaryLine}
                   />
                   {activeColumnId === col.id ? renderAfterColumn?.(col.id) : null}
                 </Fragment>
@@ -271,6 +293,7 @@ export function PayrollAllocationMatrixTableShell(props: {
                     expanded={activeRowId === row.id}
                     disabled={disabled}
                     onActivate={() => onActivateRow(activeRowId === row.id ? null : row.id)}
+                    onOpenSalaryLine={onOpenSalaryLine}
                   />
                   {children(row.id)}
                   {renderRowTotals?.(row.id) ?? null}
@@ -290,8 +313,9 @@ function SortableMatrixColumnHeader(props: {
   expanded: boolean;
   disabled: boolean;
   onActivate: () => void;
+  onOpenSalaryLine?: (salaryLineId: string) => void;
 }) {
-  const { col, expanded, disabled, onActivate } = props;
+  const { col, expanded, disabled, onActivate, onOpenSalaryLine } = props;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: col.id,
     disabled,
@@ -301,7 +325,7 @@ function SortableMatrixColumnHeader(props: {
       className={cn(
         PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
         PAYROLL_MATRIX_DATA_COL_WIDTH,
-        'border-border border-r border-b px-2 py-2 text-left align-bottom',
+        'border-border border-r border-b px-2 py-1.5 text-left align-bottom',
         expanded ? PAYROLL_MATRIX_COLUMN_HEADER_ACTIVE_BG : PAYROLL_MATRIX_STICKY_HEADER_BG,
       )}
     >
@@ -317,6 +341,14 @@ function SortableMatrixColumnHeader(props: {
           onActivate={onActivate}
           dragAttributes={attributes}
           dragListeners={listeners}
+          onOpenDetail={
+            col.kind === 'employee' && col.salaryLineId && onOpenSalaryLine
+              ? () => onOpenSalaryLine(col.salaryLineId!)
+              : undefined
+          }
+          detailAriaLabel={
+            col.kind === 'employee' ? `Open salary detail for ${col.primary}` : undefined
+          }
         >
           <p className={MATRIX_PRIMARY_NAME_CLASS}>
             {col.pinned ? '📌 ' : ''}
@@ -348,8 +380,9 @@ function SortableMatrixRowHeader(props: {
   expanded: boolean;
   disabled: boolean;
   onActivate: () => void;
+  onOpenSalaryLine?: (salaryLineId: string) => void;
 }) {
-  const { row, expanded, disabled, onActivate } = props;
+  const { row, expanded, disabled, onActivate, onOpenSalaryLine } = props;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: row.id,
     disabled,
@@ -360,7 +393,7 @@ function SortableMatrixRowHeader(props: {
       className={cn(
         PAYROLL_MATRIX_STICKY_EDGE_WIDTH,
         PAYROLL_MATRIX_STICKY_EDGE_DIVIDER,
-        'border-border sticky left-0 z-30 border-r border-b px-3 py-2.5 text-left',
+        'border-border sticky left-0 z-30 border-r border-b px-2.5 py-1.5 text-left',
         PAYROLL_MATRIX_STICKY_HEADER_BG,
         expanded && PAYROLL_MATRIX_ROW_HEADER_ACTIVE_MARK,
       )}
@@ -377,6 +410,14 @@ function SortableMatrixRowHeader(props: {
           onActivate={onActivate}
           dragAttributes={attributes}
           dragListeners={listeners}
+          onOpenDetail={
+            row.kind === 'employee' && row.salaryLineId && onOpenSalaryLine
+              ? () => onOpenSalaryLine(row.salaryLineId!)
+              : undefined
+          }
+          detailAriaLabel={
+            row.kind === 'employee' ? `Open salary detail for ${row.primary}` : undefined
+          }
         >
           <p className={MATRIX_PRIMARY_NAME_CLASS}>
             {row.pinned ? '📌 ' : ''}

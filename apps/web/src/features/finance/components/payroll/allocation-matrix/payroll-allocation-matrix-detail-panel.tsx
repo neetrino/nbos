@@ -1,6 +1,5 @@
 'use client';
 
-import { PanelRightOpen } from 'lucide-react';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   PAYROLL_MATRIX_EXPANSION_CELL_CLASS,
@@ -57,7 +56,6 @@ function employeeRunMetrics(employee: PayrollAllocationMatrixEmployee): MetricIt
   return [
     { label: 'Salary', value: fmt(employee.baseSalary) },
     { label: 'Bonus', value: fmt(employee.bonusTotalThisRun) },
-    { label: 'Total', value: fmt(employee.payableTotal) },
   ];
 }
 
@@ -80,29 +78,12 @@ export function MatrixOrderDetailHeader({ unit }: { unit: DeliveryPayableUnit })
 
 export function MatrixEmployeeDetailHeader({
   employee,
-  onOpenSalaryLine,
 }: {
   employee: PayrollAllocationMatrixEmployee;
-  onOpenSalaryLine?: (salaryLineId: string) => void;
 }) {
-  const salaryLineId = employee.salaryLineId;
-
   return (
     <th className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}>
       <ExpansionMetricStack items={employeeRunMetrics(employee)} />
-      {onOpenSalaryLine && salaryLineId ? (
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-primary mt-2 inline-flex items-center gap-1 text-[10px] font-medium"
-          onClick={(event) => {
-            event.stopPropagation();
-            onOpenSalaryLine(salaryLineId);
-          }}
-        >
-          <PanelRightOpen className="size-3" aria-hidden />
-          Detail
-        </button>
-      ) : null}
     </th>
   );
 }
