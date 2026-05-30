@@ -4,17 +4,20 @@ import { useMemo } from 'react';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
-import type { UnitEconomicsRow } from '@/lib/api/unit-economics';
 import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
+import {
+  parseUnitEconomicsMoney,
+  parseUnitEconomicsSpent,
+  unitEconomicsMarginClass,
+} from '@/features/finance/components/unit-economics/unit-economics-money';
+import { UnitEconomicsProfitabilityFooter } from '@/features/finance/components/unit-economics/unit-economics-table-footer';
+import {
+  UnitEconomicsTableHead,
+  UnitEconomicsTableShell,
+} from '@/features/finance/components/unit-economics/unit-economics-table-shell';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
 import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
 import { cn } from '@/lib/utils';
-
-function marginClass(margin: number): string {
-  if (margin < 0) return 'text-destructive';
-  if (margin > 0) return 'text-emerald-600 dark:text-emerald-400';
-  return 'text-muted-foreground';
-}
 
 export function UnitEconomicsProfitabilityTable({
   data,
@@ -22,16 +25,17 @@ export function UnitEconomicsProfitabilityTable({
   onDrilldown,
 }: {
   data: UnitEconomicsBoardData;
-  items: UnitEconomicsRow[];
+  items: UnitEconomicsBoardData['items'];
   onDrilldown?: (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 }) {
-  const { loading, error, reload } = data;
+  const { loading, error, reload, filteredTotals } = data;
 
   const sorted = useMemo(
     () =>
       [...items].sort(
         (a, b) =>
-          Number.parseFloat(b.marginAfterCommitments) - Number.parseFloat(a.marginAfterCommitments),
+          parseUnitEconomicsMoney(b.marginAfterCommitments) -
+          parseUnitEconomicsMoney(a.marginAfterCommitments),
       ),
     [items],
   );
@@ -40,74 +44,95 @@ export function UnitEconomicsProfitabilityTable({
   if (error) return <ErrorState description={error} onRetry={() => void reload()} />;
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="border-border bg-card overflow-auto rounded-xl border">
-        <table className="w-full min-w-[48rem] border-collapse text-xs">
-          <thead className="bg-card sticky top-0 z-10">
-            <tr className="text-muted-foreground text-left">
-              <th className="border-border border-b px-3 py-2 font-semibold">Delivery unit</th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Margin (after commitments)
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Cash margin
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Received
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Out committed
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-muted-foreground px-3 py-8 text-center">
-                  No delivery units with margin data yet.
+    <UnitEconomicsTableShell
+      minWidth="min-w-[56rem]"
+      hint={
+        <p className="text-muted-foreground text-sm">
+          Margin after commitments vs cash margin (received minus factual outflows). Click amounts
+          to drill down.
+        </p>
+      }
+    >
+      <UnitEconomicsTableHead>
+        <tr className="text-muted-foreground text-left">
+          <th className="border-border border-b px-3 py-2 font-semibold">Delivery unit</th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">
+            Margin (after commitments)
+          </th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">Cash margin</th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">Received</th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">
+            Bonus to pay
+          </th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">
+            Out committed
+          </th>
+        </tr>
+      </UnitEconomicsTableHead>
+      <tbody>
+        {sorted.length === 0 ? (
+          <tr>
+            <td colSpan={7} className="text-muted-foreground px-3 py-8 text-center">
+              No delivery units with margin data yet.
+            </td>
+          </tr>
+        ) : (
+          sorted.map((row) => {
+            const margin = parseUnitEconomicsMoney(row.marginAfterCommitments);
+            const cashMargin = parseUnitEconomicsMoney(row.marginFact);
+            return (
+              <tr key={row.orderId} className="hover:bg-muted/30">
+                <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
+                <td
+                  className={cn(
+                    'border-border border-b px-2 py-2 text-right font-medium tabular-nums',
+                    unitEconomicsMarginClass(margin),
+                  )}
+                >
+                  {formatAmount(margin)}
+                </td>
+                <td
+                  className={cn(
+                    'border-border border-b px-2 py-2 text-right tabular-nums',
+                    unitEconomicsMarginClass(cashMargin),
+                  )}
+                >
+                  {formatAmount(cashMargin)}
+                </td>
+                <td className="border-border border-b px-2 py-2 text-right">
+                  <UnitEconomicsDrilldownAmount
+                    amount={parseUnitEconomicsMoney(row.receivedAmount)}
+                    orderId={row.orderId}
+                    focus="payments"
+                    onDrilldown={onDrilldown}
+                  />
+                </td>
+                <td className="border-border border-b px-2 py-2 text-right">
+                  <UnitEconomicsDrilldownAmount
+                    amount={parseUnitEconomicsSpent(row)}
+                    orderId={row.orderId}
+                    focus="expenses"
+                    onDrilldown={onDrilldown}
+                  />
+                </td>
+                <td className="border-border border-b px-2 py-2 text-right">
+                  <UnitEconomicsDrilldownAmount
+                    amount={parseUnitEconomicsMoney(row.remainingBonuses)}
+                    orderId={row.orderId}
+                    focus="bonuses"
+                    onDrilldown={onDrilldown}
+                  />
+                </td>
+                <td className="border-border border-b px-2 py-2 text-right tabular-nums">
+                  {formatAmount(parseUnitEconomicsMoney(row.outCommittedAmount))}
                 </td>
               </tr>
-            ) : (
-              sorted.map((row) => {
-                const margin = Number.parseFloat(row.marginAfterCommitments);
-                const cashMargin = Number.parseFloat(row.marginFact);
-                return (
-                  <tr key={row.orderId} className="hover:bg-muted/30">
-                    <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
-                    <td
-                      className={cn(
-                        'border-border border-b px-2 py-2 text-right font-medium tabular-nums',
-                        marginClass(margin),
-                      )}
-                    >
-                      {formatAmount(margin)}
-                    </td>
-                    <td
-                      className={cn(
-                        'border-border border-b px-2 py-2 text-right tabular-nums',
-                        marginClass(cashMargin),
-                      )}
-                    >
-                      {formatAmount(cashMargin)}
-                    </td>
-                    <td className="border-border border-b px-2 py-2 text-right">
-                      <UnitEconomicsDrilldownAmount
-                        amount={Number.parseFloat(row.receivedAmount)}
-                        orderId={row.orderId}
-                        focus="payments"
-                        onDrilldown={onDrilldown}
-                      />
-                    </td>
-                    <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                      {formatAmount(Number.parseFloat(row.outCommittedAmount))}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            );
+          })
+        )}
+        {sorted.length > 0 ? <UnitEconomicsProfitabilityFooter totals={filteredTotals} /> : null}
+      </tbody>
+    </UnitEconomicsTableShell>
   );
 }

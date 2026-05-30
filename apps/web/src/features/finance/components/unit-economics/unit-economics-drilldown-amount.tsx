@@ -25,7 +25,10 @@ export function UnitEconomicsDrilldownAmount({
     <button
       type="button"
       className={cn(
-        'hover:text-primary tabular-nums underline-offset-2 hover:underline',
+        'rounded-md px-1.5 py-0.5 tabular-nums underline-offset-2 transition-colors',
+        'hover:bg-muted/70 hover:text-primary hover:underline',
+        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+        amount === 0 && 'text-muted-foreground',
         className,
       )}
       onClick={() => onDrilldown(orderId, focus)}

@@ -1,7 +1,8 @@
 'use client';
 
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { ErrorState, LoadingState } from '@/components/shared';
 import {
   buildUnitEconomicsTree,
@@ -11,6 +12,11 @@ import {
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
 import { unitEconomicsOrderTypeLabel } from '@/features/finance/components/unit-economics/unit-economics-order-type-label';
 import { UnitEconomicsOverviewMoneyCells } from '@/features/finance/components/unit-economics/unit-economics-row-money-cells';
+import { UnitEconomicsOverviewFooter } from '@/features/finance/components/unit-economics/unit-economics-table-footer';
+import {
+  UnitEconomicsTableHead,
+  UnitEconomicsTableShell,
+} from '@/features/finance/components/unit-economics/unit-economics-table-shell';
 import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
 
 type DrilldownHandler = (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
@@ -75,12 +81,14 @@ function GroupLabelCell({
   onToggle,
   title,
   subtitle,
+  emphasized,
 }: {
   indent: number;
   open: boolean;
   onToggle: () => void;
   title: string;
   subtitle: string;
+  emphasized?: boolean;
 }) {
   return (
     <td
@@ -90,7 +98,7 @@ function GroupLabelCell({
       <div className="flex items-start gap-1.5">
         <ToggleButton open={open} onClick={onToggle} />
         <div className="min-w-0">
-          <p className="font-semibold">{title}</p>
+          <p className={emphasized ? 'font-semibold' : 'font-medium'}>{title}</p>
           <p className="text-muted-foreground text-[11px]">{subtitle}</p>
         </div>
       </div>
@@ -123,7 +131,7 @@ function renderProjectRows(
   return project.products.flatMap((product) => {
     const productOpen = productOpenKeys.has(product.key);
     return [
-      <tr key={product.key} className="hover:bg-muted/30">
+      <tr key={product.key} className="hover:bg-muted/20">
         <GroupLabelCell
           indent={1}
           open={productOpen}
@@ -147,117 +155,138 @@ export function UnitEconomicsNestedTable({
   items: UnitEconomicsRow[];
   onDrilldown?: DrilldownHandler;
 }) {
-  const { projects, loading, error, reload } = data;
+  const { projects, loading, error, reload, filteredTotals } = data;
   const tree = useMemo(() => buildUnitEconomicsTree(items, projects), [items, projects]);
   const [openProjects, setOpenProjects] = useState<Set<string>>(() => new Set());
   const [openProducts, setOpenProducts] = useState<Set<string>>(() => new Set());
 
-  if (loading && items.length === 0) return <LoadingState />;
-  if (error) return <ErrorState description={error} onRetry={() => void reload()} />;
+  useEffect(() => {
+    const first = tree[0];
+    if (!first) return;
+    setOpenProjects((prev) => {
+      if (prev.size > 0) return prev;
+      return new Set([first.projectId]);
+    });
+  }, [tree]);
 
-  const toggleProject = (projectId: string) => {
+  const expandAll = useCallback(() => {
+    setOpenProjects(new Set(tree.map((project) => project.projectId)));
+    setOpenProducts(
+      new Set(tree.flatMap((project) => project.products.map((product) => product.key))),
+    );
+  }, [tree]);
+
+  const collapseAll = useCallback(() => {
+    setOpenProjects(new Set());
+    setOpenProducts(new Set());
+  }, []);
+
+  const toggleProject = useCallback((projectId: string) => {
     setOpenProjects((prev) => {
       const next = new Set(prev);
       if (next.has(projectId)) next.delete(projectId);
       else next.add(projectId);
       return next;
     });
-  };
+  }, []);
 
-  const toggleProduct = (key: string) => {
+  const toggleProduct = useCallback((key: string) => {
     setOpenProducts((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
-  };
+  }, []);
+
+  if (loading && items.length === 0) return <LoadingState />;
+  if (error) return <ErrorState description={error} onRetry={() => void reload()} />;
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-muted-foreground text-sm">
-        Project → product → order. Expand a row to see the next level; click an order code or amount
-        to drill down.
-      </p>
-      <div className="border-border bg-card overflow-auto rounded-xl border">
-        <table className="w-full min-w-[56rem] border-collapse text-xs">
-          <thead className="bg-card sticky top-0 z-10">
-            <tr className="text-muted-foreground text-left">
-              <th className="border-border border-b px-3 py-2 font-semibold">Hierarchy</th>
-              <th
-                colSpan={2}
-                className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-              >
-                Money in
-              </th>
-              <th
-                colSpan={3}
-                className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-              >
-                Money out
-              </th>
-              <th
-                colSpan={2}
-                className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-              >
-                Balance
-              </th>
-            </tr>
-            <tr className="text-muted-foreground text-left">
-              <th className="border-border border-b px-3 py-2" />
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Received
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                To receive
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Bonus to pay
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Committed
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">Cash</th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">Margin</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tree.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="text-muted-foreground px-3 py-8 text-center">
-                  No delivery units with financial activity yet.
-                </td>
-              </tr>
-            ) : (
-              tree.map((project) => {
-                const projectOpen = openProjects.has(project.projectId);
-                return (
-                  <Fragment key={project.key}>
-                    <tr className="bg-muted/20 hover:bg-muted/30">
-                      <GroupLabelCell
-                        indent={0}
-                        open={projectOpen}
-                        onToggle={() => toggleProject(project.projectId)}
-                        title={project.projectName}
-                        subtitle={`${project.projectCode} · ${project.unitCount} orders`}
-                      />
-                      <UnitEconomicsOverviewMoneyCells row={project} staticOnly />
-                    </tr>
-                    {renderProjectRows(
-                      project,
-                      projectOpen,
-                      openProducts,
-                      toggleProduct,
-                      onDrilldown,
-                    )}
-                  </Fragment>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <UnitEconomicsTableShell
+      minWidth="min-w-[56rem]"
+      hint={
+        <p className="text-muted-foreground text-sm">
+          Project → product → order. Expand levels to inspect roll-ups; click an order code or
+          amount to drill down.
+        </p>
+      }
+      toolbar={
+        <>
+          <Button type="button" variant="outline" size="sm" onClick={expandAll}>
+            Expand all
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={collapseAll}>
+            Collapse all
+          </Button>
+        </>
+      }
+    >
+      <UnitEconomicsTableHead>
+        <tr className="text-muted-foreground text-left">
+          <th className="border-border border-b px-3 py-2 font-semibold">Hierarchy</th>
+          <th
+            colSpan={2}
+            className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
+          >
+            Money in
+          </th>
+          <th
+            colSpan={3}
+            className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
+          >
+            Money out
+          </th>
+          <th
+            colSpan={2}
+            className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
+          >
+            Balance
+          </th>
+        </tr>
+        <tr className="text-muted-foreground text-left">
+          <th className="border-border border-b px-3 py-2" />
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">Received</th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">To receive</th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">
+            Bonus to pay
+          </th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">Committed</th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">Cash</th>
+          <th className="border-border border-b px-2 py-2 text-right font-semibold">Margin</th>
+        </tr>
+      </UnitEconomicsTableHead>
+      <tbody>
+        {tree.length === 0 ? (
+          <tr>
+            <td colSpan={8} className="text-muted-foreground px-3 py-8 text-center">
+              No delivery units with financial activity yet.
+            </td>
+          </tr>
+        ) : (
+          tree.map((project) => {
+            const projectOpen = openProjects.has(project.projectId);
+            return (
+              <Fragment key={project.key}>
+                <tr className="bg-muted/20 hover:bg-muted/30">
+                  <GroupLabelCell
+                    indent={0}
+                    open={projectOpen}
+                    onToggle={() => toggleProject(project.projectId)}
+                    title={project.projectName}
+                    subtitle={`${project.projectCode} · ${project.unitCount} orders`}
+                    emphasized
+                  />
+                  <UnitEconomicsOverviewMoneyCells row={project} staticOnly />
+                </tr>
+                {renderProjectRows(project, projectOpen, openProducts, toggleProduct, onDrilldown)}
+              </Fragment>
+            );
+          })
+        )}
+        {tree.length > 0 ? <UnitEconomicsOverviewFooter totals={filteredTotals} /> : null}
+      </tbody>
+    </UnitEconomicsTableShell>
   );
 }

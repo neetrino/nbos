@@ -2,21 +2,35 @@
 
 import { formatAmount } from '@/features/finance/constants/finance';
 import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
+import {
+  parseUnitEconomicsMoney,
+  parseUnitEconomicsSpent,
+  unitEconomicsMarginClass,
+  unitEconomicsSpentRaw,
+  type UnitEconomicsSpentSource,
+} from '@/features/finance/components/unit-economics/unit-economics-money';
 import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
 import { cn } from '@/lib/utils';
 
 type DrilldownHandler = (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 
-function marginClass(margin: number): string {
-  if (margin < 0) return 'text-destructive';
-  if (margin > 0) return 'text-emerald-600 dark:text-emerald-400';
-  return 'text-muted-foreground';
-}
+type MoneyRow = Pick<
+  UnitEconomicsRow,
+  | 'receivedAmount'
+  | 'receivableAmount'
+  | 'remainingBonuses'
+  | 'outCommittedAmount'
+  | 'cashBalance'
+  | 'marginAfterCommitments'
+> &
+  UnitEconomicsSpentSource & {
+    orderId?: string;
+  };
 
 function StaticAmount({ amount, className }: { amount: string; className?: string }) {
   return (
     <td className={cn('border-border border-b px-2 py-2 text-right tabular-nums', className)}>
-      {formatAmount(amount)}
+      {formatAmount(parseUnitEconomicsMoney(amount))}
     </td>
   );
 }
@@ -26,36 +40,26 @@ export function UnitEconomicsOverviewMoneyCells({
   onDrilldown,
   staticOnly = false,
 }: {
-  row: Pick<
-    UnitEconomicsRow,
-    | 'orderId'
-    | 'receivedAmount'
-    | 'receivableAmount'
-    | 'outFactAmount'
-    | 'remainingBonuses'
-    | 'outCommittedAmount'
-    | 'cashBalance'
-    | 'marginAfterCommitments'
-  >;
+  row: MoneyRow;
   onDrilldown?: DrilldownHandler;
   staticOnly?: boolean;
 }) {
-  const margin = Number.parseFloat(row.marginAfterCommitments);
-  if (staticOnly || !onDrilldown) {
+  const spentRaw = unitEconomicsSpentRaw(row);
+  const margin = parseUnitEconomicsMoney(row.marginAfterCommitments);
+  const cash = parseUnitEconomicsMoney(row.cashBalance);
+
+  if (staticOnly || !onDrilldown || !row.orderId) {
     return (
       <>
         <StaticAmount amount={row.receivedAmount} />
         <StaticAmount amount={row.receivableAmount} />
-        <StaticAmount amount={row.outFactAmount} />
+        <StaticAmount amount={spentRaw} />
         <StaticAmount amount={row.remainingBonuses} />
         <StaticAmount amount={row.outCommittedAmount} />
-        <StaticAmount
-          amount={row.cashBalance}
-          className={marginClass(Number.parseFloat(row.cashBalance))}
-        />
+        <StaticAmount amount={row.cashBalance} className={unitEconomicsMarginClass(cash)} />
         <StaticAmount
           amount={row.marginAfterCommitments}
-          className={cn('font-medium', marginClass(margin))}
+          className={cn('font-medium', unitEconomicsMarginClass(margin))}
         />
       </>
     );
@@ -65,7 +69,7 @@ export function UnitEconomicsOverviewMoneyCells({
     <>
       <td className="border-border border-b px-2 py-2 text-right">
         <UnitEconomicsDrilldownAmount
-          amount={Number.parseFloat(row.receivedAmount)}
+          amount={parseUnitEconomicsMoney(row.receivedAmount)}
           orderId={row.orderId}
           focus="payments"
           onDrilldown={onDrilldown}
@@ -73,7 +77,7 @@ export function UnitEconomicsOverviewMoneyCells({
       </td>
       <td className="border-border border-b px-2 py-2 text-right">
         <UnitEconomicsDrilldownAmount
-          amount={Number.parseFloat(row.receivableAmount)}
+          amount={parseUnitEconomicsMoney(row.receivableAmount)}
           orderId={row.orderId}
           focus="invoices"
           onDrilldown={onDrilldown}
@@ -81,7 +85,7 @@ export function UnitEconomicsOverviewMoneyCells({
       </td>
       <td className="border-border border-b px-2 py-2 text-right">
         <UnitEconomicsDrilldownAmount
-          amount={Number.parseFloat(row.outFactAmount)}
+          amount={parseUnitEconomicsSpent(row)}
           orderId={row.orderId}
           focus="expenses"
           onDrilldown={onDrilldown}
@@ -89,20 +93,17 @@ export function UnitEconomicsOverviewMoneyCells({
       </td>
       <td className="border-border border-b px-2 py-2 text-right">
         <UnitEconomicsDrilldownAmount
-          amount={Number.parseFloat(row.remainingBonuses)}
+          amount={parseUnitEconomicsMoney(row.remainingBonuses)}
           orderId={row.orderId}
           focus="bonuses"
           onDrilldown={onDrilldown}
         />
       </td>
       <StaticAmount amount={row.outCommittedAmount} />
-      <StaticAmount
-        amount={row.cashBalance}
-        className={marginClass(Number.parseFloat(row.cashBalance))}
-      />
+      <StaticAmount amount={row.cashBalance} className={unitEconomicsMarginClass(cash)} />
       <StaticAmount
         amount={row.marginAfterCommitments}
-        className={cn('font-medium', marginClass(margin))}
+        className={cn('font-medium', unitEconomicsMarginClass(margin))}
       />
     </>
   );

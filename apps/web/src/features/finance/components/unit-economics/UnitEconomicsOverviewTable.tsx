@@ -5,17 +5,24 @@ import { ErrorState, LoadingState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
 import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
+import {
+  parseUnitEconomicsMoney,
+  parseUnitEconomicsSpent,
+  unitEconomicsMarginClass,
+} from '@/features/finance/components/unit-economics/unit-economics-money';
+import {
+  UnitEconomicsFundingFooter,
+  UnitEconomicsOverviewFooter,
+} from '@/features/finance/components/unit-economics/unit-economics-table-footer';
+import {
+  UnitEconomicsTableHead,
+  UnitEconomicsTableShell,
+} from '@/features/finance/components/unit-economics/unit-economics-table-shell';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
 import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
 import { cn } from '@/lib/utils';
 
 type DrilldownHandler = (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
-
-function marginClass(margin: number): string {
-  if (margin < 0) return 'text-destructive';
-  if (margin > 0) return 'text-emerald-600 dark:text-emerald-400';
-  return 'text-muted-foreground';
-}
 
 function OverviewRowCells({
   row,
@@ -24,13 +31,15 @@ function OverviewRowCells({
   row: UnitEconomicsRow;
   onDrilldown?: DrilldownHandler;
 }) {
-  const margin = Number.parseFloat(row.marginAfterCommitments);
+  const margin = parseUnitEconomicsMoney(row.marginAfterCommitments);
+  const cash = parseUnitEconomicsMoney(row.cashBalance);
+
   return (
     <>
       <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
       <td className="border-border border-b px-2 py-2 text-right">
         <UnitEconomicsDrilldownAmount
-          amount={Number.parseFloat(row.receivedAmount)}
+          amount={parseUnitEconomicsMoney(row.receivedAmount)}
           orderId={row.orderId}
           focus="payments"
           onDrilldown={onDrilldown}
@@ -38,7 +47,7 @@ function OverviewRowCells({
       </td>
       <td className="border-border border-b px-2 py-2 text-right">
         <UnitEconomicsDrilldownAmount
-          amount={Number.parseFloat(row.receivableAmount)}
+          amount={parseUnitEconomicsMoney(row.receivableAmount)}
           orderId={row.orderId}
           focus="invoices"
           onDrilldown={onDrilldown}
@@ -46,7 +55,7 @@ function OverviewRowCells({
       </td>
       <td className="border-border border-b px-2 py-2 text-right">
         <UnitEconomicsDrilldownAmount
-          amount={Number.parseFloat(row.outFactAmount)}
+          amount={parseUnitEconomicsSpent(row)}
           orderId={row.orderId}
           focus="expenses"
           onDrilldown={onDrilldown}
@@ -54,27 +63,27 @@ function OverviewRowCells({
       </td>
       <td className="border-border border-b px-2 py-2 text-right">
         <UnitEconomicsDrilldownAmount
-          amount={Number.parseFloat(row.remainingBonuses)}
+          amount={parseUnitEconomicsMoney(row.remainingBonuses)}
           orderId={row.orderId}
           focus="bonuses"
           onDrilldown={onDrilldown}
         />
       </td>
       <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(Number.parseFloat(row.outCommittedAmount))}
+        {formatAmount(parseUnitEconomicsMoney(row.outCommittedAmount))}
       </td>
       <td
         className={cn(
           'border-border border-b px-2 py-2 text-right font-medium tabular-nums',
-          marginClass(Number.parseFloat(row.cashBalance)),
+          unitEconomicsMarginClass(cash),
         )}
       >
-        {formatAmount(Number.parseFloat(row.cashBalance))}
+        {formatAmount(cash)}
       </td>
       <td
         className={cn(
           'border-border border-b px-2 py-2 text-right font-medium tabular-nums',
-          marginClass(margin),
+          unitEconomicsMarginClass(margin),
         )}
       >
         {formatAmount(margin)}
@@ -90,14 +99,15 @@ function FundingRowCells({
   row: UnitEconomicsRow;
   onDrilldown?: DrilldownHandler;
 }) {
-  const overRelease = Number.parseFloat(row.overReleaseAmount);
-  const cash = Number.parseFloat(row.cashBalance);
+  const overRelease = parseUnitEconomicsMoney(row.overReleaseAmount);
+  const cash = parseUnitEconomicsMoney(row.cashBalance);
+
   return (
     <>
       <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
       <td className="border-border border-b px-2 py-2 text-right">
         <UnitEconomicsDrilldownAmount
-          amount={Number.parseFloat(row.receivedAmount)}
+          amount={parseUnitEconomicsMoney(row.receivedAmount)}
           orderId={row.orderId}
           focus="payments"
           onDrilldown={onDrilldown}
@@ -106,7 +116,7 @@ function FundingRowCells({
       <td
         className={cn(
           'border-border border-b px-2 py-2 text-right font-medium tabular-nums',
-          marginClass(cash),
+          unitEconomicsMarginClass(cash),
         )}
       >
         {formatAmount(cash)}
@@ -116,11 +126,12 @@ function FundingRowCells({
           'border-border border-b px-2 py-2 text-right tabular-nums',
           overRelease > 0 && 'text-destructive font-medium',
         )}
+        title="Released bonuses exceeding received cash on this unit."
       >
         {formatAmount(overRelease)}
       </td>
       <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(Number.parseFloat(row.outCommittedAmount))}
+        {formatAmount(parseUnitEconomicsMoney(row.outCommittedAmount))}
       </td>
     </>
   );
@@ -137,12 +148,12 @@ export function UnitEconomicsOverviewTable({
   variant?: 'overview' | 'funding';
   onDrilldown?: DrilldownHandler;
 }) {
-  const { loading, error, reload } = data;
+  const { loading, error, reload, filteredTotals } = data;
 
   const displayItems = useMemo(() => {
     if (variant !== 'funding') return items;
     return [...items].sort(
-      (a, b) => Number.parseFloat(b.cashBalance) - Number.parseFloat(a.cashBalance),
+      (a, b) => parseUnitEconomicsMoney(b.cashBalance) - parseUnitEconomicsMoney(a.cashBalance),
     );
   }, [items, variant]);
 
@@ -152,102 +163,104 @@ export function UnitEconomicsOverviewTable({
   const isFunding = variant === 'funding';
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="border-border bg-card overflow-auto rounded-xl border">
-        <table
-          className={cn(
-            'w-full border-collapse text-xs',
-            isFunding ? 'min-w-[44rem]' : 'min-w-[56rem]',
+    <UnitEconomicsTableShell
+      minWidth={isFunding ? 'min-w-[44rem]' : 'min-w-[56rem]'}
+      hint={
+        isFunding ? (
+          <p className="text-muted-foreground text-sm">
+            Cash balance and over-release risk per delivery unit. Over release flags when released
+            bonuses exceed received cash.
+          </p>
+        ) : null
+      }
+    >
+      <UnitEconomicsTableHead>
+        <tr className="text-muted-foreground text-left">
+          <th className="border-border border-b px-3 py-2 font-semibold">Order</th>
+          {isFunding ? (
+            <>
+              <th className="border-border border-b px-2 py-2 text-right font-semibold">
+                Received
+              </th>
+              <th className="border-border border-b px-2 py-2 text-right font-semibold">
+                Cash balance
+              </th>
+              <th
+                className="border-border border-b px-2 py-2 text-right font-semibold"
+                title="Released bonuses exceeding received cash."
+              >
+                Over release
+              </th>
+              <th className="border-border border-b px-2 py-2 text-right font-semibold">
+                Out committed
+              </th>
+            </>
+          ) : (
+            <>
+              <th
+                colSpan={2}
+                className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
+              >
+                Money in
+              </th>
+              <th
+                colSpan={3}
+                className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
+              >
+                Money out
+              </th>
+              <th
+                colSpan={2}
+                className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
+              >
+                Balance
+              </th>
+            </>
           )}
-        >
-          <thead className="bg-card sticky top-0 z-10">
-            <tr className="text-muted-foreground text-left">
-              <th className="border-border border-b px-3 py-2 font-semibold">Order</th>
+        </tr>
+        {!isFunding ? (
+          <tr className="text-muted-foreground text-left">
+            <th className="border-border border-b px-3 py-2" />
+            <th className="border-border border-b px-2 py-2 text-right font-semibold">Received</th>
+            <th className="border-border border-b px-2 py-2 text-right font-semibold">
+              To receive
+            </th>
+            <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
+            <th className="border-border border-b px-2 py-2 text-right font-semibold">
+              Bonus to pay
+            </th>
+            <th className="border-border border-b px-2 py-2 text-right font-semibold">Committed</th>
+            <th className="border-border border-b px-2 py-2 text-right font-semibold">Cash</th>
+            <th className="border-border border-b px-2 py-2 text-right font-semibold">Margin</th>
+          </tr>
+        ) : null}
+      </UnitEconomicsTableHead>
+      <tbody>
+        {displayItems.length === 0 ? (
+          <tr>
+            <td colSpan={isFunding ? 5 : 8} className="text-muted-foreground px-3 py-8 text-center">
+              No delivery units with financial activity yet.
+            </td>
+          </tr>
+        ) : (
+          displayItems.map((row) => (
+            <tr key={row.orderId} className="hover:bg-muted/30">
               {isFunding ? (
-                <>
-                  <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                    Received
-                  </th>
-                  <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                    Cash balance
-                  </th>
-                  <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                    Over release
-                  </th>
-                  <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                    Out committed
-                  </th>
-                </>
+                <FundingRowCells row={row} onDrilldown={onDrilldown} />
               ) : (
-                <>
-                  <th
-                    colSpan={2}
-                    className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-                  >
-                    Money in
-                  </th>
-                  <th
-                    colSpan={3}
-                    className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-                  >
-                    Money out
-                  </th>
-                  <th
-                    colSpan={2}
-                    className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-                  >
-                    Balance
-                  </th>
-                </>
+                <OverviewRowCells row={row} onDrilldown={onDrilldown} />
               )}
             </tr>
-            {!isFunding ? (
-              <tr className="text-muted-foreground text-left">
-                <th className="border-border border-b px-3 py-2" />
-                <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                  Received
-                </th>
-                <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                  To receive
-                </th>
-                <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
-                <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                  Bonus to pay
-                </th>
-                <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                  Committed
-                </th>
-                <th className="border-border border-b px-2 py-2 text-right font-semibold">Cash</th>
-                <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                  Margin
-                </th>
-              </tr>
-            ) : null}
-          </thead>
-          <tbody>
-            {displayItems.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={isFunding ? 5 : 8}
-                  className="text-muted-foreground px-3 py-8 text-center"
-                >
-                  No delivery units with financial activity yet.
-                </td>
-              </tr>
-            ) : (
-              displayItems.map((row) => (
-                <tr key={row.orderId} className="hover:bg-muted/30">
-                  {isFunding ? (
-                    <FundingRowCells row={row} onDrilldown={onDrilldown} />
-                  ) : (
-                    <OverviewRowCells row={row} onDrilldown={onDrilldown} />
-                  )}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          ))
+        )}
+        {displayItems.length > 0 ? (
+          isFunding ? (
+            <UnitEconomicsFundingFooter totals={filteredTotals} />
+          ) : (
+            <UnitEconomicsOverviewFooter totals={filteredTotals} />
+          )
+        ) : null}
+      </tbody>
+    </UnitEconomicsTableShell>
   );
 }
