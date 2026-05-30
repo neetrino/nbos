@@ -15,6 +15,7 @@ import {
   unitEconomicsHierarchyIndentStyle,
   unitEconomicsHierarchyLabelGuideClass,
   unitEconomicsHierarchyRowClass,
+  unitEconomicsHierarchyTitleClass,
 } from '@/features/finance/components/unit-economics/unit-economics-interactive-row';
 import { unitEconomicsOrderTypeLabel } from '@/features/finance/components/unit-economics/unit-economics-order-type-label';
 import { UnitEconomicsOverviewMoneyCells } from '@/features/finance/components/unit-economics/unit-economics-row-money-cells';
@@ -38,14 +39,25 @@ function HierarchyChevron({ open }: { open: boolean }) {
   return <Icon className="text-muted-foreground size-3.5 shrink-0" aria-hidden />;
 }
 
-function OrderLabelCell({ row, indent }: { row: UnitEconomicsRow; indent: number }) {
+function OrderLabelCell({
+  row,
+  indent,
+  highlighted,
+}: {
+  row: UnitEconomicsRow;
+  indent: 2;
+  highlighted: boolean;
+}) {
   const typeLabel = unitEconomicsOrderTypeLabel(row.orderType);
   const indentStyle = unitEconomicsHierarchyIndentStyle(indent);
 
   return (
     <td className="border-border border-b px-3 py-2" style={indentStyle}>
       <div
-        className={cn('flex items-start gap-1.5', unitEconomicsHierarchyLabelGuideClass(indent))}
+        className={cn(
+          'flex items-start gap-1.5',
+          unitEconomicsHierarchyLabelGuideClass(indent, highlighted),
+        )}
       >
         <span className="mt-1 size-3.5 shrink-0" aria-hidden />
         <div className="min-w-0">
@@ -62,12 +74,16 @@ function OrderLabelCell({ row, indent }: { row: UnitEconomicsRow; indent: number
 function GroupLabelCell({
   indent,
   open,
+  highlighted,
+  expandedProject = false,
   title,
   subtitle,
   emphasized,
 }: {
   indent: 0 | 1;
   open: boolean;
+  highlighted: boolean;
+  expandedProject?: boolean;
   title: string;
   subtitle: string;
   emphasized?: boolean;
@@ -77,11 +93,16 @@ function GroupLabelCell({
   return (
     <td className="border-border border-b px-3 py-2" style={indentStyle}>
       <div
-        className={cn('flex items-start gap-1.5', unitEconomicsHierarchyLabelGuideClass(indent))}
+        className={cn(
+          'flex items-start gap-1.5',
+          unitEconomicsHierarchyLabelGuideClass(indent, highlighted, { expandedProject }),
+        )}
       >
         <HierarchyChevron open={open} />
         <div className="min-w-0">
-          <p className={emphasized ? 'font-semibold' : 'font-medium'}>{title}</p>
+          <p className={unitEconomicsHierarchyTitleClass(Boolean(emphasized), expandedProject)}>
+            {title}
+          </p>
           <p className="text-muted-foreground text-[11px]">{subtitle}</p>
         </div>
       </div>
@@ -92,18 +113,17 @@ function GroupLabelCell({
 function renderOrderRows(
   product: UnitEconomicsTreeProduct,
   productOpen: boolean,
-  activeBranch: ActiveBranch | null,
   activeOrderId: string | null,
   onDrilldown?: DrilldownHandler,
 ) {
   if (!productOpen) return [];
   return product.orders.map((row) => {
     const isActive = activeOrderId === row.orderId;
-    const inActiveBranch = activeBranch?.productKey === product.key;
+    const highlighted = productOpen;
     return (
       <tr
         key={row.orderId}
-        className={unitEconomicsHierarchyRowClass(2, { isActive, inActiveBranch })}
+        className={unitEconomicsHierarchyRowClass(2, { highlighted, isActive })}
         tabIndex={0}
         role="button"
         aria-label={`Open ${row.orderCode} detail`}
@@ -112,7 +132,7 @@ function renderOrderRows(
           handleUnitEconomicsRowKeyDown(event, () => onDrilldown?.(row.orderId, 'invoices'))
         }
       >
-        <OrderLabelCell row={row} indent={2} />
+        <OrderLabelCell row={row} indent={2} highlighted={highlighted} />
         <UnitEconomicsOverviewMoneyCells row={row} onDrilldown={onDrilldown} />
       </tr>
     );
@@ -124,18 +144,17 @@ function renderProjectRows(
   projectOpen: boolean,
   productOpenKeys: ReadonlySet<string>,
   onToggleProduct: (key: string) => void,
-  activeBranch: ActiveBranch | null,
   activeOrderId: string | null,
   onDrilldown?: DrilldownHandler,
 ) {
   if (!projectOpen) return [];
   return project.products.flatMap((product) => {
     const productOpen = productOpenKeys.has(product.key);
-    const inActiveBranch = activeBranch?.productKey === product.key;
+    const highlighted = projectOpen;
     return [
       <tr
         key={product.key}
-        className={unitEconomicsHierarchyRowClass(1, { open: productOpen, inActiveBranch })}
+        className={unitEconomicsHierarchyRowClass(1, { highlighted, open: productOpen })}
         tabIndex={0}
         role="button"
         aria-expanded={productOpen}
@@ -148,12 +167,13 @@ function renderProjectRows(
         <GroupLabelCell
           indent={1}
           open={productOpen}
+          highlighted={highlighted}
           title={product.label}
           subtitle={`${product.unitCount} order${product.unitCount === 1 ? '' : 's'}`}
         />
         <UnitEconomicsOverviewMoneyCells row={product} staticOnly />
       </tr>,
-      ...renderOrderRows(product, productOpen, activeBranch, activeOrderId, onDrilldown),
+      ...renderOrderRows(product, productOpen, activeOrderId, onDrilldown),
     ];
   });
 }
@@ -306,13 +326,12 @@ export function UnitEconomicsNestedTable({
         ) : (
           tree.map((project) => {
             const projectOpen = openProjects.has(project.projectId);
-            const inActiveBranch = activeBranch?.projectId === project.projectId;
             return (
               <Fragment key={project.key}>
                 <tr
                   className={unitEconomicsHierarchyRowClass(0, {
+                    highlighted: projectOpen,
                     open: projectOpen,
-                    inActiveBranch,
                   })}
                   tabIndex={0}
                   role="button"
@@ -326,6 +345,8 @@ export function UnitEconomicsNestedTable({
                   <GroupLabelCell
                     indent={0}
                     open={projectOpen}
+                    highlighted={projectOpen}
+                    expandedProject={projectOpen}
                     title={project.projectName}
                     subtitle={`${project.projectCode} · ${project.unitCount} orders`}
                     emphasized
@@ -337,7 +358,6 @@ export function UnitEconomicsNestedTable({
                   projectOpen,
                   openProducts,
                   toggleProduct,
-                  activeBranch,
                   activeOrderId,
                   onDrilldown,
                 )}
