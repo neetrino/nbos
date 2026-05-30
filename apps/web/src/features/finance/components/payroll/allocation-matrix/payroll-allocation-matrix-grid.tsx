@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { PayrollAllocationMatrixCellInput } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-cell-input';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { PAYROLL_MATRIX_CELL_CLASS } from '@/features/finance/constants/payroll-allocation-matrix-cell';
+import { matrixCellNeedsManualBonus } from '@/features/finance/utils/payroll-matrix-cell-actions';
 import {
   MatrixCellDetailPanel,
   MatrixEmployeeDetailHeader,
@@ -48,14 +49,6 @@ function cellMap(cells: PayrollAllocationMatrixCell[]): Map<string, PayrollAlloc
 
 function cellKey(cell: PayrollAllocationMatrixCell): string {
   return `${cell.employeeId}:${cell.orderId}`;
-}
-
-function needsManualBonus(cell: PayrollAllocationMatrixCell, editable: boolean): boolean {
-  return (
-    editable &&
-    (cell.state === 'UNLINKED' ||
-      (cell.state === 'LINKED_EMPTY' && !cell.bonusEntryId && cell.linked))
-  );
 }
 
 function employeeAmounts(e: {
@@ -219,7 +212,7 @@ export function PayrollAllocationMatrixGrid(props: {
           style={PAYROLL_MATRIX_DATA_COL_STYLE}
           className={cn('border-border bg-card border-r border-b', PAYROLL_MATRIX_DATA_COL_WIDTH)}
         />
-      ) : needsManualBonus(cell, matrix.editable) ? (
+      ) : matrixCellNeedsManualBonus(cell, matrix.editable) ? (
         <td
           key={colId}
           style={PAYROLL_MATRIX_DATA_COL_STYLE}

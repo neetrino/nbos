@@ -2,35 +2,24 @@
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { formatAmount } from '@/features/finance/constants/finance';
-import { PayrollAllocationMatrixCellInput } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-cell-input';
-import { ExpansionMetricStack } from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-metrics';
+import {
+  HistoryMonthCell,
+  HistoryMonthHeader,
+  ProjectDetailMetrics,
+} from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-cell';
 import {
   PAYROLL_EMPLOYEE_HISTORY_DETAIL_COL_CLASS,
-  PAYROLL_EMPLOYEE_HISTORY_DETAIL_COL_STYLE,
   PAYROLL_EMPLOYEE_HISTORY_MONTH_COL_CLASS,
   PAYROLL_EMPLOYEE_HISTORY_MONTH_COL_STYLE,
   PAYROLL_EMPLOYEE_HISTORY_PROJECT_COL_CLASS,
 } from '@/features/finance/constants/payroll-employee-bonus-history-layout';
-import { payrollRunStatusUi } from '@/features/finance/constants/payroll-run-status-ui';
-import { formatPayrollMonthAbbrev } from '@/features/finance/utils/salary-board-month-utils';
-import type {
-  PayrollEmployeeBonusHistory,
-  PayrollEmployeeBonusHistoryProject,
-} from '@/lib/api/payroll-employee-bonus-history';
+import type { PayrollEmployeeBonusHistory } from '@/lib/api/payroll-employee-bonus-history';
 import type { PayrollAllocationMatrixCell } from '@/lib/api/payroll-allocation-matrix';
-import type { PayrollRunStatus } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
 
 function parseMoney(value: string): number {
   const n = Number.parseFloat(value);
   return Number.isFinite(n) ? n : 0;
-}
-
-function fmt(value: string | null): string {
-  if (value == null) return '—';
-  const n = parseMoney(value);
-  return n > 0 ? formatAmount(n) : '—';
 }
 
 const STICKY_PROJECT_HEADER = cn(
@@ -53,126 +42,12 @@ const STICKY_DETAIL_CELL = cn(
   PAYROLL_EMPLOYEE_HISTORY_DETAIL_COL_CLASS,
 );
 
-function MonthHeader({
-  payrollMonth,
-  runStatus,
-  isFocusMonth,
-  monthBonusTotal,
-  historyLoading,
-}: {
-  payrollMonth: string;
-  runStatus: PayrollRunStatus | null;
-  isFocusMonth: boolean;
-  monthBonusTotal: string;
-  historyLoading: boolean;
-}) {
-  const statusLabel =
-    runStatus != null ? payrollRunStatusUi(runStatus).label : isFocusMonth ? 'Current' : null;
-  const showTotalSkeleton = historyLoading && !isFocusMonth;
-
-  return (
-    <div className="flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-0.5 py-1">
-      <span
-        className={cn(
-          'text-[10px] font-semibold tabular-nums',
-          isFocusMonth ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground',
-        )}
-      >
-        {formatPayrollMonthAbbrev(payrollMonth)}
-      </span>
-      {statusLabel ? (
-        <span className="text-muted-foreground max-w-full truncate text-[8px] font-medium uppercase">
-          {statusLabel}
-        </span>
-      ) : null}
-      {showTotalSkeleton ? (
-        <span className="bg-muted/60 h-3 w-10 animate-pulse rounded" aria-hidden />
-      ) : (
-        <span className="text-foreground text-[10px] font-bold tabular-nums">
-          {fmt(monthBonusTotal)}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function HistoryMonthCell({
-  amount,
-  readOnly,
-  isFocusMonth,
-  focusCell,
-  availableFunding,
-  saving,
-  historyLoading,
-  onSave,
-}: {
-  amount: string | null;
-  readOnly: boolean;
-  isFocusMonth: boolean;
-  focusCell: PayrollAllocationMatrixCell | null;
-  availableFunding: number;
-  saving: boolean;
-  historyLoading: boolean;
-  onSave: (payload: { releaseThisMonth: string; reason?: string }) => Promise<void>;
-}) {
-  if (historyLoading && !isFocusMonth) {
-    return (
-      <div
-        className="border-border bg-muted/30 flex h-14 w-full items-center justify-center rounded-md border border-dashed"
-        aria-hidden
-      >
-        <span className="bg-muted/50 h-3 w-12 animate-pulse rounded" />
-      </div>
-    );
-  }
-  if (isFocusMonth && focusCell?.editable && !readOnly) {
-    return (
-      <PayrollAllocationMatrixCellInput
-        cell={focusCell}
-        availableFunding={availableFunding}
-        disabled={!focusCell.editable}
-        saving={saving}
-        onSave={onSave}
-      />
-    );
-  }
-
-  const display = isFocusMonth && focusCell ? focusCell.releaseThisMonth : amount;
-  const hasValue = display != null && parseMoney(display) > 0;
-
-  return (
-    <div
-      className={cn(
-        'flex h-14 w-full items-center justify-center rounded-md border px-1',
-        hasValue
-          ? readOnly
-            ? 'border-border bg-muted/25 text-foreground'
-            : 'border-emerald-200/80 bg-emerald-50/80 text-emerald-950 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-100'
-          : 'border-border bg-muted/15 text-muted-foreground border-dashed',
-      )}
-    >
-      <span className="truncate text-xs font-semibold tabular-nums">{fmt(display)}</span>
-    </div>
-  );
-}
-
-function ProjectDetailMetrics({ project }: { project: PayrollEmployeeBonusHistoryProject }) {
-  return (
-    <ExpansionMetricStack
-      items={[
-        { label: 'Available', value: formatAmount(parseMoney(project.availableFunding)) },
-        { label: 'Due', value: formatAmount(parseMoney(project.totalRemainingBonus)) },
-        { label: 'Paid', value: formatAmount(parseMoney(project.totalPaidBonus)) },
-      ]}
-    />
-  );
-}
-
 export function PayrollEmployeeBonusHistoryGrid({
   data,
   savingCellKey,
   historyMonthsLoading = false,
   onCellSave,
+  onManualBonus,
   scrollToFocusKey,
 }: {
   data: PayrollEmployeeBonusHistory;
@@ -182,6 +57,7 @@ export function PayrollEmployeeBonusHistoryGrid({
     cell: PayrollAllocationMatrixCell,
     payload: { releaseThisMonth: string; reason?: string },
   ) => Promise<void>;
+  onManualBonus: (cell: PayrollAllocationMatrixCell) => void;
   scrollToFocusKey: string;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -225,7 +101,7 @@ export function PayrollEmployeeBonusHistoryGrid({
                     className="hover:underline"
                     title={`Open payroll ${col.payrollMonth}`}
                   >
-                    <MonthHeader
+                    <HistoryMonthHeader
                       payrollMonth={col.payrollMonth}
                       runStatus={col.runStatus}
                       isFocusMonth={col.isFocusMonth}
@@ -234,7 +110,7 @@ export function PayrollEmployeeBonusHistoryGrid({
                     />
                   </Link>
                 ) : (
-                  <MonthHeader
+                  <HistoryMonthHeader
                     payrollMonth={col.payrollMonth}
                     runStatus={col.runStatus}
                     isFocusMonth={col.isFocusMonth}
@@ -272,12 +148,12 @@ export function PayrollEmployeeBonusHistoryGrid({
                     className={cn(
                       'border-border border-b p-1 align-middle',
                       PAYROLL_EMPLOYEE_HISTORY_MONTH_COL_CLASS,
-                      col.isFocusMonth && 'bg-emerald-50/40 dark:bg-emerald-950/15',
                     )}
                   >
                     <HistoryMonthCell
                       amount={project.monthAmounts[monthIndex] ?? null}
                       readOnly={col.readOnly}
+                      editable={data.editable}
                       isFocusMonth={col.isFocusMonth}
                       focusCell={project.focusCell}
                       availableFunding={funding}
@@ -286,6 +162,9 @@ export function PayrollEmployeeBonusHistoryGrid({
                       onSave={(payload) => {
                         if (!project.focusCell) return Promise.resolve();
                         return onCellSave(project.focusCell, payload);
+                      }}
+                      onManualBonus={() => {
+                        if (project.focusCell) onManualBonus(project.focusCell);
                       }}
                     />
                   </td>

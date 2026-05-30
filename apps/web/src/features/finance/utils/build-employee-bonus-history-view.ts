@@ -1,11 +1,12 @@
 import type {
   PayrollAllocationMatrix,
   PayrollAllocationMatrixCell,
-  DeliveryPayableUnit,
+  PayrollMatrixCellState,
 } from '@/lib/api/payroll-allocation-matrix';
 import type {
   PayrollEmployeeBonusHistory,
   PayrollEmployeeBonusHistoryMeta,
+  PayrollEmployeeBonusHistoryProject,
   PayrollEmployeeBonusHistorySlice,
 } from '@/lib/api/payroll-employee-bonus-history';
 
@@ -16,6 +17,43 @@ function parseMoney(value: string): number {
 
 function formatMoney(n: number): string {
   return n.toFixed(2);
+}
+
+/** Cell states that mean an actual bonus exists for the employee on this order. */
+const PROJECT_BONUS_STATES = new Set<PayrollMatrixCellState>([
+  'READY',
+  'PROGRESS',
+  'PARTIALLY_FUNDED',
+  'MANUAL_BONUS',
+  'EXTRA_BONUS',
+  'OVER_FUNDING',
+  'RELEASE_SET',
+]);
+
+/**
+ * Row grouping rank, mirroring the Employee × Order intent: projects where the
+ * employee has a bonus sit on top, then linked-but-empty projects, then the
+ * remaining (colorless / no-link) projects at the bottom.
+ */
+function projectSortRank(project: PayrollEmployeeBonusHistoryProject): number {
+  const hasHistoryAmount = project.monthAmounts.some((a) => a != null);
+  const cell = project.focusCell;
+  const hasBonus =
+    hasHistoryAmount ||
+    (cell != null &&
+      (parseMoney(cell.releaseThisMonth) > 0 || PROJECT_BONUS_STATES.has(cell.state)));
+  if (hasBonus) return 0;
+  if (cell?.linked) return 1;
+  return 2;
+}
+
+export function compareEmployeeBonusHistoryProjects(
+  a: PayrollEmployeeBonusHistoryProject,
+  b: PayrollEmployeeBonusHistoryProject,
+): number {
+  const rankDiff = projectSortRank(a) - projectSortRank(b);
+  if (rankDiff !== 0) return rankDiff;
+  return a.label.localeCompare(b.label);
 }
 
 function focusMonthBonusTotal(cells: PayrollAllocationMatrixCell[]): string {
@@ -38,7 +76,7 @@ export function buildOptimisticEmployeeBonusHistory(
 
   const orderIds = new Set<string>();
   for (const unit of meta.deliveryUnits) {
-    if (cellsByOrder.has(unit.orderId)) orderIds.add(unit.orderId);
+    orderIds.add(unit.orderId);
   }
   for (const cell of cells) {
     if (cell.linked || parseMoney(cell.releaseThisMonth) > 0) {
@@ -74,7 +112,7 @@ export function buildOptimisticEmployeeBonusHistory(
         focusCell,
       };
     })
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .sort(compareEmployeeBonusHistoryProjects);
 
   const months = meta.months.map((m) => ({
     ...m,
@@ -130,7 +168,7 @@ export function mergeEmployeeBonusHistorySlice(
     }
   }
 
-  mergedProjects.sort((a, b) => a.label.localeCompare(b.label));
+  mergedProjects.sort(compareEmployeeBonusHistoryProjects);
 
   return {
     ...base,
