@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { PayrollAllocationMatrixCellInput } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-cell-input';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { PAYROLL_MATRIX_CELL_CLASS } from '@/features/finance/constants/payroll-allocation-matrix-cell';
+import { payrollMatrixCellBoxClass } from '@/features/finance/components/payroll/payroll-matrix-shared/payroll-matrix-cell-box';
 import { matrixCellNeedsManualBonus } from '@/features/finance/utils/payroll-matrix-cell-actions';
 import {
   MatrixCellDetailPanel,
@@ -206,46 +206,43 @@ export function PayrollAllocationMatrixGrid(props: {
       const orderId = viewMode === 'EMPLOYEE_MATRIX' ? colId : rowId;
       const availableFunding = fundingByOrderId.get(orderId) ?? 0;
 
+      const tdClass = cn(
+        'border-border border-r border-b p-1 align-middle',
+        PAYROLL_MATRIX_DATA_COL_WIDTH,
+      );
+
       const dataTd = !cell ? (
-        <td
-          key={colId}
-          style={PAYROLL_MATRIX_DATA_COL_STYLE}
-          className={cn('border-border bg-card border-r border-b', PAYROLL_MATRIX_DATA_COL_WIDTH)}
-        />
+        <td key={colId} style={PAYROLL_MATRIX_DATA_COL_STYLE} className={tdClass}>
+          <div className={payrollMatrixCellBoxClass(null, false)} aria-hidden />
+        </td>
       ) : matrixCellNeedsManualBonus(cell, matrix.editable) ? (
-        <td
-          key={colId}
-          style={PAYROLL_MATRIX_DATA_COL_STYLE}
-          className={cn(
-            'border-border border-r border-b p-0 align-middle',
-            PAYROLL_MATRIX_DATA_COL_WIDTH,
-            PAYROLL_MATRIX_CELL_CLASS[cell.state],
-          )}
-        >
+        <td key={colId} style={PAYROLL_MATRIX_DATA_COL_STYLE} className={tdClass}>
           <button
             type="button"
             aria-label="Create manual bonus"
-            className="box-border flex h-full min-h-[2.25rem] w-full min-w-0 cursor-pointer px-1 py-0.5 hover:bg-sky-500/10"
+            className={cn(
+              payrollMatrixCellBoxClass(cell.state, false),
+              'cursor-pointer transition-colors hover:bg-sky-500/10',
+            )}
             onClick={() => onManualCellRequest(cell)}
           />
         </td>
       ) : (
-        <td
-          key={colId}
-          style={PAYROLL_MATRIX_DATA_COL_STYLE}
-          className={cn(
-            'border-border border-r border-b p-0 align-middle',
-            PAYROLL_MATRIX_DATA_COL_WIDTH,
-            PAYROLL_MATRIX_CELL_CLASS[cell.state],
-          )}
-        >
-          <PayrollAllocationMatrixCellInput
-            cell={cell}
-            availableFunding={availableFunding}
-            disabled={layoutDisabled}
-            saving={savingCellKey === cellKey(cell)}
-            onSave={(payload) => onReleaseSave(cell, payload)}
-          />
+        <td key={colId} style={PAYROLL_MATRIX_DATA_COL_STYLE} className={tdClass}>
+          <div
+            className={payrollMatrixCellBoxClass(
+              cell.state,
+              Number.parseFloat(cell.releaseThisMonth) > 0,
+            )}
+          >
+            <PayrollAllocationMatrixCellInput
+              cell={cell}
+              availableFunding={availableFunding}
+              disabled={layoutDisabled}
+              saving={savingCellKey === cellKey(cell)}
+              onSave={(payload) => onReleaseSave(cell, payload)}
+            />
+          </div>
         </td>
       );
 

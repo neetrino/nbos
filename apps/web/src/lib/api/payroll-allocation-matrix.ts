@@ -164,22 +164,6 @@ export const payrollAllocationMatrixApi = {
     return resp.data;
   },
 
-  async reassignRecipient(
-    payrollRunId: string,
-    body: {
-      fromEmployeeId: string;
-      orderId: string;
-      toEmployeeId: string;
-      reason: string;
-    },
-  ): Promise<PayrollAllocationMatrix> {
-    const resp = await api.patch<PayrollAllocationMatrix>(
-      `/api/payroll-runs/${payrollRunId}/allocation-matrix/reassign-recipient`,
-      body,
-    );
-    return resp.data;
-  },
-
   async resetLayout(
     payrollRunId: string,
     viewMode: PayrollMatrixViewMode,
@@ -187,23 +171,6 @@ export const payrollAllocationMatrixApi = {
     const resp = await api.post<PayrollAllocationMatrix>(
       `/api/payroll-runs/${payrollRunId}/allocation-matrix/layout/reset`,
       { viewMode },
-    );
-    return resp.data;
-  },
-
-  async patchPlannedBonus(
-    payrollRunId: string,
-    body: {
-      employeeId: string;
-      orderId: string;
-      amount: string;
-      title?: string;
-      reason: string;
-    },
-  ): Promise<PayrollAllocationMatrix> {
-    const resp = await api.patch<PayrollAllocationMatrix>(
-      `/api/payroll-runs/${payrollRunId}/allocation-matrix/planned-bonus`,
-      body,
     );
     return resp.data;
   },

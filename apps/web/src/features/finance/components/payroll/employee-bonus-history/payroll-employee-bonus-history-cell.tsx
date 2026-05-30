@@ -3,7 +3,7 @@
 import { formatAmount } from '@/features/finance/constants/finance';
 import { PayrollAllocationMatrixCellInput } from '@/features/finance/components/payroll/allocation-matrix/payroll-allocation-matrix-cell-input';
 import { ExpansionMetricStack } from '@/features/finance/components/payroll/employee-bonus-history/payroll-employee-bonus-history-metrics';
-import { PAYROLL_MATRIX_CELL_CLASS } from '@/features/finance/constants/payroll-allocation-matrix-cell';
+import { payrollMatrixCellBoxClass } from '@/features/finance/components/payroll/payroll-matrix-shared/payroll-matrix-cell-box';
 import { payrollRunStatusUi } from '@/features/finance/constants/payroll-run-status-ui';
 import { matrixCellNeedsManualBonus } from '@/features/finance/utils/payroll-matrix-cell-actions';
 import { formatPayrollMonthAbbrev } from '@/features/finance/utils/salary-board-month-utils';
@@ -15,8 +15,6 @@ import type { PayrollEmployeeBonusHistoryProject } from '@/lib/api/payroll-emplo
 import type { PayrollRunStatus } from '@/lib/api/payroll-runs';
 import { cn } from '@/lib/utils';
 
-const CELL_BOX_CLASS = 'flex h-14 w-full items-center justify-center rounded-md border px-1';
-
 function parseMoney(value: string): number {
   const n = Number.parseFloat(value);
   return Number.isFinite(n) ? n : 0;
@@ -26,16 +24,6 @@ function fmt(value: string | null): string {
   if (value == null) return '—';
   const n = parseMoney(value);
   return n > 0 ? formatAmount(n) : '—';
-}
-
-/** Calendar coloring mirrors the Employee × Order matrix palette. */
-function boxClassForState(state: PayrollMatrixCellState, hasValue: boolean): string {
-  if (state === 'UNLINKED') {
-    return hasValue
-      ? 'border-border bg-muted/25 text-foreground'
-      : 'border-border border-dashed bg-muted/15 text-muted-foreground';
-  }
-  return cn('border-transparent', PAYROLL_MATRIX_CELL_CLASS[state]);
 }
 
 function historyCellState(
@@ -127,7 +115,7 @@ export function HistoryMonthCell({
   const display = isFocusMonth && focusCell ? focusCell.releaseThisMonth : amount;
   const hasValue = display != null && parseMoney(display) > 0;
   const state = historyCellState(isFocusMonth, focusCell, hasValue);
-  const boxClass = cn(CELL_BOX_CLASS, boxClassForState(state, hasValue));
+  const boxClass = payrollMatrixCellBoxClass(state, hasValue);
 
   if (isFocusMonth && focusCell && editable && matrixCellNeedsManualBonus(focusCell, editable)) {
     return (
@@ -156,7 +144,9 @@ export function HistoryMonthCell({
 
   return (
     <div className={boxClass}>
-      <span className="truncate text-xs font-semibold tabular-nums">{fmt(display)}</span>
+      <span className="truncate text-center text-xs font-semibold tabular-nums">
+        {fmt(display)}
+      </span>
     </div>
   );
 }

@@ -47,7 +47,7 @@ function projectSortRank(project: PayrollEmployeeBonusHistoryProject): number {
   return 2;
 }
 
-export function compareEmployeeBonusHistoryProjects(
+function compareEmployeeBonusHistoryProjects(
   a: PayrollEmployeeBonusHistoryProject,
   b: PayrollEmployeeBonusHistoryProject,
 ): number {

@@ -6,8 +6,6 @@ import type {
   CreatePayrollMatrixManualBonusBody,
   PatchPayrollMatrixCellBody,
   PatchPayrollMatrixLayoutBody,
-  PatchPayrollMatrixPlannedBonusBody,
-  PatchPayrollMatrixReassignBody,
 } from './payroll-allocation-matrix.types';
 import { PayrollRunsService } from './payroll-runs.service';
 
@@ -211,26 +209,6 @@ export class PayrollRunsController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.payrollAllocationMatrixService.createManualBonus(id, user.id, body);
-  }
-
-  @Patch(':id/allocation-matrix/planned-bonus')
-  @ApiOperation({ summary: 'Edit planned bonus amount/title for a matrix cell' })
-  async patchAllocationMatrixPlannedBonus(
-    @Param('id') id: string,
-    @Body() body: PatchPayrollMatrixPlannedBonusBody,
-    @CurrentUser() user: CurrentUserPayload,
-  ) {
-    return this.payrollAllocationMatrixService.patchPlannedBonus(id, user.id, body);
-  }
-
-  @Patch(':id/allocation-matrix/reassign-recipient')
-  @ApiOperation({ summary: 'Reassign bonus recipient before payment (matrix context)' })
-  async patchAllocationMatrixReassignRecipient(
-    @Param('id') id: string,
-    @Body() body: PatchPayrollMatrixReassignBody,
-    @CurrentUser() user: CurrentUserPayload,
-  ) {
-    return this.payrollAllocationMatrixService.reassignRecipient(id, user.id, body);
   }
 
   @Post(':id/allocation-matrix/layout/reset')

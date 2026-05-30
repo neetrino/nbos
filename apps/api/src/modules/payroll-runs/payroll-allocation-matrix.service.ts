@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
   Decimal,
   PayrollMatrixViewModeEnum,
@@ -6,12 +6,7 @@ import {
   type PayrollBonusAllocationKindEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import { AuditService } from '../audit/audit.service';
-import { NotificationService } from '../notifications/notification.service';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
-import { reassignMatrixBonusRecipientAndSync } from './payroll-matrix-bonus-reassign';
-import { patchMatrixPlannedBonus } from './payroll-matrix-planned-bonus';
-import { syncAfterBonusReleaseMutation } from './payroll-run-bonus-release-side-effects';
 import {
   validatePayrollMatrixForApproval,
   type PayrollMatrixValidationIssue,
@@ -39,8 +34,6 @@ import type {
   CreatePayrollMatrixManualBonusBody,
   PatchPayrollMatrixCellBody,
   PatchPayrollMatrixLayoutBody,
-  PatchPayrollMatrixPlannedBonusBody,
-  PatchPayrollMatrixReassignBody,
   PayrollAllocationMatrixCell,
   PayrollAllocationMatrixDto,
   PayrollMatrixCellState,
@@ -105,13 +98,7 @@ function allocationKindFromCellState(
 
 @Injectable()
 export class PayrollAllocationMatrixService {
-  private readonly logger = new Logger(PayrollAllocationMatrixService.name);
-
-  constructor(
-    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    private readonly notifications: NotificationService,
-    private readonly audit: AuditService,
-  ) {}
+  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
   async getValidation(payrollRunId: string): Promise<{ issues: PayrollMatrixValidationIssue[] }> {
     const run = await this.prisma.payrollRun.findUnique({ where: { id: payrollRunId } });
@@ -521,97 +508,6 @@ export class PayrollAllocationMatrixService {
         reason: body.reason?.trim() || null,
         updatedById: userId,
       },
-    });
-
-    return this.getMatrix(payrollRunId, userId);
-  }
-
-  async patchPlannedBonus(
-    payrollRunId: string,
-    userId: string,
-    body: PatchPayrollMatrixPlannedBonusBody,
-  ): Promise<PayrollAllocationMatrixDto> {
-    const run = await this.prisma.payrollRun.findUnique({ where: { id: payrollRunId } });
-    if (!run) throw new NotFoundException('Payroll run not found');
-    if (!EDITABLE_STATUSES.has(run.status)) {
-      throw new BadRequestException('Payroll run is not editable');
-    }
-
-    const patchResult = await patchMatrixPlannedBonus(this.prisma, {
-      employeeId: body.employeeId,
-      orderId: body.orderId,
-      amount: body.amount,
-      title: body.title,
-      reason: body.reason,
-    });
-
-    await this.audit.log({
-      entityType: 'BonusEntry',
-      entityId: patchResult.bonusEntryId,
-      action: 'MATRIX_PLANNED_BONUS_UPDATED',
-      userId,
-      projectId: patchResult.projectId,
-      changes: {
-        payrollRunId,
-        orderId: body.orderId,
-        employeeId: body.employeeId,
-        previousAmount: patchResult.previousAmount,
-        nextAmount: patchResult.nextAmount,
-        previousTitle: patchResult.previousTitle,
-        nextTitle: body.title?.trim() ?? patchResult.previousTitle,
-        reason: body.reason.trim(),
-      },
-    });
-
-    return this.getMatrix(payrollRunId, userId);
-  }
-
-  async reassignRecipient(
-    payrollRunId: string,
-    userId: string,
-    body: PatchPayrollMatrixReassignBody,
-  ): Promise<PayrollAllocationMatrixDto> {
-    const run = await this.prisma.payrollRun.findUnique({ where: { id: payrollRunId } });
-    if (!run) throw new NotFoundException('Payroll run not found');
-    if (!EDITABLE_STATUSES.has(run.status)) {
-      throw new BadRequestException('Payroll run is not editable');
-    }
-
-    const reassignResult = await reassignMatrixBonusRecipientAndSync(this.prisma, {
-      payrollRunId,
-      fromEmployeeId: body.fromEmployeeId,
-      orderId: body.orderId,
-      toEmployeeId: body.toEmployeeId,
-      reason: body.reason,
-    });
-
-    await this.audit.log({
-      entityType: 'BonusEntry',
-      entityId: reassignResult.bonusEntryId,
-      action: 'MATRIX_BONUS_RECIPIENT_REASSIGNED',
-      userId,
-      projectId: reassignResult.projectId,
-      changes: {
-        payrollRunId,
-        orderId: body.orderId,
-        fromEmployeeId: body.fromEmployeeId,
-        toEmployeeId: body.toEmployeeId,
-        reason: body.reason.trim(),
-      },
-    });
-
-    await syncAfterBonusReleaseMutation(
-      this.prisma,
-      { releaseIds: [], carryNotifyEvents: reassignResult.carryNotifyEvents },
-      this.notifications,
-    );
-
-    this.logger.log({
-      msg: 'matrix_bonus_recipient_reassigned',
-      payrollRunId,
-      bonusEntryId: reassignResult.bonusEntryId,
-      fromEmployeeId: body.fromEmployeeId,
-      toEmployeeId: body.toEmployeeId,
     });
 
     return this.getMatrix(payrollRunId, userId);

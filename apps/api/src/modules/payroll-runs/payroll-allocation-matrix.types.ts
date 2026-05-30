@@ -91,18 +91,3 @@ export type CreatePayrollMatrixManualBonusBody = {
   amount: string;
   reason: string;
 };
-
-export type PatchPayrollMatrixPlannedBonusBody = {
-  employeeId: string;
-  orderId: string;
-  amount: string;
-  title?: string;
-  reason: string;
-};
-
-export type PatchPayrollMatrixReassignBody = {
-  fromEmployeeId: string;
-  orderId: string;
-  toEmployeeId: string;
-  reason: string;
-};

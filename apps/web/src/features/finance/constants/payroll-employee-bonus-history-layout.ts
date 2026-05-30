@@ -12,9 +12,3 @@ export const PAYROLL_EMPLOYEE_HISTORY_MONTH_COL_STYLE = {
   minWidth: '5.5rem',
   maxWidth: '5.5rem',
 } as const;
-
-export const PAYROLL_EMPLOYEE_HISTORY_DETAIL_COL_STYLE = {
-  width: '6.5rem',
-  minWidth: '6.5rem',
-  maxWidth: '6.5rem',
-} as const;
