@@ -15,6 +15,7 @@ type UnitEconomicsPagePanelProps = {
   view: UnitEconomicsBoardViewMode;
   data: UnitEconomicsBoardData;
   filteredItems: UnitEconomicsRow[];
+  activeOrderId?: string | null;
   onDrilldown: DrilldownHandler;
 };
 
@@ -22,12 +23,18 @@ export function UnitEconomicsPagePanel({
   view,
   data,
   filteredItems,
+  activeOrderId = null,
   onDrilldown,
 }: UnitEconomicsPagePanelProps) {
   switch (view) {
     case 'tree':
       return (
-        <UnitEconomicsNestedTable data={data} items={filteredItems} onDrilldown={onDrilldown} />
+        <UnitEconomicsNestedTable
+          data={data}
+          items={filteredItems}
+          activeOrderId={activeOrderId}
+          onDrilldown={onDrilldown}
+        />
       );
     case 'cards':
       return <UnitEconomicsUnitCards items={filteredItems} onDrilldown={onDrilldown} />;
@@ -37,6 +44,7 @@ export function UnitEconomicsPagePanel({
           data={data}
           items={filteredItems}
           variant="overview"
+          activeOrderId={activeOrderId}
           onDrilldown={onDrilldown}
         />
       );
@@ -46,24 +54,36 @@ export function UnitEconomicsPagePanel({
           data={data}
           items={filteredItems}
           variant="funding"
+          activeOrderId={activeOrderId}
           onDrilldown={onDrilldown}
         />
       );
     case 'outflows':
       return (
-        <UnitEconomicsExpensesTable data={data} items={filteredItems} onDrilldown={onDrilldown} />
+        <UnitEconomicsExpensesTable
+          data={data}
+          items={filteredItems}
+          activeOrderId={activeOrderId}
+          onDrilldown={onDrilldown}
+        />
       );
     case 'profitability':
       return (
         <UnitEconomicsProfitabilityTable
           data={data}
           items={filteredItems}
+          activeOrderId={activeOrderId}
           onDrilldown={onDrilldown}
         />
       );
     default:
       return (
-        <UnitEconomicsNestedTable data={data} items={filteredItems} onDrilldown={onDrilldown} />
+        <UnitEconomicsNestedTable
+          data={data}
+          items={filteredItems}
+          activeOrderId={activeOrderId}
+          onDrilldown={onDrilldown}
+        />
       );
   }
 }

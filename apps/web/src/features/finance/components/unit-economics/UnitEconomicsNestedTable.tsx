@@ -10,6 +10,12 @@ import {
   type UnitEconomicsTreeProject,
 } from '@/features/finance/components/unit-economics/build-unit-economics-tree';
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
+import {
+  handleUnitEconomicsRowKeyDown,
+  unitEconomicsHierarchyIndentStyle,
+  unitEconomicsHierarchyLabelGuideClass,
+  unitEconomicsHierarchyRowClass,
+} from '@/features/finance/components/unit-economics/unit-economics-interactive-row';
 import { unitEconomicsOrderTypeLabel } from '@/features/finance/components/unit-economics/unit-economics-order-type-label';
 import { UnitEconomicsOverviewMoneyCells } from '@/features/finance/components/unit-economics/unit-economics-row-money-cells';
 import { UnitEconomicsOverviewFooter } from '@/features/finance/components/unit-economics/unit-economics-table-footer';
@@ -18,54 +24,32 @@ import {
   UnitEconomicsTableShell,
 } from '@/features/finance/components/unit-economics/unit-economics-table-shell';
 import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
+import { cn } from '@/lib/utils';
 
 type DrilldownHandler = (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 
-function ToggleButton({ open, onClick }: { open: boolean; onClick: () => void }) {
+type ActiveBranch = {
+  projectId: string;
+  productKey: string;
+};
+
+function HierarchyChevron({ open }: { open: boolean }) {
   const Icon = open ? ChevronDown : ChevronRight;
-  return (
-    <button
-      type="button"
-      className="text-muted-foreground hover:text-foreground shrink-0 rounded p-0.5"
-      aria-expanded={open}
-      onClick={onClick}
-    >
-      <Icon className="size-3.5" aria-hidden />
-    </button>
-  );
+  return <Icon className="text-muted-foreground size-3.5 shrink-0" aria-hidden />;
 }
 
-function OrderLabelCell({
-  row,
-  indent,
-  onDrilldown,
-}: {
-  row: UnitEconomicsRow;
-  indent: number;
-  onDrilldown?: DrilldownHandler;
-}) {
+function OrderLabelCell({ row, indent }: { row: UnitEconomicsRow; indent: number }) {
   const typeLabel = unitEconomicsOrderTypeLabel(row.orderType);
-  const title = onDrilldown ? (
-    <button
-      type="button"
-      className="hover:text-primary text-left font-medium tabular-nums"
-      onClick={() => onDrilldown(row.orderId, 'invoices')}
-    >
-      {row.orderCode}
-    </button>
-  ) : (
-    <span className="font-medium tabular-nums">{row.orderCode}</span>
-  );
+  const indentStyle = unitEconomicsHierarchyIndentStyle(indent);
 
   return (
-    <td
-      className="border-border border-b px-3 py-2"
-      style={{ paddingLeft: `${12 + indent * 16}px` }}
-    >
-      <div className="flex items-start gap-1.5">
+    <td className="border-border border-b px-3 py-2" style={indentStyle}>
+      <div
+        className={cn('flex items-start gap-1.5', unitEconomicsHierarchyLabelGuideClass(indent))}
+      >
         <span className="mt-1 size-3.5 shrink-0" aria-hidden />
         <div className="min-w-0">
-          {title}
+          <span className="font-medium tabular-nums">{row.orderCode}</span>
           <p className="text-muted-foreground truncate text-[11px]">
             {row.label} · {typeLabel} · {row.deliveryOpen ? 'open' : 'closed'}
           </p>
@@ -78,25 +62,24 @@ function OrderLabelCell({
 function GroupLabelCell({
   indent,
   open,
-  onToggle,
   title,
   subtitle,
   emphasized,
 }: {
-  indent: number;
+  indent: 0 | 1;
   open: boolean;
-  onToggle: () => void;
   title: string;
   subtitle: string;
   emphasized?: boolean;
 }) {
+  const indentStyle = unitEconomicsHierarchyIndentStyle(indent);
+
   return (
-    <td
-      className="border-border border-b px-3 py-2"
-      style={{ paddingLeft: `${12 + indent * 16}px` }}
-    >
-      <div className="flex items-start gap-1.5">
-        <ToggleButton open={open} onClick={onToggle} />
+    <td className="border-border border-b px-3 py-2" style={indentStyle}>
+      <div
+        className={cn('flex items-start gap-1.5', unitEconomicsHierarchyLabelGuideClass(indent))}
+      >
+        <HierarchyChevron open={open} />
         <div className="min-w-0">
           <p className={emphasized ? 'font-semibold' : 'font-medium'}>{title}</p>
           <p className="text-muted-foreground text-[11px]">{subtitle}</p>
@@ -106,18 +89,34 @@ function GroupLabelCell({
   );
 }
 
-function renderProductRows(
+function renderOrderRows(
   product: UnitEconomicsTreeProduct,
   productOpen: boolean,
+  activeBranch: ActiveBranch | null,
+  activeOrderId: string | null,
   onDrilldown?: DrilldownHandler,
 ) {
   if (!productOpen) return [];
-  return product.orders.map((row) => (
-    <tr key={row.orderId} className="hover:bg-muted/30">
-      <OrderLabelCell row={row} indent={2} onDrilldown={onDrilldown} />
-      <UnitEconomicsOverviewMoneyCells row={row} onDrilldown={onDrilldown} />
-    </tr>
-  ));
+  return product.orders.map((row) => {
+    const isActive = activeOrderId === row.orderId;
+    const inActiveBranch = activeBranch?.productKey === product.key;
+    return (
+      <tr
+        key={row.orderId}
+        className={unitEconomicsHierarchyRowClass(2, { isActive, inActiveBranch })}
+        tabIndex={0}
+        role="button"
+        aria-label={`Open ${row.orderCode} detail`}
+        onClick={() => onDrilldown?.(row.orderId, 'invoices')}
+        onKeyDown={(event) =>
+          handleUnitEconomicsRowKeyDown(event, () => onDrilldown?.(row.orderId, 'invoices'))
+        }
+      >
+        <OrderLabelCell row={row} indent={2} />
+        <UnitEconomicsOverviewMoneyCells row={row} onDrilldown={onDrilldown} />
+      </tr>
+    );
+  });
 }
 
 function renderProjectRows(
@@ -125,38 +124,72 @@ function renderProjectRows(
   projectOpen: boolean,
   productOpenKeys: ReadonlySet<string>,
   onToggleProduct: (key: string) => void,
+  activeBranch: ActiveBranch | null,
+  activeOrderId: string | null,
   onDrilldown?: DrilldownHandler,
 ) {
   if (!projectOpen) return [];
   return project.products.flatMap((product) => {
     const productOpen = productOpenKeys.has(product.key);
+    const inActiveBranch = activeBranch?.productKey === product.key;
     return [
-      <tr key={product.key} className="hover:bg-muted/20">
+      <tr
+        key={product.key}
+        className={unitEconomicsHierarchyRowClass(1, { open: productOpen, inActiveBranch })}
+        tabIndex={0}
+        role="button"
+        aria-expanded={productOpen}
+        aria-label={`${productOpen ? 'Collapse' : 'Expand'} ${product.label}`}
+        onClick={() => onToggleProduct(product.key)}
+        onKeyDown={(event) =>
+          handleUnitEconomicsRowKeyDown(event, () => onToggleProduct(product.key))
+        }
+      >
         <GroupLabelCell
           indent={1}
           open={productOpen}
-          onToggle={() => onToggleProduct(product.key)}
           title={product.label}
           subtitle={`${product.unitCount} order${product.unitCount === 1 ? '' : 's'}`}
         />
         <UnitEconomicsOverviewMoneyCells row={product} staticOnly />
       </tr>,
-      ...renderProductRows(product, productOpen, onDrilldown),
+      ...renderOrderRows(product, productOpen, activeBranch, activeOrderId, onDrilldown),
     ];
   });
+}
+
+function resolveActiveBranch(
+  tree: UnitEconomicsTreeProject[],
+  activeOrderId: string | null,
+): ActiveBranch | null {
+  if (!activeOrderId) return null;
+  for (const project of tree) {
+    for (const product of project.products) {
+      if (product.orders.some((order) => order.orderId === activeOrderId)) {
+        return { projectId: project.projectId, productKey: product.key };
+      }
+    }
+  }
+  return null;
 }
 
 export function UnitEconomicsNestedTable({
   data,
   items,
+  activeOrderId = null,
   onDrilldown,
 }: {
   data: UnitEconomicsBoardData;
   items: UnitEconomicsRow[];
+  activeOrderId?: string | null;
   onDrilldown?: DrilldownHandler;
 }) {
   const { projects, loading, error, reload, filteredTotals } = data;
   const tree = useMemo(() => buildUnitEconomicsTree(items, projects), [items, projects]);
+  const activeBranch = useMemo(
+    () => resolveActiveBranch(tree, activeOrderId),
+    [tree, activeOrderId],
+  );
   const [openProjects, setOpenProjects] = useState<Set<string>>(() => new Set());
   const [openProducts, setOpenProducts] = useState<Set<string>>(() => new Set());
 
@@ -168,6 +201,12 @@ export function UnitEconomicsNestedTable({
       return new Set([first.projectId]);
     });
   }, [tree]);
+
+  useEffect(() => {
+    if (!activeBranch) return;
+    setOpenProjects((prev) => new Set(prev).add(activeBranch.projectId));
+    setOpenProducts((prev) => new Set(prev).add(activeBranch.productKey));
+  }, [activeBranch]);
 
   const expandAll = useCallback(() => {
     setOpenProjects(new Set(tree.map((project) => project.projectId)));
@@ -207,8 +246,8 @@ export function UnitEconomicsNestedTable({
       minWidth="min-w-[56rem]"
       hint={
         <p className="text-muted-foreground text-sm">
-          Project → product → order. Expand levels to inspect roll-ups; click an order code or
-          amount to drill down.
+          Project → product → order. Click a row to expand a level or open a unit sheet; amount
+          cells open a specific tab.
         </p>
       }
       toolbar={
@@ -267,20 +306,41 @@ export function UnitEconomicsNestedTable({
         ) : (
           tree.map((project) => {
             const projectOpen = openProjects.has(project.projectId);
+            const inActiveBranch = activeBranch?.projectId === project.projectId;
             return (
               <Fragment key={project.key}>
-                <tr className="bg-muted/20 hover:bg-muted/30">
+                <tr
+                  className={unitEconomicsHierarchyRowClass(0, {
+                    open: projectOpen,
+                    inActiveBranch,
+                  })}
+                  tabIndex={0}
+                  role="button"
+                  aria-expanded={projectOpen}
+                  aria-label={`${projectOpen ? 'Collapse' : 'Expand'} ${project.projectName}`}
+                  onClick={() => toggleProject(project.projectId)}
+                  onKeyDown={(event) =>
+                    handleUnitEconomicsRowKeyDown(event, () => toggleProject(project.projectId))
+                  }
+                >
                   <GroupLabelCell
                     indent={0}
                     open={projectOpen}
-                    onToggle={() => toggleProject(project.projectId)}
                     title={project.projectName}
                     subtitle={`${project.projectCode} · ${project.unitCount} orders`}
                     emphasized
                   />
                   <UnitEconomicsOverviewMoneyCells row={project} staticOnly />
                 </tr>
-                {renderProjectRows(project, projectOpen, openProducts, toggleProduct, onDrilldown)}
+                {renderProjectRows(
+                  project,
+                  projectOpen,
+                  openProducts,
+                  toggleProduct,
+                  activeBranch,
+                  activeOrderId,
+                  onDrilldown,
+                )}
               </Fragment>
             );
           })

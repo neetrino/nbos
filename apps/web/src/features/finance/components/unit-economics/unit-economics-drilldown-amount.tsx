@@ -31,7 +31,10 @@ export function UnitEconomicsDrilldownAmount({
         amount === 0 && 'text-muted-foreground',
         className,
       )}
-      onClick={() => onDrilldown(orderId, focus)}
+      onClick={(event) => {
+        event.stopPropagation();
+        onDrilldown(orderId, focus);
+      }}
     >
       {formatted}
     </button>

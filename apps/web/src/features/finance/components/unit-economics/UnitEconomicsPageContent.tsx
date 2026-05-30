@@ -273,6 +273,7 @@ export function UnitEconomicsPageContent() {
             view={view}
             data={boardData}
             filteredItems={filteredItems}
+            activeOrderId={drilldownOpen ? drilldownOrderId : null}
             onDrilldown={onDrilldown}
           />
         )}

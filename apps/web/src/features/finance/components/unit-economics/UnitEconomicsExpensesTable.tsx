@@ -15,15 +15,18 @@ import {
   UnitEconomicsTableShell,
 } from '@/features/finance/components/unit-economics/unit-economics-table-shell';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
+import { unitEconomicsOrderRowInteractionProps } from '@/features/finance/components/unit-economics/unit-economics-interactive-row';
 import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
 
 export function UnitEconomicsExpensesTable({
   data,
   items,
+  activeOrderId = null,
   onDrilldown,
 }: {
   data: UnitEconomicsBoardData;
   items: UnitEconomicsBoardData['items'];
+  activeOrderId?: string | null;
   onDrilldown?: (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 }) {
   const { loading, error, reload, filteredTotals } = data;
@@ -46,8 +49,8 @@ export function UnitEconomicsExpensesTable({
       minWidth="min-w-[44rem]"
       hint={
         <p className="text-muted-foreground text-sm">
-          Money out per delivery unit. Click a spent or bonus amount to open the expense or bonus
-          breakdown.
+          Money out per delivery unit. Click a row to open the unit sheet, or a amount cell for a
+          specific tab.
         </p>
       }
     >
@@ -73,7 +76,14 @@ export function UnitEconomicsExpensesTable({
           </tr>
         ) : (
           sorted.map((row) => (
-            <tr key={row.orderId} className="hover:bg-muted/30">
+            <tr
+              key={row.orderId}
+              {...unitEconomicsOrderRowInteractionProps({
+                orderId: row.orderId,
+                isActive: activeOrderId === row.orderId,
+                onDrilldown,
+              })}
+            >
               <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
               <td className="border-border border-b px-2 py-2 text-right">
                 <UnitEconomicsDrilldownAmount

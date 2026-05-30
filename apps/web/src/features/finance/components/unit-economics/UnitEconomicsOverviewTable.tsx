@@ -19,6 +19,7 @@ import {
   UnitEconomicsTableShell,
 } from '@/features/finance/components/unit-economics/unit-economics-table-shell';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
+import { unitEconomicsOrderRowInteractionProps } from '@/features/finance/components/unit-economics/unit-economics-interactive-row';
 import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
 import { cn } from '@/lib/utils';
 
@@ -141,11 +142,13 @@ export function UnitEconomicsOverviewTable({
   data,
   items,
   variant = 'overview',
+  activeOrderId = null,
   onDrilldown,
 }: {
   data: UnitEconomicsBoardData;
   items: UnitEconomicsRow[];
   variant?: 'overview' | 'funding';
+  activeOrderId?: string | null;
   onDrilldown?: DrilldownHandler;
 }) {
   const { loading, error, reload, filteredTotals } = data;
@@ -244,7 +247,14 @@ export function UnitEconomicsOverviewTable({
           </tr>
         ) : (
           displayItems.map((row) => (
-            <tr key={row.orderId} className="hover:bg-muted/30">
+            <tr
+              key={row.orderId}
+              {...unitEconomicsOrderRowInteractionProps({
+                orderId: row.orderId,
+                isActive: activeOrderId === row.orderId,
+                onDrilldown,
+              })}
+            >
               {isFunding ? (
                 <FundingRowCells row={row} onDrilldown={onDrilldown} />
               ) : (

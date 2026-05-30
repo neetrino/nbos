@@ -17,15 +17,18 @@ import {
 } from '@/features/finance/components/unit-economics/unit-economics-table-shell';
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
 import type { UnitEconomicsDrilldownFocus } from '@/lib/api/unit-economics';
+import { unitEconomicsOrderRowInteractionProps } from '@/features/finance/components/unit-economics/unit-economics-interactive-row';
 import { cn } from '@/lib/utils';
 
 export function UnitEconomicsProfitabilityTable({
   data,
   items,
+  activeOrderId = null,
   onDrilldown,
 }: {
   data: UnitEconomicsBoardData;
   items: UnitEconomicsBoardData['items'];
+  activeOrderId?: string | null;
   onDrilldown?: (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 }) {
   const { loading, error, reload, filteredTotals } = data;
@@ -48,8 +51,8 @@ export function UnitEconomicsProfitabilityTable({
       minWidth="min-w-[56rem]"
       hint={
         <p className="text-muted-foreground text-sm">
-          Margin after commitments vs cash margin (received minus factual outflows). Click amounts
-          to drill down.
+          Margin after commitments vs cash margin. Click a row to open the unit sheet, or an amount
+          cell for a specific tab.
         </p>
       }
     >
@@ -82,7 +85,14 @@ export function UnitEconomicsProfitabilityTable({
             const margin = parseUnitEconomicsMoney(row.marginAfterCommitments);
             const cashMargin = parseUnitEconomicsMoney(row.marginFact);
             return (
-              <tr key={row.orderId} className="hover:bg-muted/30">
+              <tr
+                key={row.orderId}
+                {...unitEconomicsOrderRowInteractionProps({
+                  orderId: row.orderId,
+                  isActive: activeOrderId === row.orderId,
+                  onDrilldown,
+                })}
+              >
                 <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
                 <td
                   className={cn(
