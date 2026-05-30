@@ -2,15 +2,40 @@
 
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsFilteredTotals } from '@/features/finance/components/unit-economics/compute-unit-economics-filtered-totals';
-import { unitEconomicsMarginClass } from '@/features/finance/components/unit-economics/unit-economics-money';
+import {
+  unitEconomicsGroupAmountClass,
+  unitEconomicsGroupDataCellClass,
+  type UnitEconomicsColumnGroup,
+} from '@/features/finance/components/unit-economics/unit-economics-column-groups';
 import { cn } from '@/lib/utils';
 
-function FooterAmount({ value, className }: { value: number; className?: string }) {
+function FooterLabelCell() {
+  return (
+    <td className="border-border bg-muted/30 border-t px-3 py-2 text-[11px] font-semibold">
+      Filtered total
+    </td>
+  );
+}
+
+function FooterAmount({
+  group,
+  value,
+  isGroupStart = false,
+  fontMedium = false,
+  warnIfPositive = false,
+}: {
+  group: UnitEconomicsColumnGroup;
+  value: number;
+  isGroupStart?: boolean;
+  fontMedium?: boolean;
+  warnIfPositive?: boolean;
+}) {
   return (
     <td
       className={cn(
         'border-border bg-muted/30 border-t px-2 py-2 text-right text-[11px] font-semibold tabular-nums',
-        className,
+        unitEconomicsGroupDataCellClass(group, isGroupStart),
+        unitEconomicsGroupAmountClass(group, value, { fontMedium, warnIfPositive }),
       )}
     >
       {formatAmount(value)}
@@ -21,22 +46,14 @@ function FooterAmount({ value, className }: { value: number; className?: string 
 export function UnitEconomicsOverviewFooter({ totals }: { totals: UnitEconomicsFilteredTotals }) {
   return (
     <tr>
-      <td className="border-border bg-muted/30 border-t px-3 py-2 text-[11px] font-semibold">
-        Filtered total
-      </td>
-      <FooterAmount value={totals.receivedAmount} />
-      <FooterAmount value={totals.receivableAmount} />
-      <FooterAmount value={totals.spentAmount} />
-      <FooterAmount value={totals.remainingBonuses} />
-      <FooterAmount value={totals.outCommittedAmount} />
-      <FooterAmount
-        value={totals.cashBalance}
-        className={unitEconomicsMarginClass(totals.cashBalance)}
-      />
-      <FooterAmount
-        value={totals.marginAfterCommitments}
-        className={unitEconomicsMarginClass(totals.marginAfterCommitments)}
-      />
+      <FooterLabelCell />
+      <FooterAmount group="in" value={totals.receivedAmount} isGroupStart />
+      <FooterAmount group="in" value={totals.receivableAmount} />
+      <FooterAmount group="out" value={totals.spentAmount} isGroupStart />
+      <FooterAmount group="out" value={totals.remainingBonuses} />
+      <FooterAmount group="out" value={totals.outCommittedAmount} />
+      <FooterAmount group="balance" value={totals.cashBalance} isGroupStart fontMedium />
+      <FooterAmount group="balance" value={totals.marginAfterCommitments} fontMedium />
     </tr>
   );
 }
@@ -44,19 +61,17 @@ export function UnitEconomicsOverviewFooter({ totals }: { totals: UnitEconomicsF
 export function UnitEconomicsFundingFooter({ totals }: { totals: UnitEconomicsFilteredTotals }) {
   return (
     <tr>
-      <td className="border-border bg-muted/30 border-t px-3 py-2 text-[11px] font-semibold">
-        Filtered total
-      </td>
-      <FooterAmount value={totals.receivedAmount} />
+      <FooterLabelCell />
+      <FooterAmount group="in" value={totals.receivedAmount} isGroupStart />
+      <FooterAmount group="balance" value={totals.cashBalance} isGroupStart fontMedium />
       <FooterAmount
-        value={totals.cashBalance}
-        className={unitEconomicsMarginClass(totals.cashBalance)}
-      />
-      <FooterAmount
+        group="out"
         value={totals.overReleaseAmount}
-        className={totals.overReleaseAmount > 0 ? 'text-destructive' : undefined}
+        isGroupStart
+        fontMedium
+        warnIfPositive
       />
-      <FooterAmount value={totals.outCommittedAmount} />
+      <FooterAmount group="out" value={totals.outCommittedAmount} />
     </tr>
   );
 }
@@ -64,13 +79,11 @@ export function UnitEconomicsFundingFooter({ totals }: { totals: UnitEconomicsFi
 export function UnitEconomicsOutflowsFooter({ totals }: { totals: UnitEconomicsFilteredTotals }) {
   return (
     <tr>
-      <td className="border-border bg-muted/30 border-t px-3 py-2 text-[11px] font-semibold">
-        Filtered total
-      </td>
-      <FooterAmount value={totals.spentAmount} />
-      <FooterAmount value={totals.remainingBonuses} />
-      <FooterAmount value={totals.outCommittedAmount} />
-      <FooterAmount value={totals.paidBonuses} />
+      <FooterLabelCell />
+      <FooterAmount group="out" value={totals.spentAmount} isGroupStart />
+      <FooterAmount group="out" value={totals.remainingBonuses} />
+      <FooterAmount group="out" value={totals.outCommittedAmount} />
+      <FooterAmount group="out" value={totals.paidBonuses} />
     </tr>
   );
 }
@@ -82,21 +95,13 @@ export function UnitEconomicsProfitabilityFooter({
 }) {
   return (
     <tr>
-      <td className="border-border bg-muted/30 border-t px-3 py-2 text-[11px] font-semibold">
-        Filtered total
-      </td>
-      <FooterAmount
-        value={totals.marginAfterCommitments}
-        className={unitEconomicsMarginClass(totals.marginAfterCommitments)}
-      />
-      <FooterAmount
-        value={totals.marginFact}
-        className={unitEconomicsMarginClass(totals.marginFact)}
-      />
-      <FooterAmount value={totals.receivedAmount} />
-      <FooterAmount value={totals.spentAmount} />
-      <FooterAmount value={totals.remainingBonuses} />
-      <FooterAmount value={totals.outCommittedAmount} />
+      <FooterLabelCell />
+      <FooterAmount group="balance" value={totals.marginAfterCommitments} isGroupStart fontMedium />
+      <FooterAmount group="balance" value={totals.marginFact} fontMedium />
+      <FooterAmount group="in" value={totals.receivedAmount} isGroupStart />
+      <FooterAmount group="out" value={totals.spentAmount} isGroupStart />
+      <FooterAmount group="out" value={totals.remainingBonuses} />
+      <FooterAmount group="out" value={totals.outCommittedAmount} />
     </tr>
   );
 }

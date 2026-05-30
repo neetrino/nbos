@@ -2,13 +2,9 @@
 
 import { useMemo } from 'react';
 import { ErrorState, LoadingState } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
-import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
-import {
-  parseUnitEconomicsMoney,
-  parseUnitEconomicsSpent,
-} from '@/features/finance/components/unit-economics/unit-economics-money';
+import { parseUnitEconomicsMoney } from '@/features/finance/components/unit-economics/unit-economics-money';
+import { UnitEconomicsOutflowsMoneyCells } from '@/features/finance/components/unit-economics/unit-economics-row-money-cells';
 import { UnitEconomicsOutflowsFooter } from '@/features/finance/components/unit-economics/unit-economics-table-footer';
 import { UnitEconomicsOutflowsHeaderRow } from '@/features/finance/components/unit-economics/unit-economics-table-headers';
 import {
@@ -76,28 +72,7 @@ export function UnitEconomicsExpensesTable({
               })}
             >
               <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
-              <td className="border-border border-b px-2 py-2 text-right">
-                <UnitEconomicsDrilldownAmount
-                  amount={parseUnitEconomicsSpent(row)}
-                  orderId={row.orderId}
-                  focus="expenses"
-                  onDrilldown={onDrilldown}
-                />
-              </td>
-              <td className="border-border border-b px-2 py-2 text-right">
-                <UnitEconomicsDrilldownAmount
-                  amount={parseUnitEconomicsMoney(row.remainingBonuses)}
-                  orderId={row.orderId}
-                  focus="bonuses"
-                  onDrilldown={onDrilldown}
-                />
-              </td>
-              <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                {formatAmount(parseUnitEconomicsMoney(row.outCommittedAmount))}
-              </td>
-              <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                {formatAmount(parseUnitEconomicsMoney(row.paidBonuses))}
-              </td>
+              <UnitEconomicsOutflowsMoneyCells row={row} onDrilldown={onDrilldown} />
             </tr>
           ))
         )}

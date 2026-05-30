@@ -4,9 +4,13 @@ import { PieChart } from 'lucide-react';
 import { EmptyState } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
+  unitEconomicsGroupAmountClass,
+  unitEconomicsGroupSummaryLabelClass,
+  type UnitEconomicsColumnGroup,
+} from '@/features/finance/components/unit-economics/unit-economics-column-groups';
+import {
   parseUnitEconomicsMoney,
   parseUnitEconomicsSpent,
-  unitEconomicsMarginClass,
 } from '@/features/finance/components/unit-economics/unit-economics-money';
 import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
 import { cn } from '@/lib/utils';
@@ -14,12 +18,14 @@ import { cn } from '@/lib/utils';
 type DrilldownHandler = (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
 
 function MetricButton({
+  group,
   label,
   amount,
   orderId,
   focus,
   onDrilldown,
 }: {
+  group: UnitEconomicsColumnGroup;
   label: string;
   amount: number;
   orderId: string;
@@ -27,13 +33,13 @@ function MetricButton({
   onDrilldown?: DrilldownHandler;
 }) {
   const formatted = formatAmount(amount);
+  const amountClass = unitEconomicsGroupAmountClass(group, amount, { fontMedium: true });
+  const labelClass = unitEconomicsGroupSummaryLabelClass(group);
   if (!onDrilldown) {
     return (
       <div className="flex flex-col gap-0.5 px-2 py-1.5">
-        <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-          {label}
-        </span>
-        <span className="text-sm font-medium tabular-nums">{formatted}</span>
+        <span className={labelClass}>{label}</span>
+        <span className={cn('text-sm tabular-nums', amountClass)}>{formatted}</span>
       </div>
     );
   }
@@ -43,14 +49,8 @@ function MetricButton({
       className="hover:bg-muted/60 flex flex-col gap-0.5 rounded-lg px-2 py-1.5 text-left transition-colors"
       onClick={() => onDrilldown(orderId, focus)}
     >
-      <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-        {label}
-      </span>
-      <span
-        className={cn('text-sm font-medium tabular-nums', amount === 0 && 'text-muted-foreground')}
-      >
-        {formatted}
-      </span>
+      <span className={labelClass}>{label}</span>
+      <span className={cn('text-sm tabular-nums', amountClass)}>{formatted}</span>
     </button>
   );
 }
@@ -107,21 +107,23 @@ function UnitEconomicsUnitCard({
       <div className="grid grid-cols-2 gap-3">
         <div className="border-border bg-muted/20 col-span-2 grid grid-cols-2 gap-3 rounded-lg border p-3">
           <div className="flex flex-col gap-0.5">
-            <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-              Cash
-            </span>
+            <span className={unitEconomicsGroupSummaryLabelClass('balance')}>Cash</span>
             <span
-              className={cn('text-lg font-semibold tabular-nums', unitEconomicsMarginClass(cash))}
+              className={cn(
+                'text-lg font-semibold tabular-nums',
+                unitEconomicsGroupAmountClass('balance', cash, { fontMedium: true }),
+              )}
             >
               {formatAmount(cash)}
             </span>
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-              Margin
-            </span>
+            <span className={unitEconomicsGroupSummaryLabelClass('balance')}>Margin</span>
             <span
-              className={cn('text-lg font-semibold tabular-nums', unitEconomicsMarginClass(margin))}
+              className={cn(
+                'text-lg font-semibold tabular-nums',
+                unitEconomicsGroupAmountClass('balance', margin, { fontMedium: true }),
+              )}
             >
               {formatAmount(margin)}
             </span>
@@ -129,6 +131,7 @@ function UnitEconomicsUnitCard({
         </div>
 
         <MetricButton
+          group="in"
           label="Received"
           amount={parseUnitEconomicsMoney(row.receivedAmount)}
           orderId={row.orderId}
@@ -136,6 +139,7 @@ function UnitEconomicsUnitCard({
           onDrilldown={onDrilldown}
         />
         <MetricButton
+          group="in"
           label="To receive"
           amount={parseUnitEconomicsMoney(row.receivableAmount)}
           orderId={row.orderId}
@@ -143,6 +147,7 @@ function UnitEconomicsUnitCard({
           onDrilldown={onDrilldown}
         />
         <MetricButton
+          group="out"
           label="Spent"
           amount={parseUnitEconomicsSpent(row)}
           orderId={row.orderId}
@@ -150,6 +155,7 @@ function UnitEconomicsUnitCard({
           onDrilldown={onDrilldown}
         />
         <MetricButton
+          group="out"
           label="Bonus to pay"
           amount={parseUnitEconomicsMoney(row.remainingBonuses)}
           orderId={row.orderId}
@@ -157,10 +163,17 @@ function UnitEconomicsUnitCard({
           onDrilldown={onDrilldown}
         />
         <div className="col-span-2 flex flex-col gap-0.5 px-2 py-1.5">
-          <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-            Out committed
-          </span>
-          <span className="text-sm font-medium tabular-nums">
+          <span className={unitEconomicsGroupSummaryLabelClass('out')}>Out committed</span>
+          <span
+            className={cn(
+              'text-sm tabular-nums',
+              unitEconomicsGroupAmountClass(
+                'out',
+                parseUnitEconomicsMoney(row.outCommittedAmount),
+                { fontMedium: true },
+              ),
+            )}
+          >
             {formatAmount(parseUnitEconomicsMoney(row.outCommittedAmount))}
           </span>
         </div>

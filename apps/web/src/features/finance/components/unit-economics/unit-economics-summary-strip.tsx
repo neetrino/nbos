@@ -2,24 +2,34 @@
 
 import { formatAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsFilteredTotals } from '@/features/finance/components/unit-economics/compute-unit-economics-filtered-totals';
-import { unitEconomicsMarginClass } from '@/features/finance/components/unit-economics/unit-economics-money';
+import {
+  unitEconomicsGroupAmountClass,
+  unitEconomicsGroupSummaryCardClass,
+  unitEconomicsGroupSummaryLabelClass,
+  type UnitEconomicsColumnGroup,
+} from '@/features/finance/components/unit-economics/unit-economics-column-groups';
 import { cn } from '@/lib/utils';
 
 function SummaryCell({
+  group,
   label,
   value,
-  accentClass,
+  fontMedium = false,
 }: {
+  group: UnitEconomicsColumnGroup;
   label: string;
   value: number;
-  accentClass?: string;
+  fontMedium?: boolean;
 }) {
   return (
-    <div className="border-border bg-card min-w-[7rem] flex-1 rounded-xl border px-3 py-2.5">
-      <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-        {label}
-      </p>
-      <p className={cn('mt-1 text-base font-semibold tabular-nums', accentClass)}>
+    <div className={unitEconomicsGroupSummaryCardClass(group)}>
+      <p className={unitEconomicsGroupSummaryLabelClass(group)}>{label}</p>
+      <p
+        className={cn(
+          'mt-1 text-base tabular-nums',
+          unitEconomicsGroupAmountClass(group, value, { fontMedium: fontMedium || true }),
+        )}
+      >
         {formatAmount(value)}
       </p>
     </div>
@@ -37,19 +47,15 @@ export function UnitEconomicsSummaryStrip({ totals }: { totals: UnitEconomicsFil
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
-        <SummaryCell label="Received" value={totals.receivedAmount} />
-        <SummaryCell label="To receive" value={totals.receivableAmount} />
-        <SummaryCell label="Spent" value={totals.spentAmount} />
-        <SummaryCell label="Bonus to pay" value={totals.remainingBonuses} />
+        <SummaryCell group="in" label="In · Received" value={totals.receivedAmount} />
+        <SummaryCell group="in" label="In · To receive" value={totals.receivableAmount} />
+        <SummaryCell group="out" label="Out · Spent" value={totals.spentAmount} />
+        <SummaryCell group="out" label="Out · Bonus to pay" value={totals.remainingBonuses} />
+        <SummaryCell group="balance" label="Balance · Cash" value={totals.cashBalance} />
         <SummaryCell
-          label="Cash"
-          value={totals.cashBalance}
-          accentClass={cn('font-semibold', unitEconomicsMarginClass(totals.cashBalance))}
-        />
-        <SummaryCell
-          label="Margin"
+          group="balance"
+          label="Balance · Margin"
           value={totals.marginAfterCommitments}
-          accentClass={cn('font-semibold', unitEconomicsMarginClass(totals.marginAfterCommitments))}
         />
       </div>
     </div>

@@ -2,14 +2,12 @@
 
 import { useMemo } from 'react';
 import { ErrorState, LoadingState } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
-import { UnitEconomicsDrilldownAmount } from '@/features/finance/components/unit-economics/unit-economics-drilldown-amount';
+import { parseUnitEconomicsMoney } from '@/features/finance/components/unit-economics/unit-economics-money';
 import {
-  parseUnitEconomicsMoney,
-  parseUnitEconomicsSpent,
-  unitEconomicsMarginClass,
-} from '@/features/finance/components/unit-economics/unit-economics-money';
+  UnitEconomicsFundingMoneyCells,
+  UnitEconomicsOverviewMoneyCells,
+} from '@/features/finance/components/unit-economics/unit-economics-row-money-cells';
 import {
   UnitEconomicsFundingFooter,
   UnitEconomicsOverviewFooter,
@@ -25,122 +23,8 @@ import {
 import { UnitEconomicsUnitLinkCell } from '@/features/finance/components/unit-economics/unit-economics-unit-link-cell';
 import { unitEconomicsOrderRowInteractionProps } from '@/features/finance/components/unit-economics/unit-economics-interactive-row';
 import type { UnitEconomicsDrilldownFocus, UnitEconomicsRow } from '@/lib/api/unit-economics';
-import { cn } from '@/lib/utils';
 
 type DrilldownHandler = (orderId: string, focus: UnitEconomicsDrilldownFocus) => void;
-
-function OverviewRowCells({
-  row,
-  onDrilldown,
-}: {
-  row: UnitEconomicsRow;
-  onDrilldown?: DrilldownHandler;
-}) {
-  const margin = parseUnitEconomicsMoney(row.marginAfterCommitments);
-  const cash = parseUnitEconomicsMoney(row.cashBalance);
-
-  return (
-    <>
-      <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
-      <td className="border-border border-b px-2 py-2 text-right">
-        <UnitEconomicsDrilldownAmount
-          amount={parseUnitEconomicsMoney(row.receivedAmount)}
-          orderId={row.orderId}
-          focus="payments"
-          onDrilldown={onDrilldown}
-        />
-      </td>
-      <td className="border-border border-b px-2 py-2 text-right">
-        <UnitEconomicsDrilldownAmount
-          amount={parseUnitEconomicsMoney(row.receivableAmount)}
-          orderId={row.orderId}
-          focus="invoices"
-          onDrilldown={onDrilldown}
-        />
-      </td>
-      <td className="border-border border-b px-2 py-2 text-right">
-        <UnitEconomicsDrilldownAmount
-          amount={parseUnitEconomicsSpent(row)}
-          orderId={row.orderId}
-          focus="expenses"
-          onDrilldown={onDrilldown}
-        />
-      </td>
-      <td className="border-border border-b px-2 py-2 text-right">
-        <UnitEconomicsDrilldownAmount
-          amount={parseUnitEconomicsMoney(row.remainingBonuses)}
-          orderId={row.orderId}
-          focus="bonuses"
-          onDrilldown={onDrilldown}
-        />
-      </td>
-      <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(parseUnitEconomicsMoney(row.outCommittedAmount))}
-      </td>
-      <td
-        className={cn(
-          'border-border border-b px-2 py-2 text-right font-medium tabular-nums',
-          unitEconomicsMarginClass(cash),
-        )}
-      >
-        {formatAmount(cash)}
-      </td>
-      <td
-        className={cn(
-          'border-border border-b px-2 py-2 text-right font-medium tabular-nums',
-          unitEconomicsMarginClass(margin),
-        )}
-      >
-        {formatAmount(margin)}
-      </td>
-    </>
-  );
-}
-
-function FundingRowCells({
-  row,
-  onDrilldown,
-}: {
-  row: UnitEconomicsRow;
-  onDrilldown?: DrilldownHandler;
-}) {
-  const overRelease = parseUnitEconomicsMoney(row.overReleaseAmount);
-  const cash = parseUnitEconomicsMoney(row.cashBalance);
-
-  return (
-    <>
-      <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
-      <td className="border-border border-b px-2 py-2 text-right">
-        <UnitEconomicsDrilldownAmount
-          amount={parseUnitEconomicsMoney(row.receivedAmount)}
-          orderId={row.orderId}
-          focus="payments"
-          onDrilldown={onDrilldown}
-        />
-      </td>
-      <td
-        className={cn(
-          'border-border border-b px-2 py-2 text-right font-medium tabular-nums',
-          unitEconomicsMarginClass(cash),
-        )}
-      >
-        {formatAmount(cash)}
-      </td>
-      <td
-        className={cn(
-          'border-border border-b px-2 py-2 text-right tabular-nums',
-          overRelease > 0 && 'text-destructive font-medium',
-        )}
-        title="Released bonuses exceeding received cash on this unit."
-      >
-        {formatAmount(overRelease)}
-      </td>
-      <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-        {formatAmount(parseUnitEconomicsMoney(row.outCommittedAmount))}
-      </td>
-    </>
-  );
-}
 
 export function UnitEconomicsOverviewTable({
   data,
@@ -205,10 +89,11 @@ export function UnitEconomicsOverviewTable({
                 onDrilldown,
               })}
             >
+              <UnitEconomicsUnitLinkCell row={row} onDrilldown={onDrilldown} />
               {isFunding ? (
-                <FundingRowCells row={row} onDrilldown={onDrilldown} />
+                <UnitEconomicsFundingMoneyCells row={row} onDrilldown={onDrilldown} />
               ) : (
-                <OverviewRowCells row={row} onDrilldown={onDrilldown} />
+                <UnitEconomicsOverviewMoneyCells row={row} onDrilldown={onDrilldown} />
               )}
             </tr>
           ))

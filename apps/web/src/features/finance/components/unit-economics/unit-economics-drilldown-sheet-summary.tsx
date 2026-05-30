@@ -1,7 +1,12 @@
 'use client';
 
 import { formatAmount, parseMoneyAmount } from '@/features/finance/constants/finance';
-import { unitEconomicsMarginClass } from '@/features/finance/components/unit-economics/unit-economics-money';
+import {
+  unitEconomicsGroupAmountClass,
+  unitEconomicsGroupSummaryCardClass,
+  unitEconomicsGroupSummaryLabelClass,
+  type UnitEconomicsColumnGroup,
+} from '@/features/finance/components/unit-economics/unit-economics-column-groups';
 import type {
   UnitEconomicsDrilldownFocus,
   UnitEconomicsOrderDetail,
@@ -10,21 +15,59 @@ import { cn } from '@/lib/utils';
 
 const SUMMARY_CELLS: Array<{
   label: string;
+  group: UnitEconomicsColumnGroup;
   pick: (detail: UnitEconomicsOrderDetail) => string;
   focus: UnitEconomicsDrilldownFocus | null;
+  warnIfPositive?: boolean;
 }> = [
-  { label: 'Received', pick: (detail) => detail.summary.receivedAmount, focus: 'payments' },
-  { label: 'To receive', pick: (detail) => detail.summary.receivableAmount, focus: 'invoices' },
-  { label: 'Spent', pick: (detail) => detail.summary.outFactAmount, focus: 'expenses' },
-  { label: 'Bonus to pay', pick: (detail) => detail.summary.remainingBonuses, focus: 'bonuses' },
-  { label: 'Cash balance', pick: (detail) => detail.summary.cashBalance, focus: null },
-  { label: 'Out committed', pick: (detail) => detail.summary.outCommittedAmount, focus: null },
+  {
+    label: 'Received',
+    group: 'in',
+    pick: (detail) => detail.summary.receivedAmount,
+    focus: 'payments',
+  },
+  {
+    label: 'To receive',
+    group: 'in',
+    pick: (detail) => detail.summary.receivableAmount,
+    focus: 'invoices',
+  },
+  {
+    label: 'Spent',
+    group: 'out',
+    pick: (detail) => detail.summary.outFactAmount,
+    focus: 'expenses',
+  },
+  {
+    label: 'Bonus to pay',
+    group: 'out',
+    pick: (detail) => detail.summary.remainingBonuses,
+    focus: 'bonuses',
+  },
+  {
+    label: 'Cash balance',
+    group: 'balance',
+    pick: (detail) => detail.summary.cashBalance,
+    focus: null,
+  },
+  {
+    label: 'Out committed',
+    group: 'out',
+    pick: (detail) => detail.summary.outCommittedAmount,
+    focus: null,
+  },
   {
     label: 'Margin',
+    group: 'balance',
     pick: (detail) => detail.summary.marginAfterCommitments,
     focus: null,
   },
-  { label: 'Bonus plan', pick: (detail) => detail.summary.plannedBonuses, focus: 'bonuses' },
+  {
+    label: 'Bonus plan',
+    group: 'out',
+    pick: (detail) => detail.summary.plannedBonuses,
+    focus: 'bonuses',
+  },
 ];
 
 export function UnitEconomicsDrilldownSheetSummary({
@@ -38,16 +81,16 @@ export function UnitEconomicsDrilldownSheetSummary({
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {SUMMARY_CELLS.map((cell) => {
         const value = parseMoneyAmount(cell.pick(detail));
-        const isMarginLike = cell.label === 'Margin' || cell.label === 'Cash balance';
         const body = (
           <>
-            <p className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
-              {cell.label}
-            </p>
+            <p className={unitEconomicsGroupSummaryLabelClass(cell.group)}>{cell.label}</p>
             <p
               className={cn(
                 'mt-1 text-base font-semibold tabular-nums',
-                isMarginLike && unitEconomicsMarginClass(value),
+                unitEconomicsGroupAmountClass(cell.group, value, {
+                  fontMedium: true,
+                  warnIfPositive: cell.warnIfPositive,
+                }),
               )}
             >
               {formatAmount(value)}
@@ -60,7 +103,10 @@ export function UnitEconomicsDrilldownSheetSummary({
             <button
               key={cell.label}
               type="button"
-              className="border-border bg-card hover:bg-muted/40 rounded-xl border px-3 py-2 text-left transition-colors"
+              className={cn(
+                'hover:bg-muted/40 text-left transition-colors',
+                unitEconomicsGroupSummaryCardClass(cell.group),
+              )}
               onClick={() => onFocusChange(cell.focus as UnitEconomicsDrilldownFocus)}
             >
               {body}
@@ -69,7 +115,7 @@ export function UnitEconomicsDrilldownSheetSummary({
         }
 
         return (
-          <div key={cell.label} className="border-border bg-card rounded-xl border px-3 py-2">
+          <div key={cell.label} className={unitEconomicsGroupSummaryCardClass(cell.group)}>
             {body}
           </div>
         );
