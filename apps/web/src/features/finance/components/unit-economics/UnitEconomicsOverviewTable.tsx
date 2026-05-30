@@ -15,6 +15,10 @@ import {
   UnitEconomicsOverviewFooter,
 } from '@/features/finance/components/unit-economics/unit-economics-table-footer';
 import {
+  UnitEconomicsFundingHeaderRow,
+  UnitEconomicsOverviewMoneyHeaderRow,
+} from '@/features/finance/components/unit-economics/unit-economics-table-headers';
+import {
   UnitEconomicsTableHead,
   UnitEconomicsTableShell,
 } from '@/features/finance/components/unit-economics/unit-economics-table-shell';
@@ -178,65 +182,11 @@ export function UnitEconomicsOverviewTable({
       }
     >
       <UnitEconomicsTableHead>
-        <tr className="text-muted-foreground text-left">
-          <th className="border-border border-b px-3 py-2 font-semibold">Order</th>
-          {isFunding ? (
-            <>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Received
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Cash balance
-              </th>
-              <th
-                className="border-border border-b px-2 py-2 text-right font-semibold"
-                title="Released bonuses exceeding received cash."
-              >
-                Over release
-              </th>
-              <th className="border-border border-b px-2 py-2 text-right font-semibold">
-                Out committed
-              </th>
-            </>
-          ) : (
-            <>
-              <th
-                colSpan={2}
-                className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-              >
-                Money in
-              </th>
-              <th
-                colSpan={3}
-                className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-              >
-                Money out
-              </th>
-              <th
-                colSpan={2}
-                className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-              >
-                Balance
-              </th>
-            </>
-          )}
-        </tr>
-        {!isFunding ? (
-          <tr className="text-muted-foreground text-left">
-            <th className="border-border border-b px-3 py-2" />
-            <th className="border-border border-b px-2 py-2 text-right font-semibold">Received</th>
-            <th className="border-border border-b px-2 py-2 text-right font-semibold">
-              To receive
-            </th>
-            <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
-            <th className="border-border border-b px-2 py-2 text-right font-semibold">
-              Bonus to pay
-            </th>
-            <th className="border-border border-b px-2 py-2 text-right font-semibold">Committed</th>
-            <th className="border-border border-b px-2 py-2 text-right font-semibold">Cash</th>
-            <th className="border-border border-b px-2 py-2 text-right font-semibold">Margin</th>
-          </tr>
-        ) : null}
+        {isFunding ? (
+          <UnitEconomicsFundingHeaderRow />
+        ) : (
+          <UnitEconomicsOverviewMoneyHeaderRow labelColumn="Order" />
+        )}
       </UnitEconomicsTableHead>
       <tbody>
         {displayItems.length === 0 ? (

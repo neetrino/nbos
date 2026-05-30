@@ -20,6 +20,7 @@ import {
 import { unitEconomicsOrderTypeLabel } from '@/features/finance/components/unit-economics/unit-economics-order-type-label';
 import { UnitEconomicsOverviewMoneyCells } from '@/features/finance/components/unit-economics/unit-economics-row-money-cells';
 import { UnitEconomicsOverviewFooter } from '@/features/finance/components/unit-economics/unit-economics-table-footer';
+import { UnitEconomicsOverviewMoneyHeaderRow } from '@/features/finance/components/unit-economics/unit-economics-table-headers';
 import {
   UnitEconomicsTableHead,
   UnitEconomicsTableShell,
@@ -282,39 +283,7 @@ export function UnitEconomicsNestedTable({
       }
     >
       <UnitEconomicsTableHead>
-        <tr className="text-muted-foreground text-left">
-          <th className="border-border border-b px-3 py-2 font-semibold">Hierarchy</th>
-          <th
-            colSpan={2}
-            className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-          >
-            Money in
-          </th>
-          <th
-            colSpan={3}
-            className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-          >
-            Money out
-          </th>
-          <th
-            colSpan={2}
-            className="border-border border-b px-2 py-2 text-center text-[10px] font-semibold tracking-wide uppercase"
-          >
-            Balance
-          </th>
-        </tr>
-        <tr className="text-muted-foreground text-left">
-          <th className="border-border border-b px-3 py-2" />
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Received</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">To receive</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">
-            Bonus to pay
-          </th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Committed</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Cash</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Margin</th>
-        </tr>
+        <UnitEconomicsOverviewMoneyHeaderRow labelColumn="Hierarchy" />
       </UnitEconomicsTableHead>
       <tbody>
         {tree.length === 0 ? (

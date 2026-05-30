@@ -10,6 +10,7 @@ import {
   parseUnitEconomicsSpent,
 } from '@/features/finance/components/unit-economics/unit-economics-money';
 import { UnitEconomicsOutflowsFooter } from '@/features/finance/components/unit-economics/unit-economics-table-footer';
+import { UnitEconomicsOutflowsHeaderRow } from '@/features/finance/components/unit-economics/unit-economics-table-headers';
 import {
   UnitEconomicsTableHead,
   UnitEconomicsTableShell,
@@ -55,17 +56,7 @@ export function UnitEconomicsExpensesTable({
       }
     >
       <UnitEconomicsTableHead>
-        <tr className="text-muted-foreground text-left">
-          <th className="border-border border-b px-3 py-2 font-semibold">Delivery unit</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">
-            Bonus to pay
-          </th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">
-            Out committed
-          </th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Bonus paid</th>
-        </tr>
+        <UnitEconomicsOutflowsHeaderRow />
       </UnitEconomicsTableHead>
       <tbody>
         {sorted.length === 0 ? (

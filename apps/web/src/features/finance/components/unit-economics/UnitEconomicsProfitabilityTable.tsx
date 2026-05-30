@@ -11,6 +11,7 @@ import {
   unitEconomicsMarginClass,
 } from '@/features/finance/components/unit-economics/unit-economics-money';
 import { UnitEconomicsProfitabilityFooter } from '@/features/finance/components/unit-economics/unit-economics-table-footer';
+import { UnitEconomicsProfitabilityHeaderRow } from '@/features/finance/components/unit-economics/unit-economics-table-headers';
 import {
   UnitEconomicsTableHead,
   UnitEconomicsTableShell,
@@ -57,21 +58,7 @@ export function UnitEconomicsProfitabilityTable({
       }
     >
       <UnitEconomicsTableHead>
-        <tr className="text-muted-foreground text-left">
-          <th className="border-border border-b px-3 py-2 font-semibold">Delivery unit</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">
-            Margin (after commitments)
-          </th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Cash margin</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Received</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">Spent</th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">
-            Bonus to pay
-          </th>
-          <th className="border-border border-b px-2 py-2 text-right font-semibold">
-            Out committed
-          </th>
-        </tr>
+        <UnitEconomicsProfitabilityHeaderRow />
       </UnitEconomicsTableHead>
       <tbody>
         {sorted.length === 0 ? (
