@@ -51,15 +51,15 @@ const SUMMARY_CELLS: Array<{
     focus: null,
   },
   {
-    label: 'Out committed',
-    group: 'out',
-    pick: (detail) => detail.summary.outCommittedAmount,
-    focus: null,
-  },
-  {
     label: 'Margin',
     group: 'balance',
     pick: (detail) => detail.summary.marginAfterCommitments,
+    focus: null,
+  },
+  {
+    label: 'Out committed',
+    group: 'out',
+    pick: (detail) => detail.summary.outCommittedAmount,
     focus: null,
   },
   {
