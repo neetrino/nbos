@@ -16,10 +16,19 @@ export function UnitEconomicsTableShell({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      {toolbar ? (
-        <div className="flex flex-wrap items-center justify-end gap-2">{toolbar}</div>
+      {toolbar || hint ? (
+        <div
+          className={cn(
+            'flex flex-wrap items-center gap-3',
+            toolbar && hint ? 'justify-between' : toolbar ? 'justify-end' : undefined,
+          )}
+        >
+          {hint ? <div className="min-w-0 flex-1">{hint}</div> : null}
+          {toolbar ? (
+            <div className="flex shrink-0 flex-wrap items-center gap-2">{toolbar}</div>
+          ) : null}
+        </div>
       ) : null}
-      {hint}
       <div className="border-border bg-card overflow-auto rounded-xl border shadow-sm">
         <table className={cn('w-full border-collapse text-xs', minWidth)}>{children}</table>
       </div>

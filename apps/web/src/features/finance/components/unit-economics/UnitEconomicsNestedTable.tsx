@@ -266,9 +266,9 @@ export function UnitEconomicsNestedTable({
     <UnitEconomicsTableShell
       minWidth="min-w-[56rem]"
       hint={
-        <p className="text-muted-foreground text-sm">
-          Project → product → order. Click a row to expand a level or open a unit sheet; amount
-          cells open a specific tab.
+        <p className="text-muted-foreground text-sm leading-snug">
+          Project → product → order. Click a row to expand or open a unit sheet; amount cells open a
+          specific tab.
         </p>
       }
       toolbar={
