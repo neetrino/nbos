@@ -1,7 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { useSession } from 'next-auth/react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import {
   MESSENGER_SOCKET_NAMESPACE,
@@ -100,8 +99,7 @@ export function useMessengerRealtime(options: {
   /** Channel member advanced read cursor (receipt hints for senders in that channel). */
   onChannelPeerRead?: (payload: MessengerWsChannelPeerReadPayload) => void;
 }): MessengerRealtimeControls {
-  const { data: session } = useSession();
-  const accessToken = session?.accessToken ?? null;
+  const [realtimeToken, setRealtimeToken] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const activeRef = useRef(options.active);
   const meIdRef = useRef(options.meId);
@@ -136,14 +134,44 @@ export function useMessengerRealtime(options: {
   }, []);
 
   useEffect(() => {
-    if (!options.canViewMessenger || !accessToken || !options.meId) {
+    if (!options.canViewMessenger || !options.meId) {
+      setRealtimeToken(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadRealtimeToken() {
+      try {
+        const res = await fetch('/api/auth/realtime-token');
+        if (!res.ok) {
+          if (!cancelled) setRealtimeToken(null);
+          return;
+        }
+        const body = (await res.json()) as { token?: string };
+        if (!cancelled) {
+          setRealtimeToken(typeof body.token === 'string' ? body.token : null);
+        }
+      } catch {
+        if (!cancelled) setRealtimeToken(null);
+      }
+    }
+
+    void loadRealtimeToken();
+    return () => {
+      cancelled = true;
+    };
+  }, [options.canViewMessenger, options.meId]);
+
+  useEffect(() => {
+    if (!options.canViewMessenger || !realtimeToken || !options.meId) {
       socketRef.current?.close();
       socketRef.current = null;
       return;
     }
 
     const socket = io(`${messengerSocketOrigin()}${MESSENGER_SOCKET_NAMESPACE}`, {
-      auth: { token: accessToken },
+      auth: { token: realtimeToken },
       transports: ['websocket'],
     });
     socketRef.current = socket;
@@ -227,7 +255,7 @@ export function useMessengerRealtime(options: {
       socket.close();
       socketRef.current = null;
     };
-  }, [options.canViewMessenger, accessToken, options.meId]);
+  }, [options.canViewMessenger, realtimeToken, options.meId]);
 
   useEffect(() => {
     const socket = socketRef.current;

@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useRef, type ReactNode 
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import type { MeResponse, PermissionMap, PermissionScope } from './types';
-import { api, setAuthTokenGetter } from '@/lib/api';
+import { api } from '@/lib/api';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
 const PERMISSIONS_LOAD_ERROR_TOAST_ID = 'nbos-permissions-load-error';
@@ -36,12 +36,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const prevUserIdRef = useRef<string | undefined>(undefined);
 
-  const accessToken = session?.accessToken ?? null;
   const userId = session?.user?.id;
-
-  useEffect(() => {
-    setAuthTokenGetter(async () => accessToken);
-  }, [accessToken]);
 
   useEffect(() => {
     if (status === 'loading') return;

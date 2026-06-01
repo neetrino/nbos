@@ -5,8 +5,6 @@ import type { NextConfig } from 'next';
 /** Monorepo root (apps/web → ../..). Turbopack must resolve `next` from the pnpm layout at the workspace root. */
 const MONOREPO_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-const API_URL = process.env.BACKEND_URL ?? 'http://localhost:4000';
-
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
 /**
@@ -97,10 +95,10 @@ const nextConfig: NextConfig = {
           destination: '/logo/icon.png',
         },
         {
-          // Exclude Auth.js routes from backend proxying.
-          // Otherwise /api/auth/* gets forwarded to Nest and breaks session parsing in the client.
-          source: '/api/:path((?!auth(?:/|$)).*)',
-          destination: `${API_URL}/api/:path`,
+          // Browser API calls are rewritten to the BFF route, which injects the
+          // backend JWT from the httpOnly session cookie (see app/api/bff/).
+          source: '/api/:path((?!auth(?:/|$)|bff(?:/|$)).*)',
+          destination: '/api/bff/:path',
         },
       ],
       fallback: [],
