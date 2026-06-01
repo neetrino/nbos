@@ -38,6 +38,10 @@ import type { DriveEntityAccess, DriveEntityContextAccess } from './drive-access
 import { assertDriveEntityContextAccessible } from './drive-entity-context-access';
 import { buildDriveAssetAccessWhere } from './drive-asset-access.where';
 import { applyFinanceDriveUploadDefaults } from './drive-finance-upload-defaults';
+import {
+  assertUploadFileNameAllowed,
+  assertUploadSizeWithinLimit,
+} from './drive-upload-validation';
 
 @Injectable()
 export class DriveUploadSessionService {
@@ -80,6 +84,7 @@ export class DriveUploadSessionService {
   ) {
     const fileName = requireText(dto.fileName, 'fileName');
     const contentType = requireText(dto.contentType, 'contentType');
+    assertUploadFileNameAllowed(fileName);
     if (dto.folderId) {
       const folderAccess = access
         ? documentsAccess
@@ -206,8 +211,9 @@ export class DriveUploadSessionService {
       );
     }
 
+    let head;
     try {
-      await this.r2
+      head = await this.r2
         .ensureS3()
         .send(new HeadObjectCommand({ Bucket: this.r2.bucket, Key: session.storageKey }));
     } catch (err) {
@@ -219,6 +225,17 @@ export class DriveUploadSessionService {
       throw new BadRequestException(
         'File was not found in storage. Upload to the presigned URL before completing.',
       );
+    }
+
+    // Authoritative size enforcement from the stored object (client size cannot be trusted).
+    try {
+      assertUploadSizeWithinLimit(head.ContentLength);
+    } catch (err) {
+      await this.prisma.fileUploadSession.update({
+        where: { id: sessionId },
+        data: { status: 'FAILED', failedReason: 'file_too_large' },
+      });
+      throw err;
     }
 
     return this.prisma.$transaction(async (tx) => {

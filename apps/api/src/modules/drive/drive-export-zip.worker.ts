@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Worker } from 'bullmq';
-import Redis from 'ioredis';
+import type Redis from 'ioredis';
+import { createRedisConnection, getRedisUrl } from '../../common/redis/redis-connection';
 import {
   DRIVE_ZIP_EXPORT_JOB_NAME,
   DRIVE_ZIP_EXPORT_QUEUE_NAME,
@@ -17,9 +18,9 @@ export class DriveExportZipWorker implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly driveZipExports: DriveZipExportService) {}
 
   onModuleInit() {
-    const redisUrl = process.env.REDIS_URL;
+    const redisUrl = getRedisUrl();
     if (!redisUrl) return;
-    this.connection = new Redis(redisUrl, { maxRetriesPerRequest: null });
+    this.connection = createRedisConnection(redisUrl);
     this.worker = new Worker<DriveZipExportQueuePayload>(
       DRIVE_ZIP_EXPORT_QUEUE_NAME,
       async (job) => {

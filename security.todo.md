@@ -26,7 +26,9 @@
 | **13.1 / 5.5 / 8.1** | CI: lint+typecheck+test+build, blocking `pnpm audit --audit-level=high`, gitleaks; npm Dependabot включён | `.github/workflows/ci.yml`, `.github/dependabot.yml`                                                    |
 | **23.2**             | Regression-тест whitelist `sortBy`                                                                        | `common/utils/sort-order.test.ts`                                                                       |
 
-**Осталось (следующий заход):** 2.7/2.8 JWT revoke + accessToken→BFF (P1), 6.1/6.3 pino + request-id + маскирование (P1), 9.1 R2 MIME/size лимиты (P1), 11.3 WS channel authZ (P1), 7.1 Redis TLS-enforce (P1) — плюс весь **👤 preflight** (§0, §18) на панелях.
+**Закрыто во 2-м заходе P1:** §9.1 R2 ext-blocklist + size cap, §7.1 Redis TLS-enforce в prod.
+
+**Осталось (следующий заход):** 2.7/2.8 JWT revoke + accessToken→BFF (P1), 6.1/6.3 pino + request-id + маскирование (P1, отдельный срез — добавление зависимости), 11.3 WS channel authZ (P1, ждёт планируемый messenger ACL — не изобретаем) — плюс весь **👤 preflight** (§0, §18) на панелях.
 
 ---
 
@@ -163,11 +165,11 @@
 
 ## 7. Redis — Security `7`
 
-| #   | P   | Статус | Задача                     | Проверка |
-| --- | --- | ------ | -------------------------- | -------- |
-| 7.1 | P0  | ⬜     | 👤 `rediss://` TLS         | Upstash  |
-| 7.2 | P1  | ⬜     | 🤖 TTL + key prefixes      | —        |
-| 7.3 | P0  | ⬜     | 🤖 No secrets/PII in Redis | Review   |
+| #   | P   | Статус | Задача                                                                         | Проверка |
+| --- | --- | ------ | ------------------------------------------------------------------------------ | -------- |
+| 7.1 | P0  | ✅     | 🤖👤 `rediss://` TLS — код enforce в prod (`common/redis/redis-connection.ts`) | Upstash  |
+| 7.2 | P1  | ⬜     | 🤖 TTL + key prefixes                                                          | —        |
+| 7.3 | P0  | ⬜     | 🤖 No secrets/PII in Redis                                                     | Review   |
 
 ---
 
@@ -183,14 +185,14 @@
 
 ## 9. Files / R2 — Quality **F** (18 пунктов, ключевые)
 
-| #   | P   | Статус | Задача                                            | Проверка      |
-| --- | --- | ------ | ------------------------------------------------- | ------------- |
-| 9.1 | P0  | 🔄     | 🤖 Presigned upload + RBAC; MIME + max size (F.5) | .exe rejected |
-| 9.2 | P0  | ⬜     | 👤 Bucket private; только signed URLs (F.1–F.2)   | —             |
-| 9.3 | P1  | ⬜     | 🤖 Path traversal в keys                          | `../` fail    |
-| 9.4 | P1  | ⬜     | 👤 R2 CORS minimal (F.4)                          | —             |
-| 9.5 | P2  | ⬜     | 🤖 AV scan user uploads (F.6)                     | —             |
-| 9.6 | P1  | ⬜     | 🤖 CDN cache rules не ломают private files (F.7+) | —             |
+| #   | P   | Статус | Задача                                                                              | Проверка      |
+| --- | --- | ------ | ----------------------------------------------------------------------------------- | ------------- |
+| 9.1 | P0  | ✅     | 🤖 Presigned upload + RBAC; ext-blocklist + size cap (`drive-upload-validation.ts`) | .exe rejected |
+| 9.2 | P0  | ⬜     | 👤 Bucket private; только signed URLs (F.1–F.2)                                     | —             |
+| 9.3 | P1  | ⬜     | 🤖 Path traversal в keys                                                            | `../` fail    |
+| 9.4 | P1  | ⬜     | 👤 R2 CORS minimal (F.4)                                                            | —             |
+| 9.5 | P2  | ⬜     | 🤖 AV scan user uploads (F.6)                                                       | —             |
+| 9.6 | P1  | ⬜     | 🤖 CDN cache rules не ломают private files (F.7+)                                   | —             |
 
 ---
 
