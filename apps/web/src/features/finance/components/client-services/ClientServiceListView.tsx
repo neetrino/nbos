@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { CalendarClock, DollarSign, Loader2, ServerCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
@@ -19,9 +19,8 @@ import {
   CLIENT_SERVICE_TYPES,
   clientServiceOptionLabel,
 } from '@/features/finance/constants/client-services';
-import type { ClientServiceRecord, ClientServiceRecordListParams } from '@/lib/api/client-services';
+import type { ClientServiceRecordListParams } from '@/lib/api/client-services';
 import { InfiniteScrollSentinel } from './InfiniteScrollSentinel';
-import { ClientServiceRowActions, type ClientServiceActionKind } from './ClientServiceRowActions';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
 import { useClientServiceList } from './use-client-service-list';
 
@@ -29,10 +28,6 @@ interface ClientServiceListViewProps {
   baseParams: ClientServiceRecordListParams;
   reloadToken: number;
   onOpen: (id: string) => void;
-  onAction: (service: ClientServiceRecord, kind: ClientServiceActionKind) => void;
-  actionId: string | null;
-  canCreateTask: boolean;
-  onRequestDelete: (target: { id: string; name: string }) => void;
   onCreate: () => void;
 }
 
@@ -43,14 +38,18 @@ function formatShortDate(value: string | null): string {
   );
 }
 
+function ListCellPrimary({ children }: { children: ReactNode }) {
+  return <p className="text-foreground truncate text-sm leading-tight font-medium">{children}</p>;
+}
+
+function ListCellSecondary({ children }: { children: ReactNode }) {
+  return <p className="text-muted-foreground mt-0.5 truncate text-xs leading-tight">{children}</p>;
+}
+
 export function ClientServiceListView({
   baseParams,
   reloadToken,
   onOpen,
-  onAction,
-  actionId,
-  canCreateTask,
-  onRequestDelete,
   onCreate,
 }: ClientServiceListViewProps) {
   const { items, loading, loadingMore, error, hasMore, loadMore } = useClientServiceList(
@@ -78,14 +77,12 @@ export function ClientServiceListView({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Service</TableHead>
-            <TableHead>Project</TableHead>
-            <TableHead>Renewal</TableHead>
-            <TableHead className="text-right">Cost</TableHead>
-            <TableHead>Stage</TableHead>
-            <TableHead className="w-[52px] text-right">
-              <span className="sr-only">Actions</span>
-            </TableHead>
+            <TableHead className="min-w-[180px]">Service</TableHead>
+            <TableHead className="min-w-[100px]">Kind</TableHead>
+            <TableHead className="min-w-[120px]">Project</TableHead>
+            <TableHead className="min-w-[100px]">Renewal</TableHead>
+            <TableHead className="min-w-[100px] text-right">Cost</TableHead>
+            <TableHead className="min-w-[88px]">Stage</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -93,72 +90,55 @@ export function ClientServiceListView({
             <TableRow
               key={service.id}
               className={cn(
-                'hover:bg-muted/40',
+                'hover:bg-muted/40 cursor-pointer',
                 service.overdue && 'bg-red-50/40 dark:bg-red-950/10',
               )}
+              onClick={() => onOpen(service.id)}
             >
-              <TableCell>
-                <button
-                  type="button"
-                  onClick={() => onOpen(service.id)}
-                  className={cn(
-                    'text-primary text-left font-medium hover:underline',
-                    'focus-visible:ring-ring rounded-sm focus-visible:ring-2 focus-visible:outline-none',
-                  )}
-                >
-                  {service.name}
-                </button>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  <StatusBadge
-                    label={clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)}
-                    variant="gray"
-                  />
-                  <StatusBadge
-                    label={clientServiceOptionLabel(
-                      CLIENT_SERVICE_BILLING_MODELS,
-                      service.billingModel,
-                    )}
-                    variant={service.billingModel === 'CLIENT_PAID' ? 'blue' : 'zinc'}
-                  />
-                </div>
-                {service.provider ? (
-                  <p className="text-muted-foreground mt-1 max-w-[220px] truncate text-xs">
-                    {service.provider}
-                  </p>
-                ) : null}
+              <TableCell className="max-w-[240px] py-2.5">
+                <ListCellPrimary>{service.name}</ListCellPrimary>
+                <ListCellSecondary>{service.provider ?? '—'}</ListCellSecondary>
               </TableCell>
-              <TableCell className="text-muted-foreground text-xs">
-                <span className="text-foreground font-medium">{service.project.code}</span>
-                <p className="max-w-[160px] truncate">{service.project.name}</p>
+
+              <TableCell className="max-w-[140px] py-2.5">
+                <ListCellPrimary>
+                  {clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)}
+                </ListCellPrimary>
+                <ListCellSecondary>
+                  {clientServiceOptionLabel(CLIENT_SERVICE_BILLING_MODELS, service.billingModel)}
+                </ListCellSecondary>
               </TableCell>
-              <TableCell className="text-muted-foreground text-xs">
-                <span className="inline-flex items-center gap-1">
+
+              <TableCell className="max-w-[160px] py-2.5">
+                <ListCellPrimary>{service.project.code}</ListCellPrimary>
+                <ListCellSecondary>{service.project.name}</ListCellSecondary>
+              </TableCell>
+
+              <TableCell className="py-2.5">
+                <span className="text-muted-foreground inline-flex items-center gap-1 text-xs leading-tight whitespace-nowrap">
                   <CalendarClock size={12} className="shrink-0 opacity-70" aria-hidden />
                   {formatShortDate(service.renewalDate)}
                 </span>
               </TableCell>
-              <TableCell className="text-right">
-                <span className="inline-flex items-center justify-end gap-1 font-semibold tabular-nums">
-                  <DollarSign size={12} className="text-accent shrink-0" aria-hidden />
-                  {service.ourCost ? formatAmount(Number(service.ourCost)) : '—'}
-                </span>
+
+              <TableCell className="py-2.5 text-right">
+                <ListCellPrimary>
+                  <span className="inline-flex items-center justify-end gap-1 tabular-nums">
+                    <DollarSign size={12} className="text-accent shrink-0" aria-hidden />
+                    {service.ourCost ? formatAmount(Number(service.ourCost)) : '—'}
+                  </span>
+                </ListCellPrimary>
                 {service.clientCharge ? (
-                  <p className="text-muted-foreground mt-0.5 text-xs tabular-nums">
-                    Charge {formatAmount(Number(service.clientCharge))}
-                  </p>
+                  <ListCellSecondary>
+                    <span className="block truncate text-right tabular-nums">
+                      {formatAmount(Number(service.clientCharge))}
+                    </span>
+                  </ListCellSecondary>
                 ) : null}
               </TableCell>
-              <TableCell>
+
+              <TableCell className="py-2.5">
                 <ClientServiceStageBadge service={service} emptyLabel="—" />
-              </TableCell>
-              <TableCell className="text-right">
-                <ClientServiceRowActions
-                  service={service}
-                  actionId={actionId}
-                  canCreateTask={canCreateTask}
-                  onAction={onAction}
-                  onRequestDelete={onRequestDelete}
-                />
               </TableCell>
             </TableRow>
           ))}

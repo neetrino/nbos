@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Layers } from 'lucide-react';
+import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import {
@@ -28,17 +29,20 @@ import {
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { ClientServiceGeneralTab } from './ClientServiceGeneralTab';
+import { type ClientServiceActionKind } from './ClientServiceSheetActions';
 import {
   CLIENT_SERVICE_DETAIL_SHEET_TABS,
   type ClientServiceDetailSheetTab,
 } from './client-service-detail-sheet-tabs';
 import { useClientServiceProjects } from './use-client-service-projects';
+import { usePermission } from '@/lib/permissions';
 
 interface ClientServiceDetailSheetProps {
   serviceId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
+  onRequestDelete: (target: { id: string; name: string }) => void;
 }
 
 function canSaveClientServiceForm(form: ClientServiceFormState): boolean {
@@ -56,7 +60,9 @@ export function ClientServiceDetailSheet({
   open,
   onOpenChange,
   onSaved,
+  onRequestDelete,
 }: ClientServiceDetailSheetProps) {
+  const { me } = usePermission();
   const [service, setService] = useState<ClientServiceRecord | null>(null);
   const [draft, setDraft] = useState<ClientServiceFormState | null>(null);
   const [snap, setSnap] = useState<ClientServiceFormState | null>(null);
@@ -64,6 +70,7 @@ export function ClientServiceDetailSheet({
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [actionId, setActionId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ClientServiceDetailSheetTab>('general');
   const dirtyRef = useRef(false);
   const projects = useClientServiceProjects(open);
@@ -157,6 +164,36 @@ export function ClientServiceDetailSheet({
     if (snap) setDraft({ ...snap });
   }, [snap]);
 
+  const runServiceAction = useCallback(
+    async (kind: ClientServiceActionKind) => {
+      if (!service) return;
+      setActionId(`${kind}:${service.id}`);
+      try {
+        if (kind === 'invoice') {
+          await clientServicesApi.createInvoice(service.id);
+          toast.success('Linked invoice card created.');
+        } else if (kind === 'plan') {
+          await clientServicesApi.createExpensePlan(service.id);
+          toast.success('Linked expense plan created.');
+        } else if (kind === 'expense') {
+          await clientServicesApi.createExpense(service.id);
+          toast.success('Linked expense card created.');
+        } else if (kind === 'task') {
+          if (!me?.id) throw new Error('Current employee is not loaded.');
+          await clientServicesApi.createTask(service.id, { creatorId: me.id });
+          toast.success('Linked task created.');
+        }
+        await fetchService();
+        onSaved();
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Client service action failed.'));
+      } finally {
+        setActionId(null);
+      }
+    },
+    [fetchService, me?.id, onSaved, service],
+  );
+
   if (!serviceId) return null;
 
   const typeLabel = service
@@ -218,6 +255,10 @@ export function ClientServiceDetailSheet({
                 patchDraft={patchDraft}
                 projects={projects}
                 formDisabled={saving}
+                actionId={actionId}
+                canCreateTask={Boolean(me?.id)}
+                onAction={(kind) => void runServiceAction(kind)}
+                onRequestDelete={() => onRequestDelete({ id: service.id, name: service.name })}
               />
             ) : null}
           </div>

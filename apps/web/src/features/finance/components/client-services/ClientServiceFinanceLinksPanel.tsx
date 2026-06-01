@@ -37,8 +37,8 @@ export function ClientServiceFinanceLinksPanel({ links }: ClientServiceFinanceLi
   if (!hasAny) {
     return (
       <p className="text-muted-foreground border-border rounded-lg border border-dashed p-3 text-sm">
-        No linked invoice cards, expense plans, expense cards, or tasks yet. Use the actions on the
-        list row to create links.
+        No linked invoice cards, expense plans, expense cards, or tasks yet. Use the actions above
+        to create links.
       </p>
     );
   }

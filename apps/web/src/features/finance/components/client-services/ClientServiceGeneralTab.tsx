@@ -26,6 +26,10 @@ import type { ClientServiceFormState } from '@/features/finance/utils/client-ser
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 import type { Project } from '@/lib/api/projects';
 import { ClientServiceFinanceLinksPanel } from './ClientServiceFinanceLinksPanel';
+import {
+  ClientServiceSheetActions,
+  type ClientServiceActionKind,
+} from './ClientServiceSheetActions';
 
 function mapSelectOptions(options: ReadonlyArray<{ value: string; label: string }>) {
   return options.map((row) => ({ value: row.value, label: row.label }));
@@ -40,6 +44,10 @@ interface ClientServiceGeneralTabProps {
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   projects: Project[];
   formDisabled?: boolean;
+  actionId: string | null;
+  canCreateTask: boolean;
+  onAction: (kind: ClientServiceActionKind) => void;
+  onRequestDelete: () => void;
 }
 
 export function ClientServiceGeneralTab({
@@ -49,6 +57,10 @@ export function ClientServiceGeneralTab({
   patchDraft,
   projects,
   formDisabled = false,
+  actionId,
+  canCreateTask,
+  onAction,
+  onRequestDelete,
 }: ClientServiceGeneralTabProps) {
   const [basicsOpen, setBasicsOpen] = useState(true);
   const [billingOpen, setBillingOpen] = useState(true);
@@ -241,11 +253,21 @@ export function ClientServiceGeneralTab({
       </DetailSheetSection>
 
       <DetailSheetSection title="Connections">
-        {service.financeLinks ? (
-          <ClientServiceFinanceLinksPanel links={service.financeLinks} />
-        ) : (
-          <p className="text-muted-foreground text-sm">No linked finance records yet.</p>
-        )}
+        <ClientServiceSheetActions
+          service={service}
+          actionId={actionId}
+          canCreateTask={canCreateTask}
+          disabled={formDisabled}
+          onAction={onAction}
+          onRequestDelete={onRequestDelete}
+        />
+        <div className="mt-4">
+          {service.financeLinks ? (
+            <ClientServiceFinanceLinksPanel links={service.financeLinks} />
+          ) : (
+            <p className="text-muted-foreground text-sm">No linked finance records yet.</p>
+          )}
+        </div>
       </DetailSheetSection>
     </div>
   );

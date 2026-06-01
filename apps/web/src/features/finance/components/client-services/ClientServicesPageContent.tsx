@@ -34,15 +34,12 @@ import { ClientServicesPageSettingsSheet } from './ClientServicesPageSettingsShe
 import { ClientServiceListView } from './ClientServiceListView';
 import { ClientServiceStatusBoardView } from './ClientServiceStatusBoardView';
 import { ClientServiceMonthsBoardView } from './ClientServiceMonthsBoardView';
-import { type ClientServiceActionKind } from './ClientServiceRowActions';
 import {
   clientServicesApi,
-  type ClientServiceRecord,
   type ClientServiceRecordListParams,
   type ClientServiceStats,
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { usePermission } from '@/lib/permissions';
 
 export function ClientServicesPageContent() {
   return (
@@ -58,14 +55,12 @@ function ClientServicesPageInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
-  const { me } = usePermission();
 
   const [view, setView] = useState<ClientServicesViewMode>('list');
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [reloadToken, setReloadToken] = useState(0);
   const [stats, setStats] = useState<ClientServiceStats | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [actionId, setActionId] = useState<string | null>(null);
   const deleteConfirm = useDeleteConfirm();
 
   const [search, setSearch] = useState('');
@@ -174,40 +169,15 @@ function ClientServicesPageInner() {
     async (id: string) => {
       try {
         await clientServicesApi.delete(id);
+        if (openServiceIdFromUrl === id) {
+          handleServiceSheetOpenChange(false);
+        }
         refreshAll();
       } catch (caught) {
         toast.error(getApiErrorMessage(caught, 'Client service could not be deleted.'));
       }
     },
-    [refreshAll],
-  );
-
-  const runServiceAction = useCallback(
-    async (service: ClientServiceRecord, kind: ClientServiceActionKind) => {
-      setActionId(`${kind}:${service.id}`);
-      try {
-        if (kind === 'invoice') {
-          await clientServicesApi.createInvoice(service.id);
-          toast.success('Linked invoice card created.');
-        } else if (kind === 'plan') {
-          await clientServicesApi.createExpensePlan(service.id);
-          toast.success('Linked expense plan created.');
-        } else if (kind === 'expense') {
-          await clientServicesApi.createExpense(service.id);
-          toast.success('Linked expense card created.');
-        } else if (kind === 'task') {
-          if (!me?.id) throw new Error('Current employee is not loaded.');
-          await clientServicesApi.createTask(service.id, { creatorId: me.id });
-          toast.success('Linked task created.');
-        }
-        refreshAll();
-      } catch (caught) {
-        toast.error(getApiErrorMessage(caught, 'Client service action failed.'));
-      } finally {
-        setActionId(null);
-      }
-    },
-    [me?.id, refreshAll],
+    [handleServiceSheetOpenChange, openServiceIdFromUrl, refreshAll],
   );
 
   const moduleHeroSlots = useMemo(
@@ -280,10 +250,6 @@ function ClientServicesPageInner() {
             baseParams={baseParams}
             reloadToken={reloadToken}
             onOpen={openServiceDetail}
-            onAction={runServiceAction}
-            actionId={actionId}
-            canCreateTask={Boolean(me?.id)}
-            onRequestDelete={(target) => deleteConfirm.request(target)}
             onCreate={openCreate}
           />
         )}
@@ -300,6 +266,7 @@ function ClientServicesPageInner() {
         open={Boolean(openServiceIdFromUrl)}
         onOpenChange={handleServiceSheetOpenChange}
         onSaved={refreshAll}
+        onRequestDelete={(target) => deleteConfirm.request(target)}
       />
 
       <DeleteConfirmDialog
