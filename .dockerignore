@@ -1,0 +1,45 @@
+# Dependencies and build outputs
+node_modules
+**/node_modules
+.pnpm-store
+.turbo
+**/.turbo
+.next
+**/.next
+dist
+**/dist
+coverage
+**/coverage
+
+# Git and IDE
+.git
+.github
+.cursor
+.vscode
+.idea
+agent-transcripts
+
+# Secrets and local env
+.env
+.env.*
+!.env.example
+
+# Docs and tests (not needed in images)
+docs
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+vitest.config.ts
+vitest.regression.config.ts
+
+# Prisma generated client is produced at image build time
+packages/database/src/generated
+
+# Misc
+*.md
+.DS_Store
+Thumbs.db
+*.log
+tmp
+temp
