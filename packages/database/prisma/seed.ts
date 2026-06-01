@@ -4,6 +4,7 @@ import path from 'path';
 import { seedMessenger } from './seed-messenger';
 import { seedMail } from './seed-mail';
 import { seedRichDemo } from './seed-rich-demo';
+import { seedCredentialsDemo } from './seed-credentials-demo';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
 
@@ -1644,75 +1645,6 @@ async function main() {
     },
   });
 
-  // ── Credentials ────────────────────────────────────────────
-  await prisma.credential.create({
-    data: {
-      projectId: project1.id,
-      category: 'ADMIN',
-      provider: 'Vercel',
-      name: 'ACME Production Admin',
-      url: 'https://vercel.com/acme',
-      login: 'admin@acme.am',
-      accessLevel: 'PROJECT_TEAM',
-      allowedEmployees: [pm.id, dev.id],
-    },
-  });
-  await prisma.credential.create({
-    data: {
-      projectId: project1.id,
-      category: 'DOMAIN',
-      provider: 'Namecheap',
-      name: 'acme.am DNS',
-      url: 'https://ap.manage.namecheap.com',
-      login: 'acme_account',
-      accessLevel: 'SECRET',
-      allowedEmployees: [pm.id],
-    },
-  });
-  await prisma.credential.create({
-    data: {
-      projectId: project2.id,
-      category: 'API_KEY',
-      provider: 'Firebase',
-      name: 'TechStart App Firebase',
-      accessLevel: 'PROJECT_TEAM',
-      allowedEmployees: [pm.id, dev.id],
-    },
-  });
-  await prisma.credential.create({
-    data: {
-      projectId: project4.id,
-      category: 'ADMIN',
-      provider: 'Neon',
-      name: 'MedTech DB Admin',
-      url: 'https://console.neon.tech',
-      login: 'medtech_admin',
-      accessLevel: 'SECRET',
-      allowedEmployees: [pm.id],
-    },
-  });
-  await prisma.credential.create({
-    data: {
-      projectId: project5.id,
-      category: 'API_KEY',
-      provider: 'Google Maps',
-      name: 'Fleet Maps API Key',
-      accessLevel: 'PROJECT_TEAM',
-      allowedEmployees: [pm2.id, dev.id],
-    },
-  });
-  await prisma.credential.create({
-    data: {
-      category: 'SERVICE',
-      provider: 'Figma',
-      name: 'Figma Team',
-      url: 'https://figma.com',
-      accessLevel: 'DEPARTMENT',
-      allowedEmployees: [],
-    },
-  });
-  console.log('  ✓ Credentials (6)');
-
   // ── Domains ────────────────────────────────────────────────
   await prisma.domain.upsert({
     where: { domainName: 'acme.am' },
@@ -1770,6 +1702,20 @@ async function main() {
     },
   });
   console.log('  ✓ Domains (4)');
+
+  await seedCredentialsDemo(prisma, {
+    ceo,
+    pm,
+    pm2,
+    dev,
+    designer,
+    seller,
+    products: {
+      acmeSite: { id: prod1.id, projectId: project1.id },
+      techstartApp: { id: prod4.id, projectId: project2.id },
+      medtechBlog: { id: prod9.id, projectId: project4.id },
+    },
+  });
 
   // ── Drive, Documents, Control Layer, Notifications, Calendar ─────
   const handoffFile = await prisma.fileAsset.create({
@@ -2129,7 +2075,7 @@ async function main() {
   console.log('   20 projects (half archived), 15+ products per baseline + rich bundle');
   console.log('   Finance: orders, invoices, payments, subscriptions, payroll, bonus pools');
   console.log('   Client services, expense plans, compensation profiles');
-  console.log('   10 tasks, 5 tickets, 6 credentials (baseline)');
+  console.log('   10 tasks, 5 tickets, 100+ credentials (rich vault demo)');
   await prisma.$disconnect();
 }
 
