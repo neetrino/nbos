@@ -21,6 +21,7 @@ interface ClientServiceDetailSheetBodyProps {
   actionId: string | null;
   canCreateTask: boolean;
   onAction: (kind: ClientServiceActionKind) => void;
+  onCreateTask: () => void;
 }
 
 export function ClientServiceDetailSheetBody({
@@ -34,6 +35,7 @@ export function ClientServiceDetailSheetBody({
   actionId,
   canCreateTask,
   onAction,
+  onCreateTask,
 }: ClientServiceDetailSheetBodyProps) {
   const isActionBusy = (kind: ClientServiceActionKind) => actionId === `${kind}:${service.id}`;
 
@@ -78,8 +80,7 @@ export function ClientServiceDetailSheetBody({
     <ClientServiceTasksTab
       links={service.financeLinks}
       canCreateTask={canCreateTask}
-      creating={isActionBusy('task')}
-      onCreate={() => onAction('task')}
+      onCreateTask={onCreateTask}
     />
   );
 }

@@ -458,7 +458,7 @@ expiry_date updated
    - **General** — поля карточки (basics, billing, dates, notes, proofs).
    - **Invoices** — список связанных `Invoice Card` (+ create).
    - **Expenses** — списки связанных expense plans и expense cards (+ create).
-   - **Tasks** — список связанных задач (+ create).
+   - **Tasks** — список связанных задач; **Create task** открывает shared `QuickCreateTaskDialog` (как Deal / Work Spaces), а не мгновенное создание.
 
 Должно быть видно:
 

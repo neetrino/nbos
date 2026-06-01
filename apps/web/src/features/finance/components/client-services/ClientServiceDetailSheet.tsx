@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Layers, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -14,6 +14,7 @@ import {
   EntityItemHost,
   ErrorState,
   LoadingState,
+  QuickCreateTaskDialog,
   StatusBadge,
 } from '@/components/shared';
 import {
@@ -21,6 +22,10 @@ import {
   CLIENT_SERVICE_TYPES,
   clientServiceOptionLabel,
 } from '@/features/finance/constants/client-services';
+import {
+  clientServiceTaskDefaultDueDate,
+  clientServiceTaskDefaultLinks,
+} from '@/features/finance/constants/client-service-task-links';
 import { clientServicesListWithOpenServiceHref } from '@/features/finance/constants/client-service-deep-link';
 import {
   clientServiceFormToPayload,
@@ -31,7 +36,7 @@ import {
 } from '@/features/finance/utils/client-service-form-state';
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { usePermission } from '@/lib/permissions';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
 import {
   ClientServiceSheetActions,
@@ -68,7 +73,7 @@ export function ClientServiceDetailSheet({
   onSaved,
   onRequestDelete,
 }: ClientServiceDetailSheetProps) {
-  const { me } = usePermission();
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const [service, setService] = useState<ClientServiceRecord | null>(null);
   const [draft, setDraft] = useState<ClientServiceFormState | null>(null);
   const [snap, setSnap] = useState<ClientServiceFormState | null>(null);
@@ -78,6 +83,7 @@ export function ClientServiceDetailSheet({
   const [saving, setSaving] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ClientServiceDetailSheetTab>('general');
+  const [quickCreateTaskOpen, setQuickCreateTaskOpen] = useState(false);
   const dirtyRef = useRef(false);
   const projects = useClientServiceProjects(open);
 
@@ -104,7 +110,30 @@ export function ClientServiceDetailSheet({
 
   useEffect(() => {
     setActiveTab('general');
+    if (!open) setQuickCreateTaskOpen(false);
   }, [serviceId, open]);
+
+  const taskDefaultLinks = useMemo(
+    () => (service ? clientServiceTaskDefaultLinks(service) : undefined),
+    [service],
+  );
+
+  const taskDefaultDueDate = useMemo(
+    () => (service ? clientServiceTaskDefaultDueDate(service.renewalDate) : undefined),
+    [service],
+  );
+
+  const canCreateTask = creatorReady && Boolean(creatorId);
+
+  const handleOpenCreateTask = useCallback(() => {
+    setQuickCreateTaskOpen(true);
+  }, []);
+
+  const handleTaskCreated = useCallback(() => {
+    setActiveTab('tasks');
+    void fetchService();
+    onSaved();
+  }, [fetchService, onSaved]);
 
   useLayoutEffect(() => {
     if (!service) {
@@ -187,11 +216,6 @@ export function ClientServiceDetailSheet({
           await clientServicesApi.createExpense(service.id);
           toast.success('Linked expense card created.');
           setActiveTab('expenses');
-        } else if (kind === 'task') {
-          if (!me?.id) throw new Error('Current employee is not loaded.');
-          await clientServicesApi.createTask(service.id, { creatorId: me.id });
-          toast.success('Linked task created.');
-          setActiveTab('tasks');
         }
         await fetchService();
         onSaved();
@@ -201,7 +225,7 @@ export function ClientServiceDetailSheet({
         setActionId(null);
       }
     },
-    [fetchService, me?.id, onSaved, service],
+    [fetchService, onSaved, service],
   );
 
   if (!serviceId) return null;
@@ -260,9 +284,10 @@ export function ClientServiceDetailSheet({
               <ClientServiceSheetActions
                 service={service}
                 actionId={actionId}
-                canCreateTask={Boolean(me?.id)}
+                canCreateTask={canCreateTask}
                 disabled={actionBusy}
                 onAction={(kind) => void runServiceAction(kind)}
+                onCreateTask={handleOpenCreateTask}
               />
             </div>
           ) : null}
@@ -289,8 +314,9 @@ export function ClientServiceDetailSheet({
                   projects={projects}
                   saving={saving}
                   actionId={actionId}
-                  canCreateTask={Boolean(me?.id)}
+                  canCreateTask={canCreateTask}
                   onAction={(kind) => void runServiceAction(kind)}
+                  onCreateTask={handleOpenCreateTask}
                 />
               ) : null}
             </div>
@@ -306,6 +332,19 @@ export function ClientServiceDetailSheet({
           />
         </EntityDetailSheetContent>
       </Sheet>
+
+      {service ? (
+        <QuickCreateTaskDialog
+          open={quickCreateTaskOpen}
+          onOpenChange={setQuickCreateTaskOpen}
+          creatorId={creatorId ?? ''}
+          creatorReady={creatorReady}
+          defaultLinks={taskDefaultLinks}
+          defaultDueDate={taskDefaultDueDate}
+          forceNestedBackdrop
+          onCreated={handleTaskCreated}
+        />
+      ) : null}
     </EntityItemHost>
   );
 }

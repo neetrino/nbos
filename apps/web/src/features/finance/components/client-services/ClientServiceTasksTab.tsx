@@ -19,8 +19,7 @@ import { cn } from '@/lib/utils';
 interface ClientServiceTasksTabProps {
   links: ClientServiceFinanceLinks | undefined;
   canCreateTask: boolean;
-  creating: boolean;
-  onCreate: () => void;
+  onCreateTask: () => void;
 }
 
 function taskHref(task: ClientServiceFinanceLinks['tasks'][number]): string {
@@ -33,8 +32,7 @@ function taskHref(task: ClientServiceFinanceLinks['tasks'][number]): string {
 export function ClientServiceTasksTab({
   links,
   canCreateTask,
-  creating,
-  onCreate,
+  onCreateTask,
 }: ClientServiceTasksTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
@@ -48,7 +46,7 @@ export function ClientServiceTasksTab({
   return (
     <DetailSheetSection title="Tasks" icon={<CheckSquare size={12} />}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <Button type="button" size="sm" disabled={creating || !canCreateTask} onClick={onCreate}>
+        <Button type="button" size="sm" disabled={!canCreateTask} onClick={onCreateTask}>
           <Plus size={14} aria-hidden />
           Create task
         </Button>

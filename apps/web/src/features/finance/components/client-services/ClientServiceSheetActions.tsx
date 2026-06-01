@@ -4,7 +4,7 @@ import { CheckSquare, FileText, ListChecks, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 
-export type ClientServiceActionKind = 'invoice' | 'plan' | 'expense' | 'task';
+export type ClientServiceActionKind = 'invoice' | 'plan' | 'expense';
 
 interface ClientServiceSheetActionsProps {
   service: ClientServiceRecord;
@@ -12,6 +12,7 @@ interface ClientServiceSheetActionsProps {
   canCreateTask: boolean;
   disabled?: boolean;
   onAction: (kind: ClientServiceActionKind) => void;
+  onCreateTask: () => void;
 }
 
 export function ClientServiceSheetActions({
@@ -20,6 +21,7 @@ export function ClientServiceSheetActions({
   canCreateTask,
   disabled = false,
   onAction,
+  onCreateTask,
 }: ClientServiceSheetActionsProps) {
   const busy = disabled || (actionId?.endsWith(`:${service.id}`) ?? false);
 
@@ -61,8 +63,8 @@ export function ClientServiceSheetActions({
         type="button"
         variant="outline"
         size="sm"
-        disabled={busy || actionId === `task:${service.id}` || !canCreateTask}
-        onClick={() => onAction('task')}
+        disabled={busy || !canCreateTask}
+        onClick={onCreateTask}
       >
         <CheckSquare size={14} aria-hidden />
         Create task
