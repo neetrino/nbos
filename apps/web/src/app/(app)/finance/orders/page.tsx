@@ -35,6 +35,7 @@ import { ordersListPageTitle } from '@/features/finance/constants/finance-route-
 import { PARTNER_ORDERS_DRILLDOWN_QUERY } from '@/features/finance/constants/partner-orders-drilldown';
 import {
   FINANCE_PERIOD_FILTER_KEY,
+  FINANCE_DEFAULT_LIST_PERIOD,
   parseFinancePeriodFilterValue,
 } from '@/features/finance/constants/finance-period-filter';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
@@ -101,7 +102,7 @@ function OrdersPageInner() {
 
   const handleClearOrderFilters = useCallback(() => {
     state.setFilters({});
-    state.setPeriod('month');
+    state.setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
   }, [state]);
 
   const clearReconciliationGap = useCallback(() => {

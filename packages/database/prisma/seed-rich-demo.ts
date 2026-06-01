@@ -526,7 +526,7 @@ async function seedClientServicesForProjects(
           name: `Seeded ${type} — project slice ${idx}`,
           provider: type === 'DOMAIN' ? 'Namecheap' : 'AWS',
           status: idx % 3 === 0 ? 'EXPIRING_SOON' : 'ACTIVE',
-          billingModel: t === 0 ? 'CLIENT_PAID' : 'COMPANY_PAID',
+          billingModel: t === 0 ? 'WE_PAY' : 'REMINDER_ONLY',
           ourCost: 8_000 + idx * 500,
           clientCharge: 12_000 + idx * 800,
           renewalDate: new Date('2026-08-15'),

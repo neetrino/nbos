@@ -1,15 +1,19 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Layers } from 'lucide-react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Layers, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   EntityDetailSheetContent,
+  EntityItemHost,
   ErrorState,
   LoadingState,
+  QuickCreateTaskDialog,
   StatusBadge,
 } from '@/components/shared';
 import {
@@ -17,6 +21,10 @@ import {
   CLIENT_SERVICE_TYPES,
   clientServiceOptionLabel,
 } from '@/features/finance/constants/client-services';
+import {
+  clientServiceTaskDefaultDueDate,
+  clientServiceTaskDefaultLinks,
+} from '@/features/finance/constants/client-service-task-links';
 import { clientServicesListWithOpenServiceHref } from '@/features/finance/constants/client-service-deep-link';
 import {
   clientServiceFormToPayload,
@@ -27,7 +35,9 @@ import {
 } from '@/features/finance/utils/client-service-form-state';
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { ClientServiceGeneralTab } from './ClientServiceGeneralTab';
+import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
+import { ClientServiceCreateDialogs } from './ClientServiceCreateDialogs';
+import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
 import {
   CLIENT_SERVICE_DETAIL_SHEET_TABS,
   type ClientServiceDetailSheetTab,
@@ -39,6 +49,7 @@ interface ClientServiceDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
+  onRequestDelete: (target: { id: string; name: string }) => void;
 }
 
 function canSaveClientServiceForm(form: ClientServiceFormState): boolean {
@@ -51,12 +62,24 @@ function canSaveClientServiceForm(form: ClientServiceFormState): boolean {
   );
 }
 
+function closeCreateDialogs(setters: {
+  setInvoiceOpen: (open: boolean) => void;
+  setExpenseOpen: (open: boolean) => void;
+  setQuickCreateTaskOpen: (open: boolean) => void;
+}) {
+  setters.setInvoiceOpen(false);
+  setters.setExpenseOpen(false);
+  setters.setQuickCreateTaskOpen(false);
+}
+
 export function ClientServiceDetailSheet({
   serviceId,
   open,
   onOpenChange,
   onSaved,
+  onRequestDelete,
 }: ClientServiceDetailSheetProps) {
+  const { creatorId, creatorReady } = useTaskCreatorId();
   const [service, setService] = useState<ClientServiceRecord | null>(null);
   const [draft, setDraft] = useState<ClientServiceFormState | null>(null);
   const [snap, setSnap] = useState<ClientServiceFormState | null>(null);
@@ -65,6 +88,9 @@ export function ClientServiceDetailSheet({
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<ClientServiceDetailSheetTab>('general');
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [expenseOpen, setExpenseOpen] = useState(false);
+  const [quickCreateTaskOpen, setQuickCreateTaskOpen] = useState(false);
   const dirtyRef = useRef(false);
   const projects = useClientServiceProjects(open);
 
@@ -91,7 +117,46 @@ export function ClientServiceDetailSheet({
 
   useEffect(() => {
     setActiveTab('general');
+    if (!open) {
+      closeCreateDialogs({
+        setInvoiceOpen,
+        setExpenseOpen,
+        setQuickCreateTaskOpen,
+      });
+    }
   }, [serviceId, open]);
+
+  const taskDefaultLinks = useMemo(
+    () => (service ? clientServiceTaskDefaultLinks(service) : undefined),
+    [service],
+  );
+
+  const taskDefaultDueDate = useMemo(
+    () => (service ? clientServiceTaskDefaultDueDate(service.renewalDate) : undefined),
+    [service],
+  );
+
+  const canCreateTask = creatorReady && Boolean(creatorId);
+
+  const refreshAfterLinkCreated = useCallback(() => {
+    void fetchService();
+    onSaved();
+  }, [fetchService, onSaved]);
+
+  const handleInvoiceCreated = useCallback(() => {
+    setActiveTab('invoices');
+    refreshAfterLinkCreated();
+  }, [refreshAfterLinkCreated]);
+
+  const handleExpenseCreated = useCallback(() => {
+    setActiveTab('expenses');
+    refreshAfterLinkCreated();
+  }, [refreshAfterLinkCreated]);
+
+  const handleTaskCreated = useCallback(() => {
+    setActiveTab('tasks');
+    refreshAfterLinkCreated();
+  }, [refreshAfterLinkCreated]);
 
   useLayoutEffect(() => {
     if (!service) {
@@ -168,70 +233,109 @@ export function ClientServiceDetailSheet({
   const sourcePageHref = clientServicesListWithOpenServiceHref(serviceId);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent
-        open={open}
-        layout="full"
-        width="medium"
-        sourcePageHref={sourcePageHref}
-      >
-        <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
-          {loading ? (
-            <p className="text-muted-foreground text-sm">Loading…</p>
-          ) : service ? (
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="inline-flex max-w-full min-w-0 items-center gap-2">
-                  <Layers className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {service.name}
-                  </h2>
+    <EntityItemHost nested onEntityChanged={() => void fetchService()}>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          width="medium"
+          sourcePageHref={sourcePageHref}
+        >
+          <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+            {loading ? (
+              <p className="text-muted-foreground text-sm">Loading…</p>
+            ) : service ? (
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex max-w-full min-w-0 items-center gap-2">
+                    <Layers className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                      {service.name}
+                    </h2>
+                  </div>
+                </div>
+                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                  {typeLabel ? <StatusBadge label={typeLabel} variant="indigo" /> : null}
+                  {statusLabel ? <StatusBadge label={statusLabel} variant="gray" /> : null}
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      disabled={saving}
+                      onClick={() => onRequestDelete({ id: service.id, name: service.name })}
+                    >
+                      <Trash2 />
+                      Delete service
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {typeLabel ? <StatusBadge label={typeLabel} variant="indigo" /> : null}
-                {statusLabel ? <StatusBadge label={statusLabel} variant="gray" /> : null}
-              </div>
-            </div>
-          ) : null}
-        </div>
+            ) : null}
+          </div>
 
-        {CLIENT_SERVICE_DETAIL_SHEET_TABS.length > 1 ? (
           <DetailSheetTabBar
             tabs={CLIENT_SERVICE_DETAIL_SHEET_TABS}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as ClientServiceDetailSheetTab)}
           />
-        ) : null}
 
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="px-5 py-5">
-            {loading ? (
-              <LoadingState count={3} />
-            ) : error ? (
-              <ErrorState description={error} onRetry={() => void fetchService()} />
-            ) : service && draft ? (
-              <ClientServiceGeneralTab
-                serviceId={serviceId}
-                service={service}
-                draft={draft}
-                patchDraft={patchDraft}
-                projects={projects}
-                formDisabled={saving}
-              />
-            ) : null}
-          </div>
-        </ScrollArea>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="px-5 py-5">
+              {loading ? (
+                <LoadingState count={3} />
+              ) : error ? (
+                <ErrorState description={error} onRetry={() => void fetchService()} />
+              ) : service && draft ? (
+                <ClientServiceDetailSheetBody
+                  activeTab={activeTab}
+                  serviceId={serviceId}
+                  service={service}
+                  draft={draft}
+                  patchDraft={patchDraft}
+                  projects={projects}
+                  saving={saving}
+                  canCreateTask={canCreateTask}
+                  onCreateInvoice={() => setInvoiceOpen(true)}
+                  onCreateExpense={() => setExpenseOpen(true)}
+                  onCreateTask={() => setQuickCreateTaskOpen(true)}
+                />
+              ) : null}
+            </div>
+          </ScrollArea>
 
-        <DetailSheetFormFooter
-          visible={Boolean(service && draft)}
-          dirty={dirty && (draft ? canSaveClientServiceForm(draft) : false)}
-          saving={saving}
-          errorMessage={formError}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
-      </EntityDetailSheetContent>
-    </Sheet>
+          <DetailSheetFormFooter
+            visible={activeTab === 'general' && Boolean(service && draft)}
+            dirty={dirty && (draft ? canSaveClientServiceForm(draft) : false)}
+            saving={saving}
+            errorMessage={formError}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        </EntityDetailSheetContent>
+      </Sheet>
+
+      {service ? (
+        <>
+          <ClientServiceCreateDialogs
+            service={service}
+            invoiceOpen={invoiceOpen}
+            onInvoiceOpenChange={setInvoiceOpen}
+            expenseOpen={expenseOpen}
+            onExpenseOpenChange={setExpenseOpen}
+            onInvoiceCreated={handleInvoiceCreated}
+            onExpenseCreated={handleExpenseCreated}
+          />
+          <QuickCreateTaskDialog
+            open={quickCreateTaskOpen}
+            onOpenChange={setQuickCreateTaskOpen}
+            creatorId={creatorId ?? ''}
+            creatorReady={creatorReady}
+            defaultLinks={taskDefaultLinks}
+            defaultDueDate={taskDefaultDueDate}
+            forceNestedBackdrop
+            onCreated={handleTaskCreated}
+          />
+        </>
+      ) : null}
+    </EntityItemHost>
   );
 }

@@ -24,7 +24,7 @@ export const EMPTY_CLIENT_SERVICE_FORM: ClientServiceFormState = {
   name: '',
   provider: '',
   status: 'PENDING',
-  billingModel: 'CLIENT_PAID',
+  billingModel: 'WE_PAY',
   pricingModel: 'FIXED',
   frequency: 'YEARLY',
   ourCost: '',

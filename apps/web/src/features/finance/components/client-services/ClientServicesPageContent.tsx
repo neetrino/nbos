@@ -2,33 +2,23 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { CheckSquare, FileText, ListChecks, Plus, Receipt, ServerCog, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  EmptyState,
-  ErrorState,
+  DeleteConfirmDialog,
   IntegratedSearchFilters,
   LoadingState,
-  DeleteConfirmDialog,
+  ViewModeSwitch,
   useDeleteConfirm,
   useModuleHeroSlots,
 } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
 import {
-  CLIENT_SERVICE_BILLING_MODELS,
-  CLIENT_SERVICE_STATUSES,
-  CLIENT_SERVICE_TYPES,
-  clientServiceOptionLabel,
-} from '@/features/finance/constants/client-services';
+  readClientServicesViewMode,
+  writeClientServicesViewMode,
+  type ClientServicesViewMode,
+} from '@/features/finance/constants/client-services-view';
+import { CLIENT_SERVICES_VIEW_OPTIONS } from './client-services-view-options';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { clientServicesPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { OPEN_CLIENT_SERVICE_QUERY } from '@/features/finance/constants/client-service-deep-link';
@@ -41,24 +31,15 @@ import {
 import { ClientServiceCreateDialog } from './ClientServiceCreateDialog';
 import { ClientServiceDetailSheet } from './ClientServiceDetailSheet';
 import { ClientServicesPageSettingsSheet } from './ClientServicesPageSettingsSheet';
+import { ClientServiceListView } from './ClientServiceListView';
+import { ClientServiceStatusBoardView } from './ClientServiceStatusBoardView';
+import { ClientServiceMonthsBoardView } from './ClientServiceMonthsBoardView';
 import {
   clientServicesApi,
-  type ClientServiceRecord,
+  type ClientServiceRecordListParams,
   type ClientServiceStats,
 } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { usePermission } from '@/lib/permissions';
-
-function formatShortDate(value: string | null): string {
-  if (!value) return '-';
-  return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit' }).format(
-    new Date(value),
-  );
-}
-
-function money(value: string | null): string {
-  return value ? formatAmount(Number(value)) : '-';
-}
 
 export function ClientServicesPageContent() {
   return (
@@ -75,39 +56,63 @@ function ClientServicesPageInner() {
   const searchParams = useSearchParams();
   const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
 
-  const [items, setItems] = useState<ClientServiceRecord[]>([]);
-  const [, setStats] = useState<ClientServiceStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<ClientServicesViewMode>('list');
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  const [reloadToken, setReloadToken] = useState(0);
+  const [stats, setStats] = useState<ClientServiceStats | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [actionId, setActionId] = useState<string | null>(null);
   const deleteConfirm = useDeleteConfirm();
+
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [billingFilter, setBillingFilter] = useState('all');
-  const { me } = usePermission();
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [list, nextStats] = await Promise.all([
-        clientServicesApi.getAll({ page: 1, pageSize: 100 }),
-        clientServicesApi.getStats(),
-      ]);
-      setItems(list.items);
-      setStats(nextStats);
-      setError(null);
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Client services could not be loaded.'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
-    void fetchData();
-  }, [fetchData]);
+    setView(readClientServicesViewMode());
+  }, []);
+
+  const handleViewChange = useCallback((next: ClientServicesViewMode) => {
+    setView(next);
+    writeClientServicesViewMode(next);
+  }, []);
+
+  const refreshAll = useCallback(() => setReloadToken((token) => token + 1), []);
+
+  const baseParams = useMemo<ClientServiceRecordListParams>(
+    () => ({
+      ...(search.trim() ? { search: search.trim() } : {}),
+      ...(typeFilter !== 'all' ? { type: typeFilter } : {}),
+      ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
+      ...(billingFilter !== 'all' ? { billingModel: billingFilter } : {}),
+    }),
+    [billingFilter, search, statusFilter, typeFilter],
+  );
+
+  const statsParams = useMemo(
+    () => ({
+      type: baseParams.type,
+      status: baseParams.status,
+      billingModel: baseParams.billingModel,
+      year,
+    }),
+    [baseParams.billingModel, baseParams.status, baseParams.type, year],
+  );
+
+  useEffect(() => {
+    let active = true;
+    clientServicesApi
+      .getStats(statsParams)
+      .then((next) => {
+        if (active) setStats(next);
+      })
+      .catch(() => {
+        if (active) setStats(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [statsParams, reloadToken]);
 
   const clientServiceFilterConfigs = useMemo(() => buildClientServiceIntegratedFilterConfigs(), []);
 
@@ -121,17 +126,9 @@ function ClientServicesPageInner() {
   );
 
   const handleClientServiceFilterChange = useCallback((key: string, value: string) => {
-    if (key === CLIENT_SERVICE_FILTER_TYPE_KEY) {
-      setTypeFilter(value);
-      return;
-    }
-    if (key === CLIENT_SERVICE_FILTER_STATUS_KEY) {
-      setStatusFilter(value);
-      return;
-    }
-    if (key === CLIENT_SERVICE_FILTER_BILLING_KEY) {
-      setBillingFilter(value);
-    }
+    if (key === CLIENT_SERVICE_FILTER_TYPE_KEY) setTypeFilter(value);
+    else if (key === CLIENT_SERVICE_FILTER_STATUS_KEY) setStatusFilter(value);
+    else if (key === CLIENT_SERVICE_FILTER_BILLING_KEY) setBillingFilter(value);
   }, []);
 
   const handleClearClientServiceFilters = useCallback(() => {
@@ -140,22 +137,6 @@ function ClientServicesPageInner() {
     setStatusFilter('all');
     setBillingFilter('all');
   }, []);
-
-  const visibleItems = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return items.filter((service) => {
-      const matchesSearch =
-        !q ||
-        service.name.toLowerCase().includes(q) ||
-        (service.provider?.toLowerCase().includes(q) ?? false) ||
-        (service.project?.name?.toLowerCase().includes(q) ?? false) ||
-        (service.project?.code?.toLowerCase().includes(q) ?? false);
-      const matchesType = typeFilter === 'all' || service.type === typeFilter;
-      const matchesStatus = statusFilter === 'all' || service.status === statusFilter;
-      const matchesBilling = billingFilter === 'all' || service.billingModel === billingFilter;
-      return matchesSearch && matchesType && matchesStatus && matchesBilling;
-    });
-  }, [billingFilter, items, search, statusFilter, typeFilter]);
 
   const openCreate = useCallback(() => setCreateOpen(true), []);
 
@@ -184,45 +165,20 @@ function ClientServicesPageInner() {
     [pathname, router, searchParams],
   );
 
-  const handleDelete = async (id: string) => {
-    try {
-      await clientServicesApi.delete(id);
-      await fetchData();
-    } catch (caught) {
-      setError(getApiErrorMessage(caught, 'Client service could not be deleted.'));
-    }
-  };
-
-  const runServiceAction = async (
-    service: ClientServiceRecord,
-    kind: 'invoice' | 'plan' | 'expense' | 'task',
-  ) => {
-    setActionId(`${kind}:${service.id}`);
-    try {
-      if (kind === 'invoice') {
-        await clientServicesApi.createInvoice(service.id);
-        toast.success('Linked invoice card created.');
+  const handleDelete = useCallback(
+    async (id: string) => {
+      try {
+        await clientServicesApi.delete(id);
+        if (openServiceIdFromUrl === id) {
+          handleServiceSheetOpenChange(false);
+        }
+        refreshAll();
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Client service could not be deleted.'));
       }
-      if (kind === 'plan') {
-        await clientServicesApi.createExpensePlan(service.id);
-        toast.success('Linked expense plan created.');
-      }
-      if (kind === 'expense') {
-        await clientServicesApi.createExpense(service.id);
-        toast.success('Linked expense card created.');
-      }
-      if (kind === 'task') {
-        if (!me?.id) throw new Error('Current employee is not loaded.');
-        await clientServicesApi.createTask(service.id, { creatorId: me.id });
-        toast.success('Linked task created.');
-      }
-      await fetchData();
-    } catch (caught) {
-      toast.error(getApiErrorMessage(caught, 'Client service action failed.'));
-    } finally {
-      setActionId(null);
-    }
-  };
+    },
+    [handleServiceSheetOpenChange, openServiceIdFromUrl, refreshAll],
+  );
 
   const moduleHeroSlots = useMemo(
     () => ({
@@ -230,16 +186,24 @@ function ClientServicesPageInner() {
         <IntegratedSearchFilters
           search={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search by name, provider, or project…"
+          searchPlaceholder="Search by name or provider…"
           filters={clientServiceFilterConfigs}
           filterValues={clientServiceFilterValues}
           onFilterChange={handleClientServiceFilterChange}
           onClearAll={handleClearClientServiceFilters}
         />
       ),
+      viewMode: (
+        <ViewModeSwitch
+          value={view}
+          onChange={handleViewChange}
+          options={CLIENT_SERVICES_VIEW_OPTIONS}
+          ariaLabel="Client services view mode"
+        />
+      ),
       trailing: (
         <>
-          <ClientServicesPageSettingsSheet refreshDisabled={loading} onRefresh={fetchData} />
+          <ClientServicesPageSettingsSheet refreshDisabled={false} onRefresh={refreshAll} />
           <Button type="button" onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" aria-hidden />
             New service
@@ -250,12 +214,13 @@ function ClientServicesPageInner() {
     [
       clientServiceFilterConfigs,
       clientServiceFilterValues,
-      fetchData,
       handleClearClientServiceFilters,
       handleClientServiceFilterChange,
-      loading,
+      handleViewChange,
       openCreate,
+      refreshAll,
       search,
+      view,
     ],
   );
 
@@ -263,143 +228,45 @@ function ClientServicesPageInner() {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
-      {loading ? <LoadingState /> : null}
-      {!loading && error ? (
-        <ErrorState title="Client services unavailable" description={error} />
-      ) : null}
-      {!loading && !error && items.length > 0 && visibleItems.length === 0 ? (
-        <EmptyState
-          icon={ServerCog}
-          title="No services match filters"
-          description="Clear search or filters to see the full catalog."
-        />
-      ) : null}
-      {!loading && !error && items.length === 0 ? (
-        <EmptyState
-          icon={ServerCog}
-          title="No client services yet"
-          description="Create the first domain, hosting, SaaS, account or license record for a project."
-          action={<Button onClick={openCreate}>Create service</Button>}
-        />
-      ) : null}
-      {!loading && !error && visibleItems.length > 0 ? (
-        <div className="border-border bg-card overflow-hidden rounded-xl border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Service</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Billing</TableHead>
-                <TableHead>Amounts</TableHead>
-                <TableHead>Renewal</TableHead>
-                <TableHead>Links</TableHead>
-                <TableHead className="w-[260px] text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visibleItems.map((service) => (
-                <TableRow
-                  key={service.id}
-                  className="hover:bg-muted/40 cursor-pointer"
-                  onClick={() => openServiceDetail(service.id)}
-                >
-                  <TableCell>
-                    <span className="font-medium">{service.name}</span>
-                    <p className="text-muted-foreground text-xs">
-                      {clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type)} -{' '}
-                      {clientServiceOptionLabel(CLIENT_SERVICE_STATUSES, service.status)}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    {service.project.code}
-                    <p className="text-muted-foreground text-xs">{service.project.name}</p>
-                  </TableCell>
-                  <TableCell>
-                    {clientServiceOptionLabel(CLIENT_SERVICE_BILLING_MODELS, service.billingModel)}
-                    <p className="text-muted-foreground text-xs">
-                      {service.provider ?? 'No provider'}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-muted-foreground">Cost:</span> {money(service.ourCost)}
-                    <br />
-                    <span className="text-muted-foreground">Charge:</span>{' '}
-                    {money(service.clientCharge)}
-                  </TableCell>
-                  <TableCell>{formatShortDate(service.renewalDate)}</TableCell>
-                  <TableCell>
-                    {service._count.invoices} inv - {service._count.expensePlans} plans -{' '}
-                    {service._count.expenses} exp
-                  </TableCell>
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex justify-end gap-1">
-                      {service.billingModel === 'CLIENT_PAID' ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={actionId === `invoice:${service.id}`}
-                          title="Create linked invoice"
-                          onClick={() => void runServiceAction(service, 'invoice')}
-                        >
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      ) : null}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={actionId === `plan:${service.id}`}
-                        title="Create linked expense plan"
-                        onClick={() => void runServiceAction(service, 'plan')}
-                      >
-                        <ListChecks className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={actionId === `expense:${service.id}`}
-                        title="Create linked expense card"
-                        onClick={() => void runServiceAction(service, 'expense')}
-                      >
-                        <Receipt className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={actionId === `task:${service.id}` || !me?.id}
-                        title="Create linked task"
-                        onClick={() => void runServiceAction(service, 'task')}
-                      >
-                        <CheckSquare className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          deleteConfirm.request({ id: service.id, name: service.name })
-                        }
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : null}
+      <div className="flex min-h-0 flex-1 flex-col">
+        {view === 'status' ? (
+          <ClientServiceStatusBoardView
+            baseParams={baseParams}
+            stats={stats}
+            reloadToken={reloadToken}
+            onOpen={openServiceDetail}
+          />
+        ) : view === 'months' ? (
+          <ClientServiceMonthsBoardView
+            baseParams={baseParams}
+            stats={stats}
+            year={year}
+            onYearChange={setYear}
+            reloadToken={reloadToken}
+            onOpen={openServiceDetail}
+          />
+        ) : (
+          <ClientServiceListView
+            baseParams={baseParams}
+            reloadToken={reloadToken}
+            onOpen={openServiceDetail}
+            onCreate={openCreate}
+          />
+        )}
+      </div>
 
       <ClientServiceCreateDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onSaved={() => void fetchData()}
+        onSaved={refreshAll}
       />
 
       <ClientServiceDetailSheet
         serviceId={openServiceIdFromUrl}
         open={Boolean(openServiceIdFromUrl)}
         onOpenChange={handleServiceSheetOpenChange}
-        onSaved={() => void fetchData()}
+        onSaved={refreshAll}
+        onRequestDelete={(target) => deleteConfirm.request(target)}
       />
 
       <DeleteConfirmDialog

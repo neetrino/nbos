@@ -8,6 +8,7 @@ import {
   type FinancePeriod,
   formatAmount,
 } from '@/features/finance/constants/finance';
+import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
 import {
   DashboardLoadingSkeleton,
   ExpenseCardsSnapshot,
@@ -38,7 +39,7 @@ import { toast } from 'sonner';
 export default function FinanceDashboardPage() {
   const [data, setData] = useState<FinanceDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
   const [search, setSearch] = useState('');
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -69,7 +70,7 @@ export default function FinanceDashboardPage() {
 
   const handleClearFilters = useCallback(() => {
     setSearch('');
-    setPeriod('month');
+    setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
   }, []);
 
   const moduleHeroSlots = useMemo(

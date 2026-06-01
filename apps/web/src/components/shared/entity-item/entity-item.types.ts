@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { StatusVariant } from '../StatusBadge';
 
 /** Supported related-entity kinds for tab preview + stacked sheet open. */
-export type EntityItemKind = 'task' | 'invoice' | 'bonus_entry';
+export type EntityItemKind = 'task' | 'invoice' | 'bonus_entry' | 'expense';
 
 export type EntityItemVariant = 'list-row' | 'compact-card';
 

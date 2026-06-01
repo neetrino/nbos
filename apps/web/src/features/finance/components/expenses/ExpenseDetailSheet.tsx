@@ -59,6 +59,8 @@ export interface ExpenseDetailSheetProps {
   payrollPaymentFocus?: boolean;
   onExpenseUpdated?: (expense: Expense) => void;
   onExpenseDeleted?: (expenseId: string) => void;
+  /** Stack above a parent entity sheet (related-item open from tab). */
+  forceNestedBackdrop?: boolean;
 }
 
 export function ExpenseDetailSheet({
@@ -71,6 +73,7 @@ export function ExpenseDetailSheet({
   payrollPaymentFocus = false,
   onExpenseUpdated,
   onExpenseDeleted,
+  forceNestedBackdrop = false,
 }: ExpenseDetailSheetProps) {
   const activeExpenseId = open && expenseId ? expenseId : '';
   const { expense, setExpense, loading, error, fetchExpense } = useExpenseDetail(activeExpenseId);
@@ -235,6 +238,7 @@ export function ExpenseDetailSheet({
           layout="full"
           width="compact"
           sourcePageHref={sourcePageHref}
+          forceNestedBackdrop={forceNestedBackdrop}
         >
           <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
             {loading ? (

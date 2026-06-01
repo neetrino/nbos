@@ -51,8 +51,8 @@ export class ClientServiceFlowsService {
 
   async createInvoice(serviceId: string, body: CreateClientServiceInvoiceBody = {}) {
     const service = await this.loadService(serviceId);
-    if (service.billingModel !== 'CLIENT_PAID') {
-      throw new BadRequestException('Only client-paid services can create client invoices');
+    if (service.billingModel !== 'WE_PAY') {
+      throw new BadRequestException('Only we-pay services can create client invoices');
     }
     const amount = requirePositiveAmount(
       body.amount ?? Number(service.clientCharge),
@@ -69,6 +69,9 @@ export class ClientServiceFlowsService {
 
   async createExpensePlan(serviceId: string, body: CreateClientServiceExpensePlanBody = {}) {
     const service = await this.loadService(serviceId);
+    if (service.billingModel === 'REMINDER_ONLY') {
+      throw new BadRequestException('Reminder-only services cannot create expense plans');
+    }
     const amount = requirePositiveAmount(body.amount ?? Number(service.ourCost), 'Plan amount');
     return this.expensePlansService.create({
       name: service.name,
@@ -79,13 +82,16 @@ export class ClientServiceFlowsService {
       provider: service.provider,
       projectId: service.projectId,
       clientServiceRecordId: service.id,
-      autoGenerate: body.autoGenerate ?? service.billingModel === 'COMPANY_PAID',
+      autoGenerate: body.autoGenerate ?? false,
       notes: `From client service: ${service.name}`,
     });
   }
 
   async createExpense(serviceId: string, body: CreateClientServiceExpenseBody = {}) {
     const service = await this.loadService(serviceId);
+    if (service.billingModel === 'REMINDER_ONLY') {
+      throw new BadRequestException('Reminder-only services cannot create expenses');
+    }
     const amount = requirePositiveAmount(body.amount ?? Number(service.ourCost), 'Expense amount');
     const notes = body.notes?.trim() || `From client service: ${service.name}`;
     const status = body.status?.trim() || 'PLANNED';
@@ -99,7 +105,7 @@ export class ClientServiceFlowsService {
       status,
       projectId: service.projectId,
       clientServiceRecordId: service.id,
-      isPassThrough: service.billingModel === 'CLIENT_PAID',
+      isPassThrough: service.billingModel === 'WE_PAY',
       taxStatus: service.taxStatus,
       notes,
     });

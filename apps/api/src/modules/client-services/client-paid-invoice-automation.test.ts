@@ -119,7 +119,7 @@ function buildService() {
     type: 'DOMAIN',
     name: 'example.com',
     provider: 'Namecheap',
-    billingModel: 'CLIENT_PAID',
+    billingModel: 'WE_PAY',
     ourCost: new Decimal('12'),
     renewalDate: new Date('2026-06-01'),
   };

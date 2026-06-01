@@ -37,6 +37,7 @@ export type {
   KanbanColumnQuickCreateInput,
 } from './kanban/kanban.types';
 export { KanbanColumnMoneyTotal } from './kanban/KanbanColumnMoneyTotal';
+export { KanbanColumnMoneyPill } from './kanban/KanbanColumnMoneyPill';
 export { InlineField, type InlineFieldProps } from './InlineField';
 export { MoneyInput, type MoneyInputProps } from './MoneyInput';
 export { NbosMoneyInput, type NbosMoneyInputProps } from './NbosMoneyInput';

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
 import { OPEN_INVOICE_QUERY } from '@/features/finance/constants/invoice-deep-link';
 import { PORTFOLIO_DEEP_LINK } from '@/features/clients/constants/client-portfolio-deep-links';
 import { buildInvoiceListApiParams } from '@/features/finance/utils/build-invoice-list-api-params';
@@ -64,7 +65,7 @@ export function useInvoicesPageState(options?: UseInvoicesPageStateOptions) {
   const [stageGateHighlight, setStageGateHighlight] =
     useState<InvoiceSheetStageGateHighlight | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
 
   const invoiceListExportParams: Omit<InvoiceListParams, 'page' | 'pageSize'> = useMemo(
     () =>

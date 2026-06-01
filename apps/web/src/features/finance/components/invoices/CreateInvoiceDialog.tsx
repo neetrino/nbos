@@ -35,24 +35,37 @@ export function CreateInvoiceDialog(props: CreateInvoiceDialogProps) {
     props.order,
     props.subscriptionId,
     state.subscriptionDetail,
+    props.clientServiceContext,
   );
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent className="sm:max-w-[420px]" forceNestedBackdrop={props.forceNestedBackdrop}>
         <DialogHeader>
-          <DialogTitle>{dialogTitle(props.order, state.subscriptionDetail)}</DialogTitle>
+          <DialogTitle>
+            {dialogTitle(props.order, state.subscriptionDetail, props.clientServiceContext)}
+          </DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
-        <InvoiceForm state={state} order={props.order} canSubmit={canSubmit} />
+        <InvoiceForm
+          state={state}
+          order={props.order}
+          clientServiceContext={props.clientServiceContext}
+          canSubmit={canSubmit}
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
-function dialogTitle(order: Order | null | undefined, subscriptionDetail: Subscription | null) {
+function dialogTitle(
+  order: Order | null | undefined,
+  subscriptionDetail: Subscription | null,
+  clientServiceContext?: { name: string; projectLabel: string },
+) {
   if (order) return 'Create Order Invoice';
   if (subscriptionDetail) return 'Create Subscription Invoice';
+  if (clientServiceContext) return 'Create invoice';
   return 'New Invoice';
 }
 
@@ -60,10 +73,14 @@ function dialogDescription(
   order: Order | null | undefined,
   subscriptionId: string | null | undefined,
   subscriptionDetail: Subscription | null,
+  clientServiceContext?: { name: string; projectLabel: string },
 ) {
   if (order) return `Generate an invoice for ${getOrderDisplayTitle(order)}.`;
   if (subscriptionDetail) return `Bill against subscription ${subscriptionDetail.code}.`;
   if (subscriptionId) return 'Loading subscription context…';
+  if (clientServiceContext) {
+    return `Invoice for ${clientServiceContext.name} · ${clientServiceContext.projectLabel}`;
+  }
   return null;
 }
 
@@ -78,10 +95,12 @@ function computeSubscriptionBlocked(
 function InvoiceForm({
   state,
   order,
+  clientServiceContext,
   canSubmit,
 }: {
   state: CreateInvoiceDialogState;
   order?: Order | null;
+  clientServiceContext?: { name: string; projectLabel: string };
   canSubmit: boolean;
 }) {
   const handleSubmit = (event: FormEvent) => {
@@ -90,7 +109,11 @@ function InvoiceForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <InvoiceContextSummary state={state} order={order} />
+      <InvoiceContextSummary
+        state={state}
+        order={order}
+        clientServiceContext={clientServiceContext}
+      />
       <InvoiceAmountFields form={state.form} setForm={state.setForm} />
       {state.error ? (
         <p className="text-destructive text-sm" role="alert">
@@ -112,12 +135,23 @@ function InvoiceForm({
 function InvoiceContextSummary({
   state,
   order,
+  clientServiceContext,
 }: {
   state: CreateInvoiceDialogState;
   order?: Order | null;
+  clientServiceContext?: { name: string; projectLabel: string };
 }) {
   if (order) {
     return <OrderInvoiceContext order={order} />;
+  }
+
+  if (clientServiceContext) {
+    return (
+      <div className="bg-muted/40 rounded-lg border p-3 text-sm">
+        <p className="font-medium">{clientServiceContext.name}</p>
+        <p className="text-muted-foreground">{clientServiceContext.projectLabel}</p>
+      </div>
+    );
   }
 
   if (state.subscriptionLoading) {

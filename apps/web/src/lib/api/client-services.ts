@@ -31,6 +31,9 @@ export interface ClientServiceFinanceLinks {
   }>;
 }
 
+/** Computed payment lifecycle stage (server-derived, not a stored field). */
+export type ClientServicePaymentStage = 'active' | 'upcoming' | 'invoice' | 'pay_now';
+
 export interface ClientServiceRecord {
   id: string;
   projectId: string;
@@ -56,6 +59,10 @@ export interface ClientServiceRecord {
   product: { id: string; name: string } | null;
   providerAccount: { id: string; name: string; provider: string | null } | null;
   _count: { invoices: number; expensePlans: number; expenses: number };
+  /** Present on list responses (`getAll`); absent on detail/create/update. */
+  paymentStage?: ClientServicePaymentStage;
+  /** Cross-cutting overdue overlay flag (present on list responses). */
+  overdue?: boolean;
   financeLinks?: ClientServiceFinanceLinks;
 }
 
@@ -90,6 +97,28 @@ export interface ClientServiceRecordListParams {
   search?: string;
   renewalFrom?: string;
   renewalTo?: string;
+  stage?: ClientServicePaymentStage;
+}
+
+export interface ClientServiceStatsParams {
+  projectId?: string;
+  productId?: string;
+  type?: string;
+  status?: string;
+  billingModel?: string;
+  year?: number;
+}
+
+export interface ClientServiceStageStat {
+  stage: ClientServicePaymentStage;
+  count: number;
+  sum: string;
+}
+
+export interface ClientServiceMonthStat {
+  month: number;
+  count: number;
+  sum: string;
 }
 
 export interface ClientServiceStats {
@@ -98,6 +127,10 @@ export interface ClientServiceStats {
   byStatus: Array<{ status: string; _count: { _all: number } }>;
   byType: Array<{ type: string; _count: { _all: number } }>;
   byBillingModel: Array<{ billingModel: string; _count: { _all: number } }>;
+  byStage: ClientServiceStageStat[];
+  overdue: number;
+  year: number;
+  byMonth: ClientServiceMonthStat[];
 }
 
 export const clientServicesApi = {
@@ -106,7 +139,7 @@ export const clientServicesApi = {
     return resp.data;
   },
 
-  async getStats(params?: ClientServiceRecordListParams): Promise<ClientServiceStats> {
+  async getStats(params?: ClientServiceStatsParams): Promise<ClientServiceStats> {
     const resp = await api.get<ClientServiceStats>('/api/client-services/stats', { params });
     return resp.data;
   },

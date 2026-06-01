@@ -34,6 +34,7 @@ export interface CreateExpensePlanPayload {
   nextDueDate?: string | null;
   provider?: string | null;
   projectId?: string | null;
+  clientServiceRecordId?: string | null;
   autoGenerate?: boolean;
   notes?: string | null;
 }

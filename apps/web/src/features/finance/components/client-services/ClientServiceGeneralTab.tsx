@@ -25,8 +25,6 @@ import { INVOICE_TAX_STATUS_OPTIONS } from '@/features/finance/constants/finance
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 import type { Project } from '@/lib/api/projects';
-import { ClientServiceFinanceLinksPanel } from './ClientServiceFinanceLinksPanel';
-
 function mapSelectOptions(options: ReadonlyArray<{ value: string; label: string }>) {
   return options.map((row) => ({ value: row.value, label: row.label }));
 }
@@ -193,24 +191,26 @@ export function ClientServiceGeneralTab({
         onOpenChange={setDatesOpen}
       >
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
-          <InlineField
-            variant="controlled"
-            label="Start"
-            type="date"
-            value={draft.startDate}
-            icon={<Calendar size={12} />}
-            disabled={formDisabled}
-            onValueChange={(startDate) => patchDraft({ startDate })}
-          />
-          <InlineField
-            variant="controlled"
-            label="Renewal"
-            type="date"
-            value={draft.renewalDate}
-            icon={<RefreshCw size={12} />}
-            disabled={formDisabled}
-            onValueChange={(renewalDate) => patchDraft({ renewalDate })}
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <InlineField
+              variant="controlled"
+              label="Start date"
+              type="date"
+              value={draft.startDate}
+              icon={<Calendar size={12} />}
+              disabled={formDisabled}
+              onValueChange={(startDate) => patchDraft({ startDate })}
+            />
+            <InlineField
+              variant="controlled"
+              label="Renewal date"
+              type="date"
+              value={draft.renewalDate}
+              icon={<RefreshCw size={12} />}
+              disabled={formDisabled}
+              onValueChange={(renewalDate) => patchDraft({ renewalDate })}
+            />
+          </div>
           <label className="flex items-center gap-2 text-sm">
             <Checkbox
               checked={draft.notificationsEnabled}
@@ -238,14 +238,6 @@ export function ClientServiceGeneralTab({
           purpose="EXPENSE_PROOF"
           title=""
         />
-      </DetailSheetSection>
-
-      <DetailSheetSection title="Connections">
-        {service.financeLinks ? (
-          <ClientServiceFinanceLinksPanel links={service.financeLinks} />
-        ) : (
-          <p className="text-muted-foreground text-sm">No linked finance records yet.</p>
-        )}
       </DetailSheetSection>
     </div>
   );

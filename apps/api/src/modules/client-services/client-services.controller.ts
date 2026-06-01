@@ -45,6 +45,7 @@ export class ClientServicesController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'renewalFrom', required: false })
   @ApiQuery({ name: 'renewalTo', required: false })
+  @ApiQuery({ name: 'stage', required: false })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -56,6 +57,7 @@ export class ClientServicesController {
     @Query('search') search?: string,
     @Query('renewalFrom') renewalFrom?: string,
     @Query('renewalTo') renewalTo?: string,
+    @Query('stage') stage?: string,
   ) {
     return this.clientServicesService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -68,17 +70,20 @@ export class ClientServicesController {
       search,
       renewalFrom,
       renewalTo,
+      stage,
     });
   }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get client service scope statistics' })
+  @ApiQuery({ name: 'year', required: false })
   async getStats(
     @Query('projectId') projectId?: string,
     @Query('productId') productId?: string,
     @Query('type') type?: string,
     @Query('status') status?: string,
     @Query('billingModel') billingModel?: string,
+    @Query('year') year?: string,
   ) {
     return this.clientServicesService.getStats({
       projectId,
@@ -86,6 +91,7 @@ export class ClientServicesController {
       type,
       status,
       billingModel,
+      year: year ? parseInt(year, 10) : undefined,
     });
   }
 

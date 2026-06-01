@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, BarChart3 } from 'lucide-react';
 import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
 import {
   financeReportStatusClass,
   financeReportStatusLabel,
@@ -51,7 +52,7 @@ export default function FinanceReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
 
   const reportQueryParams = useMemo((): FinanceReportQueryParams => {
     const periodParams = getFinancePeriodParams(period);
@@ -103,7 +104,7 @@ export default function FinanceReportsPage() {
 
   const handleClearFilters = useCallback(() => {
     setSearch('');
-    setPeriod('month');
+    setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
   }, []);
 
   const moduleHeroSlots = useMemo(

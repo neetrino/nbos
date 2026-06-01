@@ -47,6 +47,11 @@ interface CreateExpensePlanDialogProps {
   onOpenChange: (open: boolean) => void;
   /** When set, dialog updates this plan instead of creating a new one. */
   planToEdit?: ExpensePlan | null;
+  /** Pre-filled fields when opening from a client service sheet. */
+  initialForm?: Partial<ExpensePlanFormState>;
+  /** Custom submit instead of default `expensePlansApi.create`. */
+  submitOverride?: (form: ExpensePlanFormState) => Promise<ExpensePlan>;
+  forceNestedBackdrop?: boolean;
   onCreated?: (plan: ExpensePlan) => void;
   onUpdated?: (plan: ExpensePlan) => void;
 }
@@ -55,6 +60,9 @@ export function CreateExpensePlanDialog({
   open,
   onOpenChange,
   planToEdit = null,
+  initialForm,
+  submitOverride,
+  forceNestedBackdrop = false,
   onCreated,
   onUpdated,
 }: CreateExpensePlanDialogProps) {
@@ -84,15 +92,17 @@ export function CreateExpensePlanDialog({
     };
   }, [open]);
 
+  const initialFormKey = JSON.stringify(initialForm ?? {});
+
   useEffect(() => {
     if (!open) return;
     setFormError(null);
     if (planToEdit) {
       setForm(expensePlanToFormState(planToEdit));
     } else {
-      setForm({ ...EMPTY_EXPENSE_PLAN_FORM });
+      setForm({ ...EMPTY_EXPENSE_PLAN_FORM, ...initialForm });
     }
-  }, [open, planToEdit]);
+  }, [open, planToEdit, initialFormKey, initialForm]);
 
   const parsedAmount = parseFloat(form.amount.replace(/\s/g, ''));
   const canSubmit = Boolean(form.name.trim()) && Number.isFinite(parsedAmount) && parsedAmount > 0;
@@ -115,7 +125,10 @@ export function CreateExpensePlanDialog({
     };
     const isEdit = Boolean(planToEdit);
     try {
-      if (isEdit && planToEdit) {
+      if (submitOverride && !isEdit) {
+        const created = await submitOverride(form);
+        onCreated?.(created);
+      } else if (isEdit && planToEdit) {
         const updated = await expensePlansApi.update(planToEdit.id, payload);
         onUpdated?.(updated);
       } else {
@@ -139,7 +152,7 @@ export function CreateExpensePlanDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg" forceNestedBackdrop={forceNestedBackdrop}>
         <DialogHeader>
           <DialogTitle>{planToEdit ? 'Edit expense plan' : 'New expense plan'}</DialogTitle>
         </DialogHeader>

@@ -30,11 +30,11 @@ export function mapDomainStatusToClientServiceStatus(
 
 function resolveBillingModel(
   clientCharge: DomainSyncRow['clientCharge'],
-): 'CLIENT_PAID' | 'COMPANY_PAID' {
+): 'WE_PAY' | 'REMINDER_ONLY' {
   if (clientCharge != null && clientCharge.gt(0)) {
-    return 'CLIENT_PAID';
+    return 'WE_PAY';
   }
-  return 'COMPANY_PAID';
+  return 'REMINDER_ONLY';
 }
 
 export function buildClientServicePayloadFromDomain(

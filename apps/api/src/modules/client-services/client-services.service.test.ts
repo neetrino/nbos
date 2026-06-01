@@ -20,6 +20,10 @@ describe('ClientServicesService', () => {
         name: 'Client domain',
         ourCost: new Decimal('12'),
         clientCharge: new Decimal('20'),
+        billingModel: 'WE_PAY',
+        renewalDate: null,
+        invoices: [],
+        expenses: [],
       },
     ]);
     prisma.clientServiceRecord.count.mockResolvedValue(1);
@@ -56,7 +60,7 @@ describe('ClientServicesService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('create persists client-paid service defaults', async () => {
+  it('create persists we-pay service defaults', async () => {
     prisma.project.findUnique.mockResolvedValue({ id: 'project-1' });
     prisma.taskLink.findMany.mockResolvedValue([]);
     prisma.clientServiceRecord.create = vi.fn().mockResolvedValue({
@@ -86,7 +90,7 @@ describe('ClientServicesService', () => {
     expect(prisma.clientServiceRecord.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          billingModel: 'CLIENT_PAID',
+          billingModel: 'WE_PAY',
           pricingModel: 'FIXED',
           frequency: 'YEARLY',
         }),

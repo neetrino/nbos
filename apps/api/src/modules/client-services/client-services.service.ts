@@ -25,10 +25,16 @@ import {
   normalizeClientServicePageSize,
   parseOptionalDate,
   serializeClientServiceDetail,
-  serializeClientServiceRow,
+  serializeClientServiceListRow,
   toOptionalMoneyDecimal,
   type ClientServiceDetailRow,
 } from './client-services.helpers';
+import {
+  buildClientServiceOverdueWhere,
+  buildClientServiceStageWhere,
+  CLIENT_SERVICE_PAYMENT_STAGES,
+  isClientServicePaymentStage,
+} from './client-service-payment-stage';
 import type {
   ClientServiceRecordBody,
   ClientServiceRecordQueryParams,
@@ -42,7 +48,8 @@ export class ClientServicesService {
   async findAll(params: ClientServiceRecordQueryParams) {
     const page = normalizeClientServicePage(params.page);
     const pageSize = normalizeClientServicePageSize(params.pageSize);
-    const where = this.buildWhere(params);
+    const now = new Date();
+    const where = this.buildWhere(params, now);
     const orderBy = this.buildOrderBy(params.sortBy, params.sortOrder);
 
     const [items, total] = await Promise.all([
@@ -57,31 +64,72 @@ export class ClientServicesService {
     ]);
 
     return {
-      items: items.map((row) => serializeClientServiceRow(row)),
+      items: items.map((row) => serializeClientServiceListRow(row, now)),
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     };
   }
 
   async getStats(params: ClientServiceRecordQueryParams) {
-    const where = this.buildWhere(params);
-    const renewalTo = new Date();
+    const now = new Date();
+    const where = this.buildWhere(params, now);
+    const renewalTo = new Date(now);
     renewalTo.setUTCDate(renewalTo.getUTCDate() + CLIENT_SERVICE_RENEWAL_WINDOW_DAYS);
+    const year = this.resolveStatsYear(params.year);
 
-    const [total, byStatus, byType, byBillingModel, dueSoon] = await Promise.all([
-      this.prisma.clientServiceRecord.count({ where }),
-      this.prisma.clientServiceRecord.groupBy({ by: ['status'], where, _count: { _all: true } }),
-      this.prisma.clientServiceRecord.groupBy({ by: ['type'], where, _count: { _all: true } }),
-      this.prisma.clientServiceRecord.groupBy({
-        by: ['billingModel'],
-        where,
-        _count: { _all: true },
-      }),
-      this.prisma.clientServiceRecord.count({
-        where: { ...where, renewalDate: { gte: new Date(), lte: renewalTo } },
-      }),
-    ]);
+    const [total, byStatus, byType, byBillingModel, dueSoon, byStage, overdue, byMonth] =
+      await Promise.all([
+        this.prisma.clientServiceRecord.count({ where }),
+        this.prisma.clientServiceRecord.groupBy({ by: ['status'], where, _count: { _all: true } }),
+        this.prisma.clientServiceRecord.groupBy({ by: ['type'], where, _count: { _all: true } }),
+        this.prisma.clientServiceRecord.groupBy({
+          by: ['billingModel'],
+          where,
+          _count: { _all: true },
+        }),
+        this.prisma.clientServiceRecord.count({
+          where: { AND: [where, { renewalDate: { gte: now, lte: renewalTo } }] },
+        }),
+        this.buildStageStats(where, now),
+        this.prisma.clientServiceRecord.count({
+          where: { AND: [where, buildClientServiceOverdueWhere(now)] },
+        }),
+        this.buildMonthStats(where, year),
+      ]);
 
-    return { total, dueSoon, byStatus, byType, byBillingModel };
+    return { total, dueSoon, byStatus, byType, byBillingModel, byStage, overdue, year, byMonth };
+  }
+
+  private resolveStatsYear(year: number | undefined): number {
+    if (Number.isInteger(year) && year && year >= 2000 && year <= 2100) return year;
+    return new Date().getUTCFullYear();
+  }
+
+  private async buildStageStats(where: Prisma.ClientServiceRecordWhereInput, now: Date) {
+    return Promise.all(
+      CLIENT_SERVICE_PAYMENT_STAGES.map(async (stage) => {
+        const result = await this.prisma.clientServiceRecord.aggregate({
+          where: { AND: [where, buildClientServiceStageWhere(stage, now)] },
+          _count: { _all: true },
+          _sum: { ourCost: true },
+        });
+        return { stage, count: result._count._all, sum: String(result._sum.ourCost ?? 0) };
+      }),
+    );
+  }
+
+  private async buildMonthStats(where: Prisma.ClientServiceRecordWhereInput, year: number) {
+    return Promise.all(
+      Array.from({ length: 12 }, (_, month) => month).map(async (month) => {
+        const start = new Date(Date.UTC(year, month, 1));
+        const end = new Date(Date.UTC(year, month + 1, 1));
+        const result = await this.prisma.clientServiceRecord.aggregate({
+          where: { AND: [where, { renewalDate: { gte: start, lt: end } }] },
+          _count: { _all: true },
+          _sum: { ourCost: true },
+        });
+        return { month, count: result._count._all, sum: String(result._sum.ourCost ?? 0) };
+      }),
+    );
   }
 
   async findById(id: string) {
@@ -123,8 +171,11 @@ export class ClientServicesService {
     await this.prisma.clientServiceRecord.delete({ where: { id } });
   }
 
-  private buildWhere(params: ClientServiceRecordQueryParams): Prisma.ClientServiceRecordWhereInput {
-    return {
+  private buildWhere(
+    params: ClientServiceRecordQueryParams,
+    now: Date,
+  ): Prisma.ClientServiceRecordWhereInput {
+    const base: Prisma.ClientServiceRecordWhereInput = {
       ...(params.projectId?.trim() ? { projectId: params.projectId.trim() } : {}),
       ...(params.productId?.trim() ? { productId: params.productId.trim() } : {}),
       ...(params.type?.trim()
@@ -143,6 +194,13 @@ export class ClientServicesService {
       ...this.buildSearchWhere(params.search),
       ...this.buildRenewalWhere(params.renewalFrom, params.renewalTo),
     };
+
+    const stage = params.stage?.trim();
+    if (!stage) return base;
+    if (!isClientServicePaymentStage(stage)) {
+      throw new BadRequestException('stage is invalid');
+    }
+    return { AND: [base, buildClientServiceStageWhere(stage, now)] };
   }
 
   private buildSearchWhere(search: string | undefined): Prisma.ClientServiceRecordWhereInput {

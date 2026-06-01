@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
 import {
   buildSubscriptionListApiParams,
   buildSubscriptionListQuery,
@@ -32,7 +33,7 @@ export function useSubscriptionsPageState(options?: UseSubscriptionsPageStateOpt
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [holdingId, setHoldingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
 
   const subscriptionListExportParams: Omit<SubscriptionListParams, 'page' | 'pageSize'> = useMemo(
     () =>

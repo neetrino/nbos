@@ -33,6 +33,7 @@ import { SUBSCRIPTION_INVOICES_DRILLDOWN_QUERY } from '@/features/finance/consta
 import { getFinancePeriodParams } from '@/features/finance/constants/finance';
 import {
   buildFinancePeriodFilterConfig,
+  FINANCE_DEFAULT_LIST_PERIOD,
   FINANCE_PERIOD_FILTER_KEY,
   parseFinancePeriodFilterValue,
 } from '@/features/finance/constants/finance-period-filter';
@@ -127,7 +128,7 @@ function InvoicesPageInner() {
 
   const handleClearFilters = useCallback(() => {
     state.setFilters({});
-    state.setPeriod('month');
+    state.setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
   }, [state]);
 
   const invoiceFilterConfigs = useMemo(
