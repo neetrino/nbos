@@ -13,6 +13,7 @@ interface BootstrapCtx {
   order?: Order | null;
   subscriptionId?: string | null;
   hiddenContext?: CreateInvoiceHiddenContext;
+  defaultForm?: CreateInvoiceFormState;
   setError: (v: string | null) => void;
   setLoadError: (e: string | null) => void;
   setForm: (f: CreateInvoiceFormState) => void;
@@ -46,7 +47,7 @@ export function bootstrapCreateInvoiceDialog(ctx: BootstrapCtx): void {
   }
 
   ctx.setSubscriptionDetail(null);
-  ctx.setForm(getInitialInvoiceForm());
+  ctx.setForm(ctx.defaultForm ?? getInitialInvoiceForm());
 }
 
 async function loadSubscriptionById(

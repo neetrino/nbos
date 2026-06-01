@@ -17,6 +17,10 @@ export interface CreateInvoiceDialogOuterProps {
   hiddenContext?: CreateInvoiceHiddenContext;
   /** Custom submit (e.g. deal deposit bootstrap) instead of default invoices API create. */
   submitOverride?: (form: CreateInvoiceFormState) => Promise<Invoice | void>;
+  /** Pre-filled amount/due date when opening from a client service sheet. */
+  defaultForm?: CreateInvoiceFormState;
+  /** Read-only context shown in the dialog header area. */
+  clientServiceContext?: { name: string; projectLabel: string };
   /** Dimmed backdrop when opened inside a parent sheet/dialog (e.g. Deal card). */
   forceNestedBackdrop?: boolean;
 }
@@ -41,6 +45,7 @@ export function useCreateInvoiceDialogState({
   subscriptionId,
   hiddenContext,
   submitOverride,
+  defaultForm,
 }: CreateInvoiceDialogOuterProps): CreateInvoiceDialogState {
   const [form, setForm] = useState(() => getInitialInvoiceForm(order));
   const [loading, setLoading] = useState(false);
@@ -50,6 +55,7 @@ export function useCreateInvoiceDialogState({
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
   const hiddenContextKey = JSON.stringify(hiddenContext ?? {});
+  const defaultFormKey = JSON.stringify(defaultForm ?? {});
 
   useEffect(() => {
     bootstrapCreateInvoiceDialog({
@@ -57,13 +63,14 @@ export function useCreateInvoiceDialogState({
       order,
       subscriptionId,
       hiddenContext,
+      defaultForm,
       setError,
       setLoadError,
       setForm,
       setSubscriptionDetail,
       setSubscriptionLoading,
     });
-  }, [open, order, subscriptionId, hiddenContextKey, hiddenContext]);
+  }, [open, order, subscriptionId, hiddenContextKey, hiddenContext, defaultFormKey, defaultForm]);
 
   const handleSubmit = (event: FormEvent) =>
     runCreateInvoiceSubmit(event, {

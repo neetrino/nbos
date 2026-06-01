@@ -7,6 +7,7 @@ import { IntegratedSearchFilters, useModuleHeroSlots, ViewModeSwitch } from '@/c
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type FinancePeriod } from '@/features/finance/constants/finance';
+import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
 import {
   expensesApi,
   type Expense,
@@ -111,7 +112,7 @@ export function ExpensesPageContent({
     setView(next);
     writeExpensesBoardViewMode(next);
   }, []);
-  const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
@@ -436,7 +437,7 @@ export function ExpensesPageContent({
 
   const clearFilters = useCallback(() => {
     setFilters(clearedExpenseFilterRecord(pageVariant, projectIdFromUrl));
-    setPeriod('month');
+    setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
   }, [pageVariant, projectIdFromUrl]);
 
   const moduleHeroSlots = useMemo(

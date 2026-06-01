@@ -7,6 +7,7 @@ import {
 } from '@/features/finance/constants/order-reconciliation-drilldown';
 import { OPEN_ORDER_QUERY } from '@/features/finance/constants/order-deep-link';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
+import { FINANCE_DEFAULT_LIST_PERIOD } from '@/features/finance/constants/finance-period-filter';
 import { buildOrderListApiParams } from '@/features/finance/utils/build-order-list-api-params';
 import {
   readOrdersBoardViewMode,
@@ -43,7 +44,7 @@ export function useOrdersPageState({
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);

@@ -14,6 +14,7 @@ import { SUBSCRIPTION_TYPES, SUBSCRIPTION_STATUSES } from '@/features/finance/co
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import {
   buildFinancePeriodFilterConfig,
+  FINANCE_DEFAULT_LIST_PERIOD,
   FINANCE_PERIOD_FILTER_KEY,
   parseFinancePeriodFilterValue,
 } from '@/features/finance/constants/finance-period-filter';
@@ -151,7 +152,7 @@ function SubscriptionsPageInner() {
       router.replace(pathname ?? '/finance/subscriptions');
     }
     page.setFilters({});
-    page.setPeriod('month');
+    page.setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
     page.setSearch('');
   }, [partnerIdFromUrl, pathname, router, page]);
 

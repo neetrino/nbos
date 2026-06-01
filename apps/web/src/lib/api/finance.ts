@@ -268,6 +268,7 @@ export interface CreateExpensePayload {
   status?: string;
   projectId?: string | null;
   expensePlanId?: string | null;
+  clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
   taxStatus?: string;
   backlogReason?: string | null;

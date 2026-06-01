@@ -26,6 +26,7 @@ import {
 import { FinanceListPageSettingsSheet } from '@/features/finance/components/FinanceListPageSettingsSheet';
 import {
   buildFinancePeriodFilterConfig,
+  FINANCE_DEFAULT_LIST_PERIOD,
   FINANCE_PERIOD_FILTER_KEY,
   parseFinancePeriodFilterValue,
 } from '@/features/finance/constants/finance-period-filter';
@@ -48,7 +49,7 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [period, setPeriod] = useState<FinancePeriod>('month');
+  const [period, setPeriod] = useState<FinancePeriod>(FINANCE_DEFAULT_LIST_PERIOD);
 
   const paymentListExportParams: Omit<PaymentListParams, 'page' | 'pageSize'> = useMemo(
     () => buildPaymentListApiParams({ search, period }),
@@ -110,7 +111,7 @@ export default function PaymentsPage() {
 
   const handleClearPaymentFilters = useCallback(() => {
     setSearch('');
-    setPeriod('month');
+    setPeriod(FINANCE_DEFAULT_LIST_PERIOD);
   }, []);
 
   const moduleHeroSlots = useMemo(
