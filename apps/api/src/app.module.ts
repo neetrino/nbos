@@ -47,6 +47,7 @@ import { ChecklistTemplatesModule } from './modules/checklist-templates/checklis
 import { TokenDenylistModule } from './common/security/token-denylist.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { OriginGuard } from './common/guards/origin.guard';
 import { AuthGuard } from './common/guards/auth.guard';
 import { EmployeeGuard } from './common/guards/employee.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
@@ -111,6 +112,10 @@ import { PermissionGuard } from './common/guards/permission.guard';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: OriginGuard,
     },
     {
       provide: APP_GUARD,
