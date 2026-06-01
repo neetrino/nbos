@@ -41,6 +41,15 @@ describe('validateEnv', () => {
     expect(() => validateEnv(rest)).toThrow(/required in production/);
   });
 
+  it('rejects placeholder SCHEDULER_API_KEY in production', () => {
+    expect(() =>
+      validateEnv({
+        ...validProd,
+        SCHEDULER_API_KEY: 'change-this-scheduler-key',
+      }),
+    ).toThrow(/placeholder/i);
+  });
+
   it('does not enforce strength/placeholder outside production', () => {
     expect(() =>
       validateEnv({

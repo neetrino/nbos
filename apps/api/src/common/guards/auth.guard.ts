@@ -30,7 +30,7 @@ export class AuthGuard implements CanActivate {
     this.jwtSecret = this.configService.getOrThrow<string>('JWT_SECRET');
   }
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -59,7 +59,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid or expired token');
     }
 
-    if (this.tokenDenylist.isRevoked(payload.jti)) {
+    if (await this.tokenDenylist.isRevoked(payload.jti)) {
       throw new UnauthorizedException('Token has been revoked');
     }
 

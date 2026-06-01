@@ -69,9 +69,9 @@ export class AuthService {
    * Revokes the caller's current access token until its natural expiry,
    * so a stolen token cannot be reused after the user signs out.
    */
-  logout(jti: string | undefined, tokenExp: number | undefined): { success: true } {
+  async logout(jti: string | undefined, tokenExp: number | undefined): Promise<{ success: true }> {
     if (jti && typeof tokenExp === 'number') {
-      this.tokenDenylist.revokeUntil(jti, tokenExp * 1_000);
+      await this.tokenDenylist.revokeUntil(jti, tokenExp * 1_000);
     }
     return { success: true };
   }

@@ -51,6 +51,11 @@ export function validateEnv(config: Record<string, unknown>): Record<string, unk
     for (const key of ['CORS_ORIGIN', 'SCHEDULER_API_KEY']) {
       if (isBlank(config[key])) errors.push(`${key} is required in production`);
     }
+
+    const schedulerKey = config['SCHEDULER_API_KEY'];
+    if (typeof schedulerKey === 'string' && looksLikePlaceholder(schedulerKey)) {
+      errors.push('SCHEDULER_API_KEY looks like a placeholder; set a real secret in production');
+    }
   }
 
   if (errors.length > 0) {

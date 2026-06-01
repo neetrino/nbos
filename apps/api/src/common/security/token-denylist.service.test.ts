@@ -6,35 +6,35 @@ describe('TokenDenylistService', () => {
     vi.useRealTimers();
   });
 
-  it('treats unknown jti as not revoked', () => {
+  it('treats unknown jti as not revoked', async () => {
     const service = new TokenDenylistService();
-    expect(service.isRevoked('unknown')).toBe(false);
+    await expect(service.isRevoked('unknown')).resolves.toBe(false);
   });
 
-  it('treats undefined jti as not revoked', () => {
+  it('treats undefined jti as not revoked', async () => {
     const service = new TokenDenylistService();
-    expect(service.isRevoked(undefined)).toBe(false);
+    await expect(service.isRevoked(undefined)).resolves.toBe(false);
   });
 
-  it('marks a token revoked until its expiry', () => {
+  it('marks a token revoked until its expiry', async () => {
     const service = new TokenDenylistService();
-    service.revokeUntil('jti-1', Date.now() + 10_000);
-    expect(service.isRevoked('jti-1')).toBe(true);
+    await service.revokeUntil('jti-1', Date.now() + 10_000);
+    await expect(service.isRevoked('jti-1')).resolves.toBe(true);
   });
 
-  it('ignores already-expired revocations', () => {
+  it('ignores already-expired revocations', async () => {
     const service = new TokenDenylistService();
-    service.revokeUntil('jti-2', Date.now() - 1_000);
-    expect(service.isRevoked('jti-2')).toBe(false);
+    await service.revokeUntil('jti-2', Date.now() - 1_000);
+    await expect(service.isRevoked('jti-2')).resolves.toBe(false);
   });
 
-  it('stops reporting revoked once the token has expired', () => {
+  it('stops reporting revoked once the token has expired', async () => {
     vi.useFakeTimers();
     const service = new TokenDenylistService();
-    service.revokeUntil('jti-3', Date.now() + 5_000);
-    expect(service.isRevoked('jti-3')).toBe(true);
+    await service.revokeUntil('jti-3', Date.now() + 5_000);
+    await expect(service.isRevoked('jti-3')).resolves.toBe(true);
 
     vi.advanceTimersByTime(6_000);
-    expect(service.isRevoked('jti-3')).toBe(false);
+    await expect(service.isRevoked('jti-3')).resolves.toBe(false);
   });
 });
