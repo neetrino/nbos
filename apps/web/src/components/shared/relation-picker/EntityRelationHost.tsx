@@ -1,11 +1,22 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { ContactSheet } from '@/features/clients/components/ContactSheet';
-import { CompanySheet } from '@/features/clients/components/CompanySheet';
 import { CreateContactDialog } from '@/features/clients/components/CreateContactDialog';
-import { CreateCompanyDialog } from '@/features/clients/components/CreateCompanyDialog';
+
+const CompanySheet = dynamic(() =>
+  import('@/features/clients/components/CompanySheet').then((mod) => ({
+    default: mod.CompanySheet,
+  })),
+);
+
+const CreateCompanyDialog = dynamic(() =>
+  import('@/features/clients/components/CreateCompanyDialog').then((mod) => ({
+    default: mod.CreateCompanyDialog,
+  })),
+);
 import { CreateProjectHubDialog } from '@/features/projects/components/CreateProjectHubDialog';
 import { CreatePartnerDialog } from '@/features/partners/components/CreatePartnerDialog';
 import { CreateProductDialog } from '@/features/projects/components/CreateProductDialog';

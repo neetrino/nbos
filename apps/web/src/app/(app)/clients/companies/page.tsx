@@ -12,16 +12,13 @@ import {
   TableRow,
   TableCell,
 } from '@/components/ui/table';
-import {
-  useModuleHeroSlots,
-  IntegratedSearchFilters,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  StatusBadge,
-  DeleteConfirmDialog,
-  useDeleteConfirm,
-} from '@/components/shared';
+import { DeleteConfirmDialog, useDeleteConfirm } from '@/components/shared/delete-confirm';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { IntegratedSearchFilters } from '@/components/shared/IntegratedSearchFilters';
+import { LoadingState } from '@/components/shared/LoadingState';
+import { useModuleHeroSlots } from '@/components/shared/page-hero';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import { CompanySheet } from '@/features/clients/components/CompanySheet';
 import { CreateCompanyDialog } from '@/features/clients/components/CreateCompanyDialog';
 import {
