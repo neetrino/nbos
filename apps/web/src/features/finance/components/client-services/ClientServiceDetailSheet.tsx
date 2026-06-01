@@ -245,9 +245,6 @@ export function ClientServiceDetailSheet({
 
           {service ? (
             <div className="border-border shrink-0 border-b px-5 py-2.5">
-              <p className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wide uppercase">
-                Connections
-              </p>
               <ClientServiceSheetActions
                 service={service}
                 actionId={actionId}
