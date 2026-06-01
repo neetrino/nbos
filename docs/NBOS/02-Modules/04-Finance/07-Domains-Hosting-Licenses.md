@@ -452,8 +452,8 @@ expiry_date updated
 
 Структура sheet сверху вниз:
 
-1. **Header** — название, тип, статус.
-2. **Connections** — компактная панель действий под header: создать invoice / expense plan / expense / task, удалить сервис.
+1. **Header** — название, тип, статус, **Settings** (⚙) с действием удаления сервиса.
+2. **Connections** — компактная панель действий под header: создать invoice / expense plan / expense / task.
 3. **Tabs** — `General` | `Invoices` | `Expenses` | `Tasks`:
    - **General** — поля карточки (basics, billing, dates, notes, proofs).
    - **Invoices** — список связанных `Invoice Card` (+ create).

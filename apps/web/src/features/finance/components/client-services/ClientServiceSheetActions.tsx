@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckSquare, FileText, ListChecks, Receipt, Trash2 } from 'lucide-react';
+import { CheckSquare, FileText, ListChecks, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 
@@ -12,7 +12,6 @@ interface ClientServiceSheetActionsProps {
   canCreateTask: boolean;
   disabled?: boolean;
   onAction: (kind: ClientServiceActionKind) => void;
-  onRequestDelete: () => void;
 }
 
 export function ClientServiceSheetActions({
@@ -21,7 +20,6 @@ export function ClientServiceSheetActions({
   canCreateTask,
   disabled = false,
   onAction,
-  onRequestDelete,
 }: ClientServiceSheetActionsProps) {
   const busy = disabled || (actionId?.endsWith(`:${service.id}`) ?? false);
 
@@ -68,17 +66,6 @@ export function ClientServiceSheetActions({
       >
         <CheckSquare size={14} aria-hidden />
         Create task
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="text-destructive hover:bg-destructive/10 border-destructive/40"
-        disabled={busy}
-        onClick={onRequestDelete}
-      >
-        <Trash2 size={14} aria-hidden />
-        Delete
       </Button>
     </div>
   );

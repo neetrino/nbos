@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Layers } from 'lucide-react';
+import { Layers, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import {
   DetailSheetFormFooter,
+  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   EntityDetailSheetContent,
   EntityItemHost,
@@ -235,9 +237,19 @@ export function ClientServiceDetailSheet({
                     </h2>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                   {typeLabel ? <StatusBadge label={typeLabel} variant="indigo" /> : null}
                   {statusLabel ? <StatusBadge label={statusLabel} variant="gray" /> : null}
+                  <DetailSheetSettingsMenu>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      disabled={actionBusy}
+                      onClick={() => onRequestDelete({ id: service.id, name: service.name })}
+                    >
+                      <Trash2 />
+                      Delete service
+                    </DropdownMenuItem>
+                  </DetailSheetSettingsMenu>
                 </div>
               </div>
             ) : null}
@@ -251,7 +263,6 @@ export function ClientServiceDetailSheet({
                 canCreateTask={Boolean(me?.id)}
                 disabled={actionBusy}
                 onAction={(kind) => void runServiceAction(kind)}
-                onRequestDelete={() => onRequestDelete({ id: service.id, name: service.name })}
               />
             </div>
           ) : null}
