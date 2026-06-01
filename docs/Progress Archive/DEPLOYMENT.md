@@ -2,11 +2,14 @@
 
 This project targets a split deploy: **Next.js web** (e.g. Vercel) and **NestJS API** (e.g. Render). Adjust host names and env to your environment.
 
+**Production runbook (security preflight + smoke tests):** [`docs/reference/platforms/nbos-production-deploy.md`](../reference/platforms/nbos-production-deploy.md)  
+**Security gate checklist:** [`security.todo.md`](../../security.todo.md)
+
 ## Web (`apps/web`)
 
 - Build: `pnpm --filter @nbos/web build`
 - Runtime env (minimum): `AUTH_SECRET`, `BACKEND_URL` (origin of the API, no trailing slash), NextAuth URL vars as required by your host (`NEXTAUTH_URL` / provider-specific)
-- The app proxies authenticated API traffic from the browser to the API via `next.config.ts` rewrites (`/api/*` except `/api/auth/*`)
+- Browser API traffic goes through the **BFF** (`/api/bff/*`): rewrites in `next.config.ts` inject the backend JWT from the httpOnly session cookie server-side
 
 ## API (`apps/api`)
 

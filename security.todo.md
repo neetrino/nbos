@@ -30,7 +30,7 @@
 
 **Закрыто в 3-м заходе P1:** §6.1 nestjs-pino + request-id (`x-request-id`), §6.3 редакция секретов в логах (authorization/cookie/scheduler-key/password/token), фильтр исключений переведён на Nest Logger.
 
-**Осталось (следующий заход):** 2.8 `accessToken`→BFF (P1, требует архитектурного решения по BFF), 11.3 WS channel authZ (P1, ждёт планируемый messenger ACL — не изобретаем) — плюс весь **👤 preflight** (§0, §18) на панелях. _2.7 JWT revoke закрыт (jti + denylist + logout); durable multi-instance вариант (Redis) — задокументированный follow-up в `token-denylist.service.ts`._
+**Осталось (следующий заход):** 11.3 WS channel authZ (P1, ждёт планируемый messenger ACL — не изобретаем) — плюс весь **👤 preflight** (§0, §18) на панелях. _2.7 JWT revoke ✅; 2.8 BFF ✅; 2.3 Origin guard ✅; 0.10 deploy runbook ✅._
 
 ---
 
@@ -54,18 +54,18 @@
 
 ## 0. Preflight — поднять на сервер безопасно
 
-| #    | P   | Статус | Задача                                                                                                                     | Проверка                       |
-| ---- | --- | ------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| 0.1  | P0  | ⬜     | 👤 Окружения dev / staging / prod (Neon branch, Vercel, Render)                                                            | Секреты prod ≠ preview ≠ local |
-| 0.2  | P0  | ⬜     | 👤 Сильные секреты: `AUTH_SECRET`, `JWT_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`                                              | `openssl rand -base64 32`      |
-| 0.3  | P0  | ⬜     | 👤 Vercel: `AUTH_SECRET`, `BACKEND_URL`, `APP_URL`; без API-секретов в `NEXT_PUBLIC_*`                                     | Audit env                      |
-| 0.4  | P0  | ⬜     | 👤 Render: `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `REDIS_URL`, R2, encryption key, `RESEND_*`, `NODE_ENV=production` | CORS assert OK                 |
-| 0.5  | P0  | ⬜     | 👤 Neon: `sslmode=require`, `app_user` least privilege                                                                     | Не owner в runtime             |
-| 0.6  | P0  | ⬜     | 👤 `REPORT_EXPORT_SYNC_FALLBACK` выключен в prod                                                                           | Только worker                  |
-| 0.7  | P0  | ⬜     | 👤 Нет постоянного `ADMIN_PASSWORD` в prod; seed:admin один раз → смена пароля                                             | —                              |
-| 0.8  | P0  | ⬜     | 👤 **Cloudflare:** весь публичный трафик → CF proxy ON → origin (REG-SEC-EDGE-001 §0)                                      | Не светить origin URL          |
-| 0.9  | P1  | ⬜     | 👤 Домены `@`, `www`, `api` (если отдельно) — proxied, SSL Full (strict), HSTS после теста                                 | §18                            |
-| 0.10 | P1  | ⬜     | 🤖 Runbook деплоя со ссылкой на этот файл                                                                                  | `docs/` deploy                 |
+| #    | P   | Статус | Задача                                                                                                                     | Проверка                                             |
+| ---- | --- | ------ | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| 0.1  | P0  | ⬜     | 👤 Окружения dev / staging / prod (Neon branch, Vercel, Render)                                                            | Секреты prod ≠ preview ≠ local                       |
+| 0.2  | P0  | ⬜     | 👤 Сильные секреты: `AUTH_SECRET`, `JWT_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`                                              | `openssl rand -base64 32`                            |
+| 0.3  | P0  | ⬜     | 👤 Vercel: `AUTH_SECRET`, `BACKEND_URL`, `APP_URL`; без API-секретов в `NEXT_PUBLIC_*`                                     | Audit env                                            |
+| 0.4  | P0  | ⬜     | 👤 Render: `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `REDIS_URL`, R2, encryption key, `RESEND_*`, `NODE_ENV=production` | CORS assert OK                                       |
+| 0.5  | P0  | ⬜     | 👤 Neon: `sslmode=require`, `app_user` least privilege                                                                     | Не owner в runtime                                   |
+| 0.6  | P0  | ⬜     | 👤 `REPORT_EXPORT_SYNC_FALLBACK` выключен в prod                                                                           | Только worker                                        |
+| 0.7  | P0  | ⬜     | 👤 Нет постоянного `ADMIN_PASSWORD` в prod; seed:admin один раз → смена пароля                                             | —                                                    |
+| 0.8  | P0  | ⬜     | 👤 **Cloudflare:** весь публичный трафик → CF proxy ON → origin (REG-SEC-EDGE-001 §0)                                      | Не светить origin URL                                |
+| 0.9  | P1  | ⬜     | 👤 Домены `@`, `www`, `api` (если отдельно) — proxied, SSL Full (strict), HSTS после теста                                 | §18                                                  |
+| 0.10 | P1  | ✅     | 🤖 Runbook деплоя со ссылкой на этот файл                                                                                  | `docs/reference/platforms/nbos-production-deploy.md` |
 
 ---
 
@@ -86,20 +86,20 @@
 
 ## 2. Auth + Sessions — Security `2`, Quality **B.1–B.7**
 
-| #    | P   | Статус | Задача                                                                             | Проверка                |
-| ---- | --- | ------ | ---------------------------------------------------------------------------------- | ----------------------- |
-| 2.1  | P1  | ⬜     | 👤 ADR auth: NextAuth JWT + API JWT + RBAC + invite-only                           | `docs/adr-auth.md`      |
-| 2.2  | P0  | ✅     | 🤖 Cookie flags: httpOnly+sameSite (Auth.js) + `useSecureCookies` prod             | DevTools                |
-| 2.3  | P0  | 🔄     | 🤖 CSRF / Origin (TECH_CARD §10.2 — **перепроверить**)                             | POST чужой origin → 403 |
-| 2.4  | P0  | ✅     | 🤖 RBAC: Auth + Employee + Permission guards                                       | curl → 403              |
-| 2.5  | P1  | ⬜     | 👤 MFA для admin (Quality **B.19**)                                                | —                       |
-| 2.6  | P1  | 🔄     | 🤖 Пароль: invite ≥10 + буква+цифра ✅; login ≥6 (verify-path, оставлено)          | 400 на слабый           |
-| 2.7  | P0  | ✅     | 🤖 JWT revoke: `jti` + in-memory denylist + `POST /auth/logout` (signOut → revoke) | После logout → 401      |
-| 2.8  | P0  | ⬜     | 🤖 `accessToken` не в client-readable session (XSS → API)                          | httpOnly BFF            |
-| 2.9  | P2  | ⬜     | 🤖 Password reset (TECH_CARD §5.6)                                                 | Phase 2+                |
-| 2.10 | P1  | ✅     | 🤖 `invite-info`: rate limit 20/5min                                               | Нет перебора            |
-| 2.11 | P0  | ✅     | 🤖 argon2id                                                                        | —                       |
-| 2.12 | P0  | ✅     | 🤖 Invite-only                                                                     | —                       |
+| #    | P   | Статус | Задача                                                                             | Проверка                            |
+| ---- | --- | ------ | ---------------------------------------------------------------------------------- | ----------------------------------- |
+| 2.1  | P1  | ⬜     | 👤 ADR auth: NextAuth JWT + API JWT + RBAC + invite-only                           | `docs/adr-auth.md`                  |
+| 2.2  | P0  | ✅     | 🤖 Cookie flags: httpOnly+sameSite (Auth.js) + `useSecureCookies` prod             | DevTools                            |
+| 2.3  | P0  | ✅     | 🤖 CSRF / Origin: OriginGuard на mutating + CORS allowlist                         | POST чужой origin → 403             |
+| 2.4  | P0  | ✅     | 🤖 RBAC: Auth + Employee + Permission guards                                       | curl → 403                          |
+| 2.5  | P1  | ⬜     | 👤 MFA для admin (Quality **B.19**)                                                | —                                   |
+| 2.6  | P1  | 🔄     | 🤖 Пароль: invite ≥10 + буква+цифра ✅; login ≥6 (verify-path, оставлено)          | 400 на слабый                       |
+| 2.7  | P0  | ✅     | 🤖 JWT revoke: `jti` + in-memory denylist + `POST /auth/logout` (signOut → revoke) | После logout → 401                  |
+| 2.8  | P0  | ✅     | 🤖 BFF: JWT в httpOnly cookie, `/api/bff` + realtime-token для WS                  | DevTools: нет accessToken в session |
+| 2.9  | P2  | ⬜     | 🤖 Password reset (TECH_CARD §5.6)                                                 | Phase 2+                            |
+| 2.10 | P1  | ✅     | 🤖 `invite-info`: rate limit 20/5min                                               | Нет перебора                        |
+| 2.11 | P0  | ✅     | 🤖 argon2id                                                                        | —                                   |
+| 2.12 | P0  | ✅     | 🤖 Invite-only                                                                     | —                                   |
 
 ---
 
