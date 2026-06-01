@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,15 +26,17 @@ export function PayrollAllocationMatrixManualDialog(props: {
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
 
-  useEffect(() => {
-    if (!open) return;
-    setTitle('');
-    setAmount('');
-    setReason('');
-  }, [open, employeeLabel, unitLabel]);
+  const handleOpenChange = (next: boolean) => {
+    if (next) {
+      setTitle('');
+      setAmount('');
+      setReason('');
+    }
+    onOpenChange(next);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Manual bonus</DialogTitle>

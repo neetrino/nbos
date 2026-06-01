@@ -31,15 +31,9 @@ export function ClientServiceCreateDialogs({
   onInvoiceCreated,
   onExpenseCreated,
 }: ClientServiceCreateDialogsProps) {
-  const invoiceDefaultForm = useMemo(
-    () => getClientServiceInvoiceFormDefaults(service),
-    [service.clientCharge, service.renewalDate],
-  );
+  const invoiceDefaultForm = useMemo(() => getClientServiceInvoiceFormDefaults(service), [service]);
 
-  const expenseDefaultForm = useMemo(
-    () => getClientServiceExpenseFormDefaults(service),
-    [service.name, service.ourCost, service.renewalDate],
-  );
+  const expenseDefaultForm = useMemo(() => getClientServiceExpenseFormDefaults(service), [service]);
 
   const clientServiceContext = useMemo(
     () => ({

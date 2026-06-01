@@ -135,7 +135,7 @@ export function useMessengerRealtime(options: {
 
   useEffect(() => {
     if (!options.canViewMessenger || !options.meId) {
-      setRealtimeToken(null);
+      queueMicrotask(() => setRealtimeToken(null));
       return;
     }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { PieChart } from 'lucide-react';
 import {
@@ -171,18 +171,21 @@ export function UnitEconomicsPageContent() {
     ],
   );
 
-  useEffect(() => {
+  const drilldownUrlKey = `${searchParams.toString()}:${loading}:${items.length}`;
+  const [handledDrilldownUrlKey, setHandledDrilldownUrlKey] = useState<string | null>(null);
+
+  if (!loading && handledDrilldownUrlKey !== drilldownUrlKey) {
     const orderId = searchParams.get(UNIT_ECONOMICS_OPEN_ORDER_QUERY)?.trim();
-    if (!orderId || loading) return;
-    const exists = items.some((row) => row.orderId === orderId);
-    if (!exists) return;
-    const focus = parseUnitEconomicsDrilldownFocus(
-      searchParams.get(UNIT_ECONOMICS_DRILLDOWN_FOCUS_QUERY),
-    );
-    setDrilldownOrderId(orderId);
-    setDrilldownFocus(focus);
-    setDrilldownOpen(true);
-  }, [items, loading, searchParams]);
+    const exists = Boolean(orderId && items.some((row) => row.orderId === orderId));
+    setHandledDrilldownUrlKey(drilldownUrlKey);
+    if (exists && orderId) {
+      setDrilldownOrderId(orderId);
+      setDrilldownFocus(
+        parseUnitEconomicsDrilldownFocus(searchParams.get(UNIT_ECONOMICS_DRILLDOWN_FOCUS_QUERY)),
+      );
+      setDrilldownOpen(true);
+    }
+  }
 
   const filterValues = useMemo(
     () => ({

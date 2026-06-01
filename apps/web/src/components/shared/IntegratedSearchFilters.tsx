@@ -50,18 +50,12 @@ export function IntegratedSearchFilters({
   const hasQuery = search.trim().length > 0 || chips.length > 0;
 
   useHeroSearchExpansionState({
-    focused: searchFocused,
+    focused: searchFocused || panelOpen,
     panelOpen,
     hasQuery,
   });
 
   const panelFilterValues = panelOpen ? draftFilters : filterValues;
-
-  useEffect(() => {
-    if (panelOpen) {
-      setSearchFocused(true);
-    }
-  }, [panelOpen]);
 
   useEffect(() => {
     if (!panelOpen) return;

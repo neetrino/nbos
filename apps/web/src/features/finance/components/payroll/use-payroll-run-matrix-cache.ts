@@ -13,6 +13,7 @@ import {
 } from '@/lib/api/payroll-employee-bonus-history';
 
 export function usePayrollRunMatrixCache(payrollRunId: string, enabled: boolean) {
+  const [scopeId, setScopeId] = useState(payrollRunId);
   const [meta, setMeta] = useState<PayrollEmployeeBonusHistoryMeta | null>(null);
   const [metaError, setMetaError] = useState<string | null>(null);
   const [matrixByMode, setMatrixByMode] = useState<
@@ -25,6 +26,19 @@ export function usePayrollRunMatrixCache(payrollRunId: string, enabled: boolean)
     Partial<Record<PayrollMatrixViewMode, Promise<PayrollAllocationMatrix | null>>>
   >({});
 
+  if (payrollRunId !== scopeId) {
+    setScopeId(payrollRunId);
+    setMeta(null);
+    setMetaError(null);
+    setMatrixByMode({});
+    setMatrixLoadingMode(null);
+  }
+
+  useEffect(() => {
+    metaPromiseRef.current = null;
+    matrixPromiseRef.current = {};
+  }, [payrollRunId]);
+
   const reset = useCallback(() => {
     setMeta(null);
     setMetaError(null);
@@ -33,10 +47,6 @@ export function usePayrollRunMatrixCache(payrollRunId: string, enabled: boolean)
     metaPromiseRef.current = null;
     matrixPromiseRef.current = {};
   }, []);
-
-  useEffect(() => {
-    reset();
-  }, [payrollRunId, reset]);
 
   const ensureMeta = useCallback(async (): Promise<PayrollEmployeeBonusHistoryMeta | null> => {
     if (meta) return meta;
@@ -70,7 +80,7 @@ export function usePayrollRunMatrixCache(payrollRunId: string, enabled: boolean)
       const inflight = matrixPromiseRef.current[viewMode];
       if (inflight) return inflight;
 
-      setMatrixLoadingMode(viewMode);
+      queueMicrotask(() => setMatrixLoadingMode(viewMode));
       const promise = payrollAllocationMatrixApi
         .get(payrollRunId, viewMode)
         .then((result) => {
@@ -98,8 +108,10 @@ export function usePayrollRunMatrixCache(payrollRunId: string, enabled: boolean)
 
   useEffect(() => {
     if (!enabled) return;
-    void ensureMeta();
-    void ensureMatrix('EMPLOYEE_MATRIX');
+    queueMicrotask(() => {
+      void ensureMeta();
+      void ensureMatrix('EMPLOYEE_MATRIX');
+    });
   }, [enabled, ensureMeta, ensureMatrix]);
 
   return {

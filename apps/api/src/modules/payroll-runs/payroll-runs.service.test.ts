@@ -236,11 +236,33 @@ describe('PayrollRunsService', () => {
       });
       prisma.payrollRun.update.mockResolvedValue({});
       prisma.auditLog.create.mockResolvedValue({});
-      prisma.payrollRun.findUnique.mockResolvedValue({
-        id: 'run-1',
-        payrollMonth: '2026-05',
-        status: 'DRAFT',
-      });
+      prisma.auditLog.findMany.mockResolvedValue([]);
+      prisma.salaryLine.findMany.mockResolvedValue([]);
+      prisma.salaryLine.groupBy.mockResolvedValue([]);
+      prisma.bonusRelease.count.mockResolvedValue(0);
+      prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: {} });
+      prisma.payrollRun.findUnique.mockImplementation(
+        (args: { where: { id?: string }; include?: unknown }) => {
+          if (args.where.id !== 'run-1') {
+            return Promise.resolve(null);
+          }
+          const base = {
+            id: 'run-1',
+            payrollMonth: '2026-05',
+            status: 'DRAFT',
+            createdAt: new Date('2026-05-01T10:00:00.000Z'),
+            updatedAt: new Date('2026-05-01T10:00:00.000Z'),
+            approvedAt: null,
+            closedAt: null,
+            createdBy: null,
+            approvedBy: null,
+          };
+          if (args.include) {
+            return Promise.resolve({ ...base, salaryLines: [] });
+          }
+          return Promise.resolve(base);
+        },
+      );
     });
 
     it('does not materialize draft allocations when moving Draft to Review', async () => {
@@ -254,11 +276,28 @@ describe('PayrollRunsService', () => {
     });
 
     it('materializes draft allocations when moving Review to Approved', async () => {
-      prisma.payrollRun.findUnique.mockResolvedValue({
-        id: 'run-1',
-        payrollMonth: '2026-05',
-        status: 'REVIEW',
-      });
+      prisma.payrollRun.findUnique.mockImplementation(
+        (args: { where: { id?: string }; include?: unknown }) => {
+          if (args.where.id !== 'run-1') {
+            return Promise.resolve(null);
+          }
+          const base = {
+            id: 'run-1',
+            payrollMonth: '2026-05',
+            status: 'REVIEW',
+            createdAt: new Date('2026-05-01T10:00:00.000Z'),
+            updatedAt: new Date('2026-05-01T10:00:00.000Z'),
+            approvedAt: null,
+            closedAt: null,
+            createdBy: null,
+            approvedBy: null,
+          };
+          if (args.include) {
+            return Promise.resolve({ ...base, salaryLines: [] });
+          }
+          return Promise.resolve(base);
+        },
+      );
       prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: {} });
       prisma.salaryLine.findMany.mockResolvedValue([]);
       prisma.salaryLine.update.mockResolvedValue({});

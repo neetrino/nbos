@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FileText, Plus } from 'lucide-react';
 import {
   EntityItemList,
@@ -55,11 +55,13 @@ export function DealInvoiceTab({
     [deal.id, createInvoiceOrder],
   );
 
-  useEffect(() => {
-    if (expandCreateFormNonce > 0 && canCreate) {
+  const [seenExpandNonce, setSeenExpandNonce] = useState(expandCreateFormNonce);
+  if (expandCreateFormNonce !== seenExpandNonce) {
+    setSeenExpandNonce(expandCreateFormNonce);
+    if (expandCreateFormNonce > 0 && canCreate && !createOpen) {
       setCreateOpen(true);
     }
-  }, [expandCreateFormNonce, canCreate]);
+  }
 
   const emptyDescription = canCreate
     ? isDepositBootstrap

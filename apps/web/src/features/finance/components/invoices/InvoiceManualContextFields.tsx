@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Building2, FolderKanban } from 'lucide-react';
 import { RelationPickerField } from '@/components/shared';
 import {
@@ -31,17 +31,21 @@ export function InvoiceManualContextFields({
   gateRequiredFields,
   disabled = false,
 }: InvoiceManualContextFieldsProps) {
+  const labelSeed = `${invoice.id}:${invoice.company?.name ?? ''}:${invoice.project?.name ?? ''}`;
+  const [labelSeedSeen, setLabelSeedSeen] = useState(labelSeed);
   const [companyLabel, setCompanyLabel] = useState(invoice.company?.name ?? null);
   const [projectLabel, setProjectLabel] = useState(invoice.project?.name ?? null);
+
+  if (labelSeed !== labelSeedSeen) {
+    setLabelSeedSeen(labelSeed);
+    setCompanyLabel(invoice.company?.name ?? null);
+    setProjectLabel(invoice.project?.name ?? null);
+  }
+
   const searchCompanies = useCompanyRelationSearch();
   const searchProjects = useProjectRelationSearch();
   const companyPicker = useRelationPickerActions('company');
   const projectPicker = useRelationPickerActions('project');
-
-  useEffect(() => {
-    setCompanyLabel(invoice.company?.name ?? null);
-    setProjectLabel(invoice.project?.name ?? null);
-  }, [invoice.id, invoice.company?.name, invoice.project?.name]);
 
   if (invoice.type !== 'MANUAL') return null;
 

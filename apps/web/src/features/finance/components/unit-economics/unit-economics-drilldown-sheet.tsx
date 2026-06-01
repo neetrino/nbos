@@ -56,22 +56,20 @@ export function UnitEconomicsDrilldownSheet({
   const [detail, setDetail] = useState<UnitEconomicsOrderDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const activeTab = open ? focus : tab;
+  const loadOrderId = open && orderId ? orderId : null;
 
   useEffect(() => {
-    if (open) setTab(focus);
-  }, [open, focus]);
-
-  useEffect(() => {
-    if (!open || !orderId) {
-      setDetail(null);
-      setError(null);
-      return;
-    }
+    if (!loadOrderId) return;
     let cancelled = false;
-    setLoading(true);
-    setError(null);
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setLoading(true);
+        setError(null);
+      }
+    });
     void unitEconomicsApi
-      .orderDetail(orderId)
+      .orderDetail(loadOrderId)
       .then((next) => {
         if (!cancelled) setDetail(next);
       })
@@ -84,9 +82,16 @@ export function UnitEconomicsDrilldownSheet({
     return () => {
       cancelled = true;
     };
-  }, [open, orderId]);
+  }, [loadOrderId]);
 
-  const tabs = useMemo(() => (detail ? buildUnitEconomicsDrilldownTabs(detail) : []), [detail]);
+  const displayedDetail = loadOrderId ? detail : null;
+  const displayedError = loadOrderId ? error : null;
+  const displayedLoading = Boolean(loadOrderId) && loading;
+
+  const tabs = useMemo(
+    () => (displayedDetail ? buildUnitEconomicsDrilldownTabs(displayedDetail) : []),
+    [displayedDetail],
+  );
 
   const handleTabChange = (value: string) => {
     const next = value as UnitEconomicsDrilldownFocus;
@@ -100,7 +105,7 @@ export function UnitEconomicsDrilldownSheet({
   };
 
   const sourcePageHref =
-    orderId != null ? unitEconomicsDrilldownHref(orderId, tab) : '/finance/unit-economics';
+    orderId != null ? unitEconomicsDrilldownHref(orderId, activeTab) : '/finance/unit-economics';
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -117,57 +122,57 @@ export function UnitEconomicsDrilldownSheet({
               <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
                 <PieChart className="text-muted-foreground size-5 shrink-0" aria-hidden />
                 <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                  {detail?.label ?? 'Delivery unit'}
+                  {displayedDetail?.label ?? 'Delivery unit'}
                 </h2>
               </div>
               <p className="text-muted-foreground mt-1 text-sm">
-                {detail
-                  ? `${detail.orderCode} · ${detail.projectCode} · ${detail.orderType}`
+                {displayedDetail
+                  ? `${displayedDetail.orderCode} · ${displayedDetail.projectCode} · ${displayedDetail.orderType}`
                   : 'Invoices, payments, expenses, and bonuses for the selected delivery unit.'}
               </p>
             </div>
           </div>
         </div>
 
-        {detail ? (
-          <DetailSheetTabBar tabs={tabs} activeTab={tab} onTabChange={handleTabChange} />
+        {displayedDetail ? (
+          <DetailSheetTabBar tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} />
         ) : null}
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4">
-          {loading ? (
+          {displayedLoading ? (
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <Loader2 className="size-4 animate-spin" aria-hidden />
               Loading…
             </div>
           ) : null}
-          {error ? <p className="text-destructive text-sm">{error}</p> : null}
-          {detail ? (
+          {displayedError ? <p className="text-destructive text-sm">{displayedError}</p> : null}
+          {displayedDetail ? (
             <>
               <UnitEconomicsDrilldownSheetSummary
-                detail={detail}
+                detail={displayedDetail}
                 onFocusChange={handleSummaryFocus}
               />
-              <DrilldownTabPanel tab={tab} detail={detail} />
+              <DrilldownTabPanel tab={activeTab} detail={displayedDetail} />
               <div className="flex flex-wrap gap-2 border-t border-stone-100 pt-4 dark:border-stone-800">
                 {onOpenPoolDetail ? (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => onOpenPoolDetail(detail.orderId)}
+                    onClick={() => onOpenPoolDetail(displayedDetail.orderId)}
                   >
                     Bonus breakdown
                   </Button>
                 ) : null}
                 <Link
-                  href={`/finance/invoices?search=${encodeURIComponent(detail.orderCode)}`}
+                  href={`/finance/invoices?search=${encodeURIComponent(displayedDetail.orderCode)}`}
                   className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
                 >
                   Invoices
                   <ExternalLink size={12} className="opacity-70" aria-hidden />
                 </Link>
                 <Link
-                  href={bonusBoardHref(detail.projectId)}
+                  href={bonusBoardHref(displayedDetail.projectId)}
                   className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
                 >
                   Bonus board
