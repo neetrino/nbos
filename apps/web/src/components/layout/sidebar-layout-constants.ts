@@ -14,9 +14,6 @@ export const SIDEBAR_HEADER_CLASS =
 /** Max rendered logo width inside the sidebar header (intrinsic SVG is wider). */
 export const SIDEBAR_LOGO_MAX_WIDTH_CLASS = 'max-w-[7.5rem]';
 
-/** Horizontal inset for sidebar nav rows (Bitrix-like breathing room from the edge). */
-export const SIDEBAR_NAV_INSET_CLASS = 'px-4';
-
 /** Nav list container padding (pairs with inset on items). */
 export const SIDEBAR_NAV_LIST_CLASS = 'px-2 py-2';
 
