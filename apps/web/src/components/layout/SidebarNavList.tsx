@@ -25,7 +25,7 @@ import {
   isNavChildLinkActive,
 } from '@/lib/navigation/nav-route-utils';
 import { isRegisteredModuleKey } from '@/lib/navigation/module-last-visit';
-import { getSidebarNavIcon } from './sidebar-nav-icons';
+import { SidebarModuleIcon, SidebarModuleMarker } from './SidebarModuleIcon';
 
 interface SidebarNavListProps {
   collapsed: boolean;
@@ -79,7 +79,7 @@ export function SidebarNavList({
   const [linksExpanded, setLinksExpanded] = useState(false);
 
   return (
-    <ul className="space-y-1">
+    <ul className="space-y-0">
       {primaryItems.map((item) => (
         <ModuleNavRow
           key={item.key}
@@ -97,10 +97,10 @@ export function SidebarNavList({
           <button
             type="button"
             onClick={() => setLinksExpanded((value) => !value)}
-            className="text-sidebar-muted hover:text-sidebar-foreground flex w-full items-center justify-between rounded-lg px-4 py-2 text-sm font-medium"
+            className="text-sidebar-muted hover:text-sidebar-foreground flex w-full items-center justify-between rounded-md px-2 py-1 text-[13px] font-medium"
           >
-            <span className="flex items-center gap-3">
-              <Link2 size={18} className="shrink-0 opacity-80" />
+            <span className="flex items-center gap-2">
+              <Link2 size={16} className="shrink-0 opacity-80" />
               My Links
             </span>
             <ChevronLeft
@@ -125,7 +125,7 @@ export function SidebarNavList({
               type="button"
               title="More / Hidden"
               onClick={onToggleMore}
-              className="text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex w-full justify-center rounded-lg px-2 py-2 text-sm"
+              className="text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground flex w-full justify-center rounded-md px-2 py-1 text-sm"
             >
               ···
             </button>
@@ -134,7 +134,7 @@ export function SidebarNavList({
               <button
                 type="button"
                 onClick={onToggleMore}
-                className="text-sidebar-muted hover:text-sidebar-foreground flex w-full items-center justify-between rounded-lg px-4 py-2 text-xs font-semibold tracking-wide uppercase"
+                className="text-sidebar-muted hover:text-sidebar-foreground flex w-full items-center justify-between rounded-md px-2 py-1 text-[11px] font-semibold tracking-wide uppercase"
               >
                 <span>More / Hidden</span>
                 <ChevronLeft
@@ -168,7 +168,7 @@ export function SidebarNavList({
 
 function PersonalLinkRow({ link }: { link: DashboardPersonalLink }) {
   const className =
-    'text-sidebar-muted hover:text-sidebar-foreground flex items-center gap-2 rounded-md px-4 py-1.5 text-sm transition-colors';
+    'text-sidebar-muted hover:text-sidebar-foreground flex items-center gap-2 rounded-md px-3 py-1 text-[13px] transition-colors';
 
   if (link.isExternal) {
     return (
@@ -212,7 +212,6 @@ function ModuleNavRow({
   onExpandOnly: () => void;
   muted?: boolean;
 }) {
-  const icon = getSidebarNavIcon(item.key);
   const moduleEntryHref = useModuleEntryHref(item.key, item.href, pathname);
   const moduleHref = isRegisteredModuleKey(item.key) ? moduleEntryHref : item.href;
   const childPathActive =
@@ -226,19 +225,23 @@ function ModuleNavRow({
     : getFirstChildHref(item);
 
   if (!item.children) {
+    const isActive = active && !muted;
     return (
       <li>
         <Link
           href={moduleHref}
           title={item.label}
-          className={navLinkClass(active && !muted, collapsed, muted)}
+          className={navLinkClass(isActive, collapsed, muted)}
         >
-          {icon}
-          {!collapsed && <span>{item.label}</span>}
+          <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
+          <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
+          {!collapsed && <span className="truncate">{item.label}</span>}
         </Link>
       </li>
     );
   }
+
+  const isActive = active && !muted;
 
   return (
     <li>
@@ -247,29 +250,31 @@ function ModuleNavRow({
           href={firstChildHref}
           onClick={onExpandOnly}
           title={item.label}
-          className={navLinkClass(active && !muted, collapsed, muted)}
+          className={navLinkClass(isActive, collapsed, muted)}
         >
-          {icon}
+          <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
+          <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
         </Link>
       ) : (
         <>
           <div
             className={cn(
-              'flex w-full items-stretch gap-0 overflow-hidden rounded-lg',
-              active && !muted && 'bg-sidebar-accent text-sidebar-foreground',
+              'group relative flex w-full items-stretch overflow-hidden rounded-md transition-colors',
+              isActive ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-muted',
             )}
           >
+            <SidebarModuleMarker moduleKey={item.key} visible={isActive} />
             <Link
               href={firstChildHref}
               onClick={onExpandOnly}
               className={cn(
-                `${SIDEBAR_NAV_ITEM_CLASS} flex min-w-0 flex-1 items-center gap-3 text-sm font-medium transition-colors`,
-                active
+                `${SIDEBAR_NAV_ITEM_CLASS} flex min-w-0 flex-1 items-center gap-2 text-[13px] font-medium transition-colors`,
+                isActive
                   ? 'text-sidebar-foreground'
-                  : 'text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground',
+                  : 'hover:bg-secondary/50 hover:text-sidebar-foreground',
               )}
             >
-              {icon}
+              <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
               <span className="truncate">{item.label}</span>
             </Link>
             <button
@@ -281,8 +286,8 @@ function ModuleNavRow({
                 onToggleExpanded();
               }}
               className={cn(
-                'text-sidebar-muted hover:text-sidebar-foreground flex shrink-0 items-center px-2 transition-colors',
-                active && 'text-sidebar-foreground',
+                'text-sidebar-muted hover:text-sidebar-foreground flex shrink-0 items-center px-1.5 transition-colors',
+                isActive && 'text-sidebar-foreground',
               )}
             >
               <ChevronLeft
@@ -348,12 +353,12 @@ function ModuleNavRow({
 
 function navLinkClass(active: boolean, collapsed: boolean, muted: boolean): string {
   return cn(
-    'flex items-center gap-3 rounded-lg text-sm font-medium transition-colors',
+    'group relative flex items-center gap-2 rounded-md text-[13px] font-medium transition-colors duration-150',
     SIDEBAR_NAV_ITEM_CLASS,
     active
       ? 'bg-sidebar-accent text-sidebar-foreground'
-      : 'text-sidebar-muted hover:bg-secondary hover:text-sidebar-foreground',
-    muted && !active && 'opacity-75',
-    collapsed && 'justify-center px-2',
+      : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
+    muted && !active && 'opacity-60',
+    collapsed && 'justify-center px-1.5 py-1',
   );
 }
