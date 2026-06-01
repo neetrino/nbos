@@ -56,7 +56,7 @@ export function getClientServiceExpensePlanFormDefaults(
     nextDueDate: clientServiceTaskDefaultDueDate(service.renewalDate) ?? '',
     provider: service.provider ?? '',
     projectId: service.projectId,
-    autoGenerate: service.billingModel === 'COMPANY_PAID',
+    autoGenerate: false,
     notes: `From client service: ${service.name}`,
   };
 }
@@ -79,7 +79,7 @@ export function buildClientServiceExpensePayload(
     dueDate: form.dueDate.trim() || null,
     projectId: service.projectId,
     clientServiceRecordId: service.id,
-    isPassThrough: service.billingModel === 'CLIENT_PAID',
+    isPassThrough: service.billingModel === 'WE_PAY',
     taxStatus: service.taxStatus,
     notes: `From client service: ${service.name}`,
   };

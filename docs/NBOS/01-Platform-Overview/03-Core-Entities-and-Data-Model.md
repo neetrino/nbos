@@ -442,7 +442,7 @@ Contact (человек)
 
 - Expense Plan → many Expense Cards
 - Expense Card → many Expense Payments
-- Client Service Record → Invoice Card → Payment → Expense Card → Task
+- Client Service Record (`billing_model`: `WE_PAY` | `REMINDER_ONLY`) → Invoice Card → Payment → Expense Card → Task (только для `WE_PAY`)
 - Payroll Run → Expense Card
 - Expense Card → one Project / Product / Order (опционально)
 - Expense Card → one Partner (для partner payouts)
@@ -849,7 +849,7 @@ Contact (человек)
 
 - Domain → one Project
 - Domain → one Credential (аккаунт провайдера)
-- Domain may generate: Invoice Card for client + Expense + renewal task
+- Domain may generate: Invoice Card for client + Expense + renewal task (when linked `Client Service Record` has `billing_model = WE_PAY`); for `REMINDER_ONLY` — only control tasks and reminders
 
 ---
 

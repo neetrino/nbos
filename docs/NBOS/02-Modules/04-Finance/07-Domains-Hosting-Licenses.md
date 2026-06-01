@@ -32,7 +32,7 @@
 ```text
 Client Service Record
     ->
-Invoice Card to client (if client-paid)
+Invoice Card to client (if we-pay)
     ->
 Payment
     ->
@@ -69,7 +69,7 @@ Expense for our side
 | `provider`              | Поставщик                                                          |
 | `provider_account`      | Ссылка на Credentials                                              |
 | `status`                | Active / Pending / Suspended / Expiring Soon / Expired / Cancelled |
-| `billing_model`         | Client-paid / Company-paid                                         |
+| `billing_model`         | We Pay / Reminder Only                                             |
 | `pricing_model`         | Fixed / Usage-based                                                |
 | `frequency`             | Monthly / Yearly / One-time                                        |
 | `our_cost`              | Наша фактическая себестоимость                                     |
@@ -118,7 +118,7 @@ Expense for our side
 Особенности:
 
 - бывает ежемесячным или ежегодным;
-- может быть pass-through или company-paid;
+- может быть we-pay (pass-through) или reminder-only;
 - может иметь инфраструктурные параметры.
 
 ### 3. Service
@@ -148,26 +148,32 @@ Expense for our side
 
 ---
 
-## Billing Model (Кто платит)
+## Billing Model (Кто платит и что делает система)
 
-Это одно из главных полей.
+Это одно из главных полей. Значения в БД: `WE_PAY`, `REMINDER_ONLY`.
 
-### `Client-paid / Клиент платит`
+**Важно:** `Client Service Record` — это контур **клиентских** сервисов. Наши собственные повторяющиеся расходы компании живут в **`Expense Plan`**, а не здесь.
+
+### `We Pay / Оплачиваем мы` (`WE_PAY`)
+
+Клиент платит нам, мы платим провайдеру (pass-through).
 
 Логика:
 
 1. создаётся `Invoice Card` клиенту;
 2. клиент оплачивает;
-3. после оплаты создаётся задача на покупку / продление;
-4. потом фиксируется наш `Expense`.
+3. после оплаты автоматически создаётся `Expense Card` и задача на покупку / продление;
+4. Finance оплачивает провайдера и закрывает расход.
 
-### `Company-paid / Компания платит`
+### `Reminder Only / Только напоминание` (`REMINDER_ONLY`)
+
+Клиент платит провайдеру сам; мы помогаем не пропустить срок.
 
 Логика:
 
-1. карточка клиента не создаётся;
-2. создаётся или планируется только `Expense`;
-3. Finance оплачивает из бюджета компании.
+1. `Invoice Card` и `Expense Card` **не создаются**;
+2. система напоминает и ставит контрольную `Task` менеджеру;
+3. менеджер сверяется с клиентом: оплатил ли сам, нужно ли обновить `renewal_date`.
 
 ---
 
@@ -237,7 +243,7 @@ Domain record created
     ->
 renewal date approaches
     ->
-Invoice Card to client (if client-paid)
+Invoice Card to client (if we-pay)
     ->
 Payment
     ->
@@ -266,8 +272,8 @@ expiry_date updated
 
 Логика:
 
-- если hosting клиентский, он может создавать `Invoice Card`;
-- если hosting внутренний, он создаёт только `Expense`.
+- если hosting клиентский и `WE_PAY`, он может создавать `Invoice Card`;
+- если `REMINDER_ONLY`, создаётся только контрольная `Task`.
 
 ---
 
@@ -282,13 +288,13 @@ expiry_date updated
 
 ### Примеры
 
-| Сервис           | Billing Model               | Частота          | Особенность         |
-| ---------------- | --------------------------- | ---------------- | ------------------- |
-| Google Workspace | Client-paid                 | Monthly          | часто pass-through  |
-| Cloudflare Pro   | Client-paid or Company-paid | Monthly / Yearly | зависит от проекта  |
-| Neon             | Company-paid                | Monthly          | usage-based         |
-| Apple Developer  | Client-paid                 | Yearly           | требует credentials |
-| Google Play      | Client-paid                 | One-time         | одноразовая покупка |
+| Сервис                                  | Billing Model           | Частота          | Особенность           |
+| --------------------------------------- | ----------------------- | ---------------- | --------------------- |
+| Google Workspace                        | We Pay                  | Monthly          | часто pass-through    |
+| Cloudflare Pro                          | We Pay or Reminder Only | Monthly / Yearly | зависит от проекта    |
+| Apple Developer                         | We Pay                  | Yearly           | требует credentials   |
+| Google Play                             | We Pay                  | One-time         | одноразовая покупка   |
+| Domain (клиент сам платит регистратору) | Reminder Only           | Yearly           | только контроль срока |
 
 ---
 
@@ -435,12 +441,12 @@ expiry_date updated
 
 `Client Service Record` остаётся источником; стадия **вычисляется** из `renewal_date`, `billing_model` и связанных `Invoice Card` / `Expense Card` (канон запрещает смешивать их в одну сущность). Это проекция трёх слоёв статусов на одну ось.
 
-| Стадия     | Условие                                                                                                        |
-| ---------- | -------------------------------------------------------------------------------------------------------------- |
-| `Active`   | до `renewal_date` > 3 месяцев (или дата не задана) — действий нет                                              |
-| `Upcoming` | `renewal_date` через 2–3 месяца; `Invoice Card` ещё не создан                                                  |
-| `Invoice`  | до `renewal_date` < 2 месяцев → авто-создание `Invoice Card` (см. EXP-04); ждём оплату клиента (client-paid)   |
-| `Pay now`  | клиент оплатил → создан `Expense Card`, платим провайдеру (`Due Now`); для company-paid — наша оплата по сроку |
+| Стадия     | Условие                                                                                                                     |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `Active`   | до `renewal_date` > 3 месяцев (или дата не задана) — действий нет                                                           |
+| `Upcoming` | `renewal_date` через 2–3 месяца; для `WE_PAY` — `Invoice Card` ещё не создан; для `REMINDER_ONLY` — ждём контрольную задачу |
+| `Invoice`  | только `WE_PAY`: до `renewal_date` < 2 месяцев → авто-создание `Invoice Card` (см. EXP-04); ждём оплату клиента             |
+| `Pay now`  | только `WE_PAY`: клиент оплатил → создан `Expense Card`, платим провайдеру (`Due Now`)                                      |
 
 Терминальной колонки `Paid/Done` **нет**: как только `Expense` оплачен и `renewal_date` уезжает на следующий период, карточка пересчитывается и возвращается в `Active`.
 
@@ -453,12 +459,14 @@ expiry_date updated
 Структура sheet сверху вниз:
 
 1. **Header** — название, тип, статус, **Settings** (⚙) с действием удаления сервиса.
-2. **Connections** — компактная панель действий под header: create invoice / expense plan / expense / task открывают shared-формы с предзаполнением из карточки сервиса.
+2. **Connections** — компактная панель действий под header:
+   - **`WE_PAY`**: create invoice / expense / task → shared-формы с предзаполнением;
+   - **`REMINDER_ONLY`**: только create task.
 3. **Tabs** — `General` | `Invoices` | `Expenses` | `Tasks`:
    - **General** — поля карточки (basics, billing, dates, notes, proofs).
-   - **Invoices** — список связанных `Invoice Card`; **Create invoice** → `CreateInvoiceDialog` (amount, due date).
-   - **Expenses** — списки expense plans и expense cards; **Create** → `CreateExpensePlanDialog` / `CreateExpenseDialog`.
-   - **Tasks** — список связанных задач; **Create task** → `QuickCreateTaskDialog`.
+   - **Invoices** — список связанных `Invoice Card`; **Create invoice** только для `WE_PAY`.
+   - **Expenses** — списки expense plans и expense cards; **Create** только для `WE_PAY`.
+   - **Tasks** — список связанных задач; **Create task** → `QuickCreateTaskDialog` (оба billing model).
 
 Должно быть видно:
 

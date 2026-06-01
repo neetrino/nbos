@@ -109,7 +109,7 @@ export function ClientServiceCreateDialogs({
 
   return (
     <>
-      {service.billingModel === 'CLIENT_PAID' ? (
+      {service.billingModel === 'WE_PAY' ? (
         <CreateInvoiceDialog
           open={invoiceOpen}
           onOpenChange={onInvoiceOpenChange}
@@ -122,23 +122,27 @@ export function ClientServiceCreateDialogs({
         />
       ) : null}
 
-      <CreateExpensePlanDialog
-        open={expensePlanOpen}
-        onOpenChange={onExpensePlanOpenChange}
-        initialForm={expensePlanDefaultForm}
-        submitOverride={submitExpensePlan}
-        forceNestedBackdrop
-        onCreated={handleExpensePlanCreated}
-      />
+      {service.billingModel === 'WE_PAY' ? (
+        <>
+          <CreateExpensePlanDialog
+            open={expensePlanOpen}
+            onOpenChange={onExpensePlanOpenChange}
+            initialForm={expensePlanDefaultForm}
+            submitOverride={submitExpensePlan}
+            forceNestedBackdrop
+            onCreated={handleExpensePlanCreated}
+          />
 
-      <CreateExpenseDialog
-        open={expenseOpen}
-        onOpenChange={onExpenseOpenChange}
-        initialForm={expenseDefaultForm}
-        submitOverride={submitExpense}
-        forceNestedBackdrop
-        onCreated={handleExpenseCreated}
-      />
+          <CreateExpenseDialog
+            open={expenseOpen}
+            onOpenChange={onExpenseOpenChange}
+            initialForm={expenseDefaultForm}
+            submitOverride={submitExpense}
+            forceNestedBackdrop
+            onCreated={handleExpenseCreated}
+          />
+        </>
+      ) : null}
     </>
   );
 }

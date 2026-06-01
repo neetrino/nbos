@@ -17,7 +17,7 @@ const CLIENT_SERVICE_STATUSES = new Set([
   'EXPIRED',
   'CANCELLED',
 ]);
-const CLIENT_SERVICE_BILLING_MODELS = new Set(['CLIENT_PAID', 'COMPANY_PAID']);
+const CLIENT_SERVICE_BILLING_MODELS = new Set(['WE_PAY', 'REMINDER_ONLY']);
 const CLIENT_SERVICE_PRICING_MODELS = new Set(['FIXED', 'USAGE_BASED']);
 const CLIENT_SERVICE_FREQUENCIES = new Set([
   'ONE_TIME',
@@ -52,7 +52,7 @@ export function resolveClientServiceStatus(value: string | undefined): ClientSer
 export function resolveClientServiceBillingModel(
   value: string | undefined,
 ): ClientServiceBillingModel {
-  if (!value?.trim()) return 'CLIENT_PAID';
+  if (!value?.trim()) return 'WE_PAY';
   return requireEnumValue<ClientServiceBillingModel>(
     value,
     CLIENT_SERVICE_BILLING_MODELS,

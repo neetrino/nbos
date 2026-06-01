@@ -289,7 +289,6 @@ export function ClientServiceDetailSheet({
                 canCreateTask={canCreateTask}
                 disabled={saving}
                 onCreateInvoice={() => setInvoiceOpen(true)}
-                onCreateExpensePlan={() => setExpensePlanOpen(true)}
                 onCreateExpense={() => setExpenseOpen(true)}
                 onCreateTask={() => setQuickCreateTaskOpen(true)}
               />

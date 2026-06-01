@@ -28,7 +28,7 @@ describe('domain-client-service-sync', () => {
 
     expect(payload.type).toBe('DOMAIN');
     expect(payload.name).toBe('example.com');
-    expect(payload.billingModel).toBe('CLIENT_PAID');
+    expect(payload.billingModel).toBe('WE_PAY');
     expect(payload.status).toBe('ACTIVE');
   });
 });

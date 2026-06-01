@@ -307,7 +307,7 @@ Runtime now has first-class `ClientServiceRecord` foundation:
 Remaining runtime refactor:
 
 - migrate / wrap domain logic into the general service model;
-- ~~client-paid automation after full invoice payment: purchase task + provider expense card (idempotent; triggered from payment create when `moneyStatus` becomes PAID)~~ — done in runtime;
+- ~~we-pay (`WE_PAY`) automation after full invoice payment: purchase task + provider expense card (idempotent; triggered from payment create when `moneyStatus` becomes PAID)~~ — done in runtime;
 - connect to `Credential` and Drive File Assets for receipts/proofs/provider documents.
 
 Finance runtime also needs Drive alignment:

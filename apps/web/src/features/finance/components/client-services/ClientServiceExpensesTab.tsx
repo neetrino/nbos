@@ -17,6 +17,7 @@ import {
 interface ClientServiceExpensesTabProps {
   links: ClientServiceFinanceLinks | undefined;
   projectId: string;
+  canCreate?: boolean;
   onCreatePlan: () => void;
   onCreateExpense: () => void;
 }
@@ -52,6 +53,7 @@ function mapExpenseRows(
 export function ClientServiceExpensesTab({
   links,
   projectId,
+  canCreate = true,
   onCreatePlan,
   onCreateExpense,
 }: ClientServiceExpensesTabProps) {
@@ -63,12 +65,14 @@ export function ClientServiceExpensesTab({
   return (
     <div className="flex max-w-[48rem] flex-col gap-6">
       <DetailSheetSection title="Expense plans" icon={<ListChecks size={12} />}>
-        <div className="mb-4">
-          <Button type="button" size="sm" onClick={onCreatePlan}>
-            <Plus size={14} aria-hidden />
-            Create expense plan
-          </Button>
-        </div>
+        {canCreate ? (
+          <div className="mb-4">
+            <Button type="button" size="sm" onClick={onCreatePlan}>
+              <Plus size={14} aria-hidden />
+              Create expense plan
+            </Button>
+          </div>
+        ) : null}
         <ClientServiceLinkedRecordList
           items={planRows}
           emptyIcon={ListChecks}
@@ -78,19 +82,21 @@ export function ClientServiceExpensesTab({
       </DetailSheetSection>
 
       <DetailSheetSection title="Expense cards" icon={<Receipt size={12} />}>
-        <div className="mb-4">
-          <Button type="button" size="sm" onClick={onCreateExpense}>
-            <Plus size={14} aria-hidden />
-            Create expense
-          </Button>
-        </div>
+        {canCreate ? (
+          <div className="mb-4">
+            <Button type="button" size="sm" onClick={onCreateExpense}>
+              <Plus size={14} aria-hidden />
+              Create expense
+            </Button>
+          </div>
+        ) : null}
         <ClientServiceLinkedRecordList
           items={expenseRows}
           emptyIcon={Receipt}
           emptyTitle="No expense cards"
           emptyDescription="No expense cards linked to this service yet."
         />
-        {expenses.length > 0 ? (
+        {expenses[0] ? (
           <Link
             href={expenseDetailHref(expenses[0].id, projectId)}
             className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4 gap-1.5')}

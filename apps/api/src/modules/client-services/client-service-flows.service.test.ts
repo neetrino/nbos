@@ -27,9 +27,9 @@ describe('ClientServiceFlowsService', () => {
     );
   });
 
-  it('creates linked invoice for client-paid service', async () => {
+  it('creates linked invoice for we-pay service', async () => {
     prisma.clientServiceRecord.findUnique.mockResolvedValue(
-      buildService({ billingModel: 'CLIENT_PAID' }),
+      buildService({ billingModel: 'WE_PAY' }),
     );
 
     await service.createInvoice('svc-1', {});
@@ -44,15 +44,15 @@ describe('ClientServiceFlowsService', () => {
     );
   });
 
-  it('rejects invoice for company-paid service', async () => {
+  it('rejects invoice for reminder-only service', async () => {
     prisma.clientServiceRecord.findUnique.mockResolvedValue(
-      buildService({ billingModel: 'COMPANY_PAID' }),
+      buildService({ billingModel: 'REMINDER_ONLY' }),
     );
 
     await expect(service.createInvoice('svc-1', {})).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('creates linked expense plan from service', async () => {
+  it('creates linked expense plan from we-pay service', async () => {
     prisma.clientServiceRecord.findUnique.mockResolvedValue(buildService({ type: 'HOSTING' }));
 
     await service.createExpensePlan('svc-1', {});
@@ -62,8 +62,27 @@ describe('ClientServiceFlowsService', () => {
         category: 'HOSTING',
         clientServiceRecordId: 'svc-1',
         amount: 99,
+        autoGenerate: false,
       }),
     );
+  });
+
+  it('rejects expense plan for reminder-only service', async () => {
+    prisma.clientServiceRecord.findUnique.mockResolvedValue(
+      buildService({ billingModel: 'REMINDER_ONLY' }),
+    );
+
+    await expect(service.createExpensePlan('svc-1', {})).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  it('rejects expense for reminder-only service', async () => {
+    prisma.clientServiceRecord.findUnique.mockResolvedValue(
+      buildService({ billingModel: 'REMINDER_ONLY' }),
+    );
+
+    await expect(service.createExpense('svc-1', {})).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('creates linked task with service link', async () => {
@@ -96,7 +115,7 @@ function buildService(overrides: Record<string, unknown> = {}) {
     provider: 'Cloudflare',
     providerAccountId: null,
     status: 'ACTIVE',
-    billingModel: 'CLIENT_PAID',
+    billingModel: 'WE_PAY',
     pricingModel: 'FIXED',
     frequency: 'MONTHLY',
     ourCost: new Decimal('99'),

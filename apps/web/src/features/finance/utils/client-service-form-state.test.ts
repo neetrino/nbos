@@ -25,7 +25,7 @@ describe('clientServiceToFormState', () => {
       name: 'example.com',
       provider: null,
       status: 'ACTIVE',
-      billingModel: 'CLIENT_PAID',
+      billingModel: 'WE_PAY',
       pricingModel: 'FIXED',
       frequency: 'YEARLY',
       ourCost: '12.00',

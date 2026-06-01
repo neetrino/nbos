@@ -16,8 +16,8 @@ export const CLIENT_SERVICE_STATUSES = [
 ] as const;
 
 export const CLIENT_SERVICE_BILLING_MODELS = [
-  { value: 'CLIENT_PAID', label: 'Client-paid' },
-  { value: 'COMPANY_PAID', label: 'Company-paid' },
+  { value: 'WE_PAY', label: 'We Pay' },
+  { value: 'REMINDER_ONLY', label: 'Reminder Only' },
 ] as const;
 
 export const CLIENT_SERVICE_PRICING_MODELS = [

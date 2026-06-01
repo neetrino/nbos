@@ -63,7 +63,7 @@ export function computeClientServicePaymentStage(
   now: Date = new Date(),
 ): ClientServiceStageResult {
   const { renewalDate, billingModel } = input;
-  const isClientPaid = billingModel === 'CLIENT_PAID';
+  const isWePay = billingModel === 'WE_PAY';
   const hasActiveExpense = input.expenseStatuses.some((status) => !isInactiveExpenseStatus(status));
   const hasActiveInvoice = input.invoiceMoneyStatuses.some(
     (status) => !isInactiveInvoiceStatus(status),
@@ -75,7 +75,7 @@ export function computeClientServicePaymentStage(
   const stage = resolveStage({
     hasActiveExpense,
     hasActiveInvoice,
-    isClientPaid,
+    isWePay,
     renewalDate,
     invoiceWindowEnd,
     upcomingWindowEnd,
@@ -95,19 +95,21 @@ export function computeClientServicePaymentStage(
 interface ResolveStageInput {
   hasActiveExpense: boolean;
   hasActiveInvoice: boolean;
-  isClientPaid: boolean;
+  isWePay: boolean;
   renewalDate: Date | null;
   invoiceWindowEnd: Date;
   upcomingWindowEnd: Date;
 }
 
 function resolveStage(input: ResolveStageInput): ClientServicePaymentStage {
-  if (input.hasActiveExpense) return 'pay_now';
-  if (input.isClientPaid && input.hasActiveInvoice) return 'invoice';
+  if (input.isWePay && input.hasActiveExpense) return 'pay_now';
+  if (input.isWePay && input.hasActiveInvoice) return 'invoice';
 
   const due = input.renewalDate?.getTime();
   if (due === undefined) return 'active';
-  if (due <= input.invoiceWindowEnd.getTime()) return input.isClientPaid ? 'invoice' : 'pay_now';
+  if (due <= input.invoiceWindowEnd.getTime()) {
+    return input.isWePay ? 'invoice' : 'upcoming';
+  }
   if (due <= input.upcomingWindowEnd.getTime()) return 'upcoming';
   return 'active';
 }
@@ -140,32 +142,17 @@ export function buildClientServiceStageWhere(
   switch (stage) {
     case 'pay_now':
       return {
-        OR: [
-          activeExpense,
-          {
-            AND: [
-              noActiveExpense,
-              noActiveInvoice,
-              { billingModel: 'COMPANY_PAID' },
-              { renewalDate: { lte: invoiceWindowEnd } },
-            ],
-          },
-        ],
+        AND: [{ billingModel: 'WE_PAY' }, activeExpense],
       };
     case 'invoice':
       return {
         AND: [
           noActiveExpense,
+          { billingModel: 'WE_PAY' },
           {
             OR: [
-              { AND: [{ billingModel: 'CLIENT_PAID' }, activeInvoice] },
-              {
-                AND: [
-                  noActiveInvoice,
-                  { billingModel: 'CLIENT_PAID' },
-                  { renewalDate: { lte: invoiceWindowEnd } },
-                ],
-              },
+              activeInvoice,
+              { AND: [noActiveInvoice, { renewalDate: { lte: invoiceWindowEnd } }] },
             ],
           },
         ],
@@ -175,7 +162,17 @@ export function buildClientServiceStageWhere(
         AND: [
           noActiveExpense,
           noActiveInvoice,
-          { renewalDate: { gt: invoiceWindowEnd, lte: upcomingWindowEnd } },
+          {
+            OR: [
+              { renewalDate: { gt: invoiceWindowEnd, lte: upcomingWindowEnd } },
+              {
+                AND: [
+                  { billingModel: 'REMINDER_ONLY' },
+                  { renewalDate: { lte: invoiceWindowEnd } },
+                ],
+              },
+            ],
+          },
         ],
       };
     case 'active':

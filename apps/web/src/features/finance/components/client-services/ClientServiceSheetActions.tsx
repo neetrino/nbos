@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckSquare, FileText, ListChecks, Receipt } from 'lucide-react';
+import { CheckSquare, FileText, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 
@@ -9,7 +9,6 @@ interface ClientServiceSheetActionsProps {
   canCreateTask: boolean;
   disabled?: boolean;
   onCreateInvoice: () => void;
-  onCreateExpensePlan: () => void;
   onCreateExpense: () => void;
   onCreateTask: () => void;
 }
@@ -19,44 +18,37 @@ export function ClientServiceSheetActions({
   canCreateTask,
   disabled = false,
   onCreateInvoice,
-  onCreateExpensePlan,
   onCreateExpense,
   onCreateTask,
 }: ClientServiceSheetActionsProps) {
+  const isWePay = service.billingModel === 'WE_PAY';
+
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {service.billingModel === 'CLIENT_PAID' ? (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={disabled}
-          onClick={onCreateInvoice}
-        >
-          <FileText size={14} aria-hidden />
-          Create invoice
-        </Button>
+      {isWePay ? (
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            onClick={onCreateInvoice}
+          >
+            <FileText size={14} aria-hidden />
+            Create invoice
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            onClick={onCreateExpense}
+          >
+            <Receipt size={14} aria-hidden />
+            Create expense
+          </Button>
+        </>
       ) : null}
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={disabled}
-        onClick={onCreateExpensePlan}
-      >
-        <ListChecks size={14} aria-hidden />
-        Create expense plan
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={disabled}
-        onClick={onCreateExpense}
-      >
-        <Receipt size={14} aria-hidden />
-        Create expense
-      </Button>
       <Button
         type="button"
         variant="outline"

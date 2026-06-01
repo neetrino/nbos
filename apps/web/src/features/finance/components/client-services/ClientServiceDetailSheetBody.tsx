@@ -55,7 +55,7 @@ export function ClientServiceDetailSheetBody({
     return (
       <ClientServiceInvoicesTab
         links={service.financeLinks}
-        canCreateInvoice={service.billingModel === 'CLIENT_PAID'}
+        canCreateInvoice={service.billingModel === 'WE_PAY'}
         onCreate={onCreateInvoice}
       />
     );
@@ -66,6 +66,7 @@ export function ClientServiceDetailSheetBody({
       <ClientServiceExpensesTab
         links={service.financeLinks}
         projectId={service.projectId}
+        canCreate={service.billingModel === 'WE_PAY'}
         onCreatePlan={onCreateExpensePlan}
         onCreateExpense={onCreateExpense}
       />

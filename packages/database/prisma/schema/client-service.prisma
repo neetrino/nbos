@@ -18,8 +18,8 @@ enum ClientServiceStatus {
 }
 
 enum ClientServiceBillingModel {
-  CLIENT_PAID
-  COMPANY_PAID
+  WE_PAY
+  REMINDER_ONLY
 }
 
 enum ClientServicePricingModel {
@@ -36,7 +36,7 @@ model ClientServiceRecord {
   provider             String?
   providerAccountId    String?                   @map("provider_account_id")
   status               ClientServiceStatus       @default(PENDING)
-  billingModel         ClientServiceBillingModel @default(CLIENT_PAID) @map("billing_model")
+  billingModel         ClientServiceBillingModel @default(WE_PAY) @map("billing_model")
   pricingModel         ClientServicePricingModel @default(FIXED) @map("pricing_model")
   frequency            ExpenseFrequency          @default(YEARLY)
   ourCost              Decimal?                  @map("our_cost") @db.Decimal(12, 2)
