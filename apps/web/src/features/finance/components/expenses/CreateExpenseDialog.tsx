@@ -1,13 +1,18 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { formatIsoDateValue } from '@/components/shared/date-picker/date-picker-format';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { EXPENSE_CATEGORIES, EXPENSE_STAGES } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { expensesApi, type CreateExpensePayload, type Expense } from '@/lib/api/finance';
-import { projectsApi, type Project } from '@/lib/api/projects';
-import { PROJECTS_PAGE_SIZE, SCHEMA_EXPENSE_STATUSES } from './edit-expense-dialog-constants';
-import { EditExpenseDialogForm, type EditExpenseFormState } from './EditExpenseDialogForm';
+import { expensesApi, type Expense } from '@/lib/api/finance';
+import { getNextBusinessDay } from '@/lib/date/business-days';
+import { SCHEMA_EXPENSE_STATUSES } from './edit-expense-dialog-constants';
+import {
+  buildCreateExpensePayload,
+  type CreateExpenseFormState,
+} from '@/features/finance/utils/expense-create-defaults';
+import { CreateExpenseDialogForm } from './CreateExpenseDialogForm';
+import { parseExpenseDraftAmount } from '@/features/finance/utils/expense-general-form-state';
 
 interface CreateExpenseDialogProps {
   open: boolean;
@@ -19,20 +24,13 @@ interface CreateExpenseDialogProps {
   defaultStatus?: string;
 }
 
-const EMPTY_FORM: EditExpenseFormState = {
-  name: '',
-  amount: '',
-  type: 'PLANNED',
-  category: 'OTHER',
-  frequency: 'ONE_TIME',
-  status: 'PLANNED',
-  dueDate: '',
-  projectId: 'none',
-  isPassThrough: false,
-  taxStatus: 'TAX',
-  backlogReason: 'none',
-  notes: '',
-};
+function createEmptyForm(): CreateExpenseFormState {
+  return {
+    name: '',
+    amount: '',
+    dueDate: formatIsoDateValue(getNextBusinessDay()),
+  };
+}
 
 export function CreateExpenseDialog({
   open,
@@ -42,91 +40,34 @@ export function CreateExpenseDialog({
   defaultStatus,
 }: CreateExpenseDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [projectsLoading, setProjectsLoading] = useState(false);
-  const [projects, setProjects] = useState<Project[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
-  const [form, setForm] = useState<EditExpenseFormState>(EMPTY_FORM);
+  const [form, setForm] = useState<CreateExpenseFormState>(createEmptyForm);
 
   useEffect(() => {
     if (!open) return;
-    let cancelled = false;
-    setProjectsLoading(true);
-    projectsApi
-      .getAll({ page: 1, pageSize: PROJECTS_PAGE_SIZE })
-      .then((res) => {
-        if (!cancelled) setProjects(res.items);
-      })
-      .catch(() => {
-        if (!cancelled) setProjects([]);
-      })
-      .finally(() => {
-        if (!cancelled) setProjectsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+    setForm(createEmptyForm());
+    setFormError(null);
   }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const status =
-      defaultStatus && SCHEMA_EXPENSE_STATUSES.has(defaultStatus)
-        ? defaultStatus
-        : EMPTY_FORM.status;
-    setForm({
-      ...EMPTY_FORM,
-      status,
-      projectId: defaultProjectId && defaultProjectId.length > 0 ? defaultProjectId : 'none',
-    });
-    setFormError(null);
-  }, [open, defaultProjectId, defaultStatus]);
-
-  const categoryItems = useMemo(
-    (): Array<{ value: string; label: string }> =>
-      EXPENSE_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
-    [],
-  );
-
-  const statusItems = useMemo(
-    (): Array<{ value: string; label: string }> =>
-      EXPENSE_STAGES.filter((s) => SCHEMA_EXPENSE_STATUSES.has(s.value)).map((s) => ({
-        value: s.value,
-        label: s.label,
-      })),
-    [],
-  );
-
-  const parsedAmount = parseFloat(form.amount.replace(/\s/g, ''));
-  const canSubmit = Boolean(form.name.trim()) && Number.isFinite(parsedAmount) && parsedAmount > 0;
+  const parsedAmount = parseExpenseDraftAmount(form.amount) ?? Number.NaN;
+  const canSubmit = Boolean(form.name.trim()) && parseExpenseDraftAmount(form.amount) != null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
 
+    const status =
+      defaultStatus && SCHEMA_EXPENSE_STATUSES.has(defaultStatus) ? defaultStatus : undefined;
+
+    const payload = buildCreateExpensePayload(form, {
+      defaultProjectId,
+      defaultStatus: status,
+    });
+    if (!payload) return;
+
     setLoading(true);
     setFormError(null);
     try {
-      const backlogReason =
-        form.status === 'BACKLOG'
-          ? form.backlogReason === 'none'
-            ? null
-            : form.backlogReason
-          : undefined;
-
-      const payload: CreateExpensePayload = {
-        name: form.name.trim(),
-        type: form.type,
-        category: form.category,
-        amount: parsedAmount,
-        frequency: form.frequency,
-        status: form.status,
-        dueDate: form.dueDate.trim() ? form.dueDate : null,
-        projectId: form.projectId === 'none' ? null : form.projectId,
-        isPassThrough: form.isPassThrough,
-        taxStatus: form.taxStatus,
-        notes: form.notes.trim() ? form.notes.trim() : null,
-        ...(form.status === 'BACKLOG' ? { backlogReason } : {}),
-      };
       const created = await expensesApi.create(payload);
       onCreated(created);
       onOpenChange(false);
@@ -144,26 +85,20 @@ export function CreateExpenseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[560px]">
+      <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>New expense</DialogTitle>
         </DialogHeader>
 
-        <EditExpenseDialogForm
+        <CreateExpenseDialogForm
           form={form}
           setForm={setForm}
-          categoryItems={categoryItems}
-          statusItems={statusItems}
-          projects={projects}
-          projectsLoading={projectsLoading}
           parsedAmount={parsedAmount}
           formError={formError}
           loading={loading}
           canSubmit={canSubmit}
           onSubmit={handleSubmit}
           onCancel={() => onOpenChange(false)}
-          submitIdleLabel="Create"
-          submitLoadingLabel="Creating…"
         />
       </DialogContent>
     </Dialog>
