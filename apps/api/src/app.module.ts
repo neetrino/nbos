@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { LoggerModule } from 'nestjs-pino';
 import { validateEnv } from './config/env.validation';
+import { buildLoggerParams } from './config/logger.config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { DatabaseModule } from './database.module';
 import { HealthController } from './health.controller';
@@ -55,6 +57,7 @@ import { PermissionGuard } from './common/guards/permission.guard';
       envFilePath: '../../.env.local',
       validate: validateEnv,
     }),
+    LoggerModule.forRoot(buildLoggerParams()),
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 100 }],
     }),

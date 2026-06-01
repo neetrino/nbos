@@ -28,6 +28,8 @@
 
 **Закрыто во 2-м заходе P1:** §9.1 R2 ext-blocklist + size cap, §7.1 Redis TLS-enforce в prod.
 
+**Закрыто в 3-м заходе P1:** §6.1 nestjs-pino + request-id (`x-request-id`), §6.3 редакция секретов в логах (authorization/cookie/scheduler-key/password/token), фильтр исключений переведён на Nest Logger.
+
 **Осталось (следующий заход):** 2.7/2.8 JWT revoke + accessToken→BFF (P1), 6.1/6.3 pino + request-id + маскирование (P1, отдельный срез — добавление зависимости), 11.3 WS channel authZ (P1, ждёт планируемый messenger ACL — не изобретаем) — плюс весь **👤 preflight** (§0, §18) на панелях.
 
 ---
@@ -153,13 +155,13 @@
 
 ## 6. Observability — Security `6`, Quality **K**
 
-| #   | P   | Статус | Задача                                                    | Проверка      |
-| --- | --- | ------ | --------------------------------------------------------- | ------------- |
-| 6.1 | P0  | 🔄     | 🤖 Pino + request-id; не только `console.error`           | JSON logs     |
-| 6.2 | P1  | ⬜     | 👤 Sentry + alerts 5xx/latency (K.1–K.5)                  | Test alert    |
-| 6.3 | P0  | ⬜     | 🤖 Mask JWT/password/PII (K.9 privacy)                    | grep logs     |
-| 6.4 | P1  | ⬜     | 🤖 Audit: credentials reveal, RBAC, export, delete (B.20) | DB audit rows |
-| 6.5 | P1  | ⬜     | 👤 CF Security Events + 401/403/429 spikes (WAF §8)       | Dashboard     |
+| #   | P   | Статус | Задача                                                            | Проверка      |
+| --- | --- | ------ | ----------------------------------------------------------------- | ------------- |
+| 6.1 | P0  | ✅     | 🤖 nestjs-pino + request-id (`x-request-id`); фильтр через Logger | JSON logs     |
+| 6.2 | P1  | ⬜     | 👤 Sentry + alerts 5xx/latency (K.1–K.5)                          | Test alert    |
+| 6.3 | P0  | ✅     | 🤖 Redact authorization/cookie/scheduler-key/password/token       | grep logs     |
+| 6.4 | P1  | ⬜     | 🤖 Audit: credentials reveal, RBAC, export, delete (B.20)         | DB audit rows |
+| 6.5 | P1  | ⬜     | 👤 CF Security Events + 401/403/429 spikes (WAF §8)               | Dashboard     |
 
 ---
 

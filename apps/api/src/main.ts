@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { json, urlencoded } from 'express';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import {
   assertCorsOriginsSafeForProduction,
@@ -21,7 +22,10 @@ async function bootstrap() {
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: false,
+    bufferLogs: true,
   });
+
+  app.useLogger(app.get(Logger));
 
   app.use(json({ limit: JSON_BODY_LIMIT }));
   app.use(urlencoded({ extended: true, limit: URLENCODED_BODY_LIMIT }));
@@ -64,9 +68,11 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 4000;
   await app.listen(port);
-  console.warn(`NBOS API running on http://localhost:${port}`);
+
+  const logger = app.get(Logger);
+  logger.log(`NBOS API running on http://localhost:${port}`);
   if (swaggerEnabled) {
-    console.warn(`Swagger docs: http://localhost:${port}/api/docs`);
+    logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
   }
 }
 
