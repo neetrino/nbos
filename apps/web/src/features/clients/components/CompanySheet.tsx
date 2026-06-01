@@ -5,12 +5,10 @@ import { Trash2 } from 'lucide-react';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
-import {
-  DetailSheetFormFooter,
-  DetailSheetSettingsMenu,
-  EntityDetailSheetContent,
-  StatusBadge,
-} from '@/components/shared';
+import { DetailSheetFormFooter } from '@/components/shared/DetailSheetFormFooter';
+import { DetailSheetSettingsMenu } from '@/components/shared/DetailSheetSettingsMenu';
+import { EntityDetailSheetContent } from '@/components/shared/EntityDetailSheetContent';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import { getCompanyType, getTaxStatus } from '../constants/clients';
 import { useContactSearchOptions } from '../hooks/use-contact-search-options';
 import type { Company } from '@/lib/api/clients';
@@ -21,7 +19,7 @@ import {
   type CompanyGeneralDraft,
 } from './company-general-form-state';
 import { CompanySheetScrollBody } from './CompanySheetScrollBody';
-import type { RelationCreatedEvent } from '@/components/shared/relation-picker';
+import type { RelationCreatedEvent } from '@/components/shared/relation-picker/relation-created-event';
 import { useRegisterRelationCreated } from '@/components/shared/relation-picker/use-register-relation-created';
 import { applyCompanyRelationCreated } from './apply-company-relation-created';
 import {
