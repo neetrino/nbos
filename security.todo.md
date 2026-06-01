@@ -30,7 +30,7 @@
 
 **Закрыто в 3-м заходе P1:** §6.1 nestjs-pino + request-id (`x-request-id`), §6.3 редакция секретов в логах (authorization/cookie/scheduler-key/password/token), фильтр исключений переведён на Nest Logger.
 
-**Осталось (следующий заход):** **👤 preflight** (§0, §18) на панелях — Neon, Cloudflare, Vercel/Render secrets, branch protection. **Messenger (после доработки модуля):** §11.2 rate limit, §11.3 WS channel authZ.
+**Осталось (следующий заход):** **👤 preflight** (§0, §18) — Coolify/Hetzner env, Neon, Cloudflare, GitHub branch protection. **Messenger (после доработки модуля):** §11.2, §11.3. **Deploy guide:** [`docs/reference/platforms/nbos-coolify-hetzner.md`](docs/reference/platforms/nbos-coolify-hetzner.md).
 
 **Закрыто в 4-м заходе:** §2.7 Redis-backed JWT denylist (`nbos:jwt-denylist:*`), §9.3 R2 storage key path traversal guard, §5.6/§10.1 placeholder + required secrets (env validation), §7.2 denylist key prefix + TTL.
 
@@ -56,18 +56,18 @@
 
 ## 0. Preflight — поднять на сервер безопасно
 
-| #    | P   | Статус | Задача                                                                                                                     | Проверка                                             |
-| ---- | --- | ------ | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| 0.1  | P0  | ⬜     | 👤 Окружения dev / staging / prod (Neon branch, Vercel, Render)                                                            | Секреты prod ≠ preview ≠ local                       |
-| 0.2  | P0  | ⬜     | 👤 Сильные секреты: `AUTH_SECRET`, `JWT_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`                                              | `openssl rand -base64 32`                            |
-| 0.3  | P0  | ⬜     | 👤 Vercel: `AUTH_SECRET`, `BACKEND_URL`, `APP_URL`; без API-секретов в `NEXT_PUBLIC_*`                                     | Audit env                                            |
-| 0.4  | P0  | ⬜     | 👤 Render: `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `REDIS_URL`, R2, encryption key, `RESEND_*`, `NODE_ENV=production` | CORS assert OK                                       |
-| 0.5  | P0  | ⬜     | 👤 Neon: `sslmode=require`, `app_user` least privilege                                                                     | Не owner в runtime                                   |
-| 0.6  | P0  | ⬜     | 👤 `REPORT_EXPORT_SYNC_FALLBACK` выключен в prod                                                                           | Только worker                                        |
-| 0.7  | P0  | ⬜     | 👤 Нет постоянного `ADMIN_PASSWORD` в prod; seed:admin один раз → смена пароля                                             | —                                                    |
-| 0.8  | P0  | ⬜     | 👤 **Cloudflare:** весь публичный трафик → CF proxy ON → origin (REG-SEC-EDGE-001 §0)                                      | Не светить origin URL                                |
-| 0.9  | P1  | ⬜     | 👤 Домены `@`, `www`, `api` (если отдельно) — proxied, SSL Full (strict), HSTS после теста                                 | §18                                                  |
-| 0.10 | P1  | ✅     | 🤖 Runbook деплоя со ссылкой на этот файл                                                                                  | `docs/reference/platforms/nbos-production-deploy.md` |
+| #    | P   | Статус | Задача                                                                                                                                   | Проверка                            |
+| ---- | --- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| 0.1  | P0  | ⬜     | 👤 Окружения dev / staging / prod (Neon branch, Coolify on Hetzner)                                                                      | Секреты prod ≠ preview ≠ local      |
+| 0.2  | P0  | ⬜     | 👤 Сильные секреты: `AUTH_SECRET`, `JWT_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`                                                            | `openssl rand -base64 32`           |
+| 0.3  | P0  | ⬜     | 👤 Coolify **nbos-web**: `AUTH_SECRET`, `BACKEND_URL`, `APP_URL`, `NEXT_PUBLIC_BACKEND_URL`; без API-секретов в web                      | Audit env                           |
+| 0.4  | P0  | ⬜     | 👤 Coolify **nbos-api**: `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `REDIS_URL`, R2, encryption key, `RESEND_*`, `NODE_ENV=production` | CORS assert OK                      |
+| 0.5  | P0  | ⬜     | 👤 Neon: `sslmode=require`, `app_user` least privilege                                                                                   | Не owner в runtime                  |
+| 0.6  | P0  | ⬜     | 👤 `REPORT_EXPORT_SYNC_FALLBACK` выключен в prod                                                                                         | Только worker                       |
+| 0.7  | P0  | ⬜     | 👤 Нет постоянного `ADMIN_PASSWORD` в prod; seed:admin один раз → смена пароля                                                           | —                                   |
+| 0.8  | P0  | ⬜     | 👤 **Cloudflare:** весь публичный трафик → CF proxy ON → origin (REG-SEC-EDGE-001 §0)                                                    | Не светить origin URL               |
+| 0.9  | P1  | ⬜     | 👤 Домены `@`, `www`, `api` (если отдельно) — proxied, SSL Full (strict), HSTS после теста                                               | §18                                 |
+| 0.10 | P1  | ✅     | 🤖 Runbook деплоя (Coolify/Hetzner + security gate)                                                                                      | `platforms/nbos-coolify-hetzner.md` |
 
 ---
 
@@ -144,7 +144,7 @@
 
 | #   | P   | Статус | Задача                                                               | Проверка           |
 | --- | --- | ------ | -------------------------------------------------------------------- | ------------------ |
-| 5.1 | P0  | ⬜     | 👤 Секреты только в Vercel/Render/GitHub Secrets (C.1–C.2)           | —                  |
+| 5.1 | P0  | ⬜     | 👤 Секреты только в Coolify env / GitHub Secrets (C.1–C.2)           | —                  |
 | 5.2 | P1  | ⬜     | 👤 `docs/runbook-secret-rotation.md` (C.4)                           | Runbook            |
 | 5.3 | P0  | ✅     | 🤖 `.gitignore` env                                                  | —                  |
 | 5.4 | P0  | ✅     | 🤖 Fail-fast env validation at API boot (`config/env.validation.ts`) | Weak secret → exit |
@@ -233,15 +233,15 @@
 
 ## 13. CI/CD — Quality **L**, anti-pattern #9
 
-| #    | P   | Статус | Задача                                                           | Проверка          |
-| ---- | --- | ------ | ---------------------------------------------------------------- | ----------------- |
-| 13.1 | P0  | ✅     | 🤖 GHA: lint + typecheck + test + build + audit + gitleaks (L.3) | Branch protection |
-| 13.2 | P0  | ⬜     | 👤 Protected main; no force push                                 | GitHub            |
-| 13.3 | P0  | ⬜     | 👤 Single migration job (L.4)                                    | Log               |
-| 13.4 | P1  | ⬜     | 👤 Preview ≠ prod DB (L.2)                                       | Env scopes        |
-| 13.5 | P1  | ⬜     | 🤖 Dockerfile non-root (L + §13)                                 | Image scan        |
-| 13.6 | P1  | ⬜     | 👤 Rollback runbook (L.5)                                        | Doc               |
-| 13.7 | P1  | ⬜     | 👤 Render health `/api/health` (L.10, anti #17)                  | Render UI         |
+| #    | P   | Статус | Задача                                                                 | Проверка          |
+| ---- | --- | ------ | ---------------------------------------------------------------------- | ----------------- |
+| 13.1 | P0  | ✅     | 🤖 GHA: lint + typecheck + test + build + audit + gitleaks (L.3)       | Branch protection |
+| 13.2 | P0  | ⬜     | 👤 Protected main; no force push                                       | GitHub            |
+| 13.3 | P0  | ⬜     | 👤 Single migration job (L.4)                                          | Log               |
+| 13.4 | P1  | ⬜     | 👤 Preview ≠ prod DB (L.2)                                             | Env scopes        |
+| 13.5 | P1  | ⬜     | 🤖 Dockerfile non-root (L + §13)                                       | Image scan        |
+| 13.6 | P1  | ⬜     | 👤 Rollback runbook (L.5)                                              | Doc               |
+| 13.7 | P1  | ⬜     | 👤 Coolify health check `GET /api/health` on nbos-api (L.10, anti #17) | Coolify UI        |
 
 ---
 

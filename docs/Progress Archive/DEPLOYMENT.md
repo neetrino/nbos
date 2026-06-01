@@ -1,9 +1,12 @@
 # NBOS deployment (baseline)
 
-This project targets a split deploy: **Next.js web** (e.g. Vercel) and **NestJS API** (e.g. Render). Adjust host names and env to your environment.
+This project deploys to **Hetzner VPS via Coolify** (web + api). External: Neon, R2, Resend, optional Cloudflare edge.
 
-**Production runbook (security preflight + smoke tests):** [`docs/reference/platforms/nbos-production-deploy.md`](../reference/platforms/nbos-production-deploy.md)  
-**Security gate checklist:** [`security.todo.md`](../../security.todo.md)
+**Runbooks:**
+
+- [`docs/reference/platforms/nbos-coolify-hetzner.md`](../reference/platforms/nbos-coolify-hetzner.md) — Coolify UI, build/start commands, env split
+- [`docs/reference/platforms/nbos-production-deploy.md`](../reference/platforms/nbos-production-deploy.md) — security preflight + smoke tests
+- [`security.todo.md`](../../security.todo.md) §0
 
 ## Web (`apps/web`)
 
