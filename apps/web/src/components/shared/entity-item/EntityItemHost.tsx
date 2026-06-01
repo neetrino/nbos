@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { TaskSheet } from '@/features/tasks/components/TaskSheet';
 import { InvoiceSheet } from '@/features/finance/components/InvoiceSheet';
+import { ExpenseDetailSheet } from '@/features/finance/components/expenses/ExpenseDetailSheet';
 import { BonusEntryReleasesSheet } from '@/features/finance/components/bonus/bonus-entry-releases-sheet';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { invoicesApi, paymentsApi, type Invoice } from '@/lib/api/finance';
@@ -25,11 +26,18 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
   const [invoiceSheetOpen, setInvoiceSheetOpen] = useState(false);
   const [bonusEntry, setBonusEntry] = useState<BonusEntryListRow | null>(null);
   const [bonusEntrySheetOpen, setBonusEntrySheetOpen] = useState(false);
+  const [expenseId, setExpenseId] = useState<string | null>(null);
+  const [expenseSheetOpen, setExpenseSheetOpen] = useState(false);
 
   const openEntityItem = useCallback(async (target: EntityItemOpenTarget) => {
     if (target.kind === 'task') {
       setTaskId(target.id);
       setTaskSheetOpen(true);
+      return;
+    }
+    if (target.kind === 'expense') {
+      setExpenseId(target.id);
+      setExpenseSheetOpen(true);
       return;
     }
     if (target.kind === 'invoice') {
@@ -68,6 +76,11 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
   const handleBonusEntrySheetOpenChange = useCallback((next: boolean) => {
     setBonusEntrySheetOpen(next);
     if (!next) setBonusEntry(null);
+  }, []);
+
+  const handleExpenseSheetOpenChange = useCallback((next: boolean) => {
+    setExpenseSheetOpen(next);
+    if (!next) setExpenseId(null);
   }, []);
 
   const handleInvoiceUpdated = useCallback(
@@ -134,6 +147,15 @@ export function EntityItemHost({ children, nested = true, onEntityChanged }: Ent
         open={bonusEntrySheetOpen}
         onOpenChange={handleBonusEntrySheetOpenChange}
         onAfterPatch={() => onEntityChanged?.()}
+        forceNestedBackdrop={nested}
+      />
+
+      <ExpenseDetailSheet
+        expenseId={expenseId}
+        open={expenseSheetOpen}
+        onOpenChange={handleExpenseSheetOpenChange}
+        onExpenseUpdated={() => onEntityChanged?.()}
+        onExpenseDeleted={() => onEntityChanged?.()}
         forceNestedBackdrop={nested}
       />
     </EntityItemHostProvider>

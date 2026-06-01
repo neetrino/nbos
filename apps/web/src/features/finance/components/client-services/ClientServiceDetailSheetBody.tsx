@@ -63,7 +63,6 @@ export function ClientServiceDetailSheetBody({
     return (
       <ClientServiceExpensesTab
         links={service.financeLinks}
-        projectId={service.projectId}
         canCreate={service.billingModel === 'WE_PAY'}
         onCreateExpense={onCreateExpense}
       />
