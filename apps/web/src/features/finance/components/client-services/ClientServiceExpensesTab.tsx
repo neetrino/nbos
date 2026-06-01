@@ -1,11 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { ExternalLink, ListChecks, Plus, Receipt } from 'lucide-react';
+import { ExternalLink, Plus, Receipt } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { DetailSheetSection } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
-import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
 import { expenseDetailHref } from '@/features/finance/constants/project-expenses-drilldown';
 import type { ClientServiceFinanceLinks } from '@/lib/api/client-services';
 import { cn } from '@/lib/utils';
@@ -18,21 +17,7 @@ interface ClientServiceExpensesTabProps {
   links: ClientServiceFinanceLinks | undefined;
   projectId: string;
   canCreate?: boolean;
-  onCreatePlan: () => void;
   onCreateExpense: () => void;
-}
-
-function mapExpensePlanRows(
-  plans: ClientServiceFinanceLinks['expensePlans'],
-): ClientServiceLinkedRecordRow[] {
-  return plans.map((plan) => ({
-    id: plan.id,
-    href: expensePlansListWithOpenPlanHref(plan.id),
-    title: plan.name,
-    subtitle: plan.category,
-    metric: formatAmount(Number(plan.amount)),
-    leadingIcon: ListChecks,
-  }));
 }
 
 function mapExpenseRows(
@@ -54,33 +39,13 @@ export function ClientServiceExpensesTab({
   links,
   projectId,
   canCreate = true,
-  onCreatePlan,
   onCreateExpense,
 }: ClientServiceExpensesTabProps) {
-  const plans = links?.expensePlans ?? [];
   const expenses = links?.expenses ?? [];
-  const planRows = mapExpensePlanRows(plans);
   const expenseRows = mapExpenseRows(expenses, projectId);
 
   return (
     <div className="flex max-w-[48rem] flex-col gap-6">
-      <DetailSheetSection title="Expense plans" icon={<ListChecks size={12} />}>
-        {canCreate ? (
-          <div className="mb-4">
-            <Button type="button" size="sm" onClick={onCreatePlan}>
-              <Plus size={14} aria-hidden />
-              Create expense plan
-            </Button>
-          </div>
-        ) : null}
-        <ClientServiceLinkedRecordList
-          items={planRows}
-          emptyIcon={ListChecks}
-          emptyTitle="No expense plans"
-          emptyDescription="No expense plans linked to this service yet."
-        />
-      </DetailSheetSection>
-
       <DetailSheetSection title="Expense cards" icon={<Receipt size={12} />}>
         {canCreate ? (
           <div className="mb-4">

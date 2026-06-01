@@ -19,7 +19,6 @@ interface ClientServiceDetailSheetBodyProps {
   saving: boolean;
   canCreateTask: boolean;
   onCreateInvoice: () => void;
-  onCreateExpensePlan: () => void;
   onCreateExpense: () => void;
   onCreateTask: () => void;
 }
@@ -34,7 +33,6 @@ export function ClientServiceDetailSheetBody({
   saving,
   canCreateTask,
   onCreateInvoice,
-  onCreateExpensePlan,
   onCreateExpense,
   onCreateTask,
 }: ClientServiceDetailSheetBodyProps) {
@@ -67,7 +65,6 @@ export function ClientServiceDetailSheetBody({
         links={service.financeLinks}
         projectId={service.projectId}
         canCreate={service.billingModel === 'WE_PAY'}
-        onCreatePlan={onCreateExpensePlan}
         onCreateExpense={onCreateExpense}
       />
     );

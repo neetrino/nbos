@@ -38,7 +38,6 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { ClientServiceCreateDialogs } from './ClientServiceCreateDialogs';
 import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
-import { ClientServiceSheetActions } from './ClientServiceSheetActions';
 import {
   CLIENT_SERVICE_DETAIL_SHEET_TABS,
   type ClientServiceDetailSheetTab,
@@ -65,12 +64,10 @@ function canSaveClientServiceForm(form: ClientServiceFormState): boolean {
 
 function closeCreateDialogs(setters: {
   setInvoiceOpen: (open: boolean) => void;
-  setExpensePlanOpen: (open: boolean) => void;
   setExpenseOpen: (open: boolean) => void;
   setQuickCreateTaskOpen: (open: boolean) => void;
 }) {
   setters.setInvoiceOpen(false);
-  setters.setExpensePlanOpen(false);
   setters.setExpenseOpen(false);
   setters.setQuickCreateTaskOpen(false);
 }
@@ -92,7 +89,6 @@ export function ClientServiceDetailSheet({
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<ClientServiceDetailSheetTab>('general');
   const [invoiceOpen, setInvoiceOpen] = useState(false);
-  const [expensePlanOpen, setExpensePlanOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [quickCreateTaskOpen, setQuickCreateTaskOpen] = useState(false);
   const dirtyRef = useRef(false);
@@ -124,7 +120,6 @@ export function ClientServiceDetailSheet({
     if (!open) {
       closeCreateDialogs({
         setInvoiceOpen,
-        setExpensePlanOpen,
         setExpenseOpen,
         setQuickCreateTaskOpen,
       });
@@ -150,11 +145,6 @@ export function ClientServiceDetailSheet({
 
   const handleInvoiceCreated = useCallback(() => {
     setActiveTab('invoices');
-    refreshAfterLinkCreated();
-  }, [refreshAfterLinkCreated]);
-
-  const handleExpensePlanCreated = useCallback(() => {
-    setActiveTab('expenses');
     refreshAfterLinkCreated();
   }, [refreshAfterLinkCreated]);
 
@@ -282,19 +272,6 @@ export function ClientServiceDetailSheet({
             ) : null}
           </div>
 
-          {service ? (
-            <div className="border-border shrink-0 border-b px-5 py-2.5">
-              <ClientServiceSheetActions
-                service={service}
-                canCreateTask={canCreateTask}
-                disabled={saving}
-                onCreateInvoice={() => setInvoiceOpen(true)}
-                onCreateExpense={() => setExpenseOpen(true)}
-                onCreateTask={() => setQuickCreateTaskOpen(true)}
-              />
-            </div>
-          ) : null}
-
           <DetailSheetTabBar
             tabs={CLIENT_SERVICE_DETAIL_SHEET_TABS}
             activeTab={activeTab}
@@ -318,7 +295,6 @@ export function ClientServiceDetailSheet({
                   saving={saving}
                   canCreateTask={canCreateTask}
                   onCreateInvoice={() => setInvoiceOpen(true)}
-                  onCreateExpensePlan={() => setExpensePlanOpen(true)}
                   onCreateExpense={() => setExpenseOpen(true)}
                   onCreateTask={() => setQuickCreateTaskOpen(true)}
                 />
@@ -343,12 +319,9 @@ export function ClientServiceDetailSheet({
             service={service}
             invoiceOpen={invoiceOpen}
             onInvoiceOpenChange={setInvoiceOpen}
-            expensePlanOpen={expensePlanOpen}
-            onExpensePlanOpenChange={setExpensePlanOpen}
             expenseOpen={expenseOpen}
             onExpenseOpenChange={setExpenseOpen}
             onInvoiceCreated={handleInvoiceCreated}
-            onExpensePlanCreated={handleExpensePlanCreated}
             onExpenseCreated={handleExpenseCreated}
           />
           <QuickCreateTaskDialog

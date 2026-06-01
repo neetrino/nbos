@@ -2,13 +2,8 @@ import { defaultCreateInvoiceDueDateIso } from '@/features/finance/components/in
 import type { CreateInvoiceFormState } from '@/features/finance/components/invoices/create-invoice-dialog-utils';
 import type { CreateExpenseFormState } from '@/features/finance/utils/expense-create-defaults';
 import { parseExpenseDraftAmount } from '@/features/finance/utils/expense-general-form-state';
-import {
-  EMPTY_EXPENSE_PLAN_FORM,
-  type ExpensePlanFormState,
-} from '@/features/finance/utils/expense-plan-form-state';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 import type { CreateExpensePayload } from '@/lib/api/finance';
-import type { CreateExpensePlanPayload } from '@/lib/api/expense-plans';
 import { clientServiceTaskDefaultDueDate } from './client-service-task-links';
 
 /** Mirrors API `clientServiceExpenseCategory` (`client-service-flow-helpers.ts`). */
@@ -44,23 +39,6 @@ export function getClientServiceExpenseFormDefaults(
   };
 }
 
-export function getClientServiceExpensePlanFormDefaults(
-  service: ClientServiceRecord,
-): ExpensePlanFormState {
-  return {
-    ...EMPTY_EXPENSE_PLAN_FORM,
-    name: service.name,
-    category: clientServiceExpenseCategory(service.type),
-    amount: formatMoneyDefault(service.ourCost),
-    frequency: service.frequency,
-    nextDueDate: clientServiceTaskDefaultDueDate(service.renewalDate) ?? '',
-    provider: service.provider ?? '',
-    projectId: service.projectId,
-    autoGenerate: false,
-    notes: `From client service: ${service.name}`,
-  };
-}
-
 export function buildClientServiceExpensePayload(
   form: CreateExpenseFormState,
   service: ClientServiceRecord,
@@ -82,26 +60,5 @@ export function buildClientServiceExpensePayload(
     isPassThrough: service.billingModel === 'WE_PAY',
     taxStatus: service.taxStatus,
     notes: `From client service: ${service.name}`,
-  };
-}
-
-export function buildClientServiceExpensePlanPayload(
-  form: ExpensePlanFormState,
-  serviceId: string,
-): CreateExpensePlanPayload | null {
-  const parsedAmount = parseFloat(form.amount.replace(/\s/g, ''));
-  if (!form.name.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) return null;
-
-  return {
-    name: form.name.trim(),
-    category: form.category,
-    amount: parsedAmount,
-    frequency: form.frequency,
-    nextDueDate: form.nextDueDate.trim() ? form.nextDueDate : null,
-    provider: form.provider.trim() || null,
-    projectId: form.projectId !== 'none' ? form.projectId : null,
-    clientServiceRecordId: serviceId,
-    autoGenerate: form.autoGenerate,
-    notes: form.notes.trim() || null,
   };
 }

@@ -4,28 +4,21 @@ import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { CreateExpenseDialog } from '@/features/finance/components/expenses/CreateExpenseDialog';
-import { CreateExpensePlanDialog } from '@/features/finance/components/expenses/CreateExpensePlanDialog';
 import {
   buildClientServiceExpensePayload,
-  buildClientServiceExpensePlanPayload,
   getClientServiceExpenseFormDefaults,
-  getClientServiceExpensePlanFormDefaults,
   getClientServiceInvoiceFormDefaults,
 } from '@/features/finance/constants/client-service-create-defaults';
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
-import { expensePlansApi } from '@/lib/api/expense-plans';
 import { expensesApi } from '@/lib/api/finance';
 
 interface ClientServiceCreateDialogsProps {
   service: ClientServiceRecord;
   invoiceOpen: boolean;
   onInvoiceOpenChange: (open: boolean) => void;
-  expensePlanOpen: boolean;
-  onExpensePlanOpenChange: (open: boolean) => void;
   expenseOpen: boolean;
   onExpenseOpenChange: (open: boolean) => void;
   onInvoiceCreated: () => void;
-  onExpensePlanCreated: () => void;
   onExpenseCreated: () => void;
 }
 
@@ -33,12 +26,9 @@ export function ClientServiceCreateDialogs({
   service,
   invoiceOpen,
   onInvoiceOpenChange,
-  expensePlanOpen,
-  onExpensePlanOpenChange,
   expenseOpen,
   onExpenseOpenChange,
   onInvoiceCreated,
-  onExpensePlanCreated,
   onExpenseCreated,
 }: ClientServiceCreateDialogsProps) {
   const invoiceDefaultForm = useMemo(
@@ -49,11 +39,6 @@ export function ClientServiceCreateDialogs({
   const expenseDefaultForm = useMemo(
     () => getClientServiceExpenseFormDefaults(service),
     [service.name, service.ourCost, service.renewalDate],
-  );
-
-  const expensePlanDefaultForm = useMemo(
-    () => getClientServiceExpensePlanFormDefaults(service),
-    [service],
   );
 
   const clientServiceContext = useMemo(
@@ -74,15 +59,6 @@ export function ClientServiceCreateDialogs({
     [service.id],
   );
 
-  const submitExpensePlan = useCallback(
-    async (form: ReturnType<typeof getClientServiceExpensePlanFormDefaults>) => {
-      const payload = buildClientServiceExpensePlanPayload(form, service.id);
-      if (!payload) throw new Error('Expense plan form is incomplete.');
-      return expensePlansApi.create(payload);
-    },
-    [service.id],
-  );
-
   const submitExpense = useCallback(
     async (form: ReturnType<typeof getClientServiceExpenseFormDefaults>) => {
       const payload = buildClientServiceExpensePayload(form, service);
@@ -97,52 +73,34 @@ export function ClientServiceCreateDialogs({
     onInvoiceCreated();
   }, [onInvoiceCreated]);
 
-  const handleExpensePlanCreated = useCallback(() => {
-    toast.success('Linked expense plan created.');
-    onExpensePlanCreated();
-  }, [onExpensePlanCreated]);
-
   const handleExpenseCreated = useCallback(() => {
     toast.success('Linked expense card created.');
     onExpenseCreated();
   }, [onExpenseCreated]);
 
+  if (service.billingModel !== 'WE_PAY') return null;
+
   return (
     <>
-      {service.billingModel === 'WE_PAY' ? (
-        <CreateInvoiceDialog
-          open={invoiceOpen}
-          onOpenChange={onInvoiceOpenChange}
-          defaultForm={invoiceDefaultForm}
-          clientServiceContext={clientServiceContext}
-          hiddenContext={{ projectId: service.projectId }}
-          submitOverride={submitInvoice}
-          forceNestedBackdrop
-          onCreated={handleInvoiceCreated}
-        />
-      ) : null}
+      <CreateInvoiceDialog
+        open={invoiceOpen}
+        onOpenChange={onInvoiceOpenChange}
+        defaultForm={invoiceDefaultForm}
+        clientServiceContext={clientServiceContext}
+        hiddenContext={{ projectId: service.projectId }}
+        submitOverride={submitInvoice}
+        forceNestedBackdrop
+        onCreated={handleInvoiceCreated}
+      />
 
-      {service.billingModel === 'WE_PAY' ? (
-        <>
-          <CreateExpensePlanDialog
-            open={expensePlanOpen}
-            onOpenChange={onExpensePlanOpenChange}
-            initialForm={expensePlanDefaultForm}
-            submitOverride={submitExpensePlan}
-            forceNestedBackdrop
-            onCreated={handleExpensePlanCreated}
-          />
-
-          <CreateExpenseDialog
-            open={expenseOpen}
-            onOpenChange={onExpenseOpenChange}
-            initialForm={expenseDefaultForm}
-            submitOverride={submitExpense}
-            forceNestedBackdrop
-            onCreated={handleExpenseCreated}
-          />
-        </>
-      ) : null}
+      <CreateExpenseDialog
+        open={expenseOpen}
+        onOpenChange={onExpenseOpenChange}
+        initialForm={expenseDefaultForm}
+        submitOverride={submitExpense}
+        forceNestedBackdrop
+        onCreated={handleExpenseCreated}
+      />
     </>
   );
 }

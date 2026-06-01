@@ -459,13 +459,10 @@ expiry_date updated
 Структура sheet сверху вниз:
 
 1. **Header** — название, тип, статус, **Settings** (⚙) с действием удаления сервиса.
-2. **Connections** — компактная панель действий под header:
-   - **`WE_PAY`**: create invoice / expense / task → shared-формы с предзаполнением;
-   - **`REMINDER_ONLY`**: только create task.
-3. **Tabs** — `General` | `Invoices` | `Expenses` | `Tasks`:
+2. **Tabs** — `General` | `Invoices` | `Expenses` | `Tasks`:
    - **General** — поля карточки (basics, billing, dates, notes, proofs).
    - **Invoices** — список связанных `Invoice Card`; **Create invoice** только для `WE_PAY`.
-   - **Expenses** — списки expense plans и expense cards; **Create** только для `WE_PAY`.
+   - **Expenses** — список expense cards; **Create expense** только для `WE_PAY`.
    - **Tasks** — список связанных задач; **Create task** → `QuickCreateTaskDialog` (оба billing model).
 
 Должно быть видно:
