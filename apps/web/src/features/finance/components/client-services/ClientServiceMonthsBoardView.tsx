@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
+import { clientServiceStageHex } from '@/features/finance/constants/client-service-payment-stage';
 import type { ClientServiceRecordListParams, ClientServiceStats } from '@/lib/api/client-services';
 import { ClientServiceBoardScroll } from './ClientServiceBoardScroll';
 
@@ -32,6 +33,12 @@ const MONTH_LABELS = [
 ];
 
 const MONTH_HEX = resolveKanbanStageHex('bg-cyan-600') ?? '#0891B2';
+const CURRENT_MONTH_HEX = clientServiceStageHex('active');
+
+function isCurrentMonthColumn(year: number, month: number): boolean {
+  const now = new Date();
+  return year === now.getFullYear() && month === now.getMonth();
+}
 
 function monthRange(year: number, month: number): { from: string; to: string } {
   const from = new Date(Date.UTC(year, month, 1));
@@ -55,7 +62,7 @@ export function ClientServiceMonthsBoardView({
         return {
           key: `${year}-${month}`,
           label,
-          hex: MONTH_HEX,
+          hex: isCurrentMonthColumn(year, month) ? CURRENT_MONTH_HEX : MONTH_HEX,
           count: stat?.count ?? 0,
           sum: stat?.sum ?? '0',
           params: { ...baseParams, renewalFrom: from, renewalTo: to },
