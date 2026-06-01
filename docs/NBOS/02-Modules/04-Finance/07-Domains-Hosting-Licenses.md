@@ -448,7 +448,17 @@ expiry_date updated
 
 Порог «2 месяца» = граница стадии `Invoice` и совпадает с автоматизацией продления (`EXP-04`).
 
-### На карточке сервиса
+### На карточке сервиса (detail sheet)
+
+Структура sheet сверху вниз:
+
+1. **Header** — название, тип, статус.
+2. **Connections** — компактная панель действий под header: создать invoice / expense plan / expense / task, удалить сервис.
+3. **Tabs** — `General` | `Invoices` | `Expenses` | `Tasks`:
+   - **General** — поля карточки (basics, billing, dates, notes, proofs).
+   - **Invoices** — список связанных `Invoice Card` (+ create).
+   - **Expenses** — списки связанных expense plans и expense cards (+ create).
+   - **Tasks** — список связанных задач (+ create).
 
 Должно быть видно:
 

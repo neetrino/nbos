@@ -26,7 +26,7 @@ export function ClientServiceSheetActions({
   const busy = disabled || (actionId?.endsWith(`:${service.id}`) ?? false);
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-1.5">
       {service.billingModel === 'CLIENT_PAID' ? (
         <Button
           type="button"

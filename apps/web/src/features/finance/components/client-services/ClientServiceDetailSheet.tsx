@@ -9,6 +9,7 @@ import {
   DetailSheetFormFooter,
   DetailSheetTabBar,
   EntityDetailSheetContent,
+  EntityItemHost,
   ErrorState,
   LoadingState,
   StatusBadge,
@@ -28,14 +29,17 @@ import {
 } from '@/features/finance/utils/client-service-form-state';
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { ClientServiceGeneralTab } from './ClientServiceGeneralTab';
-import { type ClientServiceActionKind } from './ClientServiceSheetActions';
+import { usePermission } from '@/lib/permissions';
+import { ClientServiceDetailSheetBody } from './ClientServiceDetailSheetBody';
+import {
+  ClientServiceSheetActions,
+  type ClientServiceActionKind,
+} from './ClientServiceSheetActions';
 import {
   CLIENT_SERVICE_DETAIL_SHEET_TABS,
   type ClientServiceDetailSheetTab,
 } from './client-service-detail-sheet-tabs';
 import { useClientServiceProjects } from './use-client-service-projects';
-import { usePermission } from '@/lib/permissions';
 
 interface ClientServiceDetailSheetProps {
   serviceId: string | null;
@@ -172,16 +176,20 @@ export function ClientServiceDetailSheet({
         if (kind === 'invoice') {
           await clientServicesApi.createInvoice(service.id);
           toast.success('Linked invoice card created.');
+          setActiveTab('invoices');
         } else if (kind === 'plan') {
           await clientServicesApi.createExpensePlan(service.id);
           toast.success('Linked expense plan created.');
+          setActiveTab('expenses');
         } else if (kind === 'expense') {
           await clientServicesApi.createExpense(service.id);
           toast.success('Linked expense card created.');
+          setActiveTab('expenses');
         } else if (kind === 'task') {
           if (!me?.id) throw new Error('Current employee is not loaded.');
           await clientServicesApi.createTask(service.id, { creatorId: me.id });
           toast.success('Linked task created.');
+          setActiveTab('tasks');
         }
         await fetchService();
         onSaved();
@@ -203,76 +211,93 @@ export function ClientServiceDetailSheet({
     ? clientServiceOptionLabel(CLIENT_SERVICE_STATUSES, service.status)
     : undefined;
   const sourcePageHref = clientServicesListWithOpenServiceHref(serviceId);
+  const actionBusy = saving || Boolean(actionId);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent
-        open={open}
-        layout="full"
-        width="medium"
-        sourcePageHref={sourcePageHref}
-      >
-        <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
-          {loading ? (
-            <p className="text-muted-foreground text-sm">Loading…</p>
-          ) : service ? (
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="inline-flex max-w-full min-w-0 items-center gap-2">
-                  <Layers className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                  <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                    {service.name}
-                  </h2>
+    <EntityItemHost nested onEntityChanged={() => void fetchService()}>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <EntityDetailSheetContent
+          open={open}
+          layout="full"
+          width="medium"
+          sourcePageHref={sourcePageHref}
+        >
+          <div className="bg-background border-border shrink-0 border-b px-5 pt-5 pb-3">
+            {loading ? (
+              <p className="text-muted-foreground text-sm">Loading…</p>
+            ) : service ? (
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex max-w-full min-w-0 items-center gap-2">
+                    <Layers className="text-muted-foreground size-5 shrink-0" aria-hidden />
+                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                      {service.name}
+                    </h2>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {typeLabel ? <StatusBadge label={typeLabel} variant="indigo" /> : null}
+                  {statusLabel ? <StatusBadge label={statusLabel} variant="gray" /> : null}
                 </div>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {typeLabel ? <StatusBadge label={typeLabel} variant="indigo" /> : null}
-                {statusLabel ? <StatusBadge label={statusLabel} variant="gray" /> : null}
-              </div>
+            ) : null}
+          </div>
+
+          {service ? (
+            <div className="border-border shrink-0 border-b px-5 py-2.5">
+              <p className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-wide uppercase">
+                Connections
+              </p>
+              <ClientServiceSheetActions
+                service={service}
+                actionId={actionId}
+                canCreateTask={Boolean(me?.id)}
+                disabled={actionBusy}
+                onAction={(kind) => void runServiceAction(kind)}
+                onRequestDelete={() => onRequestDelete({ id: service.id, name: service.name })}
+              />
             </div>
           ) : null}
-        </div>
 
-        {CLIENT_SERVICE_DETAIL_SHEET_TABS.length > 1 ? (
           <DetailSheetTabBar
             tabs={CLIENT_SERVICE_DETAIL_SHEET_TABS}
             activeTab={activeTab}
             onTabChange={(value) => setActiveTab(value as ClientServiceDetailSheetTab)}
           />
-        ) : null}
 
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="px-5 py-5">
-            {loading ? (
-              <LoadingState count={3} />
-            ) : error ? (
-              <ErrorState description={error} onRetry={() => void fetchService()} />
-            ) : service && draft ? (
-              <ClientServiceGeneralTab
-                serviceId={serviceId}
-                service={service}
-                draft={draft}
-                patchDraft={patchDraft}
-                projects={projects}
-                formDisabled={saving}
-                actionId={actionId}
-                canCreateTask={Boolean(me?.id)}
-                onAction={(kind) => void runServiceAction(kind)}
-                onRequestDelete={() => onRequestDelete({ id: service.id, name: service.name })}
-              />
-            ) : null}
-          </div>
-        </ScrollArea>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="px-5 py-5">
+              {loading ? (
+                <LoadingState count={3} />
+              ) : error ? (
+                <ErrorState description={error} onRetry={() => void fetchService()} />
+              ) : service && draft ? (
+                <ClientServiceDetailSheetBody
+                  activeTab={activeTab}
+                  serviceId={serviceId}
+                  service={service}
+                  draft={draft}
+                  patchDraft={patchDraft}
+                  projects={projects}
+                  saving={saving}
+                  actionId={actionId}
+                  canCreateTask={Boolean(me?.id)}
+                  onAction={(kind) => void runServiceAction(kind)}
+                />
+              ) : null}
+            </div>
+          </ScrollArea>
 
-        <DetailSheetFormFooter
-          visible={Boolean(service && draft)}
-          dirty={dirty && (draft ? canSaveClientServiceForm(draft) : false)}
-          saving={saving}
-          errorMessage={formError}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
-      </EntityDetailSheetContent>
-    </Sheet>
+          <DetailSheetFormFooter
+            visible={activeTab === 'general' && Boolean(service && draft)}
+            dirty={dirty && (draft ? canSaveClientServiceForm(draft) : false)}
+            saving={saving}
+            errorMessage={formError}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        </EntityDetailSheetContent>
+      </Sheet>
+    </EntityItemHost>
   );
 }
