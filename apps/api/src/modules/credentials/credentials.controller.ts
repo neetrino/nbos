@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import { credentialsAccessFromUser } from './credentials-access';
 import { CredentialsService } from './credentials.service';
 
 @ApiTags('Credentials')
@@ -48,6 +49,7 @@ export class CredentialsController {
   ) {
     const archivedFlag =
       includeArchived === '1' || includeArchived === 'true' || includeArchived === 'yes';
+    const access = credentialsAccessFromUser(user);
     return this.credentialsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
@@ -56,8 +58,9 @@ export class CredentialsController {
       accessLevel,
       search,
       tab: (tab as 'all' | 'personal' | 'department' | 'secret') || undefined,
-      employeeId: user.id,
-      departmentIds: user.departmentIds,
+      employeeId: access.employeeId,
+      departmentIds: access.departmentIds,
+      viewScope: access.viewScope,
       includeArchived: archivedFlag,
     });
   }
@@ -68,10 +71,7 @@ export class CredentialsController {
     summary: 'Get credential metadata (secrets omitted; use secrets/reveal or secrets/copy)',
   })
   async findOne(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    return this.credentialsService.findById(id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds ?? [],
-    });
+    return this.credentialsService.findById(id, credentialsAccessFromUser(user));
   }
 
   @Post(':id/secrets/reveal')
@@ -83,10 +83,12 @@ export class CredentialsController {
     @Body() body: { field: string; stepUpPassword?: string },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.revealSecretField(id, body.field, body.stepUpPassword, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds ?? [],
-    });
+    return this.credentialsService.revealSecretField(
+      id,
+      body.field,
+      body.stepUpPassword,
+      credentialsAccessFromUser(user),
+    );
   }
 
   @Post(':id/secrets/copy')
@@ -100,10 +102,12 @@ export class CredentialsController {
     @Body() body: { field: string; stepUpPassword?: string },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.copySecretField(id, body.field, body.stepUpPassword, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds ?? [],
-    });
+    return this.credentialsService.copySecretField(
+      id,
+      body.field,
+      body.stepUpPassword,
+      credentialsAccessFromUser(user),
+    );
   }
 
   @Post('export')
@@ -123,10 +127,7 @@ export class CredentialsController {
         fields: Array.isArray(body.fields) ? body.fields : undefined,
         stepUpPassword: body.stepUpPassword,
       },
-      {
-        employeeId: user.id,
-        departmentIds: user.departmentIds ?? [],
-      },
+      credentialsAccessFromUser(user),
     );
   }
 
@@ -137,10 +138,7 @@ export class CredentialsController {
     summary: 'Record audited open of stored http(s) URL; returns URL for client navigation',
   })
   async openUrl(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    return this.credentialsService.recordUrlOpened(id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds ?? [],
-    });
+    return this.credentialsService.recordUrlOpened(id, credentialsAccessFromUser(user));
   }
 
   @Post()
@@ -215,10 +213,7 @@ export class CredentialsController {
     },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.credentialsService.update(id, body, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds ?? [],
-    });
+    return this.credentialsService.update(id, body, credentialsAccessFromUser(user));
   }
 
   @Delete(':id/permanent')
@@ -228,10 +223,7 @@ export class CredentialsController {
     summary: 'Permanently delete an archived credential (cannot be undone)',
   })
   async permanentRemove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    await this.credentialsService.permanentlyDelete(id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds ?? [],
-    });
+    await this.credentialsService.permanentlyDelete(id, credentialsAccessFromUser(user));
   }
 
   @Delete(':id')
@@ -239,10 +231,7 @@ export class CredentialsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Archive credential (soft delete)' })
   async remove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    await this.credentialsService.archive(id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds ?? [],
-    });
+    await this.credentialsService.archive(id, credentialsAccessFromUser(user));
   }
 
   @Post(':id/restore')
@@ -250,9 +239,6 @@ export class CredentialsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Restore archived credential' })
   async restore(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    await this.credentialsService.restore(id, {
-      employeeId: user.id,
-      departmentIds: user.departmentIds ?? [],
-    });
+    await this.credentialsService.restore(id, credentialsAccessFromUser(user));
   }
 }

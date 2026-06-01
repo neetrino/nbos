@@ -6,6 +6,11 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { AuditService } from '../audit/audit.service';
 import { NotificationService } from '../notifications/notification.service';
 import { encrypt, decrypt } from '../../common/utils/crypto';
+import {
+  type CredentialsAccessContext,
+  credentialsRbacBypassesRowFilter,
+  resolveCredentialsRbacScope,
+} from './credentials-access';
 
 const SENSITIVE_FIELDS = ['password', 'apiKey', 'envData', 'secureNotes'] as const;
 type SensitiveField = (typeof SENSITIVE_FIELDS)[number];
@@ -46,11 +51,7 @@ function isSafeCredentialOpenUrl(raw: string): boolean {
 
 type CredentialTab = 'all' | 'personal' | 'department' | 'secret';
 
-/** Caller identity for row-level credential access (mirrors list visibility rules). */
-export interface CredentialsAccessContext {
-  employeeId: string;
-  departmentIds: string[];
-}
+export type { CredentialsAccessContext } from './credentials-access';
 
 interface CredentialQueryParams {
   page?: number;
@@ -62,6 +63,8 @@ interface CredentialQueryParams {
   tab?: CredentialTab;
   employeeId?: string;
   departmentIds?: string[];
+  /** RBAC CREDENTIALS VIEW scope from the caller. */
+  viewScope?: string;
   /** When true, list only archived rows (same visibility rules). */
   includeArchived?: boolean;
 }
@@ -170,6 +173,7 @@ export class CredentialsService {
       tab,
       employeeId,
       departmentIds = [],
+      viewScope,
       includeArchived = false,
     } = params;
 
@@ -193,9 +197,9 @@ export class CredentialsService {
     }
 
     if (tab && employeeId) {
-      this.applyTabFilter(where, tab, employeeId, departmentIds);
+      this.applyTabFilter(where, tab, employeeId, departmentIds, viewScope);
     } else if (employeeId) {
-      this.applyVisibilityFilter(where, employeeId, departmentIds);
+      this.applyVisibilityFilter(where, employeeId, departmentIds, viewScope);
     }
 
     const [rows, total] = await Promise.all([
@@ -258,6 +262,7 @@ export class CredentialsService {
     tab: CredentialTab,
     employeeId: string,
     departmentIds: string[],
+    viewScope?: string,
   ) {
     switch (tab) {
       case 'personal':
@@ -266,17 +271,19 @@ export class CredentialsService {
         break;
       case 'department':
         where.accessLevel = 'DEPARTMENT';
-        if (departmentIds.length > 0) {
+        if (!credentialsRbacBypassesRowFilter(viewScope) && departmentIds.length > 0) {
           where.departmentId = { in: departmentIds };
         }
         break;
       case 'secret':
         where.accessLevel = 'SECRET';
-        where.allowedEmployees = { has: employeeId };
+        if (!credentialsRbacBypassesRowFilter(viewScope)) {
+          where.allowedEmployees = { has: employeeId };
+        }
         break;
       case 'all':
       default:
-        this.applyVisibilityFilter(where, employeeId, departmentIds);
+        this.applyVisibilityFilter(where, employeeId, departmentIds, viewScope);
         break;
     }
   }
@@ -293,8 +300,19 @@ export class CredentialsService {
     where: Prisma.CredentialWhereInput,
     employeeId: string,
     departmentIds: string[],
+    viewScope?: string,
   ) {
+    if (credentialsRbacBypassesRowFilter(viewScope)) return;
     where.OR = [...(where.OR ?? []), ...this.visibilityAccessOr(employeeId, departmentIds)];
+  }
+
+  private rowVisibilityWhere(
+    access: CredentialsAccessContext,
+    action: 'view' | 'edit' | 'delete' = 'view',
+  ): Pick<Prisma.CredentialWhereInput, 'OR'> {
+    const scope = resolveCredentialsRbacScope(access, action);
+    if (credentialsRbacBypassesRowFilter(scope)) return {};
+    return { OR: this.visibilityAccessOr(access.employeeId, access.departmentIds) };
   }
 
   /** Same rules as list `applyVisibilityFilter` OR branch, for single-row guards. */
@@ -335,7 +353,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: null,
-        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+        ...this.rowVisibilityWhere(access, 'view'),
       },
       include: { project: { select: { id: true, name: true } } },
     });
@@ -421,7 +439,7 @@ export class CredentialsService {
 
     const where: Prisma.CredentialWhereInput = {
       archivedAt: null,
-      OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+      ...this.rowVisibilityWhere(access, 'view'),
     };
     if (input.credentialIds && input.credentialIds.length > 0) {
       where.id = { in: input.credentialIds };
@@ -571,7 +589,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: null,
-        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+        ...this.rowVisibilityWhere(access, 'edit'),
       },
     });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
@@ -645,7 +663,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: null,
-        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+        ...this.rowVisibilityWhere(access, 'delete'),
       },
     });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
@@ -670,7 +688,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: { not: null },
-        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+        ...this.rowVisibilityWhere(access, 'edit'),
       },
     });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
@@ -697,7 +715,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: { not: null },
-        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+        ...this.rowVisibilityWhere(access, 'delete'),
       },
     });
     if (!existing) throw new NotFoundException(`Credential ${id} not found`);
@@ -819,7 +837,7 @@ export class CredentialsService {
       where: {
         id,
         archivedAt: null,
-        OR: this.visibilityAccessOr(access.employeeId, access.departmentIds),
+        ...this.rowVisibilityWhere(access, 'view'),
       },
     });
     if (!row) throw new NotFoundException(`Credential ${id} not found`);
