@@ -7,7 +7,6 @@ import { ClientServiceGeneralTab } from './ClientServiceGeneralTab';
 import { ClientServiceInvoicesTab } from './ClientServiceInvoicesTab';
 import { ClientServiceExpensesTab } from './ClientServiceExpensesTab';
 import { ClientServiceTasksTab } from './ClientServiceTasksTab';
-import type { ClientServiceActionKind } from './ClientServiceSheetActions';
 import type { ClientServiceDetailSheetTab } from './client-service-detail-sheet-tabs';
 
 interface ClientServiceDetailSheetBodyProps {
@@ -18,9 +17,10 @@ interface ClientServiceDetailSheetBodyProps {
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   projects: Project[];
   saving: boolean;
-  actionId: string | null;
   canCreateTask: boolean;
-  onAction: (kind: ClientServiceActionKind) => void;
+  onCreateInvoice: () => void;
+  onCreateExpensePlan: () => void;
+  onCreateExpense: () => void;
   onCreateTask: () => void;
 }
 
@@ -32,13 +32,12 @@ export function ClientServiceDetailSheetBody({
   patchDraft,
   projects,
   saving,
-  actionId,
   canCreateTask,
-  onAction,
+  onCreateInvoice,
+  onCreateExpensePlan,
+  onCreateExpense,
   onCreateTask,
 }: ClientServiceDetailSheetBodyProps) {
-  const isActionBusy = (kind: ClientServiceActionKind) => actionId === `${kind}:${service.id}`;
-
   if (activeTab === 'general') {
     return (
       <ClientServiceGeneralTab
@@ -57,8 +56,7 @@ export function ClientServiceDetailSheetBody({
       <ClientServiceInvoicesTab
         links={service.financeLinks}
         canCreateInvoice={service.billingModel === 'CLIENT_PAID'}
-        creating={isActionBusy('invoice')}
-        onCreate={() => onAction('invoice')}
+        onCreate={onCreateInvoice}
       />
     );
   }
@@ -68,10 +66,8 @@ export function ClientServiceDetailSheetBody({
       <ClientServiceExpensesTab
         links={service.financeLinks}
         projectId={service.projectId}
-        creatingPlan={isActionBusy('plan')}
-        creatingExpense={isActionBusy('expense')}
-        onCreatePlan={() => onAction('plan')}
-        onCreateExpense={() => onAction('expense')}
+        onCreatePlan={onCreateExpensePlan}
+        onCreateExpense={onCreateExpense}
       />
     );
   }

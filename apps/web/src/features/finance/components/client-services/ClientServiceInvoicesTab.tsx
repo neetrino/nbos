@@ -20,14 +20,12 @@ import { cn } from '@/lib/utils';
 interface ClientServiceInvoicesTabProps {
   links: ClientServiceFinanceLinks | undefined;
   canCreateInvoice: boolean;
-  creating: boolean;
   onCreate: () => void;
 }
 
 export function ClientServiceInvoicesTab({
   links,
   canCreateInvoice,
-  creating,
   onCreate,
 }: ClientServiceInvoicesTabProps) {
   const onOpenItem = useOpenEntityItemFromSummary();
@@ -43,7 +41,7 @@ export function ClientServiceInvoicesTab({
     <DetailSheetSection title="Invoice cards" icon={<FileText size={12} />}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         {canCreateInvoice ? (
-          <Button type="button" size="sm" disabled={creating} onClick={onCreate}>
+          <Button type="button" size="sm" disabled={!canCreateInvoice} onClick={onCreate}>
             <Plus size={14} aria-hidden />
             Create invoice
           </Button>

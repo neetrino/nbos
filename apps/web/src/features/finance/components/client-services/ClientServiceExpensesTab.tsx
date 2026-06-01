@@ -17,8 +17,6 @@ import {
 interface ClientServiceExpensesTabProps {
   links: ClientServiceFinanceLinks | undefined;
   projectId: string;
-  creatingPlan: boolean;
-  creatingExpense: boolean;
   onCreatePlan: () => void;
   onCreateExpense: () => void;
 }
@@ -54,8 +52,6 @@ function mapExpenseRows(
 export function ClientServiceExpensesTab({
   links,
   projectId,
-  creatingPlan,
-  creatingExpense,
   onCreatePlan,
   onCreateExpense,
 }: ClientServiceExpensesTabProps) {
@@ -68,7 +64,7 @@ export function ClientServiceExpensesTab({
     <div className="flex max-w-[48rem] flex-col gap-6">
       <DetailSheetSection title="Expense plans" icon={<ListChecks size={12} />}>
         <div className="mb-4">
-          <Button type="button" size="sm" disabled={creatingPlan} onClick={onCreatePlan}>
+          <Button type="button" size="sm" onClick={onCreatePlan}>
             <Plus size={14} aria-hidden />
             Create expense plan
           </Button>
@@ -83,7 +79,7 @@ export function ClientServiceExpensesTab({
 
       <DetailSheetSection title="Expense cards" icon={<Receipt size={12} />}>
         <div className="mb-4">
-          <Button type="button" size="sm" disabled={creatingExpense} onClick={onCreateExpense}>
+          <Button type="button" size="sm" onClick={onCreateExpense}>
             <Plus size={14} aria-hidden />
             Create expense
           </Button>
