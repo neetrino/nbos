@@ -1,6 +1,9 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma, type ContactRole, type InputJsonValue } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { resolveSortField, normalizeSortDirection } from '../../../common/utils/sort-order';
+
+const CONTACT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'firstName', 'lastName', 'email']);
 
 interface CreateContactDto {
   firstName: string;
@@ -56,7 +59,10 @@ export class ContactsService {
           companies: { select: { id: true, name: true } },
           _count: { select: { projects: true, leads: true, deals: true } },
         },
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: {
+          [resolveSortField(sortBy, CONTACT_SORT_FIELDS, 'createdAt')]:
+            normalizeSortDirection(sortOrder),
+        },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),

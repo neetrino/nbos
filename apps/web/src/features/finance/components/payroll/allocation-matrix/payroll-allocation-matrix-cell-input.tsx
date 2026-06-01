@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type FocusEvent, type KeyboardEvent } from 'react';
+import { useCallback, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { Loader2 } from 'lucide-react';
 import { AmdCurrencyIcon } from '@/components/shared/AmdCurrencyIcon';
 import { MoneyInput } from '@/components/shared/MoneyInput';
@@ -51,13 +51,16 @@ export function PayrollAllocationMatrixCellInput(props: {
   onSave: (payload: { releaseThisMonth: string; reason?: string }) => Promise<void>;
 }) {
   const { cell, availableFunding, disabled, saving, onSave } = props;
+  const cellSyncKey = `${cell.employeeId}:${cell.orderId}:${cell.releaseThisMonth}`;
+  const [cellSyncSeen, setCellSyncSeen] = useState(cellSyncKey);
   const [amount, setAmount] = useState(() => releaseDraftFromCell(cell));
   const [focused, setFocused] = useState(false);
 
-  useEffect(() => {
+  if (cellSyncKey !== cellSyncSeen) {
+    setCellSyncSeen(cellSyncKey);
     setAmount(releaseDraftFromCell(cell));
     setFocused(false);
-  }, [cell.employeeId, cell.orderId, cell.releaseThisMonth]);
+  }
 
   const showCurrency = focused || amount.trim().length > 0;
   const remaining = parseMoney(cell.remaining);

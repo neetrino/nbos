@@ -6,10 +6,12 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'node:crypto';
 import * as argon2 from 'argon2';
 import * as jwt from 'jsonwebtoken';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { TokenDenylistService } from '../../common/security/token-denylist.service';
 
 interface JwtPayload {
   sub: string;
@@ -25,6 +27,7 @@ export class AuthService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly config: ConfigService,
+    private readonly tokenDenylist: TokenDenylistService,
   ) {
     this.jwtSecret = this.config.getOrThrow<string>('JWT_SECRET');
     this.jwtExpiresIn = this.config.get<string>('JWT_EXPIRES_IN') ?? '7d';
@@ -48,6 +51,7 @@ export class AuthService {
     const payload: JwtPayload = { sub: employee.id, email: employee.email };
     const accessToken = jwt.sign(payload, this.jwtSecret, {
       expiresIn: this.jwtExpiresIn as jwt.SignOptions['expiresIn'],
+      jwtid: randomUUID(),
     });
 
     return {
@@ -59,6 +63,17 @@ export class AuthService {
         lastName: employee.lastName,
       },
     };
+  }
+
+  /**
+   * Revokes the caller's current access token until its natural expiry,
+   * so a stolen token cannot be reused after the user signs out.
+   */
+  async logout(jti: string | undefined, tokenExp: number | undefined): Promise<{ success: true }> {
+    if (jti && typeof tokenExp === 'number') {
+      await this.tokenDenylist.revokeUntil(jti, tokenExp * 1_000);
+    }
+    return { success: true };
   }
 
   async acceptInvite(token: string, firstName: string, lastName: string, password: string) {

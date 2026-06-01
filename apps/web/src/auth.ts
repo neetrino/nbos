@@ -1,10 +1,10 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import type { DefaultSession } from 'next-auth';
+import type { DefaultSession, User } from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
 
 declare module 'next-auth' {
   interface Session {
-    accessToken: string;
     user: DefaultSession['user'] & {
       id: string;
       firstName: string;
@@ -16,6 +16,14 @@ declare module 'next-auth' {
     accessToken: string;
     firstName: string;
     lastName: string;
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    accessToken?: string;
+    firstName?: string;
+    lastName?: string;
   }
 }
 
@@ -72,21 +80,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
-        token['accessToken'] = user.accessToken;
-        token['firstName'] = user.firstName;
-        token['lastName'] = user.lastName;
+        token.accessToken = user.accessToken;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
         token.sub = user.id;
       }
       return token;
     },
-    session({ session, token }) {
-      session.accessToken = (token['accessToken'] as string) ?? '';
-      session.user.id = token.sub ?? '';
-      session.user.firstName = (token['firstName'] as string) ?? '';
-      session.user.lastName = (token['lastName'] as string) ?? '';
+    session({ session, token }: { session: DefaultSession; token: JWT }) {
+      if (session.user) {
+        session.user.id = token.sub ?? '';
+        session.user.firstName = token.firstName ?? '';
+        session.user.lastName = token.lastName ?? '';
+      }
       return session;
+    },
+  },
+  events: {
+    // Best-effort: revoke the backend access token when the user signs out,
+    // so a leaked token cannot be reused after logout.
+    async signOut(message) {
+      const accessToken = 'token' in message ? message.token?.accessToken : undefined;
+      if (!accessToken) {
+        return;
+      }
+      try {
+        await fetch(`${BACKEND_URL}/api/v1/auth/logout`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+      } catch {
+        // Signing out client-side must succeed even if the backend is unreachable.
+      }
     },
   },
   pages: {
@@ -96,4 +123,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: 'jwt',
     maxAge: 7 * 24 * 60 * 60,
   },
+  // Force the Secure cookie flag + `__Secure-` prefix in production.
+  // The session cookie itself stays httpOnly + sameSite=lax (Auth.js defaults).
+  useSecureCookies: process.env.NODE_ENV === 'production',
 });

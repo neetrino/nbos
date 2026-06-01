@@ -56,7 +56,7 @@ function ClientServicesPageInner() {
   const searchParams = useSearchParams();
   const openServiceIdFromUrl = searchParams.get(OPEN_CLIENT_SERVICE_QUERY)?.trim() || null;
 
-  const [view, setView] = useState<ClientServicesViewMode>('list');
+  const [view, setView] = useState<ClientServicesViewMode>(() => readClientServicesViewMode());
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [reloadToken, setReloadToken] = useState(0);
   const [stats, setStats] = useState<ClientServiceStats | null>(null);
@@ -67,10 +67,6 @@ function ClientServicesPageInner() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [billingFilter, setBillingFilter] = useState('all');
-
-  useEffect(() => {
-    setView(readClientServicesViewMode());
-  }, []);
 
   const handleViewChange = useCallback((next: ClientServicesViewMode) => {
     setView(next);

@@ -1,9 +1,15 @@
-import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Post, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiSecurity } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { SchedulerService } from './scheduler.service';
+import { ServiceApiKeyGuard } from '../../common/guards/service-api-key.guard';
+import { Public } from '../../common/decorators';
 
 @ApiTags('Scheduler')
-@ApiBearerAuth()
+@ApiSecurity('scheduler-key')
+@Public()
+@SkipThrottle()
+@UseGuards(ServiceApiKeyGuard)
 @Controller('scheduler')
 export class SchedulerController {
   constructor(private readonly schedulerService: SchedulerService) {}

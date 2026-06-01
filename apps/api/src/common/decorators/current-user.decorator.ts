@@ -10,6 +10,10 @@ export interface CurrentUserPayload {
   firstName: string;
   lastName: string;
   permissions: Record<string, string>;
+  /** Set by AuthGuard from the access token; used for logout/revocation. */
+  jti?: string;
+  /** Access-token expiry (epoch seconds), set by AuthGuard. */
+  tokenExp?: number;
   meProfile?: {
     id: string;
     firstName: string;

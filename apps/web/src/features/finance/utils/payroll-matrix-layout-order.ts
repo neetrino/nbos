@@ -11,9 +11,13 @@ export function moveLayoutId(
   const target = idx + direction;
   if (target < 0 || target >= base.length) return base;
   const next = [...base];
-  const tmp = next[idx];
-  next[idx] = next[target] ?? tmp;
-  next[target] = tmp;
+  const current = next[idx];
+  const swapWith = next[target];
+  if (current === undefined || swapWith === undefined) {
+    return base;
+  }
+  next[idx] = swapWith;
+  next[target] = current;
   return next;
 }
 

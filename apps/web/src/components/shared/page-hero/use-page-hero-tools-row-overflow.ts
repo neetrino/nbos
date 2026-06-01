@@ -11,7 +11,6 @@ export function usePageHeroToolsRowOverflow(
 
   useLayoutEffect(() => {
     if (!enabled) {
-      setOverflowing(false);
       return undefined;
     }
 
@@ -30,5 +29,5 @@ export function usePageHeroToolsRowOverflow(
     return () => observer.disconnect();
   }, [enabled, toolsRowRef]);
 
-  return overflowing;
+  return enabled ? overflowing : false;
 }

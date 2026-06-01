@@ -1,12 +1,15 @@
 # NBOS deployment (baseline)
 
-This project targets a split deploy: **Next.js web** (e.g. Vercel) and **NestJS API** (e.g. Render). Adjust host names and env to your environment.
+This project deploys to **Hetzner VPS via Coolify** (web + api). External: Neon, R2, Resend, optional Cloudflare edge.
+
+**Runbook:** [`docs/deploy.md`](../deploy.md) — Coolify, Cloudflare, security preflight, smoke tests  
+**Security gate:** [`security.todo.md`](../../security.todo.md) §0
 
 ## Web (`apps/web`)
 
 - Build: `pnpm --filter @nbos/web build`
 - Runtime env (minimum): `AUTH_SECRET`, `BACKEND_URL` (origin of the API, no trailing slash), NextAuth URL vars as required by your host (`NEXTAUTH_URL` / provider-specific)
-- The app proxies authenticated API traffic from the browser to the API via `next.config.ts` rewrites (`/api/*` except `/api/auth/*`)
+- Browser API traffic goes through the **BFF** (`/api/bff/*`): rewrites in `next.config.ts` inject the backend JWT from the httpOnly session cookie server-side
 
 ## API (`apps/api`)
 

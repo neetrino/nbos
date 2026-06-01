@@ -31,6 +31,7 @@ export function ClientServiceInvoicesTab({
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
   const invoices = links?.invoices ?? [];
+  const firstInvoice = invoices[0];
 
   const itemSummaries = useMemo(
     () => invoices.map((row) => clientServiceInvoiceLinkToItemSummary(row)),
@@ -67,9 +68,9 @@ export function ClientServiceInvoicesTab({
         emptyDescription="No invoice cards linked to this service yet."
       />
 
-      {invoices.length > 0 ? (
+      {firstInvoice ? (
         <Link
-          href={`/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(invoices[0].id)}`}
+          href={`/finance/invoices?${OPEN_INVOICE_QUERY}=${encodeURIComponent(firstInvoice.id)}`}
           className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4 gap-1.5')}
         >
           <FileText size={14} aria-hidden />

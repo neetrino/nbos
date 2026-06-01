@@ -226,9 +226,11 @@ describe('DriveService', () => {
     });
 
     it('creates DB-backed File Asset metadata with version and link', async () => {
+      const tenantStorageKey =
+        'nbos/tenants/00000000-0000-4000-8000-000000000001/files/projects/p1/offer.pdf';
       const result = await service.createFileAsset({
         displayName: 'Approved offer.pdf',
-        storageKey: 'Drive/projects/p1/offer.pdf',
+        storageKey: tenantStorageKey,
         mimeType: 'application/pdf',
         sizeBytes: 123,
         purpose: 'OFFER',
@@ -250,7 +252,7 @@ describe('DriveService', () => {
             versions: {
               create: expect.objectContaining({
                 versionNumber: 1,
-                storageKey: 'Drive/projects/p1/offer.pdf',
+                storageKey: tenantStorageKey,
               }),
             },
             links: {

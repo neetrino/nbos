@@ -26,6 +26,9 @@ import {
 } from './partner-referral-terms.ops';
 import { assertPartnerAssignableForInboundCrm } from '../../partners/partner-crm-source.ops';
 import { syncEntityContactLinks } from '../shared/sync-entity-contact-links.ops';
+import { resolveSortField, normalizeSortDirection } from '../../../common/utils/sort-order';
+
+const DEAL_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'name', 'code', 'status', 'amount']);
 
 @Injectable()
 export class DealsService {
@@ -84,7 +87,10 @@ export class DealsService {
       this.prisma.deal.findMany({
         where,
         include: dealListInclude,
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: {
+          [resolveSortField(sortBy, DEAL_SORT_FIELDS, 'createdAt')]:
+            normalizeSortDirection(sortOrder),
+        },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),

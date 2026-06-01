@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -56,9 +56,12 @@ export function DeleteConfirmDialog({
   const resolvedTitle = title ?? DEFAULT_TITLES[level];
   const resolvedDescription = description ?? DEFAULT_DESCRIPTIONS[level];
 
-  useEffect(() => {
-    if (!open) setTypedName('');
-  }, [open]);
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setTypedName('');
+    }
+    onOpenChange(next);
+  };
 
   const nameOk =
     level === 'simple' || (itemName.trim().length > 0 && typedName.trim() === itemName.trim());
@@ -74,7 +77,7 @@ export function DeleteConfirmDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>{resolvedTitle}</DialogTitle>

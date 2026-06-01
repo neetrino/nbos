@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import Redis from 'ioredis';
+import type Redis from 'ioredis';
+import { createRedisConnection, getRedisUrl } from '../../common/redis/redis-connection';
 import {
   REPORT_EXPORT_JOB_NAME,
   REPORT_EXPORT_QUEUE_NAME,
@@ -14,9 +15,9 @@ export class ReportsQueueService implements OnModuleInit, OnModuleDestroy {
   private connection: Redis | null = null;
 
   onModuleInit() {
-    const redisUrl = process.env.REDIS_URL;
+    const redisUrl = getRedisUrl();
     if (!redisUrl) return;
-    this.connection = new Redis(redisUrl, { maxRetriesPerRequest: null });
+    this.connection = createRedisConnection(redisUrl);
     this.queue = new Queue<ReportExportQueuePayload>(REPORT_EXPORT_QUEUE_NAME, {
       connection: this.connection,
     });

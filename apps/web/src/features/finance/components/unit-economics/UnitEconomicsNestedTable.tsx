@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ErrorState, LoadingState } from '@/components/shared';
@@ -214,20 +214,26 @@ export function UnitEconomicsNestedTable({
   const [openProjects, setOpenProjects] = useState<Set<string>>(() => new Set());
   const [openProducts, setOpenProducts] = useState<Set<string>>(() => new Set());
 
-  useEffect(() => {
-    const first = tree[0];
-    if (!first) return;
-    setOpenProjects((prev) => {
-      if (prev.size > 0) return prev;
-      return new Set([first.projectId]);
-    });
-  }, [tree]);
+  const defaultProjectId = tree[0]?.projectId;
+  const resolvedOpenProjects = useMemo(() => {
+    let next = openProjects;
+    if (next.size === 0 && defaultProjectId) {
+      next = new Set([defaultProjectId]);
+    }
+    if (activeBranch) {
+      const withActive = new Set(next);
+      withActive.add(activeBranch.projectId);
+      return withActive;
+    }
+    return next;
+  }, [activeBranch, defaultProjectId, openProjects]);
 
-  useEffect(() => {
-    if (!activeBranch) return;
-    setOpenProjects((prev) => new Set(prev).add(activeBranch.projectId));
-    setOpenProducts((prev) => new Set(prev).add(activeBranch.productKey));
-  }, [activeBranch]);
+  const resolvedOpenProducts = useMemo(() => {
+    if (!activeBranch) return openProducts;
+    const next = new Set(openProducts);
+    next.add(activeBranch.productKey);
+    return next;
+  }, [activeBranch, openProducts]);
 
   const expandAll = useCallback(() => {
     setOpenProjects(new Set(tree.map((project) => project.projectId)));
@@ -294,7 +300,7 @@ export function UnitEconomicsNestedTable({
           </tr>
         ) : (
           tree.map((project) => {
-            const projectOpen = openProjects.has(project.projectId);
+            const projectOpen = resolvedOpenProjects.has(project.projectId);
             return (
               <Fragment key={project.key}>
                 <tr
@@ -325,7 +331,7 @@ export function UnitEconomicsNestedTable({
                 {renderProjectRows(
                   project,
                   projectOpen,
-                  openProducts,
+                  resolvedOpenProducts,
                   toggleProduct,
                   activeOrderId,
                   onDrilldown,

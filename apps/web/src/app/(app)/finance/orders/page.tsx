@@ -159,6 +159,7 @@ function OrdersPageInner() {
       handleExportScopeStatsCsv,
       handleOrderFilterChange,
       orderFilterConfigs,
+      orderFilterValues,
       state,
     ],
   );

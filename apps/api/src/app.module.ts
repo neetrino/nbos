@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { LoggerModule } from 'nestjs-pino';
+import { validateEnv } from './config/env.validation';
+import { buildLoggerParams } from './config/logger.config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { DatabaseModule } from './database.module';
 import { HealthController } from './health.controller';
@@ -41,8 +44,10 @@ import { RolesModule } from './modules/roles/roles.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { ChecklistTemplatesModule } from './modules/checklist-templates/checklist-templates.module';
+import { TokenDenylistModule } from './common/security/token-denylist.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { OriginGuard } from './common/guards/origin.guard';
 import { AuthGuard } from './common/guards/auth.guard';
 import { EmployeeGuard } from './common/guards/employee.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
@@ -52,10 +57,13 @@ import { PermissionGuard } from './common/guards/permission.guard';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '../../.env.local',
+      validate: validateEnv,
     }),
+    LoggerModule.forRoot(buildLoggerParams()),
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 100 }],
     }),
+    TokenDenylistModule,
     DatabaseModule,
     AuthModule,
     EmployeesModule,
@@ -104,6 +112,10 @@ import { PermissionGuard } from './common/guards/permission.guard';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: OriginGuard,
     },
     {
       provide: APP_GUARD,

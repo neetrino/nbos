@@ -12,6 +12,16 @@ import {
 } from './task-project-list-filter.ops';
 import { taskWhereInvolvesEmployee } from './task-involves-employee-where.op';
 import { buildTaskListSearchWhere } from './task-list-search-where.op';
+import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
+
+const TASK_SORT_FIELDS = new Set([
+  'createdAt',
+  'updatedAt',
+  'dueDate',
+  'priority',
+  'status',
+  'title',
+]);
 
 export interface TaskFindAllPaginatedParams {
   page?: number;
@@ -103,7 +113,10 @@ export async function taskFindAllPaginated(
     prisma.task.findMany({
       where,
       include,
-      orderBy: { [sortBy]: sortOrder },
+      orderBy: {
+        [resolveSortField(sortBy, TASK_SORT_FIELDS, 'createdAt')]:
+          normalizeSortDirection(sortOrder),
+      },
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),
