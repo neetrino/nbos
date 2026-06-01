@@ -60,7 +60,7 @@ export function useBonusEntryPlannedAdjust(
       setEditing(false);
       onSaved();
     } catch (err: unknown) {
-      setSubmitError(getApiErrorMessage(err));
+      setSubmitError(getApiErrorMessage(err, 'Planned amount could not be saved.'));
     } finally {
       setSubmitting(false);
     }

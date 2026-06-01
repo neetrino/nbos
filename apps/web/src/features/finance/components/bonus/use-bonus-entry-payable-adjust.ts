@@ -59,7 +59,7 @@ export function useBonusEntryPayableAdjust(
       setEditing(false);
       onSaved();
     } catch (err: unknown) {
-      setSubmitError(getApiErrorMessage(err));
+      setSubmitError(getApiErrorMessage(err, 'Payable adjustment could not be saved.'));
     } finally {
       setSubmitting(false);
     }

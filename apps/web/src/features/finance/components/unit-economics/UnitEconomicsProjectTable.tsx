@@ -1,7 +1,7 @@
 'use client';
 
 import { ErrorState, LoadingState } from '@/components/shared';
-import { formatAmount } from '@/features/finance/constants/finance';
+import { formatAmount, parseMoneyAmount } from '@/features/finance/constants/finance';
 import type { UnitEconomicsBoardData } from '@/features/finance/components/unit-economics/unit-economics-board-data';
 import { cn } from '@/lib/utils';
 
@@ -62,16 +62,16 @@ export function UnitEconomicsProjectTable({ data }: { data: UnitEconomicsBoardDa
                     {row.unitCount}
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                    {formatAmount(row.receivedAmount)}
+                    {formatAmount(parseMoneyAmount(row.receivedAmount))}
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                    {formatAmount(row.receivableAmount)}
+                    {formatAmount(parseMoneyAmount(row.receivableAmount))}
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                    {formatAmount(row.expensesPaidAmount)}
+                    {formatAmount(parseMoneyAmount(row.expensesPaidAmount))}
                   </td>
                   <td className="border-border border-b px-2 py-2 text-right tabular-nums">
-                    {formatAmount(row.remainingBonuses)}
+                    {formatAmount(parseMoneyAmount(row.remainingBonuses))}
                   </td>
                   <td
                     className={cn(
@@ -79,7 +79,7 @@ export function UnitEconomicsProjectTable({ data }: { data: UnitEconomicsBoardDa
                       marginClass(row.cashBalance),
                     )}
                   >
-                    {formatAmount(row.cashBalance)}
+                    {formatAmount(parseMoneyAmount(row.cashBalance))}
                   </td>
                   <td
                     className={cn(
@@ -87,7 +87,7 @@ export function UnitEconomicsProjectTable({ data }: { data: UnitEconomicsBoardDa
                       marginClass(row.marginAfterCommitments),
                     )}
                   >
-                    {formatAmount(row.marginAfterCommitments)}
+                    {formatAmount(parseMoneyAmount(row.marginAfterCommitments))}
                   </td>
                 </tr>
               ))

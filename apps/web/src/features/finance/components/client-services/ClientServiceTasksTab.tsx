@@ -37,6 +37,7 @@ export function ClientServiceTasksTab({
   const onOpenItem = useOpenEntityItemFromSummary();
   const [viewVariant, setViewVariant] = useState<EntityItemVariant>('list-row');
   const tasks = links?.tasks ?? [];
+  const firstTask = tasks[0];
 
   const itemSummaries = useMemo(
     () => tasks.map((row) => clientServiceTaskLinkToItemSummary(row)),
@@ -67,9 +68,9 @@ export function ClientServiceTasksTab({
         emptyDescription="No tasks linked to this service yet."
       />
 
-      {tasks.length > 0 ? (
+      {firstTask ? (
         <Link
-          href={taskHref(tasks[0])}
+          href={taskHref(firstTask)}
           className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4 gap-1.5')}
         >
           <CheckSquare size={14} aria-hidden />

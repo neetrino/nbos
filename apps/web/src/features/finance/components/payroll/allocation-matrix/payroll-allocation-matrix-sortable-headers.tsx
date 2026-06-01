@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, type ReactNode } from 'react';
-import type { DragEndEvent, DraggableAttributes, SyntheticListenerMap } from '@dnd-kit/core';
+import type { DragEndEvent, DraggableAttributes } from '@dnd-kit/core';
 import {
   DndContext,
   KeyboardSensor,
@@ -18,6 +18,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+
+type SortableDragListeners = ReturnType<typeof useSortable>['listeners'];
 import { GripVertical, PanelRightOpen } from 'lucide-react';
 import {
   PAYROLL_MATRIX_COLUMN_HEADER_STICKY,
@@ -132,7 +134,7 @@ function MatrixHeaderDragShell({
   dragLabel: string;
   onActivate: () => void;
   dragAttributes: DraggableAttributes;
-  dragListeners: SyntheticListenerMap | undefined;
+  dragListeners: SortableDragListeners;
   onOpenDetail?: () => void;
   detailAriaLabel?: string;
   children: ReactNode;

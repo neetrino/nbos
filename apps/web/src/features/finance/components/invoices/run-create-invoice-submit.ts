@@ -29,7 +29,7 @@ export async function runCreateInvoiceSubmit(
   try {
     if (params.submitOverride) {
       const created = await params.submitOverride(params.form);
-      await params.onCreated(created);
+      await params.onCreated(created ?? undefined);
     } else {
       const created = await invoicesApi.create(
         buildCreateInvoicePayload(
